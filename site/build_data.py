@@ -74,6 +74,10 @@ def strip_house_range(s):
 
 sys.path.insert(0, str(REPO_ROOT))
 try:
+    import parsers  # noqa: E402 -- repo-root parsers.py (openmeteo forecast parser, etc.)
+except Exception:  # pragma: no cover - defensive fallback, same posture as lwl below
+    parsers = None
+try:
     import live_water_level as lwl  # noqa: E402
 except Exception as _lwl_exc:  # pragma: no cover - defensive fallback
 
@@ -130,6 +134,16 @@ NEAR_STATION_RADIUS_KM = 5.0   # generalised per-centre radius (task spec: stati
 PUMP_RADIUS_KM = 2.5           # generalised per-centre radius (task spec: pumps ≤2.5 km)
 FLOOD_ROAD_RADIUS_KM = 5.0
 HOSPITAL_RADIUS_KM = 5.0
+RAIN_GAUGE_RADIUS_KM = 4.0     # "3 nearest gauges (<= 4 km)" -- RAIN NOW item
+
+# Design drainage capacity -- VERIFIED against the source document itself (see
+# raw/capacity/CAPACITY_NOTE.md, not committed -- it quotes the exact Thai sentence).
+# "โดยขีดความสามารถของระบบระบายน้ำสามารถรองรับปริมาณฝนตกสะสมรวมได้ไม่เกิน 80 มิลลิเมตร
+# ใน 1 วัน ... หรือแปลงเป็นความเข้มของฝนไม่เกิน 58.7 มิลลิเมตรต่อชั่วโมง"
+DESIGN_CAPACITY_MM_PER_HOUR = 58.7
+DESIGN_CAPACITY_MM_PER_DAY = 80.0
+DESIGN_CAPACITY_SOURCE_TH = ("แผนปฏิบัติราชการประจำปี พ.ศ. 2569 สำนักการระบายน้ำ กทม., "
+                              "หน้า 4 (VERIFIED -- อ่านตรงจากเอกสารต้นทาง)")
 
 POND_NAME_BY_PUMP_CODE = {
     "ST.SPS.02": "บึงรับน้ำสัมมากร 4",
@@ -215,12 +229,35 @@ def load_pump_rows(station_codes: list[str]) -> tuple[list[dict], Path | None]:
 
 # --- 3. Rain (24h, nearest station to a given centre) ------------------------------------
 
+def _rain_tier_word(mm_24h: float | None) -> str:
+    """Plain-word tier for a 24h rainfall total -- Dr-tier engineering judgment (this
+    codebase's own bucketing, not an agency-issued category), used only for the hero
+    tile's plain-language line, never as a computed risk score."""
+    if mm_24h is None:
+        return ""
+    if mm_24h >= 150:
+        return "หนักมาก"
+    if mm_24h >= 90:
+        return "หนัก"
+    if mm_24h >= 35:
+        return "ปานกลาง"
+    if mm_24h > 0:
+        return "เบา"
+    return "ไม่มีฝน"
+
+
 def load_rain(generated_at_utc_iso: str, centre_lat: float, centre_lon: float) -> tuple[dict | None, Path | None]:
     # collect.py's thaiwater_rain_24h collector (added 2026-09-26, red-team fix HIGH-3)
     # writes a fresh snapshot every run to raw/live/thaiwater_rain_24h/<ts>.json; the
     # raw/gapfill/rain_24h*.json manual snapshot is now only a fallback for a run where
     # that collector hasn't run yet or failed (e.g. local dev, or a CI run before this
     # collector existed).
+    #
+    # RAIN NOW (2026-09-26): the snapshot carries `rain_1h` alongside `rain_24h` per
+    # station -- this function now also returns the 3 NEAREST gauges within
+    # RAIN_GAUGE_RADIUS_KM (4 km) as `gauges`, each with its own rain_1h/rain_24h/time,
+    # so the hero tile can show "ฝนตอนนี้" (rain_1h at the nearest gauge) alongside the
+    # 24h total, instead of only the single nearest station regardless of distance.
     path = newest_file(RAW / "live" / "thaiwater_rain_24h", "*.json")
     if path is None:
         path = newest_file(RAW / "gapfill", "rain_24h*.json")
@@ -231,29 +268,40 @@ def load_rain(generated_at_utc_iso: str, centre_lat: float, centre_lon: float) -
     except (OSError, json.JSONDecodeError):
         return None, path
     rows = data.get("data") or []
-    best = None
-    best_dist = None
+    candidates = []
     for rec in rows:
         station = rec.get("station") or {}
         lat, lon = station.get("tele_station_lat"), station.get("tele_station_long")
         if lat is None or lon is None or rec.get("rain_24h") is None:
             continue
         dist = lwl.haversine_km(centre_lat, centre_lon, float(lat), float(lon))
-        if best_dist is None or dist < best_dist:
-            best_dist = dist
-            best = rec
-    if best is None:
+        observed_at = to_utc_iso(rec.get("rainfall_datetime"), "%Y-%m-%d %H:%M")
+        candidates.append({
+            "name": (station.get("tele_station_name") or {}).get("th"),
+            "dist_km": round(dist, 2),
+            "rain_1h": rec.get("rain_1h"),
+            "rain_24h": rec.get("rain_24h"),
+            "time": observed_at,
+            "agency_th": ((rec.get("agency") or {}).get("agency_name") or {}).get("th"),
+            "_dist_raw": dist,
+        })
+    if not candidates:
         return None, path
-    station = best.get("station") or {}
-    observed_at = to_utc_iso(best.get("rainfall_datetime"), "%Y-%m-%d %H:%M")
-    agency_th = ((best.get("agency") or {}).get("agency_name") or {}).get("th")
+    candidates.sort(key=lambda c: c["_dist_raw"])
+    best = candidates[0]
+    gauges = [{k: v for k, v in c.items() if k != "_dist_raw"}
+              for c in candidates if c["_dist_raw"] <= RAIN_GAUGE_RADIUS_KM][:3]
+    observed_at = best["time"]
     return {
-        "station": (station.get("tele_station_name") or {}).get("th"),
-        "dist_km": round(best_dist, 2) if best_dist is not None else None,
-        "mm_24h": best.get("rain_24h"),
+        "station": best["name"],
+        "dist_km": best["dist_km"],
+        "mm_24h": best["rain_24h"],
+        "mm_1h": best["rain_1h"],
         "observed_at": observed_at,
-        "agency_th": agency_th,
+        "agency_th": best["agency_th"],
         "stale": is_stale(observed_at, generated_at_utc_iso),
+        "tier_word": _rain_tier_word(best["rain_24h"]),
+        "gauges": gauges,
     }, path
 
 
@@ -785,35 +833,153 @@ def build_dds_quotes(relevant_names: list[str]) -> tuple[list[dict], dict | None
     return quotes, report_meta, pdf_path
 
 
-# --- 12. Hourly rain forecast -- UNAVAILABLE in the automated CI path -----------------
+# --- 12. Hourly rain forecast -- Open-Meteo (third-party, open, no key) ------------------
 #
 # The previous version of this function did one Playwright navigation to Google's
-# hourly-precipitation strip. GitHub Actions runners have no Playwright/Chromium install
-# by default and no sanctioned reason to scrape Google from CI, so that fetch has been
-# removed here. `forecast` is always the fail-soft "unavailable" readout below; every place
-# it is shown is already labelled accordingly (see DATA_README.md).
+# hourly-precipitation strip; GitHub Actions runners have no Playwright/Chromium install
+# by default and no sanctioned reason to scrape Google from CI. Replaced 2026-09-26 with
+# collect.py's `collect_openmeteo_forecast` (a plain JSON GET, no key, works fine in CI),
+# which writes `raw/live/openmeteo_forecast/<ts>_<area_id>.json` per area. This function
+# only READS that cached snapshot -- no network call here, same discipline as every other
+# `load_*` function in this file. Still fails soft to "unavailable" if the collector
+# hasn't run yet or the snapshot can't be parsed.
 
 _FORECAST_UNAVAILABLE = {
     "available": False,
     "status": "ยังไม่มีพยากรณ์ฝนรายชั่วโมง — ดูเรดาร์ กทม.",
     "items": [],
+    "hourly": [],
     "source": None,
     "trust_tier": None,
     "direction": "unavailable",
+    "trend_word": None,
+    "next6h_mm": None, "next24h_mm": None, "h24_48_mm": None, "h48_72_mm": None,
+    "first_dry_6h_start": None,
 }
 
+DRY_HOUR_MM_THRESHOLD = 0.1  # mm/h at or below this counts as "dry" for first_dry_6h_start
+TREND_STEP_MM = 0.5          # minimum mm difference between 3h windows to call a trend
 
-def fetch_forecast_short() -> dict:
-    """Always returns the fail-soft unavailable readout (see module docstring above)."""
-    return dict(_FORECAST_UNAVAILABLE)
+
+def _fmt_hhmm(time_local: str | None) -> str | None:
+    if not time_local:
+        return None
+    return time_local[-5:] if len(time_local) >= 5 else time_local
+
+
+def _trend_word(rows: list[dict]) -> tuple[str, str | None]:
+    """Compares the next-3h rain sum against the following-3h sum (task spec).
+    Returns (direction, thai_word) where direction in {rising, falling, steady}."""
+    first3 = sum(r["mm"] for r in rows[0:3])
+    next3 = sum(r["mm"] for r in rows[3:6])
+    if next3 > first3 + TREND_STEP_MM:
+        return "rising", "ฝนกำลังจะตกเพิ่มขึ้น"
+    if first3 > next3 + TREND_STEP_MM:
+        after = _fmt_hhmm(rows[3]["time_local"]) if len(rows) > 3 else None
+        word = f"ฝนกำลังจะเบาลงหลัง {after} น." if after else "ฝนกำลังจะเบาลง"
+        return "falling", word
+    return "steady", "ฝนยังตกต่อ"
+
+
+def _first_dry_6h_start(rows: list[dict]) -> str | None:
+    for i in range(0, max(0, len(rows) - 5)):
+        window = rows[i:i + 6]
+        if len(window) == 6 and all(r["mm"] <= DRY_HOUR_MM_THRESHOLD for r in window):
+            return _fmt_hhmm(window[0]["time_local"])
+    return None
+
+
+def build_forecast_short(rows: list[dict], fetched_at_iso: str | None) -> dict:
+    """Pure function: hourly Open-Meteo rows (ascending, already filtered to "now
+    onward") -> the `forecast`/`forecast_short` dict this pipeline renders. Split out
+    from `load_openmeteo_forecast` so it's unit-testable on a fixture with no file I/O."""
+    if not rows:
+        return dict(_FORECAST_UNAVAILABLE)
+    direction, trend_word = _trend_word(rows)
+    hourly = [{"h": _fmt_hhmm(r["time_local"]), "mm": round(r["mm"], 1), "prob": r.get("prob")}
+              for r in rows[:12]]
+    items = [{"h": h["h"], "mm": h["mm"]} for h in hourly[:6]]
+
+    def _sum(a, b):
+        vals = [r["mm"] for r in rows[a:b]]
+        return round(sum(vals), 1) if vals else None
+
+    return {
+        "available": True,
+        "status": None,
+        "items": items,
+        "hourly": hourly,
+        "source": "Open-Meteo (แบบจำลองเปิด ECMWF/GFS)",
+        "trust_tier": "third_party_forecast",
+        "direction": direction,
+        "trend_word": trend_word,
+        "next6h_mm": _sum(0, 6),
+        "next24h_mm": _sum(0, 24),
+        "h24_48_mm": _sum(24, 48),
+        "h48_72_mm": _sum(48, 72),
+        "first_dry_6h_start": _first_dry_6h_start(rows),
+        "fetched_at": fetched_at_iso,
+    }
+
+
+def load_openmeteo_forecast(area_id: str, now_local: datetime.datetime) -> tuple[dict, Path | None]:
+    path = newest_file(RAW / "live" / "openmeteo_forecast", f"*_{area_id}.json")
+    if path is None:
+        return dict(_FORECAST_UNAVAILABLE), None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return dict(_FORECAST_UNAVAILABLE), path
+    if parsers is None:
+        return dict(_FORECAST_UNAVAILABLE), path
+    try:
+        all_rows = parsers.parse_openmeteo_forecast(data)
+    except Exception:  # pragma: no cover - defensive, matches this file's fail-soft rule
+        return dict(_FORECAST_UNAVAILABLE), path
+    now_floor = now_local.replace(minute=0, second=0, microsecond=0)
+    future_rows = []
+    for r in all_rows:
+        try:
+            local_dt = datetime.datetime.strptime(r["time_local"], "%Y-%m-%dT%H:%M").replace(tzinfo=BANGKOK_TZ)
+        except ValueError:
+            continue
+        if local_dt >= now_floor:
+            future_rows.append(r)
+    forecast = build_forecast_short(future_rows, fetched_at_of(path))
+    return forecast, path
+
+
+def build_capacity_comparison(rain: dict | None, forecast: dict | None) -> dict:
+    """Arithmetic on declared inputs only (sum + ratio) -- never a model, per this
+    workspace's equation discipline. `today_mm` is the already-observed rain_24h at the
+    nearest gauge; `plus_forecast_mm` adds Open-Meteo's next24h_mm on top -- both compared
+    against the DDS-verified design capacity of 80 mm/day."""
+    today_mm = (rain or {}).get("mm_24h")
+    fc_24h = (forecast or {}).get("next24h_mm") if (forecast or {}).get("available") else None
+    out = {
+        "mm_per_hour": DESIGN_CAPACITY_MM_PER_HOUR,
+        "mm_per_day": DESIGN_CAPACITY_MM_PER_DAY,
+        "source_th": DESIGN_CAPACITY_SOURCE_TH,
+        "today_mm": today_mm,
+        "today_ratio": round(today_mm / DESIGN_CAPACITY_MM_PER_DAY, 1) if today_mm is not None else None,
+        "forecast_24h_mm": fc_24h,
+        "total_with_forecast_mm": None,
+        "total_with_forecast_ratio": None,
+    }
+    if today_mm is not None or fc_24h is not None:
+        total = (today_mm or 0) + (fc_24h or 0)
+        out["total_with_forecast_mm"] = round(total, 1)
+        out["total_with_forecast_ratio"] = round(total / DESIGN_CAPACITY_MM_PER_DAY, 1)
+    return out
 
 
 # --- Sources ---------------------------------------------------------------------------
 
 def build_sources(rain: dict | None, canal_path, pump_path, rain_path, flood_road_path,
                    dds_pdf_path, tide_path, community_path, community_agency: str,
-                   community_id: str = "community_reports") -> list[dict]:
-    return [
+                   community_id: str = "community_reports",
+                   forecast: dict | None = None, forecast_path=None) -> list[dict]:
+    out = [
         {"id": "thaiwater_canal_waterlevel",
          "agency_th": "สำนักการระบายน้ำ กรุงเทพมหานคร (ผ่าน HII/สสน. thaiwater.net)",
          "url": "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/canal_waterlevel",
@@ -837,18 +1003,28 @@ def build_sources(rain: dict | None, canal_path, pump_path, rain_path, flood_roa
         {"id": community_id, "agency_th": community_agency, "url": None,
          "fetched_at": fetched_at_of(community_path), "trust_tier": "community_report"},
     ]
+    if forecast and forecast.get("available"):
+        out.append({
+            "id": "openmeteo_forecast",
+            "agency_th": "Open-Meteo (แบบจำลองเปิด ECMWF/GFS) — บุคคลที่สาม ไม่ใช่กรมอุตุนิยมวิทยา (TMD)",
+            "url": None, "fetched_at": fetched_at_of(forecast_path),
+            "trust_tier": "third_party_forecast",
+        })
+    return out
 
 
 # --- Area builder ---------------------------------------------------------------------
 
 def build_area_data(*, area_id: str, label: str, centre_lat: float, centre_lon: float,
-                     generated_at_bkk: str, generated_at_utc_iso: str,
+                     generated_at_bkk: str, generated_at_utc_iso: str, now_local,
                      canal_stations: list[dict], canal_by_code: dict,
                      canal_path, pump_station_codes: list[str], tide: dict | None,
                      dds_relevant_names: list[str], is_ram53: bool = False) -> dict:
     pump_rows, pump_path = load_pump_rows(pump_station_codes)
     rain, rain_path = load_rain(generated_at_utc_iso, centre_lat, centre_lon)
     flood_roads, flood_road_path = load_flood_roads(generated_at_utc_iso, centre_lat, centre_lon)
+    forecast, forecast_path = load_openmeteo_forecast(area_id, now_local)
+    capacity = build_capacity_comparison(rain, forecast)
 
     upstream_stations = build_upstream_stations(canal_by_code, generated_at_utc_iso, centre_lat, centre_lon)
     upstream_codes = {s["code"] for s in upstream_stations}
@@ -902,7 +1078,8 @@ def build_area_data(*, area_id: str, label: str, centre_lat: float, centre_lon: 
 
     sources = build_sources(rain, canal_path, pump_path, rain_path, flood_road_path,
                              dds_pdf_path, None, community_path, community_agency,
-                             community_id=("community_reports_ram53" if is_ram53 else "community_reports"))
+                             community_id=("community_reports_ram53" if is_ram53 else "community_reports"),
+                             forecast=forecast, forecast_path=forecast_path)
 
     return {
         "label": label,
@@ -912,6 +1089,9 @@ def build_area_data(*, area_id: str, label: str, centre_lat: float, centre_lon: 
         "pumps": pumps,
         "rain": rain,
         "tide": tide,
+        "forecast": forecast,
+        "forecast_short": forecast,
+        "capacity": capacity,
         "flood_roads": flood_roads,
         "tiers": tiers,
         "tiers_note": tiers_note,
@@ -940,7 +1120,6 @@ def main():
     canal_stations, canal_path = load_canal_stations()
     canal_by_code = {s["canal_oldcode"]: s for s in canal_stations if s.get("canal_oldcode")}
     tide, tide_path = load_tide(generated_at_utc_iso)
-    forecast = fetch_forecast_short()
 
     dds_names = ["สะพานสูง", "แสนแสบ", "ประเวศ", "วังทองหลาง", "บางกะปิ"]
 
@@ -948,6 +1127,7 @@ def main():
         area_id="sammakorn", label="หมู่บ้านสัมมากร (รามคำแหง 112)",
         centre_lat=13.758235, centre_lon=100.676084,
         generated_at_bkk=generated_at_bkk, generated_at_utc_iso=generated_at_utc_iso,
+        now_local=now_local,
         canal_stations=canal_stations, canal_by_code=canal_by_code, canal_path=canal_path,
         pump_station_codes=["ST.SPS.01", "ST.SPS.02", "ST.SPS.03", "ST.SPS.04"],
         tide=tide, dds_relevant_names=dds_names, is_ram53=False,
@@ -956,12 +1136,13 @@ def main():
         area_id="ram53", label="ซอยรามคำแหง 53",
         centre_lat=13.765540, centre_lon=100.619095,
         generated_at_bkk=generated_at_bkk, generated_at_utc_iso=generated_at_utc_iso,
+        now_local=now_local,
         canal_stations=canal_stations, canal_by_code=canal_by_code, canal_path=canal_path,
         pump_station_codes=["ST.WTL.01", "ST.BKP.01", "ST.BKP.06", "ST.BKP.02"],
         tide=tide, dds_relevant_names=dds_names, is_ram53=True,
     )
-    # Ram53's rain-forecast card notes it borrows the nearest official district forecast.
-    ram53["rain_forecast_area_note"] = "พยากรณ์ของเขตสะพานสูง (ใกล้เคียง)"
+    # Each area now gets its OWN Open-Meteo forecast (its own lat/lon), not a borrowed
+    # district forecast -- see load_openmeteo_forecast / collect_openmeteo_forecast.
 
     all_sources = []
     seen_ids = set()
@@ -971,18 +1152,21 @@ def main():
                 continue
             seen_ids.add(s["id"])
             all_sources.append(s)
-    if forecast.get("available"):
-        all_sources.append({
-            "id": "google_weather_forecast", "agency_th": "Google Weather (weather.com) — ไม่ใช่หน่วยงานรัฐไทย",
-            "url": "https://www.google.com/search?q=พยากรณ์อากาศ+สะพานสูง+กรุงเทพ",
-            "fetched_at": generated_at_utc_iso, "trust_tier": "third_party_forecast",
-        })
+
+    # TMD (กรมอุตุนิยมวิทยา) official forecast could not be fetched in this pipeline
+    # (TLS/API-key access this CI environment does not have) -- Open-Meteo above is the
+    # stand-in, always labelled third-party. This caveat is surfaced in the sources
+    # footer (see build_page.py's sources block), not silently hidden.
+    forecast_caveat_th = ("พยากรณ์ฝนที่แสดงมาจาก Open-Meteo (แบบจำลองเปิด third-party) "
+                           "เนื่องจากไม่สามารถดึงพยากรณ์อย่างเป็นทางการจากกรมอุตุนิยมวิทยา "
+                           "(TMD) ได้ในระบบอัตโนมัตินี้ (ติด TLS/ต้องใช้ API key)")
 
     data = {
         "generated_at_bkk": generated_at_bkk,
         "epistemic_note": "เป็นการอ่านค่าจากหน่วยงาน ไม่ใช่การพยากรณ์",
         "default_area": "sammakorn",
-        "forecast": forecast,
+        "forecast": sammakorn["forecast"],  # top-level default/back-compat = sammakorn's
+        "forecast_caveat_th": forecast_caveat_th,
         "all_sources": all_sources,
         "areas": {"sammakorn": sammakorn, "ram53": ram53},
     }
@@ -990,10 +1174,7 @@ def main():
     OUT_JSON.parent.mkdir(parents=True, exist_ok=True)
     OUT_JSON.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    counts = {
-        "forecast_available": forecast["available"],
-        "areas": {},
-    }
+    counts = {"areas": {}}
     for aid, ad in data["areas"].items():
         by_status = {}
         for s in ad["stations_near"]:
@@ -1002,6 +1183,8 @@ def main():
             "sources": len(ad["sources"]), "stations_near": len(ad["stations_near"]),
             "stations_near_by_status": by_status, "pumps": len(ad["pumps"]),
             "rain": 1 if ad["rain"] else 0,
+            "rain_gauges": len((ad["rain"] or {}).get("gauges") or []),
+            "forecast_available": ad["forecast"]["available"],
             "tide_next_high": len((ad["tide"] or {}).get("next_high", [])),
             "flood_roads": len(ad["flood_roads"]), "tiers": len(ad["tiers"]),
             "dds_quotes": len(ad["dds_quotes"]), "exits": len(ad["exits"]),

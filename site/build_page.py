@@ -418,14 +418,21 @@ def build_indicator_tiles(area, st, pc, now_dt, pond_word):
             ("amber" if up_crit_stations else "green")
         tiles.append(_tile("link", f"{len(up_crit_stations)}/{up_total}", "ต้นน้ำสูง", dot))
 
-    # 4. ฝน 24 ชม.
+    # 4. ฝนตอนนี้ (มม./ชม.) + เส้นรอง 24 ชม.
     rain = area.get("rain")
     if rain and rain.get("mm_24h") is not None:
         mm = rain["mm_24h"]
+        mm_1h = rain.get("mm_1h")
         dot = "red" if mm > 90 else ("amber" if mm >= 30 else "green")
-        tiles.append(_tile("rain", f"{mm:.0f} มม.", "ฝน 24 ชม.", dot))
+        station = rain.get("station")
+        dist = rain.get("dist_km")
+        value_text = f"{mm_1h:.1f} มม./ชม." if mm_1h is not None else "–"
+        label = f"ฝนตอนนี้ ({station} {dist:.1f} กม.)" if station and dist is not None else "ฝนตอนนี้"
+        tier = rain.get("tier_word")
+        extra = f"24 ชม. {mm:.0f} มม." + (f" ({tier})" if tier else "")
+        tiles.append(_tile("rain", value_text, label, dot, extra_line=extra))
     else:
-        tiles.append(_tile("rain", "–", "ฝน 24 ชม.", "grey"))
+        tiles.append(_tile("rain", "–", "ฝนตอนนี้", "grey"))
 
     # 5. น้ำหนุน
     hw = next_high_water(area)
@@ -450,20 +457,12 @@ def build_hours_list(area, st, pc, now_dt, forecast):
     pump_ic = icon("pump", 20)
     wave_ic = icon("wave", 20)
 
-    if forecast.get("available") and forecast.get("direction") == "rising":
-        items = forecast.get("items") or []
-        h_start = items[0].get("h") if items else None
-        h_end = items[-1].get("h") if items else None
-        if h_start and h_end:
-            lines.append(f"{rain_ic} ฝนเพิ่มขึ้นช่วง {esc(h_start)}–{esc(h_end)} น.")
-        else:
-            lines.append(f"{rain_ic} ฝนกำลังจะเพิ่มขึ้น")
-    elif forecast.get("available") and forecast.get("direction") == "falling":
-        items = forecast.get("items") or []
-        h_end = items[-1].get("h") if items else None
-        lines.append(f"{rain_ic} ฝนจะเบาลงหลัง {esc(h_end)} น." if h_end else f"{rain_ic} ฝนกำลังจะเบาลง")
-    elif forecast.get("available"):
-        lines.append(f"{rain_ic} ฝนยังตกต่อเนื่อง")
+    # "อีก 3-5 ชั่วโมงข้างหน้า" -- trend_word compares the next-3h sum against the
+    # following-3h sum (see build_data.py::_trend_word), read straight from the data
+    # rather than re-derived here.
+    if forecast.get("available"):
+        trend_word = forecast.get("trend_word") or "ฝนยังตกต่อ"
+        lines.append(f"{rain_ic} อีก 3–5 ชั่วโมงข้างหน้า: {esc(trend_word)}")
     else:
         lines.append(f"{rain_ic} ยังไม่มีพยากรณ์รายชั่วโมง")
 
@@ -620,30 +619,60 @@ def build_canal_rows(area, now_dt):
 
 def build_forecast_fragments(area, now_dt_local, forecast, rain_forecast_area_note):
     rain = area.get("rain")
+    capacity = area.get("capacity") or {}
     if rain:
+        mm_1h = rain.get("mm_1h")
+        mm_24h = rain.get("mm_24h")
+        now_rate = f"{mm_1h:.1f}" if mm_1h is not None else "–"
         rain_text = (
-            f'สถานีที่ใกล้ที่สุด: <strong>{esc(rain.get("station"))}</strong> '
-            f'(ห่าง {rain.get("dist_km", 0):.1f} กม.) วัดฝนสะสม 24 ชม. ได้ '
-            f'<span class="num">{(rain.get("mm_24h") or 0):.1f}</span> มม. — '
+            f'ฝนตอนนี้ <span class="num">{now_rate}</span> มม./ชม. '
+            f'<span class="small">({esc(rain.get("station"))} {rain.get("dist_km", 0):.1f} กม.)</span><br>'
+            f'24 ชม. <span class="num">{(mm_24h or 0):.1f}</span> มม.'
+            f'{" (" + esc(rain.get("tier_word")) + ")" if rain.get("tier_word") else ""} — '
             f'อ่านเมื่อ {fmt_time_full(rain.get("observed_at"), now_dt_local)} · {esc(rain.get("agency_th"))}'
         )
+        if capacity.get("today_mm") is not None and capacity.get("today_ratio") is not None:
+            rain_text += (
+                f'<br><span class="small">ระบบ กทม. ออกแบบรับได้ ~'
+                f'{capacity["mm_per_day"]:.0f} มม./วัน — วันนี้ตกแล้ว '
+                f'{capacity["today_mm"]:.0f} มม. ({capacity["today_ratio"]:.1f} เท่า) — '
+                f'{esc(capacity.get("source_th"))}</span>'
+            )
     else:
         rain_text = "ไม่มีข้อมูลล่าสุด"
 
     forecast = forecast or {}
+    rain_ic = icon("rain", 20)
     if forecast.get("available"):
         note = f' <span class="small">({esc(rain_forecast_area_note)})</span>' if rain_forecast_area_note else ""
-        dirn = forecast.get("direction")
-        items = forecast.get("items") or []
-        rain_ic = icon("rain", 20)
-        if dirn == "rising" and items:
-            fc_text = f"{rain_ic} ฝนกำลังจะตกเพิ่มขึ้น ช่วง {esc(items[0].get('h'))}–{esc(items[-1].get('h'))} น."
-        elif dirn == "falling":
-            fc_text = f"{rain_ic} ฝนกำลังจะเบาลง"
-        else:
-            fc_text = f"{rain_ic} ฝนยังตกต่อ"
+        trend_word = forecast.get("trend_word") or "ฝนยังตกต่อ"
+        fc_text = f"{rain_ic} {esc(trend_word)}"
         fc_text += (f'{note} <span class="small">— {esc(forecast.get("source"))}, '
                     f'ไม่ใช่ของหน่วยงานรัฐไทย</span>')
+        next6h = forecast.get("next6h_mm")
+        next24h = forecast.get("next24h_mm")
+        tomorrow = forecast.get("h24_48_mm")
+        dry_start = forecast.get("first_dry_6h_start")
+        add_html = '<br><span class="small">ฝนที่จะเติมอีก (แบบจำลองเปิด Open-Meteo, ไม่ใช่กรมอุตุฯ): '
+        if next6h is None:
+            add_html += "ไม่มีข้อมูล"
+        else:
+            add_html += f'อีก 6 ชม. {next6h:.0f} มม.'
+            if next24h is not None:
+                add_html += f' · 24 ชม. {next24h:.0f} มม.'
+            if tomorrow is not None:
+                add_html += f' · พรุ่งนี้ {tomorrow:.0f} มม.'
+            add_html += (f' · ช่วงแห้ง 6 ชม. แรกเริ่ม {esc(dry_start)} น.' if dry_start
+                         else ' · ยังไม่พบช่วงแห้ง 6 ชม. ติดต่อกันใน 72 ชม.นี้')
+        add_html += "</span>"
+        fc_text += add_html
+        if capacity.get("total_with_forecast_mm") is not None:
+            fc_text += (
+                f'<br><span class="small">ฝนที่ตกแล้ว + ที่จะเติม 24 ชม. = '
+                f'{capacity["total_with_forecast_mm"]:.0f} มม. เทียบขีด '
+                f'{capacity["mm_per_day"]:.0f} มม./วัน = {capacity["total_with_forecast_ratio"]:.1f} เท่า '
+                '(ผลรวม+อัตราส่วนจากตัวเลขที่ประกาศไว้ ไม่ใช่แบบจำลอง)</span>'
+            )
     else:
         note = f' ({esc(rain_forecast_area_note)})' if rain_forecast_area_note else ""
         fc_text = f'{esc(forecast.get("status") or "ยังไม่มีพยากรณ์ฝนรายชั่วโมง — ดูเรดาร์ กทม.")}{note}'
@@ -1027,7 +1056,7 @@ def main():
     area_template = m.group(1)
 
     now_dt = to_bkk(parsed.get("generated_at_bkk")) or datetime.datetime.now(BANGKOK_TZ)
-    forecast = parsed.get("forecast")
+    top_forecast = parsed.get("forecast")
     areas = parsed.get("areas") or {}
     default_area = parsed.get("default_area") or "sammakorn"
 
@@ -1038,7 +1067,10 @@ def main():
             area = areas.get(area_id)
             if area is None:
                 continue
-            blocks.append(render_area_block(area_template, area_id, area, now_dt, forecast,
+            # Each area now carries its OWN Open-Meteo forecast (own lat/lon) -- fall
+            # back to the top-level (sammakorn's) forecast only if an area is missing it.
+            area_forecast = area.get("forecast") or top_forecast
+            blocks.append(render_area_block(area_template, area_id, area, now_dt, area_forecast,
                                              hidden=(area_id != default_area)))
         area_sections_html = "".join(blocks)
 
@@ -1047,6 +1079,9 @@ def main():
 
         all_sources = parsed.get("all_sources") or []
         sources_list = build_sources_list(all_sources, now_dt)
+        forecast_caveat_th = parsed.get("forecast_caveat_th")
+        if forecast_caveat_th:
+            sources_list += f'<li>{icon("doc", 16)}<span class="small">{esc(forecast_caveat_th)}</span></li>'
     except Exception as e:  # fail-soft: never crash with zero output
         print(f"WARNING: static server-side render failed ({e}); page will be degraded", file=sys.stderr)
         area_sections_html = ""

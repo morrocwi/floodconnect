@@ -568,3 +568,50 @@ def parse_tide_table_text(text: str) -> list:
             row[field] = _tide_token(field, tok)
         current["days"].append(row)
     return out
+
+
+# --- Open-Meteo hourly precipitation forecast (open model, third-party) -------------------
+#
+# Added 2026-09-26 (RAIN FORECAST item): api.open-meteo.com needs no API key and blends
+# ECMWF/GFS open models. It is explicitly a THIRD-PARTY forecast product, never a Thai
+# government source and never confused with a TMD (กรมอุตุฯ) official forecast -- see
+# build_data.py's `load_openmeteo_forecast` and the "third_party" trust_tier in
+# sources/registry.yaml. `timezone=Asia/Bangkok` on the request makes every `hourly.time[i]`
+# already a Bangkok-local "YYYY-MM-DDTHH:MM" string, so no timezone math happens here.
+
+OPENMETEO_FORECAST_URL_TMPL = (
+    "https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}"
+    "&hourly=precipitation,precipitation_probability&timezone=Asia%2FBangkok&forecast_days=3"
+)
+
+
+def openmeteo_forecast_url(lat: float, lon: float) -> str:
+    return OPENMETEO_FORECAST_URL_TMPL.format(lat=lat, lon=lon)
+
+
+def parse_openmeteo_forecast(data: dict) -> list:
+    """
+    Open-Meteo `/v1/forecast?hourly=precipitation,precipitation_probability` JSON -> a
+    list of hourly rows in ascending time order:
+    [{"time_local": "YYYY-MM-DDTHH:MM", "mm": float, "prob": int|None}].
+
+    A row missing its precipitation value is skipped, never fabricated as 0 -- same rule
+    as every other parser in this file. `prob` (precipitation_probability, %) is optional
+    in Open-Meteo's own response and stays None if absent/short.
+    """
+    hourly = data.get("hourly") or {}
+    times = hourly.get("time") or []
+    precs = hourly.get("precipitation") or []
+    probs = hourly.get("precipitation_probability") or []
+    out = []
+    for i, t in enumerate(times):
+        if i >= len(precs) or precs[i] is None:
+            continue
+        mm = precs[i]
+        try:
+            mm = float(mm)
+        except (TypeError, ValueError):
+            continue
+        prob = probs[i] if i < len(probs) else None
+        out.append({"time_local": t, "mm": mm, "prob": prob})
+    return out

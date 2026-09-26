@@ -369,6 +369,33 @@ sources:
         method_evaluation_table: "method_evaluation table in data/observations.sqlite,
           written by `python3 social_listening.py --evaluate`"
 
+  - id: openmeteo_forecast
+    agency:
+      th: "Open-Meteo (แบบจำลองเปิด ผสม ECMWF/GFS) -- ไม่ใช่กรมอุตุนิยมวิทยา (TMD)"
+      en: "Open-Meteo (open ECMWF/GFS model blend) -- NOT the Thai Meteorological
+        Department (TMD)"
+    url: "https://api.open-meteo.com/v1/forecast?latitude=..&longitude=..&hourly=precipitation,precipitation_probability&timezone=Asia%2FBangkok&forecast_days=3"
+    method: "GET, one request per area per run (lat/lon substituted per area -- see
+      parsers.py::openmeteo_forecast_url). No API key needed."
+    cadence: "hourly model output, refreshed multiple times/day upstream"
+    format: json
+    auth: none
+    licence_status: {text: "Open-Meteo's non-commercial API is documented as free/open
+      (open-meteo.com), not independently re-verified against a formal licence text by
+      this repo -- same RELAYED/unresolved posture as every other entry here.",
+      unresolved: true}
+    trust_tier: third_party
+    host_rule:
+      max_requests_per_run: 1
+      notes: "Not a BMA host, so the strict weather.bangkok.go.th/dds.bangkok.go.th rule
+        doesn't name it, but this repo still makes only one GET per area per run here (2
+        areas = 2 requests total per run), no retries -- see collect_openmeteo_forecast."
+    last_status: {date: "2026-09-26", http: null, note: "Not yet run live in this
+      environment -- shape confirmed against Open-Meteo's public API documentation
+      (hourly.time/precipitation/precipitation_probability arrays, timezone-localised
+      when `timezone=` is passed)."}
+    variables: [precipitation_mm, precipitation_probability_pct]
+
   - id: rid_flood_risk_map
     agency:
       th: "กรมชลประทาน"

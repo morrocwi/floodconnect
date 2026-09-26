@@ -532,6 +532,67 @@ def collect_dds_nowcast_gif(conn, dry_run=False) -> CollectResult:
                           note=f"snapshot saved to {p} -- image only, not parsed")
 
 
+# Same two area centres build_data.py uses (หมู่บ้านสัมมากร / ซอยรามคำแหง 53) -- duplicated
+# here (not imported from build_data.py, which lives under site/ and is a script, not a
+# package this file should import from) so this collector can request each area's own
+# Open-Meteo forecast. Keep in sync with site/build_data.py's main() centres if they move.
+OPENMETEO_AREA_CENTRES = {
+    "sammakorn": (13.758235, 100.676084),
+    "ram53": (13.765540, 100.619095),
+}
+
+
+def collect_openmeteo_forecast(conn, dry_run=False) -> CollectResult:
+    """One GET per area per run (registry: max_requests_per_run applies per area-URL, not
+    per source id) -- see sources/registry.yaml's openmeteo_forecast entry. A failure on
+    one area's request does not stop the other area's request (independent hosts-safety
+    posture: same domain, but this is not a BMA host under the strict single-request rule,
+    and Open-Meteo has no documented rate limit this repo has hit)."""
+    sid = "openmeteo_forecast"
+    if dry_run:
+        urls = ", ".join(parsers.openmeteo_forecast_url(lat, lon)
+                          for lat, lon in OPENMETEO_AREA_CENTRES.values())
+        return CollectResult(sid, True, note="dry-run: would GET " + urls)
+    ok_any = False
+    n_obs = 0
+    notes = []
+    for area_id, (lat, lon) in OPENMETEO_AREA_CENTRES.items():
+        url = parsers.openmeteo_forecast_url(lat, lon)
+        try:
+            status, body = _one_get(url, GENERIC_HEADERS)
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as e:
+            notes.append(f"{area_id}: network/HTTP error: {e}")
+            continue
+        if status != 200:
+            notes.append(f"{area_id}: HTTP {status}")
+            continue
+        d = RAW_LIVE_DIR / sid
+        d.mkdir(parents=True, exist_ok=True)
+        p = d / f"{_utcnow_stamp()}_{area_id}.json"
+        p.write_bytes(body)
+        ok_any = True
+        fetched_at = _utcnow_iso()
+        import json
+        rows = parsers.parse_openmeteo_forecast(json.loads(body))
+        for r in rows:
+            try:
+                local_dt = datetime.datetime.strptime(r["time_local"], "%Y-%m-%dT%H:%M")
+            except ValueError:
+                continue
+            observed_at = local_dt.replace(
+                tzinfo=datetime.timezone(datetime.timedelta(hours=7))
+            ).astimezone(datetime.timezone.utc).isoformat()
+            n_obs += store.insert_observation(
+                conn, source_id=sid, station_code=area_id, station_name=area_id,
+                lat=lat, lon=lon, variable="precipitation_forecast_mm", value=r["mm"],
+                unit="mm", observed_at_utc=observed_at, fetched_at_utc=fetched_at,
+                trust_tier="third_party", provenance={"source_url": url, "prob_pct": r["prob"]},
+            )
+        notes.append(f"{area_id}: {len(rows)} hourly row(s) fetched")
+    return CollectResult(sid, ok_any, http=(200 if ok_any else None),
+                          note="; ".join(notes), counts={"inserted": n_obs})
+
+
 COLLECTORS = {
     "thaiwater_canal_waterlevel": collect_thaiwater_canal_waterlevel,
     "thaiwater_flood_road": collect_thaiwater_flood_road,
@@ -542,6 +603,7 @@ COLLECTORS = {
     "dds_tide_pdf": collect_dds_tide_pdf,
     "bma_klongmap": collect_bma_klongmap,
     "dds_nowcast_gif": collect_dds_nowcast_gif,
+    "openmeteo_forecast": collect_openmeteo_forecast,
 }
 
 # Sources with no fetcher by design (manual import / static reference) -- see registry.yaml.
