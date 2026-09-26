@@ -92,6 +92,10 @@ try:
 except Exception:  # pragma: no cover - defensive fallback
     cgmod = None
 try:
+    import burden_ledger as blmod  # noqa: E402 -- Toledo PROP-FLOOD-05a/05b (proposals, PR #62)
+except Exception:  # pragma: no cover - defensive fallback
+    blmod = None
+try:
     import live_water_level as lwl  # noqa: E402
 except Exception as _lwl_exc:  # pragma: no cover - defensive fallback
 
@@ -1551,6 +1555,155 @@ def build_canal_graph_readout(canal_by_code: dict, generated_at_utc_iso: str) ->
     }
 
 
+# --- Burden ledger (Toledo PROP-FLOOD-05a/05b, proposals, PR #62 not yet merged) --------
+
+THAIWATER_BMA_DIR = RAW / "live" / "thaiwater_bma"
+BURDEN_EPS = "0.02"  # per-gauge resolution, matches control_structures.yaml declaration
+
+
+def load_control_structures_yaml() -> dict:
+    """Load site/inputs/canals/control_structures.yaml. Returns {} (never raises) if
+    PyYAML is unavailable or the file is missing/unparseable -- same posture as
+    load_canal_graph_yaml()."""
+    path = CANALS_DIR / "control_structures.yaml"
+    if not HAVE_YAML or not path.is_file():
+        return {}
+    try:
+        return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except Exception:  # pragma: no cover - defensive, malformed yaml never crashes the build
+        return {}
+
+
+def _burden_declared_state(sdef: dict, reading: dict | None, eps_sum) -> str | None:
+    """Derive g_c(t) per control_structures.yaml's own declared control_state_rule_th:
+    CLOSED iff declared a gate AND out-in exceeds the combined resolution; PUMPING iff a
+    declared pump station reports pumps_on>0 (not wired to any of today's 5 declared
+    structures -- kept for a structure that later declares a pump_station_code); else
+    OPEN iff the structure declares SOME control mechanism (is_gate or a pump code);
+    else None (no declared control-state source at all -> CONTROL_STATE_MISSING,
+    exactly pkn01's case today)."""
+    is_gate = bool(sdef.get("is_gate"))
+    if is_gate and reading is not None:
+        g_in, g_out = reading.get("level_m"), reading.get("canal_out")
+        if g_in is not None and g_out not in (None, 0):
+            if (blmod._q(g_out) - blmod._q(g_in)) > eps_sum:
+                return blmod.STATE_CLOSED
+    # pump_station_code is declared but no pump telemetry source is wired for any of
+    # today's 5 structures -- left as a documented no-op until one is.
+    if is_gate or sdef.get("pump_station_code"):
+        return blmod.STATE_OPEN
+    return None
+
+
+def _burden_history_higher_sides(canal_oldcode: str, sdef: dict, eps_sum) -> list:
+    """Replay every distinct tick in raw/live/thaiwater_bma/*.json (chronological,
+    de-duplicated by canal_datetime) for one declared structure's own station code,
+    returning [higher_side_or_None, ...] ending at the most recent snapshot -- the input
+    persistence() needs. Only the SAME station's canal_value/canal_out pair is used
+    (matching control_structures.yaml's own declaration that A/B come from one station's
+    two fields, not two stations). Staleness is not applied to historical ticks (each
+    snapshot's own timestamp already IS that tick's declared instant); only the CURRENT
+    tick's readout (computed separately in build_burden_ledger_readout) checks staleness
+    against `generated_at_utc_iso`."""
+    if not canal_oldcode or blmod is None or not THAIWATER_BMA_DIR.is_dir():
+        return []
+    seen_ticks = {}
+    for path in sorted(THAIWATER_BMA_DIR.glob("*.json")):
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        rows = payload.get("data") if isinstance(payload, dict) else payload
+        for rec in rows or []:
+            station = rec.get("station") or {}
+            code = station.get("canal_oldcode") or station.get("canal_code")
+            if code != canal_oldcode:
+                continue
+            dt = rec.get("canal_datetime")
+            if dt and dt not in seen_ticks:
+                seen_ticks[dt] = (rec.get("canal_value"), rec.get("canal_out"))
+            break
+    history = []
+    for dt in sorted(seen_ticks.keys()):
+        g_in, g_out = seen_ticks[dt]
+        state = _burden_declared_state(sdef, {"level_m": g_in, "canal_out": g_out}, eps_sum)
+        result = blmod.structure_burden(canal_oldcode, g_in, g_out, BURDEN_EPS, BURDEN_EPS,
+                                         state)
+        history.append(result.higher_side if result.result == blmod.RESULT_DETERMINATE
+                        else None)
+    return history
+
+
+def build_burden_ledger_readout(canal_by_code: dict, generated_at_utc_iso: str) -> dict:
+    """Run Toledo PROP-FLOOD-05a's structure_burden()/persistence() over every declared
+    structure in site/inputs/canals/control_structures.yaml, then PROP-FLOOD-05b's
+    zone_order() over the declared zeta zone map. Runs ONCE per build (city/east-zone-
+    wide, not per-area), same size-budget reasoning as build_canal_graph_readout().
+    Returns {"available": False, ...} if the yaml or burden_ledger.py itself is
+    unavailable, never a guessed/partial readout."""
+    doc = load_control_structures_yaml()
+    structures_def = (doc or {}).get("structures") or {}
+    zones_def = (doc or {}).get("zones") or {}
+    if not doc or blmod is None or not structures_def:
+        return {"available": False,
+                "reason": "control_structures.yaml or burden_ledger module unavailable"}
+
+    eps_sum = blmod._q(BURDEN_EPS) * 2
+
+    structure_rows = {}
+    readouts_for_zone_order = {}
+    for sid, sdef in structures_def.items():
+        code = sdef.get("canal_oldcode")
+        reading = canal_by_code.get(code) if code else None
+        state = _burden_declared_state(sdef, reading, eps_sum)
+
+        g_in = reading.get("level_m") if reading else None
+        g_out = reading.get("canal_out") if reading else None
+        observed_at = reading.get("observed_at") if reading else None
+        stale = is_stale(observed_at, generated_at_utc_iso) if reading else True
+
+        result = blmod.structure_burden(
+            sid, g_in, g_out, BURDEN_EPS, BURDEN_EPS, state,
+            datum_a=sdef.get("datum_a"), datum_b=sdef.get("datum_b"),
+            stale_a=stale, stale_b=stale)
+
+        history = _burden_history_higher_sides(code, sdef, eps_sum)
+        p_c = blmod.persistence(history)
+
+        readouts_for_zone_order[sid] = (result, p_c)
+        structure_rows[sid] = {
+            "label_th": sdef.get("label_th"), "canal_oldcode": code,
+            "side_a_label_th": sdef.get("side_a_label_th"),
+            "side_b_label_th": sdef.get("side_b_label_th"),
+            "state": state, "result": result.result,
+            "reason_codes": list(result.reason_codes),
+            "higher_side": result.higher_side, "lower_side": result.lower_side,
+            "burdened_side": result.burdened_side, "relieved_side": result.relieved_side,
+            "a_c": str(result.a_c) if result.a_c is not None else None,
+            "value_m": lwl.safe_float(g_in), "out_m": lwl.safe_float(g_out),
+            "observed_at": observed_at, "stale": stale, "persistence": p_c,
+        }
+
+    zones = {zid: {"boundaries": [
+                (sid, side) for sid, sdef in structures_def.items()
+                for side, zref in (sdef.get("zeta") or {}).items() if zref == zid
+            ]} for zid in zones_def}
+    ordering = blmod.zone_order(zones, readouts_for_zone_order)
+
+    zones_out = {zid: zdef.get("label_th", zid) for zid, zdef in zones_def.items()}
+
+    return {
+        "available": True,
+        "sensor_resolution_m": (doc.get("sensor_resolution_m") or {}).get("value"),
+        "stale_after_hours": doc.get("stale_after_hours"),
+        "control_state_rule_th": (doc.get("control_state_rule_th") or "").strip(),
+        "structures": structure_rows,
+        "zones": zones_out,
+        "zone_order": ordering,
+        "next_step_th": (doc.get("next_step_th") or "").strip(),
+    }
+
+
 # --- Area builder ---------------------------------------------------------------------
 
 def build_area_data(*, area_id: str, label: str, centre_lat: float, centre_lon: float,
@@ -1715,6 +1868,7 @@ def main():
                                            generated_at_utc_iso)
     sammakorn_rough = build_sammakorn_rough_estimate(drain_timeline)
     canal_graph_readout = build_canal_graph_readout(canal_by_code, generated_at_utc_iso)
+    burden_ledger_readout = build_burden_ledger_readout(canal_by_code, generated_at_utc_iso)
     if briefing_raw:
         all_sources_briefing = {
             "id": "bma_governor_briefing", "agency_th": briefing_raw.get("agency_th"),
@@ -1741,6 +1895,7 @@ def main():
         "sammakorn_rough": sammakorn_rough,
         "forecast_7day_compare": load_forecast_7day_compare(),
         "canal_graph": canal_graph_readout,
+        "burden_ledger": burden_ledger_readout,
         "areas": {"sammakorn": sammakorn, "ram53": ram53},
     }
 

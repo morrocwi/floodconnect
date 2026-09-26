@@ -1,0 +1,117 @@
+# Declared control structures for burden_ledger.py -- Toledo PROP-FLOOD-05a/05b
+# (proposals, unverified; Toledo PR #62 not yet merged). Every field here is a
+# DECLARATION by the maintainer, cross-checked against BMA station codes in the cached
+# thaiwater canal_waterlevel feed (raw/live/thaiwater_bma/*.json) -- read directly, not
+# taken on trust. `h_A`/`h_B` for each structure are read from the SAME station's own
+# two fields (`canal_value` = inside/upstream level, `canal_out` = outside/downstream
+# level) -- this is one BMA gauge with an in/out pair, not two separate stations.
+epistemic_note_th: >
+  โครงสร้างควบคุมน้ำ (ประตูระบายน้ำ/สถานีสูบ) ที่ประกาศไว้ที่นี่ ฝั่ง A (ต้นน้ำ/ในคลอง) และฝั่ง B
+  (ปลายน้ำ/นอกคลอง) มาจากค่าที่สถานีเดียวกันรายงานสองค่า (canal_value=ใน, canal_out=นอก) --
+  ไม่ใช่สองสถานีคนละจุด สถานะควบคุม (เปิด/ปิด/สูบ) เป็นกฎอนุมานจากค่าที่วัดได้ (INSTINCT) จนกว่า
+  กทม. จะเผยแพร่สถานะประตูจริงเอง.
+sensor_resolution_m:
+  value: 0.02
+  tag: INSTINCT
+  note: >
+    Same declared per-gauge resolution cutoff as site/inputs/canals/east_chain.yaml's own
+    sensor_resolution_m -- BMA publishes canal_value/canal_out to 2 decimal places.
+stale_after_hours: 2.0
+
+control_state_rule_th: >
+  state = CLOSED เมื่อ out - in > eps_A+eps_B (0.04 ม.) และโครงสร้างเป็นประตู (is_gate: true);
+  state = PUMPING(ทิศทางที่ประกาศ) เมื่อสถานีสูบที่เกี่ยวข้องรายงาน pumps_on > 0;
+  มิฉะนั้น state = OPEN. หากไม่มีทั้ง is_gate:true ที่ยืนยันได้ และไม่มีข้อมูลปั๊ม -> state ไม่ถูก
+  ประกาศ (CONTROL_STATE_MISSING) นี่คือกฎอนุมาน (INSTINCT) ไม่ใช่ประกาศทางการจาก กทม.
+
+structures:
+  ssb10:
+    label_th: "ปตร.แสนแสบ-มีนบุรี"
+    canal_oldcode: "WL.SSB.10"
+    is_gate: true
+    pump_station_code: null
+    datum_a: MSL
+    datum_b: MSL
+    side_a_label_th: "ฝั่งใน (มีนบุรี-หนองจอก)"
+    side_b_label_th: "ฝั่งนอก (บางกะปิ-สะพานสูง)"
+    zeta:
+      A: minburi_nongchok
+      B: bangkapi_saphansung
+    source: "RID east-zone memo (RELAYED); cross-checked against east_chain.yaml node ssb10"
+  ssb09:
+    label_th: "ปตร.บางชัน"
+    canal_oldcode: "WL.SSB.09"
+    is_gate: true
+    pump_station_code: null
+    datum_a: MSL
+    datum_b: MSL
+    side_a_label_th: "ฝั่งใน (บางกะปิ-สะพานสูง)"
+    side_b_label_th: "ฝั่งนอก (เมืองชั้นใน/พระโขนง)"
+    zeta:
+      A: bangkapi_saphansung
+      B: inner_city_phra_khanong
+    source: "RID east-zone memo (RELAYED); cross-checked against east_chain.yaml node ssb09"
+  pwt03:
+    label_th: "ปตร.ประเวศ-วัดกระทุ่ม"
+    canal_oldcode: "WL.PWT.03"
+    is_gate: true
+    pump_station_code: null
+    datum_a: MSL
+    datum_b: MSL
+    side_a_label_th: "ฝั่งใน (ประเวศตอนบน — ไม่อยู่ใน 4 โซนที่ประกาศ)"
+    side_b_label_th: "ฝั่งนอก (ลาดกระบัง-สุวรรณภูมิ)"
+    zeta:
+      A: null   # ประเวศ upper reach is not one of the 4 declared zones -- left undeclared
+                # on purpose rather than force-mapped, per PROP-FLOOD-05a's zeta discipline.
+      B: ladkrabang_suvarnabhumi
+    source: "RID relay (not independently verified); cross-checked against east_chain.yaml node pwt03"
+  pwt04:
+    label_th: "ปตร.ประเวศ-ลาดกระบัง"
+    canal_oldcode: "WL.PWT.04"
+    is_gate: true
+    pump_station_code: null
+    datum_a: MSL
+    datum_b: MSL
+    side_a_label_th: "ฝั่งใน (ประเวศตอนบน — ไม่อยู่ใน 4 โซนที่ประกาศ)"
+    side_b_label_th: "ฝั่งนอก (ลาดกระบัง-สุวรรณภูมิ)"
+    zeta:
+      A: null
+      B: ladkrabang_suvarnabhumi
+    source: "RID relay (not independently verified); cross-checked against east_chain.yaml node pwt04"
+  pkn01:
+    label_th: "ส.พระโขนง"
+    canal_oldcode: "WL.PKN.01"
+    is_gate: false   # station name is "ส." (สถานี), not "ปตร." -- NOT declared a floodgate;
+                      # this workspace does not assume gate status from the large measured
+                      # in/out asymmetry alone (that would be exactly the tide/lock
+                      # confusion PROP-FLOOD-05a's honest_caveats warns against).
+    pump_station_code: null   # no pumps_on telemetry for this code in the cached feed;
+                                # control state is therefore undeclared for this structure.
+    datum_a: MSL
+    datum_b: MSL
+    side_a_label_th: "ฝั่งใน (เมืองชั้นใน/พระโขนง)"
+    side_b_label_th: "ฝั่งนอก (แม่น้ำเจ้าพระยา — ไม่อยู่ใน 4 โซนที่ประกาศ)"
+    zeta:
+      A: inner_city_phra_khanong
+      B: null   # the river side is the discharge destination, not a declared city zone
+    source: >
+      Added per task instruction ("add พระโขนง if the feed has in/out") -- the feed does
+      carry canal_value/canal_out for WL.PKN.01. Declared here WITHOUT is_gate:true and
+      WITHOUT a pump_station_code, so its control state g_c(t) is honestly
+      CONTROL_STATE_MISSING at every tick until a source declares whether/how this
+      structure is operated -- never guessed into CLOSED from the level asymmetry alone.
+
+zones:
+  minburi_nongchok:
+    label_th: "มีนบุรี-หนองจอก"
+  bangkapi_saphansung:
+    label_th: "บางกะปิ-สะพานสูง"
+  ladkrabang_suvarnabhumi:
+    label_th: "ลาดกระบัง-สุวรรณภูมิ"
+  inner_city_phra_khanong:
+    label_th: "เมืองชั้นใน/พระโขนง"
+
+next_step_th: >
+  ยืนยัน zeta(pwt03,A) และ zeta(pwt04,A) กับเอกสาร RID ฉบับเต็ม (ตอนนี้ยังไม่มีโซนที่ประกาศไว้
+  ครอบคลุมฝั่งประเวศตอนบน) และหาแหล่งข้อมูลสถานะประตู/ปั๊มจริงของ ส.พระโขนง แทนการปล่อยเป็น
+  CONTROL_STATE_MISSING ถาวร -- ทั้งสองจุดยังเป็น OPEN.

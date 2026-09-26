@@ -424,6 +424,12 @@
   .cg-swatch-orange{ background:#D68910; }
   .cg-swatch-grey{ background:#8A9AA0; }
 
+  /* ---- burden ledger (ผลที่วัดได้ที่ประตูน้ำ) ---- */
+  .burden-ledger-wrap{ margin: 10px 0 4px; }
+  .bl-zone-heading{ font-size:0.95rem; margin:10px 0 4px; }
+  .bl-zone-list{ margin:0 0 6px; padding-left:1.2em; }
+  .bl-zone-list li{ margin-bottom:4px; }
+
   /* ---- forecast section ---- */
   .fcard{ border:1px solid var(--border); border-radius:8px; padding:14px 16px; margin-bottom:12px; background:var(--surface); }
   .fcard h3{ font-size:1.05rem; margin:0 0 8px; }
@@ -523,6 +529,8 @@
       <div class="tile-grid" id="why-list-__AREA__">{{WHY_LIST}}</div>
 
       <div id="canal-graph-__AREA__">{{CANAL_GRAPH_SECTION_HTML}}</div>
+
+      <div id="burden-ledger-__AREA__">{{BURDEN_LEDGER_SECTION_HTML}}</div>
 
       <h3 class="hours-heading">อีก 3–5 ชั่วโมงข้างหน้า</h3>
       <ul class="hours-list" id="hours-list-__AREA__">{{HOURS_LIST}}</ul>

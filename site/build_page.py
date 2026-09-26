@@ -24,6 +24,7 @@ import datetime
 import json
 import re
 import sys
+from fractions import Fraction
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -1702,11 +1703,120 @@ def build_canal_graph_section_html(canal_graph):
     )
 
 
+# --- Burden ledger (Toledo PROP-FLOOD-05a/05b, proposals, PR #62 not yet merged) --------
+
+_BL_STATE_TH = {
+    "CLOSED": "ปิด", "OPEN": "เปิด",
+    "PUMPING(A->B)": "สูบ (ในนอก)", "PUMPING(B->A)": "สูบ (นอกใน)",
+}
+_BL_REASON_TH = {
+    "UNDECLARED_STRUCTURE": "ไม่ได้ประกาศโครงสร้างนี้",
+    "MISSING_INPUT": "ไม่มีค่าที่อ่านได้",
+    "STALE_INPUT": "ค่าเก่าเกินไป",
+    "DATUM_MISMATCH": "ระดับอ้างอิงไม่ตรงกัน",
+    "CONTROL_STATE_MISSING": "ไม่ทราบสถานะประตู/ปั๊ม",
+}
+
+
+def _bl_side_label(row, side):
+    if side == "A":
+        return row.get("side_a_label_th") or "ฝั่ง A"
+    if side == "B":
+        return row.get("side_b_label_th") or "ฝั่ง B"
+    return "-"
+
+
+def build_burden_ledger_rows_html(burden_ledger):
+    structures = (burden_ledger or {}).get("structures") or {}
+    rows = []
+    for sid, row in structures.items():
+        state_th = _BL_STATE_TH.get(row.get("state"), "ไม่ทราบ" if row.get("state") is None else esc(row["state"]))
+        result = row.get("result")
+        if result == "DETERMINATE":
+            burdened = esc(_bl_side_label(row, row.get("burdened_side")))
+            relieved = esc(_bl_side_label(row, row.get("relieved_side")))
+            a_c = row.get("a_c")
+            try:
+                diff_m = f"{abs(float(Fraction(a_c))):.2f}" if a_c is not None else "-"
+            except (ValueError, ZeroDivisionError):
+                diff_m = "-"
+            persist = f'{row.get("persistence", 0)} รอบ'
+        elif result == "GRADIENT_ONLY":
+            burdened = relieved = '<span class="small">เปิด — ดูผังคลองด้านบน</span>'
+            diff_m, persist = "-", "-"
+        elif result == "UNRESOLVED":
+            burdened = relieved = '<span class="small">ต่างกันไม่พอจะบอกได้</span>'
+            diff_m, persist = "-", "-"
+        else:  # REFUSED
+            reasons = ", ".join(_BL_REASON_TH.get(rc, rc) for rc in row.get("reason_codes") or [])
+            burdened = relieved = f'<span class="small">อ่านไม่ได้ ({esc(reasons)})</span>'
+            diff_m, persist = "-", "-"
+        rows.append(
+            "<tr>"
+            f"<td>{esc(row.get('label_th') or sid)}</td>"
+            f"<td>{esc(state_th)}</td>"
+            f"<td>{burdened}</td>"
+            f"<td>{relieved}</td>"
+            f"<td>{diff_m}</td>"
+            f"<td>{persist}</td>"
+            "</tr>"
+        )
+    return "".join(rows)
+
+
+def build_burden_ledger_zone_list_html(burden_ledger):
+    ordering = (burden_ledger or {}).get("zone_order") or {}
+    zones = (burden_ledger or {}).get("zones") or {}
+    ranked = sorted(ordering.get("ranked") or [], key=lambda r: r["rank"])
+    items = []
+    for r in ranked:
+        label = esc(zones.get(r["zone_id"], r["zone_id"]))
+        items.append(
+            f'<li><strong>อันดับ {r["rank"]}</strong> — {label}: '
+            f'R={r["R"]} (ฝั่งโล่งกว่า), B={r["B"]} (ฝั่งรับภาระ), '
+            f'ΣP โล่ง-รับภาระ = {r["sigma_p_rel"] - r["sigma_p_bur"]}</li>'
+        )
+    for no in ordering.get("no_order") or []:
+        label = esc(zones.get(no["zone_id"], no["zone_id"]))
+        reasons = "; ".join(esc(x) for x in no.get("reasons") or [])
+        items.append(f'<li>{label}: <span class="small">ไม่มีลำดับ (NO_ORDER) — {reasons}</span></li>')
+    for zid in ordering.get("not_evaluable") or []:
+        label = esc(zones.get(zid, zid))
+        items.append(f'<li>{label}: <span class="small">ประเมินไม่ได้ (NOT_EVALUABLE) — ไม่มีขอบเขตที่ประกาศไว้</span></li>')
+    return "<ul class=\"bl-zone-list\">" + "".join(items) + "</ul>" if items else ""
+
+
+def build_burden_ledger_section_html(burden_ledger):
+    """'ผลที่วัดได้ที่ประตูน้ำ (ใครฝั่งไหนสูงกว่าเมื่อประตูปิด)' -- collapsed <details>,
+    placed after the canal graph section (same convention: collapsed by default, plain
+    Thai wording, no fault/intent language). Toledo PROP-FLOOD-05a/05b, proposals."""
+    if not burden_ledger or not burden_ledger.get("available"):
+        return ""
+    rows_html = build_burden_ledger_rows_html(burden_ledger)
+    zone_list_html = build_burden_ledger_zone_list_html(burden_ledger)
+    return (
+        '<section class="burden-ledger-wrap" aria-label="ผลที่วัดได้ที่ประตูน้ำ">'
+        '<details id="burden-ledger-details">'
+        '<summary><span>ผลที่วัดได้ที่ประตูน้ำ (ใครฝั่งไหนสูงกว่าเมื่อประตูปิด)</span></summary>'
+        '<div class="tablewrap"><table>'
+        '<thead><tr><th>ประตู/สถานี</th><th>สถานะที่ประกาศ</th>'
+        '<th>ฝั่งสูงกว่า (BURDENED)</th><th>ฝั่งต่ำกว่า (RELIEVED)</th>'
+        '<th>ต่างกัน (ม.)</th><th>ต่อเนื่อง</th></tr></thead>'
+        f'<tbody>{rows_html}</tbody></table></div>'
+        '<h4 class="bl-zone-heading">ลำดับโซนจากผลที่วัดได้ (R−B เป็นจำนวนนับ ไม่ใช่คะแนน)</h4>'
+        f'{zone_list_html}'
+        '<p class="small">อ่านผลที่วัดได้ ณ ขณะนี้เท่านั้น ไม่ใช่เจตนา นโยบาย หรือความเป็นธรรม; '
+        'น้ำหนุนทำให้เกิดความต่างแบบเดียวกับประตูปิด — สถานะที่ใช้เป็นกฎอนุมานจนกว่า กทม. '
+        'จะเผยแพร่สถานะประตู</p>'
+        '</details></section>'
+    )
+
+
 # ---------------- one area's full fragment map ----------------
 
 def build_area_fragments(area_id, area, now_dt, forecast, bangkok_east=None, briefing=None,
                           capacity_records=None, drain_timeline=None, sammakorn_rough=None,
-                          forecast_7day_compare=None, canal_graph=None):
+                          forecast_7day_compare=None, canal_graph=None, burden_ledger=None):
     labels = AREA_LABELS[area_id]
     pumps = area.get("pumps") or []
     pc = pump_counts(pumps, now_dt)
@@ -1779,6 +1889,18 @@ def build_area_fragments(area_id, area, now_dt, forecast, bangkok_east=None, bri
             'ดูที่แท็บ "หมู่บ้านสัมมากร" ด้านบน</p></section>'
         ) if canal_graph and canal_graph.get("available") else ""
 
+    # Identical between areas (city-wide burden ledger) -- render once (sammakorn tab)
+    # for the same page-size-budget reasoning as the canal graph/water-balance chart
+    # above; ram53 gets a short pointer, never a silent drop.
+    if area_id == "sammakorn":
+        burden_ledger_section_html = build_burden_ledger_section_html(burden_ledger)
+    else:
+        burden_ledger_section_html = (
+            '<section class="burden-ledger-wrap" aria-label="ผลที่วัดได้ที่ประตูน้ำ">'
+            '<p class="small">ผลที่วัดได้ที่ประตูน้ำ (โซนตะวันออกร่วมกันทั้งสองพื้นที่) — '
+            'ดูที่แท็บ "หมู่บ้านสัมมากร" ด้านบน</p></section>'
+        ) if burden_ledger and burden_ledger.get("available") else ""
+
     return {
         "{{PLACE_PIN}}": icon("pin", 16) + f'<span>{esc(labels["pin"])}</span>',
         "{{HEADING_LABEL}}": esc(labels["heading"]),
@@ -1788,6 +1910,7 @@ def build_area_fragments(area_id, area, now_dt, forecast, bangkok_east=None, bri
         "{{STATUS_WATCH}}": watch_line,  # already HTML (has <strong> + icon)
         "{{WHY_LIST}}": indicator_tiles,
         "{{CANAL_GRAPH_SECTION_HTML}}": canal_graph_section_html,
+        "{{BURDEN_LEDGER_SECTION_HTML}}": burden_ledger_section_html,
         "{{HOURS_LIST}}": hours_list,
         "{{STATUS_NOTE}}": esc(status_note),
         "{{STALE_RIBBON_HIDDEN}}": stale_ribbon_hidden,
@@ -1832,7 +1955,7 @@ def build_area_fragments(area_id, area, now_dt, forecast, bangkok_east=None, bri
 def render_area_block(area_template, area_id, area, now_dt, forecast, hidden,
                        bangkok_east=None, briefing=None, capacity_records=None,
                        drain_timeline=None, sammakorn_rough=None, forecast_7day_compare=None,
-                       canal_graph=None):
+                       canal_graph=None, burden_ledger=None):
     block = area_template
     fragments = build_area_fragments(area_id, area, now_dt, forecast,
                                       bangkok_east=bangkok_east, briefing=briefing,
@@ -1840,7 +1963,8 @@ def render_area_block(area_template, area_id, area, now_dt, forecast, hidden,
                                       drain_timeline=drain_timeline,
                                       sammakorn_rough=sammakorn_rough,
                                       forecast_7day_compare=forecast_7day_compare,
-                                      canal_graph=canal_graph)
+                                      canal_graph=canal_graph,
+                                      burden_ledger=burden_ledger)
     for placeholder, value in fragments.items():
         block = block.replace(placeholder, value)
     block = block.replace("{{AREA_HIDDEN}}", " hidden" if hidden else "")
@@ -1923,7 +2047,7 @@ def main():
     # dist/data.json written separately still has everything, unabridged.
     embed_parsed = dict(parsed)
     for _k in ("capacity_records", "drain_timeline", "sammakorn_rough", "forecast_7day_compare",
-               "canal_graph"):
+               "canal_graph", "burden_ledger"):
         embed_parsed.pop(_k, None)
     json_text = json.dumps(embed_parsed, ensure_ascii=False, separators=(",", ":"))
     json_text = json_text.replace("</script", "<\\/script")
@@ -1953,6 +2077,7 @@ def main():
     sammakorn_rough = parsed.get("sammakorn_rough")
     forecast_7day_compare = parsed.get("forecast_7day_compare")
     canal_graph = parsed.get("canal_graph")
+    burden_ledger = parsed.get("burden_ledger")
 
     static_ok = True
     try:
@@ -1971,7 +2096,8 @@ def main():
                                              drain_timeline=drain_timeline,
                                              sammakorn_rough=sammakorn_rough,
                                              forecast_7day_compare=forecast_7day_compare,
-                                             canal_graph=canal_graph))
+                                             canal_graph=canal_graph,
+                                             burden_ledger=burden_ledger))
         area_sections_html = "".join(blocks)
 
         asof = fmt_hm(parsed.get("generated_at_bkk"))
