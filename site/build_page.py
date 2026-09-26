@@ -1373,11 +1373,15 @@ def build_village_panel_svg(sammakorn_rough, now_dt, tide_windows=None):
 _THAI_MONTH_SHORT = {9: "ก.ย.", 10: "ต.ค."}
 
 
-def build_daily_rain_table_html(compare):
+def build_daily_rain_table_html(compare, briefing=None):
     """'ฝน 7 วันข้างหน้า (6 แบบจำลอง)' table -- daily median(min-max) mm straight from
     forecast_7day_compare.json (never recomputed, per FORECAST_SPEC.md item 2), plus the
     model-disagreement flags and the TMD 24h official text (labelled official_forecast)
-    /ONWR-HII OPEN gap, surfaced plainly rather than hidden."""
+    /ONWR-HII OPEN gap, surfaced plainly rather than hidden. `briefing` (optional) is the
+    build_briefing_summary() dict -- when it carries a `tmd_forecast_note_th` (TMD's own
+    outlook relayed via the 26 ก.ย. 16:15 BMA/PM briefing: rain easing from 27 ก.ย.), that
+    line is shown right next to this table, tagged official_report, never merged into the
+    models' own median/min/max numbers above."""
     if not compare:
         return ""
     daily = compare.get("daily_open_meteo_mm") or {}
@@ -1404,18 +1408,29 @@ def build_daily_rain_table_html(compare):
         tmd_html = (f'<p class="small">{_tag_pill("official_report")} กรมอุตุฯ 24 ชม.: '
                     f'{esc(tmd.get("content"))} — ยังไม่มีพยากรณ์ 7 วันเป็นตัวเลขจากหน่วยงานรัฐที่ดึงได้</p>')
 
+    briefing_tmd_note = (briefing or {}).get("tmd_forecast_note_th")
+    briefing_tmd_html = ""
+    if briefing_tmd_note:
+        briefing_tmd_html = (
+            f'<p class="small">{_tag_pill("official_report")} กทม. แถลง 16:15 (อ้างอิงกรมอุตุฯ): '
+            f'{esc(briefing_tmd_note)} — สอดคล้องกับตัวเลขมัธยฐานของแบบจำลองข้างต้นที่ลดลง '
+            f'27-29 ก.ย.</p>'
+        )
+
     return (
         '<div class="fcard daily-rain-card">'
         '<h3>ฝน 7 วันข้างหน้า (6 แบบจำลอง)</h3>'
         + table_html
         + "".join(sorted(set(flag_lines)))
         + tmd_html
+        + briefing_tmd_html
         + '</div>'
     )
 
 
 def build_combined_chart_html(drain_timeline, sammakorn_rough, now_dt, tide_windows,
-                               include_village_panel, forecast_7day_compare=None):
+                               include_village_panel, forecast_7day_compare=None,
+                               briefing=None):
     coverage = (drain_timeline or {}).get("forecast_coverage_hours")
     horizon = (drain_timeline or {}).get("horizon_hours")
     gap_note = (f"ฝนหลังชั่วโมงที่ {coverage} ยังไม่รวม (พื้นที่สีเทาในกราฟ) · "
@@ -1428,7 +1443,7 @@ def build_combined_chart_html(drain_timeline, sammakorn_rough, now_dt, tide_wind
            '<h3>เส้นเวลาระบายน้ำค้าง — กรุงเทพฯ/โซนตะวันออก (4 สถานการณ์)</h3>'
            + build_drain_timeline_svg(drain_timeline, now_dt, tide_windows)
            + '</div>'
-           + build_daily_rain_table_html(forecast_7day_compare))
+           + build_daily_rain_table_html(forecast_7day_compare, briefing=briefing))
     if not include_village_panel:
         return caveat + top
     bottom = ('<div class="fcard village-panel-card">'
@@ -1441,7 +1456,7 @@ def build_combined_chart_html(drain_timeline, sammakorn_rough, now_dt, tide_wind
 def build_waterbalance_section_html(area_id, water_balance, bangkok_east, capacity_records,
                                      labels, drain_timeline=None, now_dt=None,
                                      sammakorn_rough=None, tide_windows=None,
-                                     forecast_7day_compare=None):
+                                     forecast_7day_compare=None, briefing=None):
     # Size budget fix 2026-09-26: the Bangkok-wide chart/arithmetic/capacity table are
     # IDENTICAL regardless of which area tab is open (they are city-wide, not
     # area-specific) -- rendering them once per area doubled the page past the 300KB
@@ -1456,7 +1471,8 @@ def build_waterbalance_section_html(area_id, water_balance, bangkok_east, capaci
 
     chart_html = build_combined_chart_html(drain_timeline, sammakorn_rough, now_dt,
                                             tide_windows, include_village_panel=True,
-                                            forecast_7day_compare=forecast_7day_compare)
+                                            forecast_7day_compare=forecast_7day_compare,
+                                            briefing=briefing)
     return (
         build_bangkok_east_html(bangkok_east)
         + chart_html
@@ -1494,6 +1510,16 @@ def build_help_briefing_html(briefing):
     if shelters:
         parts.append(f'<p><strong>ศูนย์พักพิง:</strong> {shelters.get("count")} แห่ง '
                       f'(รองรับ {shelters.get("capacity"):,} คน, ใช้แล้ว {shelters.get("in_use")} คน)</p>')
+    households = briefing.get("households_affected_initial_survey")
+    if households:
+        parts.append(f'<p><strong>ครัวเรือนที่ได้รับผลกระทบ (สำรวจเบื้องต้น):</strong> '
+                      f'ประมาณ {households:,} ครัวเรือน</p>')
+    health_support = briefing.get("health_support_ready")
+    if health_support:
+        parts.append(f'<p><strong>หน่วยแพทย์พร้อม:</strong> {esc(health_support)}</p>')
+    dispatch_support = briefing.get("disaster_response_support")
+    if dispatch_support:
+        parts.append(f'<p><strong>กำลังสนับสนุน:</strong> {esc(dispatch_support)}</p>')
     parking = briefing.get("temporary_parking") or []
     if parking:
         parts.append(f'<p><strong>จุดจอดรถชั่วคราว:</strong> {esc(", ".join(parking))}</p>')
@@ -1505,11 +1531,182 @@ def build_help_briefing_html(briefing):
     return "".join(parts)
 
 
+# ---------------- canal graph (Toledo PROP-FLOOD-04, proposal) --------------------------
+#
+# Fixed schematic layout for the declared east-chain graph (site/inputs/canals/east_chain.yaml)
+# -- a small, hand-declared set of named nodes, not a generic force-directed layout. Positions
+# are a readable diagram, not a geographic projection (same "schematic, not a map" posture the
+# repo's own README_bangkok_canals.md uses for KlongMap).
+_CG_BOX_W, _CG_BOX_H = 132, 44
+_CG_NODE_POS = {
+    "ssb10": (10, 10), "ssb09": (170, 10), "ssb08": (330, 10),
+    "ssb07": (490, 10), "ssb04": (650, 10), "pkn01": (810, 10),
+    "banma": (10, 130), "sammakorn_pond": (170, 130), "wangyai": (330, 130),
+    "tpk03": (490, 130), "pwt03": (650, 130), "pwt04": (810, 130),
+    "ladkrabang": (650, 250), "south_outlet": (810, 250),
+    "hmk01": (10, 250), "lbk03": (150, 250), "kjn01": (290, 250), "ram53_canal": (430, 250),
+}
+_CG_STATUS_COLOR = {
+    "NORMAL": "#2E7D32", "WATCH": "#D68910", "CRITICAL": "#C0392B", "OVERBANK": "#8E2A1F",
+    "NO_GAUGE": "#8A9AA0", "NO_DATA": "#8A9AA0", "NO_THRESHOLD": "#8A9AA0",
+}
+_CG_HIGHLIGHT_NODE = "sammakorn_pond"
+
+
+def _cg_inset(x1, y1, x2, y2, inset=70):
+    import math
+    dx, dy = x2 - x1, y2 - y1
+    dist = math.hypot(dx, dy) or 1.0
+    ux, uy = dx / dist, dy / dist
+    return (round(x1 + ux * inset, 1), round(y1 + uy * inset, 1),
+            round(x2 - ux * inset, 1), round(y2 - uy * inset, 1))
+
+
+def build_canal_graph_synthesis_th(canal_graph):
+    """One line, generated ONLY from today's edge/node readouts (never a forecast) --
+    the maintainer's own example shape: which measured reaches are flowing which way,
+    which gates are locked, which reaches have no gauge at all."""
+    if not canal_graph or not canal_graph.get("available"):
+        return "ยังไม่มีข้อมูลผังคลองวันนี้"
+    nodes = canal_graph.get("nodes") or {}
+    edges = canal_graph.get("edges") or []
+    parts = []
+
+    measured = []
+    for e in edges:
+        if e["status"] == "OK" and e["direction"] in ("FORWARD", "REVERSE"):
+            u_label = (nodes.get(e["u"]) or {}).get("label_th") or e["u"]
+            v_label = (nodes.get(e["v"]) or {}).get("label_th") or e["v"]
+            measured.append(f"{u_label}→{v_label}" if e["direction"] == "FORWARD"
+                             else f"{v_label}→{u_label}")
+    if measured:
+        parts.append("น้ำวัดได้จริงตอนนี้: " + " · ".join(measured))
+
+    locked_labels = sorted({
+        (nodes.get(e["locked_node"]) or {}).get("label_th") or e["locked_node"]
+        for e in edges if e["status"] == "CONTROLLED" and e.get("locked_node")
+    })
+    if locked_labels:
+        parts.append("ประตูล็อก/ปิดกั้นอยู่: " + ", ".join(locked_labels))
+
+    ungauged = sorted({
+        n.get("label_th") or nid for nid, n in nodes.items() if n.get("status") == "NO_GAUGE"
+    })
+    if ungauged:
+        parts.append(", ".join(ungauged) + " ไม่มีเครื่องวัด")
+
+    return " · ".join(parts) if parts else "วันนี้ยังไม่มีทิศทางที่ยืนยันได้จากเครื่องวัดจริง"
+
+
+def build_canal_graph_svg(canal_graph):
+    """Inline SVG 'ผังคลอง' flow diagram: boxes = declared nodes (name + level m + status
+    colour), arrows = edges coloured by readout (blue solid = measured direction, grey
+    dashed = unresolved/refused/no gauge, orange = controlled/locked, with a lock glyph).
+    An edge whose design_direction is declared but not measured gets a thin grey outline
+    arrow instead of a solid one -- never presented the same as a live reading."""
+    if not canal_graph or not canal_graph.get("available"):
+        return ""
+    nodes = canal_graph.get("nodes") or {}
+    edges = canal_graph.get("edges") or []
+
+    max_x = max((p[0] for p in _CG_NODE_POS.values()), default=0) + _CG_BOX_W + 10
+    max_y = max((p[1] for p in _CG_NODE_POS.values()), default=0) + _CG_BOX_H + 10
+
+    parts = [
+        f'<svg class="canal-graph-svg" viewBox="0 0 {max_x} {max_y}" '
+        f'role="img" aria-label="ผังคลอง น้ำไหลจากไหนไปไหนตอนนี้">',
+        '<defs>'
+        '<marker id="cgArrB" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L8,4L0,8Z" fill="#1F7A8C"/></marker>'
+        '<marker id="cgArrO" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L8,4L0,8Z" fill="#D68910"/></marker>'
+        '<marker id="cgArrG" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L8,4L0,8Z" fill="#8A9AA0"/></marker>'
+        '</defs>'
+    ]
+
+    # -- edges first, so node boxes drawn after sit visually on top of the line ends --
+    for e in edges:
+        u_id, v_id = e["u"], e["v"]
+        if u_id not in _CG_NODE_POS or v_id not in _CG_NODE_POS:
+            continue
+        ux, uy = _CG_NODE_POS[u_id]
+        vx, vy = _CG_NODE_POS[v_id]
+        ucx, ucy = ux + _CG_BOX_W / 2, uy + _CG_BOX_H / 2
+        vcx, vcy = vx + _CG_BOX_W / 2, vy + _CG_BOX_H / 2
+        x1, y1, x2, y2 = _cg_inset(ucx, ucy, vcx, vcy)
+
+        status, direction = e["status"], e.get("direction")
+        design_dir = e.get("design_direction") or "unknown"
+        reverse_arrow = (direction == "REVERSE") or (direction is None and design_dir == "v_to_u")
+
+        if status == "OK" and direction in ("FORWARD", "REVERSE"):
+            cls, marker = "cg-edge-measured", "cgArrB"
+        elif status == "CONTROLLED":
+            cls, marker = "cg-edge-controlled", "cgArrO"
+        else:
+            cls, marker = "cg-edge-design" if design_dir != "unknown" else "cg-edge-unknown", "cgArrG"
+
+        if reverse_arrow:
+            x1, y1, x2, y2 = x2, y2, x1, y1
+        marker_attr = "" if design_dir == "unknown" and status not in ("OK", "CONTROLLED") else f' marker-end="url(#{marker})"'
+        parts.append(f'<line class="{cls}" x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}"{marker_attr}/>')
+        if status == "CONTROLLED":
+            mx, my = (x1 + x2) / 2, (y1 + y2) / 2
+            parts.append(f'<text class="cg-lock" x="{mx}" y="{my - 6}" text-anchor="middle">🔒</text>')
+
+    # -- node boxes on top --
+    for nid, n in nodes.items():
+        if nid not in _CG_NODE_POS:
+            continue
+        x, y = _CG_NODE_POS[nid]
+        color = _CG_STATUS_COLOR.get(n.get("status"), "#8A9AA0")
+        label = esc(n.get("label_th") or nid)
+        value = n.get("value_m")
+        value_txt = f"{value:.2f} ม." if isinstance(value, (int, float)) else "ไม่มีเครื่องวัด"
+        highlight = ' class="cg-node cg-node-hi"' if nid == _CG_HIGHLIGHT_NODE else ' class="cg-node"'
+        parts.append(
+            f'<g{highlight}>'
+            f'<rect x="{x}" y="{y}" width="{_CG_BOX_W}" height="{_CG_BOX_H}" rx="6" '
+            f'fill="var(--surface)" stroke="{color}" stroke-width="2"/>'
+            f'<text x="{x + _CG_BOX_W / 2}" y="{y + 17}" text-anchor="middle" class="cg-node-label">{label}</text>'
+            f'<text x="{x + _CG_BOX_W / 2}" y="{y + 33}" text-anchor="middle" class="cg-node-value" fill="{color}">{esc(value_txt)}</text>'
+            f'</g>'
+        )
+
+    parts.append('</svg>')
+    return "".join(parts)
+
+
+def build_canal_graph_section_html(canal_graph):
+    """'ผังคลอง — น้ำไหลจากไหนไปไหน (ตอนนี้)' -- synthesis line always visible, full
+    diagram inside a <details> that is collapsed by default (same convention as every
+    other <details> in this template)."""
+    if not canal_graph or not canal_graph.get("available"):
+        return ""
+    synthesis = esc(build_canal_graph_synthesis_th(canal_graph))
+    svg = build_canal_graph_svg(canal_graph)
+    legend = (
+        '<p class="cg-legend small">'
+        '<span class="cg-legend-item"><span class="cg-swatch cg-swatch-blue"></span>ทิศทางวัดได้จริง</span> '
+        '<span class="cg-legend-item"><span class="cg-swatch cg-swatch-orange"></span>ประตูล็อก/ปิดกั้น</span> '
+        '<span class="cg-legend-item"><span class="cg-swatch cg-swatch-grey"></span>ไม่มีเครื่องวัด/ไม่ยืนยัน</span>'
+        '</p>'
+    )
+    return (
+        '<section class="canal-graph-wrap" aria-label="ผังคลองน้ำไหลจากไหนไปไหน">'
+        f'<p class="cg-synthesis">{synthesis}</p>'
+        '<details id="canal-graph-details">'
+        '<summary><span>ผังคลอง — น้ำไหลจากไหนไปไหน (ตอนนี้)</span></summary>'
+        + legend + svg +
+        '<p class="small">ทิศทางมาจากการเทียบระดับน้ำสองจุดจริง (readout) — เส้นบาง/เทาคือคลองที่ยังไม่มี'
+        'เครื่องวัดครบสองฝั่ง แสดงแค่ทิศทางที่ออกแบบไว้ (relay, ไม่ใช่การวัด)</p>'
+        '</details></section>'
+    )
+
+
 # ---------------- one area's full fragment map ----------------
 
 def build_area_fragments(area_id, area, now_dt, forecast, bangkok_east=None, briefing=None,
                           capacity_records=None, drain_timeline=None, sammakorn_rough=None,
-                          forecast_7day_compare=None):
+                          forecast_7day_compare=None, canal_graph=None):
     labels = AREA_LABELS[area_id]
     pumps = area.get("pumps") or []
     pc = pump_counts(pumps, now_dt)
@@ -1558,13 +1755,29 @@ def build_area_fragments(area_id, area, now_dt, forecast, bangkok_east=None, bri
     waterbalance_section_html = build_waterbalance_section_html(
         area_id, area.get("water_balance"), bangkok_east, capacity_records, labels,
         drain_timeline=drain_timeline, now_dt=now_dt, sammakorn_rough=sammakorn_rough,
-        tide_windows=tide_windows, forecast_7day_compare=forecast_7day_compare)
+        tide_windows=tide_windows, forecast_7day_compare=forecast_7day_compare,
+        briefing=briefing)
     briefing_hero_html, briefing_hero_hidden = build_briefing_hero_html(briefing)
     briefing_forecast_line = build_forecast_briefing_line(briefing)
     # Identical between areas (city-wide briefing) -- render once (sammakorn/default
     # tab) to stay under the page size budget, same reasoning as the water-balance chart.
     briefing_help_html = build_help_briefing_html(briefing) if area_id == "sammakorn" else ""
     fc_text = fc_text + briefing_forecast_line
+
+    # Identical between areas (both share nodes on the same declared east-chain graph,
+    # e.g. ssb07) -- render the full diagram once (sammakorn tab) for the size budget,
+    # same reasoning as the water-balance chart/bangkok_east block above; ram53 gets a
+    # short pointer with its own always-visible synthesis line (never a silent drop).
+    if area_id == "sammakorn":
+        canal_graph_section_html = build_canal_graph_section_html(canal_graph)
+    else:
+        synthesis = esc(build_canal_graph_synthesis_th(canal_graph))
+        canal_graph_section_html = (
+            '<section class="canal-graph-wrap" aria-label="ผังคลองน้ำไหลจากไหนไปไหน">'
+            f'<p class="cg-synthesis">{synthesis}</p>'
+            '<p class="small">ผังคลองแบบเต็ม (โซนตะวันออกร่วมกันทั้งสองพื้นที่) — '
+            'ดูที่แท็บ "หมู่บ้านสัมมากร" ด้านบน</p></section>'
+        ) if canal_graph and canal_graph.get("available") else ""
 
     return {
         "{{PLACE_PIN}}": icon("pin", 16) + f'<span>{esc(labels["pin"])}</span>',
@@ -1574,6 +1787,7 @@ def build_area_fragments(area_id, area, now_dt, forecast, bangkok_east=None, bri
         "{{SAFETY_FACT}}": esc(SAFETY_FACT),
         "{{STATUS_WATCH}}": watch_line,  # already HTML (has <strong> + icon)
         "{{WHY_LIST}}": indicator_tiles,
+        "{{CANAL_GRAPH_SECTION_HTML}}": canal_graph_section_html,
         "{{HOURS_LIST}}": hours_list,
         "{{STATUS_NOTE}}": esc(status_note),
         "{{STALE_RIBBON_HIDDEN}}": stale_ribbon_hidden,
@@ -1617,14 +1831,16 @@ def build_area_fragments(area_id, area, now_dt, forecast, bangkok_east=None, bri
 
 def render_area_block(area_template, area_id, area, now_dt, forecast, hidden,
                        bangkok_east=None, briefing=None, capacity_records=None,
-                       drain_timeline=None, sammakorn_rough=None, forecast_7day_compare=None):
+                       drain_timeline=None, sammakorn_rough=None, forecast_7day_compare=None,
+                       canal_graph=None):
     block = area_template
     fragments = build_area_fragments(area_id, area, now_dt, forecast,
                                       bangkok_east=bangkok_east, briefing=briefing,
                                       capacity_records=capacity_records,
                                       drain_timeline=drain_timeline,
                                       sammakorn_rough=sammakorn_rough,
-                                      forecast_7day_compare=forecast_7day_compare)
+                                      forecast_7day_compare=forecast_7day_compare,
+                                      canal_graph=canal_graph)
     for placeholder, value in fragments.items():
         block = block.replace(placeholder, value)
     block = block.replace("{{AREA_HIDDEN}}", " hidden" if hidden else "")
@@ -1706,7 +1922,8 @@ def main():
     # HTML rendering are dropped from the EMBEDDED copy only; the standalone
     # dist/data.json written separately still has everything, unabridged.
     embed_parsed = dict(parsed)
-    for _k in ("capacity_records", "drain_timeline", "sammakorn_rough", "forecast_7day_compare"):
+    for _k in ("capacity_records", "drain_timeline", "sammakorn_rough", "forecast_7day_compare",
+               "canal_graph"):
         embed_parsed.pop(_k, None)
     json_text = json.dumps(embed_parsed, ensure_ascii=False, separators=(",", ":"))
     json_text = json_text.replace("</script", "<\\/script")
@@ -1735,6 +1952,7 @@ def main():
     drain_timeline = parsed.get("drain_timeline")
     sammakorn_rough = parsed.get("sammakorn_rough")
     forecast_7day_compare = parsed.get("forecast_7day_compare")
+    canal_graph = parsed.get("canal_graph")
 
     static_ok = True
     try:
@@ -1752,7 +1970,8 @@ def main():
                                              capacity_records=capacity_records,
                                              drain_timeline=drain_timeline,
                                              sammakorn_rough=sammakorn_rough,
-                                             forecast_7day_compare=forecast_7day_compare))
+                                             forecast_7day_compare=forecast_7day_compare,
+                                             canal_graph=canal_graph))
         area_sections_html = "".join(blocks)
 
         asof = fmt_hm(parsed.get("generated_at_bkk"))

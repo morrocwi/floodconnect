@@ -1,0 +1,77 @@
+{
+  "id": "bma_governor_briefing_2026-09-26-1615",
+  "agency_th": "กรุงเทพมหานคร — ประชุมออนไลน์ผู้ว่าฯ กทม. ร่วมนายกรัฐมนตรี 26 ก.ย. 2569 16:15",
+  "trust_tier": "official_report",
+  "briefing_time_bkk": "2026-09-26T16:15:00+07:00",
+  "url": null,
+  "url_status": "OPEN",
+  "url_search_note": "Pasted maintainer summary of the 16:15 online meeting between the BMA governor and the Prime Minister -- no direct bangkok.go.th/prbangkok.go.th/official Facebook post URL located yet. url stays OPEN rather than substituting a news URL for an official one. Supersedes, does not contradict, the 13:00 briefing (bma_briefing_2026-09-26_1300.json) on the shared facts (backlog volume unchanged at 223 million m^3); numbers that changed between the two (shelters in-use, roads-affected count) are BOTH kept on record, tagged by their own briefing time, never silently overwritten.",
+  "declared_facts": {
+    "rain_since_2026-09-24": {
+      "value": "> 300 mm cumulative",
+      "tag": "official_report"
+    },
+    "backlog_volume_phra_nakhon_side": {
+      "value": 223000000,
+      "unit": "m^3",
+      "tag": "official_report",
+      "note": "Unchanged from the 13:00 briefing's own figure -- stated again at 16:15, not a new measurement."
+    },
+    "total_bma_pumping_capacity": {
+      "value": 1200,
+      "unit": "m^3/s",
+      "tag": "official_report",
+      "note": "Carried forward unchanged from the 13:00 briefing (bma_briefing_2026-09-26_1300.json) -- not restated as a new figure at 16:15, but needed here so build_data.py's drain-time arithmetic (which always reads the newest BRIEFING_PATH) keeps working off a real declared value rather than a hole."
+    },
+    "estimated_drain_time_if_no_new_rain": {
+      "value": "2-3 days",
+      "tag": "official_report",
+      "note": "Carried forward unchanged from the 13:00 briefing -- not restated as a new figure at 16:15."
+    },
+    "main_canals_status": {
+      "value": "คลองสายหลักเต็ม บางจุดล้นตลิ่ง",
+      "value_en": "main canals full, some overflowing",
+      "tag": "official_report"
+    },
+    "main_roads_affected_count": {
+      "value": 13,
+      "tag": "official_report",
+      "note": "Distinct metric from the 13:00 briefing's roads_affected_count (93, a broader road list) -- this 16:15 figure is specifically \"main roads\" (ถนนสายหลัก). Both kept, not merged."
+    },
+    "shelters": {
+      "value": {"count": 233, "capacity": 15000, "in_use": 4200},
+      "tag": "official_report",
+      "note": "in_use risen from 981 (13:00 briefing) to ~4,200 by 16:15."
+    },
+    "households_affected_initial_survey": {
+      "value": 52000,
+      "tag": "official_report",
+      "note": "Described as an initial/preliminary survey figure (สำรวจเบื้องต้น), not final."
+    },
+    "bedridden_patients_moved": {
+      "value": 40,
+      "tag": "official_report",
+      "note": "Approximate (~40), rounded up slightly from the 13:00 briefing's 36 -- both kept on record."
+    },
+    "health_support_ready": {
+      "value": "ศูนย์บริการสาธารณสุข 69 แห่ง + โรงพยาบาล กทม. 13 แห่ง พร้อมรองรับ",
+      "value_en": "69 public health centres + 13 BMA hospitals ready",
+      "tag": "official_report"
+    },
+    "disaster_response_support": {
+      "value": "ปภ. และหน่วยทหารสนับสนุนรถสูง/เรือ เข้าพื้นที่ที่เข้าถึงยาก",
+      "value_en": "DDPM (ปภ.) and military support with high-clearance trucks and boats for hard-to-reach areas",
+      "tag": "official_report"
+    },
+    "tmd_forecast_note": {
+      "value": "กรมอุตุนิยมวิทยา (TMD): ฝนอาจยังตกหนัก 26 ก.ย. และมีแนวโน้มลดลงตั้งแต่ 27 ก.ย. เป็นต้นไป",
+      "tag": "official_report",
+      "note": "Relayed from TMD via the BMA briefing -- this is TMD's own official forecast, distinct from the third-party Open-Meteo/multi-model forecast this page otherwise relies on. Shown next to (never replacing) the multi-model 7-day comparison table."
+    },
+    "conditional_outlook": {
+      "value": "if no new rain, situation gradually improves (ทยอยคลี่คลาย)",
+      "tag": "official_report"
+    },
+    "disaster_area_declared": {"value": true, "tag": "official_report"}
+  }
+}

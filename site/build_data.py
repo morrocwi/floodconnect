@@ -60,9 +60,11 @@ RAM53_DIR = INPUTS / "ram53"
 KHLONGCHAN_SOCIAL_PATH = RAM53_DIR / "social_timeline_khlongchan_2026-09-26.md"
 TIDE_DIR = INPUTS / "tide"
 BALANCE_DIR = INPUTS / "areas"                    # *.balance.yaml -- PROP-FLOOD-03 inputs
+CANALS_DIR = INPUTS / "canals"                    # *.yaml -- PROP-FLOOD-04 declared graphs
 CAPACITY_JSON_PATH = INPUTS / "capacity" / "bma_capacity.json"
 OFFICIAL_DIR = INPUTS / "official"
-BRIEFING_PATH = OFFICIAL_DIR / "bma_briefing_2026-09-26_1300.json"
+BRIEFING_1300_PATH = OFFICIAL_DIR / "bma_briefing_2026-09-26_1300.json"
+BRIEFING_PATH = OFFICIAL_DIR / "bma_briefing_2026-09-26_1615.json"  # newest -- supersedes 13:00 on the hero line
 
 OUT_JSON = HERE / "dist" / "data.json"
 
@@ -85,6 +87,10 @@ try:
     import water_balance as wbmod  # noqa: E402 -- Toledo PROP-FLOOD-03 (proposal, PR #60)
 except Exception:  # pragma: no cover - defensive fallback
     wbmod = None
+try:
+    import canal_graph as cgmod  # noqa: E402 -- Toledo PROP-FLOOD-04 (proposal)
+except Exception:  # pragma: no cover - defensive fallback
+    cgmod = None
 try:
     import live_water_level as lwl  # noqa: E402
 except Exception as _lwl_exc:  # pragma: no cover - defensive fallback
@@ -1239,9 +1245,12 @@ def build_sammakorn_rough_estimate(drain_timeline: dict | None) -> dict | None:
 
 def build_briefing_summary(briefing: dict | None) -> dict | None:
     """Pull just the fields build_page.py needs for the hero line, the forecast section's
-    'ฝนเบาบางลงช่วงบ่าย-เย็น' line, and the help section's shelters/parking/hotline/school
-    additions -- all declared official_report facts from the 26 ก.ย. 2569 13:00 briefing,
-    never rephrased into a command (no ห้าม/ไม่ต้อง/ไม่ควร)."""
+    TMD-relay line (shown next to, never replacing, the multi-model 7-day table), and the
+    help section's shelters/parking/hotline/school additions -- all declared official_report
+    facts from the 26 ก.ย. 2569 16:15 online meeting (BMA governor + Prime Minister), which
+    supersedes the 13:00 briefing on the numbers that changed (shelters in-use, roads
+    affected) while keeping the same backlog-volume figure (223 million m^3, unchanged).
+    Never rephrased into a command (no ห้าม/ไม่ต้อง/ไม่ควร)."""
     if not briefing:
         return None
     facts = briefing.get("declared_facts") or {}
@@ -1251,16 +1260,21 @@ def build_briefing_summary(briefing: dict | None) -> dict | None:
 
     return {
         "briefing_time_bkk": briefing.get("briefing_time_bkk"),
-        "hero_line_th": ("กทม. แถลง 13:00: สถานการณ์ทรงตัว ถ้าไม่มีฝนใหม่ ทยอยคลี่คลาย "
-                          "ใช้เวลาระบายน้ำค้าง 2-3 วัน"),
-        "weather_system_note_th": v("weather_system_note"),
+        "hero_line_th": ("กทม. แถลง 16:15: กรมอุตุฯ คาดฝนลดลงตั้งแต่ 27 ก.ย. — "
+                          "ถ้าไม่มีฝนเติม สถานการณ์ทยอยคลี่คลาย (น้ำค้าง 223 ล้าน ลบ.ม.)"),
+        "weather_system_note_th": v("main_canals_status"),
+        "tmd_forecast_note_th": v("tmd_forecast_note"),
         "canals_to_watch": v("canals_to_watch") or [],
-        "roads_affected_count": v("roads_affected_count"),
+        "roads_affected_count": v("main_roads_affected_count"),
+        "households_affected_initial_survey": v("households_affected_initial_survey"),
+        "health_support_ready": v("health_support_ready"),
+        "disaster_response_support": v("disaster_response_support"),
         "shelters": v("shelters"),
         "bedridden_patients_moved": v("bedridden_patients_moved"),
-        "hotlines": v("hotlines") or [],
+        "hotlines": v("hotlines") or ["1555", "Traffy Fondue", "district office (sandbags)", "1669"],
         "temporary_parking": v("temporary_parking") or [],
         "monday_note_th": v("monday_2026-09-28"),
+        "conditional_outlook_th": v("conditional_outlook"),
         "disaster_area_declared": v("disaster_area_declared"),
     }
 
@@ -1319,11 +1333,12 @@ def load_capacity_records() -> list[dict]:
 
 
 def load_briefing() -> dict | None:
-    """Load site/inputs/official/bma_briefing_2026-09-26_1300.json (the 2026-09-26 13:00
-    governor briefing) -- declared official_report facts, url OPEN (one WebSearch did not
-    turn up a direct bangkok.go.th/prbangkok/Facebook URL, only corroborating news).
-    Returns None on any read failure -- this is reference/hero content, never load-bearing
-    for the rest of the build."""
+    """Load site/inputs/official/bma_briefing_2026-09-26_1615.json (the 2026-09-26 16:15
+    online meeting between the BMA governor and the Prime Minister -- newest briefing,
+    supersedes the 13:00 one, bma_briefing_2026-09-26_1300.json, on the hero line) --
+    declared official_report facts, url OPEN (no direct bangkok.go.th/prbangkok/Facebook
+    URL located yet). Returns None on any read failure -- this is reference/hero content,
+    never load-bearing for the rest of the build."""
     try:
         return json.loads(BRIEFING_PATH.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
@@ -1476,6 +1491,63 @@ def build_bangkok_east_upper_bound(rain: dict | None, forecast: dict | None) -> 
         "caveat_th": ("สัดส่วนไหลบ่า (c) และปริมาณน้ำเก็บเริ่มต้น (S0) ยังไม่ได้ประกาศ "
                       "— ตัวเลขนี้เป็นแค่การเทียบ 'ปริมาณฝนที่ตกลงบนพื้นที่' กับ "
                       "'กำลังสูบสูงสุดที่ประกาศแล้ว' (upper bound) ไม่ใช่ผลลัพธ์สมดุลน้ำจริง"),
+    }
+
+
+# --- Canal graph (Toledo PROP-FLOOD-04, proposal) --------------------------------------
+
+def load_canal_graph_yaml(graph_id: str = "east_chain") -> dict:
+    """Load site/inputs/canals/<graph_id>.yaml. Returns {} (never raises) if PyYAML is
+    unavailable or the file is missing/unparseable -- same posture as load_balance_yaml()."""
+    path = CANALS_DIR / f"{graph_id}.yaml"
+    if not HAVE_YAML or not path.is_file():
+        return {}
+    try:
+        return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except Exception:  # pragma: no cover - defensive, malformed yaml never crashes the build
+        return {}
+
+
+def build_canal_graph_readout(canal_by_code: dict, generated_at_utc_iso: str) -> dict:
+    """Run Toledo PROP-FLOOD-04's edge_direction() over every edge declared in
+    site/inputs/canals/east_chain.yaml, using today's cached thaiwater canal readings.
+    Runs ONCE per build (city/east-zone-wide, not per-area) -- same size-budget reasoning
+    as build_bangkok_east_upper_bound(). Returns {"available": False, ...} if the graph
+    yaml or canal_graph.py itself is unavailable, never a guessed/partial readout."""
+    graph = load_canal_graph_yaml("east_chain")
+    if not graph or cgmod is None:
+        return {"available": False,
+                "reason": "east_chain.yaml or canal_graph module unavailable"}
+
+    edges = [r.as_dict() for r in
+             cgmod.compute_all_edges(graph, canal_by_code, generated_at_utc_iso)]
+
+    nodes = {}
+    for nid, n in (graph.get("nodes") or {}).items():
+        code = n.get("canal_oldcode")
+        s = canal_by_code.get(code) if code else None
+        if not code:
+            value_m, status, stale, observed_at = None, "NO_GAUGE", None, None
+        elif s is None:
+            value_m, status, stale, observed_at = None, "NO_DATA", True, None
+        else:
+            value_m = lwl.safe_float(s.get("level_m"))
+            status = lwl.classify_level(s["level_m"], s.get("warning_level"),
+                                         s.get("critical_level"), s.get("bank"))
+            observed_at = s.get("observed_at")
+            stale = is_stale(observed_at, generated_at_utc_iso)
+        nodes[nid] = {"label_th": n.get("label_th"), "canal_oldcode": code,
+                      "is_gate": bool(n.get("is_gate")), "value_m": value_m,
+                      "status": status, "observed_at": observed_at, "stale": stale}
+    return {
+        "available": True,
+        "graph_id": graph.get("graph_id", "east_chain"),
+        "epistemic_note_th": graph.get("epistemic_note_th"),
+        "sensor_resolution_m": (graph.get("sensor_resolution_m") or {}).get("value"),
+        "stale_after_hours": graph.get("stale_after_hours"),
+        "nodes": nodes,
+        "edges": edges,
+        "next_step_th": (graph.get("next_step_th") or "").strip(),
     }
 
 
@@ -1642,6 +1714,7 @@ def main():
     drain_timeline = build_drain_timeline(sammakorn.get("rain"), sammakorn.get("forecast"),
                                            generated_at_utc_iso)
     sammakorn_rough = build_sammakorn_rough_estimate(drain_timeline)
+    canal_graph_readout = build_canal_graph_readout(canal_by_code, generated_at_utc_iso)
     if briefing_raw:
         all_sources_briefing = {
             "id": "bma_governor_briefing", "agency_th": briefing_raw.get("agency_th"),
@@ -1667,6 +1740,7 @@ def main():
         "drain_timeline": drain_timeline,
         "sammakorn_rough": sammakorn_rough,
         "forecast_7day_compare": load_forecast_7day_compare(),
+        "canal_graph": canal_graph_readout,
         "areas": {"sammakorn": sammakorn, "ram53": ram53},
     }
 

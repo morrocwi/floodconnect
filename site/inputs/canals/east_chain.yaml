@@ -1,0 +1,275 @@
+# Declared canal graph for canal_graph.py -- Toledo PROP-FLOOD-04 (proposal, unverified;
+# PR not yet opened). Every node/edge here is a DECLARATION by the maintainer for the
+# Sammakorn/Ramkhamhaeng-53 east-zone chains, cross-checked against BMA station codes in
+# the cached thaiwater canal_waterlevel snapshot
+# (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json) -- read directly, not
+# taken on trust. This is NOT the OSM-derived undirected graph in
+# output/bangkok_canals.graphml (build_bangkok_canals.py); that one is an automated,
+# mostly-unoriented survey of ~8,600 junctions city-wide. This one is a small, hand-declared
+# chain of named nodes the maintainer specifically asked to see connected, with real-time
+# direction computed only where both ends are gauged.
+graph_id: east_chain
+epistemic_note_th: >
+  กราฟนี้เป็นการประกาศ (declared) ของโหนด/เส้นเชื่อมคลองที่ผู้ดูแลระบุเอง ไม่ใช่ผลสำรวจอัตโนมัติจาก
+  OSM (ต่างจาก output/bangkok_canals.graphml ซึ่งเป็นกราฟไม่มีทิศทางส่วนใหญ่จาก heuristic ระยะทาง) --
+  ทิศทาง "ตอนนี้" ที่แสดงมาจากการเทียบระดับน้ำสองจุดจริงที่มีเครื่องวัดครบทั้งสองฝั่งเท่านั้น
+  (readout, ไม่ใช่การเดา) ส่วนคลองที่ไม่มีเครื่องวัดจะโชว์แค่ทิศทาง "ออกแบบ" (design_direction)
+  ซึ่งเป็นข้อมูล relay จากเอกสาร ไม่ใช่การวัดจริง
+sensor_resolution_m:
+  value: 0.02
+  tag: INSTINCT
+  note: >
+    Declared sensor-resolution cutoff for "is this level difference real" -- BMA publishes
+    canal_value to 2 decimal places (cm precision). This 0.02 m bar is a judgment call by
+    this workspace (INSTINCT), not a manufacturer-specified sensor accuracy figure.
+stale_after_hours: 2.0
+
+nodes:
+  ssb10:
+    label_th: "มีนบุรี ปตร.แสนแสบ-มีนบุรี"
+    canal_oldcode: "WL.SSB.10"
+    source_name_th: "ปตร.คลองแสนแสบ-ถ.ประชาร่วมใจ"
+    datum: MSL
+    is_gate: true
+    note: >
+      Maintainer's colloquial label ("มีนบุรี") differs from thaiwater's own station name
+      recorded in source_name_th -- code WL.SSB.10 is the cross-check used to confirm this
+      is the same station, kept rather than silently renamed to match either label.
+  ssb09:
+    label_th: "บางชัน ปตร."
+    canal_oldcode: "WL.SSB.09"
+    source_name_th: "ปตร.คลองแสนแสบ-บางชัน"
+    datum: MSL
+    is_gate: true
+  ssb08:
+    label_th: "แสนแสบ-เสรีไทย 24"
+    canal_oldcode: "WL.SSB.08"
+    source_name_th: "ค.แสนแสบ-เสรีไทย 24"
+    datum: MSL
+    is_gate: false
+  ssb07:
+    label_th: "แสนแสบ-บางกะปิ"
+    canal_oldcode: "WL.SSB.07"
+    source_name_th: "ค.แสนแสบ-สนข.บางกะปิ"
+    datum: MSL
+    is_gate: false
+  ssb04:
+    label_th: "แสนแสบ ตอนใน (คลองตัน)"
+    canal_oldcode: "WL.SSB.04"
+    source_name_th: "ส.แสนแสบ-คลองตัน"
+    datum: MSL
+    is_gate: false
+    note: >
+      Scope decision 2026-09-26: WL.SSB.03/02/01 (อโศก/สมคิด/โบ๊เบ๊) sit on the real canal
+      between SSB.07 and SSB.04 but are not declared as nodes in this graph -- out of scope
+      for the east-zone/Sammakorn chain this task asked for. Edge e_ssb07_ssb04 below skips
+      them; this is a declared simplification, not a claim those stations don't exist.
+  pkn01:
+    label_th: "พระโขนง"
+    canal_oldcode: "WL.PKN.01"
+    source_name_th: "ส.พระโขนง"
+    datum: MSL
+    is_gate: false
+  banma:
+    label_th: "คลองบ้านม้า"
+    canal_oldcode: null
+    datum: MSL
+    is_gate: false
+    note: >
+      No public gauge ("ไม่มีเครื่องวัด") -- not found in the thaiwater canal snapshot or
+      BMA's PumpHistory station list under any code. Private pump ST.SPS.01 sits on this
+      reach (see site/inputs/areas/sammakorn.balance.yaml).
+  sammakorn_pond:
+    label_th: "บึงสัมมากร"
+    canal_oldcode: null
+    datum: MSL
+    is_gate: false
+    note: "No public gauge; private pumps ST.SPS.02/03/04 (see sammakorn.balance.yaml)."
+  wangyai:
+    label_th: "คลองวังใหญ่บน"
+    canal_oldcode: null
+    datum: MSL
+    is_gate: false
+    note: "No public gauge found under any BMA code."
+  tpk03:
+    label_th: "ทับช้างบน"
+    canal_oldcode: "WL.TPK.03"
+    source_name_th: "ค.ตาพุก ค.ทับช้างบน"
+    datum: MSL
+    is_gate: false
+  pwt03:
+    label_th: "ประเวศ-วัดกระทุ่ม ปตร."
+    canal_oldcode: "WL.PWT.03"
+    source_name_th: "ปตร.คลองประเวศฯ-วัดกระทุ่มฯ"
+    datum: MSL
+    is_gate: true
+  pwt04:
+    label_th: "ประเวศ-ลาดกระบัง ปตร."
+    canal_oldcode: "WL.PWT.04"
+    source_name_th: "ปตร.คลองประเวศฯ-ลาดกระบัง"
+    datum: MSL
+    is_gate: true
+  ladkrabang:
+    label_th: "ลาดกระบัง/สุวรรณภูมิ"
+    canal_oldcode: null
+    datum: MSL
+    is_gate: false
+    note: "Aggregate downstream-area label, not one gauge point -- no code declared."
+  south_outlet:
+    label_th: "ปลายทางใต้ (คลองพระองค์ฯ/ชายทะเล)"
+    canal_oldcode: null
+    datum: MSL
+    is_gate: false
+    note: "No gauge declared here; terminal label only."
+  hmk01:
+    label_th: "คลองหัวหมาก"
+    canal_oldcode: "WL.HMK.01"
+    source_name_th: "ค.หัวหมาก ถ.ศรีนครินทร์"
+    datum: MSL
+    is_gate: false
+  lbk03:
+    label_th: "คลองลาดบัวขาว"
+    canal_oldcode: "WL.LBK.03"
+    source_name_th: "ค.ลาดบัวขาว ซ.กาญจนาภิเษก 24"
+    datum: MSL
+    is_gate: false
+  kjn01:
+    label_th: "คลองจั่น"
+    canal_oldcode: "WL.KJN.01"
+    source_name_th: "ค.จั่น ถ.ลาดพร้าว"
+    datum: MSL
+    is_gate: false
+  ram53_canal:
+    label_th: "ลำรางลาดพร้าว 112"
+    canal_oldcode: null
+    datum: MSL
+    is_gate: false
+    note: "No gauge; ซอยรามคำแหง 53 area's own drainage lateral."
+
+edges:
+  - edge_id: e_ssb10_ssb09
+    u: ssb10
+    v: ssb09
+    adjacency_source: "maintainer east-chain declaration 2026-09-26"
+    design_direction: "u_to_v"
+    design_direction_source: >
+      RID east-zone memo (RELAYED, not independently verified): มีนบุรี -> แสนแสบ ->
+      พระโขนง as the design drainage direction during flood-control operations.
+    control_structures: ["WL.SSB.10 gate", "WL.SSB.09 gate"]
+  - edge_id: e_ssb09_ssb08
+    u: ssb09
+    v: ssb08
+    adjacency_source: "maintainer east-chain declaration 2026-09-26"
+    design_direction: "u_to_v"
+    design_direction_source: "same RID relay as e_ssb10_ssb09"
+    control_structures: ["WL.SSB.09 gate"]
+  - edge_id: e_ssb08_ssb07
+    u: ssb08
+    v: ssb07
+    adjacency_source: "maintainer east-chain declaration 2026-09-26"
+    design_direction: "u_to_v"
+    design_direction_source: "same RID relay as e_ssb10_ssb09"
+    control_structures: []
+  - edge_id: e_ssb07_ssb04
+    u: ssb07
+    v: ssb04
+    adjacency_source: "maintainer east-chain declaration 2026-09-26 (skips undeclared WL.SSB.03/02/01, see ssb04 node note)"
+    design_direction: "u_to_v"
+    design_direction_source: "same RID relay as e_ssb10_ssb09"
+    control_structures: []
+  - edge_id: e_ssb04_pkn01
+    u: ssb04
+    v: pkn01
+    adjacency_source: "maintainer east-chain declaration 2026-09-26"
+    design_direction: "u_to_v"
+    design_direction_source: "same RID relay as e_ssb10_ssb09 (แสนแสบตอนใน -> พระโขนง outlet)"
+    control_structures: []
+  - edge_id: e_banma_sammakornpond
+    u: banma
+    v: sammakorn_pond
+    adjacency_source: "maintainer branch declaration 2026-09-26"
+    design_direction: "unknown"
+    design_direction_source: null
+    control_structures: ["ST.SPS.01 pump"]
+  - edge_id: e_sammakornpond_wangyai
+    u: sammakorn_pond
+    v: wangyai
+    adjacency_source: "maintainer branch declaration 2026-09-26"
+    design_direction: "unknown"
+    design_direction_source: null
+    control_structures: ["ST.SPS.02 pump", "ST.SPS.03 pump", "ST.SPS.04 pump"]
+  - edge_id: e_wangyai_tpk03
+    u: wangyai
+    v: tpk03
+    adjacency_source: "maintainer branch declaration 2026-09-26"
+    design_direction: "unknown"
+    design_direction_source: null
+    control_structures: []
+  - edge_id: e_tpk03_pwt03
+    u: tpk03
+    v: pwt03
+    adjacency_source: "maintainer branch declaration 2026-09-26"
+    design_direction: "u_to_v"
+    design_direction_source: >
+      RID relay (not independently verified): ประเวศ -> ลาดกระบัง -> ปลายทางใต้ as the
+      design drainage direction.
+    control_structures: ["WL.PWT.03 gate"]
+  - edge_id: e_pwt03_pwt04
+    u: pwt03
+    v: pwt04
+    adjacency_source: "maintainer branch declaration 2026-09-26"
+    design_direction: "u_to_v"
+    design_direction_source: "same RID relay as e_tpk03_pwt03"
+    control_structures: ["WL.PWT.03 gate", "WL.PWT.04 gate"]
+  - edge_id: e_pwt04_ladkrabang
+    u: pwt04
+    v: ladkrabang
+    adjacency_source: "maintainer branch declaration 2026-09-26"
+    design_direction: "u_to_v"
+    design_direction_source: "same RID relay as e_tpk03_pwt03"
+    control_structures: ["WL.PWT.04 gate"]
+  - edge_id: e_ladkrabang_south
+    u: ladkrabang
+    v: south_outlet
+    adjacency_source: "maintainer branch declaration 2026-09-26"
+    design_direction: "u_to_v"
+    design_direction_source: "same RID relay as e_tpk03_pwt03"
+    control_structures: []
+  - edge_id: e_hmk01_ssb07
+    u: hmk01
+    v: ssb07
+    adjacency_source: >
+      maintainer-declared tributary merge near บางกะปิ, 2026-09-26 -- approximate,
+      not a surveyed junction point.
+    design_direction: "u_to_v"
+    design_direction_source: "assumed tributary-into-mainline merge, not RID-sourced (INSTINCT)"
+    control_structures: []
+  - edge_id: e_lbk03_ssb07
+    u: lbk03
+    v: ssb07
+    adjacency_source: >
+      maintainer-declared tributary merge near บางกะปิ, 2026-09-26 -- approximate,
+      not a surveyed junction point.
+    design_direction: "u_to_v"
+    design_direction_source: "assumed tributary-into-mainline merge, not RID-sourced (INSTINCT)"
+    control_structures: []
+  - edge_id: e_kjn01_ssb07
+    u: kjn01
+    v: ssb07
+    adjacency_source: >
+      maintainer-declared tributary merge near บางกะปิ, 2026-09-26 -- approximate,
+      not a surveyed junction point.
+    design_direction: "u_to_v"
+    design_direction_source: "assumed tributary-into-mainline merge, not RID-sourced (INSTINCT)"
+    control_structures: []
+  - edge_id: e_ram53_ssb07
+    u: ram53_canal
+    v: ssb07
+    adjacency_source: "maintainer declaration 2026-09-26: ลำรางลาดพร้าว 112 -> แสนแสบ-บางกะปิ"
+    design_direction: "u_to_v"
+    design_direction_source: "maintainer declaration (same)"
+    control_structures: []
+
+next_step_th: >
+  ขยายกราฟนี้ไปยัง WL.SSB.03/02/01 (อโศก/สมคิด/โบ๊เบ๊) และยืนยัน design_direction ด้วยเอกสาร RID
+  ฉบับเต็มแทนการ relay ข่าว/ความจำ -- ทั้งสองจุดยังเป็น OPEN.

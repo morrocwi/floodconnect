@@ -82,9 +82,13 @@ def test_load_briefing_returns_declared_facts():
 def test_build_briefing_summary_hero_line():
     briefing = bd.load_briefing()
     summary = bd.build_briefing_summary(briefing)
-    assert "2-3 วัน" in summary["hero_line_th"]
+    # 2026-09-26 16:15 briefing supersedes the 13:00 one on the hero wording.
+    assert "16:15" in summary["hero_line_th"]
+    assert "27 ก.ย." in summary["hero_line_th"]
     assert summary["shelters"]["count"] == 233
+    assert summary["shelters"]["in_use"] == 4200
     assert "Traffy Fondue" in summary["hotlines"]
+    assert summary["tmd_forecast_note_th"]
 
 
 def test_build_briefing_summary_none_when_no_briefing():
