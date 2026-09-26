@@ -211,6 +211,24 @@ def test_classify_level_missing_bank_still_classifies_critical():
     assert lwl.classify_level(2.5, warning=2.0, critical=2.5, bank=None) == "CRITICAL"
 
 
+def test_classify_level_non_numeric_threshold_never_raises():
+    # Red-team fix MEDIUM-4 (2026-09-26): a station publishing "N/A"/"" instead of a
+    # number used to raise deep inside the >= comparison; it must now degrade to
+    # NO_THRESHOLD, never crash the whole classification pass.
+    assert lwl.classify_level(2.5, warning="N/A", critical="", bank=None) == "NO_THRESHOLD"
+    assert lwl.classify_level("N/A", warning=2.0, critical=2.5, bank=3.0) == "NO_THRESHOLD"
+    # numeric strings still classify correctly (safe_float coerces, doesn't just reject)
+    assert lwl.classify_level("2.5", warning="2.0", critical="2.5", bank="3.0") == "CRITICAL"
+
+
+def test_safe_float_coerces_or_returns_none():
+    assert lwl.safe_float("2.5") == 2.5
+    assert lwl.safe_float(None) is None
+    assert lwl.safe_float("N/A") is None
+    assert lwl.safe_float("") is None
+    assert lwl.safe_float(3) == 3.0
+
+
 # ---- age_hours / staleness ----
 
 def test_age_hours_basic():

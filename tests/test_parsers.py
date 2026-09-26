@@ -28,6 +28,26 @@ def test_parse_thaiwater_flood_road_converts_local_time_to_utc():
     assert r["observed_at"].endswith("+00:00")
 
 
+def test_parse_thaiwater_rain_24h_skips_missing_value_or_coord():
+    data = json.loads((FIXTURES / "thaiwater_rain_24h_sample.json").read_text(encoding="utf-8"))
+    rows = parsers.parse_thaiwater_rain_24h(data)
+    # fixture has 4 records: one with rain_24h=null, one with lat/lon=null -- both skipped
+    assert len(rows) == 2
+    for r in rows:
+        assert r["lat"] is not None and r["lon"] is not None
+        assert r["mm_24h"] is not None
+        assert r["source_url"] == parsers.THAIWATER_RAIN_24H_URL
+
+
+def test_parse_thaiwater_rain_24h_converts_local_time_to_utc():
+    data = json.loads((FIXTURES / "thaiwater_rain_24h_sample.json").read_text(encoding="utf-8"))
+    rows = parsers.parse_thaiwater_rain_24h(data)
+    r = rows[0]
+    assert r["observed_at"] is not None
+    assert r["observed_at"].endswith("+00:00")
+    assert r["mm_24h"] == 315.0
+
+
 def test_parse_dds_flood_report_html_still_flooded_row_is_none_not_zero():
     html = (FIXTURES / "dds_flood_report_sample.html").read_text(encoding="utf-8")
     rows = parsers.parse_dds_flood_report_html(html)

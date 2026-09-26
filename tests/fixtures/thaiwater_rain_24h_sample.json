@@ -1,0 +1,93 @@
+{
+  "result": "OK",
+  "data": [
+    {
+      "id": 312077233,
+      "rain_24h": 315,
+      "rain_1h": 0.5,
+      "rainfall_datetime": "2026-09-26 10:00",
+      "station_type": "rainfall_24h",
+      "agency": {
+        "agency_name": {
+          "th": "กรมชลประทาน ",
+          "en": "Royal Irrigation Department",
+          "jp": ""
+        }
+      },
+      "station": {
+        "id": 1316655,
+        "tele_station_name": {
+          "th": "บ้านโพธิ์"
+        },
+        "tele_station_lat": 13.58335,
+        "tele_station_long": 101.070917,
+        "tele_station_oldcode": "ridtele_TKgt56"
+      }
+    },
+    {
+      "id": 312077234,
+      "rain_24h": 42.5,
+      "rain_1h": 0,
+      "rainfall_datetime": "2026-09-26 10:00",
+      "station_type": "rainfall_24h",
+      "agency": {
+        "agency_name": {
+          "th": "กรมชลประทาน ",
+          "en": "Royal Irrigation Department",
+          "jp": ""
+        }
+      },
+      "station": {
+        "id": 1316656,
+        "tele_station_name": {
+          "th": "สะพานสูง"
+        },
+        "tele_station_lat": 13.7663,
+        "tele_station_long": 100.6763,
+        "tele_station_oldcode": "ridtele_TKgt57"
+      }
+    },
+    {
+      "id": 312077235,
+      "rain_24h": null,
+      "rainfall_datetime": "2026-09-26 10:00",
+      "station_type": "rainfall_24h",
+      "agency": {
+        "agency_name": {
+          "th": "กรมชลประทาน ",
+          "en": "Royal Irrigation Department",
+          "jp": ""
+        }
+      },
+      "station": {
+        "id": 1316657,
+        "tele_station_name": {
+          "th": "ไม่มีค่าฝน"
+        },
+        "tele_station_lat": 13.7,
+        "tele_station_long": 100.6
+      }
+    },
+    {
+      "id": 312077236,
+      "rain_24h": 5,
+      "rainfall_datetime": "2026-09-26 10:00",
+      "station_type": "rainfall_24h",
+      "agency": {
+        "agency_name": {
+          "th": "กรมชลประทาน ",
+          "en": "Royal Irrigation Department",
+          "jp": ""
+        }
+      },
+      "station": {
+        "id": 1316658,
+        "tele_station_name": {
+          "th": "พิกัดหาย"
+        },
+        "tele_station_lat": null,
+        "tele_station_long": null
+      }
+    }
+  ]
+}

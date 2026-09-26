@@ -24,8 +24,10 @@ for anyone reading the raw file directly.
   *that snapshot* was taken), not this build's run time. `url`/`agency_th` for the BMA
   canal/pump/flood-road/DDS sources are copied verbatim from this repo's own
   `floodconnect/sources/registry.yaml` (its `trust_tier` vocabulary is reused
-  as-is). The rain (`thaiwater_rain_24h`) source has no URL recorded anywhere in this
-  codebase's cache — `url: null` plus a `note` says so rather than guessing one.
+  as-is). The rain (`thaiwater_rain_24h`) source is now collected live every CI run
+  (2026-09-26 red-team fix HIGH-3) by `collect.py`'s `collect_thaiwater_rain_24h` and
+  registered in `sources/registry.yaml`, so its `url`/`agency_th` are also copied
+  verbatim from there.
 
 ## `stations_near[]` — BMA canal water-level stations (thaiwater.net, republishing BMA
 สำนักการระบายน้ำ กรุงเทพมหานคร)
@@ -77,10 +79,13 @@ for that one station, not a guess.
 ## `rain`
 
 Nearest rain-gauge station (by haversine distance) to the village centre, selected from
-`floodconnect/raw/gapfill/rain_24h_1.json` (newest `rain_24h*.json` in that
-directory). `mm_24h` = that record's own `rain_24h` field (millimetres, 24h total);
-`observed_at` parsed from `rainfall_datetime` (Thailand local time → UTC ISO). No
-averaging or interpolation across stations — one real station's own reading only.
+the newest file in `floodconnect/raw/live/thaiwater_rain_24h/` (written every run by
+`collect.py`'s `thaiwater_rain_24h` collector, added 2026-09-26); falls back to
+`floodconnect/raw/gapfill/rain_24h_1.json` (newest `rain_24h*.json` in that directory)
+only when that live collector hasn't run yet or failed this run. `mm_24h` = that
+record's own `rain_24h` field (millimetres, 24h total); `observed_at` parsed from
+`rainfall_datetime` (Thailand local time → UTC ISO). No averaging or interpolation
+across stations — one real station's own reading only.
 
 ## `tide`
 
@@ -121,8 +126,11 @@ file exists, `tiers: []` and `tiers_note` says so plainly.
 
 ## `dds_quotes[]`
 
-`pdftotext -layout` on the newest `dds_daily_*.pdf` in
-`floodconnect/raw/dds_reports/` (BMA's daily situation bulletin), keeping only
+`pdftotext -layout` on the newest `*.pdf` in `floodconnect/raw/live/dds_daily_pdf/`
+(where `collect.py` actually writes the live-fetched PDF every run), falling back to
+`floodconnect/raw/dds_reports/dds_daily_*.pdf` only if that live directory is empty
+(2026-09-26 red-team fix HIGH-2: the two paths had silently diverged and this reader
+was pointed at the wrong one) — BMA's daily situation bulletin, keeping only
 lines containing สะพานสูง / แสนแสบ / ประเวศ / น้ำทะเลหนุน / คาดการณ์, each tagged with
 its PDF page number (pages are split on pdftotext's own `\f` form-feed). Thai-font
 ligature artefacts (stray Unicode Private-Use-Area glyphs observed in this PDF's text

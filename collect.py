@@ -155,6 +155,41 @@ def collect_thaiwater_flood_road(conn, dry_run=False) -> CollectResult:
                           counts={"inserted": n})
 
 
+def collect_thaiwater_rain_24h(conn, dry_run=False) -> CollectResult:
+    """Red-team fix HIGH-3 (2026-09-26): CI had no rain collector at all, so the rain
+    tile always fell back to a one-time manual raw/gapfill/rain_24h*.json snapshot that
+    goes stale forever. Same one-GET/one-cache-raw discipline as
+    collect_thaiwater_flood_road; writes to raw/live/thaiwater_rain_24h/<ts>.json."""
+    sid = "thaiwater_rain_24h"
+    if dry_run:
+        return CollectResult(sid, True, note="dry-run: would GET " + parsers.THAIWATER_RAIN_24H_URL)
+    try:
+        status, body = _one_get(parsers.THAIWATER_RAIN_24H_URL, lwl.THAIWATER_HEADERS)
+    except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as e:
+        return CollectResult(sid, False, note=f"network/HTTP error: {e}")
+    if status != 200:
+        return CollectResult(sid, False, http=status, note=f"HTTP {status}")
+    _cache_raw(sid, body, "json")
+    fetched_at = _utcnow_iso()
+    import json
+    rows = parsers.parse_thaiwater_rain_24h(json.loads(body))
+    n = 0
+    for r in rows:
+        if r.get("observed_at") is None:
+            continue
+        n += store.insert_observation(
+            conn, source_id=sid, station_code=r.get("station_id"),
+            station_name=r.get("station_name_th"), lat=r["lat"], lon=r["lon"],
+            variable="rain_24h_mm", value=r.get("mm_24h"), unit="mm",
+            observed_at_utc=r["observed_at"], fetched_at_utc=fetched_at,
+            trust_tier="official_telemetry",
+            provenance={"source_url": r.get("source_url"), "agency": r.get("agency"),
+                        "agency_th": r.get("agency_th")},
+        )
+    return CollectResult(sid, True, http=200, note=f"{len(rows)} rain station(s) fetched",
+                          counts={"inserted": n})
+
+
 def collect_bma_pumphistory(conn, dry_run=False) -> CollectResult:
     sid = "bma_pumphistory"
     if dry_run:
@@ -500,6 +535,7 @@ def collect_dds_nowcast_gif(conn, dry_run=False) -> CollectResult:
 COLLECTORS = {
     "thaiwater_canal_waterlevel": collect_thaiwater_canal_waterlevel,
     "thaiwater_flood_road": collect_thaiwater_flood_road,
+    "thaiwater_rain_24h": collect_thaiwater_rain_24h,
     "bma_pumphistory": collect_bma_pumphistory,
     "dds_flood_report": collect_dds_flood_report,
     "dds_daily_pdf": collect_dds_daily_pdf,

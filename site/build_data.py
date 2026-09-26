@@ -215,7 +215,14 @@ def load_pump_rows(station_codes: list[str]) -> tuple[list[dict], Path | None]:
 # --- 3. Rain (24h, nearest station to a given centre) ------------------------------------
 
 def load_rain(generated_at_utc_iso: str, centre_lat: float, centre_lon: float) -> tuple[dict | None, Path | None]:
-    path = newest_file(RAW / "gapfill", "rain_24h*.json")
+    # collect.py's thaiwater_rain_24h collector (added 2026-09-26, red-team fix HIGH-3)
+    # writes a fresh snapshot every run to raw/live/thaiwater_rain_24h/<ts>.json; the
+    # raw/gapfill/rain_24h*.json manual snapshot is now only a fallback for a run where
+    # that collector hasn't run yet or failed (e.g. local dev, or a CI run before this
+    # collector existed).
+    path = newest_file(RAW / "live" / "thaiwater_rain_24h", "*.json")
+    if path is None:
+        path = newest_file(RAW / "gapfill", "rain_24h*.json")
     if path is None:
         return None, None
     try:
@@ -397,9 +404,14 @@ def build_upstream_stations(canal_by_code: dict, generated_at_utc_iso: str,
             status = lwl.classify_level(
                 s["level_m"], s.get("warning_level"), s.get("critical_level"), s.get("bank")
             )
-            entry.update({"value_m": s["level_m"], "out_m": s.get("canal_out"),
-                          "warning": s.get("warning_level"), "critical": s.get("critical_level"),
-                          "bank": s.get("bank"), "status": status,
+            # Red-team fix MEDIUM-4 (2026-09-26): store the safe-float'd threshold values
+            # (None on anything non-numeric), not the raw agency field -- otherwise a
+            # downstream f"{x:.2f}" in build_page.py would crash on a non-numeric value
+            # that classify_level itself already tolerated.
+            entry.update({"value_m": lwl.safe_float(s["level_m"]), "out_m": s.get("canal_out"),
+                          "warning": lwl.safe_float(s.get("warning_level")),
+                          "critical": lwl.safe_float(s.get("critical_level")),
+                          "bank": lwl.safe_float(s.get("bank")), "status": status,
                           "observed_at": s.get("observed_at"),
                           "stale": is_stale(s.get("observed_at"), generated_at_utc_iso)})
         out.append(entry)
@@ -422,11 +434,14 @@ def build_near_stations(canal_stations: list[dict], exclude_codes: set,
         status = lwl.classify_level(
             s["level_m"], s.get("warning_level"), s.get("critical_level"), s.get("bank")
         )
+        # Red-team fix MEDIUM-4 (2026-09-26): safe-float the stored thresholds too --
+        # see build_upstream_stations's identical comment above.
         out.append({
             "code": code, "name": s.get("name_th"), "dist_km": round(dist, 2),
-            "value_m": s["level_m"], "out_m": s.get("canal_out"),
-            "warning": s.get("warning_level"), "critical": s.get("critical_level"),
-            "bank": s.get("bank"), "status": status,
+            "value_m": lwl.safe_float(s["level_m"]), "out_m": s.get("canal_out"),
+            "warning": lwl.safe_float(s.get("warning_level")),
+            "critical": lwl.safe_float(s.get("critical_level")),
+            "bank": lwl.safe_float(s.get("bank")), "status": status,
             "observed_at": s.get("observed_at"),
             "stale": is_stale(s.get("observed_at"), generated_at_utc_iso),
             "role": "north" if s["lat"] >= centre_lat else "south",
@@ -660,7 +675,13 @@ def _dds_fix_name(name: str) -> str:
 
 
 def build_dds_quotes(relevant_names: list[str]) -> tuple[list[dict], dict | None, Path | None]:
-    pdf_path = newest_file(RAW / "dds_reports", "dds_daily_*.pdf")
+    # collect.py writes the live PDF to raw/live/dds_daily_pdf/<timestamp>.pdf
+    # (see collect.py's _cache_raw); raw/dds_reports/ is a manual/legacy drop
+    # location kept only as a fallback so an older manually-placed file still
+    # works (2026-09-26 red-team fix -- these two paths had silently diverged).
+    pdf_path = newest_file(RAW / "live" / "dds_daily_pdf", "*.pdf")
+    if pdf_path is None:
+        pdf_path = newest_file(RAW / "dds_reports", "dds_daily_*.pdf")
     if pdf_path is None:
         return [], None, None
     try:

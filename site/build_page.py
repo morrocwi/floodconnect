@@ -98,7 +98,7 @@ def tier_dot(zone_key):
 STATUS_PILL = {
     "NORMAL": ("pill-ok", "ปกติ"), "WATCH": ("pill-warn", "เส้นเตือน"),
     "CRITICAL": ("pill-crit", "เส้นอันตราย"), "OVERBANK": ("pill-over", "ล้นตลิ่ง"),
-    "NO_THRESHOLD": ("pill-none", "ไม่มีข้อมูล"),
+    "NO_THRESHOLD": ("pill-none", "ไม่มีข้อมูลล่าสุด"),
 }
 
 AREA_LABELS = {
@@ -352,21 +352,25 @@ def rain_band_word(mm):
     return "น้อย"
 
 
-DOT_WORD = {"red": "สูง", "amber": "เฝ้าดู", "green": "ปกติ", "grey": "ไม่มีค่า"}
+DOT_WORD = {"red": "สูง", "amber": "เฝ้าดู", "green": "ปกติ", "grey": "ไม่มีข้อมูลล่าสุด"}
 
 
-def _tile(icon_name, value_text, label_text, dot, time_text=None):
+def _tile(icon_name, value_text, label_text, dot, time_text=None, extra_line=None):
     """One infographic tile (maintainer ruling 2026-09-26): 40px icon, big bold
     value, short label, colour dot + one status word. No paragraphs -- an
-    icon-grid the eye can scan in one pass."""
+    icon-grid the eye can scan in one pass. `extra_line` (2026-09-26 red-team
+    fix) adds a second small line -- used for pumps merely idle (not failed),
+    kept separate from the fail count so idle is never mislabelled as a fault."""
     word = DOT_WORD.get(dot, DOT_WORD["grey"])
     time_html = f'<span class="tile-time">{esc(time_text)}</span>' if time_text else ""
+    extra_html = f'<div class="tile-extra">{esc(extra_line)}</div>' if extra_line else ""
     return (
         '<div class="tile">'
         f'{icon(icon_name, 40)}'
         f'<div class="tile-value num">{esc(value_text)}</div>'
         f'<div class="tile-label">{esc(label_text)}</div>'
         f'<div class="tile-status"><span class="why-dot why-dot-{dot}" aria-hidden="true"></span>{word}</div>'
+        f'{extra_html}'
         f'{time_html}'
         '</div>'
     )
@@ -381,14 +385,15 @@ def build_indicator_tiles(area, st, pc, now_dt, pond_word):
     # 1. ปั๊มบึง
     pumps = area.get("pumps") or []
     total_pumps = len(pumps)
-    problems = pc["fail"] + pc["idle"]
     if total_pumps == 0:
         tiles.append(_tile("pump", "–", "ปั๊มบึง", "grey"))
     else:
         dot = "red" if pc["fail"] > 0 else ("amber" if pc["idle"] > 0 else ("grey" if pc["ok"] == 0 else "green"))
-        label = "ปั๊มขัดข้อง" if problems > 0 else "ปั๊มบึง"
+        label = "ปั๊มขัดข้อง (กทม. รายงาน)" if pc["fail"] > 0 else "ปั๊มบึง"
         newest_pump = max((p.get("observed_at") for p in pumps if p.get("observed_at")), default=None)
-        tiles.append(_tile("pump", f"{problems}/{total_pumps}", label, dot, obs_time_label(newest_pump, now_dt)))
+        idle_line = f"ไม่ได้เดิน {pc['idle']}" if pc["idle"] > 0 else None
+        tiles.append(_tile("pump", f"{pc['fail']}/{total_pumps}", label, dot, obs_time_label(newest_pump, now_dt),
+                            extra_line=idle_line))
 
     # 2. คลองรอบบ้าน
     fresh_near = st["fresh_near"]
@@ -500,7 +505,7 @@ def build_now_line(area):
 def build_zones_html(area):
     tiers = area.get("tiers") or []
     if not tiers:
-        note = esc(area.get("tiers_note") or "ยังไม่มีข้อมูล")
+        note = esc(area.get("tiers_note") or "ไม่มีข้อมูลล่าสุด")
         return f'<p class="empty-note">{note}</p>'
     by_tier = {t.get("tier"): (t.get("sois") or []) for t in tiers}
     groups = {"red": by_tier.get("T1", []), "orange": by_tier.get("T2", []),
@@ -537,9 +542,9 @@ def build_pump_rows(area, now_dt):
         text, kind = pump_wording(p, now_dt)
         cls = "stat-fail" if kind in ("fail", "idle", "missing") else "stat-ok"
         if kind in ("fail", "missing"):
-            level = "ไม่มีค่า"
+            level = "ไม่มีข้อมูลล่าสุด"
         elif p.get("level_m") is None:
-            level = "ไม่มีค่า"
+            level = "ไม่มีข้อมูลล่าสุด"
         else:
             level = f"{p['level_m']:.2f} ม."
         pond_name = esc(p.get("pond_name") or p.get("name"))
@@ -553,7 +558,7 @@ def build_pump_rows(area, now_dt):
             f'<td data-label="เวลา">{fmt_time_full(p.get("observed_at"), now_dt)}</td>'
             "</tr>"
         )
-    rows_html = "".join(rows) or '<tr><td colspan="5" class="empty-note">ไม่มีข้อมูลปั๊มในชุดข้อมูลนี้</td></tr>'
+    rows_html = "".join(rows) or '<tr><td colspan="5" class="empty-note">ไม่มีข้อมูลล่าสุด</td></tr>'
     pc = pump_counts(pumps, now_dt)
     bits = []
     if pc["fail"]:
@@ -598,7 +603,7 @@ def build_canal_rows(area, now_dt):
         (fresh if (h is not None and h <= 24) else stale).append(s)
     north = [s for s in fresh if s.get("role") == "north"]
     south = [s for s in fresh if s.get("role") == "south"]
-    empty = '<tr><td colspan="4" class="empty-note">ไม่มีสถานีสดในชุดข้อมูลนี้</td></tr>'
+    empty = '<tr><td colspan="4" class="empty-note">ไม่มีข้อมูลล่าสุด</td></tr>'
     north_html = "".join(canal_row_html(s, now_dt) for s in north) or empty
     south_html = "".join(canal_row_html(s, now_dt) for s in south) or empty
     stale_html = "".join(canal_row_html(s, now_dt) for s in stale) or \
@@ -606,7 +611,7 @@ def build_canal_rows(area, now_dt):
 
     upstream = [s for s in (area.get("stations_near") or []) if s.get("role") == "upstream"]
     upstream_html = "".join(canal_row_html(s, now_dt) for s in upstream) or \
-        '<tr><td colspan="4" class="empty-note">ไม่มีข้อมูลต้นน้ำในชุดข้อมูลนี้</td></tr>'
+        '<tr><td colspan="4" class="empty-note">ไม่มีข้อมูลล่าสุด</td></tr>'
     return north_html, south_html, stale_html, upstream_html
 
 
@@ -622,7 +627,7 @@ def build_forecast_fragments(area, now_dt_local, forecast, rain_forecast_area_no
             f'อ่านเมื่อ {fmt_time_full(rain.get("observed_at"), now_dt_local)} · {esc(rain.get("agency_th"))}'
         )
     else:
-        rain_text = "ไม่มีข้อมูลฝนในชุดข้อมูลนี้"
+        rain_text = "ไม่มีข้อมูลล่าสุด"
 
     forecast = forecast or {}
     if forecast.get("available"):
@@ -650,7 +655,7 @@ def build_forecast_fragments(area, now_dt_local, forecast, rain_forecast_area_no
                      f'({hw_dt.strftime("%H:%M")} น.)</strong> ระดับ '
                      f'<span class="num">{(hw.get("height_m") or 0):.2f}</span> ม.')
     else:
-        tide_next = "ไม่มีข้อมูลรอบถัดไป"
+        tide_next = "ไม่มีข้อมูลล่าสุด"
     station_th = tide.get("station_th") or "กรมอุทกศาสตร์ กองทัพเรือ"
     tide_basis = (f"พยากรณ์ทางดาราศาสตร์จาก{esc(station_th)} เท่านั้น ไม่รวมน้ำเหนือ/ฝน "
                   "วัดจากระดับทะเลปานกลาง (MSL) — เทียบกับตัวเลขคลองไม่ได้ ใช้คนละมาตรฐาน")
@@ -669,8 +674,8 @@ def build_forecast_fragments(area, now_dt_local, forecast, rain_forecast_area_no
         return "".join(rows)
 
     week = tide.get("week") or []
-    tide_week_rows = tide_rows_html(week[:2]) or '<tr><td colspan="4" class="empty-note">ไม่มีข้อมูล</td></tr>'
-    tide_week_more_rows = tide_rows_html(week[2:]) or '<tr><td colspan="4" class="empty-note">ไม่มีข้อมูล</td></tr>'
+    tide_week_rows = tide_rows_html(week[:2]) or '<tr><td colspan="4" class="empty-note">ไม่มีข้อมูลล่าสุด</td></tr>'
+    tide_week_more_rows = tide_rows_html(week[2:]) or '<tr><td colspan="4" class="empty-note">ไม่มีข้อมูลล่าสุด</td></tr>'
 
     quotes = area.get("dds_quotes") or []
     dds_html = "".join(f"<li>{esc(q.get('text'))}</li>" for q in quotes)
@@ -695,7 +700,7 @@ def build_exit_rows(area):
             body = f'<span class="empty-note">{esc(e.get("status_from_reports"))}</span>'
         rows.append(f'<tr><td data-label="เส้นทาง">{esc(e.get("name"))}</td>'
                     f'<td data-label="รายงานล่าสุด">{body}</td></tr>')
-    return "".join(rows) or '<tr><td colspan="2" class="empty-note">ไม่มีข้อมูล</td></tr>'
+    return "".join(rows) or '<tr><td colspan="2" class="empty-note">ไม่มีข้อมูลล่าสุด</td></tr>'
 
 
 def build_floodroad_rows(area, now_dt):
@@ -728,7 +733,7 @@ def build_hospital_rows(area):
         rows.append(f'<tr><td data-label="โรงพยาบาล">{esc(h.get("name"))}</td>'
                     f'<td class="num" data-label="ระยะทาง">{(h.get("dist_km") or 0):.1f} กม.</td>'
                     f'<td data-label="โทร">{phone_html}</td></tr>')
-    return "".join(rows) or '<tr><td colspan="3" class="empty-note">ไม่มีข้อมูลโรงพยาบาลในชุดข้อมูลนี้</td></tr>'
+    return "".join(rows) or '<tr><td colspan="3" class="empty-note">ไม่มีข้อมูลล่าสุด</td></tr>'
 
 
 def build_sources_list(sources, now_dt):
@@ -835,9 +840,20 @@ def build_area_fragments(area_id, area, now_dt, forecast):
     status_note += " · รวบรวมโดยประชาชน ไม่ใช่ประกาศทางการ"
     now_line = build_now_line(area)
 
-    any_old = any((h := hours_ago(x.get("observed_at"), now_dt)) is None or h > 2
-                  for x in (area.get("stations_near") or []) + pumps)
-    stale_ribbon_hidden = "" if any_old else " hidden"
+    # Red-team fix MEDIUM-5 (2026-09-26): this used to compute its own "any row older
+    # than 2h" check, treating a row with NO observed_at at all (a reference-only row
+    # such as BKK013/BKK015, which never carries a live timestamp) the same as a row
+    # that IS live but stale -- so the banner was pinned on permanently regardless of how
+    # fresh the real data was. It now reuses the same `staleness` dict build_data.py
+    # already computed (which correctly excludes null-observed_at rows and keys off the
+    # newest live official observation), so the page and data.json can never disagree.
+    stale_ribbon_hidden = "" if staleness.get("banner") else " hidden"
+    # LOW-6: on total failure (no live official observation at all -- not merely an old
+    # one), say so plainly instead of the "some data is old" wording, which implies fresh
+    # data exists somewhere on the page.
+    stale_ribbon_text = ("ไม่มีข้อมูลล่าสุดจากหน่วยงาน — เตรียมพร้อมไว้ก่อน"
+                          if not staleness.get("newest_official_obs")
+                          else "ข้อมูลบางส่วนเก่า — ดูเวลาท้ายแต่ละบรรทัด")
 
     zones_html = build_zones_html(area)
     pump_rows_html, pump_lead = build_pump_rows(area, now_dt)
@@ -859,6 +875,7 @@ def build_area_fragments(area_id, area, now_dt, forecast):
         "{{HOURS_LIST}}": hours_list,
         "{{STATUS_NOTE}}": esc(status_note),
         "{{STALE_RIBBON_HIDDEN}}": stale_ribbon_hidden,
+        "{{STALE_RIBBON_TEXT}}": esc(stale_ribbon_text),
         "{{WB_HTML}}": wb_html,
         "{{ADVICE_HTML}}": advice_html,
         "{{ZONES_HEADING}}": sec_label("wave", esc(labels["zones_heading"])),

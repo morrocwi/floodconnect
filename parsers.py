@@ -73,6 +73,58 @@ def parse_thaiwater_flood_road(data: dict) -> list:
     return out
 
 
+# --- thaiwater rain_24h (api-v3.thaiwater.net .../public/rain_24h) -----------------------
+#
+# Added 2026-09-26 (red-team fix HIGH-3: CI had no rain collector at all). Same "data":[...]
+# envelope shape as flood_road/canal_waterlevel; confirmed against the existing manual
+# snapshot raw/gapfill/rain_24h_1.json (4282 stations, rain_24h in mm, rainfall_datetime
+# local Thailand time, station.tele_station_lat/_long real coordinates).
+
+THAIWATER_RAIN_24H_URL = "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/rain_24h"
+
+
+def parse_thaiwater_rain_24h(data: dict) -> list:
+    """
+    `api-v3.thaiwater.net .../public/rain_24h` JSON -> rain-reading dicts.
+
+    Returns [{station_id, station_name_th, lat, lon, mm_24h, observed_at (UTC ISO,
+    converted from local Thailand time), agency, source_url, fetched_at=None}]. A record
+    with no coordinate or no rain_24h value is skipped, never fabricated (same rule as
+    parse_thaiwater_flood_road).
+    """
+    out = []
+    for rec in data.get("data", []):
+        station = rec.get("station") or {}
+        lat, lon = station.get("tele_station_lat"), station.get("tele_station_long")
+        mm = rec.get("rain_24h")
+        if lat is None or lon is None or mm is None:
+            continue
+        dt_str = rec.get("rainfall_datetime")
+        observed_at = None
+        if dt_str:
+            try:
+                local_dt = datetime.datetime.strptime(dt_str, "%Y-%m-%d %H:%M")
+                local_dt = local_dt.replace(tzinfo=datetime.timezone(datetime.timedelta(hours=7)))
+                observed_at = local_dt.astimezone(datetime.timezone.utc).isoformat()
+            except ValueError:
+                observed_at = None
+        agency = ((rec.get("agency") or {}).get("agency_name") or {}).get("en")
+        agency_th = ((rec.get("agency") or {}).get("agency_name") or {}).get("th")
+        out.append({
+            "station_id": str(station.get("id")) if station.get("id") is not None else None,
+            "station_name_th": (station.get("tele_station_name") or {}).get("th"),
+            "lat": float(lat),
+            "lon": float(lon),
+            "mm_24h": float(mm),
+            "observed_at": observed_at,
+            "agency": agency,
+            "agency_th": agency_th,
+            "source_url": THAIWATER_RAIN_24H_URL,
+            "fetched_at": None,
+        })
+    return out
+
+
 # --- dds_flood_report (dds.bangkok.go.th/flood_report.php, server-rendered HTML) --------
 #
 # Two `<table class="blueTable">` blocks confirmed 2026-09-26: the FIRST is a per-district

@@ -555,6 +555,18 @@ def resolve_station_coordinate(station: dict, floodgate_csv: Path = FLOODGATE_CS
 STALE_HOURS = 24.0
 
 
+def safe_float(x):
+    """Coerce to float, returning None on any failure (missing, "N/A", empty string,
+    non-numeric) instead of raising -- never let one bad agency-published field crash the
+    whole classification pass (red-team fix MEDIUM-4, 2026-09-26)."""
+    if x is None:
+        return None
+    try:
+        return float(x)
+    except (TypeError, ValueError):
+        return None
+
+
 def classify_level(value, warning, critical, bank):
     """
     Pure classifier against BMA's own published thresholds for a station -- never a
@@ -572,8 +584,19 @@ def classify_level(value, warning, critical, bank):
 
     Checked highest-band-first so a station missing one threshold (e.g. bank published
     but warning not) still classifies correctly off whichever bands it does have.
+
+    Red-team fix MEDIUM-4 (2026-09-26): a non-numeric value/threshold (e.g. a station
+    publishing "N/A" or "" instead of a number) used to raise TypeError/ValueError deep in
+    the comparison; every input is now coerced through a safe float() first, so a
+    non-numeric field is just treated as "not published" (None) rather than crashing.
     """
+    value = safe_float(value)
+    warning = safe_float(warning)
+    critical = safe_float(critical)
+    bank = safe_float(bank)
     if warning is None and critical is None and bank is None:
+        return "NO_THRESHOLD"
+    if value is None:
         return "NO_THRESHOLD"
     if bank is not None and value >= bank:
         return "OVERBANK"

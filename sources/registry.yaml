@@ -89,6 +89,32 @@ sources:
       mapping confirmed against this live response."}
     variables: [floodroad_value_cm]
 
+  - id: thaiwater_rain_24h
+    agency:
+      th: "กรมชลประทาน/สถาบันสารสนเทศทรัพยากรน้ำ (สสน.) -- ผ่าน thaiwater.net"
+      en: "Royal Irrigation Department / Hydro-Informatics Institute (HII/สสน.), via
+        thaiwater.net"
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/rain_24h"
+    method: GET
+    cadence: unknown -- not yet observed across two fetches
+    format: json
+    auth: none
+    licence_status: {text: "Same relayed/unconfirmed licence note as
+      thaiwater_canal_waterlevel -- not independently re-checked for this endpoint
+      specifically.", unresolved: true}
+    trust_tier: official_telemetry
+    # Added 2026-09-26 (red-team fix HIGH-3): CI had no rain collector at all, so the
+    # rain tile always fell back to raw/gapfill/rain_24h*.json, a one-time manual snapshot
+    # that goes stale forever. This collector writes a fresh raw/live/thaiwater_rain_24h/
+    # snapshot every run; build_data.py reads that dir first and only falls back to the
+    # gapfill snapshot if the live collector hasn't run yet or failed this run.
+    host_rule: {max_requests_per_run: 1, notes: "Same host as thaiwater_canal_waterlevel."}
+    last_status: {date: "2026-09-26", http: null, note: "not yet run live in this
+      environment -- shape confirmed against the existing raw/gapfill/rain_24h_1.json
+      manual snapshot (4282 stations, rain_24h/rainfall_datetime/station lat-long
+      fields) from the same API family."}
+    variables: [rain_24h_mm]
+
   - id: bma_pumphistory
     agency:
       th: "สำนักการระบายน้ำ กรุงเทพมหานคร"
