@@ -70,6 +70,7 @@ ICON_PATHS = {
     "doc": '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
     "clock": '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
     "check": '<polyline points="20 6 9 17 4 12"/>',
+    "bolt": '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
 }
 
 
@@ -725,6 +726,20 @@ def build_community_rows(area):
     return "".join(rows) or '<tr><td colspan="3" class="empty-note">ยังไม่มีรายงานในชุดข้อมูลนี้</td></tr>'
 
 
+def build_nearby_community_rows(area):
+    """คลองจั่น/บางกะปิ 'nearby area' note (2026-09-26) -- sammakorn only; ram53 already
+    folds the full set into its own community rows since คลองจั่น is on its own canal
+    chain, so this returns "" (hidden) there."""
+    rows = area.get("nearby_community") or []
+    if not rows:
+        return "", " hidden"
+    html = "".join(f'<tr><td class="num" data-label="เวลา">{esc(r.get("time"))}</td>'
+                   f'<td data-label="จุด">{esc(clean_soi_name(r.get("place")))}</td>'
+                   f'<td data-label="สภาพที่รายงาน">{esc(r.get("state") or "-")}</td></tr>'
+                   for r in rows)
+    return html, ""
+
+
 def build_hospital_rows(area):
     rows = []
     for h in area.get("hospitals") or []:
@@ -805,7 +820,15 @@ def build_worsen_better_html(area, st, pc, now_dt, forecast):
 
 # ---------------- optional advice section (5 short suggestions) --------------
 
+# SAFETY_FACT (2026-09-26, founder-requested after the คลองจั่น electrocution death):
+# stated as a FACT, never a command -- never "ไม่ต้อง/ห้าม/ไม่ควร".
+SAFETY_FACT = ("⚠ วันนี้มีผู้เสียชีวิตจากไฟฟ้าดูดในน้ำท่วมที่แฟลตคลองจั่น (ข่าว 26 ก.ย.) "
+               "— ไฟฟ้ากับน้ำท่วมอันตรายถึงชีวิต")
+
 ADVICE_ITEMS = [
+    # Moved to first place 2026-09-26 (same incident) -- an optional suggestion, not a
+    # command ("เลี่ยง", not "ห้าม/ไม่ควร").
+    ("bolt", "ปิดเบรกเกอร์ชั้นล่าง และเลี่ยงน้ำใกล้เสาไฟ/ปลั๊ก/รถที่จมน้ำ"),
     ("pump", "ยกของสำคัญขึ้นที่สูง"),
     ("phone", "ชาร์จมือถือ เตรียมไฟฉาย"),
     ("exit", "จอดรถในจุดที่น้ำไม่ถึง"),
@@ -863,6 +886,7 @@ def build_area_fragments(area_id, area, now_dt, forecast):
     exit_rows = build_exit_rows(area)
     floodroad_rows = build_floodroad_rows(area, now_dt)
     community_rows = build_community_rows(area)
+    nearby_community_rows, nearby_community_hidden = build_nearby_community_rows(area)
     hospital_rows = build_hospital_rows(area)
 
     return {
@@ -870,6 +894,7 @@ def build_area_fragments(area_id, area, now_dt, forecast):
         "{{HEADING_LABEL}}": esc(labels["heading"]),
         "{{STATUS_WORD}}": esc(st["word"]),
         "{{NOW_LINE}}": esc(now_line),
+        "{{SAFETY_FACT}}": esc(SAFETY_FACT),
         "{{STATUS_WATCH}}": watch_line,  # already HTML (has <strong> + icon)
         "{{WHY_LIST}}": indicator_tiles,
         "{{HOURS_LIST}}": hours_list,
@@ -902,6 +927,9 @@ def build_area_fragments(area_id, area, now_dt, forecast):
         "{{FLOODROAD_ROWS}}": floodroad_rows,
         "{{COMMUNITY_COL2_LABEL}}": esc(area.get("community_label") or "จุด"),
         "{{COMMUNITY_ROWS}}": community_rows,
+        "{{NEARBY_COMMUNITY_ROWS}}": nearby_community_rows,
+        "{{NEARBY_COMMUNITY_HIDDEN}}": nearby_community_hidden,
+        "{{NEARBY_COMMUNITY_LABEL}}": esc(area.get("nearby_community_label") or ""),
         "{{HOSPITAL_ROWS}}": hospital_rows,
     }
 

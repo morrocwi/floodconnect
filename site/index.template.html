@@ -196,6 +196,12 @@
     font-size:1.08rem; font-weight:500; line-height:1.5; margin:0 0 16px; color: var(--on-hero);
   }
   .banner .watch strong{ color: inherit; font-weight:700; }
+  .banner .safety-fact{
+    font-size:0.98rem; font-weight:600; line-height:1.5; margin:0 0 14px;
+    padding:10px 12px; border-radius:10px; background: rgba(255,190,60,.14);
+    border:1px solid rgba(255,190,60,.4); color: var(--on-hero);
+  }
+  .banner .safety-fact:empty{ display:none; }
   .why-heading, .hours-heading{
     font-family: var(--font-display); font-size:0.95rem; font-weight:700; color: var(--hero-muted);
     margin:0 0 6px; text-transform:none; letter-spacing:.01em;
@@ -450,6 +456,7 @@
         <p class="status-word" id="banner-word-__AREA__">{{STATUS_WORD}}</p>
       </div>
       <p class="now" id="banner-now-__AREA__">ตอนนี้ อาจทำได้: {{NOW_LINE}}</p>
+      <p class="safety-fact" id="banner-safety-fact-__AREA__">{{SAFETY_FACT}}</p>
       <p class="watch" id="banner-watch-__AREA__">{{STATUS_WATCH}}</p>
 
       <h3 class="why-heading">ทำไมถึงบอกแบบนี้</h3>
@@ -586,6 +593,13 @@
           <thead><tr><th>เวลา</th><th>{{COMMUNITY_COL2_LABEL}}</th><th>สภาพที่รายงาน</th></tr></thead>
           <tbody id="community-rows-__AREA__">{{COMMUNITY_ROWS}}</tbody>
         </table></div>
+        <div id="nearby-community-wrap-__AREA__"{{NEARBY_COMMUNITY_HIDDEN}}>
+          <h3 style="margin:14px 0 6px;font-size:1.05rem;">{{NEARBY_COMMUNITY_LABEL}}</h3>
+          <div class="tablewrap"><table>
+            <thead><tr><th>เวลา</th><th>จุด</th><th>สภาพที่รายงาน</th></tr></thead>
+            <tbody id="nearby-community-rows-__AREA__">{{NEARBY_COMMUNITY_ROWS}}</tbody>
+          </table></div>
+        </div>
       </div>
     </details>
 

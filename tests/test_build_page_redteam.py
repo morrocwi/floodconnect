@@ -73,3 +73,27 @@ def test_stale_banner_shows_when_data_json_says_stale():
     }
     fragments = bp.build_area_fragments("sammakorn", area, NOW, {})
     assert fragments["{{STALE_RIBBON_HIDDEN}}"] == ""
+
+
+def test_safety_fact_present_and_advice_electricity_item_first():
+    # founder-requested addition after the คลองจั่น electrocution death (2026-09-26):
+    # a FACT line (never a command) plus moving the electricity advice to first place.
+    assert "ไฟฟ้าดูด" in bp.SAFETY_FACT
+    assert bp.ADVICE_ITEMS[0][1].startswith("ปิดเบรกเกอร์ชั้นล่าง")
+    for bad in ("ไม่ต้อง", "ห้าม", "ไม่ควร"):
+        assert bad not in bp.SAFETY_FACT
+        for _, text in bp.ADVICE_ITEMS:
+            assert bad not in text
+
+
+def test_nearby_community_rendered_for_sammakorn_hidden_for_ram53():
+    area_with_rows = {"nearby_community": [{"time": "~12:00", "place": "แฟลตคลองจั่น",
+                                             "state": "น้ำสูงถึงอก"}]}
+    html, hidden = bp.build_nearby_community_rows(area_with_rows)
+    assert hidden == ""
+    assert "แฟลตคลองจั่น" in html
+
+    area_empty = {"nearby_community": []}
+    html2, hidden2 = bp.build_nearby_community_rows(area_empty)
+    assert hidden2 == " hidden"
+    assert html2 == ""

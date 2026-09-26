@@ -9,6 +9,16 @@ if str(SITE_DIR) not in sys.path:
 
 import build_data as bd  # noqa: E402
 
+_KHLONGCHAN_SAMPLE = """\
+# sample
+| เวลาโพสต์ (≈) | แหล่ง | จุด | สภาพ |
+|---|---|---|---|
+| ~10:00 (6 ชม.) | Facebook (บุคคล) | แฟลตคลองจั่น | "ฝนตกไม่หยุด" |
+| ~11:00 (5 ชม.) | สวพ.FM91 | แฟลตเคหะคลองจั่น | น้ำท่วมสูงถึงหลังคารถ |
+| ~12:00 (4 ชม.) | PPTV HD 36 / ข่าว | แฟลตเคหะคลองจั่น | น้ำสูงถึงอก |
+| ~13:00 (3 ชม.) | Facebook (เพจ) | แฟลตเคหะคลองจั่น | ยังไม่ลด |
+"""
+
 
 def test_dds_pdf_prefers_raw_live_over_dds_reports(tmp_path, monkeypatch):
     # HIGH-2: collect.py writes to raw/live/dds_daily_pdf/, but build_data.py used to
@@ -76,3 +86,21 @@ def test_load_rain_prefers_live_thaiwater_snapshot_over_gapfill(tmp_path, monkey
     assert rain["station"] == "live station"
     assert rain["mm_24h"] == 42.0
     assert path == live_dir / "2026-09-26T050000Z.json"
+
+
+def test_khlongchan_community_names_media_agency_not_person(tmp_path):
+    p = tmp_path / "social_timeline_khlongchan_sample.md"
+    p.write_text(_KHLONGCHAN_SAMPLE, encoding="utf-8")
+    rows = bd.build_khlongchan_community(p)
+    assert len(rows) == 4
+    # a personal Facebook post/page is never named in the output
+    assert "Facebook" not in rows[0]["state"]
+    assert "Facebook" not in rows[3]["state"]
+    # a named media outlet IS disclosed as the source
+    assert "(สวพ.FM91)" in rows[1]["state"]
+    assert "(PPTV HD 36)" in rows[2]["state"]  # " / ข่าว" suffix stripped
+
+
+def test_khlongchan_community_missing_file_returns_empty():
+    from pathlib import Path
+    assert bd.build_khlongchan_community(Path("/nonexistent/path.md")) == []

@@ -57,6 +57,7 @@ INPUTS = HERE / "inputs"                         # curated, checked-into-git com
 COMMUNITY_DIR = INPUTS / "community"
 UPSTREAM_REPORT_PATH = INPUTS / "upstream_watchlist.md"
 RAM53_DIR = INPUTS / "ram53"
+KHLONGCHAN_SOCIAL_PATH = RAM53_DIR / "social_timeline_khlongchan_2026-09-26.md"
 TIDE_DIR = INPUTS / "tide"
 
 OUT_JSON = HERE / "dist" / "data.json"
@@ -579,6 +580,58 @@ def build_ram53_community(social_md_path: Path) -> list[dict]:
     return out
 
 
+# --- 9c. คลองจั่น/บางกะปิ "เสียงจากอินเทอร์เน็ต" -- คลองจั่นอยู่ในโซ่คลองของราม 53 -----------
+#
+# Added 2026-09-26 (founder request): แฟลตเคหะคลองจั่น is on the same canal chain as ram53
+# (แสนแสบ -> คลองจั่น), so its social-media reports are ram53-relevant community signal, and
+# a nearby-area sub-line for sammakorn too. Same time/place/state-only, no-personal-name
+# discipline as build_ram53_community -- a media OUTLET (สวพ.FM91, PPTV HD 36, The Bangkok
+# Insight) is named as an agency, since it published a public byline-free news item, not a
+# private individual; a personal Facebook post/page ("Facebook (บุคคล)"/"(เพจ)"/"(คลิป)") is
+# never named, same as every other "ชาวบ้านรายงาน" row in this codebase.
+
+_KHLONGCHAN_ROW_RE = _RAM53_ROW_RE  # identical 4-column table shape
+
+
+def _khlongchan_source_label(raw_source: str) -> str | None:
+    """A named media outlet -> its name (agency disclosure); a personal post/page/clip ->
+    None (never named). `raw_source` is the table's own "แหล่ง" column text."""
+    s = (raw_source or "").strip()
+    if not s:
+        return None
+    if re.search(r"บุคคล|เพจ|คลิป", s):
+        return None
+    # "The Bangkok Insight / ข่าว" / "PPTV HD 36 / ข่าว" -> drop the generic " / ข่าว" suffix
+    s = re.sub(r"\s*/\s*ข่าว\s*$", "", s).strip()
+    return s or None
+
+
+def build_khlongchan_community(social_md_path: Path) -> list[dict]:
+    """Returns rows in the table's own (ascending) time order: [{time, place, state}], with
+    a named media outlet's name folded into `state` as "... (<outlet>)" -- never a personal
+    name. Same table shape as build_ram53_community, reused here rather than re-implemented."""
+    if not social_md_path.exists():
+        return []
+    out = []
+    for line in social_md_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line.startswith("|"):
+            continue
+        m = _KHLONGCHAN_ROW_RE.match(line)
+        if not m:
+            continue
+        time_th, source_raw, place, state = (m.group("time"), m.group("platform"),
+                                              m.group("place"), m.group("state"))
+        if time_th in ("เวลาโพสต์ (≈)",) or set(time_th) <= {"-"}:
+            continue  # header / separator row
+        if not place or not state:
+            continue
+        source = _khlongchan_source_label(source_raw)
+        state_out = f"{state} ({source})" if source else state
+        out.append({"time": time_th, "place": strip_house_range(place), "state": state_out})
+    return out
+
+
 # --- 10. Exits ------------------------------------------------------------------------------
 
 def build_exits_sammakorn(community_md_path: Path) -> list[dict]:
@@ -807,14 +860,20 @@ def build_area_data(*, area_id: str, label: str, centre_lat: float, centre_lon: 
     dds_quotes, dds_report, dds_pdf_path = build_dds_quotes(dds_relevant_names)
     hospitals = build_hospitals(centre_lat, centre_lon)
 
+    # คลองจั่น/บางกะปิ is on ram53's own canal chain (แสนแสบ -> คลองจั่น) -- its social
+    # timeline is ram53-relevant community signal, and a "nearby area" note for sammakorn.
+    khlongchan_rows = build_khlongchan_community(KHLONGCHAN_SOCIAL_PATH)
+    nearby_community = khlongchan_rows[-3:]  # newest 3 (table is in ascending time order)
+
     if is_ram53:
         tiers, tiers_note = [], "ยังไม่มีรายงานรายซอย — ใช้รายงานถนนรามคำแหง/หน้า ม.ราม แทน"
         exits = build_exits_ram53()
-        community = build_ram53_community(RAM53_DIR / "social_timeline_2026-09-26.md")
+        community = (build_ram53_community(RAM53_DIR / "social_timeline_2026-09-26.md")
+                     + khlongchan_rows)
         community_label = "จุด"
         community_path = RAM53_DIR / "social_timeline_2026-09-26.md"
         community_agency = ("เสียงจากอินเทอร์เน็ต (โพสต์สาธารณะที่ค้นเจอผ่าน Google -- ไม่ใช่หน่วยงานราชการ, "
-                             "ไม่เก็บชื่อผู้โพสต์)")
+                             "ไม่เก็บชื่อผู้โพสต์ ยกเว้นสื่อที่เผยแพร่ชื่อสำนักข่าวเอง)")
     else:
         tiers, tiers_note = build_tiers_sammakorn()
         exits = build_exits_sammakorn(COMMUNITY_DIR / "community_reports_2026-09-26.md")
@@ -863,6 +922,11 @@ def build_area_data(*, area_id: str, label: str, centre_lat: float, centre_lon: 
         "staleness": staleness,
         "community": community,
         "community_label": community_label,
+        # Newest 3 คลองจั่น/บางกะปิ social-media reports, sammakorn only -- ram53 already has
+        # the full khlongchan set folded into `community` above (it's on ram53's own canal
+        # chain), so showing it again here would duplicate the same rows.
+        "nearby_community": [] if is_ram53 else nearby_community,
+        "nearby_community_label": "พื้นที่ใกล้เคียง (บางกะปิ/คลองจั่น)",
     }
 
 
