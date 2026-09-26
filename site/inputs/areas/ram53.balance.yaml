@@ -1,0 +1,37 @@
+# Declared inputs for Toledo PROP-FLOOD-03 (water_balance.py) -- node "ram53".
+# Proposal, unverified; PR #60 pending. All fields OPEN -- no catchment/pump/storage
+# declaration exists for this soi at all, so step() REFUSES on every tick.
+node_id: ram53
+A:
+  value: null
+  unit: m^2
+  tag: OPEN
+  note: "No catchment-area declaration exists for ซอยรามคำแหง 53 -- UNDECLARED_AREA on step()."
+c:
+  value: null
+  unit: fraction (0-1)
+  tag: OPEN
+  note: "Not measured -- see the same caveat as sammakorn.balance.yaml."
+C_pump:
+  value: null
+  unit: m^3/s
+  tag: OPEN
+  note: >
+    ram53's nearest declared pump codes in build_data.py (ST.WTL.01, ST.BKP.01,
+    ST.BKP.06, ST.BKP.02) are BMA telemetry stations used for status display only --
+    their combined discharge capacity has not been declared as this node's C_pump.
+S0:
+  value: null
+  unit: m^3
+  tag: OPEN
+  note: "No declared initial storage for this node."
+tau:
+  value: 3600
+  unit: s
+  tag: VERIFIED
+  note: "One-hour tick, matching the hourly rain-gauge cadence."
+declared_edges: []
+next_step: >
+  Sub-unit balance for ram53 resumes once a declared catchment area (A) and pump
+  capacity (C_pump) exist. See bangkok_east for the current zone-level upper-bound
+  comparison.

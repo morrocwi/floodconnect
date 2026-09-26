@@ -76,7 +76,7 @@ def test_stale_banner_shows_when_data_json_says_stale():
 
 
 def test_safety_fact_present_and_advice_electricity_item_first():
-    # founder-requested addition after the คลองจั่น electrocution death (2026-09-26):
+    # maintainer-requested addition after the คลองจั่น electrocution death (2026-09-26):
     # a FACT line (never a command) plus moving the electricity advice to first place.
     assert "ไฟฟ้าดูด" in bp.SAFETY_FACT
     assert bp.ADVICE_ITEMS[0][1].startswith("ปิดเบรกเกอร์ชั้นล่าง")

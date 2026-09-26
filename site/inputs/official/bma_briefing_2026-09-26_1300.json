@@ -1,0 +1,75 @@
+{
+  "id": "bma_governor_briefing_2026-09-26-1300",
+  "agency_th": "กรุงเทพมหานคร — แถลงผู้ว่าฯ 26 ก.ย. 2569 13:00 ณ ศูนย์ควบคุมระบบป้องกันน้ำท่วม",
+  "trust_tier": "official_report",
+  "briefing_time_bkk": "2026-09-26T13:00:00+07:00",
+  "url": null,
+  "url_status": "OPEN",
+  "url_search_note": "One WebSearch run (2026-09-26) found several news reports of this briefing (mgronline.com, thestandard.co, thansettakij.com, prachachat.net, thaipost.net, thereporters.co, ejan.co, amarintv.com, thaipbs.or.th) that corroborate the pasted figures (223 million m^3, 2-3 days, >300mm cumulative rain since 24 Sep, disaster-area declaration, 28 Sep school closure) -- but no direct bangkok.go.th / prbangkok.go.th / official BMA Facebook post URL was returned by that search. url stays OPEN per instruction rather than substituting a news URL for an official one.",
+  "corroborating_news_urls_relayed_only": [
+    "https://mgronline.com/qol/detail/9690000094013",
+    "https://thestandard.co/chatchart-bkk-flood-schools-close/",
+    "https://www.thansettakij.com/general-news/669919"
+  ],
+  "declared_facts": {
+    "rain_since_2026-09-24": {
+      "value": "many areas >100 mm, some ~300 mm",
+      "tag": "official_report",
+      "note": "News corroboration (thaipost.net, thereporters.co) independently reports >300mm cumulative, described as a 43-year high -- consistent with the pasted briefing content."
+    },
+    "disaster_area_declared": {"value": true, "tag": "official_report"},
+    "weather_system_note": {
+      "value": "low-pressure system moving north/west; rain expected to ease afternoon-evening",
+      "tag": "official_report"
+    },
+    "conditional_outlook": {
+      "value": "if no new rain, situation gradually improves",
+      "tag": "official_report"
+    },
+    "backlog_volume_phra_nakhon_side": {
+      "value": 223000000,
+      "unit": "m^3",
+      "tag": "official_report",
+      "note": "ฝั่งพระนคร accumulated/backlog water volume as stated in the briefing; corroborated by news (mgronline.com etc: \"ปริมาณน้ำสะสม 223 ล้าน ลบ.ม.\")."
+    },
+    "total_bma_pumping_capacity": {
+      "value": 1200,
+      "unit": "m^3/s",
+      "tag": "official_report",
+      "note": "As stated in the briefing -- one of the several conflicting city-wide totals catalogued in site/inputs/capacity/bma_capacity.json (key citywide_total_pumping_capacity); this specific value is the one the BMA itself stated in this briefing, so it is used (not the 1230.55/1300 alternatives) for the drain-time arithmetic below."
+    },
+    "estimated_drain_time_if_no_new_rain": {
+      "value": "2-3 days",
+      "tag": "official_report",
+      "note": "As stated in the briefing; corroborated verbatim by multiple news outlets (\"คาด 2-3 วันระบายหมด\")."
+    },
+    "watching_inflow_from_surrounding_provinces": {"value": true, "tag": "official_report"},
+    "canals_to_watch": {
+      "value": ["เปรมประชากร", "ลาดพร้าว", "แสนแสบ", "ประเวศบุรีรมย์", "ศิริวัฒนา"],
+      "tag": "official_report"
+    },
+    "roads_affected_count": {
+      "value": 93,
+      "tag": "official_report",
+      "note": "Including ถนนรามคำแหง, ลาดกระบัง, ศรีนครินทร์ (named explicitly in the briefing)."
+    },
+    "shelters": {
+      "value": {"count": 233, "capacity": 15000, "in_use": 981},
+      "tag": "official_report"
+    },
+    "bedridden_patients_moved": {"value": 36, "tag": "official_report"},
+    "hotlines": {
+      "value": ["1555", "Traffy Fondue", "district office (sandbags)", "1669"],
+      "tag": "official_report"
+    },
+    "temporary_parking": {
+      "value": ["อาคารจอดรถ กทม.", "ศูนย์ราชการฯ หลักสี่", "เซ็นทรัล", "เดอะมอลล์",
+                 "แฟชั่นไอส์แลนด์", "โลตัส"],
+      "tag": "official_report"
+    },
+    "monday_2026-09-28": {
+      "value": "BMA schools closed, non-essential staff flexible work",
+      "tag": "official_report"
+    }
+  }
+}

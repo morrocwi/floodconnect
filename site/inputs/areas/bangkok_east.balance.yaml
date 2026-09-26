@@ -1,0 +1,90 @@
+# Declared inputs for Toledo PROP-FLOOD-03 (water_balance.py) -- node "bangkok_east".
+# Maintainer decision 2026-09-26: run the water-balance readout at Bangkok-wide/east-zone
+# level FIRST (this node), village sub-units (sammakorn/ram53) later once their own A/C_pump
+# are declared. Proposal, unverified; PR #60 pending.
+#
+# c (runoff fraction) stays OPEN here too -- step() REFUSES this node's water_balance.step()
+# just like the villages do. What THIS node adds beyond a bare REFUSED is a separate,
+# clearly-labelled UPPER-BOUND arithmetic comparison (rain-input volume vs max outflow
+# capacity) computed from ONLY the declared quantities below (A and C_pump), shown in
+# build_data.py's `bangkok_east_upper_bound` and rendered in the page's "สมดุลน้ำ" section --
+# this is explicitly NOT the water_balance.py ledger result, and is labelled as such.
+node_id: bangkok_east
+A:
+  value: 1568.737
+  unit: km^2
+  tag: RELAYED
+  note: >
+    No east-zone-specific catchment area figure exists anywhere in raw/capacity (checked:
+    plan_2569.pdf/.txt, CAPACITY_NOTE.md, CAPACITY_DETAIL.md, dds_0003650.txt) -- the only
+    zone-scale area found is the Bang Sue tunnel's own 56 km^2 service zone, which is NOT
+    the east zone (สะพานสูง/บางกะปิ/มีนบุรี/ลาดกระบัง/ประเวศ) FloodConnect covers. Falling
+    back to the Bangkok administrative area (1,568.737 km^2) per maintainer instruction --
+    this is a WELL-KNOWN PUBLIC FIGURE, not read from a document under raw/capacity in
+    this task, hence RELAYED rather than VERIFIED (see bma_capacity.json key
+    bangkok_administrative_area). Using the whole city as the denominator overstates the
+    true east-zone catchment, so any comparison built from it is an upper bound on
+    capacity relative to a SMALLER true catchment, not a village-scale answer.
+c:
+  value: null
+  unit: fraction (0-1)
+  tag: OPEN
+  note: >
+    Left OPEN per maintainer instruction ("declare as INSTINCT 0.7 only if the maintainer
+    later confirms -- for now leave OPEN"). water_balance.step() therefore REFUSES
+    MISSING_INPUT for this node exactly as it does for the villages; only the separate
+    upper-bound arithmetic (which needs A and C_pump only, not c) is computed below.
+C_pump:
+  value: 335
+  unit: m^3/s
+  tag: MIXED
+  note: >
+    Sum of the four east-zone outlet capacities with individually-sourced values -- see
+    breakdown below. This is a floor/partial sum (only outlets this repo has a source
+    for), not a claim that these are the ONLY outlets serving the zone.
+  breakdown:
+    - name: "สถานีสูบน้ำพระโขนง (main Chao Phraya outlet)"
+      value: 155
+      unit: m^3/s
+      tag: MEASURED
+      source: raw/gapfill/water_station.csv
+    - name: "อุโมงค์พระโขนง"
+      value: 60
+      unit: m^3/s
+      tag: MEASURED
+      source: raw/gapfill/water_station.csv
+    - name: "อุโมงค์บึงหนองบอน"
+      value: 60
+      unit: m^3/s
+      tag: RELAYED
+      source: "matichon/thestandard/komchadluek news coverage"
+    - name: "อุโมงค์แสนแสบ-ลาดพร้าว ส่วนต่อขยาย (สถานีสูบปลายอุโมงค์)"
+      value: 60
+      unit: m^3/s
+      tag: RELAYED
+      source: "ryt9.com news coverage"
+  citywide_range_reference:
+    low: 1200
+    high: 1300
+    unit: m^3/s
+    tag: RELAYED
+    note: >
+      City-wide total pumping capacity as reported in event-time news (three conflicting
+      figures: 1200 / 1230.55 / 1300; the maintainer-asked 1,272.33 was NOT FOUND anywhere)
+      -- shown alongside the 335 m^3/s declared-with-source floor for context, never
+      substituted for it.
+S0:
+  value: null
+  unit: m^3
+  tag: OPEN
+  note: "No declared initial storage for a zone this large -- would need a reservoir/canal-network model this repo does not have."
+tau:
+  value: 3600
+  unit: s
+  tag: VERIFIED
+  note: "One-hour tick, matching the hourly rain-gauge cadence."
+declared_edges: []
+next_step: >
+  หน่วยย่อย (สัมมากร) เมื่อมีพื้นที่/กำลังปั๊ม -- village-level sub-units (sammakorn, ram53)
+  resume once their own catchment area and private-pump capacity are declared
+  (see sammakorn.balance.yaml / ram53.balance.yaml next_step fields).

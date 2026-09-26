@@ -1,0 +1,114 @@
+# Declared inputs for Toledo PROP-FLOOD-03 (water_balance.py) -- node "sammakorn".
+# Proposal, unverified; PR #60 pending. Every field carries a tag; OPEN means the
+# declaration does not exist yet, so step() will REFUSE with the matching reason code
+# rather than silently defaulting.
+node_id: sammakorn
+A:
+  value: null
+  unit: m^2
+  tag: OPEN
+  note: >
+    Catchment area for the village has not been declared anywhere in raw/capacity or
+    the community inputs -- would need a surveyed/GIS boundary of the village drainage
+    catchment, not the OSM road/building footprint alone. UNDECLARED_AREA on step().
+c:
+  value: null
+  unit: fraction (0-1)
+  tag: OPEN
+  note: >
+    Runoff fraction not measured against real rainfall-runoff data for this catchment.
+    Per PROP-FLOOD-03's own honest_caveats, c is INSTINCT until measured -- left OPEN
+    here rather than guessed, so step() REFUSES MISSING_INPUT instead of silently using
+    an unverified number.
+C_pump:
+  value: null
+  unit: m^3/s
+  tag: OPEN
+  note: >
+    ST.SPS.01-04 are the village's own private pump stations (สามัคคี). NOT FOUND in
+    either raw/gapfill/pump_stations_full.json (172 BMA-registered stations) or
+    water_station.csv -- they are private, not registered publicly. See docs/CAPACITY.md
+    section 2.
+S0:
+  value: null
+  unit: m^3
+  tag: OPEN
+  note: >
+    No declared initial storage reading for the village's private retention ponds.
+tau:
+  value: 3600
+  unit: s
+  tag: VERIFIED
+  note: "One-hour tick, matching the hourly rain-gauge cadence used elsewhere in build_data.py."
+declared_edges: []
+reference_only:
+  sammakorn_private_ponds_capacity_m3:
+    value: 227000
+    tag: RELAYED
+    source: komchadluek.net "ผุดแก้มลิงเก็บน้ำ ป้องกันท่วมสัมมากร-รามคำแหง"
+    note: >
+      Reference only, NEVER used as a declared S0 -- a news figure for "capacity when
+      fully developed" is not the same as an observed current storage level, and using
+      it as S0 would silently smuggle an unverified number into the ledger. See
+      site/inputs/capacity/bma_capacity.json key sammakorn_private_ponds_capacity.
+next_step: >
+  Sub-unit balance for sammakorn resumes once a declared catchment area (A) and pump
+  capacity (C_pump) exist -- see the bangkok_east node for the current upper-bound
+  comparison at city-zone level, which does not require these village-level declarations.
+
+# Maintainer decision 2026-09-26: a ROUGH, explicitly-labelled-INSTINCT illustrative
+# estimate for the page's chart ONLY -- this block is NEVER read by
+# build_village_water_balance() / water_balance.step() (which still uses the OPEN A/c
+# above and therefore still REFUSES, unchanged). It exists solely so build_page.py can
+# draw the second chart panel with every input visibly tagged INSTINCT/RELAYED.
+rough_estimate_instinct:
+  area_m2:
+    value: 13699797.66827595
+    tag: "INSTINCT (catchment boundary itself is a judgment call; geometry method is MEASURED)"
+    source: raw/community/sammakorn_area_estimate.json
+    note: >
+      Maintainer's message described this as "4.57 km^2", but the actual file at this
+      path (read directly, not taken on trust) records 13,699,797.66827595 m^2
+      (~13.7 km^2) via a convex hull of named soi roads (OSM), tagged by the file itself
+      as "MEASURED geometry / INSTINCT as catchment". Using the file's real value here,
+      not the pasted 4.57 -- flagging the discrepancy rather than silently picking one.
+  c:
+    value: 0.7
+    tag: INSTINCT
+  pond_capacity_m3:
+    value: 227000
+    tag: RELAYED
+    source: "komchadluek.net (see reference_only.sammakorn_private_ponds_capacity_m3 above)"
+  area_m2_range_for_depth_band:
+    low: 1500000
+    high: 4600000
+    tag: INSTINCT
+    note: >
+      Peer-review addition 2026-09-26: the 13.7 km^2 figure above is the WHOLE village's
+      convex-hull boundary; averaging excess volume over the whole village understates
+      depth in the low-lying sub-area that actually floods. This 1.5-4.6 km^2 range is a
+      rough guess at that flood-prone sub-area (closer to the maintainer's originally
+      pasted, but file-unconfirmed, 4.57 km^2) -- shown as a BAND (not a single line) on
+      the pump0 scenario specifically so the uncertainty is visible rather than picked.
+  S0_m3:
+    value: 249700.0
+    tag: INSTINCT
+    note: "1.10 x pond capacity (\"บึงล้น\" -- pond already over-full at t=0)."
+  pump_scenarios:
+    pump0:
+      q_m3s: 0
+      tag: INSTINCT
+      label_th: "ปั๊มไม่เดิน (ปัจจุบัน)"
+    pump2:
+      q_m3s: 2
+      tag: INSTINCT
+      label_th: "ปั๊ม 2 ลบ.ม./วิ"
+    pump2_gravity:
+      q_m3s: 2
+      q_m3s_after_bkk_c0_end: 3
+      tag: INSTINCT
+      label_th: "ปั๊ม 2 + ไหลตามแรงโน้มถ่วง 1 หลัง กทม.ระบายหมด"
+  caption_th: "ประมาณหยาบ ๆ ทุกตัวแปรติดป้าย -- ซอยต่ำอาจมีน้ำสูงกว่าค่าเฉลี่ยที่แสดงนี้หลายเท่า"
+  decisive_factor_th: >
+    ตัวตัดสินของสัมมากรคือปั๊มบึงเดินหรือไม่ — ถ้าไม่เดิน น้ำในหมู่บ้านไม่ลดแม้ กทม.
+    โดยรวมระบายหมด เพราะคลองรอบบ้านยังสูงกว่าพื้น

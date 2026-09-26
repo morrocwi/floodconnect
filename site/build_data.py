@@ -59,6 +59,10 @@ UPSTREAM_REPORT_PATH = INPUTS / "upstream_watchlist.md"
 RAM53_DIR = INPUTS / "ram53"
 KHLONGCHAN_SOCIAL_PATH = RAM53_DIR / "social_timeline_khlongchan_2026-09-26.md"
 TIDE_DIR = INPUTS / "tide"
+BALANCE_DIR = INPUTS / "areas"                    # *.balance.yaml -- PROP-FLOOD-03 inputs
+CAPACITY_JSON_PATH = INPUTS / "capacity" / "bma_capacity.json"
+OFFICIAL_DIR = INPUTS / "official"
+BRIEFING_PATH = OFFICIAL_DIR / "bma_briefing_2026-09-26_1300.json"
 
 OUT_JSON = HERE / "dist" / "data.json"
 
@@ -77,6 +81,10 @@ try:
     import parsers  # noqa: E402 -- repo-root parsers.py (openmeteo forecast parser, etc.)
 except Exception:  # pragma: no cover - defensive fallback, same posture as lwl below
     parsers = None
+try:
+    import water_balance as wbmod  # noqa: E402 -- Toledo PROP-FLOOD-03 (proposal, PR #60)
+except Exception:  # pragma: no cover - defensive fallback
+    wbmod = None
 try:
     import live_water_level as lwl  # noqa: E402
 except Exception as _lwl_exc:  # pragma: no cover - defensive fallback
@@ -630,7 +638,7 @@ def build_ram53_community(social_md_path: Path) -> list[dict]:
 
 # --- 9c. คลองจั่น/บางกะปิ "เสียงจากอินเทอร์เน็ต" -- คลองจั่นอยู่ในโซ่คลองของราม 53 -----------
 #
-# Added 2026-09-26 (founder request): แฟลตเคหะคลองจั่น is on the same canal chain as ram53
+# Added 2026-09-26 (maintainer request): แฟลตเคหะคลองจั่น is on the same canal chain as ram53
 # (แสนแสบ -> คลองจั่น), so its social-media reports are ram53-relevant community signal, and
 # a nearby-area sub-line for sammakorn too. Same time/place/state-only, no-personal-name
 # discipline as build_ram53_community -- a media OUTLET (สวพ.FM91, PPTV HD 36, The Bangkok
@@ -919,6 +927,10 @@ def build_forecast_short(rows: list[dict], fetched_at_iso: str | None) -> dict:
         "h48_72_mm": _sum(48, 72),
         "first_dry_6h_start": _first_dry_6h_start(rows),
         "fetched_at": fetched_at_iso,
+        # Full hourly series (up to Open-Meteo's forecast_days=3 horizon, ~72h) for the
+        # drain-timeline chart's rain-input term -- `hourly` above only keeps 12 rows for
+        # the short forecast strip; this keeps everything parse_openmeteo_forecast gave us.
+        "hourly_full": [{"time_local": r["time_local"], "mm": round(r["mm"], 2)} for r in rows],
     }
 
 
@@ -973,6 +985,286 @@ def build_capacity_comparison(rain: dict | None, forecast: dict | None) -> dict:
     return out
 
 
+DRAIN_TIMELINE_HORIZON_HOURS = 96
+DRAIN_TIMELINE_SCENARIOS = [("c0", 0.0, "ฝนหยุด (c=0)"), ("c50", 0.5, "สมมติ (c=0.5)"),
+                            ("c100", 1.0, "ขอบบน (c=1)")]
+
+FORECAST_MODELS = ["ecmwf_ifs025", "gfs_seamless", "icon_seamless", "jma_seamless",
+                    "gem_seamless", "meteofrance_seamless"]
+FORECAST_DIR = RAW / "forecast"
+FORECAST_7DAY_COMPARE_PATH = FORECAST_DIR / "forecast_7day_compare.json"
+
+
+def load_forecast_7day_compare() -> dict | None:
+    """Load raw/forecast/forecast_7day_compare.json AS-IS -- it already has per-day
+    per-model mm plus precomputed min/median/max/n (see FORECAST_SPEC.md item 2: "Do not
+    recompute"). Returns None on any read failure -- reference/display data only."""
+    try:
+        return json.loads(FORECAST_7DAY_COMPARE_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def load_multimodel_hourly() -> list[dict]:
+    """Merge the 6 raw/forecast/openmeteo_<model>.json hourly precipitation series by
+    time index (FORECAST_SPEC.md item 1) -> one row per hour:
+    {time_local, median_mm, min_mm, max_mm, jma_mm, n}. A model missing an hour (shorter
+    run) is skipped for that hour's median/min/max, never treated as 0mm."""
+    per_model = {}
+    for model in FORECAST_MODELS:
+        path = FORECAST_DIR / f"openmeteo_{model}.json"
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if parsers is None:
+            continue
+        try:
+            per_model[model] = parsers.parse_openmeteo_forecast(data)
+        except Exception:  # pragma: no cover - defensive
+            continue
+    if not per_model:
+        return []
+
+    by_time: dict[str, dict] = {}
+    order: list[str] = []
+    for model, rows in per_model.items():
+        for r in rows:
+            t = r["time_local"]
+            if t not in by_time:
+                by_time[t] = {}
+                order.append(t)
+            by_time[t][model] = r["mm"]
+
+    out = []
+    for t in order:
+        vals = list(by_time[t].values())
+        if not vals:
+            continue
+        out.append({
+            "time_local": t,
+            "median_mm": round(sorted(vals)[len(vals) // 2] if len(vals) % 2 else
+                                (sorted(vals)[len(vals) // 2 - 1] + sorted(vals)[len(vals) // 2]) / 2, 2),
+            "min_mm": round(min(vals), 2),
+            "max_mm": round(max(vals), 2),
+            "jma_mm": round(by_time[t]["jma_seamless"], 2) if "jma_seamless" in by_time[t] else None,
+            "n": len(vals),
+        })
+    return out
+
+
+def build_drain_timeline(rain: dict | None, forecast: dict | None,
+                          generated_at_utc_iso: str) -> dict | None:
+    """Hourly drain-timeline for the "สมดุลน้ำ" chart -- V0/Q from the BMA's own 26 ก.ย.
+    13:00 briefing (declared, official_report), A from the Bangkok administrative-area
+    fallback (RELAYED, same as build_bangkok_east_upper_bound), hourly rain from the
+    sammakorn Open-Meteo forecast used as a PROXY for the whole city (labelled as such).
+    Three scenarios sweep the undeclared runoff fraction c in {0, 0.5, 1} (per maintainer
+    instruction) -- this is still plain arithmetic on declared/labelled inputs, never a
+    hydraulic model. Returns None if the briefing or forecast is unavailable."""
+    briefing = load_briefing()
+    if not briefing:
+        return None
+    facts = briefing.get("declared_facts") or {}
+    v0 = (facts.get("backlog_volume_phra_nakhon_side") or {}).get("value")
+    q = (facts.get("total_bma_pumping_capacity") or {}).get("value")
+    if v0 is None or not q:
+        return None
+
+    cfg = load_balance_yaml("bangkok_east")
+    a_km2 = _cfg_value(cfg, "A") or 1568.737
+    a_m2 = a_km2 * 1_000_000.0
+    q_per_hour = q * 3600.0
+
+    # 2026-09-26 forecast upgrade: use the 6-model median (FORECAST_SPEC.md) instead of
+    # a single Open-Meteo run for the chart's rain input -- covers the full 96h horizon
+    # (7-day fetch, ~168h) so the grey "no forecast" fallback below rarely triggers now.
+    multimodel = load_multimodel_hourly()
+    n = DRAIN_TIMELINE_HORIZON_HOURS
+    if multimodel:
+        rain_mm = [row["median_mm"] for row in multimodel[:n]]
+        rain_min = [row["min_mm"] for row in multimodel[:n]]
+        rain_max = [row["max_mm"] for row in multimodel[:n]]
+        rain_jma = [row["jma_mm"] if row["jma_mm"] is not None else row["median_mm"]
+                    for row in multimodel[:n]]
+        forecast_coverage_hours = len(multimodel[:n])
+    else:
+        # fall back to the single-station area forecast (pre-upgrade behaviour) if the
+        # 6-model files are unavailable for any reason.
+        hourly = (forecast or {}).get("hourly_full") or []
+        rain_mm = [h.get("mm") or 0.0 for h in hourly[:n]]
+        rain_min = list(rain_mm)
+        rain_max = list(rain_mm)
+        rain_jma = list(rain_mm)
+        forecast_coverage_hours = len(rain_mm)
+    # Peer-review fix 2026-09-26: hours beyond the real forecast used to be silently
+    # padded with 0mm, which the chart could not distinguish from "forecast says no
+    # rain". They are still filled with 0 here (arithmetic needs a number), but
+    # `forecast_coverage_hours` tells build_page.py exactly where the real data ends, so
+    # the chart can grey-shade the unforecast region and label it "ไม่มีพยากรณ์ —
+    # สมมติฝน 0" instead of drawing it as an ordinary forecast line.
+    for series in (rain_mm, rain_min, rain_max, rain_jma):
+        while len(series) < n:
+            series.append(0.0)
+
+    scenarios = {}
+    for key, c, label_th, rain_series in [
+        ("c0", 0.0, "ฝนหยุด (c=0)", rain_mm),
+        ("c50", 0.5, "สมมติ (c=0.5)", rain_mm),
+        ("c100", 1.0, "ขอบบน (c=1)", rain_mm),
+        ("d_jma", 0.5, "แบบจำลองที่ฝนมากที่สุด (JMA, c=0.5)", rain_jma),
+    ]:
+        values = []
+        v = v0
+        end_hour = None
+        for h in range(n + 1):
+            if v <= 0 and end_hour is None:
+                end_hour = h
+            v_display = 0.0 if end_hour is not None else v
+            values.append(round(v_display, 1))
+            if h < n and end_hour is None:
+                inflow = (rain_series[h] / 1000.0) * a_m2 * c
+                v = v - q_per_hour + inflow
+        end_time_iso = None
+        if end_hour is not None:
+            try:
+                t0 = datetime.datetime.fromisoformat(generated_at_utc_iso)
+                end_time_iso = (t0 + datetime.timedelta(hours=end_hour)).isoformat()
+            except ValueError:
+                end_time_iso = None
+        scenarios[key] = {"label_th": label_th, "c": c, "values_m3": values,
+                           "end_hour": end_hour, "end_time_utc": end_time_iso}
+
+    return {
+        "generated_at_utc": generated_at_utc_iso,
+        "horizon_hours": n,
+        "forecast_coverage_hours": forecast_coverage_hours,
+        "v0_m3": v0,
+        "q_m3s": q,
+        "area_km2": a_km2,
+        "rain_mm_hourly": rain_mm[:n],
+        "rain_min_hourly": rain_min[:n],
+        "rain_max_hourly": rain_max[:n],
+        "rain_source_note_th": ("ฝนมัธยฐาน (median) จาก 6 แบบจำลองเปิด (ECMWF/GFS/ICON/JMA/GEM/"
+                                 "Météo-France) ที่จุดสัมมากร ใช้เป็นตัวแทนของทั้งเมือง (proxy)"),
+        "scenarios": scenarios,
+        "footnote_th": ("เลขคณิตบนค่าที่ประกาศ + พยากรณ์แบบจำลองเปิด · ไม่ใช่แบบจำลองชลศาสตร์ · "
+                         "ไม่รวมน้ำจากจังหวัดรอบ · c ยังไม่ประกาศ"),
+        "sammakorn_note_th": ("สัมมากรอยู่ท้ายลำดับโซน (ทับช้างล้น, ปั๊มบึงไม่เดิน, ประตูประเวศล็อก) "
+                               "จึงน่าจะพ้นน้ำช้ากว่าค่าเฉลี่ยเมือง"),
+        "sammakorn_note_tag": "INSTINCT",
+    }
+
+
+def build_sammakorn_rough_estimate(drain_timeline: dict | None) -> dict | None:
+    """ROUGH, explicitly-INSTINCT illustrative village-level estimate for the chart's
+    bottom panel only -- maintainer decision 2026-09-26. NEVER used by
+    build_village_water_balance()/water_balance.step(), which stays on the OPEN A/c in
+    sammakorn.balance.yaml's top-level fields and therefore keeps REFUSING, unchanged.
+    Every input here is read from sammakorn.balance.yaml's `rough_estimate_instinct`
+    block, itself tagged per-field INSTINCT/RELAYED."""
+    if not drain_timeline:
+        return None
+    cfg = (load_balance_yaml("sammakorn") or {}).get("rough_estimate_instinct")
+    if not cfg:
+        return None
+
+    area_m2 = (cfg.get("area_m2") or {}).get("value")
+    c = (cfg.get("c") or {}).get("value")
+    pond = (cfg.get("pond_capacity_m3") or {}).get("value")
+    s0 = (cfg.get("S0_m3") or {}).get("value")
+    if None in (area_m2, c, pond, s0):
+        return None
+
+    rain_mm = drain_timeline.get("rain_mm_hourly") or []
+    n = drain_timeline.get("horizon_hours") or len(rain_mm)
+    bkk_c0_end_hour = ((drain_timeline.get("scenarios") or {}).get("c0") or {}).get("end_hour")
+
+    pump_cfg = cfg.get("pump_scenarios") or {}
+    scenarios = {}
+    for key, pcfg in pump_cfg.items():
+        q0 = pcfg.get("q_m3s") or 0.0
+        q_after = pcfg.get("q_m3s_after_bkk_c0_end")
+        values_cm = []
+        s = s0
+        for h in range(n + 1):
+            excess = max(s - pond, 0.0)
+            depth_cm = (excess / area_m2) * 100.0
+            values_cm.append(round(depth_cm, 2))
+            if h < n:
+                q = q0
+                if q_after is not None and bkk_c0_end_hour is not None and h >= bkk_c0_end_hour:
+                    q = q_after
+                inflow = (rain_mm[h] / 1000.0) * area_m2 * c if h < len(rain_mm) else 0.0
+                s = max(s + inflow - q * 3600.0, 0.0)
+        scenarios[key] = {"label_th": pcfg.get("label_th") or key, "q_m3s": q0,
+                           "values_cm": values_cm}
+
+    # pump0 depth BAND using the low-lying sub-area range (peer-review addition
+    # 2026-09-26) -- a smaller area gives a LARGER average depth, so area_low ->
+    # depth_high and area_high -> depth_low.
+    band = None
+    area_range = cfg.get("area_m2_range_for_depth_band") or {}
+    a_low, a_high = area_range.get("low"), area_range.get("high")
+    pump0_cfg = pump_cfg.get("pump0") or {}
+    if a_low and a_high:
+        def _band_series(area_for_band):
+            values = []
+            s = s0
+            for h in range(n + 1):
+                excess = max(s - pond, 0.0)
+                values.append(round((excess / area_for_band) * 100.0, 2))
+                if h < n:
+                    inflow = (rain_mm[h] / 1000.0) * area_for_band * c if h < len(rain_mm) else 0.0
+                    s = max(s + inflow - (pump0_cfg.get("q_m3s") or 0.0) * 3600.0, 0.0)
+            return values
+
+        band = {"depth_high_cm": _band_series(a_low), "depth_low_cm": _band_series(a_high),
+                "area_low_m2": a_low, "area_high_m2": a_high}
+
+    return {
+        "horizon_hours": n,
+        "area_m2": area_m2, "c": c, "pond_capacity_m3": pond, "s0_m3": s0,
+        "scenarios": scenarios,
+        "pump0_depth_band": band,
+        "caption_th": cfg.get("caption_th"),
+        "decisive_factor_th": cfg.get("decisive_factor_th"),
+        "area_note_th": ((cfg.get("area_m2") or {}).get("note") or ""),
+        "rain_mm_hourly": rain_mm[:n],
+        "forecast_coverage_hours": drain_timeline.get("forecast_coverage_hours"),
+    }
+
+
+# --- BMA governor briefing 2026-09-26 13:00 (official_report) --------------------------
+
+def build_briefing_summary(briefing: dict | None) -> dict | None:
+    """Pull just the fields build_page.py needs for the hero line, the forecast section's
+    'ฝนเบาบางลงช่วงบ่าย-เย็น' line, and the help section's shelters/parking/hotline/school
+    additions -- all declared official_report facts from the 26 ก.ย. 2569 13:00 briefing,
+    never rephrased into a command (no ห้าม/ไม่ต้อง/ไม่ควร)."""
+    if not briefing:
+        return None
+    facts = briefing.get("declared_facts") or {}
+
+    def v(key):
+        return (facts.get(key) or {}).get("value")
+
+    return {
+        "briefing_time_bkk": briefing.get("briefing_time_bkk"),
+        "hero_line_th": ("กทม. แถลง 13:00: สถานการณ์ทรงตัว ถ้าไม่มีฝนใหม่ ทยอยคลี่คลาย "
+                          "ใช้เวลาระบายน้ำค้าง 2-3 วัน"),
+        "weather_system_note_th": v("weather_system_note"),
+        "canals_to_watch": v("canals_to_watch") or [],
+        "roads_affected_count": v("roads_affected_count"),
+        "shelters": v("shelters"),
+        "bedridden_patients_moved": v("bedridden_patients_moved"),
+        "hotlines": v("hotlines") or [],
+        "temporary_parking": v("temporary_parking") or [],
+        "monday_note_th": v("monday_2026-09-28"),
+        "disaster_area_declared": v("disaster_area_declared"),
+    }
+
+
 # --- Sources ---------------------------------------------------------------------------
 
 def build_sources(rain: dict | None, canal_path, pump_path, rain_path, flood_road_path,
@@ -1011,6 +1303,180 @@ def build_sources(rain: dict | None, canal_path, pump_path, rain_path, flood_roa
             "trust_tier": "third_party_forecast",
         })
     return out
+
+
+# --- Water balance (Toledo PROP-FLOOD-03, proposal, PR #60 pending) --------------------
+
+def load_capacity_records() -> list[dict]:
+    """Load site/inputs/capacity/bma_capacity.json's curated records list. Returns []
+    on any read failure -- this is reference data for the page, never load-bearing for
+    the rest of the build."""
+    try:
+        data = json.loads(CAPACITY_JSON_PATH.read_text(encoding="utf-8"))
+        return data.get("records") or []
+    except (OSError, json.JSONDecodeError):
+        return []
+
+
+def load_briefing() -> dict | None:
+    """Load site/inputs/official/bma_briefing_2026-09-26_1300.json (the 2026-09-26 13:00
+    governor briefing) -- declared official_report facts, url OPEN (one WebSearch did not
+    turn up a direct bangkok.go.th/prbangkok/Facebook URL, only corroborating news).
+    Returns None on any read failure -- this is reference/hero content, never load-bearing
+    for the rest of the build."""
+    try:
+        return json.loads(BRIEFING_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def load_balance_yaml(node_id: str) -> dict:
+    """Load site/inputs/areas/<node_id>.balance.yaml. Returns {} (never raises) if
+    PyYAML is unavailable or the file is missing/unparseable -- the caller treats an
+    empty dict the same as "every declared field missing", which is the honest outcome."""
+    path = BALANCE_DIR / f"{node_id}.balance.yaml"
+    if not HAVE_YAML or not path.is_file():
+        return {}
+    try:
+        return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except Exception:  # pragma: no cover - defensive, malformed yaml never crashes the build
+        return {}
+
+
+def _cfg_value(cfg: dict, key: str):
+    """Pull a declared scalar value out of one field of a *.balance.yaml doc, e.g.
+    cfg['A'] == {'value': 1568.737, 'tag': 'RELAYED', ...} -> 1568.737, or None if the
+    field/value is absent (an honest OPEN declaration)."""
+    field_cfg = cfg.get(key)
+    if not isinstance(field_cfg, dict):
+        return None
+    return field_cfg.get("value")
+
+
+def build_village_water_balance(node_id: str, generated_at_utc_iso: str,
+                                 rain: dict | None) -> dict:
+    """Run water_balance.step() for one village node (sammakorn/ram53) using ONLY the
+    declared inputs in its *.balance.yaml. Both village yamls declare A/c/C_pump/S0 as
+    OPEN today, so this always REFUSES -- that REFUSED outcome, with its reason codes,
+    is exactly what the page's "สมดุลน้ำ" section must show (never a guessed number)."""
+    cfg = load_balance_yaml(node_id)
+    if wbmod is None:
+        return {"status": "REFUSED", "reason_codes": ["MISSING_INPUT"],
+                "inputs_present": [], "inputs_missing": ["water_balance module unavailable"]}
+
+    p_mm = (rain or {}).get("mm_1h")
+    p_m = (p_mm / 1000.0) if p_mm is not None else None
+
+    inp = wbmod.WaterBalanceInputs(
+        node_id=node_id, tick_index=0, tick_time=generated_at_utc_iso,
+        S0=_cfg_value(cfg, "S0"), A=_cfg_value(cfg, "A"), c=_cfg_value(cfg, "c"),
+        tau=_cfg_value(cfg, "tau") or 3600,
+        C_pump=_cfg_value(cfg, "C_pump"),
+        P=p_m, P_observed_at=(rain or {}).get("observed_at"),
+        gate_flag=None, gate_flag_observed_at=None,
+        Q_out_meas=None, Q_out_observed_at=None,
+        inflow_edges=[], declared_edges=set(),
+    )
+    res = wbmod.step(inp, S_prev=None)
+    return res.as_dict()
+
+
+def build_bangkok_east_upper_bound(rain: dict | None, forecast: dict | None) -> dict:
+    """Bangkok-wide/east-zone UPPER-BOUND arithmetic (maintainer decision 2026-09-26):
+    rain-input volume (P * A, declared area only, NOT the water_balance.py ledger --
+    runoff fraction c and storage S0 are OPEN for this node, so the actual ledger REFUSES,
+    see build_village_water_balance-style call below) vs declared outflow capacity per
+    hour, both in million m^3, plus the ratio. This is plain arithmetic on two declared
+    quantities (A, C_pump) -- never a hydraulic model, never a substitute for
+    water_balance.step()."""
+    cfg = load_balance_yaml("bangkok_east")
+    if wbmod is None or not cfg:
+        return {"available": False, "reason": "bangkok_east.balance.yaml or water_balance module unavailable"}
+
+    a_km2 = _cfg_value(cfg, "A")
+    c_pump = _cfg_value(cfg, "C_pump")
+    c_pump_cfg = cfg.get("C_pump") or {}
+    breakdown = c_pump_cfg.get("breakdown") or []
+    citywide_ref = c_pump_cfg.get("citywide_range_reference") or {}
+
+    # Also run the actual PROP-FLOOD-03 ledger for this node -- c is OPEN, so this
+    # REFUSES exactly like the villages; shown alongside the upper-bound arithmetic so
+    # the page never confuses the two.
+    ledger = build_village_water_balance("bangkok_east", rain and rain.get("observed_at")
+                                          or datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                                          rain)
+
+    if a_km2 is None or c_pump is None:
+        return {"available": False, "reason": "A or C_pump not declared", "ledger": ledger}
+
+    a_m2 = a_km2 * 1_000_000.0
+    mm_1h = (rain or {}).get("mm_1h")
+    mm_24h_forecast = (forecast or {}).get("next24h_mm") if (forecast or {}).get("available") else None
+
+    def volume_million_m3(mm):
+        if mm is None:
+            return None
+        return round((mm / 1000.0) * a_m2 / 1_000_000.0, 3)
+
+    rain_now_vol = volume_million_m3(mm_1h)
+    rain_forecast_vol = volume_million_m3(mm_24h_forecast)
+    outflow_per_hour_m3 = c_pump * 3600.0
+    outflow_per_hour_million_m3 = round(outflow_per_hour_m3 / 1_000_000.0, 3)
+
+    ratio_now = (round(rain_now_vol / outflow_per_hour_million_m3, 3)
+                 if (rain_now_vol is not None and outflow_per_hour_million_m3) else None)
+
+    briefing = load_briefing()
+    briefing_arithmetic = None
+    if briefing:
+        facts = briefing.get("declared_facts") or {}
+        v_backlog = (facts.get("backlog_volume_phra_nakhon_side") or {}).get("value")
+        q_official = (facts.get("total_bma_pumping_capacity") or {}).get("value")
+        if v_backlog is not None and q_official:
+            outflow_per_hour_m3_official = q_official * 3600.0
+            hours_if_no_new_rain = round(v_backlog / outflow_per_hour_m3_official, 1)
+            days_if_no_new_rain = round(hours_if_no_new_rain / 24.0, 1)
+            extra_forecast_vol_m3 = ((rain_forecast_vol * 1_000_000.0)
+                                      if rain_forecast_vol is not None else 0.0)
+            hours_with_forecast_rain = round(
+                (v_backlog + extra_forecast_vol_m3) / outflow_per_hour_m3_official, 1)
+            days_with_forecast_rain = round(hours_with_forecast_rain / 24.0, 1)
+            briefing_arithmetic = {
+                "backlog_volume_m3": v_backlog,
+                "pumping_capacity_m3s": q_official,
+                "outflow_per_hour_m3": outflow_per_hour_m3_official,
+                "hours_if_no_new_rain": hours_if_no_new_rain,
+                "days_if_no_new_rain": days_if_no_new_rain,
+                "hours_range_with_forecast_rain": [hours_if_no_new_rain, hours_with_forecast_rain],
+                "days_range_with_forecast_rain": [days_if_no_new_rain, days_with_forecast_rain],
+                "briefing_stated_days": (facts.get("estimated_drain_time_if_no_new_rain") or {}).get("value"),
+                "caveat_th": ("52 ชม./2.2 วัน มาจากเลข V=223 ล้าน ลบ.ม. และ Q=1,200 ลบ.ม./วิ ที่ กทม. "
+                              "แถลงเองเมื่อ 13:00 -- เป็นเลขคณิตธรรมดา (V หาร Q) ไม่ใช่แบบจำลอง; "
+                              "ช่วงบนของช่วง (with forecast rain) บวกฝนที่ Open-Meteo (third-party) "
+                              "คาดว่าจะตกอีกใน 24 ชม.ข้างหน้าเข้าไปเป็นปริมาณน้ำเพิ่มเติม (upper bound, "
+                              "ไม่ใช่ตัวเลขที่ กทม. แถลง)"),
+            }
+
+    return {
+        "available": True,
+        "area_km2": a_km2,
+        "area_tag": (cfg.get("A") or {}).get("tag"),
+        "c_pump_m3s": c_pump,
+        "c_pump_breakdown": breakdown,
+        "citywide_range_reference": citywide_ref,
+        "rain_now_mm_1h": mm_1h,
+        "rain_now_volume_million_m3": rain_now_vol,
+        "rain_forecast_24h_mm": mm_24h_forecast,
+        "rain_forecast_volume_million_m3": rain_forecast_vol,
+        "outflow_capacity_per_hour_million_m3": outflow_per_hour_million_m3,
+        "ratio_rain_now_vs_outflow_per_hour": ratio_now,
+        "briefing_arithmetic": briefing_arithmetic,
+        "ledger": ledger,
+        "next_step_th": (cfg.get("next_step") or "").strip(),
+        "caveat_th": ("สัดส่วนไหลบ่า (c) และปริมาณน้ำเก็บเริ่มต้น (S0) ยังไม่ได้ประกาศ "
+                      "— ตัวเลขนี้เป็นแค่การเทียบ 'ปริมาณฝนที่ตกลงบนพื้นที่' กับ "
+                      "'กำลังสูบสูงสุดที่ประกาศแล้ว' (upper bound) ไม่ใช่ผลลัพธ์สมดุลน้ำจริง"),
+    }
 
 
 # --- Area builder ---------------------------------------------------------------------
@@ -1081,6 +1547,8 @@ def build_area_data(*, area_id: str, label: str, centre_lat: float, centre_lon: 
                              community_id=("community_reports_ram53" if is_ram53 else "community_reports"),
                              forecast=forecast, forecast_path=forecast_path)
 
+    water_balance = build_village_water_balance(area_id, generated_at_utc_iso, rain)
+
     return {
         "label": label,
         "centre": {"lat": centre_lat, "lon": centre_lon, "label": label},
@@ -1102,6 +1570,7 @@ def build_area_data(*, area_id: str, label: str, centre_lat: float, centre_lon: 
         "staleness": staleness,
         "community": community,
         "community_label": community_label,
+        "water_balance": water_balance,
         # Newest 3 คลองจั่น/บางกะปิ social-media reports, sammakorn only -- ram53 already has
         # the full khlongchan set folded into `community` above (it's on ram53's own canal
         # chain), so showing it again here would duplicate the same rows.
@@ -1161,6 +1630,30 @@ def main():
                            "เนื่องจากไม่สามารถดึงพยากรณ์อย่างเป็นทางการจากกรมอุตุนิยมวิทยา "
                            "(TMD) ได้ในระบบอัตโนมัตินี้ (ติด TLS/ต้องใช้ API key)")
 
+    # Bangkok-wide/east-zone water-balance upper-bound (maintainer decision 2026-09-26):
+    # runs FIRST, ahead of the village sub-units, using sammakorn's own rain/forecast
+    # readout as the representative gauge for the zone (labelled as such in the output).
+    bangkok_east = build_bangkok_east_upper_bound(sammakorn.get("rain"), sammakorn.get("forecast"))
+    bangkok_east["rain_source_note_th"] = ("ใช้ค่าฝนจากสถานีที่ใกล้สัมมากรที่สุดเป็นตัวแทนของโซน "
+                                            "— ไม่ใช่ค่าเฉลี่ยทั้งโซนตะวันออก")
+
+    briefing_raw = load_briefing()
+    briefing_summary = build_briefing_summary(briefing_raw)
+    drain_timeline = build_drain_timeline(sammakorn.get("rain"), sammakorn.get("forecast"),
+                                           generated_at_utc_iso)
+    sammakorn_rough = build_sammakorn_rough_estimate(drain_timeline)
+    if briefing_raw:
+        all_sources_briefing = {
+            "id": "bma_governor_briefing", "agency_th": briefing_raw.get("agency_th"),
+            "url": briefing_raw.get("url"), "fetched_at": fetched_at_of(BRIEFING_PATH),
+            "trust_tier": "official_report",
+        }
+    else:
+        all_sources_briefing = None
+    if all_sources_briefing and all_sources_briefing["id"] not in seen_ids:
+        seen_ids.add(all_sources_briefing["id"])
+        all_sources.append(all_sources_briefing)
+
     data = {
         "generated_at_bkk": generated_at_bkk,
         "epistemic_note": "เป็นการอ่านค่าจากหน่วยงาน ไม่ใช่การพยากรณ์",
@@ -1168,6 +1661,12 @@ def main():
         "forecast": sammakorn["forecast"],  # top-level default/back-compat = sammakorn's
         "forecast_caveat_th": forecast_caveat_th,
         "all_sources": all_sources,
+        "bangkok_east_water_balance": bangkok_east,
+        "bma_briefing": briefing_summary,
+        "capacity_records": load_capacity_records(),
+        "drain_timeline": drain_timeline,
+        "sammakorn_rough": sammakorn_rough,
+        "forecast_7day_compare": load_forecast_7day_compare(),
         "areas": {"sammakorn": sammakorn, "ram53": ram53},
     }
 

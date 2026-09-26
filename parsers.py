@@ -579,9 +579,15 @@ def parse_tide_table_text(text: str) -> list:
 # sources/registry.yaml. `timezone=Asia/Bangkok` on the request makes every `hourly.time[i]`
 # already a Bangkok-local "YYYY-MM-DDTHH:MM" string, so no timezone math happens here.
 
+# forecast_days=5 (2026-09-26, peer-review fix): the drain-timeline chart's 96h horizon
+# needs a forecast that actually reaches +96h; forecast_days=3 (~72h) left the last ~24h
+# of the chart with no real forecast at all, which build_data.py's build_drain_timeline
+# used to silently pad with 0mm. It no longer does that silently -- see
+# `drain_timeline["forecast_coverage_hours"]` / the chart's grey "ไม่มีพยากรณ์" band -- but
+# requesting the extra 2 days here means most runs won't hit that fallback at all.
 OPENMETEO_FORECAST_URL_TMPL = (
     "https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}"
-    "&hourly=precipitation,precipitation_probability&timezone=Asia%2FBangkok&forecast_days=3"
+    "&hourly=precipitation,precipitation_probability&timezone=Asia%2FBangkok&forecast_days=5"
 )
 
 

@@ -422,6 +422,30 @@
 
   .empty-note{ color: var(--text-muted); font-style: normal; }
 
+  /* Water-balance section (Toledo PROP-FLOOD-03, proposal) -- 2026-09-26 */
+  .tag-pill{ display:inline-block; padding:1px 7px; border-radius:10px; font-size:0.82rem;
+             font-weight:600; background:#eef1f4; color:#3a4250; white-space:nowrap; }
+  .tag-verified, .tag-measured{ background:#e3f3e9; color:#1e6b3f; }
+  .tag-relayed{ background:#fdf0dd; color:#8a5a10; }
+  .tag-open, .tag-none{ background:#f1eef6; color:#5b4a86; }
+  .tag-official_report, .tag-official_forecast{ background:#e4edfb; color:#20488f; }
+  .drain-timeline-svg, .village-panel-svg{ width:100%; height:auto; display:block; }
+  .drain-legend{ list-style:none; padding:0; margin:8px 0; display:flex; flex-wrap:wrap; gap:10px 16px; }
+  .drain-legend li{ display:flex; align-items:center; gap:6px; font-size:0.9rem; }
+  .legend-swatch{ display:inline-block; width:14px; height:4px; border-radius:2px; }
+  .waterbalance-caveat{ background:#fdf6e3; border:1px solid #eadfb4; border-radius:8px;
+                         padding:8px 12px; font-size:0.92rem; margin-bottom:10px; }
+  .mini-capacity-table, .daily-rain-table{ width:100%; border-collapse:collapse; font-size:0.92rem; }
+  .mini-capacity-table td, .mini-capacity-table th,
+  .daily-rain-table td, .daily-rain-table th{ padding:5px 8px; border-bottom:1px solid var(--border); text-align:left; }
+  .wb-inputs-grid{ display:flex; flex-wrap:wrap; gap:0 24px; }
+  .wb-inputs-grid ul{ list-style:none; padding:0; margin:4px 0; }
+  .wb-inputs-present li.ok{ color:#1e6b3f; }
+  .wb-inputs-missing li.missing{ color:#a4373a; }
+  .wb-refused-sentence{ font-size:1rem; }
+  .flag-line{ color:#a4373a; }
+  .briefing-hero{ font-weight:600; margin:4px 0; }
+
   @media (max-width:400px){
     .topbar{ flex-wrap:wrap; }
   }
@@ -455,6 +479,7 @@
         <p class="status-place" id="status-place-__AREA__">{{HEADING_LABEL}}</p>
         <p class="status-word" id="banner-word-__AREA__">{{STATUS_WORD}}</p>
       </div>
+      <div class="briefing-hero-wrap" id="briefing-hero-__AREA__"{{BRIEFING_HERO_HIDDEN}}>{{BRIEFING_HERO_HTML}}</div>
       <p class="now" id="banner-now-__AREA__">ตอนนี้ อาจทำได้: {{NOW_LINE}}</p>
       <p class="safety-fact" id="banner-safety-fact-__AREA__">{{SAFETY_FACT}}</p>
       <p class="watch" id="banner-watch-__AREA__">{{STATUS_WATCH}}</p>
@@ -621,6 +646,14 @@
           <strong>ดูแลเป็นพิเศษ:</strong> ผู้สูงอายุ ผู้ป่วยติดเตียง เด็กเล็ก ผู้ใช้เครื่องมือแพทย์ที่ต้องใช้ไฟ — ย้ายขึ้นชั้นบน แจ้งเพื่อนบ้าน เตรียมยา 3–5 วัน ระวังไฟดูด/น้ำสกปรก
         </div>
         <p class="helpers-note">ช่วยกันหลายฝ่าย: นิติบุคคลหมู่บ้าน/ชุมชน · สำนักงานเขต (กระสอบทราย) · สำนักการระบายน้ำ (ปั๊ม) · ถ้าคุณเป็นพยาบาล/อสส./จิตอาสาในพื้นที่ แจ้งผู้นำชุมชน</p>
+        <div id="briefing-help-__AREA__">{{BRIEFING_HELP_HTML}}</div>
+      </div>
+    </details>
+
+    <details id="waterbalance-details-__AREA__">
+      <summary><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 8 4 11.5 4 15.5A8 8 0 0 0 20 15.5C20 11.5 16 8 12 2Z"/></svg><span>สมดุลน้ำ (สูตรที่ลงทะเบียน PROP-FLOOD-03, ยังเป็นข้อเสนอ)</span></summary>
+      <div class="tier-body">
+        <div id="waterbalance-section-__AREA__">{{WATERBALANCE_SECTION_HTML}}</div>
       </div>
     </details>
 

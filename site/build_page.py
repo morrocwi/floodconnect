@@ -849,7 +849,7 @@ def build_worsen_better_html(area, st, pc, now_dt, forecast):
 
 # ---------------- optional advice section (5 short suggestions) --------------
 
-# SAFETY_FACT (2026-09-26, founder-requested after the คลองจั่น electrocution death):
+# SAFETY_FACT (2026-09-26, maintainer-requested after the คลองจั่น electrocution death):
 # stated as a FACT, never a command -- never "ไม่ต้อง/ห้าม/ไม่ควร".
 SAFETY_FACT = ("⚠ วันนี้มีผู้เสียชีวิตจากไฟฟ้าดูดในน้ำท่วมที่แฟลตคลองจั่น (ข่าว 26 ก.ย.) "
                "— ไฟฟ้ากับน้ำท่วมอันตรายถึงชีวิต")
@@ -871,9 +871,603 @@ def build_advice_html():
     return f'<ul class="advice-list">{items}</ul>'
 
 
+# ---------------- water balance (Toledo PROP-FLOOD-03, proposal, PR #60 pending) --------
+
+_TAG_LABEL_TH = {"VERIFIED": "ยืนยันแล้ว", "MEASURED": "วัดจากไฟล์ข้อมูล", "RELAYED": "ข่าว/บุคคลที่สาม",
+                 "OPEN": "ยังไม่มีคำตอบ", "official_report": "ทางการแถลง"}
+
+
+def _tag_pill(tag):
+    label = _TAG_LABEL_TH.get(tag, tag or "")
+    cls = (tag or "").lower()
+    return f'<span class="tag-pill tag-{esc(cls)}">{esc(label)}</span>'
+
+
+def build_capacity_mini_table(records):
+    """'ขีดความสามารถ กทม.' mini-table -- VERIFIED/MEASURED rows first, RELAYED/OPEN
+    marked clearly. `records` is data.json's `capacity_records` (bma_capacity.json's own
+    curated list, unchanged)."""
+    if not records:
+        return '<p class="small">ไม่มีข้อมูลขีดความสามารถ กทม. ที่โหลดได้</p>'
+    order = {"VERIFIED": 0, "MEASURED": 1, "RELAYED": 2, "OPEN": 3}
+    rows = sorted(records, key=lambda r: order.get(r.get("tag"), 9))
+    # Size-budget fix 2026-09-26: capped at 16 rows (VERIFIED/MEASURED always included
+    # first by the sort above) -- the full 32-row list lives in docs/CAPACITY.md and in
+    # the standalone dist/data.json; this mini-table is a summary, not the record.
+    shown, rest = rows[:10], rows[10:]
+    out = ['<table class="mini-capacity-table"><thead><tr><th>รายการ</th><th>ค่า</th>'
+           '<th>สถานะ</th></tr></thead><tbody>']
+    for r in shown:
+        value = r.get("value")
+        unit = r.get("unit") or ""
+        val_text = "ไม่พบ/OPEN" if value is None else f"{value} {esc(unit)}"
+        out.append(f'<tr><td>{esc(r.get("key"))}</td>'
+                    f'<td>{val_text}</td><td>{_tag_pill(r.get("tag"))}</td></tr>')
+    out.append("</tbody></table>")
+    if rest:
+        out.append(f'<p class="small">อีก {len(rest)} รายการ (ส่วนใหญ่ RELAYED/OPEN) — '
+                    f'ดู <code>docs/CAPACITY.md</code></p>')
+    return "".join(out)
+
+
+def build_bangkok_east_html(bangkok_east):
+    """Bangkok-wide/east-zone upper-bound block -- maintainer decision 2026-09-26: shown
+    ABOVE the village-level blocks. Plain arithmetic on declared inputs (A, C_pump, and
+    the BMA's own 26 ก.ย. 13:00 briefing V/Q), never a hydraulic model -- every number
+    here says so next to itself."""
+    if not bangkok_east or not bangkok_east.get("available"):
+        return '<p class="small">ยังไม่มีข้อมูลภาพรวมกรุงเทพฯ/โซนตะวันออก</p>'
+
+    parts = ['<div class="fcard waterbalance-city">',
+             '<h3>ภาพรวมกรุงเทพฯ / โซนตะวันออก (คำนวณจากตัวเลขที่ประกาศแล้วเท่านั้น)</h3>']
+
+    ba = bangkok_east.get("briefing_arithmetic")
+    if ba:
+        days_range = ba.get("days_range_with_forecast_rain") or [ba.get("days_if_no_new_rain")]
+        low, high = days_range[0], days_range[-1]
+        range_text = f"{low:.1f}" if low == high else f"{low:.1f}–{high:.1f}"
+        parts.append(
+            '<p><strong>เวลาที่คาดว่าจะระบายน้ำค้างหมด</strong> (จากตัวเลขที่ กทม. แถลงเอง 13:00): '
+            f'{ba["backlog_volume_m3"]:,.0f} ลบ.ม. ÷ ({ba["pumping_capacity_m3s"]:,.0f} ลบ.ม./วิ × 3,600) '
+            f'= {ba["outflow_per_hour_m3"]:,.0f} ลบ.ม./ชม. ≈ '
+            f'<span class="num">{ba["hours_if_no_new_rain"]:.0f} ชม. (≈{ba["days_if_no_new_rain"]:.1f} วัน)</span> '
+            f'ถ้าฝนหยุดและสูบเต็มกำลัง — ตรงกับที่ กทม. แถลง {esc(ba.get("briefing_stated_days"))} '
+            f'{_tag_pill("official_report")}</p>'
+            f'<p class="small">รวมฝนที่ยังจะตกอีก (Open-Meteo คาด 24 ชม. ข้างหน้า, third-party, upper bound): '
+            f'ช่วงเวลา {esc(range_text)} วัน — {esc(ba.get("caveat_th"))}</p>'
+        )
+
+    a_km2 = bangkok_east.get("area_km2")
+    c_pump = bangkok_east.get("c_pump_m3s")
+    parts.append(
+        f'<p class="small">พื้นที่ที่ใช้คำนวณ: {a_km2:,.1f} ตร.กม. {_tag_pill(bangkok_east.get("area_tag"))} '
+        f'(ยังไม่มีตัวเลขพื้นที่รับน้ำเฉพาะโซนตะวันออก จึงใช้พื้นที่กรุงเทพฯ ทั้งหมดแทน — เป็น upper bound '
+        f'ที่กว้างกว่าโซนจริง) · กำลังสูบที่มีแหล่งอ้างอิงรวม {c_pump:,.0f} ลบ.ม./วินาที '
+        f'(พระโขนง 155 {_tag_pill("MEASURED")}, อุโมงค์พระโขนง 60 {_tag_pill("MEASURED")}, '
+        f'บึงหนองบอน 60 {_tag_pill("RELAYED")}, แสนแสบ-ลาดพร้าว 60 {_tag_pill("RELAYED")}) '
+        f'เทียบกำลังสูบรวมทั้งเมืองที่รายงาน 1,200-1,300 ลบ.ม./วินาที {_tag_pill("RELAYED")}</p>'
+    )
+
+    rain_now_vol = bangkok_east.get("rain_now_volume_million_m3")
+    outflow_hr = bangkok_east.get("outflow_capacity_per_hour_million_m3")
+    if rain_now_vol is not None and outflow_hr is not None:
+        ratio = bangkok_east.get("ratio_rain_now_vs_outflow_per_hour")
+        parts.append(
+            f'<p>ฝนที่ตกลงบนพื้นที่ต่อชั่วโมง ≈ <span class="num">{rain_now_vol:.2f}</span> ล้าน ลบ.ม. '
+            f'เทียบสูบออกได้สูงสุด ≈ <span class="num">{outflow_hr:.2f}</span> ล้าน ลบ.ม./ชม. '
+            f'({esc(bangkok_east.get("rain_source_note_th"))})'
+            f'{f" — อัตราส่วน {ratio:.1f} เท่า" if ratio is not None else ""}</p>'
+        )
+    parts.append('<p class="small"><em>สัดส่วนไหลบ่า (c) และน้ำเก็บเริ่มต้น (S0) ยังไม่ได้ประกาศ '
+                 '— นี่คือการเทียบตัวเลขต้นน้ำ/ปลายน้ำ (upper bound) ไม่ใช่ผลลัพธ์สมการสมดุลน้ำที่แท้จริง</em></p>')
+    next_step = bangkok_east.get("next_step_th")
+    if next_step:
+        parts.append(f'<p class="small">ขั้นต่อไป: {esc(next_step)}</p>')
+    parts.append("</div>")
+    return "".join(parts)
+
+
+def build_village_waterbalance_html(water_balance, labels):
+    """This area's own PROP-FLOOD-03 ledger status -- REFUSED with reason codes today
+    (village-level catchment/pump-capacity are not declared), never a guessed number."""
+    if not water_balance:
+        return ""
+    status = water_balance.get("status")
+    present = water_balance.get("inputs_present") or []
+    missing = water_balance.get("inputs_missing") or []
+    reasons = water_balance.get("reason_codes") or []
+
+    field_th = {"A": "พื้นที่รับน้ำ", "c": "สัดส่วนไหลบ่า", "C_pump": "กำลังปั๊ม",
+                "S0": "น้ำเริ่มต้นในบึง", "P": "ฝนตอนนี้", "tau": "ช่วงเวลาต่อรอบ",
+                "gate_flag": "สถานะประตูน้ำ", "Q_out_meas": "อัตราสูบออกจริง"}
+
+    def field_word(f):
+        return field_th.get(f, f)
+
+    present_html = "".join(f'<li class="ok">✔ {esc(field_word(f))}</li>' for f in present) or "<li>—</li>"
+    missing_words = [field_word(f) for f in missing]
+    missing_html = "".join(f'<li class="missing">✘ {esc(field_word(f))}</li>' for f in missing) or "<li>—</li>"
+
+    if status == "REFUSED":
+        sentence = f'ยังคำนวณไม่ได้ — ระบบปฏิเสธเพราะขาด: {esc(", ".join(missing_words) or "ไม่ทราบ")}'
+    else:
+        sentence = f'คำนวณได้: น้ำสะสม {esc(water_balance.get("S_next"))} ลบ.ม. (แนวโน้ม {esc(water_balance.get("trend"))})'
+
+    return (
+        f'<div class="fcard waterbalance-village">'
+        f'<h3>{esc(labels.get("heading") or "")} (หน่วยย่อย)</h3>'
+        f'<div class="wb-inputs-grid"><ul class="wb-inputs-present">{present_html}</ul>'
+        f'<ul class="wb-inputs-missing">{missing_html}</ul></div>'
+        f'<p class="wb-refused-sentence"><strong>{esc(sentence)}</strong></p>'
+        f'<p class="small">รหัสเหตุผล: {esc(", ".join(reasons) or "—")} '
+        f'(สูตรที่ลงทะเบียน PROP-FLOOD-03, ยังเป็นข้อเสนอ, PR #60 รอตรวจ)</p>'
+        f'</div>'
+    )
+
+
+_SCENARIO_COLOR = {"c0": "#1e8f4e", "c50": "#d98c0f", "c100": "#c0392b", "d_jma": "#8e2411"}
+_SCENARIO_DASH = {"d_jma": "3,2"}
+_HALF_DAY_TH = [(0, 5, "เช้ามืด"), (6, 11, "เช้า"), (12, 16, "บ่าย"), (17, 19, "เย็น"), (20, 23, "คืน")]
+
+
+def _half_day_word(hour):
+    for lo, hi, word in _HALF_DAY_TH:
+        if lo <= hour <= hi:
+            return word
+    return ""
+
+
+def _fmt_end_time_th(iso, now_dt):
+    """Rounded to a half-day per peer review 2026-09-26 -- exact hours stay in the JSON
+    (end_time_utc), only the legend/table text is rounded."""
+    if not iso:
+        return "ยังไม่พ้นน้ำในช่วงที่คำนวณ"
+    dt = to_bkk(iso)
+    if dt is None:
+        return "ไม่ทราบ"
+    return f"{_half_day_word(dt.hour)} {dt.day} {THAI_MONTHS[dt.month - 1]}"
+
+
+def _tide_windows(area):
+    """±2h shaded windows around each declared next-high-water time -- 'น้ำหนุน — สูบออกได้ช้าลง'."""
+    tide = (area or {}).get("tide") or {}
+    highs = tide.get("next_high") or []
+    windows = []
+    for h in highs:
+        dt = to_bkk(h.get("time"))
+        if dt is None:
+            continue
+        windows.append((dt - datetime.timedelta(hours=2), dt + datetime.timedelta(hours=2)))
+    return windows
+
+
+def _svg_chart_frame(W, H, PAD_L, PAD_R, PAD_T, PAD_B, n, t0, now_dt, tide_windows,
+                      forecast_coverage_hours=None):
+    """Shared frame pieces: day gridlines/x-labels, 'now' marker, tide-window shading,
+    and a grey unforecast band -- used by both the Bangkok and village panels so they
+    stay visually aligned on the same x-axis."""
+    plot_w = W - PAD_L - PAD_R
+    plot_h = H - PAD_T - PAD_B
+    parts = []
+
+    def x_of(h):
+        return PAD_L + (h / n) * plot_w if n else PAD_L
+
+    # grey "no forecast beyond here" band (peer-review fix -- never silently draw
+    # padding-zero hours as if they were real forecast)
+    if forecast_coverage_hours is not None and forecast_coverage_hours < n:
+        gx = x_of(forecast_coverage_hours)
+        parts.append(f'<rect x="{gx:.0f}" y="{PAD_T}" width="{(W - PAD_R - gx):.0f}" '
+                     f'height="{plot_h}" fill="#d9dde2" opacity="0.5"/>')
+        parts.append(f'<text x="{gx + 4:.0f}" y="{PAD_T + 11}" font-size="8" fill="#5b6472">'
+                     f'ไม่มีพยากรณ์ — สมมติฝน 0</text>')
+
+    # tide (high-water ±2h) shading
+    for i, (w0, w1) in enumerate(tide_windows or []):
+        h0 = (w0 - t0).total_seconds() / 3600.0 if t0 else None
+        h1 = (w1 - t0).total_seconds() / 3600.0 if t0 else None
+        if h0 is None or h1 is None or h1 < 0 or h0 > n:
+            continue
+        h0c, h1c = max(h0, 0), min(h1, n)
+        x0, x1 = x_of(h0c), x_of(h1c)
+        parts.append(f'<rect x="{x0:.0f}" y="{PAD_T}" width="{max(x1 - x0, 1):.0f}" '
+                     f'height="{plot_h}" fill="#b39ddb" opacity="0.22"/>')
+        if i == 0:
+            parts.append(f'<text x="{x0 + 2:.0f}" y="{PAD_T + 22}" font-size="8" '
+                         f'fill="#6a4fa0">น้ำหนุน — สูบออกได้ช้าลง</text>')
+
+    # day gridlines + x labels
+    for h in range(0, n + 1, 48):
+        x = x_of(h)
+        parts.append(f'<line x1="{x:.0f}" y1="{PAD_T}" x2="{x:.0f}" y2="{PAD_T + plot_h}" '
+                     f'stroke="#d8dee6" stroke-width="1" stroke-dasharray="2,2"/>')
+        label = f"+{h}ชม."
+        if t0:
+            dt_h = t0 + datetime.timedelta(hours=h)
+            label = f"{_half_day_word(dt_h.hour)} {dt_h.day}/{dt_h.month}"
+        parts.append(f'<text x="{x:.0f}" y="{H - 10}" font-size="8.5" fill="#5b6472" '
+                     f'text-anchor="middle">{esc(label)}</text>')
+
+    # "ตอนนี้" (now) marker at h=0
+    x_now = x_of(0)
+    parts.append(f'<line x1="{x_now:.0f}" y1="{PAD_T}" x2="{x_now:.0f}" y2="{PAD_T + plot_h}" '
+                 f'stroke="#333" stroke-width="1.4"/>')
+    parts.append(f'<text x="{x_now + 3:.0f}" y="{PAD_T + 10}" font-size="8.5" fill="#333">ตอนนี้</text>')
+
+    return parts, x_of, plot_w, plot_h
+
+
+def build_drain_timeline_svg(drain_timeline, now_dt, tide_windows=None):
+    """Bangkok-wide panel: 3 scenarios sweeping the undeclared runoff fraction c in
+    {0, 0.5, 1}, rain bars, day gridlines, now-marker, tide shading, grey unforecast
+    band, and a shaded c=0..c=1 uncertainty band. Hand-written inline SVG (no
+    matplotlib in the shipped page -- keeps the page well under the 300KB/artifact
+    contract; a matplotlib rendering of this same chart ran ~140KB, mostly font-path
+    bloat for Thai glyphs)."""
+    if not drain_timeline:
+        return '<p class="small">ยังไม่มีข้อมูลพยากรณ์ฝนพอสำหรับกราฟ</p>'
+
+    W, H = 640, 280
+    PAD_L, PAD_R, PAD_T, PAD_B = 56, 46, 18, 34
+    scenarios = drain_timeline["scenarios"]
+    n = drain_timeline["horizon_hours"]
+    v_max = max(max(s["values_m3"]) for s in scenarios.values()) or 1.0
+    v_max_m = v_max / 1_000_000.0
+    plot_h = H - PAD_T - PAD_B
+
+    def y_of(v_m3):
+        v_m = v_m3 / 1_000_000.0
+        frac = v_m / v_max_m if v_max_m else 0
+        return PAD_T + plot_h - frac * plot_h
+
+    t0 = to_bkk(drain_timeline.get("generated_at_utc"))
+    frame_parts, x_of, plot_w, _ = _svg_chart_frame(
+        W, H, PAD_L, PAD_R, PAD_T, PAD_B, n, t0, now_dt, tide_windows,
+        forecast_coverage_hours=drain_timeline.get("forecast_coverage_hours"))
+
+    rain = drain_timeline.get("rain_mm_hourly") or []
+    rain_max = (max(rain) if rain else 1.0) or 1.0
+
+    parts = [f'<svg viewBox="0 0 {W} {H}" role="img" aria-label="กราฟเวลาระบายน้ำค้าง สามสถานการณ์" '
+             f'xmlns="http://www.w3.org/2000/svg" class="drain-timeline-svg">']
+
+    # rain bars (behind everything) -- rendered every RENDER_STRIDE hours to keep SVG
+    # size well under the artifact-contract budget (a bar per literal hour over a 96h
+    # horizon roughly doubled this chart's byte size for no visible gain at this width).
+    RENDER_STRIDE = 4 if n > 48 else 1
+    if rain:
+        bar_w = max(plot_w / max(n, 1) * 0.7 * RENDER_STRIDE, 1)
+        for h in range(0, n, RENDER_STRIDE):
+            mm = rain[h] if h < len(rain) else 0
+            if mm <= 0:
+                continue
+            bh = (mm / rain_max) * (plot_h * 0.3)
+            bx = x_of(h)
+            by = PAD_T + plot_h - bh
+            parts.append(f'<rect x="{bx:.0f}" y="{by:.0f}" width="{bar_w:.0f}" height="{bh:.0f}" '
+                         f'fill="#8ec9ee" opacity="0.5"/>')
+
+    parts.extend(frame_parts)
+
+    # y-axis labels (million m^3)
+    for frac in (0, 0.5, 1.0):
+        y = PAD_T + plot_h - frac * plot_h
+        val = frac * v_max_m
+        parts.append(f'<line x1="{PAD_L}" y1="{y:.0f}" x2="{W - PAD_R}" y2="{y:.0f}" '
+                     f'stroke="#eef1f4" stroke-width="1"/>')
+        parts.append(f'<text x="{PAD_L - 6}" y="{y + 3:.0f}" font-size="9" fill="#5b6472" '
+                     f'text-anchor="end">{val:.0f}</text>')
+    parts.append(f'<text x="12" y="{PAD_T + 8}" font-size="9" fill="#5b6472">ล้าน ลบ.ม.</text>')
+
+    # c=0..c=1 uncertainty band (shaded fill between the two extreme scenarios) --
+    # sampled every RENDER_STRIDE hours (see rain-bar comment above)
+    idxs = sorted(set(list(range(0, n + 1, RENDER_STRIDE)) + [n]))
+    c0, c100 = scenarios.get("c0"), scenarios.get("c100")
+    if c0 and c100:
+        top_pts = [(x_of(h), y_of(c100["values_m3"][h])) for h in idxs]
+        bot_pts = [(x_of(h), y_of(c0["values_m3"][h])) for h in idxs]
+        path_pts = top_pts + list(reversed(bot_pts))
+        path = "M " + " L ".join(f"{x:.0f},{y:.0f}" for x, y in path_pts) + " Z"
+        parts.append(f'<path d="{path}" fill="#c0392b" opacity="0.08"/>')
+
+    # scenario lines (d_jma drawn thin+dashed per peer review, others solid)
+    for key, s in scenarios.items():
+        color = _SCENARIO_COLOR.get(key, "#333")
+        dash = _SCENARIO_DASH.get(key)
+        width = 1.4 if key == "d_jma" else 2.2
+        dash_attr = f' stroke-dasharray="{dash}"' if dash else ""
+        pts = " ".join(f"{x_of(h):.0f},{y_of(s['values_m3'][h]):.0f}" for h in idxs)
+        parts.append(f'<polyline points="{pts}" fill="none" stroke="{color}" '
+                     f'stroke-width="{width}"{dash_attr}/>')
+
+    parts.append("</svg>")
+
+    legend_rows = []
+    for key, _, label_th in DRAIN_TIMELINE_SCENARIOS_LABELS:
+        s = scenarios.get(key)
+        if not s:
+            continue
+        color = _SCENARIO_COLOR.get(key, "#333")
+        legend_rows.append(
+            f'<li><span class="legend-swatch" style="background:{color}"></span>'
+            f'{esc(label_th)} — {esc(_fmt_end_time_th(s.get("end_time_utc"), now_dt))}</li>'
+        )
+
+    return (
+        '<div class="drain-timeline">'
+        + "".join(parts)
+        + f'<ul class="drain-legend">{"".join(legend_rows)}</ul>'
+        + f'<p class="small drain-footnote">{esc(drain_timeline.get("footnote_th"))}</p>'
+        + '</div>'
+    )
+
+
+DRAIN_TIMELINE_SCENARIOS_LABELS = [("c0", 0.0, "ฝนหยุด (c=0)"), ("c50", 0.5, "สมมติ (c=0.5)"),
+                                    ("c100", 1.0, "ขอบบน (c=1)"),
+                                    ("d_jma", 0.5, "แบบจำลองที่ฝนมากที่สุด (JMA, c=0.5)")]
+
+_PUMP_SCENARIO_STYLE = {
+    "pump0": {"color": "#c0392b", "dash": ""},
+    "pump2": {"color": "#d98c0f", "dash": "5,3"},
+    "pump2_gravity": {"color": "#1e8f4e", "dash": "2,2"},
+}
+
+
+def build_village_panel_svg(sammakorn_rough, now_dt, tide_windows=None):
+    """Village (สัมมากร) panel: average excess-depth-above-pond-capacity per pump
+    scenario (cm), a shaded band for the no-pump scenario reflecting the 1.5-4.6 km^2
+    sub-area uncertainty, rain bars scaled to this panel's own forecast max, and the
+    same now-marker/tide-shading frame as the Bangkok panel above it."""
+    if not sammakorn_rough:
+        return '<p class="small">ยังไม่มีข้อมูลประมาณหยาบสำหรับสัมมากร</p>'
+
+    W, H = 640, 260
+    PAD_L, PAD_R, PAD_T, PAD_B = 56, 46, 18, 34
+    n = sammakorn_rough["horizon_hours"]
+    scenarios = sammakorn_rough["scenarios"]
+    band = sammakorn_rough.get("pump0_depth_band")
+    all_vals = [v for s in scenarios.values() for v in s["values_cm"]]
+    if band:
+        all_vals += band["depth_high_cm"] + band["depth_low_cm"]
+    v_max = max(all_vals) if all_vals else 1.0
+    v_max = max(v_max, 1.0)
+    plot_h = H - PAD_T - PAD_B
+
+    def y_of(cm):
+        frac = cm / v_max if v_max else 0
+        return PAD_T + plot_h - frac * plot_h
+
+    t0 = now_dt
+    frame_parts, x_of, plot_w, _ = _svg_chart_frame(
+        W, H, PAD_L, PAD_R, PAD_T, PAD_B, n, t0, now_dt, tide_windows,
+        forecast_coverage_hours=sammakorn_rough.get("forecast_coverage_hours"))
+
+    rain = sammakorn_rough.get("rain_mm_hourly") or []
+    rain_max = (1.5 * max(rain)) if rain else 1.0
+    rain_max = rain_max or 1.0
+
+    parts = [f'<svg viewBox="0 0 {W} {H}" role="img" '
+             f'aria-label="กราฟความลึกน้ำเฉลี่ยเหนือความจุบึงสัมมากร ประมาณหยาบ" '
+             f'xmlns="http://www.w3.org/2000/svg" class="village-panel-svg">']
+
+    RENDER_STRIDE = 4 if n > 48 else 1
+    if rain:
+        bar_w = max(plot_w / max(n, 1) * 0.7 * RENDER_STRIDE, 1)
+        for h in range(0, n, RENDER_STRIDE):
+            mm = rain[h] if h < len(rain) else 0
+            if mm <= 0:
+                continue
+            bh = (mm / rain_max) * (plot_h * 0.3)
+            bx = x_of(h)
+            by = PAD_T + plot_h - bh
+            parts.append(f'<rect x="{bx:.0f}" y="{by:.0f}" width="{bar_w:.0f}" height="{bh:.0f}" '
+                         f'fill="#8ec9ee" opacity="0.5"/>')
+
+    parts.extend(frame_parts)
+
+    for frac in (0, 0.5, 1.0):
+        y = PAD_T + plot_h - frac * plot_h
+        val = frac * v_max
+        parts.append(f'<line x1="{PAD_L}" y1="{y:.0f}" x2="{W - PAD_R}" y2="{y:.0f}" '
+                     f'stroke="#eef1f4" stroke-width="1"/>')
+        parts.append(f'<text x="{PAD_L - 6}" y="{y + 3:.0f}" font-size="9" fill="#5b6472" '
+                     f'text-anchor="end">{val:.0f}</text>')
+    parts.append(f'<text x="12" y="{PAD_T + 8}" font-size="9" fill="#5b6472">ซม. (เฉลี่ย)</text>')
+
+    idxs = sorted(set(list(range(0, n + 1, RENDER_STRIDE)) + [n]))
+    if band:
+        top_pts = [(x_of(h), y_of(band["depth_high_cm"][h])) for h in idxs]
+        bot_pts = [(x_of(h), y_of(band["depth_low_cm"][h])) for h in idxs]
+        path_pts = top_pts + list(reversed(bot_pts))
+        path = "M " + " L ".join(f"{x:.0f},{y:.0f}" for x, y in path_pts) + " Z"
+        parts.append(f'<path d="{path}" fill="#c0392b" opacity="0.12"/>')
+
+    for key, s in scenarios.items():
+        style = _PUMP_SCENARIO_STYLE.get(key, {"color": "#333", "dash": ""})
+        pts = " ".join(f"{x_of(h):.0f},{y_of(s['values_cm'][h]):.0f}" for h in idxs)
+        dash_attr = f' stroke-dasharray="{style["dash"]}"' if style["dash"] else ""
+        parts.append(f'<polyline points="{pts}" fill="none" stroke="{style["color"]}" '
+                     f'stroke-width="2.2"{dash_attr}/>')
+
+    # annotate the no-pump plateau
+    pump0 = scenarios.get("pump0")
+    if pump0 and pump0["values_cm"]:
+        last_h = len(pump0["values_cm"]) - 1
+        ax, ay = x_of(last_h * 0.6), y_of(pump0["values_cm"][int(last_h * 0.6)])
+        parts.append(f'<text x="{ax:.0f}" y="{(ay - 8):.0f}" font-size="9" fill="#c0392b" '
+                     f'text-anchor="middle">ไม่ลดเอง — ต้องปั๊ม</text>')
+
+    parts.append("</svg>")
+
+    legend_rows = []
+    labels_th = {"pump0": "ปั๊มไม่เดิน (ปัจจุบัน)", "pump2": "ปั๊ม 2 ลบ.ม./วิ",
+                 "pump2_gravity": "ปั๊ม 2 + แรงโน้มถ่วง 1 หลัง กทม.ระบายหมด"}
+    for key in ("pump0", "pump2", "pump2_gravity"):
+        s = scenarios.get(key)
+        if not s:
+            continue
+        style = _PUMP_SCENARIO_STYLE.get(key, {"color": "#333"})
+        legend_rows.append(f'<li><span class="legend-swatch" style="background:{style["color"]}">'
+                           f'</span>{esc(s.get("label_th") or labels_th.get(key, key))}</li>')
+
+    band_low = band["depth_low_cm"][-1] if band else None
+    band_high = band["depth_high_cm"][-1] if band else None
+    range_note = (f'ช่วงความไม่แน่นอนของพื้นที่ (1.5-4.6 ตร.กม.) ให้ความลึกเฉลี่ย '
+                  f'≈ {band_low:.0f}-{band_high:.0f} ซม. — ซอยต่ำสุดลึกกว่าค่าเฉลี่ยหลายเท่า '
+                  f'(รายงานวันนี้ 30 ซม.)') if band_low is not None else ""
+
+    return (
+        '<div class="village-panel">'
+        + "".join(parts)
+        + f'<ul class="drain-legend">{"".join(legend_rows)}</ul>'
+        + (f'<p class="small">{esc(range_note)}</p>' if range_note else "")
+        + f'<p class="small">{esc(sammakorn_rough.get("caption_th"))}</p>'
+        + f'<p class="small"><strong>{esc(sammakorn_rough.get("decisive_factor_th"))}</strong> '
+        + f'{_tag_pill("INSTINCT")}</p>'
+        + '</div>'
+    )
+
+
+_THAI_MONTH_SHORT = {9: "ก.ย.", 10: "ต.ค."}
+
+
+def build_daily_rain_table_html(compare):
+    """'ฝน 7 วันข้างหน้า (6 แบบจำลอง)' table -- daily median(min-max) mm straight from
+    forecast_7day_compare.json (never recomputed, per FORECAST_SPEC.md item 2), plus the
+    model-disagreement flags and the TMD 24h official text (labelled official_forecast)
+    /ONWR-HII OPEN gap, surfaced plainly rather than hidden."""
+    if not compare:
+        return ""
+    daily = compare.get("daily_open_meteo_mm") or {}
+    rows = []
+    for date_str, d in sorted(daily.items()):
+        y, m, day = date_str.split("-")
+        label = f"{int(day)} {_THAI_MONTH_SHORT.get(int(m), m)}"
+        med, lo, hi = d.get("median"), d.get("min"), d.get("max")
+        note = " ← ฝนเบา" if (med is not None and med < 6) else ""
+        rows.append(f'<tr><td>{esc(label)}</td>'
+                    f'<td>{med:.0f} ({lo:.0f}-{hi:.0f}){esc(note)}</td></tr>')
+    table_html = ('<div class="tablewrap"><table class="daily-rain-table">'
+                  '<thead><tr><th>วัน</th><th>ฝนคาดการณ์ มม./วัน มัธยฐาน (ต่ำสุด-สูงสุด)</th></tr></thead>'
+                  f'<tbody>{"".join(rows)}</tbody></table></div>')
+
+    flags = compare.get("flags") or {}
+    flag_lines = []
+    for f in (flags.get("model_disagreement") or []) + (flags.get("heavy_burst_gt_50mm_after_today") or []):
+        flag_lines.append(f'<p class="small flag-line">⚠ {esc(f)}</p>')
+
+    tmd = (compare.get("sources") or {}).get("tmd") or {}
+    tmd_html = ""
+    if tmd:
+        tmd_html = (f'<p class="small">{_tag_pill("official_report")} กรมอุตุฯ 24 ชม.: '
+                    f'{esc(tmd.get("content"))} — ยังไม่มีพยากรณ์ 7 วันเป็นตัวเลขจากหน่วยงานรัฐที่ดึงได้</p>')
+
+    return (
+        '<div class="fcard daily-rain-card">'
+        '<h3>ฝน 7 วันข้างหน้า (6 แบบจำลอง)</h3>'
+        + table_html
+        + "".join(sorted(set(flag_lines)))
+        + tmd_html
+        + '</div>'
+    )
+
+
+def build_combined_chart_html(drain_timeline, sammakorn_rough, now_dt, tide_windows,
+                               include_village_panel, forecast_7day_compare=None):
+    coverage = (drain_timeline or {}).get("forecast_coverage_hours")
+    horizon = (drain_timeline or {}).get("horizon_hours")
+    gap_note = (f"ฝนหลังชั่วโมงที่ {coverage} ยังไม่รวม (พื้นที่สีเทาในกราฟ) · "
+                if (coverage is not None and horizon is not None and coverage < horizon) else "")
+    caveat = (f'<p class="waterbalance-caveat"><strong>คำเตือนก่อนดูกราฟ:</strong> '
+              f'ประมาณหยาบ ๆ ไม่ใช่พยากรณ์ทางการ · {gap_note}'
+              'ไม่รวมน้ำจากจังหวัดรอบ · '
+              'การสูบจริงลดลงช่วงน้ำหนุน (พื้นที่สีม่วงในกราฟ)</p>')
+    top = ('<div class="fcard drain-timeline-card">'
+           '<h3>เส้นเวลาระบายน้ำค้าง — กรุงเทพฯ/โซนตะวันออก (4 สถานการณ์)</h3>'
+           + build_drain_timeline_svg(drain_timeline, now_dt, tide_windows)
+           + '</div>'
+           + build_daily_rain_table_html(forecast_7day_compare))
+    if not include_village_panel:
+        return caveat + top
+    bottom = ('<div class="fcard village-panel-card">'
+              '<h3>สัมมากร — ความลึกน้ำเฉลี่ยเหนือความจุบึง (ประมาณหยาบ ๆ ทุกตัวแปรติดป้าย)</h3>'
+              + build_village_panel_svg(sammakorn_rough, now_dt, tide_windows)
+              + '</div>')
+    return caveat + top + bottom
+
+
+def build_waterbalance_section_html(area_id, water_balance, bangkok_east, capacity_records,
+                                     labels, drain_timeline=None, now_dt=None,
+                                     sammakorn_rough=None, tide_windows=None,
+                                     forecast_7day_compare=None):
+    # Size budget fix 2026-09-26: the Bangkok-wide chart/arithmetic/capacity table are
+    # IDENTICAL regardless of which area tab is open (they are city-wide, not
+    # area-specific) -- rendering them once per area doubled the page past the 300KB
+    # artifact-contract budget. They now render ONLY inside the sammakorn block (which is
+    # also the block carrying the village-level chart panel); the ram53 block gets a
+    # short pointer instead of a byte-for-byte duplicate.
+    if area_id != "sammakorn":
+        pointer = ('<p class="small">ภาพรวมกรุงเทพฯ/โซนตะวันออก, กราฟเส้นเวลาระบายน้ำ, '
+                   'ฝน 7 วันข้างหน้า และตารางขีดความสามารถ กทม. เป็นข้อมูลระดับเมืองเดียวกันทั้งสองพื้นที่ '
+                   '— ดูที่แท็บ "หมู่บ้านสัมมากร" ด้านบน</p>')
+        return pointer + build_village_waterbalance_html(water_balance, labels)
+
+    chart_html = build_combined_chart_html(drain_timeline, sammakorn_rough, now_dt,
+                                            tide_windows, include_village_panel=True,
+                                            forecast_7day_compare=forecast_7day_compare)
+    return (
+        build_bangkok_east_html(bangkok_east)
+        + chart_html
+        + build_village_waterbalance_html(water_balance, labels)
+        + '<div class="fcard capacity-mini">'
+        + '<h3>ขีดความสามารถ กทม. (สรุปย่อ)</h3>'
+        + build_capacity_mini_table(capacity_records)
+        + f'<p class="small">รายละเอียดเต็ม: <code>docs/CAPACITY.md</code></p></div>'
+    )
+
+
+# ---------------- BMA governor briefing 2026-09-26 13:00 (official_report) --------------
+
+def build_briefing_hero_html(briefing):
+    if not briefing:
+        return "", " hidden"
+    return f'<p class="briefing-hero">{esc(briefing.get("hero_line_th"))}</p>', ""
+
+
+def build_forecast_briefing_line(briefing):
+    if not briefing or not briefing.get("weather_system_note_th"):
+        return ""
+    return (f'<p class="small">{icon("doc", 16)} กทม. แถลง: '
+            f'{esc(briefing.get("weather_system_note_th"))}</p>')
+
+
+def build_help_briefing_html(briefing):
+    if not briefing:
+        return ""
+    parts = ['<div class="fcard briefing-help">']
+    hotlines = briefing.get("hotlines") or []
+    if hotlines:
+        parts.append(f'<p><strong>สายด่วน:</strong> {esc(", ".join(hotlines))}</p>')
+    shelters = briefing.get("shelters") or {}
+    if shelters:
+        parts.append(f'<p><strong>ศูนย์พักพิง:</strong> {shelters.get("count")} แห่ง '
+                      f'(รองรับ {shelters.get("capacity"):,} คน, ใช้แล้ว {shelters.get("in_use")} คน)</p>')
+    parking = briefing.get("temporary_parking") or []
+    if parking:
+        parts.append(f'<p><strong>จุดจอดรถชั่วคราว:</strong> {esc(", ".join(parking))}</p>')
+    monday = briefing.get("monday_note_th")
+    if monday:
+        parts.append(f'<p><strong>วันจันทร์ 28 ก.ย.:</strong> {esc(monday)}</p>')
+    parts.append(f'<p class="small">{_tag_pill("official_report")} จากแถลงผู้ว่าฯ 26 ก.ย. 2569 13:00</p>')
+    parts.append("</div>")
+    return "".join(parts)
+
+
 # ---------------- one area's full fragment map ----------------
 
-def build_area_fragments(area_id, area, now_dt, forecast):
+def build_area_fragments(area_id, area, now_dt, forecast, bangkok_east=None, briefing=None,
+                          capacity_records=None, drain_timeline=None, sammakorn_rough=None,
+                          forecast_7day_compare=None):
     labels = AREA_LABELS[area_id]
     pumps = area.get("pumps") or []
     pc = pump_counts(pumps, now_dt)
@@ -918,6 +1512,18 @@ def build_area_fragments(area_id, area, now_dt, forecast):
     nearby_community_rows, nearby_community_hidden = build_nearby_community_rows(area)
     hospital_rows = build_hospital_rows(area)
 
+    tide_windows = _tide_windows(area)
+    waterbalance_section_html = build_waterbalance_section_html(
+        area_id, area.get("water_balance"), bangkok_east, capacity_records, labels,
+        drain_timeline=drain_timeline, now_dt=now_dt, sammakorn_rough=sammakorn_rough,
+        tide_windows=tide_windows, forecast_7day_compare=forecast_7day_compare)
+    briefing_hero_html, briefing_hero_hidden = build_briefing_hero_html(briefing)
+    briefing_forecast_line = build_forecast_briefing_line(briefing)
+    # Identical between areas (city-wide briefing) -- render once (sammakorn/default
+    # tab) to stay under the page size budget, same reasoning as the water-balance chart.
+    briefing_help_html = build_help_briefing_html(briefing) if area_id == "sammakorn" else ""
+    fc_text = fc_text + briefing_forecast_line
+
     return {
         "{{PLACE_PIN}}": icon("pin", 16) + f'<span>{esc(labels["pin"])}</span>',
         "{{HEADING_LABEL}}": esc(labels["heading"]),
@@ -960,12 +1566,24 @@ def build_area_fragments(area_id, area, now_dt, forecast):
         "{{NEARBY_COMMUNITY_HIDDEN}}": nearby_community_hidden,
         "{{NEARBY_COMMUNITY_LABEL}}": esc(area.get("nearby_community_label") or ""),
         "{{HOSPITAL_ROWS}}": hospital_rows,
+        "{{WATERBALANCE_SECTION_HTML}}": waterbalance_section_html,
+        "{{BRIEFING_HERO_HTML}}": briefing_hero_html,
+        "{{BRIEFING_HERO_HIDDEN}}": briefing_hero_hidden,
+        "{{BRIEFING_HELP_HTML}}": briefing_help_html,
     }
 
 
-def render_area_block(area_template, area_id, area, now_dt, forecast, hidden):
+def render_area_block(area_template, area_id, area, now_dt, forecast, hidden,
+                       bangkok_east=None, briefing=None, capacity_records=None,
+                       drain_timeline=None, sammakorn_rough=None, forecast_7day_compare=None):
     block = area_template
-    for placeholder, value in build_area_fragments(area_id, area, now_dt, forecast).items():
+    fragments = build_area_fragments(area_id, area, now_dt, forecast,
+                                      bangkok_east=bangkok_east, briefing=briefing,
+                                      capacity_records=capacity_records,
+                                      drain_timeline=drain_timeline,
+                                      sammakorn_rough=sammakorn_rough,
+                                      forecast_7day_compare=forecast_7day_compare)
+    for placeholder, value in fragments.items():
         block = block.replace(placeholder, value)
     block = block.replace("{{AREA_HIDDEN}}", " hidden" if hidden else "")
     block = block.replace("__AREA__", area_id)
@@ -1038,7 +1656,17 @@ def main():
         print(f"ERROR: {data_path} is not valid JSON: {e}", file=sys.stderr)
         return 1
 
-    json_text = json.dumps(parsed, ensure_ascii=False, separators=(",", ":"))
+    # Size budget fix 2026-09-26: everything in this page is already server-rendered
+    # into HTML (the water-balance chart, capacity table, daily rain table etc.) --
+    # the embedded <script id="data"> JSON only needs to carry what client JS actually
+    # reads (recheckStaleness() reads `areas[*].stations_near`/`.pumps` observed_at
+    # only, per index.template.html). Bulky fields that exist purely for build-time
+    # HTML rendering are dropped from the EMBEDDED copy only; the standalone
+    # dist/data.json written separately still has everything, unabridged.
+    embed_parsed = dict(parsed)
+    for _k in ("capacity_records", "drain_timeline", "sammakorn_rough", "forecast_7day_compare"):
+        embed_parsed.pop(_k, None)
+    json_text = json.dumps(embed_parsed, ensure_ascii=False, separators=(",", ":"))
     json_text = json_text.replace("</script", "<\\/script")
 
     template = template_path.read_text(encoding="utf-8")
@@ -1059,6 +1687,12 @@ def main():
     top_forecast = parsed.get("forecast")
     areas = parsed.get("areas") or {}
     default_area = parsed.get("default_area") or "sammakorn"
+    bangkok_east = parsed.get("bangkok_east_water_balance")
+    briefing = parsed.get("bma_briefing")
+    capacity_records = parsed.get("capacity_records") or []
+    drain_timeline = parsed.get("drain_timeline")
+    sammakorn_rough = parsed.get("sammakorn_rough")
+    forecast_7day_compare = parsed.get("forecast_7day_compare")
 
     static_ok = True
     try:
@@ -1071,7 +1705,12 @@ def main():
             # back to the top-level (sammakorn's) forecast only if an area is missing it.
             area_forecast = area.get("forecast") or top_forecast
             blocks.append(render_area_block(area_template, area_id, area, now_dt, area_forecast,
-                                             hidden=(area_id != default_area)))
+                                             hidden=(area_id != default_area),
+                                             bangkok_east=bangkok_east, briefing=briefing,
+                                             capacity_records=capacity_records,
+                                             drain_timeline=drain_timeline,
+                                             sammakorn_rough=sammakorn_rough,
+                                             forecast_7day_compare=forecast_7day_compare))
         area_sections_html = "".join(blocks)
 
         asof = fmt_hm(parsed.get("generated_at_bkk"))

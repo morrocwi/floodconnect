@@ -1,0 +1,325 @@
+{
+  "_readme": "Curated from raw/capacity/CAPACITY_NOTE.md and raw/capacity/CAPACITY_DETAIL.md (2026-09-26 research pass). Every record carries {value, unit, source_title, source_url, page, tag, note}. tag one of VERIFIED (read the source document ourselves) / RELAYED (from a third party's summary/news, not the source document itself) / OPEN (no answer, or conflicting answers not yet resolved). Conflicting figures for the same quantity are kept as SEPARATE records sharing the same `key` so the conflict is visible side by side, never silently picked.",
+  "records": [
+    {
+      "key": "design_capacity_mm_per_hour",
+      "value": 58.7,
+      "unit": "mm/h",
+      "tag": "VERIFIED",
+      "source_title": "แผนปฏิบัติราชการประจำปี พ.ศ. 2569 สำนักการระบายน้ำ กทม.",
+      "source_url": "https://dds.bangkok.go.th/public_content/files/001/0011062_1.pdf",
+      "page": 4,
+      "note": "As-built design capacity of the existing drainage system, converted from the daily figure: 80 mm/day averaged over ~3 h/day of rain = 58.7 mm/h. Exact quote kept in docs/CAPACITY.md."
+    },
+    {
+      "key": "design_capacity_mm_per_day",
+      "value": 80,
+      "unit": "mm/day",
+      "tag": "VERIFIED",
+      "source_title": "แผนปฏิบัติราชการประจำปี พ.ศ. 2569 สำนักการระบายน้ำ กทม.",
+      "source_url": "https://dds.bangkok.go.th/public_content/files/001/0011062_1.pdf",
+      "page": 4,
+      "note": "\"ขีดความสามารถของระบบระบายน้ำสามารถรองรับปริมาณฝนตกสะสมรวมได้ไม่เกิน 80 มิลลิเมตร ใน 1 วัน\" -- exact quote."
+    },
+    {
+      "key": "design_standard_jica_current_mm_per_hour",
+      "value": 76,
+      "unit": "mm/h",
+      "tag": "RELAYED",
+      "source_title": "ข่าว thestandard.co / thaitabloid.com เรื่องแผนแม่บท กทม.-JICA",
+      "source_url": null,
+      "page": null,
+      "note": "News reporting on the BMA-JICA drainage master plan describes 76 mm/h as the 'current' design criterion for NEW construction -- conflicts with the 58.7 mm/h VERIFIED as-built figure above. Interpretation offered (as-built vs new-construction standard) is INSTINCT, not verified against a source document. See docs/CAPACITY.md 'ความขัดแย้งเกณฑ์ออกแบบ'."
+    },
+    {
+      "key": "design_standard_jica_target_mm_per_hour",
+      "value": 100,
+      "unit": "mm/h",
+      "tag": "RELAYED",
+      "source_title": "ข่าว thestandard.co / thaitabloid.com เรื่องแผนแม่บท กทม.-JICA",
+      "source_url": null,
+      "page": null,
+      "note": "Target design intensity for the BMA-JICA master plan, 20-40 years out, plan approval process started Feb 2567."
+    },
+    {
+      "key": "outlet_phrakhanong_pump_station_current",
+      "value": 155,
+      "unit": "m^3/s",
+      "tag": "MEASURED",
+      "source_title": "raw/gapfill/water_station.csv (dds.bangkok.go.th open dataset, 438 rows)",
+      "source_url": null,
+      "page": null,
+      "note": "สถานีสูบน้ำพระโขนง -- 45 pumps (35x3 + 10x5 m^3/s). This is the main pump station outlet for the Sammakorn/Ram53 canal chain toward the Chao Phraya."
+    },
+    {
+      "key": "outlet_phrakhanong_pump_station_2007",
+      "value": 173,
+      "unit": "m^3/s",
+      "tag": "VERIFIED",
+      "source_title": "สถิติข้อมูลปี 2550, กองสารสนเทศระบายน้ำ สำนักการระบายน้ำ กทม. (มิ.ย. 2551)",
+      "source_url": "https://dds.bangkok.go.th/public_content/files/001/0003650_1.pdf",
+      "page": 10,
+      "note": "2007 statistics document gives 173 m^3/s for the same station -- 18 m^3/s higher than the current MEASURED 155 m^3/s figure. Discrepancy OPEN: cause unknown (pump wear/replacement/counting method)."
+    },
+    {
+      "key": "outlet_phrakhanong_tunnel",
+      "value": 60,
+      "unit": "m^3/s",
+      "tag": "MEASURED",
+      "source_title": "raw/gapfill/water_station.csv",
+      "source_url": null,
+      "page": null,
+      "note": "อุโมงค์พระโขนง -- 4x15 m^3/s pumps, supplements the main Phrakhanong pump station at the Chao Phraya outlet."
+    },
+    {
+      "key": "tunnel_bueng_nong_bon",
+      "value": 60,
+      "unit": "m^3/s",
+      "tag": "RELAYED",
+      "source_title": "matichon / thestandard / komchadluek news coverage",
+      "source_url": null,
+      "page": null,
+      "note": "อุโมงค์บึงหนองบอน -- diameter 5 m, ~9.4 km, serves ประเวศ/บางนา/พระโขนง/สวนหลวง; reported ~86.7% complete at time of the cited news, target open Mar 2565."
+    },
+    {
+      "key": "tunnel_bang_sue",
+      "value": 60,
+      "unit": "m^3/s",
+      "tag": "RELAYED",
+      "source_title": "mgronline news coverage",
+      "source_url": null,
+      "page": null,
+      "note": "อุโมงค์บางซื่อ (แห่งที่ 8) -- diameter 5 m, 6.4 km, serves a 56 km^2 zone (ห้วยขวาง/ดินแดง/พญาไท/จตุจักร/ลาดพร้าว/วังทองหลาง/บางซื่อ/ดุสิต)."
+    },
+    {
+      "key": "tunnel_saen_saep_lat_phrao_end_pump",
+      "value": 60,
+      "unit": "m^3/s",
+      "tag": "RELAYED",
+      "source_title": "ryt9.com news coverage",
+      "source_url": null,
+      "page": null,
+      "note": "อุโมงค์แสนแสบ-ลาดพร้าว ส่วนต่อขยายถึงซอยลาดพร้าว 130 -- end-of-tunnel pump station, serves บางกะปิ/สะพานสูง/บึงกุ่ม (the zone Sammakorn/Ram53 sit in). Capacity for the tunnel bore itself is OPEN (not found), only the end pump's 60 m^3/s is sourced."
+    },
+    {
+      "key": "tunnel_phra_ram9_ramkhamhaeng_capacity",
+      "value": null,
+      "unit": "m^3/s",
+      "tag": "OPEN",
+      "source_title": "mcot.net \"ไขคำตอบอุโมงค์ยักษ์ กทม.อยู่ไหน\"",
+      "source_url": null,
+      "page": null,
+      "note": "อุโมงค์พระราม 9-รามคำแหง -- diameter 4.60 m, length 5.98 km. Capacity not found in any source read for this task."
+    },
+    {
+      "key": "citywide_pump_stations_count",
+      "value": 195,
+      "unit": "stations",
+      "tag": "RELAYED",
+      "source_title": "search result referencing dds.bangkok.go.th/about2_5.php + ryt9",
+      "source_url": null,
+      "page": null,
+      "note": "Conflicts with the 200-station figure below (same `key`, different year/source, not resolved)."
+    },
+    {
+      "key": "citywide_pump_stations_count",
+      "value": 200,
+      "unit": "stations",
+      "tag": "RELAYED",
+      "source_title": "thaipr.net (release 3600663, ปี 2568)",
+      "source_url": null,
+      "page": null,
+      "note": "Conflicts with the 195-station figure above -- likely different budget years (stations are added/renovated yearly) but neither figure was read from a primary BMA document in this task."
+    },
+    {
+      "key": "citywide_floodgates_count",
+      "value": 242,
+      "unit": "gates",
+      "tag": "RELAYED",
+      "source_title": "search result referencing dds.bangkok.go.th/about2_5.php",
+      "source_url": null,
+      "page": null,
+      "note": "Off by one from the 243 figure below -- likely a different budget-year snapshot."
+    },
+    {
+      "key": "citywide_floodgates_count",
+      "value": 243,
+      "unit": "gates",
+      "tag": "RELAYED",
+      "source_title": "thaipr.net (release 3600663, ปี 2568)",
+      "source_url": null,
+      "page": null,
+      "note": "Off by one from the 242 figure above."
+    },
+    {
+      "key": "citywide_canal_length",
+      "value": 263.31,
+      "unit": "km",
+      "tag": "RELAYED",
+      "source_title": "search result referencing dds.bangkok.go.th (source page not opened to verify)",
+      "source_url": null,
+      "page": null,
+      "note": "Total canal length maintained by สำนักการระบายน้ำ. Not read from a primary document in this task."
+    },
+    {
+      "key": "citywide_supplementary_pump_pits",
+      "value": 349,
+      "unit": "pits",
+      "tag": "RELAYED",
+      "source_title": "thaipr.net (release 3600663, ปี 2568)",
+      "source_url": null,
+      "page": null,
+      "note": "บ่อสูบ/สถานีสูบเสริมแบบท่อ."
+    },
+    {
+      "key": "citywide_total_pumping_capacity",
+      "value": 1200,
+      "unit": "m^3/s",
+      "tag": "RELAYED",
+      "source_title": "bangkokbiznews news coverage (flood event, 26 ก.ย. 2569)",
+      "source_url": null,
+      "page": null,
+      "note": "\"ฝั่งพระนครมีกำลังสูบรวม 1,200 ลบ.ม./วินาที\" -- an event-time news figure, not a fixed as-built capacity spec. See the 1,230.55 and 1,300 conflicting figures below; 1,272.33 (asked about directly) was NOT FOUND in any source checked."
+    },
+    {
+      "key": "citywide_total_pumping_capacity",
+      "value": 1230.55,
+      "unit": "m^3/s",
+      "tag": "RELAYED",
+      "source_title": "WebSearch result summary (news, exact outlet not captured)",
+      "source_url": null,
+      "page": null,
+      "note": "One of three conflicting city-wide totals found; not read from a primary BMA document."
+    },
+    {
+      "key": "citywide_total_pumping_capacity",
+      "value": 1300,
+      "unit": "m^3/s",
+      "tag": "RELAYED",
+      "source_title": "WebSearch result summary (news, exact outlet not captured)",
+      "source_url": null,
+      "page": null,
+      "note": "One of three conflicting city-wide totals found; not read from a primary BMA document."
+    },
+    {
+      "key": "citywide_total_pumping_capacity_asked_1272_33",
+      "value": null,
+      "unit": "m^3/s",
+      "tag": "OPEN",
+      "source_title": null,
+      "source_url": null,
+      "page": null,
+      "note": "The specific figure 1,272.33 m^3/s the maintainer asked about was NOT FOUND in any of the sources checked (dds.bangkok.go.th documents read, or WebSearch results) across two research passes."
+    },
+    {
+      "key": "sammakorn_private_ponds_count",
+      "value": 5,
+      "unit": "ponds",
+      "tag": "RELAYED",
+      "source_title": "komchadluek.net \"ผุดแก้มลิงเก็บน้ำ ป้องกันท่วมสัมมากร-รามคำแหง\"",
+      "source_url": null,
+      "page": null,
+      "note": "หมู่บ้านสามัคคี's own private retention ponds -- not a BMA facility. Reference only; NOT used as a declared model input (see site/inputs/areas/sammakorn.balance.yaml, which marks it OPEN for A/c/S0/C_pump)."
+    },
+    {
+      "key": "sammakorn_private_ponds_area_rai",
+      "value": 142,
+      "unit": "rai",
+      "tag": "RELAYED",
+      "source_title": "komchadluek.net \"ผุดแก้มลิงเก็บน้ำ ป้องกันท่วมสัมมากร-รามคำแหง\"",
+      "source_url": null,
+      "page": null,
+      "note": "Combined area of the 5 ponds."
+    },
+    {
+      "key": "sammakorn_private_ponds_capacity",
+      "value": 227000,
+      "unit": "m^3",
+      "tag": "RELAYED",
+      "source_title": "komchadluek.net \"ผุดแก้มลิงเก็บน้ำ ป้องกันท่วมสัมมากร-รามคำแหง\"",
+      "source_url": null,
+      "page": null,
+      "note": "Storage capacity when fully developed -- news figure, not BMA data, not ST.SPS pump-house capacity (which remains OPEN/NOT FOUND)."
+    },
+    {
+      "key": "rain_2554_annual_total",
+      "value": 1826,
+      "unit": "mm/year",
+      "tag": "RELAYED",
+      "source_title": "mgronline / tiwrmdev.hii.or.th (search summary)",
+      "source_url": null,
+      "page": null,
+      "note": "2554 (2011, the great flood year) annual rain total, ~25% above normal; cumulative to 1 Dec 2554 was 2,257.5 mm."
+    },
+    {
+      "key": "rain_2565_sep_monthly_total",
+      "value": 801.6,
+      "unit": "mm/month",
+      "tag": "RELAYED",
+      "source_title": "workpointtoday.com \"bkk-0310\"",
+      "source_url": null,
+      "page": null,
+      "note": "September 2565 (2022) single-month total = 148.5% of the 30-year average, 38 rain days in 28 days (multiple rain events per day some days)."
+    },
+    {
+      "key": "rain_peak_day_2554_2565",
+      "value": null,
+      "unit": "mm/day",
+      "tag": "OPEN",
+      "source_title": null,
+      "source_url": null,
+      "page": null,
+      "note": "Single-station peak-day rainfall for 2554 or 2565 was NOT FOUND -- cannot compare apples-to-apples against today's (26 ก.ย. 2569) 203.5-205.0 mm/24h VERIFIED readings."
+    },
+    {
+      "key": "today_20260926_rain_saphan_sung",
+      "value": 203.5,
+      "unit": "mm/24h",
+      "tag": "VERIFIED",
+      "source_title": "รายงานประจำวัน DDS ฉบับที่ 269/69",
+      "source_url": null,
+      "page": null,
+      "note": "สนง.เขตสะพานสูง, 07:20-07:00 window."
+    },
+    {
+      "key": "today_20260926_rain_wang_thonglang",
+      "value": 205.0,
+      "unit": "mm/24h",
+      "tag": "VERIFIED",
+      "source_title": "รายงานประจำวัน DDS ฉบับที่ 269/69",
+      "source_url": null,
+      "page": null,
+      "note": "ส.คลองเจ้าคุณสิงห์ เขตวังทองหลาง, 07:15-06:55 window."
+    },
+    {
+      "key": "today_20260926_rain_phaya_thai",
+      "value": 203.0,
+      "unit": "mm/24h",
+      "tag": "VERIFIED",
+      "source_title": "รายงานประจำวัน DDS ฉบับที่ 269/69",
+      "source_url": null,
+      "page": null,
+      "note": "สนง.เขตพญาไท, 07:15-06:55 window."
+    },
+    {
+      "key": "bangkok_administrative_area",
+      "value": 1568.737,
+      "unit": "km^2",
+      "tag": "RELAYED",
+      "source_title": "commonly cited BMA administrative-area figure",
+      "source_url": null,
+      "page": null,
+      "note": "Well-known public figure for the Bangkok Metropolitan Administration's administrative area -- NOT found inside any document under raw/capacity for this task, so it is tagged RELAYED rather than VERIFIED (per this repo's rule: a claim is only VERIFIED when the source document was actually read for it). Used only as a fallback denominator for the bangkok_east upper-bound comparison since no east-zone-specific catchment area figure was found anywhere in raw/capacity either."
+    },
+    {
+      "key": "flood_history_2007_top_roads",
+      "value": null,
+      "unit": null,
+      "tag": "VERIFIED",
+      "source_title": "สถิติข้อมูลปี 2550, กองสารสนเทศระบายน้ำ สำนักการระบายน้ำ กทม.",
+      "source_url": "https://dds.bangkok.go.th/public_content/files/001/0003650_1.pdf",
+      "page": 9,
+      "note": "Top-10 flood-prone roads by incident count in 2007: (1) สุขุมวิท 18x, (2) พหลโยธิน 16x, (3) ลาดพร้าว 15x (วังทองหลาง/บางกะปิ -- same zone as Sammakorn/Ram53), (4) งามวงศ์วาน 14x, (5) พระราม 6 14x, (6) พัฒนาการ 14x, (7) แจ้งวัฒนะ 13x, (8) ศรีนครินทร์ 11x, (9) ศรีอยุธยา 10x, (10) ราชสีมา 10x. วังทองหลาง has been a weak point for at least 18 years, not a new problem."
+    }
+  ]
+}
