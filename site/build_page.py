@@ -111,7 +111,7 @@ AREA_LABELS = {
         "exit_place_word": "หมู่บ้าน",
         "zones_heading": "ซอยไหนต้องระวังอะไร",
         "pump_heading": "บึงและปั๊มในหมู่บ้าน",
-        "pump_caption": "ระดับน้ำและปั๊มเดิน/ปั๊มเสีย 4 สถานีของหมู่บ้าน",
+        "pump_caption": "ระดับน้ำและปั๊มเดิน/ขัดข้อง 4 สถานีของหมู่บ้าน",
         "canal_north_label": "ฝั่งเหนือ — คลองแสนแสบ",
         "canal_south_label": "ฝั่งใต้ — คลองทับช้าง / ประเวศ / หัวหมาก",
         "pond_word": "บึงในหมู่บ้าน",
@@ -124,7 +124,7 @@ AREA_LABELS = {
         "exit_place_word": "ซอย",
         "zones_heading": "สถานการณ์ในซอย",
         "pump_heading": "สถานีสูบน้ำใกล้ซอย",
-        "pump_caption": "ระดับน้ำและปั๊มเดิน/ปั๊มเสีย 4 สถานีใกล้ซอย",
+        "pump_caption": "ระดับน้ำและปั๊มเดิน/ขัดข้อง 4 สถานีใกล้ซอย",
         "canal_north_label": "ฝั่งเหนือ",
         "canal_south_label": "ฝั่งใต้",
         "pond_word": "ปั๊มริมคลองใกล้ซอย",
@@ -259,7 +259,7 @@ def pump_wording(p, now_dt):
     ขัดข้อง and ไม่ได้เดิน counts -- callers must count each kind separately."""
     h = hours_ago(p.get("observed_at"), now_dt)
     if p.get("status_th") == "ขัดข้อง":
-        return "ปั๊มขัดข้อง (ตามที่ กทม. รายงาน)", "fail"
+        return ("กทม. รายงาน 'ขัดข้อง' (ไม่ทราบสาเหตุ: เครื่อง ไฟ หรือสัญญาณ — ตรวจหน้างานได้)", "fail")
     if h is None or h > 2:
         return "ไม่มีข้อมูลล่าสุด", "missing"
     if (p.get("pumps_on") or 0) == 0:
@@ -316,7 +316,7 @@ def build_watch_line(area, st, pc, now_dt, forecast):
     hw = next_high_water(area)
     candidates = []
     if pc["fail"] > 0:
-        candidates.append((3, f"ปั๊มบึงเสีย {pc['fail']} จุด"))
+        candidates.append((3, f"ปั๊มบึงขัดข้อง {pc['fail']} จุด"))
     if st["up_crit"] > 0:
         candidates.append((2, f"ต้นน้ำเกินเส้นอันตราย {st['up_crit']} จุด"))
     if st["fresh_crit"] > 0:
@@ -390,7 +390,7 @@ def build_indicator_tiles(area, st, pc, now_dt, pond_word):
         tiles.append(_tile("pump", "–", "ปั๊มบึง", "grey"))
     else:
         dot = "red" if pc["fail"] > 0 else ("amber" if pc["idle"] > 0 else ("grey" if pc["ok"] == 0 else "green"))
-        label = "ปั๊มขัดข้อง (กทม. รายงาน)" if pc["fail"] > 0 else "ปั๊มบึง"
+        label = "ขัดข้อง (กทม. รายงาน)" if pc["fail"] > 0 else "ปั๊มบึง"
         newest_pump = max((p.get("observed_at") for p in pumps if p.get("observed_at")), default=None)
         idle_line = f"ไม่ได้เดิน {pc['idle']}" if pc["idle"] > 0 else None
         tiles.append(_tile("pump", f"{pc['fail']}/{total_pumps}", label, dot, obs_time_label(newest_pump, now_dt),
@@ -447,9 +447,42 @@ def build_indicator_tiles(area, st, pc, now_dt, pond_word):
     return "".join(tiles)
 
 
-def build_hours_list(area, st, pc, now_dt, forecast):
-    """Up to 4 icon-led lines, each 8 words or fewer (maintainer ruling
-    2026-09-26: infographic style)."""
+# canal-vs-ground reference station per area (2026-09-26, founder-requested):
+# ground class 0-0.5 m MSL, RTSD 2010 topo map, +-0.5 m map-class tolerance.
+CANAL_VS_GROUND_STATION = {"sammakorn": "WL.TPK.03", "ram53": "WL.KJN.01"}
+GROUND_LEVEL_MSL_M = 0.5
+
+
+def build_canal_vs_ground_line(area, area_id, now_dt):
+    """One hero-list line comparing the back-canal water level to the
+    0-0.5 m MSL ground/pond class (RTSD 2010, +-0.5 m map tolerance): if the
+    canal already sits above the ground class, water cannot drain into it by
+    gravity alone. Falls back to the nearest fresh (<=24h) north/south canal
+    station when the named station is missing or stale."""
+    stations = area.get("stations_near") or []
+    wanted_code = CANAL_VS_GROUND_STATION.get(area_id)
+    station = next((s for s in stations if s.get("code") == wanted_code
+                     and s.get("value_m") is not None), None)
+    if station is None:
+        candidates = [s for s in stations
+                      if s.get("role") in ("north", "south") and s.get("value_m") is not None
+                      and (h := hours_ago(s.get("observed_at"), now_dt)) is not None and h <= 24]
+        candidates.sort(key=lambda s: s.get("dist_km") if s.get("dist_km") is not None else 999)
+        station = candidates[0] if candidates else None
+    if station is None:
+        return None
+    diff = station["value_m"] - GROUND_LEVEL_MSL_M
+    sign = "+" if diff >= 0 else ""
+    verdict = "ไหลลงคลองเองได้" if station["value_m"] < 0.3 else "น้ำยังไหลลงคลองเองไม่ได้"
+    wave_ic = icon("wave", 20)
+    return (f"{wave_ic} คลองหลังบ้าน vs พื้น — คลองสูงกว่าพื้น ~{sign}{diff:.1f} ม. "
+            f"(พื้น ชั้นแผนที่ ±0.5 ม., RTSD 2010) → {verdict}")
+
+
+def build_hours_list(area, st, pc, now_dt, forecast, area_id=None):
+    """Up to 5 icon-led lines, each 8 words or fewer (maintainer ruling
+    2026-09-26: infographic style; 5th line = canal-vs-ground indicator,
+    founder-requested 2026-09-26)."""
     lines = []
     forecast = forecast or {}
     rain_ic = icon("rain", 20)
@@ -481,7 +514,11 @@ def build_hours_list(area, st, pc, now_dt, forecast):
     if len(st["fresh_near"]) > 0:
         lines.append(f"{wave_ic} คลอง {st['fresh_crit']}/{len(st['fresh_near'])} จุดเกินเส้นอันตราย")
 
-    lines = lines[:4]
+    canal_vs_ground = build_canal_vs_ground_line(area, area_id, now_dt)
+    if canal_vs_ground:
+        lines.append(canal_vs_ground)
+
+    lines = lines[:5]
     return "".join(f'<li><span class="why-text">{ln}</span></li>' for ln in lines)
 
 
@@ -573,23 +610,28 @@ def build_pump_rows(area, now_dt):
 # ---------------- canals ----------------
 
 def canal_row_html(s, now_dt):
+    # Short per-station threshold numbers only (no long "เกณฑ์ (ม. เทียบระดับน้ำในคลอง):"
+    # label repeated on every row -- that explanation now lives ONCE as a .table-lead note
+    # above the table). Combined with the observed-time label into one small grey meta
+    # line, matching the pump/pond card's line-4 pattern.
     thresh = []
     if s.get("warning") is not None:
-        thresh.append(f"เส้นเตือน {s['warning']:.2f}")
+        thresh.append(f"เตือน {s['warning']:.2f}")
     if s.get("critical") is not None:
-        thresh.append(f"เส้นอันตราย {s['critical']:.2f}")
+        thresh.append(f"อันตราย {s['critical']:.2f}")
     if s.get("bank") is not None:
-        thresh.append(f"ล้นตลิ่ง {s['bank']:.2f}")
-    thresh_html = (f'<br><span class="thresh">เกณฑ์ (ม. เทียบระดับน้ำในคลอง): {" / ".join(thresh)}</span>'
-                   if thresh else "")
+        thresh.append(f"ตลิ่ง {s['bank']:.2f}")
+    thresh_short = " · ".join(thresh)
+    time_label = obs_time_label(s.get("observed_at"), now_dt)
+    meta_line = f"{thresh_short} · {time_label}" if thresh_short else time_label
     value = "–" if s.get("value_m") is None else f"{s['value_m']:.2f} ม."
     return (
         "<tr>"
         f'<td data-label="สถานี">{esc(s.get("name"))}<br><span class="small">{esc(s.get("code"))} · ห่าง '
-        f'{s.get("dist_km", 0):.1f} กม.</span>{thresh_html}</td>'
+        f'{s.get("dist_km", 0):.1f} กม.</span></td>'
         f'<td class="num" data-label="ระดับน้ำ">{esc(value)}</td>'
         f'<td data-label="สถานะ">{status_pill_aged_html(s.get("status"), s.get("observed_at"), now_dt)}</td>'
-        f'<td data-label="เวลา">{fmt_time_full(s.get("observed_at"), now_dt)}</td>'
+        f'<td data-label="เกณฑ์ / เวลา">{esc(meta_line)}</td>'
         "</tr>"
     )
 
@@ -1476,7 +1518,7 @@ def build_area_fragments(area_id, area, now_dt, forecast, bangkok_east=None, bri
     rain_forecast_note = area.get("rain_forecast_area_note")
     watch_line = build_watch_line(area, st, pc, now_dt, forecast)
     indicator_tiles = build_indicator_tiles(area, st, pc, now_dt, labels["pond_word"])
-    hours_list = build_hours_list(area, st, pc, now_dt, forecast)
+    hours_list = build_hours_list(area, st, pc, now_dt, forecast, area_id=area_id)
     wb_html = build_worsen_better_html(area, st, pc, now_dt, forecast)
     advice_html = build_advice_html()
 

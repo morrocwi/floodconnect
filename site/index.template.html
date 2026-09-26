@@ -103,6 +103,7 @@
 
   *{ box-sizing: border-box; }
   html{ -webkit-text-size-adjust: 100%; }
+  html, body{ max-width:100%; overflow-x:hidden; }
   body{
     margin: 0;
     background: var(--bg);
@@ -115,7 +116,8 @@
     padding-inline: var(--gutter);
     padding-block: 14px 48px;
   }
-  main{ max-width: 640px; margin-inline: auto; }
+  main{ max-width: 640px; margin-inline: auto; width:100%; }
+  svg{ max-width:100%; }
   h1,h2,h3{ font-family: var(--font-display); line-height: 1.3; color: var(--text); }
   h1{ font-size: 1.6rem; margin: 0; font-weight:700; text-wrap: balance; }
   .subtitle{ font-size:1rem; color: var(--text-muted); margin: 2px 0 0; }
@@ -323,9 +325,9 @@
   .tile-time{ font-size:0.72rem; color: var(--hero-muted); }
 
   /* ---- tables ---- */
-  .tablewrap{ overflow-x:auto; margin-bottom:14px; border:1px solid var(--border); border-radius:8px; }
+  .tablewrap{ overflow-x:auto; max-width:100%; margin-bottom:14px; border:1px solid var(--border); border-radius:8px; }
   .table-lead{ font-size:1rem; color: var(--text-muted); margin: 0 0 8px; }
-  table{ border-collapse: collapse; width:100%; font-size:1rem; }
+  table{ border-collapse: collapse; width:100%; max-width:100%; font-size:1rem; }
   caption{ text-align:left; caption-side: top; padding:8px 12px 6px; }
   th, td{ padding:9px 12px; border-bottom:1px solid var(--border); text-align:left; vertical-align:top; }
   thead th{ background: var(--surface-2); font-weight:700; }
@@ -333,15 +335,15 @@
   .thresh{ color:var(--text-muted); font-size:0.9rem; }
 
   /* Desktop/tablet: normal table, wide enough to need a min-width + horizontal scroll.
-     Phones (<=480px): stacked "card" rows instead -- no min-width, no sideways scroll,
+     Phones (<=600px): stacked "card" rows instead -- no min-width, no sideways scroll,
      each cell labelled with its column header via data-label. */
-  @media (min-width:481px){
+  @media (min-width:601px){
     table{ min-width:480px; }
   }
-  @media (max-width:480px){
-    .tablewrap{ border:none; overflow-x:visible; }
+  @media (max-width:600px){
+    .tablewrap{ border:none; overflow-x:visible; max-width:100%; }
     .tablewrap table, .tablewrap thead, .tablewrap tbody, .tablewrap tr, .tablewrap th, .tablewrap td{
-      display:block; width:100%;
+      display:block; width:100%; min-width:0; max-width:100%;
     }
     .tablewrap caption{ display:block; width:100%; padding:0 0 8px; margin-bottom:0; }
     .tablewrap thead{ position:absolute; left:-9999px; top:-9999px; } /* keep for screen readers via table semantics lost, so repeat header as data-label instead */
@@ -349,30 +351,45 @@
       border:1px solid var(--border); border-radius:8px; padding:10px 12px; margin-bottom:10px; background:var(--surface);
     }
     .tablewrap tbody td{
-      border:none; padding:6px 0; display:flex; gap:10px; align-items:flex-start;
+      border:none; padding:6px 0; display:flex; gap:10px; align-items:flex-start; min-width:0;
     }
     .tablewrap tbody td::before{
       content: attr(data-label); flex:0 0 42%; max-width:42%; font-weight:700; color:var(--text-muted);
     }
 
-    /* ---- pump cards: full-width bold title row + right-aligned status, code on its own
-       small line, narrower value-label column -- fixes the tall cramped key/value grid and
-       the mid-word Thai line breaks the reviewer flagged. Scoped to .pump-table only so the
-       generic card layout above is untouched for canal/tide/exit/hospital tables. ---- */
-    .pump-table tbody tr{ display:flex; flex-wrap:wrap; column-gap:8px; align-items:flex-start; }
-    .pump-table tbody td{ flex:1 1 100%; }
+    /* ---- pump cards: full-width bold title row, value+status pill together on one big
+       line, pump-count + time as a small grey meta line below. Scoped to .pump-table only
+       so the generic card layout above is untouched for tide/exit/hospital tables. ---- */
+    .pump-table tbody tr{ display:flex; flex-wrap:wrap; column-gap:10px; row-gap:2px; align-items:baseline; }
+    .pump-table tbody td{ flex:0 0 auto; min-width:0; }
+    .pump-table tbody td::before{ display:none; }
     .pump-table tbody td:first-child{
-      order:1; flex:1 1 auto; display:block; font-weight:700; font-size:1.05rem;
+      order:1; flex:1 1 100%; display:block; font-weight:700; font-size:1.05rem;
       padding-bottom:2px; word-break:keep-all; overflow-wrap:break-word;
     }
-    .pump-table tbody td:first-child::before{ display:none; }
     .pump-table tbody td:first-child .nw{ white-space:nowrap; }
-    .pump-table tbody td:nth-child(4){ order:2; flex:0 0 auto; margin-inline-start:auto; }
-    .pump-table tbody td:nth-child(4)::before{ display:none; }
-    .pump-table tbody td:nth-child(2){ order:3; }
-    .pump-table tbody td:nth-child(3){ order:4; }
-    .pump-table tbody td:nth-child(5){ order:5; }
-    .pump-table tbody td::before{ flex:0 0 7.5em; max-width:7.5em; }
+    .pump-table tbody td:nth-child(2){ order:2; font-size:1.2rem; font-weight:700; } /* ระดับน้ำ */
+    .pump-table tbody td:nth-child(4){ order:3; } /* สถานะ pill, same line as value */
+    .pump-table tbody td:nth-child(3){ order:4; flex:1 1 100%; font-size:0.85rem; color:var(--text-muted); margin-top:2px; } /* ปั๊มเดิน */
+    .pump-table tbody td:nth-child(5){ order:5; font-size:0.85rem; color:var(--text-muted); } /* เวลา, same line as ปั๊มเดิน */
+    .pump-table tbody td:nth-child(5)::before{ content:"· "; color:var(--text-muted); }
+
+    /* ---- canal/water-level cards (คลองรอบบ้าน north/south/upstream/stale): station
+       name (wraps normally) -> small grey code+distance -> big value + status pill on
+       one line -> one small grey line with the short threshold numbers + observed time.
+       The long "เกณฑ์ (ม. เทียบระดับน้ำในคลอง)" explanation lives ONCE as a note above
+       the table (see .table-lead), never repeated per row. ---- */
+    .canal-table tbody tr{ display:flex; flex-wrap:wrap; column-gap:10px; row-gap:4px; align-items:baseline; }
+    .canal-table tbody td{ flex:0 0 auto; min-width:0; padding:0; }
+    .canal-table tbody td::before{ display:none; }
+    .canal-table tbody td:first-child{
+      order:1; flex:1 1 100%; display:block; font-weight:700; font-size:1.05rem;
+      overflow-wrap:break-word;
+    }
+    .canal-table tbody td:first-child .small{ display:block; font-weight:400; margin-top:2px; }
+    .canal-table tbody td:nth-child(2){ order:2; font-size:1.25rem; font-weight:700; } /* ระดับน้ำ */
+    .canal-table tbody td:nth-child(3){ order:3; } /* สถานะ pill, same line as value */
+    .canal-table tbody td:nth-child(4){ order:4; flex:1 1 100%; font-size:0.85rem; color:var(--text-muted); } /* เกณฑ์ + เวลา */
   }
 
   .pill{
@@ -532,26 +549,27 @@
     <details id="canal-details-__AREA__">
       <summary><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c1.5-2 3-2 4.5 0s3 2 4.5 0 3-2 4.5 0 3 2 4.5 0"/><path d="M2 9c1.5-2 3-2 4.5 0s3 2 4.5 0 3-2 4.5 0 3 2 4.5 0"/></svg><span>คลองรอบบ้าน</span></summary>
       <div class="tier-body">
+        <p class="table-lead">เกณฑ์ของ กทม. เทียบระดับน้ำในคลอง (ม.): เส้นเตือน / เส้นอันตราย / ล้นตลิ่ง — ตัวเลขเฉพาะจุดของแต่ละสถานีอยู่ในบรรทัดเล็กใต้ค่าน้ำของแถวนั้น</p>
         <h3 style="margin:0 0 6px;font-size:1.05rem;">{{CANAL_NORTH_LABEL}}</h3>
-        <div class="tablewrap"><table>
-          <thead><tr><th>สถานี</th><th>ระดับน้ำ</th><th>สถานะ</th><th>เวลา</th></tr></thead>
+        <div class="tablewrap canal-table"><table>
+          <thead><tr><th>สถานี</th><th>ระดับน้ำ</th><th>สถานะ</th><th>เกณฑ์ / เวลา</th></tr></thead>
           <tbody id="canal-north-__AREA__">{{CANAL_NORTH_ROWS}}</tbody>
         </table></div>
         <h3 style="margin:14px 0 6px;font-size:1.05rem;">{{CANAL_SOUTH_LABEL}}</h3>
-        <div class="tablewrap"><table>
-          <thead><tr><th>สถานี</th><th>ระดับน้ำ</th><th>สถานะ</th><th>เวลา</th></tr></thead>
+        <div class="tablewrap canal-table"><table>
+          <thead><tr><th>สถานี</th><th>ระดับน้ำ</th><th>สถานะ</th><th>เกณฑ์ / เวลา</th></tr></thead>
           <tbody id="canal-south-__AREA__">{{CANAL_SOUTH_ROWS}}</tbody>
         </table></div>
         <h3 style="margin:14px 0 6px;font-size:1.05rem;">ต้นน้ำ (ลาดกระบัง / มีนบุรี / ประเวศ)</h3>
-        <div class="tablewrap"><table>
-          <thead><tr><th>สถานี</th><th>ระดับน้ำ</th><th>สถานะ</th><th>เวลา</th></tr></thead>
+        <div class="tablewrap canal-table"><table>
+          <thead><tr><th>สถานี</th><th>ระดับน้ำ</th><th>สถานะ</th><th>เกณฑ์ / เวลา</th></tr></thead>
           <tbody id="canal-upstream-__AREA__">{{CANAL_UPSTREAM_ROWS}}</tbody>
         </table></div>
         <details id="canal-stale-details-__AREA__">
           <summary>ข้อมูลเก่า (เกิน 24 ชม. หรือสถานีไกลกว่า 5 กม.)</summary>
           <div class="tier-body">
-            <div class="tablewrap"><table>
-              <thead><tr><th>สถานี</th><th>ระดับน้ำ</th><th>สถานะ</th><th>เวลา</th></tr></thead>
+            <div class="tablewrap canal-table"><table>
+              <thead><tr><th>สถานี</th><th>ระดับน้ำ</th><th>สถานะ</th><th>เกณฑ์ / เวลา</th></tr></thead>
               <tbody id="canal-stale-__AREA__">{{CANAL_STALE_ROWS}}</tbody>
             </table></div>
           </div>
