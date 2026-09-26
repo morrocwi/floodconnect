@@ -42,6 +42,8 @@ CLI:
     python3 live_water_level.py --probe
     python3 live_water_level.py --attach output/bangkok_canals.graphml --out output/bangkok_canals.graphml
 """
+from __future__ import annotations
+
 import argparse
 import datetime
 import json
@@ -52,7 +54,13 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-import networkx as nx
+try:
+    import networkx as nx
+except ImportError:  # pragma: no cover -- only needed by the --attach/graphml CLI path,
+    # not by collect.py/readout.py, which only use this module's fetch/classify/age_hours
+    # helpers. Kept optional so the live-collection pipeline never fails on a missing
+    # heavy dependency it doesn't actually need.
+    nx = None
 
 HERE = Path(__file__).parent
 RAW_LIVE_DIR = HERE / "raw" / "live"
@@ -765,6 +773,11 @@ def run_probe() -> None:
 
 
 def run_attach(graph_path: Path, out_path: Path, from_file: Path = None) -> None:
+    if nx is None:
+        raise SystemExit(
+            "networkx is required for --attach (graph read/write); install it with "
+            "`pip install networkx` -- it is not needed for --probe or the collect.py path."
+        )
     G = nx.read_graphml(graph_path)
     all_stations = []
 

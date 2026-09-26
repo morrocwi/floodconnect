@@ -34,6 +34,12 @@
     /* dedicated flood-tier ladder -- stripe/dot/label all read from these, never from
        --accent/--accent-2, so tier colour can never collide with brand/UI colour again. */
     --tier-3: #C0392B; --tier-2: #D98A1F; --tier-1: #C9A227; --tier-1-text: #7A5F00; --tier-0: #8A9AA0;
+    /* one hairline used by every card/divider in the page (maintainer ruling
+       2026-09-26: "one card language" -- 16px radius, 1px hairline, soft
+       shadow reserved for the hero only). Same value as --border, named
+       separately so card code never has to know about the legacy token. */
+    --line: #CBD8DC;
+    --card-radius: 16px;
     --font-body: "Noto Sans Thai","Sarabun",system-ui,-apple-system,"Segoe UI",sans-serif;
     --font-display: "Noto Sans Thai","Sarabun",system-ui,sans-serif;
     color-scheme: light;
@@ -64,6 +70,7 @@
       --hero-muted: rgba(233,241,243,.72);
       --hero-border: rgba(233,241,243,.24);
       --tier-3: #FF7A68; --tier-2: #F5BB4E; --tier-1: #E6C95A; --tier-1-text: #E6C95A; --tier-0: #9AACB2;
+      --line: #2C4450;
     }
   }
   :root[data-theme="dark"]{
@@ -91,6 +98,7 @@
     --hero-muted: rgba(233,241,243,.72);
     --hero-border: rgba(233,241,243,.24);
     --tier-3: #FF7A68; --tier-2: #F5BB4E; --tier-1: #E6C95A; --tier-1-text: #E6C95A; --tier-0: #9AACB2;
+    --line: #2C4450;
   }
 
   *{ box-sizing: border-box; }
@@ -109,11 +117,18 @@
   }
   main{ max-width: 640px; margin-inline: auto; }
   h1,h2,h3{ font-family: var(--font-display); line-height: 1.3; color: var(--text); }
-  h1{ font-size: 1.6rem; margin: 0; font-weight:700; }
+  h1{ font-size: 1.6rem; margin: 0; font-weight:700; text-wrap: balance; }
   .subtitle{ font-size:1rem; color: var(--text-muted); margin: 2px 0 0; }
-  h2{ font-size: 1.2rem; margin: 0 0 10px; padding-top: 28px; border-top: 3px solid var(--border); padding-block-start: 20px; }
-  section:first-of-type h2{ border-top: none; padding-top: 0; }
-  p{ margin: 0 0 10px; }
+  /* section headers: 13px uppercase-tracking label + icon (maintainer ruling
+     2026-09-26: "one card language"), not a bare oversized heading. */
+  h2.sec-label, summary.sec-label{
+    display:flex; align-items:center; gap:8px;
+    font-size:0.8125rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color: var(--text-muted); margin: 0 0 14px; padding-top: 32px; border-top: 1px solid var(--line);
+    padding-block-start: 24px;
+  }
+  section:first-of-type h2.sec-label{ border-top: none; padding-top: 0; }
+  p{ margin: 0 0 10px; max-width: 62ch; }
   a{ color: var(--link); }
   a:not(:hover){ text-decoration-thickness: 1.5px; }
   small, .small{ font-size: 1rem; color: var(--text-muted); }
@@ -155,11 +170,15 @@
 
   /* ---- hero: calm navy card (dedicated --hero-bg/--on-hero, both themes -- never --accent) ---- */
   .banner{
-    padding: 18px 16px 20px; margin: 2px 0 14px; border-radius:12px;
+    padding: 24px 22px 24px; margin: 2px 0 24px; border-radius: var(--card-radius);
     background: var(--hero-bg); color: var(--on-hero);
+    /* soft 2-layer shadow reserved for the hero card only (maintainer ruling
+       2026-09-26: "one card language" -- every other card is flat + hairline). */
+    box-shadow: 0 1px 2px rgba(10,22,29,.16), 0 12px 28px -8px rgba(10,22,29,.28);
   }
   .banner .place{
-    font-size:1rem; letter-spacing:.03em; color: var(--hero-muted); margin:0 0 10px; font-weight:500;
+    display:flex; align-items:center; gap:8px;
+    font-size:1rem; letter-spacing:.03em; color: var(--hero-muted); margin:0 0 12px; font-weight:500;
   }
   .status-heading{ margin: 0 0 10px; }
   .status-heading .status-place{
@@ -217,44 +236,84 @@
      Colour comes from the same .label-* class the text label already uses, never a new hue. ---- */
   .dot{ width:.8em; height:.8em; vertical-align:-.05em; margin-right:.35em; flex:0 0 auto; }
 
+  /* ---- premium icon system (maintainer ruling 2026-09-26): outline inline-SVG,
+     currentColor, no fill -- replaces every emoji glyph in section headers
+     and bullets. Sizes only; colour always inherits from context. ---- */
+  svg.ic{ display:inline-block; vertical-align:-.2em; flex:0 0 auto; }
+  .ic-16{ width:16px; height:16px; }
+  .ic-20{ width:20px; height:20px; }
+  .ic-24{ width:24px; height:24px; }
+  .ic-40{ width:40px; height:40px; }
+
   section{ margin-bottom: 4px; }
 
-  /* ---- zone cards ---- */
-  .tier-card{ border-radius:8px; border:1px solid var(--border); overflow:hidden; margin-bottom:12px; background:var(--surface); }
-  .tier-card .stripe{ height:8px; width:100%; }
-  .tier-card .body{ padding:14px 16px; }
-  .tier-card .name{ font-weight:700; font-size:1.1rem; margin-bottom:8px; }
-  .tier-card .prepline{ font-weight:600; margin:8px 0 0; }
+  /* ---- card language: one shared look for every card on the page -- 16px
+     radius, 1px hairline, 20-24px padding. Severity is a 4px LEFT RAIL plus a
+     text pill, never a full-colour fill (calm-not-alarming, rule kept from
+     the base skill). ---- */
+  .tier-card{
+    border-radius: var(--card-radius); border:1px solid var(--line); border-left-width:4px;
+    overflow:hidden; margin-bottom:12px; background:var(--surface);
+  }
+  .tier-card .body{ padding:20px 22px; }
+  .tier-card .name{ display:flex; align-items:center; gap:10px; font-weight:700; font-size:1.1rem; margin-bottom:10px; }
+  .tier-card .prepline{ font-weight:600; margin:10px 0 0; font-size:0.98rem; }
   .zone-chip-list{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:2px; }
   .zone-chip{
-    border:1px solid var(--border); border-radius:6px; padding:5px 10px; font-size:0.98rem;
-    background: var(--surface-2);
+    border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:1rem;
+    background: var(--surface-2); min-height:28px; display:inline-flex; align-items:center;
   }
-  .stripe-red{ background: var(--tier-3); } .label-red{ color: var(--tier-3); }
-  .stripe-orange{ background: var(--tier-2); } .label-orange{ color: var(--tier-2); }
-  .stripe-yellow{ background: var(--tier-1); } .label-yellow{ color: var(--tier-1-text); }
-  .stripe-grey{ background: var(--tier-0); } .label-grey{ color: var(--tier-0); }
+  .rail-red{ border-left-color: var(--tier-3); } .label-red{ color: var(--tier-3); }
+  .rail-orange{ border-left-color: var(--tier-2); } .label-orange{ color: var(--tier-2); }
+  .rail-yellow{ border-left-color: var(--tier-1); } .label-yellow{ color: var(--tier-1-text); }
+  .rail-grey{ border-left-color: var(--tier-0); } .label-grey{ color: var(--tier-0); }
+  .pill-tier-red{ color: var(--tier-3); }
+  .pill-tier-orange{ color: var(--tier-2); }
+  .pill-tier-yellow{ color: var(--tier-1-text); }
+  .pill-tier-grey{ color: var(--tier-0); }
 
-  details{ border:1px solid var(--border); border-radius:8px; margin-bottom:10px; background:var(--surface); }
+  details{ border:1px solid var(--line); border-radius: var(--card-radius); margin-bottom:10px; background:var(--surface); }
+  details.tier-card{ border-left-width:4px; }
   details > summary{
-    cursor:pointer; list-style:none; padding:12px 16px; font-weight:700; min-height:48px;
-    display:flex; align-items:center; gap:8px;
+    cursor:pointer; list-style:none; padding:14px 22px; font-weight:700; min-height:48px;
+    display:flex; align-items:center; gap:10px;
   }
   details > summary::-webkit-details-marker{ display:none; }
-  details > summary::before{ content:"+"; display:inline-block; width:1em; font-weight:700; color: var(--accent-2); }
-  details[open] > summary::before{ content:"–"; }
-  details .tier-body{ padding: 0 16px 14px; }
+  details > summary::after{ content:"+"; display:inline-block; margin-inline-start:auto; width:1em; font-weight:700; color: var(--accent-2); }
+  details[open] > summary::after{ content:"–"; }
+  details .tier-body{ padding: 0 22px 18px; }
 
   /* ---- worsen/better two-column ---- */
-  .wb-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+  .wb-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin: 24px 0; }
   @media (max-width:520px){ .wb-grid{ grid-template-columns:1fr; } }
-  .wb-card{ border-radius:8px; border:1px solid var(--border); padding:14px 16px; background:var(--surface); }
-  .wb-card.worse{ border-top:4px solid var(--alert); }
-  .wb-card.better{ border-top:4px solid var(--ok); }
-  .wb-card h3{ font-size:1.05rem; margin:0 0 8px; }
-  .wb-card ul{ margin:0 0 8px; padding-inline-start:1.1em; }
-  .wb-card li{ margin-bottom:5px; font-size:1rem; }
-  .wb-card .action{ font-size:0.95rem; font-weight:600; color: var(--text-muted); margin:0; }
+  .wb-card{ border-radius: var(--card-radius); border:1px solid var(--line); border-left-width:4px; padding:20px 22px; background:var(--surface); }
+  .wb-card.worse{ border-left-color: var(--alert); }
+  .wb-card.better{ border-left-color: var(--ok); }
+  .wb-card h3{ font-size:0.95rem; margin:0 0 12px; font-weight:700; }
+  .wb-list{ list-style:none; margin:0 0 10px; padding:0; }
+  .wb-list li{ display:flex; align-items:flex-start; gap:10px; margin-bottom:10px; font-size:1rem; }
+  .wb-card .action{ font-size:0.92rem; font-weight:600; color: var(--text-muted); margin:0; }
+
+  /* ---- optional-advice section (short suggestions, icon-led) ---- */
+  .advice-list{ list-style:none; margin:0; padding:0; }
+  .advice-list li{
+    display:flex; align-items:center; gap:12px; padding:12px 4px; min-height:48px;
+    border-bottom:1px solid var(--line); font-size:1.05rem;
+  }
+  .advice-list li:last-child{ border-bottom:none; }
+
+  /* ---- hero infographic tile grid (maintainer ruling 2026-09-26: "more icons,
+     fewer words" -- replaces the old row-list of 5 lines) ---- */
+  .tile-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:0 0 16px; }
+  .tile{
+    background: rgba(255,255,255,.06); border:1px solid var(--hero-border); border-radius:12px;
+    padding:14px 12px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:4px;
+  }
+  .tile svg.ic{ color: var(--on-hero); margin-bottom:2px; }
+  .tile-value{ font-size:1.5rem; font-weight:700; color: var(--on-hero); line-height:1.1; }
+  .tile-label{ font-size:0.8rem; color: var(--hero-muted); line-height:1.3; }
+  .tile-status{ display:flex; align-items:center; gap:5px; font-size:0.8rem; color: var(--on-hero); font-weight:600; margin-top:2px; }
+  .tile-time{ font-size:0.72rem; color: var(--hero-muted); }
 
   /* ---- tables ---- */
   .tablewrap{ overflow-x:auto; margin-bottom:14px; border:1px solid var(--border); border-radius:8px; }
@@ -310,8 +369,8 @@
   }
 
   .pill{
-    display:inline-block; padding:3px 10px; border-radius:999px; font-weight:700; font-size:0.92rem;
-    border:1.5px solid currentColor;
+    display:inline-flex; align-items:center; min-height:28px; padding:4px 14px; border-radius:999px;
+    font-weight:700; font-size:0.92rem; border:1.5px solid currentColor;
   }
   .pill-ok{ color: var(--ok); }
   .pill-warn{ color: var(--warning-text); }
@@ -344,9 +403,9 @@
 
   /* ---- footer ---- */
   footer{ margin-top:30px; padding-top:20px; border-top:3px solid var(--border); font-size:1rem; color:var(--text-muted); }
-  footer h2{ font-size:1.1rem; border:none; padding:0; margin-bottom:8px; }
-  .sources-list{ padding-inline-start:1.1em; margin:0 0 14px; }
-  .sources-list li{ margin-bottom:6px; }
+  footer h2.sec-label{ border:none; padding:0; margin-bottom:12px; }
+  .sources-list{ list-style:none; padding:0; margin:0 0 14px; }
+  .sources-list li{ display:flex; align-items:flex-start; gap:8px; margin-bottom:8px; }
   .sources-list a{ display:inline-flex; align-items:center; min-height:44px; padding-inline:4px; }
   .hotline{ font-weight:700; color: var(--text); }
   .credit{ margin-top:14px; font-size:0.92rem; }
@@ -375,8 +434,8 @@
   <div class="area-select-wrap">
     <label for="area-select">เลือกพื้นที่ที่ต้องการดู</label>
     <select id="area-select" aria-label="เลือกพื้นที่ที่ต้องการดู">
-      <option value="sammakorn" selected>📍 หมู่บ้านสัมมากร (รามคำแหง 112)</option>
-      <option value="ram53">📍 ซอยรามคำแหง 53</option>
+      <option value="sammakorn" selected>หมู่บ้านสัมมากร (รามคำแหง 112)</option>
+      <option value="ram53">ซอยรามคำแหง 53</option>
     </select>
   </div>
 
@@ -393,10 +452,11 @@
       <p class="watch" id="banner-watch-__AREA__">{{STATUS_WATCH}}</p>
 
       <h3 class="why-heading">ทำไมถึงบอกแบบนี้</h3>
-      <ul class="why-list" id="why-list-__AREA__">{{WHY_LIST}}</ul>
+      <div class="tile-grid" id="why-list-__AREA__">{{WHY_LIST}}</div>
 
       <h3 class="hours-heading">อีก 3–5 ชั่วโมงข้างหน้า</h3>
       <ul class="hours-list" id="hours-list-__AREA__">{{HOURS_LIST}}</ul>
+
 
       <p class="note" id="banner-note-__AREA__">{{STATUS_NOTE}}</p>
       <div class="stale-ribbon-wrap" id="banner-stale-__AREA__"{{STALE_RIBBON_HIDDEN}}>
@@ -409,13 +469,23 @@
       </div>
     </section>
 
+    <section aria-labelledby="h-wb-__AREA__">
+      <h2 class="sec-label" id="h-wb-__AREA__"><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>แนวโน้ม</span></h2>
+      <div id="wb-__AREA__">{{WB_HTML}}</div>
+    </section>
+
+    <section aria-labelledby="h-advice-__AREA__">
+      <h2 class="sec-label" id="h-advice-__AREA__"><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>สิ่งที่อาจทำได้ในช่วงนี้ (พิจารณาเอง)</span></h2>
+      <div id="advice-__AREA__">{{ADVICE_HTML}}</div>
+    </section>
+
     <section aria-labelledby="h-zones-__AREA__">
-      <h2 id="h-zones-__AREA__">{{ZONES_HEADING}}</h2>
+      <h2 class="sec-label" id="h-zones-__AREA__">{{ZONES_HEADING}}</h2>
       <div id="zone-groups-__AREA__">{{ZONES_HTML}}</div>
     </section>
 
     <section aria-labelledby="h-pump-__AREA__">
-      <h2 id="h-pump-__AREA__">{{PUMP_HEADING}}</h2>
+      <h2 class="sec-label" id="h-pump-__AREA__">{{PUMP_HEADING}}</h2>
       <p class="table-lead" id="pump-lead-__AREA__">{{PUMP_LEAD}}</p>
       <div class="tablewrap pump-table">
         <table>
@@ -427,7 +497,7 @@
     </section>
 
     <details id="canal-details-__AREA__">
-      <summary>คลองรอบบ้าน</summary>
+      <summary><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c1.5-2 3-2 4.5 0s3 2 4.5 0 3-2 4.5 0 3 2 4.5 0"/><path d="M2 9c1.5-2 3-2 4.5 0s3 2 4.5 0 3-2 4.5 0 3 2 4.5 0"/></svg><span>คลองรอบบ้าน</span></summary>
       <div class="tier-body">
         <h3 style="margin:0 0 6px;font-size:1.05rem;">{{CANAL_NORTH_LABEL}}</h3>
         <div class="tablewrap"><table>
@@ -457,7 +527,7 @@
     </details>
 
     <details id="forecast-details-__AREA__">
-      <summary>ทางการบอกว่าอะไรกำลังมา</summary>
+      <summary><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 13v8"/><path d="M8 13v8"/><path d="M12 15v8"/><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/></svg><span>ทางการบอกว่าอะไรกำลังมา</span></summary>
       <div class="tier-body">
         <div class="fcard">
           <h3>ฝนที่ตกไปแล้วใน 24 ชั่วโมงที่ผ่านมา</h3>
@@ -492,7 +562,7 @@
     </details>
 
     <details id="exit-details-__AREA__">
-      <summary>ทางออกจาก{{EXIT_PLACE_WORD}}</summary>
+      <summary><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>ทางออกจาก{{EXIT_PLACE_WORD}}</span></summary>
       <div class="tier-body">
         <div class="tablewrap"><table>
           <thead><tr><th>เส้นทาง</th><th>รายงานล่าสุด</th></tr></thead>
@@ -508,7 +578,7 @@
     </details>
 
     <details id="community-details-__AREA__">
-      <summary>เสียงจากอินเทอร์เน็ต</summary>
+      <summary><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>เสียงจากอินเทอร์เน็ต</span></summary>
       <div class="tier-body">
         <p class="small">รายงานสาธารณะที่คนในพื้นที่โพสต์ อ่านคู่กับข้อมูลทางการ ไม่เก็บชื่อผู้โพสต์ <span class="small">(social listening)</span></p>
         <div class="tablewrap"><table>
@@ -519,7 +589,7 @@
     </details>
 
     <details id="help-details-__AREA__">
-      <summary>ถ้าต้องการความช่วยเหลือ</summary>
+      <summary><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><span>ถ้าต้องการความช่วยเหลือ</span></summary>
       <div class="tier-body">
         <p class="hlp-line">หน้านี้ยังไม่มีเบอร์โทรฉุกเฉินที่ตรวจสอบจากแหล่งข้อมูลทางการที่ใช้สร้างหน้านี้
           — ดูลิงก์หน่วยงาน (สสน., สำนักการระบายน้ำ กทม., สำนักงานเขต) ในหัวข้อ "แหล่งข้อมูล" ท้ายหน้าเพื่อค้นเบอร์ที่ถูกต้อง
@@ -543,7 +613,7 @@
   <!--AREA_TEMPLATE_END-->
 
   <footer>
-    <h2>แหล่งข้อมูล</h2>
+    <h2 class="sec-label"><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>แหล่งข้อมูล</span></h2>
     <ul class="sources-list" id="sources-list">{{SOURCES_LIST}}</ul>
     <p><strong>รวบรวมข้อมูลจากภาครัฐโดยประชาชน ไม่ใช่ประกาศทางการ เป็นการอ่านค่าจากหน่วยงาน ไม่ใช่การพยากรณ์ อาจคลาดเคลื่อนหรือช้า โปรดตรวจสอบด้วยตัวเองอีกครั้ง</strong></p>
     <p class="credit">หน้านี้จัดทำขึ้นเพื่อให้ข้อมูลแก่คนในหมู่บ้านสัมมากร (รามคำแหง 112) และซอยรามคำแหง 53 ไม่ใช่หน่วยงานราชการ · ขอบคุณข้อมูลจาก สสน., สำนักการระบายน้ำ กทม., กรมอุทกศาสตร์ กองทัพเรือ, สำนักงานเขต และชาวบ้านที่ช่วยกันรายงาน</p>

@@ -352,125 +352,129 @@ def rain_band_word(mm):
     return "น้อย"
 
 
-def _why_li(emoji, label, value_text, time_text, dot):
-    time_html = f' <span class="why-time">({esc(time_text)})</span>' if time_text else ""
-    return (f'<li><span class="why-emoji">{emoji}</span>'
-            f'<span class="why-text"><strong>{esc(label)}</strong> — {esc(value_text)}{time_html}</span>'
-            f'<span class="why-dot why-dot-{dot}" aria-hidden="true"></span></li>')
+DOT_WORD = {"red": "สูง", "amber": "เฝ้าดู", "green": "ปกติ", "grey": "ไม่มีค่า"}
 
 
-def build_why_list(area, st, pc, now_dt, pond_word):
-    items = []
+def _tile(icon_name, value_text, label_text, dot, time_text=None):
+    """One infographic tile (maintainer ruling 2026-09-26): 40px icon, big bold
+    value, short label, colour dot + one status word. No paragraphs -- an
+    icon-grid the eye can scan in one pass."""
+    word = DOT_WORD.get(dot, DOT_WORD["grey"])
+    time_html = f'<span class="tile-time">{esc(time_text)}</span>' if time_text else ""
+    return (
+        '<div class="tile">'
+        f'{icon(icon_name, 40)}'
+        f'<div class="tile-value num">{esc(value_text)}</div>'
+        f'<div class="tile-label">{esc(label_text)}</div>'
+        f'<div class="tile-status"><span class="why-dot why-dot-{dot}" aria-hidden="true"></span>{word}</div>'
+        f'{time_html}'
+        '</div>'
+    )
 
-    # 1. ปั๊มบึงในหมู่บ้าน / ปั๊มริมคลองใกล้ซอย
+
+def build_indicator_tiles(area, st, pc, now_dt, pond_word):
+    """2-column infographic tile grid replacing the old row list -- one tile
+    per indicator: pump, canal, upstream, rain, tide (maintainer ruling
+    2026-09-26: 'more icons, fewer words')."""
+    tiles = []
+
+    # 1. ปั๊มบึง
     pumps = area.get("pumps") or []
-    clauses = []
-    if pc["fail"] > 0:
-        clauses.append(f"ขัดข้อง {pc['fail']} จุด")
-    if pc["idle"] > 0:
-        clauses.append(f"ไม่ได้เดิน {pc['idle']} จุด")
-    if not clauses and pc["missing"] > 0 and pc["ok"] == 0:
-        clauses.append("ไม่มีข้อมูลล่าสุด")
-    if not clauses:
-        on = sum((p.get("pumps_on") or 0) for p in pumps)
-        total = sum((p.get("pumps_total") or 0) for p in pumps)
-        clauses.append(f"ปกติ ปั๊มเดิน {on}/{total} จุด" if pumps else "ไม่มีข้อมูลปั๊ม")
-    dot = "red" if pc["fail"] > 0 else ("amber" if pc["idle"] > 0 else ("grey" if pc["ok"] == 0 else "green"))
-    newest_pump = max((p.get("observed_at") for p in pumps if p.get("observed_at")), default=None)
-    items.append(_why_li("🏊", pond_word, ", ".join(clauses), obs_time_label(newest_pump, now_dt), dot))
+    total_pumps = len(pumps)
+    problems = pc["fail"] + pc["idle"]
+    if total_pumps == 0:
+        tiles.append(_tile("pump", "–", "ปั๊มบึง", "grey"))
+    else:
+        dot = "red" if pc["fail"] > 0 else ("amber" if pc["idle"] > 0 else ("grey" if pc["ok"] == 0 else "green"))
+        label = "ปั๊มขัดข้อง" if problems > 0 else "ปั๊มบึง"
+        newest_pump = max((p.get("observed_at") for p in pumps if p.get("observed_at")), default=None)
+        tiles.append(_tile("pump", f"{problems}/{total_pumps}", label, dot, obs_time_label(newest_pump, now_dt)))
 
     # 2. คลองรอบบ้าน
     fresh_near = st["fresh_near"]
     crit = st["fresh_crit"]
     total = len(fresh_near)
     if total == 0:
-        items.append(_why_li("🌊", "คลองรอบบ้าน", "ไม่มีข้อมูลสด (≤24 ชม., ≤5 กม.)", None, "grey"))
+        tiles.append(_tile("wave", "–", "คลองรอบบ้าน", "grey"))
     else:
-        text = f"เกินเส้นอันตราย {crit} จาก {total} จุด" if crit > 0 else f"ปกติ {total} จุด"
         newest = max((s.get("observed_at") for s in fresh_near if s.get("observed_at")), default=None)
-        items.append(_why_li("🌊", "คลองรอบบ้าน", text, obs_time_label(newest, now_dt),
-                              "red" if crit > 0 else "green"))
+        tiles.append(_tile("wave", f"{crit}/{total}", "คลองเกินเส้นอันตราย", "red" if crit > 0 else "green",
+                            obs_time_label(newest, now_dt)))
 
     # 3. น้ำจากต้นทาง
     fresh_up = st["fresh_up"]
     up_crit_stations = [s for s in fresh_up if s.get("status") in ("CRITICAL", "OVERBANK")]
     up_total = len(fresh_up)
     if up_total == 0:
-        items.append(_why_li("🔗", "น้ำจากต้นทาง", "ไม่มีข้อมูลสด", None, "grey"))
-    elif not up_crit_stations:
-        items.append(_why_li("🔗", "น้ำจากต้นทาง", f"ปกติ (0/{up_total} จุด)", None, "green"))
+        tiles.append(_tile("link", "–", "ต้นน้ำสูง", "grey"))
     else:
-        places = []
-        for s in up_crit_stations:
-            name = s.get("short_name") or s.get("name") or ""
-            if name and name not in places:
-                places.append(name)
-        places_text = ", ".join(places[:3])
-        dot = "red" if len(up_crit_stations) >= up_total / 2.0 else "amber"
-        items.append(_why_li("🔗", "น้ำจากต้นทาง",
-                              f"{places_text} ยังสูง ({len(up_crit_stations)}/{up_total} จุด)", None, dot))
+        dot = "red" if up_crit_stations and len(up_crit_stations) >= up_total / 2.0 else \
+            ("amber" if up_crit_stations else "green")
+        tiles.append(_tile("link", f"{len(up_crit_stations)}/{up_total}", "ต้นน้ำสูง", dot))
 
     # 4. ฝน 24 ชม.
     rain = area.get("rain")
     if rain and rain.get("mm_24h") is not None:
         mm = rain["mm_24h"]
-        word = rain_band_word(mm)
-        loc = f"{rain.get('station') or 'สถานีใกล้เคียง'}, ห่าง {rain.get('dist_km', 0):.1f} กม."
         dot = "red" if mm > 90 else ("amber" if mm >= 30 else "green")
-        items.append(_why_li("🌧️", "ฝน 24 ชม.", f"{mm:.0f} มม. {word}", loc, dot))
+        tiles.append(_tile("rain", f"{mm:.0f} มม.", "ฝน 24 ชม.", dot))
     else:
-        items.append(_why_li("🌧️", "ฝน 24 ชม.", "ไม่มีข้อมูล", None, "grey"))
+        tiles.append(_tile("rain", "–", "ฝน 24 ชม.", "grey"))
 
     # 5. น้ำหนุน
     hw = next_high_water(area)
     if hw:
         hw_dt = to_bkk(hw.get("time"))
         height = hw.get("height_m")
-        h_text = f"{height:+.1f} ม." if height is not None else "--"
-        items.append(_why_li("🌕", "น้ำหนุน", f"ขึ้นสูงสุด {thai_clock_exact(hw_dt)} ({h_text})", None, "grey"))
+        h_text = f"{height:+.1f} ม." if height is not None else "–"
+        tiles.append(_tile("moon", h_text, f"น้ำหนุน {thai_clock_exact(hw_dt)}", "grey"))
     else:
-        items.append(_why_li("🌕", "น้ำหนุน", "ไม่มีข้อมูล", None, "grey"))
+        tiles.append(_tile("moon", "–", "น้ำหนุน", "grey"))
 
-    return "".join(items)
+    return "".join(tiles)
 
 
 def build_hours_list(area, st, pc, now_dt, forecast):
+    """Up to 4 icon-led lines, each 8 words or fewer (maintainer ruling
+    2026-09-26: infographic style)."""
     lines = []
     forecast = forecast or {}
+    rain_ic = icon("rain", 20)
+    moon_ic = icon("moon", 20)
+    pump_ic = icon("pump", 20)
+    wave_ic = icon("wave", 20)
+
     if forecast.get("available") and forecast.get("direction") == "rising":
         items = forecast.get("items") or []
         h_start = items[0].get("h") if items else None
         h_end = items[-1].get("h") if items else None
         if h_start and h_end:
-            lines.append(f"🌧️ ฝนกำลังจะตกเพิ่มขึ้น ช่วง {esc(h_start)}–{esc(h_end)} น.")
+            lines.append(f"{rain_ic} ฝนเพิ่มขึ้นช่วง {esc(h_start)}–{esc(h_end)} น.")
         else:
-            lines.append("🌧️ ฝนกำลังจะตกเพิ่มขึ้น")
+            lines.append(f"{rain_ic} ฝนกำลังจะเพิ่มขึ้น")
     elif forecast.get("available") and forecast.get("direction") == "falling":
         items = forecast.get("items") or []
         h_end = items[-1].get("h") if items else None
-        lines.append(f"🌤️ ฝนกำลังจะเบาลง หลัง {esc(h_end)} น." if h_end else "🌤️ ฝนกำลังจะเบาลง")
+        lines.append(f"{rain_ic} ฝนจะเบาลงหลัง {esc(h_end)} น." if h_end else f"{rain_ic} ฝนกำลังจะเบาลง")
     elif forecast.get("available"):
-        lines.append("🌧️ ฝนยังตกต่อ")
+        lines.append(f"{rain_ic} ฝนยังตกต่อเนื่อง")
     else:
-        lines.append("ยังไม่มีพยากรณ์ฝนรายชั่วโมง — ดูเรดาร์ กทม.")
+        lines.append(f"{rain_ic} ยังไม่มีพยากรณ์รายชั่วโมง")
 
     hw = next_high_water(area)
     if hw:
         hw_dt = to_bkk(hw.get("time"))
-        lines.append(f"🌕 น้ำหนุนขึ้นสูงสุด {thai_clock_exact(hw_dt)}")
+        lines.append(f"{moon_ic} น้ำหนุนสูงสุด {thai_clock_exact(hw_dt)}")
 
-    if pc["fail"] > 0 or pc["idle"] > 0:
-        bits = []
-        if pc["fail"] > 0:
-            bits.append(f"ขัดข้อง {pc['fail']} จุด")
-        if pc["idle"] > 0:
-            bits.append(f"ไม่ได้เดิน {pc['idle']} จุด")
-        lines.append("🏊 ปั๊มบึง " + ", ".join(bits))
+    if pc["fail"] > 0:
+        lines.append(f"{pump_ic} ปั๊มบึงขัดข้อง {pc['fail']} จุด")
+    elif pc["idle"] > 0:
+        lines.append(f"{pump_ic} ปั๊มบึงไม่ได้เดิน {pc['idle']} จุด")
     else:
-        lines.append("🏊 ปั๊มบึงเดินปกติ")
+        lines.append(f"{pump_ic} ปั๊มบึงเดินปกติ")
 
     if len(st["fresh_near"]) > 0:
-        lines.append(f"🌊 คลองรอบบ้าน {st['fresh_crit']}/{len(st['fresh_near'])} จุดเกินเส้นอันตราย")
+        lines.append(f"{wave_ic} คลอง {st['fresh_crit']}/{len(st['fresh_near'])} จุดเกินเส้นอันตราย")
 
     lines = lines[:4]
     return "".join(f'<li><span class="why-text">{ln}</span></li>' for ln in lines)
@@ -480,7 +484,7 @@ def build_hours_list(area, st, pc, now_dt, forecast):
 
 def build_now_line(area):
     """One OPTIONAL-suggestion line for right under the verdict word: the reader decides.
-    Never an imperative command, never a phrase granting or waiving permission."""
+    Never an imperative command, never a permission ("ไม่ต้อง...")."""
     tiers = area.get("tiers") or []
     has_t1 = any(t.get("tier") == "T1" and (t.get("sois") or []) for t in tiers)
     if has_t1:
@@ -508,14 +512,17 @@ def build_zones_html(area):
         dot = tier_dot(zone_key)
         chips = "".join(f'<span class="zone-chip">{esc(clean_soi_name(s.get("soi")))}</span>' for s in sois) \
             or '<span class="empty-note small">ไม่มีซอยในกลุ่มนี้</span>'
-        prep_line = f'<p class="prepline">{esc(meta["prep"])}</p>' if meta["prep"] else ""
-        body = (f'<div class="body"><div class="name">{dot}{meta["label"]} ({len(sois)} ซอย)</div>'
+        # short one-line optional action, <=10 words (maintainer ruling 2026-09-26)
+        prep_line = f'<p class="prepline">อาจทำได้: {esc(meta["prep"])}</p>' if meta["prep"] else ""
+        pill = f'<span class="pill pill-tier-{zone_key}">{len(sois)} ซอย</span>'
+        body = (f'<div class="body"><div class="name">{dot}{meta["label"]} {pill}</div>'
                 f'<div class="zone-chip-list">{chips}</div>{prep_line}</div>')
         if zone_key == "grey":
             open_attr = " open" if open_by_default else ""
-            return (f"<details{open_attr}><summary>{dot}{meta['label']} ({len(sois)} ซอย)</summary>"
+            return (f"<details class=\"tier-card rail-{zone_key}\"{open_attr}>"
+                    f"<summary>{dot}{meta['label']} {pill}</summary>"
                     f'<div class="tier-body"><div class="zone-chip-list">{chips}</div></div></details>')
-        return f'<div class="tier-card"><div class="stripe stripe-{zone_key}"></div>{body}</div>'
+        return f'<div class="tier-card rail-{zone_key}">{body}</div>'
 
     return (card("red", groups["red"]) + card("orange", groups["orange"])
             + card("yellow", groups["yellow"]) + card("grey", groups["grey"], open_by_default=False))
@@ -622,12 +629,13 @@ def build_forecast_fragments(area, now_dt_local, forecast, rain_forecast_area_no
         note = f' <span class="small">({esc(rain_forecast_area_note)})</span>' if rain_forecast_area_note else ""
         dirn = forecast.get("direction")
         items = forecast.get("items") or []
+        rain_ic = icon("rain", 20)
         if dirn == "rising" and items:
-            fc_text = f"🌧️ ฝนกำลังจะตกเพิ่มขึ้น ช่วง {esc(items[0].get('h'))}–{esc(items[-1].get('h'))} น."
+            fc_text = f"{rain_ic} ฝนกำลังจะตกเพิ่มขึ้น ช่วง {esc(items[0].get('h'))}–{esc(items[-1].get('h'))} น."
         elif dirn == "falling":
-            fc_text = "🌤️ ฝนกำลังจะเบาลง"
+            fc_text = f"{rain_ic} ฝนกำลังจะเบาลง"
         else:
-            fc_text = "🌧️ ฝนยังตกต่อ"
+            fc_text = f"{rain_ic} ฝนยังตกต่อ"
         fc_text += (f'{note} <span class="small">— {esc(forecast.get("source"))}, '
                     f'ไม่ใช่ของหน่วยงานรัฐไทย</span>')
     else:
@@ -724,13 +732,86 @@ def build_hospital_rows(area):
 
 
 def build_sources_list(sources, now_dt):
+    dot = icon("doc", 16)
     items = []
     for s in sources or []:
         link = (f' — <a href="{esc(s.get("url"))}" target="_blank" rel="noopener">ลิงก์ต้นทาง</a>'
                 if s.get("url") else "")
-        items.append(f"<li><strong>{esc(s.get('agency_th'))}</strong> · อ่านเมื่อ "
+        items.append(f"<li>{dot}<strong>{esc(s.get('agency_th'))}</strong> · อ่านเมื่อ "
                      f"{fmt_time_full(s.get('fetched_at'), now_dt)}{link}</li>")
     return "".join(items)
+
+
+# ---------------- worsen / better two-sided cards (short bullets, icon-led) --------------
+
+def build_worsen_better_html(area, st, pc, now_dt, forecast):
+    """Two calm cards, condition bullets straight from the data -- never a
+    verdict, just the signals a reader can check themselves."""
+    worse, better = [], []
+    hw = next_high_water(area)
+    rain = area.get("rain") or {}
+    mm = rain.get("mm_24h")
+    forecast = forecast or {}
+
+    if hw:
+        hw_dt = to_bkk(hw.get("time"))
+        height = hw.get("height_m")
+        h_text = f" ({height:+.1f} ม.)" if height is not None else ""
+        worse.append((icon("moon", 20), f"น้ำหนุนสูงสุด {thai_clock_exact(hw_dt)}{h_text}"))
+    if mm is not None and mm >= 30:
+        worse.append((icon("rain", 20), f"ฝนสะสม {mm:.0f} มม. ใน 24 ชม."))
+    if pc["fail"] + pc["idle"] > 0:
+        worse.append((icon("pump", 20), f"ปั๊มบึงมีปัญหา {pc['fail'] + pc['idle']} จุด"))
+    if st["fresh_crit"] > 0:
+        worse.append((icon("wave", 20), f"คลองเกินเส้นอันตราย {st['fresh_crit']} จุด"))
+    if forecast.get("direction") == "rising":
+        worse.append((icon("rain", 20), "ฝนตามพยากรณ์กำลังเพิ่มขึ้น"))
+    if not worse:
+        worse.append((icon("clock", 20), "ยังไม่มีสัญญาณแย่ลงชัดเจนตอนนี้"))
+
+    tide = area.get("tide") or {}
+    highs = tide.get("next_high") or []
+    if len(highs) >= 2:
+        h0, h1 = highs[0].get("height_m"), highs[1].get("height_m")
+        if h0 is not None and h1 is not None and h1 < h0:
+            better.append((icon("moon", 20), "น้ำหนุนรอบถัดไปต่ำกว่ารอบนี้"))
+    if forecast.get("direction") == "falling":
+        better.append((icon("rain", 20), "ฝนตามพยากรณ์กำลังเบาลง"))
+    if pc["total"] > 0 and pc["fail"] == 0 and pc["idle"] == 0:
+        better.append((icon("pump", 20), "ปั๊มบึงเดินปกติทุกจุด"))
+    if st["fresh_near"] and st["fresh_crit"] == 0:
+        better.append((icon("wave", 20), "คลองรอบบ้านอยู่ในเกณฑ์ปกติ"))
+    if not better:
+        better.append((icon("clock", 20), "ยังไม่มีสัญญาณดีขึ้นชัดเจนตอนนี้"))
+
+    def bullets_html(rows):
+        return "".join(f"<li>{ic}<span>{text}</span></li>" for ic, text in rows)
+
+    return (
+        '<div class="wb-grid">'
+        '<div class="wb-card worse"><h3>สัญญาณว่าอาจแย่ลง</h3>'
+        f'<ul class="wb-list">{bullets_html(worse)}</ul></div>'
+        '<div class="wb-card better"><h3>สัญญาณว่าอาจดีขึ้น (ยังคงระวังต่อ)</h3>'
+        f'<ul class="wb-list">{bullets_html(better)}</ul>'
+        '<p class="action">แม้สัญญาณดีขึ้น ให้เก็บของที่ยกไว้ต่อจนน้ำในซอยลงหมด</p></div>'
+        '</div>'
+    )
+
+
+# ---------------- optional advice section (5 short suggestions) --------------
+
+ADVICE_ITEMS = [
+    ("pump", "ยกของสำคัญขึ้นที่สูง"),
+    ("phone", "ชาร์จมือถือ เตรียมไฟฉาย"),
+    ("exit", "จอดรถในจุดที่น้ำไม่ถึง"),
+    ("hospital", "เตรียมยาประจำตัว 3–5 วัน"),
+    ("doc", "ติดตามป้ายเตือนก่อนออกจากบ้าน"),
+]
+
+
+def build_advice_html():
+    items = "".join(f'<li>{icon(ic, 20)}<span>{esc(text)}</span></li>' for ic, text in ADVICE_ITEMS)
+    return f'<ul class="advice-list">{items}</ul>'
 
 
 # ---------------- one area's full fragment map ----------------
@@ -743,8 +824,10 @@ def build_area_fragments(area_id, area, now_dt, forecast):
 
     rain_forecast_note = area.get("rain_forecast_area_note")
     watch_line = build_watch_line(area, st, pc, now_dt, forecast)
-    why_list = build_why_list(area, st, pc, now_dt, labels["pond_word"])
+    indicator_tiles = build_indicator_tiles(area, st, pc, now_dt, labels["pond_word"])
     hours_list = build_hours_list(area, st, pc, now_dt, forecast)
+    wb_html = build_worsen_better_html(area, st, pc, now_dt, forecast)
+    advice_html = build_advice_html()
 
     staleness = area.get("staleness") or {}
     newest = staleness.get("newest_official_obs")
@@ -767,18 +850,20 @@ def build_area_fragments(area_id, area, now_dt, forecast):
     hospital_rows = build_hospital_rows(area)
 
     return {
-        "{{PLACE_PIN}}": esc(labels["pin"]),
+        "{{PLACE_PIN}}": icon("pin", 16) + f'<span>{esc(labels["pin"])}</span>',
         "{{HEADING_LABEL}}": esc(labels["heading"]),
         "{{STATUS_WORD}}": esc(st["word"]),
         "{{NOW_LINE}}": esc(now_line),
-        "{{STATUS_WATCH}}": watch_line,  # already HTML (has <strong>)
-        "{{WHY_LIST}}": why_list,
+        "{{STATUS_WATCH}}": watch_line,  # already HTML (has <strong> + icon)
+        "{{WHY_LIST}}": indicator_tiles,
         "{{HOURS_LIST}}": hours_list,
         "{{STATUS_NOTE}}": esc(status_note),
         "{{STALE_RIBBON_HIDDEN}}": stale_ribbon_hidden,
-        "{{ZONES_HEADING}}": esc(labels["zones_heading"]),
+        "{{WB_HTML}}": wb_html,
+        "{{ADVICE_HTML}}": advice_html,
+        "{{ZONES_HEADING}}": sec_label("wave", esc(labels["zones_heading"])),
         "{{ZONES_HTML}}": zones_html,
-        "{{PUMP_HEADING}}": esc(labels["pump_heading"]),
+        "{{PUMP_HEADING}}": sec_label("pump", esc(labels["pump_heading"])),
         "{{PUMP_CAPTION}}": esc(labels["pump_caption"]),
         "{{PUMP_LEAD}}": esc(pump_lead),
         "{{PUMP_ROWS}}": pump_rows_html,

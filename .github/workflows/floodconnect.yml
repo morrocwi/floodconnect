@@ -34,7 +34,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install Python dependencies
-        run: pip install pyyaml requests
+        run: pip install -r requirements-ci.txt
 
       - name: Install pdftotext (poppler-utils)
         run: sudo apt-get update && sudo apt-get install -y poppler-utils
@@ -43,7 +43,10 @@ jobs:
         # collect.py already isolates one source's failure from the rest (see its `run()`);
         # some BMA hosts (weather.bangkok.go.th / dds.bangkok.go.th) may 403 from GitHub's
         # shared IP ranges -- this step must still succeed and build with whatever fetched.
-        run: python3 collect.py --all
+        # The `|| echo` is a second layer of tolerance in case collect.py itself ever exits
+        # non-zero (e.g. every single source down at once) -- build_data.py is fail-soft
+        # against missing/partial raw/ snapshots, so the pipeline still produces a page.
+        run: python3 collect.py --all || echo "collect had failures, continuing"
 
       - name: Build data.json
         run: python3 site/build_data.py

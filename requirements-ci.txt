@@ -1,0 +1,14 @@
+# Dependencies for the FloodConnect CI pipeline (.github/workflows/floodconnect.yml):
+# collect.py --all -> site/build_data.py -> site/build_page.py
+#
+# This is deliberately NOT the full repo dependency set -- build_kg.py,
+# build_bangkok_canals.py, and dem_signal_check.py (offline knowledge-graph construction
+# and DEM analysis, not part of the live collect/site pipeline) need geopandas/shapely/
+# rasterio, which are heavy (compiled GDAL/GEOS/PROJ bindings) and are intentionally left
+# out of the CI path. live_water_level.py's `--attach`/graphml CLI needs networkx, which
+# collect.py does not call -- but the module-level import must still succeed since
+# collect.py imports the module, so networkx is listed here too (it is pure-Python-ish
+# and light compared to the geo stack).
+pyyaml
+requests
+networkx
