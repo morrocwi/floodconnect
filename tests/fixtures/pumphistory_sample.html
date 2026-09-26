@@ -1,0 +1,114 @@
+<!doctype html>
+<html><body>
+<script>
+    var datapump = [{"pumpStation_id": 104, "district_id": 44, "ftp_code": null, "pumpStation_code": "ST.SPS.01", "pumpStation_name": "สถานีสูบน้ำคลองบ้านม้า 2", "pumpStation_name_en": "Khlong Ban Ma 2 Pumping Station", "latitude": 13.7763, "longitude": 100.6713, "pump_count": 4, "pump_capacity": null, "pump_shortname": "ส.คลองบ้านม้า 2", "pump_shortname_en": "Khlong Ban Ma 2 Pumping Station", "pump_system_id": 3, "amount_max": 900000000.0, "amount_min": -0.1, "active": 1, "district_name": "สะพานสูง", "district_latitude": 13.7763, "district_longitude": 100.6713, "area_id": 2, "area_name": "สถานีฝั่งพระนคร", "pump_last": null, "pump_Trip_last": null}, {"pumpStation_id": 105, "district_id": 44, "ftp_code": null, "pumpStation_code": "ST.SPS.02", "pumpStation_name": "สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่", "pumpStation_name_en": "Bueng No. 4 Pumping Station, Khlong Wat Yai", "latitude": 13.7555, "longitude": 100.6795, "pump_count": 2, "pump_capacity": null, "pump_shortname": "ส.บึงที่ 4 ตอนคลองวัดใหญ่", "pump_shortname_en": "Bueng No. 4 Pumping Station, Khlong Wat Yai", "pump_system_id": 3, "amount_max": 900000000.0, "amount_min": -0.1, "active": 1, "district_name": "สะพานสูง", "district_latitude": 13.7555, "district_longitude": 100.6795, "area_id": 2, "area_name": "สถานีฝั่งพระนคร", "pump_last": null, "pump_Trip_last": null}, {"pumpStation_id": 106, "district_id": 44, "ftp_code": null, "pumpStation_code": "ST.SPS.03", "pumpStation_name": "สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2", "pumpStation_name_en": "Bueng No. 2 Pumping Station, Khlong Ban Ma 2", "latitude": 13.767, "longitude": 100.6771, "pump_count": 3, "pump_capacity": null, "pump_shortname": "ส.บึงที่ 2 ตอนคลองบ้านม้า 2", "pump_shortname_en": "Bueng No. 2 Pumping Station, Khlong Ban Ma 2", "pump_system_id": 3, "amount_max": 900000000.0, "amount_min": -0.1, "active": 1, "district_name": "สะพานสูง", "district_latitude": 13.767, "district_longitude": 100.6771, "area_id": 2, "area_name": "สถานีฝั่งพระนคร", "pump_last": null, "pump_Trip_last": null}, {"pumpStation_id": 107, "district_id": 44, "ftp_code": null, "pumpStation_code": "ST.SPS.04", "pumpStation_name": "สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง", "pumpStation_name_en": "Bueng No. 1 Pumping Station, Khlong Saphan Sung", "latitude": 13.7706, "longitude": 100.6798, "pump_count": 2, "pump_capacity": null, "pump_shortname": "ส.บึงที่ 1 ตอนคลองสะพานสูง", "pump_shortname_en": "Bueng No. 1 Pumping Station, Khlong Saphan Sung", "pump_system_id": 3, "amount_max": 900000000.0, "amount_min": -0.1, "active": 1, "district_name": "สะพานสูง", "district_latitude": 13.7706, "district_longitude": 100.6798, "area_id": 2, "area_name": "สถานีฝั่งพระนคร", "pump_last": null, "pump_Trip_last": null}];
+</script>
+<table>
+<thead>
+                            <tr class="success" id="table-headers">
+                                <th class="success" style="text-align:center; vertical-align: middle;">No.</th>
+                                <th class="success" style="text-align:center; vertical-align: middle;">รหัสสถานี</th>
+                                <th class="success" style="text-align:center; vertical-align: middle;">ชื่อสถานี</th>
+                                <th class="success" style="text-align:center; vertical-align: middle;">วัน - เวลา</th>
+                                <th class="success" style="text-align:center; vertical-align: middle;">สถานะ</th>
+                                <th class="success" style="text-align:center; vertical-align: middle;">ระดับน้ำ (ม.)</th>
+                                <th class="success" style="text-align:center; vertical-align: middle;">ระดับน้ำจุดที่ 2 (ม.)</th>
+                                <th class="success" style="text-align:center; vertical-align: middle;">สถานะของเครื่องสูบน้ำตัวที่ 1</th>
+                                <th class="success" style="text-align:center; vertical-align: middle;">สถานะของเครื่องสูบน้ำตัวที่ 2</th>
+                                <th class="success" style="text-align:center; vertical-align: middle;">สถานะของเครื่องสูบน้ำตัวที่ 3</th>
+                                <th class="success" style="text-align:center; vertical-align: middle;">สถานะของเครื่องสูบน้ำตัวที่ 4</th>
+                                <th class="success" style="text-align:center; vertical-align: middle;">สถานะของเครื่องสูบน้ำตัวที่ 5</th>
+                                <th class="success" style="text-align:center; vertical-align: middle;">สถานะของเครื่องสูบน้ำตัวที่ 6</th>
+                                <th class="success" style="text-align:center; vertical-align: middle;">ระยะเปิดบานประตูระบายน้ำบานที่ 1</th>
+                                <th class="success" style="text-align:center; vertical-align: middle;">ระยะเปิดบานประตูระบายน้ำบานที่ 2</th>
+                                <th class="success" style="text-align:center; vertical-align: middle;">ระยะเปิดบานประตูระบายน้ำบานที่ 3</th>
+                                <th class="success" style="text-align:center; vertical-align: middle;">ระยะเปิดบานประตูระบายน้ำบานที่ 4</th>
+
+
+                            </tr>
+                        </thead>
+<tbody id="tbodysummary">
+<tr role="row" class="odd">
+                                    <td style="text-align: left;">73</td>
+                                    <td style="text-align: left;">ST.SPS.01</td>
+                                    <td style="text-align: left;">สถานีสูบน้ำคลองบ้านม้า 2</td>
+                                    <td style="text-align: left;">26/09/2026 11:00</td>
+                                        <td style="text-align: center;"><span class="text-center label label-default text-center" style="color:white;background-color:#5e5e5e">ขัดข้อง</span></td>
+
+                                    <td style="text-align: right;">0.00</td>
+                                    <td style="text-align: right;"></td>
+                                        <td style="text-align: center;"><span class="text-center label label-primary">รอทำงาน</span></td>
+                                        <td style="text-align: center;"><span class="text-center label label-primary">รอทำงาน</span></td>
+                                        <td style="text-align: center;"><span class="text-center label label-primary">รอทำงาน</span></td>
+                                        <td style="text-align: center;"><span class="text-center label label-primary">รอทำงาน</span></td>
+                                        <td></td>
+                                        <td></td>
+                                    <td style="text-align: right;">0.00</td>
+                                    <td style="text-align: right;"></td>
+                                    <td style="text-align: right;"></td>
+                                    <td style="text-align: right;"></td>
+
+                                </tr><tr role="row" class="odd">
+                                    <td style="text-align: left;">74</td>
+                                    <td style="text-align: left;">ST.SPS.02</td>
+                                    <td style="text-align: left;">สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่</td>
+                                    <td style="text-align: left;">26/09/2026 11:00</td>
+                                        <td style="text-align: center;"><span Class="text-center label label-primary" style="color:white;background-color:#1ab394">ปกติ</span></td>
+
+                                    <td style="text-align: right;">0.73</td>
+                                    <td style="text-align: right;"></td>
+                                        <td style="text-align: center;"><span class="text-center label label-primary">รอทำงาน</span></td>
+                                        <td style="text-align: center;"><span class="text-center label label-primary">รอทำงาน</span></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    <td style="text-align: right;">0.00</td>
+                                    <td style="text-align: right;"></td>
+                                    <td style="text-align: right;"></td>
+                                    <td style="text-align: right;"></td>
+
+                                </tr><tr role="row" class="odd">
+                                    <td style="text-align: left;">75</td>
+                                    <td style="text-align: left;">ST.SPS.03</td>
+                                    <td style="text-align: left;">สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2</td>
+                                    <td style="text-align: left;">26/09/2026 11:00</td>
+                                        <td style="text-align: center;"><span Class="text-center label label-primary" style="color:white;background-color:#1ab394">ปกติ</span></td>
+
+                                    <td style="text-align: right;">0.57</td>
+                                    <td style="text-align: right;"></td>
+                                        <td style="text-align: center;"><span class="text-center label label-primary">รอทำงาน</span></td>
+                                        <td style="text-align: center;"><span class="text-center label label-primary">รอทำงาน</span></td>
+                                        <td style="text-align: center;"><span class="text-center label label-danger">ทำงาน</span></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    <td style="text-align: right;"></td>
+                                    <td style="text-align: right;"></td>
+                                    <td style="text-align: right;"></td>
+                                    <td style="text-align: right;"></td>
+
+                                </tr><tr role="row" class="odd">
+                                    <td style="text-align: left;">76</td>
+                                    <td style="text-align: left;">ST.SPS.04</td>
+                                    <td style="text-align: left;">สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง</td>
+                                    <td style="text-align: left;">26/09/2026 11:00</td>
+                                        <td style="text-align: center;"><span Class="text-center label label-primary" style="color:white;background-color:#1ab394">ปกติ</span></td>
+
+                                    <td style="text-align: right;">1.27</td>
+                                    <td style="text-align: right;"></td>
+                                        <td style="text-align: center;"><span class="text-center label label-danger">ทำงาน</span></td>
+                                        <td style="text-align: center;"><span class="text-center label label-primary">รอทำงาน</span></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    <td style="text-align: right;"></td>
+                                    <td style="text-align: right;"></td>
+                                    <td style="text-align: right;"></td>
+                                    <td style="text-align: right;"></td>
+
+                                </tr>
+</tbody>
+</table>
+</body></html>

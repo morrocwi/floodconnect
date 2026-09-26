@@ -1,0 +1,132 @@
+{
+  "area_id": "ram53",
+  "area_name_th": "ซอยรามคำแหง 53",
+  "area_name_en": "Soi Ramkhamhaeng 53",
+  "generated_at_utc": "2026-09-26T13:15:00+00:00",
+  "tier": "Dr (draft, no independent reviewer yet)",
+  "centre": {
+    "lat": 13.765540125000635,
+    "lon": 100.61909460837903,
+    "method": "midpoint by along-line length (not simple lat/lon average) of the combined 3 contiguous OSM ways tagged exactly 'ซอยรามคำแหง 53' (osm ids 79223012, 286602371, 286602373), total soi length 1285.3 m",
+    "north_end": {"lat": 13.7712626, "lon": 100.6182714},
+    "south_end": {"lat": 13.7599218, "lon": 100.6202595},
+    "tag": "MEASURED",
+    "source": "raw/ram53/overpass.json (ONE successful Overpass query, mirror overpass.kumi.systems, bbox-restricted name search)"
+  },
+  "district": {
+    "best_estimate_khet": "วังทองหลาง (Wang Thong Lang)",
+    "border_with_khet": "บางกะปิ (Bang Kapi) -- centre sits within ~600m of stations/pumps whose own agency-reported geocode splits between the two",
+    "khwaeng": "OPEN -- not resolved (Overpass administrative-boundary pull failed on this session's mirror; see raw/ram53/overpass_attempts.log)",
+    "tag": "RELAYED",
+    "evidence": [
+      "nearest BMA canal station (597m) WL.CKS.01 geocode.amphoe_name.th = วังทองหลาง",
+      "nearest BMA pump station (511m) code prefix ST.WTL.* = วังทองหลาง's own agency code prefix",
+      "2nd/3rd nearest canal stations (622-626m) and nearest rain gauge (576m) all geocode to บางกะปิ",
+      "Overpass admin-boundary relation pull failed (OOM) this session -- NOT independently confirmed via OSM boundary polygon"
+    ]
+  },
+  "chain": {
+    "tag": "MEASURED (HOTOSM local gpkg + node-shared-walk network trace, same method as sammakorn/analyze.py + trace_network.py; no network call)",
+    "nearest_named_waterways_straight_line_1500m": [
+      {"name": "ลำรางแยกซอยลาดพร้าว 112", "type": "ditch", "dist_m": 133.6, "bearing": "W"},
+      {"name": "คลองจิตรมิตรมหาดไทย", "type": "canal", "dist_m": 347.8, "bearing": "ENE"},
+      {"name": "คลองแสนแสบ", "type": "canal", "dist_m": 418.8, "bearing": "S"},
+      {"name": "คลองเจ้าคุณสิงห์", "type": "canal", "dist_m": 484.8, "bearing": "WSW"},
+      {"name": "คลองวัดตึก", "type": "canal", "dist_m": 891.8, "bearing": "SW"},
+      {"name": "คลองจั่น", "type": "canal", "dist_m": 1166.4, "bearing": "E"}
+    ],
+    "network_trace_order_node_shared_walk": [
+      {"name": "ลำรางแยกซอยลาดพร้าว 112", "graph_dist_m": 958, "type": "ditch"},
+      {"name": "คลองแสนแสบ", "graph_dist_m": 1175, "type": "canal", "role": "MAIN receiving canal"},
+      {"name": "คลองจั่น", "graph_dist_m": 1418, "type": "canal"},
+      {"name": "คลองจิตรมิตรมหาดไทย", "graph_dist_m": 2075, "type": "canal"},
+      {"name": "คลองกะจะ", "graph_dist_m": 2753, "type": "canal"},
+      {"name": "คลองลำพังพวย", "graph_dist_m": 3167, "type": "river"}
+    ],
+    "verdict": "drains via ลำรางแยกซอยลาดพร้าว 112 (local ditch, 134m) into คลองแสนแสบ (Saen Saeb) -- the first MAIN candidate the network trace reaches, confirmed at both 5m and 30m node-snap tolerance",
+    "flow_direction": "OPEN -- output/bangkok_canals.graphml tags the local laterals (จิตรมิตรมหาดไทย, เจ้าคุณสิงห์, ลำรางแยกซอยลาดพร้าว 112, วัดตึก) direction_basis='unknown'; แสนแสบ/จั่น only carry direction_basis='heuristic_nearest_river_sink' (a guess, same caveat as the Sammakorn frame's N2 entry) -- do not treat as confirmed"
+  },
+  "stations": [
+    {"code": "WL.CKS.01", "name_th": "ส.คลองเจ้าคุณสิงห์", "dist_m": 597, "bearing": "SW", "value_m": 0.36, "bank_m": 1.85, "warning_m": -0.3, "critical_m": -0.2, "observed_at": "2026-09-25T13:05:00+00:00", "amphoe": "วังทองหลาง", "flag": "ABOVE critical (0.36 > -0.2)"},
+    {"code": "SS05", "name_th": "คลองแสนแสบช่วง ส.คลองเจ้าคุณสิงห์", "dist_m": 622, "bearing": "SW", "value_m": -0.368, "bank_m": null, "warning_m": null, "critical_m": null, "observed_at": "2019-12-24T07:38:00+00:00", "amphoe": "บางกะปิ", "flag": "STALE (2019 reading, no threshold published) -- not usable live"},
+    {"code": "WL.SSB.06", "name_th": "ค.แสนแสบ-เจ้าคุณสิงห์", "dist_m": 626, "bearing": "SW", "value_m": 0.48, "bank_m": 1.91, "warning_m": 0.2, "critical_m": 0.35, "observed_at": "2026-09-25T13:05:00+00:00", "amphoe": "บางกะปิ", "flag": "ABOVE critical (0.48 > 0.35)"},
+    {"code": "WL.KJT.01", "name_th": "ค.จิต ซ.ลาดพร้าว 122", "dist_m": 901, "bearing": "NNE", "value_m": 0.29, "bank_m": 0.75, "warning_m": -0.1, "critical_m": 0, "observed_at": "2026-09-25T13:05:00+00:00", "amphoe": "วังทองหลาง", "flag": "ABOVE critical (0.29 > 0)"},
+    {"code": "WL.KJN.01", "name_th": "ค.จั่น ถ.ลาดพร้าว", "dist_m": 1528, "bearing": "NE", "value_m": 0.43, "bank_m": 1, "warning_m": -0.2, "critical_m": 0, "observed_at": "2026-09-25T07:25:00+00:00", "amphoe": "วังทองหลาง", "flag": "ABOVE critical (0.43 > 0)"},
+    {"code": "WL.KJG.01", "name_th": "ค.จิก ถ.หัวหมาก", "dist_m": 2061, "bearing": "SE", "value_m": 0.0, "bank_m": 1, "warning_m": -0.2, "critical_m": 0, "observed_at": "2026-09-25T13:05:00+00:00", "amphoe": "บางกะปิ", "flag": "AT critical exactly (0.0 = 0)"},
+    {"code": "WL.SSB.05", "name_th": "ค.แสนแสบ รามคำแหง 9", "dist_m": 2077, "bearing": "SW", "value_m": -0.71, "bank_m": 2, "warning_m": -0.1, "critical_m": 0.1, "observed_at": "2023-10-23T04:05:00+00:00", "amphoe": "บางกะปิ", "flag": "STALE (2023) -- not usable live"},
+    {"code": "WL.CKS.02", "name_th": "ค.เจ้าคุณสิงห์ ถ.ลาดพร้าว", "dist_m": 2151, "bearing": "NNW", "value_m": 0.31, "bank_m": 1, "warning_m": -0.2, "critical_m": 0, "observed_at": "2026-09-25T13:05:00+00:00", "amphoe": "วังทองหลาง", "flag": "ABOVE critical (0.31 > 0)"},
+    {"code": "WL.YPN.02", "name_th": "ค.ยายเผื่อน ถ.ลาดพร้าว", "dist_m": 2213, "bearing": "E", "value_m": -0.21, "bank_m": 0.7, "warning_m": -0.2, "critical_m": 0, "observed_at": "2026-09-25T13:05:00+00:00", "amphoe": "บางกะปิ", "flag": "slightly BELOW warning (-0.21 < -0.2) -- normal"},
+    {"code": "WL.PPA.02", "name_th": "ค.พลับพลา ศูนย์แพทย์พัฒนา", "dist_m": 2358, "bearing": "W", "value_m": -0.19, "bank_m": 0.4, "warning_m": -0.2, "critical_m": 0, "observed_at": "2024-05-14T06:45:00+00:00", "amphoe": "วังทองหลาง", "flag": "STALE (2024) -- not usable live"},
+    {"code": "WL.HMK.01", "name_th": "ค.หัวหมาก ถ.ศรีนครินทร์", "dist_m": 4319, "bearing": "SE", "value_m": 0.46, "bank_m": 1, "warning_m": -0.2, "critical_m": 0, "observed_at": "2026-09-25T13:05:00+00:00", "amphoe": "สวนหลวง", "flag": "ABOVE critical (0.46 > 0); OUTSIDE the 1.5-2km scope, included only because another worker's community-report file (raw ram53 scratchpad) had already flagged it as 'วิกฤต' RELAYED from a Facebook post -- this is the direct BMA-station confirmation of that relay"},
+    {"note": "all 'value vs threshold' comparisons above are plain fact-statements from BMA's own published numbers for that one station, not a composite/aggregated risk score", "tag": "MEASURED", "source": "raw/live/thaiwater_bma/2026-09-26T050415Z.json, api-v3.thaiwater.net public canal_waterlevel, no auth needed (cached, no new fetch this session)", "staleness_note": "most non-stale readings are timestamped 2026-09-25T13:05:00 UTC = 2026-09-25 20:05 Bangkok time -- about 16h before this session's centre pull, not truly this-minute-live; several stations (SS05, WL.SSB.05, WL.PPA.02) are multi-year stale and excluded from live comparison"}
+  ],
+  "pumps": {
+    "ST_pumping_stations_nearest": [
+      {"code": "ST.WTL.01", "name_th": "สถานีสูบน้ำคลองจิตมิตรมหาดไทย", "dist_m": 511, "bearing": "SE", "pump_count": 4, "capacity": null, "status_th": "ปกติ", "pumps_running": "4/4", "level_m": 0.50, "gate_open_m": 0.73, "as_of_local": "26/09/2026 12:00"},
+      {"code": "ST.BKP.01", "name_th": "สถานีสูบน้ำคลองจิกกานดา", "dist_m": 593, "bearing": "SE", "pump_count": 2, "capacity": null, "status_th": "ขัดข้อง", "pumps_running": "0/2", "level_m": 0.00, "gate_open_m": 0.00, "as_of_local": "26/09/2026 12:00", "flag": "OUT OF ORDER right now"},
+      {"code": "ST.BKP.06", "name_th": "สถานีสูบน้ำคลองวัดตึก", "dist_m": 930, "bearing": "WSW", "pump_count": 5, "capacity": null, "status_th": "ขัดข้อง", "pumps_running": "0/5", "level_m": 0.00, "gate_open_m": 0.00, "as_of_local": "26/09/2026 12:00", "flag": "OUT OF ORDER right now"},
+      {"code": "ST.BKP.02", "name_th": "สถานีสูบน้ำหน้า สน.หัวหมาก", "dist_m": 1067, "bearing": "ESE", "pump_count": 4, "capacity": null, "status_th": "ปกติ", "pumps_running": "3/4", "level_m": -0.34, "gate_open_m": 0.00, "as_of_local": "26/09/2026 12:00"}
+    ],
+    "PH_road_pumps_within_2km": [],
+    "PH_road_pumps_nearest_outside_2km_for_context": [
+      {"code": "PH.WTL.03", "name_th": "บ่อสูบน้ำถนนลาดพร้าวตัดประดิษฐ์มนูธรรม (ฝั่งเซ็นจูรี่อพาร์ทเม้นท์)", "dist_m": 2504, "bearing": "NNW"},
+      {"code": "PH.SLG.01", "name_th": "บ่อสูบน้ำรามคำแหงซอย 5", "dist_m": 2686, "bearing": "SW"}
+    ],
+    "tag": "MEASURED",
+    "source": "raw/live/pumphistory/2026-09-26T050424Z.html (var datapump, 99 ST.* stations, coords) + its live table (status/level/pump-count) -- and raw/live/pump_page/2026-09-26T043500Z.html (var datapump, 169-172 PH.* road pumps with capacity, mostly null here)",
+    "note": "unlike Sammakorn (surrounded by PH.* road-flood pumps), Ram 53 has NONE within 2km -- nearest PH.* is 2.5km away. Local drainage here relies on the 4 canal-side ST.* pumping stations, of which 2 of the nearest 3 are reporting ขัดข้อง (malfunction) with 0 pumps running as of 26/09/2026 12:00 local."
+  },
+  "rain": {
+    "nearest_gauge": "คลองแสนแสบ บางกะปิ",
+    "dist_m": 576,
+    "amphoe": "บางกะปิ",
+    "rain_24h_mm": 196.6,
+    "rain_1h_mm": 1.4,
+    "as_of_local": "2026-09-26 11:00",
+    "agency": "สสน. (Hydro-Informatics Institute)",
+    "tag": "MEASURED",
+    "source": "raw/gapfill/rain_24h_1.json (cached, no new fetch)"
+  },
+  "ground": {
+    "centre": {
+      "rtsd2010_2011_flood_depth_class": "0 - 0.5 m (best legend match, but distance-64.6 vs the '<0 m' class at 70.6 -- centre pixel is a near-tie, likely sits on/near a class-boundary line)",
+      "rid_scenario_dike_failure_class": "OUT-dike depth 0.80 m (best match; legend colours in this map are pastel and close together -- treat as low-confidence)",
+      "tag": "MEASURED (pixel colour extracted with rtsd_sample.py's fitted affine georeference, reused as-is; both source images cover Ram53 -- confirmed in-bounds, not an edge artifact)"
+    },
+    "grid_3x3_step_150m": {
+      "rtsd2010": {
+        "NW": "0-0.5m", "N": "<0m (weak match)", "NE": "0-0.5m",
+        "W": "0-0.5m", "C": "0-0.5m (near class boundary)", "E": "0-0.5m",
+        "SW": "0-0.5m", "S": "0-0.5m", "SE": "0-0.5m"
+      },
+      "rid_scenario": {
+        "NW": "OUT-dike 1.00m", "N": "IN-dike 0.40m", "NE": "OUT-dike 0.80m",
+        "W": "OUT-dike 2.10m", "C": "OUT-dike 0.80m", "E": "OUT-dike 1.10m",
+        "SW": "IN-dike 0.20m", "S": "OUT-dike 1.00m", "SE": "OUT-dike 1.10m"
+      },
+      "note_rid_scenario": "the grid mixes IN-dike (N, SW) and OUT-dike (7 of 9 points) reads within just 150-300m -- the King's-dike boundary line itself likely passes through this 3x3 block; given the close legend colours this is a structural hint, not a confident depth number",
+      "full_json": "raw RGB + both legend matches per point were derived from a working-session scratch file not carried into this repo"
+    }
+  },
+  "exits": [
+    {
+      "candidate": "ถ.รามคำแหง (Thanon Ramkhamhaeng)",
+      "via": "south end of the soi, (13.7599218, 100.6202595)",
+      "tag": "INSTINCT",
+      "reasoning": "a soi named 'ซอยรามคำแหง N' conventionally starts at its junction with Thanon Ramkhamhaeng itself; the Overpass around-radius query that would have confirmed the actual crossing road's name/class failed on this session's mirror (see overpass_attempts.log) -- NOT independently confirmed this session"
+    },
+    {
+      "candidate": "ซอยลาดพร้าว 112 (Soi Lat Phrao 112) or another Lat Phrao-side minor road",
+      "via": "north end of the soi, (13.7712626, 100.6182714)",
+      "tag": "INSTINCT/OPEN",
+      "reasoning": "the nearest local waterway is literally named 'ลำรางแยกซอยลาดพร้าว 112' and one of its graph endpoints (100.61730,13.77000) sits ~530m from this soi's north end -- suggestive but not a confirmed road connection"
+    }
+  ],
+  "open_items": [
+    "Overpass admin-boundary (แขวง) pull failed all attempts (OOM/504) -- exact แขวง not resolved",
+    "Overpass around-radius surrounding highway pull failed all attempts -- 'exits' above are INSTINCT, not VERIFIED",
+    "canal flow direction is OPEN/heuristic-only for every waterway in this chain",
+    "most BMA canal-station readings are ~16h stale (2026-09-25 20:05 local) relative to this session, not this-minute-live",
+    "no risk score computed or implied anywhere in this file, per task instruction"
+  ]
+}

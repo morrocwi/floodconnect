@@ -1,0 +1,362 @@
+# Source registry for the Sammakorn live flood-context data system.
+#
+# This is a REGISTRY, not a claim of quality. `trust_tier` and `method` are this codebase's
+# own engineering judgment calls (INSTINCT/Dr-tier classification), not a certification
+# from any agency. Thai flood/water agencies run independent, sometimes-disagreeing systems
+# (project ruling: "ประเทศไทยมีหลายหน่วยงานที่ทำงานแข่งกันและไม่สอดคล้องกัน") -- this
+# registry exists so every reading downstream can be traced back to which agency said it,
+# by what method, and how fresh/likely-to-be-current the entry below still is.
+#
+# trust_tier vocabulary (fixed, do not invent new values without updating this comment):
+#   official_telemetry        -- a government agency's own sensor/instrument reading,
+#                                 machine-recorded, no human compilation step in between.
+#   official_report           -- a government agency's own compiled report/bulletin/table
+#                                 (may itself aggregate telemetry from official_telemetry
+#                                 sources, plus human-written narrative/forecast).
+#   official_shared_inference -- a government office's own inference from a THIRD-PARTY
+#                                 signal it does not operate (e.g. reading traffic-map
+#                                 colour as a flood proxy) and shares it as guidance.
+#   third_party                -- not a government agency at all. (No source below uses
+#                                 this tier yet; kept in the vocabulary for future sources.)
+#   community_report           -- a private individual's own account (a public social-media
+#                                 post, or a message pasted into a community group), not an
+#                                 agency, not an instrument, not a compiled report. A row
+#                                 FROM this source whose own publisher is a media outlet
+#                                 (JS100/อีจัน/Rodee-style page, not a person) is stored at
+#                                 the row level as official_shared_inference instead, via
+#                                 that row's own `publisher_type` field in provenance_json --
+#                                 the registry-level tier below is the DEFAULT for a person's
+#                                 own post, not a blanket tier for every row this source ever
+#                                 produces. See `social_listening.py`.
+#
+# host_rule.max_requests_per_run enforces this workspace's BMA host-safety rule: at most ONE
+# request per URL per run on weather.bangkok.go.th / dds.bangkok.go.th, no retry loops,
+# stop touching a host on 403/reset. api-v3.thaiwater.net (HII/สสน.) is a different agency
+# and is not subject to that specific BMA rule, but collect.py still makes only one
+# request per source per run everywhere in this repo -- there is no retry path anywhere.
+
+sources:
+  - id: thaiwater_canal_waterlevel
+    agency:
+      th: "สำนักการระบายน้ำ กรุงเทพมหานคร (ผ่าน HII/สสน. thaiwater.net)"
+      en: "Department of Drainage and Sewerage, BMA (republished via HII/thaiwater.net)"
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/canal_waterlevel"
+    method: GET
+    cadence: near-real-time (station refresh interval not published; observed multiple
+      distinct canal_datetime values across one snapshot)
+    format: json
+    auth: none
+    licence_status:
+      text: "RELAYED, not independently confirmed against a formal licence text -- no
+        terms/licence link was found in thaiwater.net/bma's footer during the 2026-09-26
+        check. Re-check thaiwater.net's actual terms before any public/commercial
+        redistribution."
+      unresolved: true
+    trust_tier: official_telemetry
+    host_rule:
+      max_requests_per_run: 1
+      notes: "api-v3.thaiwater.net is HII/สสน., not a BMA host -- this workspace's strict
+        weather.bangkok.go.th/dds.bangkok.go.th rule doesn't name this host, but this
+        repo still makes only one GET per run here, no retries."
+    last_status: {date: "2026-09-26", http: 200, note: "282 BMA canal-station records,
+      real canal_lat/canal_long, warning/critical/bank thresholds present."}
+    variables: [canal_water_level_m, warning_level_m, critical_level_m, bank_level_m,
+      canal_out_m (gate stations only)]
+
+  - id: thaiwater_flood_road
+    agency:
+      th: "สำนักการระบายน้ำ กรุงเทพมหานคร (ผ่าน HII/สสน. thaiwater.net) -- อ้างอิง"
+      en: "Department of Drainage and Sewerage, BMA (republished via HII/thaiwater.net) --
+        RELAYED"
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/flood_road"
+    method: GET
+    cadence: unknown -- not yet observed across two fetches
+    format: json
+    auth: none
+    licence_status: {text: "Same relayed/unconfirmed licence note as
+      thaiwater_canal_waterlevel -- not independently re-checked for this endpoint
+      specifically.", unresolved: true}
+    trust_tier: official_telemetry
+    # Confirmed 2026-09-26 by one real fetch (262 records): station.floodroad_lat/_long
+    # are real coordinates, floodroad_oldcode mirrors canal_oldcode's "FL.<area>.<n>"
+    # scheme, and floodroad_value ranges 0-35.6 across the sample (212 at exactly 0) --
+    # read as MEASURED (Dr-tier engineering judgment, not confirmed against BMA's own
+    # unit label) flood-depth in cm at a fixed road point, same telemetry shape as
+    # canal_waterlevel's canal_value, not a human-compiled list.
+    host_rule: {max_requests_per_run: 1, notes: "Same host as thaiwater_canal_waterlevel."}
+    last_status: {date: "2026-09-26", http: 200, note: "262 records, 0 missing
+      coordinates. See parsers.py::parse_thaiwater_flood_road for the exact field
+      mapping confirmed against this live response."}
+    variables: [floodroad_value_cm]
+
+  - id: bma_pumphistory
+    agency:
+      th: "สำนักการระบายน้ำ กรุงเทพมหานคร"
+      en: "Department of Drainage and Sewerage, Bangkok Metropolitan Administration"
+    url: "https://weather.bangkok.go.th/Station/PumpHistory"
+    method: GET (server-rendered HTML table + embedded `var datapump` JS metadata array)
+    cadence: unknown -- server-rendered "current status" page, refresh interval not
+      published
+    format: html
+    auth: none
+    licence_status: {text: "RELAYED -- no licence/terms text found on this page during
+      the 2026-09-26 check.", unresolved: true}
+    trust_tier: official_telemetry
+    host_rule:
+      max_requests_per_run: 1
+      notes: "weather.bangkok.go.th IS a BMA host under this workspace's strict rule. Confirmed
+        2026-09-26: /Station/PumpHistory returns 200, but /Home and /Map on the SAME host
+        returned 403 the same day -- treated as a per-path difference, never assumed to
+        persist. /Klongmap/GetDataForUpdate on this host is also 403 (see bma_klongmap)."
+    last_status: {date: "2026-09-26", http: 200, note: "ST.SPS.01-04 Sammakorn pump
+      stations parsed with real lat/lon from the page's own datapump metadata array."}
+    variables: [level_m, pumps_on, pumps_total, gate_open_m, station_status_th]
+
+  - id: dds_daily_pdf
+    agency:
+      th: "สำนักการระบายน้ำ กรุงเทพมหานคร (ศูนย์ควบคุมระบบป้องกันน้ำท่วม)"
+      en: "Department of Drainage and Sewerage, BMA -- daily situation bulletin"
+    url: "https://dds.bangkok.go.th/public_content/files/001/0004901_1.pdf"
+    method: "ONE GET only (timeout=300s socket-op timeout, not a curl-style total
+      deadline), no HEAD first -- an earlier HEAD-then-conditional-GET shape could send
+      two requests to this URL in one run (whenever the PDF had changed, or on the very
+      first run before any snapshot existed), which is what host_rule below forbids;
+      --from-file bypasses the network entirely for an already-downloaded copy"
+    cadence: daily (issue number increments daily, e.g. ฉบับที่ 269/69 on 2026-09-26)
+    format: pdf
+    auth: none
+    licence_status: {text: "RELAYED -- no licence/terms text checked for this specific
+      file; same public-bulletin posture as the rest of dds.bangkok.go.th.", unresolved: true}
+    trust_tier: official_report
+    host_rule:
+      max_requests_per_run: 1
+      notes: "dds.bangkok.go.th is a BMA host under this workspace's strict rule. Confirmed
+        2026-09-26: this PDF path returns 200. See dds_daily_parser_spec (repo history /
+        docs/DATA_SYSTEM.md) for the full per-section layout: pages 1,2,3,7 have
+        extractable text (pdftotext -layout); pages 4-6 are raster images (weather map,
+        satellite photo, rain maps, 7-day forecast chart) with NO extractable text --
+        OPEN without OCR, out of scope for this pipeline."
+    last_status: {date: "2026-09-26", http: 200, note: "7 pages, ~2.48 MiB. Sections
+      parsed to observations: rainfall-by-station (sec.2), canal levels outer/inner
+      (sec.3-4), Chao Phraya discharge + partial tide fields for FULLY-formatted daily
+      rows only (sec.5), reservoir storage (sec.6), dedicated tide AM/PM (sec.7).
+      Everything else (header prose, weather forecast, an incomplete/irregular daily
+      row, salinity table, narrative log) is stored verbatim in the documents table,
+      not force-parsed into fields."}
+    variables: [rain_mm_24h, canal_level_m, canal_critical_m, qmax_cms, reservoir_pct,
+      tide_am_level_m, tide_pm_level_m]
+
+  - id: dds_flood_report
+    agency:
+      th: "สำนักการระบายน้ำ กรุงเทพมหานคร"
+      en: "Department of Drainage and Sewerage, BMA"
+    url: "https://dds.bangkok.go.th/flood_report.php"
+    method: GET (server-rendered HTML, two tables -- per-district summary counts, then a
+      per-road detail table)
+    cadence: daily / event-driven
+    format: html
+    auth: none
+    licence_status: {text: "RELAYED, not independently confirmed.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "Same host/rule as dds_daily_pdf."}
+    last_status: {date: "2026-09-26", http: 200, note: "Per-road detail table: 11 columns
+      (ลำดับที่, พื้นที่เขต, ถนน, บริเวณ, ความสูง ซม., ความยาว ม., กระทบผิวจราจร,
+      เวลาท่วม, เวลาแห้ง, ระยะเวลาท่วม, ปริมาณฝนรวม). A road still flooded at fetch
+      time has an empty เวลาแห้ง/ระยะเวลาท่วม cell -- parsed as None, never fabricated."}
+    variables: [district, road, area_detail, flood_height_cm, flood_length_m,
+      lanes_affected, flood_start, flood_end, flood_duration, rain_total_mm]
+
+  - id: dds_tide_pdf
+    agency:
+      th: "กรมอุทกศาสตร์ กองทัพเรือ (สถานี: กองบัญชาการกองทัพเรือ)"
+      en: "Royal Thai Navy Hydrographic Department (station: Navy HQ)"
+    url: "https://dds.bangkok.go.th/public_content/files/001/0006030_1.pdf"
+    method: "ONE GET only, no HEAD first -- same fix/reasoning as dds_daily_pdf's method
+      field. This is a yearly table, expected to change roughly once a year."
+    cadence: yearly (one PDF covers all 12 months of a calendar/BE year)
+    format: pdf
+    auth: none
+    licence_status: {text: "RELAYED, not independently confirmed.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "Same host/rule as dds_daily_pdf."}
+    last_status: {date: "2026-09-26", http: 200, note: "12 pages = 12 months (2026:
+      JANUARY..DECEMBER confirmed). Each day: up to 2 high-water + 2 low-water
+      time+level entries (AM/PM); '-' means no such extreme that half-day, parsed as
+      None, never fabricated as 0."}
+    variables: [tide_high_am_time, tide_high_am_level_m, tide_low_am_time,
+      tide_low_am_level_m, tide_high_pm_time, tide_high_pm_level_m, tide_low_pm_time,
+      tide_low_pm_level_m]
+
+  - id: dds_nowcast_gif
+    agency:
+      th: "สำนักการระบายน้ำ กรุงเทพมหานคร"
+      en: "Department of Drainage and Sewerage, BMA"
+    url: "https://dds.bangkok.go.th/Line_data/picture/radar_rain.gif"
+    method: GET (binary image, stored as a timestamped snapshot -- NOT parsed; a radar
+      GIF is a picture, this pipeline does not run image inference on it)
+    cadence: near-real-time (radar refresh interval not published)
+    format: gif
+    auth: none
+    licence_status: {text: "RELAYED, not independently confirmed.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "Same host/rule as dds_daily_pdf."}
+    last_status: {date: "2026-09-26", http: null, note: "Not yet fetched by collect.py
+      this run -- image-only source, snapshot-and-store only, no parser to test against
+      it beyond confirming a file was saved."}
+    variables: []
+
+  - id: bma_klongmap
+    agency:
+      th: "สำนักการระบายน้ำ กรุงเทพมหานคร"
+      en: "Department of Drainage and Sewerage, BMA"
+    url: "https://weather.bangkok.go.th/Klongmap/GetDataForUpdate"
+    method: GET
+    cadence: unknown
+    format: json
+    auth: none
+    licence_status: {text: "RELAYED, not independently confirmed.", unresolved: true}
+    trust_tier: official_telemetry
+    host_rule:
+      max_requests_per_run: 1
+      notes: "DORMANT -- confirmed HTTP 403 on 2026-09-26 even with full browser-like
+        headers (see live_water_level.py fetch_klongmap()). Parser
+        (parse_klongmap_stations) stays implemented and unit-tested so it activates the
+        moment this 403 lifts; collect.py does not retry it in a loop. collect.py also
+        excludes this source from a plain `--all` run (its own DORMANT_NOT_IN_ALL set) --
+        per the host-safety rule's 'if 403/reset, stop touching that host', a confirmed
+        403 must not be re-probed on every future run without a human deciding to check
+        again via `--source bma_klongmap` explicitly."
+    last_status: {date: "2026-09-26", http: 403, note: "Blocked at the edge, not a bug in
+      this repo's request (confirmed with full browser-like headers)."}
+    variables: [water_level_m]
+
+  - id: governor_shared_flooded_roads
+    agency:
+      th: "สำนักงานผู้ว่าราชการกรุงเทพมหานคร (แชร์ต่อ)"
+      en: "Office of the Governor of Bangkok (shared onward)"
+    url: "(shared out-of-band by a maintainer as a private link, not stored in this repo --
+      see this source's method/last_status below for what is known about it instead of a
+      URL)"
+    method: "manual import only -- no fetcher. A person/agency read Google Maps traffic
+      colour as a flood proxy and shared the resulting road list; there is no API to poll."
+    cadence: ad hoc, whenever shared
+    format: manual (artifact/text import)
+    auth: none
+    licence_status: {text: "RELAYED -- shared informally, not a published open-data
+      product; do not redistribute as if it were an official BMA/DDS report.", unresolved: true}
+    trust_tier: official_shared_inference
+    host_rule: {max_requests_per_run: 0, notes: "No fetcher -- this is intentional, not a
+      gap. See method above."}
+    last_status: {date: "2026-09-26", http: null, note: "Link relayed by a maintainer
+      (\"ลิงค์นั้นมาจาก ผู้ว่ากทม เชื่อถือได้ระดับหนึ่ง\" -- trusted to a degree, not
+      unconditionally). Not yet imported into this run's store -- OPEN."}
+    variables: [road_name, inferred_status]
+
+  - id: rtsd_2010_ground_level_map
+    agency:
+      th: "กรมแผนที่ทหาร"
+      en: "Royal Thai Survey Department"
+    url: "raw/rtsd_2010 (static, if present -- reference only, no live URL polled)"
+    method: reference (already-fetched static asset from an earlier session)
+    cadence: static (2010 survey)
+    format: image/geojson (see raw/rtsd_2010/georef.json)
+    auth: none
+    licence_status: {text: "RELAYED, not independently confirmed.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 0, notes: "Static reference asset, not re-fetched
+      by this collector."}
+    last_status: {date: "2026-09-26", http: null, note: "Present in raw/rtsd_2010/ from
+      an earlier session -- reference only, not wired into observations/documents by
+      this stage of the pipeline."}
+    variables: []
+
+  - id: social_listening_google
+    agency:
+      th: "สาธารณะ (โพสต์สาธารณะที่ Google index)"
+      en: "Public (public posts indexed by Google) -- NOT an agency; this workspace's own
+        social-listening layer, see effectiveness block below"
+    url: "https://www.google.com/search (web search, no fixed API endpoint -- see method)"
+    method: "Google web search filtered to the last 24 h (tbs=qdr:d), for a fixed set of
+      area names/hashtags per run; only public (not-logged-in-visible) posts are ever
+      read; poster names are never stored, only place/state/time -- see
+      social_listening.py::parse_google_snapshot / search_google"
+    cadence: "hourly-capable (not yet scheduled -- see docs/DATA_SYSTEM.md's no-cron
+      note, same discipline as every other source in this registry)"
+    format: "parsed text (from a saved Google results snapshot -- HTML or a plain-text
+      transcription of one)"
+    auth: none
+    licence_status:
+      text: "Public posts, summarised into place/state/time rows, never reproduced
+        verbatim and never attributed to a named poster. Not independently checked
+        against Google's own terms of service for automated querying -- treat this as
+        RELAYED/unresolved the same as every other source here."
+      unresolved: true
+    trust_tier: community_report
+    host_rule:
+      max_requests_per_run: 2
+      notes: "At most 2 Google search queries per area per run, at least 60 seconds
+        apart. Stop immediately on a CAPTCHA challenge or an HTTP 429 -- no retry loop,
+        same fail-closed discipline as every other source in this registry."
+    last_status: {date: "2026-09-26", http: null, note: "Not yet run through
+      search_google() this session (playwright optional-import path untested against a
+      live Google page) -- two REAL manually-compiled snapshots exist instead, see
+      docs/METHOD_social_listening.md and raw/community/."}
+    variables: [community_report (ordinal state code, see social_listening.py::STATE_ORDER)]
+    effectiveness:
+      doc: "docs/METHOD_social_listening.md"
+      headline:
+        areas_covered_2026-09-26: ["สัมมากร (sammakorn)", "รามคำแหง 53 (ram53)"]
+        method_evaluation_table: "method_evaluation table in data/observations.sqlite,
+          written by `python3 social_listening.py --evaluate`"
+
+  - id: social_listening_paste
+    agency:
+      th: "สาธารณะ (โพสต์สาธารณะที่ Google index)"
+      en: "Public (public posts indexed by Google) -- maintainer-pasted group/page text,
+        same posture as social_listening_google"
+    url: "(no URL -- maintainer-pasted text from a Facebook group/page, not fetched by this
+      repo; see method)"
+    method: "manual import only -- no fetcher. A maintainer (or another person with
+      access) pastes text copied from a community Facebook group/page into this repo's
+      raw/community/ directory; social_listening.py::parse_paste turns it into rows.
+      Author/poster-name lines are dropped and never stored -- only
+      soi/place/state/time survives."
+    cadence: ad hoc, whenever pasted
+    format: manual (text import)
+    auth: none
+    licence_status:
+      text: "Same posture as social_listening_google -- public group content,
+        summarised not reproduced, no names stored, not independently checked against
+        the group's own terms."
+      unresolved: true
+    trust_tier: community_report
+    host_rule: {max_requests_per_run: 0, notes: "No fetcher -- this is intentional, not
+      a gap. See method above."}
+    last_status: {date: "2026-09-26", http: null, note: "Two real maintainer-supplied
+      compilations imported this session -- see raw/community/ and
+      docs/METHOD_social_listening.md."}
+    variables: [community_report (ordinal state code, see social_listening.py::STATE_ORDER)]
+    effectiveness:
+      doc: "docs/METHOD_social_listening.md"
+      headline:
+        areas_covered_2026-09-26: ["สัมมากร (sammakorn)", "รามคำแหง 53 (ram53)"]
+        method_evaluation_table: "method_evaluation table in data/observations.sqlite,
+          written by `python3 social_listening.py --evaluate`"
+
+  - id: rid_flood_risk_map
+    agency:
+      th: "กรมชลประทาน"
+      en: "Royal Irrigation Department"
+    url: "raw/rid_flood_risk (static, if present -- reference only, no live URL polled)"
+    method: reference (already-fetched static asset from an earlier session)
+    cadence: static
+    format: image/geojson (see raw/rid_flood_risk/georef.json)
+    auth: none
+    licence_status: {text: "RELAYED, not independently confirmed.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 0, notes: "Static reference asset, not re-fetched
+      by this collector."}
+    last_status: {date: "2026-09-26", http: null, note: "Present in raw/rid_flood_risk/
+      from an earlier session -- reference only, not wired into
+      observations/documents by this stage of the pipeline."}
+    variables: []

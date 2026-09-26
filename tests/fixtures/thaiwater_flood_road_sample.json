@@ -1,0 +1,245 @@
+{
+  "result": "OK",
+  "data": [
+    {
+      "floodroad_datetime": "2019-01-30 17:50",
+      "floodroad_value": 0,
+      "agency": {
+        "agency_name": {
+          "th": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+          "en": "Department of Bangkok",
+          "jp": ""
+        }
+      },
+      "geocode": {
+        "area_code": "1",
+        "area_name": {
+          "th": "กรุงเทพมหานคร",
+          "en": "Bangkok"
+        },
+        "amphoe_name": {
+          "th": "พระนคร",
+          "en": "Phra Nakhon District"
+        },
+        "tumbon_name": {
+          "th": "พระบรมมหาราชวัง",
+          "en": "Phraborom Maharatchawang"
+        },
+        "province_code": "10",
+        "province_name": {
+          "th": "กรุงเทพมหานคร",
+          "en": "Bangkok"
+        }
+      },
+      "station": {
+        "id": 160,
+        "floodroad_name": {
+          "th": "ถ.สนามไชย  ช่วงถนนเศรษฐการ"
+        },
+        "floodroad_lat": 13.7448,
+        "floodroad_long": 100.49446,
+        "floodroad_oldcode": "FL.PNK.01"
+      }
+    },
+    {
+      "floodroad_datetime": "2026-09-25 20:10",
+      "floodroad_value": 0,
+      "agency": {
+        "agency_name": {
+          "th": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+          "en": "Department of Bangkok",
+          "jp": ""
+        }
+      },
+      "geocode": {
+        "area_code": "1",
+        "area_name": {
+          "th": "กรุงเทพมหานคร",
+          "en": "Bangkok"
+        },
+        "amphoe_name": {
+          "th": "บางแค",
+          "en": "Bang Khae District"
+        },
+        "tumbon_name": {
+          "th": "บางแค",
+          "en": "Bang Khae"
+        },
+        "province_code": "10",
+        "province_name": {
+          "th": "กรุงเทพมหานคร",
+          "en": "Bangkok"
+        }
+      },
+      "station": {
+        "id": 175,
+        "floodroad_name": {
+          "th": "ถ.เพชรเกษม ช่วงซอยวัดม่วง"
+        },
+        "floodroad_lat": 13.70927,
+        "floodroad_long": 100.39139,
+        "floodroad_oldcode": "FL.BKE.02"
+      }
+    },
+    {
+      "floodroad_datetime": "2026-09-25 20:05",
+      "floodroad_value": 0,
+      "agency": {
+        "agency_name": {
+          "th": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+          "en": "Department of Bangkok",
+          "jp": ""
+        }
+      },
+      "geocode": {
+        "area_code": "1",
+        "area_name": {
+          "th": "กรุงเทพมหานคร",
+          "en": "Bangkok"
+        },
+        "amphoe_name": {
+          "th": "ลาดกระบัง",
+          "en": "Lat Krabang District"
+        },
+        "tumbon_name": {
+          "th": "ทับยาว",
+          "en": "Thap Yao"
+        },
+        "province_code": "10",
+        "province_name": {
+          "th": "กรุงเทพมหานคร",
+          "en": "Bangkok"
+        }
+      },
+      "station": {
+        "id": 707,
+        "floodroad_name": {
+          "th": "ถ.หลวงแพ่ง ช่วงโรงเรียนแสงหิรัญวิทยา *"
+        },
+        "floodroad_lat": 13.71289,
+        "floodroad_long": 100.81426,
+        "floodroad_oldcode": "FL.LKB.02"
+      }
+    },
+    {
+      "floodroad_datetime": "2026-09-25 20:05",
+      "floodroad_value": 0,
+      "agency": {
+        "agency_name": {
+          "th": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+          "en": "Department of Bangkok",
+          "jp": ""
+        }
+      },
+      "geocode": {
+        "area_code": "1",
+        "area_name": {
+          "th": "กรุงเทพมหานคร",
+          "en": "Bangkok"
+        },
+        "amphoe_name": {
+          "th": "วัฒนา",
+          "en": "Vadhana District"
+        },
+        "tumbon_name": {
+          "th": "พระโขนงเหนือ",
+          "en": "Phra Khanong Nuea"
+        },
+        "province_code": "10",
+        "province_name": {
+          "th": "กรุงเทพมหานคร",
+          "en": "Bangkok"
+        }
+      },
+      "station": {
+        "id": 768,
+        "floodroad_name": {
+          "th": "ถ.สุขุมวิท ช่วง ซ.สุขุมวิท 69 *"
+        },
+        "floodroad_lat": 13.71467,
+        "floodroad_long": 100.59217,
+        "floodroad_oldcode": "FL.WTN.07"
+      }
+    },
+    {
+      "floodroad_datetime": "2026-09-25 20:10",
+      "floodroad_value": 0,
+      "agency": {
+        "agency_name": {
+          "th": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+          "en": "Department of Bangkok",
+          "jp": ""
+        }
+      },
+      "geocode": {
+        "area_code": "1",
+        "area_name": {
+          "th": "กรุงเทพมหานคร",
+          "en": "Bangkok"
+        },
+        "amphoe_name": {
+          "th": "ลาดกระบัง",
+          "en": "Lat Krabang District"
+        },
+        "tumbon_name": {
+          "th": "ลำปลาทิว",
+          "en": "Lam Pla Thio"
+        },
+        "province_code": "10",
+        "province_name": {
+          "th": "กรุงเทพมหานคร",
+          "en": "Bangkok"
+        }
+      },
+      "station": {
+        "id": 713,
+        "floodroad_name": {
+          "th": "ถ.เจ้าคุณทหาร หน้าสถานี LPG PT สาขาลาดกระบัง4 *"
+        },
+        "floodroad_lat": 13.75091,
+        "floodroad_long": 100.78994,
+        "floodroad_oldcode": "FL.LKB.08"
+      }
+    },
+    {
+      "floodroad_datetime": "2026-09-25 20:10",
+      "floodroad_value": 0,
+      "agency": {
+        "agency_name": {
+          "th": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+          "en": "Department of Bangkok",
+          "jp": ""
+        }
+      },
+      "geocode": {
+        "area_code": "1",
+        "area_name": {
+          "th": "กรุงเทพมหานคร",
+          "en": "Bangkok"
+        },
+        "amphoe_name": {
+          "th": "คลองเตย",
+          "en": "Khlong Toei District"
+        },
+        "tumbon_name": {
+          "th": "คลองเตย",
+          "en": "Khlong Toei"
+        },
+        "province_code": "10",
+        "province_name": {
+          "th": "กรุงเทพมหานคร",
+          "en": "Bangkok"
+        }
+      },
+      "station": {
+        "id": 181,
+        "floodroad_name": {
+          "th": "ซ.สุขุมวิท 22 (ด้านถนนพระรามที่ 4)"
+        },
+        "floodroad_lat": null,
+        "floodroad_long": 100.56467,
+        "floodroad_oldcode": "FL.KTY.02"
+      }
+    }
+  ]
+}

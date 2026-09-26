@@ -1,0 +1,4560 @@
+# soi_tiers_2026-09-26.yaml
+# Per-soi flood-onset ladder, หมู่บ้านสัมมากร (Ramkhamhaeng 110/112, Saphan Sung)
+# Built 2026-09-26. Tags per row: RELAYED=community report, MEASURED=geometry from OSM/Bing roads + haversine,
+# INSTINCT=tier grouping + interpolated geocode judgment, OPEN=unresolved (esp. trigger_levels).
+# NO risk score/formula anywhere in this file (per project rule: a formula needs Toledo registration first).
+# Ladder is purely empirical ordering by observed onset time + depth on 2026-09-26.
+office: {lat: 13.758235, lon: 100.676084, note: "ARAYA office, ซอย 44"}
+tiers_definition:
+  T1: "ท่วมเข้าบ้านก่อนใคร (house entry <=06:00 หรือ depth>=20cm)"
+  T2: "เข้าบ้าน/โรงรถ 06:00-08:00"
+  T3: "เข้าโรงรถ/ถนนท่วมทั้งซอย 08:00-10:00"
+  T4: "ท่วมถนน/ซึม หลัง 10:00"
+  T5: ไม่มีรายงานวันนี้ (unknown != safe)
+pond_overflow_vs_soi_onset_test: # INSTINCT, maintainer hypothesis check
+  hypothesis: "บึงล้นก่อน แล้วซอยรอบบึงถึงท่วม (pond overflows -> nearby sois flood)"
+  verdict: MIXED_REVERSED_IN_PART
+  detail: >-
+    INSTINCT read of today's data: the order does NOT hold cleanly. ซอย 50 (0-150m ring of
+    บึงรับน้ำสัมมากร 4/ST.SPS.02) reported house entry at 04:00, several hours BEFORE any pond
+    overflow report (earliest pond overflow report is บึงหน้าคอนโด ซ.18 / ทะเลสาบต้นสน around
+    06:00-08:00). ซอย 48 and 48/3 (also 0-150-300m ring of the same pond/pump) follow at
+    06:00-09:00, roughly overlapping the pond-overflow window rather than clearly after it.
+    For the ซอย 17/18/A8/B5 cluster near บึงรับน้ำสัมมากร 1 (ST.SPS.04) the order looks closer
+    to the hypothesis: บึงหน้าคอนโด ซ.18 overflow ~06:00-07:00 lines up with ซอย18 (06:00-07:00,
+    same time, not clearly after) and precedes ซอย A8/B5 (08:00-09:00) and ซอย 17 (11:10).
+    ทะเลสาบ 2 ล้นเข้าบ้าน at 11:20 (ST.SPS.04, บึง1) is LATE relative to nearby ซอย17/18 which
+    already flooded hours earlier -- reversed for that pair.
+    Reading: low-lying sois close to a canal/culvert (ซอย 50, 59) can flood from direct canal
+    backflow BEFORE the retention pond itself is reported full; other sois cluster around the
+    pond's overflow window. The single global rule "pond fills -> then sois flood" is not clean;
+    it is closer to true for the ST.SPS.04/บึง1 cluster than for the ST.SPS.02/บึง4 cluster.
+  what_would_settle_it: >-
+    A time series of each pond's water level (not a single 11:25 snapshot) matched minute-for-
+    minute against each soi's first-flood report. We have only one BMA canal snapshot
+    (2026-09-26T04:01:59Z fetch, records timestamped 2026-09-25 20:05 -- i.e. the PRIOR evening,
+    not today's event) and two pumphistory HTML captures (11:25, 12:00 Thai time) that show only
+    pump ON/OFF status text (one pump "ขัดข้อง"/malfunction), no numeric pond-depth values in the
+    files actually on disk. The maintainer-supplied 11:25 pond levels (บึง4 0.73m, บึง2 0.57m, บึง1
+    1.27m, บ้านม้า2 ขัดข้อง 0/4) are RELAYED here, not independently re-derived from the raw files
+    in this repo within this pass -- OPEN: could not locate the exact source file/endpoint that
+    carries those numeric pump/level readings.
+pond_rings:
+  บึงรับน้ำสัมมากร 4:
+    pump: ST.SPS.02
+    overflow_report_time: "บึงหน้าคอนโด ซ.18 / ต้นสน-cluster ~06:00-08:00 (ทะเลสาบต้นสน 08:00 ใกล้เคียง)"
+    bma_1125_relayed: 0.73 m, ปั๊ม 0/2 ทำงาน
+    rings:
+      "0-150m":
+        - soi: ซอย 59 (สุดซอย/ปากซอย)
+          dist_m: 45.8
+          first_time: "06:00-10:00"
+          depth_cm: null
+          tier: T1
+        - soi: ซอย 58
+          dist_m: 115.7
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+      "150-300m":
+        - soi: ซอย 54
+          dist_m: 294.8
+          first_time: "08:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 56
+          dist_m: 223.9
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 56/2
+          dist_m: 200.6
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 46
+          dist_m: 284.3
+          first_time: null
+          depth_cm: null
+          tier: T5
+      "300-500m":
+        - soi: ซอย 50
+          dist_m: 392.1
+          first_time: "04:00"
+          depth_cm: null
+          tier: T1
+        - soi: ซอย 51
+          dist_m: 326.5
+          first_time: "09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 40
+          dist_m: 417.8
+          first_time: "11:00"
+          depth_cm: null
+          tier: T4
+        - soi: ซอย 36/1
+          dist_m: 468.8
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 36/2
+          dist_m: 486.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 44
+          dist_m: 349.7
+          first_time: null
+          depth_cm: null
+          tier: T5
+      ">500m":
+        - soi: ซอย 48
+          dist_m: 541.0
+          first_time: "06:00-08:00"
+          depth_cm: 9.5
+          tier: T1
+        - soi: ซอย 18
+          dist_m: 1373.4
+          first_time: "06:00-07:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย B5 / โซน B / เมน B
+          dist_m: 1896.0
+          first_time: "06:00-08:00"
+          depth_cm: null
+          tier: T1
+        - soi: ซอย 48/3
+          dist_m: 532.5
+          first_time: "07:00-09:00"
+          depth_cm: 30
+          tier: T1
+        - soi: ซอย 36
+          dist_m: 569.3
+          first_time: "07:00-08:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย D3
+          dist_m: 1654.9
+          first_time: "07:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 48/2
+          dist_m: 534.9
+          first_time: "07:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 48/5
+          dist_m: 524.2
+          first_time: "07:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 15A
+          dist_m: 1494.6
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 24
+          dist_m: 966.6
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 25/3
+          dist_m: 1191.4
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย A5
+          dist_m: 1941.6
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 32
+          dist_m: 598.3
+          first_time: "09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย A8
+          dist_m: 1876.2
+          first_time: "09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย F5
+          dist_m: 1319.5
+          first_time: "09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย G14 / ถนนเมนราม 110
+          dist_m: 1933.8
+          first_time: "10:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 17
+          dist_m: 1341.6
+          first_time: "11:10"
+          depth_cm: null
+          tier: T4
+        - soi: ซอย 47/5
+          dist_m: 616.6
+          first_time: "11:40"
+          depth_cm: null
+          tier: T4
+  บึงรับน้ำสัมมากร 3:
+    pump: null
+    overflow_report_time: "ทะเลสาบกลางหมู่บ้าน ~09:00 (เชื่อมถนน)"
+    bma_1125_relayed: OPEN (ไม่มีรหัส BMA คู่ตรงในสแนปช็อตนี้)
+    rings:
+      "0-150m":
+        - soi: ซอย 24/2
+          dist_m: 132.7
+          first_time: null
+          depth_cm: null
+          tier: T5
+      "150-300m":
+        - soi: ซอย 24
+          dist_m: 167.1
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 24/1
+          dist_m: 211.6
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 32/1
+          dist_m: 231.4
+          first_time: null
+          depth_cm: null
+          tier: T5
+      "300-500m":
+        - soi: ซอย 36
+          dist_m: 454.2
+          first_time: "07:00-08:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 25/3
+          dist_m: 403.4
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 32
+          dist_m: 379.3
+          first_time: "09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 40
+          dist_m: 479.3
+          first_time: "11:00"
+          depth_cm: null
+          tier: T4
+        - soi: ซอย 36/3
+          dist_m: 390.8
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย H3
+          dist_m: 395.5
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 23
+          dist_m: 301.4
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย H2
+          dist_m: 438.9
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย H4
+          dist_m: 352.9
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย H1
+          dist_m: 483.6
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 32/3
+          dist_m: 419.7
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 21
+          dist_m: 331.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 36/1
+          dist_m: 361.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 32/2
+          dist_m: 389.0
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/10
+          dist_m: 464.0
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 32/4
+          dist_m: 455.0
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 36/2
+          dist_m: 381.2
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 32/8
+          dist_m: 482.9
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/7
+          dist_m: 406.0
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 32/5
+          dist_m: 371.5
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/1
+          dist_m: 341.8
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/5
+          dist_m: 452.2
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอยเมน H
+          dist_m: 389.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/9
+          dist_m: 443.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย H5
+          dist_m: 310.3
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/8
+          dist_m: 431.0
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/11
+          dist_m: 467.4
+          first_time: null
+          depth_cm: null
+          tier: T5
+      ">500m":
+        - soi: ซอย 50
+          dist_m: 744.1
+          first_time: "04:00"
+          depth_cm: null
+          tier: T1
+        - soi: ซอย 48
+          dist_m: 847.9
+          first_time: "06:00-08:00"
+          depth_cm: 9.5
+          tier: T1
+        - soi: ซอย 18
+          dist_m: 635.4
+          first_time: "06:00-07:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย B5 / โซน B / เมน B
+          dist_m: 1118.8
+          first_time: "06:00-08:00"
+          depth_cm: null
+          tier: T1
+        - soi: ซอย 59 (สุดซอย/ปากซอย)
+          dist_m: 769.8
+          first_time: "06:00-10:00"
+          depth_cm: null
+          tier: T1
+        - soi: ซอย 48/3
+          dist_m: 888.6
+          first_time: "07:00-09:00"
+          depth_cm: 30
+          tier: T1
+        - soi: ซอย D3
+          dist_m: 894.8
+          first_time: "07:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 48/2
+          dist_m: 830.5
+          first_time: "07:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 48/5
+          dist_m: 850.4
+          first_time: "07:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 15A
+          dist_m: 742.3
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 54
+          dist_m: 641.1
+          first_time: "08:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 56
+          dist_m: 645.5
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 56/2
+          dist_m: 659.5
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 58
+          dist_m: 726.6
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย A5
+          dist_m: 1146.9
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย A8
+          dist_m: 1085.2
+          first_time: "09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย F5
+          dist_m: 582.5
+          first_time: "09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 51
+          dist_m: 704.0
+          first_time: "09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย G14 / ถนนเมนราม 110
+          dist_m: 1137.4
+          first_time: "10:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 17
+          dist_m: 591.3
+          first_time: "11:10"
+          depth_cm: null
+          tier: T4
+        - soi: ซอย 47/5
+          dist_m: 895.8
+          first_time: "11:40"
+          depth_cm: null
+          tier: T4
+  บึงรับน้ำสัมมากร 2:
+    pump: ST.SPS.03
+    overflow_report_time: "ทะเลสาบ 1 (องค์พระ) ~10:00"
+    bma_1125_relayed: 0.57 m, ปั๊ม 1/3 ทำงาน
+    rings:
+      "0-150m":
+        - soi: ซอย 24
+          dist_m: 132.9
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 24/1
+          dist_m: 61.0
+          first_time: null
+          depth_cm: null
+          tier: T5
+      "150-300m":
+        - soi: ซอย 25/3
+          dist_m: 248.1
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย H3
+          dist_m: 184.4
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 23
+          dist_m: 281.6
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย H2
+          dist_m: 208.9
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย H4
+          dist_m: 169.6
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย H1
+          dist_m: 241.8
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 21
+          dist_m: 247.8
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 22
+          dist_m: 250.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/7
+          dist_m: 284.9
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย E6
+          dist_m: 244.5
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอยเมน H
+          dist_m: 160.6
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/9
+          dist_m: 299.0
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย H5
+          dist_m: 165.6
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/11
+          dist_m: 293.6
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 24/2
+          dist_m: 269.2
+          first_time: null
+          depth_cm: null
+          tier: T5
+      "300-500m":
+        - soi: ซอย F5
+          dist_m: 326.5
+          first_time: "09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 17
+          dist_m: 471.4
+          first_time: "11:10"
+          depth_cm: null
+          tier: T4
+        - soi: ซอย E4
+          dist_m: 349.3
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย F4
+          dist_m: 359.3
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย A18
+          dist_m: 409.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย E3
+          dist_m: 397.2
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย E2
+          dist_m: 446.4
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย F2
+          dist_m: 451.9
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย F1
+          dist_m: 495.2
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย E1
+          dist_m: 495.0
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย F3
+          dist_m: 406.7
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 19
+          dist_m: 350.4
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 32/5
+          dist_m: 460.8
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/1
+          dist_m: 343.4
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/5
+          dist_m: 397.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอยเมน F
+          dist_m: 393.0
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอยเมน E
+          dist_m: 394.2
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย E5
+          dist_m: 303.3
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 22/1
+          dist_m: 448.0
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 32/1
+          dist_m: 369.9
+          first_time: null
+          depth_cm: null
+          tier: T5
+      ">500m":
+        - soi: ซอย 50
+          dist_m: 944.2
+          first_time: "04:00"
+          depth_cm: null
+          tier: T1
+        - soi: ซอย 48
+          dist_m: 1017.2
+          first_time: "06:00-08:00"
+          depth_cm: 9.5
+          tier: T1
+        - soi: ซอย 18
+          dist_m: 524.8
+          first_time: "06:00-07:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย B5 / โซน B / เมน B
+          dist_m: 919.7
+          first_time: "06:00-08:00"
+          depth_cm: null
+          tier: T1
+        - soi: ซอย 59 (สุดซอย/ปากซอย)
+          dist_m: 1026.3
+          first_time: "06:00-10:00"
+          depth_cm: null
+          tier: T1
+        - soi: ซอย 48/3
+          dist_m: 1063.2
+          first_time: "07:00-09:00"
+          depth_cm: 30
+          tier: T1
+        - soi: ซอย 36
+          dist_m: 622.4
+          first_time: "07:00-08:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย D3
+          dist_m: 623.7
+          first_time: "07:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 48/2
+          dist_m: 1000.0
+          first_time: "07:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 48/5
+          dist_m: 1024.0
+          first_time: "07:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 15A
+          dist_m: 598.8
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 54
+          dist_m: 866.9
+          first_time: "08:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 56
+          dist_m: 885.9
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 56/2
+          dist_m: 902.8
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 58
+          dist_m: 977.1
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย A5
+          dist_m: 916.6
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 32
+          dist_m: 550.3
+          first_time: "09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย A8
+          dist_m: 864.1
+          first_time: "09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 51
+          dist_m: 918.9
+          first_time: "09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย G14 / ถนนเมนราม 110
+          dist_m: 875.2
+          first_time: "10:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 40
+          dist_m: 698.2
+          first_time: "11:00"
+          depth_cm: null
+          tier: T4
+        - soi: ซอย 47/5
+          dist_m: 1049.8
+          first_time: "11:40"
+          depth_cm: null
+          tier: T4
+  บึงรับน้ำสัมมากร 1:
+    pump: ST.SPS.04
+    overflow_report_time: "ทะเลสาบ 2 ล้นเข้าบ้าน ~11:20"
+    bma_1125_relayed: 1.27 m, ปั๊ม 1/2 ทำงาน
+    rings:
+      "0-150m":
+        []
+      "150-300m":
+        - soi: ซอย 15A
+          dist_m: 270.2
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย A8
+          dist_m: 282.0
+          first_time: "09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย A9
+          dist_m: 224.0
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 13
+          dist_m: 246.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย A18
+          dist_m: 177.9
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย A14
+          dist_m: 245.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย C2
+          dist_m: 288.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 12
+          dist_m: 227.6
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย C4
+          dist_m: 256.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย A10
+          dist_m: 179.4
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 15
+          dist_m: 270.2
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 19
+          dist_m: 273.8
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย A11
+          dist_m: 262.6
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย C3
+          dist_m: 268.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 22/1
+          dist_m: 277.6
+          first_time: null
+          depth_cm: null
+          tier: T5
+      "300-500m":
+        - soi: ซอย 18
+          dist_m: 353.5
+          first_time: "06:00-07:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย B5 / โซน B / เมน B
+          dist_m: 346.0
+          first_time: "06:00-08:00"
+          depth_cm: null
+          tier: T1
+        - soi: ซอย 25/3
+          dist_m: 409.5
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย A5
+          dist_m: 341.8
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย G14 / ถนนเมนราม 110
+          dist_m: 419.9
+          first_time: "10:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 17
+          dist_m: 339.9
+          first_time: "11:10"
+          depth_cm: null
+          tier: T4
+        - soi: ซอยสัมมากร 1 ซอย B13
+          dist_m: 389.7
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย G17
+          dist_m: 366.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย E4
+          dist_m: 367.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย G18
+          dist_m: 331.3
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอยสัมมากร 1 ซอย B10
+          dist_m: 363.9
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอยสัมมากร 1 ซอย B12
+          dist_m: 372.7
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย G15
+          dist_m: 414.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอยสัมมากร 1 ซอย B8
+          dist_m: 384.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอยสัมมากร 1 ซอย B7
+          dist_m: 392.6
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย G19
+          dist_m: 320.7
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย E3
+          dist_m: 365.9
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอยสัมมากร 1 ซอย B14
+          dist_m: 411.0
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย E2
+          dist_m: 367.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอยสัมมากร 1 ซอย B11
+          dist_m: 361.7
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอยสัมมากร 1 ซอย B9
+          dist_m: 386.7
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย E1
+          dist_m: 370.9
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย D1
+          dist_m: 388.3
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 22
+          dist_m: 340.8
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/7
+          dist_m: 427.3
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย E6
+          dist_m: 398.7
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย C1
+          dist_m: 337.2
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/5
+          dist_m: 481.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอยเมน F
+          dist_m: 443.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอยเมน E
+          dist_m: 394.7
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย E5
+          dist_m: 370.8
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย C5
+          dist_m: 349.9
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/9
+          dist_m: 383.8
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย D2
+          dist_m: 465.8
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย C6
+          dist_m: 344.5
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/11
+          dist_m: 345.3
+          first_time: null
+          depth_cm: null
+          tier: T5
+      ">500m":
+        - soi: ซอย 50
+          dist_m: 1525.3
+          first_time: "04:00"
+          depth_cm: null
+          tier: T1
+        - soi: ซอย 48
+          dist_m: 1599.5
+          first_time: "06:00-08:00"
+          depth_cm: 9.5
+          tier: T1
+        - soi: ซอย 59 (สุดซอย/ปากซอย)
+          dist_m: 1572.7
+          first_time: "06:00-10:00"
+          depth_cm: null
+          tier: T1
+        - soi: ซอย 48/3
+          dist_m: 1645.8
+          first_time: "07:00-09:00"
+          depth_cm: 30
+          tier: T1
+        - soi: ซอย 36
+          dist_m: 1205.1
+          first_time: "07:00-08:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย D3
+          dist_m: 500.5
+          first_time: "07:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 48/2
+          dist_m: 1582.4
+          first_time: "07:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 48/5
+          dist_m: 1606.6
+          first_time: "07:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 24
+          dist_m: 639.9
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 54
+          dist_m: 1439.7
+          first_time: "08:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 56
+          dist_m: 1449.9
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 56/2
+          dist_m: 1464.4
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 58
+          dist_m: 1531.6
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 32
+          dist_m: 1132.6
+          first_time: "09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย F5
+          dist_m: 558.7
+          first_time: "09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 51
+          dist_m: 1496.2
+          first_time: "09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 40
+          dist_m: 1272.7
+          first_time: "11:00"
+          depth_cm: null
+          tier: T4
+        - soi: ซอย 47/5
+          dist_m: 1630.0
+          first_time: "11:40"
+          depth_cm: null
+          tier: T4
+  ทะเลสาบสัมมากร:
+    pump: null
+    overflow_report_time: "OPEN (ไม่มีรายงานเจาะจงชื่อนี้; อาจซ้ำกับ 'ทะเลสาบกลางหมู่บ้าน')"
+    bma_1125_relayed: OPEN
+    rings:
+      "0-150m":
+        - soi: ซอย 18
+          dist_m: 126.7
+          first_time: "06:00-07:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 17
+          dist_m: 137.9
+          first_time: "11:10"
+          depth_cm: null
+          tier: T4
+        - soi: ซอย 25/5
+          dist_m: 127.2
+          first_time: null
+          depth_cm: null
+          tier: T5
+      "150-300m":
+        - soi: ซอย 15A
+          dist_m: 247.6
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 25/3
+          dist_m: 286.4
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 23
+          dist_m: 276.3
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 21
+          dist_m: 276.6
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย A14
+          dist_m: 279.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/10
+          dist_m: 270.0
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 15
+          dist_m: 247.5
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/7
+          dist_m: 238.8
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 19
+          dist_m: 291.2
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/1
+          dist_m: 232.8
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/9
+          dist_m: 242.5
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/11
+          dist_m: 279.6
+          first_time: null
+          depth_cm: null
+          tier: T5
+      "300-500m":
+        - soi: ซอย 24
+          dist_m: 465.5
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอยสัมมากร 1 ซอย B13
+          dist_m: 426.3
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 13
+          dist_m: 321.6
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอยสัมมากร 1 ซอย B12
+          dist_m: 463.9
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย A18
+          dist_m: 441.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 12
+          dist_m: 373.1
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอยสัมมากร 1 ซอย B14
+          dist_m: 392.8
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 22
+          dist_m: 457.9
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย A11
+          dist_m: 377.8
+          first_time: null
+          depth_cm: null
+          tier: T5
+        - soi: ซอย 25/8
+          dist_m: 325.0
+          first_time: null
+          depth_cm: null
+          tier: T5
+      ">500m":
+        - soi: ซอย 50
+          dist_m: 1306.5
+          first_time: "04:00"
+          depth_cm: null
+          tier: T1
+        - soi: ซอย 48
+          dist_m: 1419.9
+          first_time: "06:00-08:00"
+          depth_cm: 9.5
+          tier: T1
+        - soi: ซอย B5 / โซน B / เมน B
+          dist_m: 658.6
+          first_time: "06:00-08:00"
+          depth_cm: null
+          tier: T1
+        - soi: ซอย 59 (สุดซอย/ปากซอย)
+          dist_m: 1256.9
+          first_time: "06:00-10:00"
+          depth_cm: null
+          tier: T1
+        - soi: ซอย 48/3
+          dist_m: 1459.0
+          first_time: "07:00-09:00"
+          depth_cm: 30
+          tier: T1
+        - soi: ซอย 36
+          dist_m: 1028.1
+          first_time: "07:00-08:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย D3
+          dist_m: 875.5
+          first_time: "07:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 48/2
+          dist_m: 1402.5
+          first_time: "07:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 48/5
+          dist_m: 1421.4
+          first_time: "07:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 54
+          dist_m: 1187.6
+          first_time: "08:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 56
+          dist_m: 1174.0
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 56/2
+          dist_m: 1182.6
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 58
+          dist_m: 1231.8
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย A5
+          dist_m: 763.9
+          first_time: "08:00-09:00"
+          depth_cm: null
+          tier: T2
+        - soi: ซอย 32
+          dist_m: 953.2
+          first_time: "09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย A8
+          dist_m: 683.7
+          first_time: "09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย F5
+          dist_m: 739.4
+          first_time: "09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 51
+          dist_m: 1257.9
+          first_time: "09:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย G14 / ถนนเมนราม 110
+          dist_m: 895.1
+          first_time: "10:00"
+          depth_cm: null
+          tier: T3
+        - soi: ซอย 40
+          dist_m: 1038.3
+          first_time: "11:00"
+          depth_cm: null
+          tier: T4
+        - soi: ซอย 47/5
+          dist_m: 1469.4
+          first_time: "11:40"
+          depth_cm: null
+          tier: T4
+sois:
+  - soi: ซอย 50
+    lat: 13.756899500000001
+    lon: 100.67480196666666
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T1
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 203.0
+    nearest_pump: {code: ST.SPS.02, name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่, dist_m: 530.7, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 4, dist_m: 392.1, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 4, ring: 300-500m, dist_m: 392.1, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: เข้าบ้าน
+      first_time: "04:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 48
+    lat: 13.756667
+    lon: 100.673314
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (pre-geocoded in low_areas CSV, no separate way match)
+    tier: T1
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 346.3
+    nearest_pump: {code: ST.SPS.02, name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่, dist_m: 680.6, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 4, dist_m: 541.0, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 4, ring: ">500m", dist_m: 541.0, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: เข้าชั้น 1
+      first_time: "06:00-08:00"
+      depth_cm: 9.5
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย B5 / โซน B / เมน B
+    lat: 13.772666855555556
+    lon: 100.68038479444445
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T1
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1670.6
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 238.3, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 346.0, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 346.0, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: เข้าในตัวบ้าน
+      first_time: "06:00-08:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 59 (สุดซอย/ปากซอย)
+    lat: 13.756
+    lon: 100.6779
+    geocode_tag: INSTINCT
+    geocode_method: INTERPOLATED (สุดซอย near คลอง/pump ST.SPS.02, no matching way; report says water came from canal culvert)
+    tier: T1
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 316.6
+    nearest_pump: {code: ST.SPS.02, name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่, dist_m: 181.5, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 4, dist_m: 45.8, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 4, ring: 0-150m, dist_m: 45.8, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: ขึ้นโรงรถ/หลังบ้าน จากท่อน้ำคลอง
+      first_time: "06:00-10:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 48/3
+    lat: 13.756218361842105
+    lon: 100.67332649407895
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T1
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 372.8
+    nearest_pump: {code: ST.SPS.02, name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่, dist_m: 671.5, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 4, dist_m: 532.5, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 4, ring: ">500m", dist_m: 532.5, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: เข้าบ้าน 30ซม; บ่อบำบัดจม
+      first_time: "07:00-09:00"
+      depth_cm: 30
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 18
+    lat: 13.767840957142857
+    lon: 100.68079870714287
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T2
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1183.3
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 325.2, tag: MEASURED}
+    nearest_pond: {name: ทะเลสาบสัมมากร, dist_m: 126.7, tag: MEASURED}
+    pond_centre: {pond: ทะเลสาบสัมมากร, ring: 0-150m, dist_m: 126.7, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: เข้าโรงรถ; บึงหน้าคอนโด ซ.18 ล้น
+      first_time: "06:00-07:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 36
+    lat: 13.759830769999999
+    lon: 100.67505623125001
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T2
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 209.3
+    nearest_pump: {code: ST.SPS.02, name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่, dist_m: 679.9, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 3, dist_m: 454.2, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 3, ring: 300-500m, dist_m: 454.2, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: ท่วมทั้งซอย เข้าบ้าน/โรงรถ
+      first_time: "07:00-08:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย D3
+    lat: 13.7700184
+    lon: 100.6738956
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T2
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1331.4
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 482.1, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 500.5, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: ">500m", dist_m: 500.5, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: เป็นทะเล ใกล้เข้าบ้าน
+      first_time: "07:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 48/2
+    lat: 13.7568
+    lon: 100.6734
+    geocode_tag: INSTINCT
+    geocode_method: INTERPOLATED (co-located with ซอย 48/48-3 cluster, no matching way)
+    tier: T2
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 330.9
+    nearest_pump: {code: ST.SPS.02, name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่, dist_m: 674.5, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 4, dist_m: 534.9, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 4, ring: ">500m", dist_m: 534.9, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: เข้าโรงรถ
+      first_time: "07:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 48/5
+    lat: 13.75655
+    lon: 100.67345
+    geocode_tag: INSTINCT
+    geocode_method: INTERPOLATED (co-located with ซอย 48/48-3 cluster, no matching way)
+    tier: T2
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 340.6
+    nearest_pump: {code: ST.SPS.02, name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่, dist_m: 663.8, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 4, dist_m: 524.2, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 4, ring: ">500m", dist_m: 524.2, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: "เข้าบ้าน (ยังท่วม 12:00)"
+      first_time: "07:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 54
+    lat: 13.7574
+    lon: 100.6761
+    geocode_tag: INSTINCT
+    geocode_method: INTERPOLATED (toward ST.SPS.02/บึงที่4, no matching way)
+    tier: T2
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 92.9
+    nearest_pump: {code: ST.SPS.02, name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่, dist_m: 423.7, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 4, dist_m: 294.8, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 4, ring: 150-300m, dist_m: 294.8, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: เข้าครัว+โรงรถ
+      first_time: "08:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย A5
+    lat: 13.7732
+    lon: 100.6787
+    geocode_tag: INSTINCT
+    geocode_method: INTERPOLATED (adjacent to ซอย A8/A9 cluster, no matching way)
+    tier: T2
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1687.8
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 312.6, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 341.8, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 341.8, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: เริ่มเข้าบ้าน
+      first_time: "08:00-09:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 15A
+    lat: 13.768966
+    lon: 100.680724
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (pre-geocoded in low_areas CSV, no separate way match)
+    tier: T3
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 1294.2
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 207.3, tag: MEASURED}
+    nearest_pond: {name: ทะเลสาบสัมมากร, dist_m: 247.6, tag: MEASURED}
+    pond_centre: {pond: ทะเลสาบสัมมากร, ring: 150-300m, dist_m: 247.6, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: ท่วมถนน
+      first_time: "08:00-09:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 24
+    lat: 13.7644247
+    lon: 100.67775776666667
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T3
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 711.6
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 295.0, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 132.9, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: 0-150m, dist_m: 132.9, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: ท่วมถนน
+      first_time: "08:00-09:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 25/3
+    lat: 13.766450483333331
+    lon: 100.67867313333333
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T3
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 955.4
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 180.6, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 248.1, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: 150-300m, dist_m: 248.1, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: ท่วมถนน
+      first_time: "08:00-09:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 56
+    lat: 13.7572
+    lon: 100.6768
+    geocode_tag: INSTINCT
+    geocode_method: INTERPOLATED (toward ST.SPS.02/บึงที่4, no matching way)
+    tier: T3
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 138.7
+    nearest_pump: {code: ST.SPS.02, name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่, dist_m: 347.5, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 4, dist_m: 223.9, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 4, ring: 150-300m, dist_m: 223.9, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: ท่วม/น้ำเข้าร้าน
+      first_time: "08:00-09:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 56/2
+    lat: 13.75705
+    lon: 100.67695
+    geocode_tag: INSTINCT
+    geocode_method: INTERPOLATED (co-located with ซอย 56, no matching way)
+    tier: T3
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 161.6
+    nearest_pump: {code: ST.SPS.02, name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่, dist_m: 324.9, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 4, dist_m: 200.6, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 4, ring: 150-300m, dist_m: 200.6, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: ท่วม/น้ำเข้าร้าน
+      first_time: "08:00-09:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 58
+    lat: 13.7564
+    lon: 100.6774
+    geocode_tag: INSTINCT
+    geocode_method: INTERPOLATED (toward บึงรับน้ำสัมมากร 4, no matching way)
+    tier: T3
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 248.7
+    nearest_pump: {code: ST.SPS.02, name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่, dist_m: 247.9, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 4, dist_m: 115.7, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 4, ring: 0-150m, dist_m: 115.7, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: ท่วม/น้ำเข้าร้าน
+      first_time: "08:00-09:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 32
+    lat: 13.760394855555555
+    lon: 100.67544598888888
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T3
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 249.9
+    nearest_pump: {code: ST.SPS.02, name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่, dist_m: 698.5, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 3, dist_m: 379.3, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 3, ring: 300-500m, dist_m: 379.3, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: ท่วม
+      first_time: "09:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย A8
+    lat: 13.772593866666668
+    lon: 100.67914976666667
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T3
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 1630.6
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 232.6, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 282.0, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 150-300m, dist_m: 282.0, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: ซึมเข้าบ้าน
+      first_time: "09:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย F5
+    lat: 13.767030166666666
+    lon: 100.67445705
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T3
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 993.6
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 285.5, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 326.5, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: 300-500m, dist_m: 326.5, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: มีระดับน้ำในซอย
+      first_time: "09:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 51
+    lat: 13.757
+    lon: 100.6755
+    geocode_tag: INSTINCT
+    geocode_method: INTERPOLATED (between ซอย 50 and ซอย 54/56 cluster, no matching way)
+    tier: T3
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 151.1
+    nearest_pump: {code: ST.SPS.02, name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่, dist_m: 463.1, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 4, dist_m: 326.5, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 4, ring: 300-500m, dist_m: 326.5, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: เข้าที่จอดรถ อีก 1 นิ้วเข้าบ้าน
+      first_time: "09:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย G14 / ถนนเมนราม 110
+    lat: 13.773
+    lon: 100.676
+    geocode_tag: INSTINCT
+    geocode_method: INTERPOLATED (between ซอย G15/G17/G18/G19 cluster and ถนนรามคำแหง 110 frontage; report itself gives two possible locations)
+    tier: T3
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1641.8
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 489.5, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 419.9, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 419.9, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: ท่วม (หน้าร้านขนม)
+      first_time: "10:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 40
+    lat: 13.758918216666666
+    lon: 100.67616255
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T4
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 76.4
+    nearest_pump: {code: ST.SPS.02, name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่, dist_m: 523.8, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 4, dist_m: 417.8, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 4, ring: 300-500m, dist_m: 417.8, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: ท่วม
+      first_time: "11:00"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 17
+    lat: 13.767633538888889
+    lon: 100.68034417777778
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T4
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 1141.9
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 335.1, tag: MEASURED}
+    nearest_pond: {name: ทะเลสาบสัมมากร, dist_m: 137.9, tag: MEASURED}
+    pond_centre: {pond: ทะเลสาบสัมมากร, ring: 0-150m, dist_m: 137.9, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: เข้าโรงรถ+ย้อนท่อ
+      first_time: "11:10"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 47/5
+    lat: 13.75665
+    lon: 100.6726
+    geocode_tag: INSTINCT
+    geocode_method: INTERPOLATED (neighbor cluster of ซอย 48/48-3, no matching way; low confidence)
+    tier: T4
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 415.5
+    nearest_pump: {code: ST.SPS.02, name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่, dist_m: 756.1, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 4, dist_m: 616.6, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 4, ring: ">500m", dist_m: 616.6, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: RELAYED
+      state: เข้าโรงรถ
+      first_time: "11:40"
+      depth_cm: null
+      n_reports: 1
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย ๒๓/๕
+    lat: 13.758981571428572
+    lon: 100.66862201428572
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 810.2
+    nearest_pump: {code: ST.SPS.02, name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่, dist_m: 1237.0, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 3, dist_m: 1084.2, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 3, ring: ">500m", dist_m: 1084.2, tag: MEASURED}
+    nearest_canal: {name: คลองบ้านม้า, dist_m: 101.3, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 46
+    lat: 13.75822335
+    lon: 100.67758939999999
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 162.6
+    nearest_pump: {code: ST.SPS.02, name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่, dist_m: 366.4, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 4, dist_m: 284.3, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 4, ring: 150-300m, dist_m: 284.3, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอยสัมมากร 1 ซอย B13
+    lat: 13.77056335
+    lon: 100.68210895
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1517.4
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 249.4, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 389.7, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 389.7, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย G17
+    lat: 13.7723693
+    lon: 100.67604225
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1571.7
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 451.0, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 366.1, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 366.1, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 36/3
+    lat: 13.7598241
+    lon: 100.67609702857143
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 176.7
+    nearest_pump: {code: ST.SPS.02, name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่, dist_m: 605.2, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 3, dist_m: 390.8, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 3, ring: 300-500m, dist_m: 390.8, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย H3
+    lat: 13.7653137
+    lon: 100.67509325
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 794.4
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 286.6, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 184.4, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: 150-300m, dist_m: 184.4, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย A9
+    lat: 13.772062
+    lon: 100.6791181
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 1572.0
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 178.5, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 224.0, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 150-300m, dist_m: 224.0, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 23
+    lat: 13.76514465
+    lon: 100.6794016
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 847.8
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 323.0, tag: MEASURED}
+    nearest_pond: {name: ทะเลสาบสัมมากร, dist_m: 276.3, tag: MEASURED}
+    pond_centre: {pond: ทะเลสาบสัมมากร, ring: 150-300m, dist_m: 276.3, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย E4
+    lat: 13.7681574
+    lon: 100.67580355000001
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1103.7
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 190.2, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 349.3, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: 300-500m, dist_m: 349.3, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย G18
+    lat: 13.7726244
+    lon: 100.67684875
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1602.2
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 390.2, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 331.3, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 331.3, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอยสัมมากร 1 ซอย B10
+    lat: 13.771736400000002
+    lon: 100.6814637
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1609.8
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 219.7, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 363.9, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 363.9, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 13
+    lat: 13.7696542
+    lon: 100.68075329999999
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1366.2
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 147.2, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 246.1, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 150-300m, dist_m: 246.1, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย H2
+    lat: 13.76573305
+    lon: 100.67495009999999
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 842.7
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 271.6, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 208.9, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: 150-300m, dist_m: 208.9, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย H4
+    lat: 13.764900149999999
+    lon: 100.67524805
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 746.6
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 307.4, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 169.6, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: 150-300m, dist_m: 169.6, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย H1
+    lat: 13.76614175
+    lon: 100.67479265
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 890.2
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 266.8, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 241.8, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: 150-300m, dist_m: 241.8, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย F4
+    lat: 13.767350883333334
+    lon: 100.67434156666667
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1031.0
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 300.5, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 359.3, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: 300-500m, dist_m: 359.3, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอยสัมมากร 1 ซอย B12
+    lat: 13.7709452
+    lon: 100.68187599999999
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1545.6
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 227.5, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 372.7, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 372.7, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย G15
+    lat: 13.77274605
+    lon: 100.6757982
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1613.9
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 493.7, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 414.1, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 414.1, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 32/3
+    lat: 13.76101955
+    lon: 100.67444785
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 356.5
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 724.1, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 3, dist_m: 419.7, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 3, ring: 300-500m, dist_m: 419.7, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 21
+    lat: 13.76564965
+    lon: 100.67903435
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 883.9
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 257.3, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 247.8, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: 150-300m, dist_m: 247.8, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย A18
+    lat: 13.7687329
+    lon: 100.67772657500001
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1180.7
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 204.2, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 177.9, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 150-300m, dist_m: 177.9, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอยสัมมากร 1 ซอย B8
+    lat: 13.77250135
+    lon: 100.68111529999999
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 1676.8
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 254.7, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 384.1, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 384.1, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 36/1
+    lat: 13.75977795
+    lon: 100.67696795
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 196.3
+    nearest_pump: {code: ST.SPS.02, name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่, dist_m: 548.7, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 3, dist_m: 361.1, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 3, ring: 300-500m, dist_m: 361.1, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอยสัมมากร 1 ซอย B7
+    lat: 13.772870300000001
+    lon: 100.68082085
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 1705.9
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 275.5, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 392.6, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 392.6, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย G19
+    lat: 13.7719739
+    lon: 100.67624380000001
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1527.8
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 413.3, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 320.7, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 320.7, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย A14
+    lat: 13.76922685
+    lon: 100.68059819999999
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1315.9
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 175.3, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 245.1, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 150-300m, dist_m: 245.1, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 32/6
+    lat: 13.76088115
+    lon: 100.673362625
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 415.9
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 791.1, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 3, dist_m: 530.7, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 3, ring: ">500m", dist_m: 530.7, tag: MEASURED}
+    nearest_canal: {name: คลองบ้านม้า, dist_m: 424.6, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย C2
+    lat: 13.770984649999999
+    lon: 100.6760096
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1417.7
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 411.6, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 288.1, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 150-300m, dist_m: 288.1, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย E3
+    lat: 13.76853445
+    lon: 100.67556525
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1146.6
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 237.9, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 365.9, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 365.9, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 12
+    lat: 13.770104
+    lon: 100.6806358
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1408.4
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 105.8, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 227.6, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 150-300m, dist_m: 227.6, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอยสัมมากร 1 ซอย B14
+    lat: 13.77019735
+    lon: 100.6823328
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1491.6
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 277.2, tag: MEASURED}
+    nearest_pond: {name: ทะเลสาบสัมมากร, dist_m: 392.8, tag: MEASURED}
+    pond_centre: {pond: ทะเลสาบสัมมากร, ring: 300-500m, dist_m: 392.8, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย D5
+    lat: 13.76915245
+    lon: 100.6734141
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 1247.7
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 464.5, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 562.9, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: ">500m", dist_m: 562.9, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย C4
+    lat: 13.770056700000001
+    lon: 100.6761577
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1314.5
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 354.8, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 256.1, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 150-300m, dist_m: 256.1, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย E2
+    lat: 13.7689322
+    lon: 100.67536053333333
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1192.0
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 285.4, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 367.1, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 367.1, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 32/2
+    lat: 13.7609422
+    lon: 100.67483455
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 329.9
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 716.7, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 3, dist_m: 389.0, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 3, ring: 300-500m, dist_m: 389.0, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย F2
+    lat: 13.768292966666666
+    lon: 100.6741201
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1138.3
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 352.5, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 451.9, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: 300-500m, dist_m: 451.9, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย A10
+    lat: 13.7714593
+    lon: 100.67947045
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1515.3
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 102.0, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 179.4, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 150-300m, dist_m: 179.4, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย F1
+    lat: 13.76876895
+    lon: 100.6740978
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 1190.8
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 379.2, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 495.2, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: 300-500m, dist_m: 495.2, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอยสัมมากร 1 ซอย B11
+    lat: 13.771343850000001
+    lon: 100.68163530000001
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1576.1
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 214.8, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 361.7, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 361.7, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 25/10
+    lat: 13.76443385
+    lon: 100.68180855
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 925.9
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 583.1, tag: MEASURED}
+    nearest_pond: {name: ทะเลสาบสัมมากร, dist_m: 270.0, tag: MEASURED}
+    pond_centre: {pond: ทะเลสาบสัมมากร, ring: 150-300m, dist_m: 270.0, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอยสัมมากร 1 ซอย B9
+    lat: 13.772214566666667
+    lon: 100.68139513333334
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 1656.9
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 248.8, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 386.7, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 386.7, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 32/4
+    lat: 13.761154266666665
+    lon: 100.67400446666666
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 394.7
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 731.0, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 3, dist_m: 455.0, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 3, ring: 300-500m, dist_m: 455.0, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย E1
+    lat: 13.76933805
+    lon: 100.67519185
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1238.4
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 331.8, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 370.9, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 370.9, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 36/2
+    lat: 13.759757733333332
+    lon: 100.67644776666667
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 173.8
+    nearest_pump: {code: ST.SPS.02, name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่, dist_m: 576.9, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 3, dist_m: 381.2, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 3, ring: 300-500m, dist_m: 381.2, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย F3
+    lat: 13.767881833333334
+    lon: 100.67426986666665
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1090.4
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 321.0, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 406.7, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: 300-500m, dist_m: 406.7, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย D1
+    lat: 13.770036933333335
+    lon: 100.67493410000002
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 1318.2
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 410.8, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 388.3, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 388.3, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 22
+    lat: 13.7673961375
+    lon: 100.6771020625
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1024.6
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 44.0, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 250.1, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: 150-300m, dist_m: 250.1, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 32/8
+    lat: 13.761292599999999
+    lon: 100.67366
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 429.1
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 735.4, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 3, dist_m: 482.9, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 3, ring: 300-500m, dist_m: 482.9, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย D6
+    lat: 13.770303991666665
+    lon: 100.67230073333333
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1402.8
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 635.3, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 672.8, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: ">500m", dist_m: 672.8, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 15
+    lat: 13.7689655
+    lon: 100.68072406666666
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 1294.1
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 207.3, tag: MEASURED}
+    nearest_pond: {name: ทะเลสาบสัมมากร, dist_m: 247.5, tag: MEASURED}
+    pond_centre: {pond: ทะเลสาบสัมมากร, ring: 150-300m, dist_m: 247.5, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 25/7
+    lat: 13.76633412
+    lon: 100.6791431
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 959.3
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 232.7, tag: MEASURED}
+    nearest_pond: {name: ทะเลสาบสัมมากร, dist_m: 238.8, tag: MEASURED}
+    pond_centre: {pond: ทะเลสาบสัมมากร, ring: 150-300m, dist_m: 238.8, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย E6
+    lat: 13.767303653846154
+    lon: 100.67625767692309
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1008.6
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 97.0, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 244.5, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: 150-300m, dist_m: 244.5, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย C1
+    lat: 13.77082269
+    lon: 100.67548793
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1401.2
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 459.3, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 337.2, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 337.2, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 19
+    lat: 13.767677700000002
+    lon: 100.67875482000001
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1088.9
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 194.0, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 273.8, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 150-300m, dist_m: 273.8, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 32/5
+    lat: 13.76158302
+    lon: 100.67465312
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 403.1
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 657.8, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 3, dist_m: 371.5, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 3, ring: 300-500m, dist_m: 371.5, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย A11
+    lat: 13.77019192857143
+    lon: 100.68095917142857
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1430.0
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 133.2, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 262.6, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 150-300m, dist_m: 262.6, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 25/1
+    lat: 13.7651604375
+    lon: 100.679973525
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 877.2
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 371.7, tag: MEASURED}
+    nearest_pond: {name: ทะเลสาบสัมมากร, dist_m: 232.8, tag: MEASURED}
+    pond_centre: {pond: ทะเลสาบสัมมากร, ring: 150-300m, dist_m: 232.8, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 25/5
+    lat: 13.76617065
+    lon: 100.68032305833333
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 994.1
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 360.1, tag: MEASURED}
+    nearest_pond: {name: ทะเลสาบสัมมากร, dist_m: 127.2, tag: MEASURED}
+    pond_centre: {pond: ทะเลสาบสัมมากร, ring: 0-150m, dist_m: 127.2, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอยเมน F
+    lat: 13.7682058625
+    lon: 100.67493525
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1115.6
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 269.5, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 393.0, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: 300-500m, dist_m: 393.0, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอยเมน H
+    lat: 13.765476542857142
+    lon: 100.67534168571429
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 809.2
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 254.5, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 160.6, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: 150-300m, dist_m: 160.6, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอยเมน E
+    lat: 13.768414575
+    lon: 100.6753285625
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1134.9
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 247.7, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 394.2, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: 300-500m, dist_m: 394.2, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย E5
+    lat: 13.7678027
+    lon: 100.67606945
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1063.9
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 142.7, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 303.3, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: 300-500m, dist_m: 303.3, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย C5
+    lat: 13.7704313
+    lon: 100.6753029
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1358.8
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 428.1, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 349.9, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 349.9, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอยเมน D
+    lat: 13.76893906965812
+    lon: 100.67283467542734
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1240.9
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 508.6, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 599.0, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: ">500m", dist_m: 599.0, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 25/9
+    lat: 13.76671745
+    lon: 100.679056
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 996.3
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 213.6, tag: MEASURED}
+    nearest_pond: {name: ทะเลสาบสัมมากร, dist_m: 242.5, tag: MEASURED}
+    pond_centre: {pond: ทะเลสาบสัมมากร, ring: 150-300m, dist_m: 242.5, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 24/1
+    lat: 13.76468132
+    lon: 100.67705652666668
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 724.5
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 257.9, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 61.0, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: 0-150m, dist_m: 61.0, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย H5
+    lat: 13.76449135
+    lon: 100.67542739999999
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 699.3
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 332.3, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 2, dist_m: 165.6, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 2, ring: 150-300m, dist_m: 165.6, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย D2
+    lat: 13.770394425
+    lon: 100.674224075
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 1366.9
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 488.8, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 465.8, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 465.8, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย D4
+    lat: 13.7698341
+    lon: 100.67361968
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 1316.9
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 490.5, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 531.1, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: ">500m", dist_m: 531.1, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย C3
+    lat: 13.77052965
+    lon: 100.6760802
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1367.1
+    nearest_pump: {code: ST.SPS.04, name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง, dist_m: 401.8, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 268.1, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 150-300m, dist_m: 268.1, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย C6
+    lat: 13.770139775
+    lon: 100.67533792500001
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1326.2
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 397.6, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 344.5, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 300-500m, dist_m: 344.5, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 22/1
+    lat: 13.769149925
+    lon: 100.676164175
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1213.7
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 259.5, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 1, dist_m: 277.6, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 1, ring: 150-300m, dist_m: 277.6, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 25/8
+    lat: 13.763909522222223
+    lon: 100.68166330000001
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 872.5
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 600.8, tag: MEASURED}
+    nearest_pond: {name: ทะเลสาบสัมมากร, dist_m: 325.0, tag: MEASURED}
+    pond_centre: {pond: ทะเลสาบสัมมากร, ring: 300-500m, dist_m: 325.0, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 25/11
+    lat: 13.767031099999999
+    lon: 100.6787198
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 1018.7
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 175.0, tag: MEASURED}
+    nearest_pond: {name: ทะเลสาบสัมมากร, dist_m: 279.6, tag: MEASURED}
+    pond_centre: {pond: ทะเลสาบสัมมากร, ring: 150-300m, dist_m: 279.6, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 24/2
+    lat: 13.762754335714286
+    lon: 100.67658775
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 505.5
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 475.3, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 3, dist_m: 132.7, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 3, ring: 0-150m, dist_m: 132.7, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 32/1
+    lat: 13.7619544
+    lon: 100.67590787272728
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: false
+    dist_to_office_m: 414.0
+    nearest_pump: {code: ST.SPS.03, name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2, dist_m: 575.6, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 3, dist_m: 231.4, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 3, ring: 150-300m, dist_m: 231.4, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+  - soi: ซอย 44
+    lat: 13.758348250000001
+    lon: 100.67641585
+    geocode_tag: MEASURED
+    geocode_method: MEASURED (road centroid, sammakorn_roads.geojson)
+    tier: T5
+    tier_tag: INSTINCT
+    near_low_point_hint: true
+    dist_to_office_m: 38.0
+    nearest_pump: {code: ST.SPS.02, name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่, dist_m: 459.6, tag: MEASURED}
+    nearest_pond: {name: บึงรับน้ำสัมมากร 4, dist_m: 349.7, tag: MEASURED}
+    pond_centre: {pond: บึงรับน้ำสัมมากร 4, ring: 300-500m, dist_m: 349.7, tag: MEASURED}
+    nearest_canal: {name: null, dist_m: null, tag: MEASURED}
+    report_2026_09_26:
+      tag: OPEN
+      state: none
+      first_time: null
+      depth_cm: null
+      n_reports: 0
+      note: "no community report reached us for this soi on 2026-09-26 -- unknown, NOT verified-safe"
+    trigger_levels:
+      status: OPEN
+      tag: OPEN
+      note: >-
+        No same-day (2026-09-26) time-matched reading found in the cached snapshots for this
+        soi's first_time. Only one BMA canal snapshot on disk
+        (raw/live/thaiwater_bma/2026-09-26T040159Z_canal_waterlevel.json, fetched ~11:01 Thai
+        time) and it carries WL.SSB.07/WL.TPK.03 readings timestamped 2026-09-25 20:05 (the
+        PRIOR evening, not same-day) -- so it does NOT satisfy "same-day reading exists" and
+        is left unfilled. pumphistory HTML captures (11:25, 12:00) show pump on/off status text
+        only, no numeric station reading tied to a timestamp comparable to first_time.
+history_endpoint_check: # deliverable 5, one attempt each, 20s timeout, no retry
+  attempt_1:
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/canal_waterlevel_graph?station_id=77"
+    http_status: 404
+    body: "404:  Unknown service id"
+  attempt_2:
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_graph?station_id=77"
+    http_status: 200
+    tag: VERIFIED
+    fields: ["result", "data.graph_data[].{datetime,value,value_out,discharge}", "data.min_bank", "data.warning_level", "data.critical_level", "data.ground_level", "data.qmax"]
+    station_confirmed: "station_id=77 = WL.SSB.07 (ค.แสนแสบ-สนข.บางกะปิ), matches raw/live/thaiwater_bma canal_waterlevel.json station.id=77"
+    interval: "15-minute, 2026-09-23 00:00 through 2026-09-26 12:30 in this pull"
+    critical_finding: >-
+      This endpoint DOES exist and returns a real time series (this is the calibration source the
+      trigger_levels field needs). BUT for WL.SSB.07 the last non-null reading in the pulled window is
+      2026-09-25 20:00 (value 0.40 m, warning_level 0.35 m, critical_level 0.45 m -- so already just
+      above warning at 20:00 the evening BEFORE today's flood). Every 15-min slot from 2026-09-25 20:15
+      through 2026-09-26 12:30 (i.e. the entire flood morning) is null -- the station appears to have
+      stopped reporting right before/during the event. This does NOT satisfy "same-day reading exists"
+      for any soi's first_time today, so trigger_levels stays OPEN for all rows. It does mean: if this
+      endpoint is re-pulled later (station_id=77 for WL.SSB.07, and the equivalent station_id for
+      WL.TPK.03) once the gap backfills or reporting resumes, trigger_levels CAN be calibrated from it --
+      this is now the concrete "what would settle it" answer, not a hypothetical.
+    not_attempted: "WL.TPK.03's numeric station_id (not 77) -- would need a station-list lookup, out of scope for this one-attempt check"

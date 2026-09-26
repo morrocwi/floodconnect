@@ -1,0 +1,225 @@
+{
+  "result": "OK",
+  "data": [
+    {
+      "canal_datetime": "2021-01-22 12:05",
+      "canal_value": 0.12,
+      "canal_out": 0,
+      "agency": {
+        "agency_name": {
+          "th": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+          "en": "Department of Bangkok",
+          "jp": ""
+        }
+      },
+      "geocode": {
+        "area_code": "1",
+        "area_name": {
+          "th": "กรุงเทพมหานคร",
+          "en": "Bangkok"
+        },
+        "amphoe_name": {
+          "th": "หนองแขม",
+          "en": "Nong Khaem District"
+        },
+        "tumbon_name": {
+          "th": "หนองแขม",
+          "en": "Nong Khaem"
+        },
+        "province_code": "10",
+        "province_name": {
+          "th": "กรุงเทพมหานคร",
+          "en": "Bangkok"
+        }
+      },
+      "station": {
+        "id": 153,
+        "canal_name": {
+          "th": "ค.ภาษีเจริญ-ค.มหาศร"
+        },
+        "canal_lat": 13.68138,
+        "canal_long": 100.35047,
+        "canal_oldcode": "WL.PSC.04",
+        "bank": null,
+        "warning_level": null,
+        "critical_level": null
+      }
+    },
+    {
+      "canal_datetime": "2026-09-25 20:05",
+      "canal_value": -1.29,
+      "canal_out": 1.45,
+      "agency": {
+        "agency_name": {
+          "th": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+          "en": "Department of Bangkok",
+          "jp": ""
+        }
+      },
+      "geocode": {
+        "area_code": "1",
+        "area_name": {
+          "th": "กรุงเทพมหานคร",
+          "en": "Bangkok"
+        },
+        "amphoe_name": {
+          "th": "พระโขนง",
+          "en": "Phra Khanong District"
+        },
+        "tumbon_name": {
+          "th": "บางจาก",
+          "en": "Bang Chak"
+        },
+        "province_code": "10",
+        "province_name": {
+          "th": "กรุงเทพมหานคร",
+          "en": "Bangkok"
+        }
+      },
+      "station": {
+        "id": 87,
+        "canal_name": {
+          "th": "ส.คลองเจ็ก"
+        },
+        "canal_lat": 13.6922,
+        "canal_long": 100.5898,
+        "canal_oldcode": "WL.KJK.01",
+        "bank": 2.8,
+        "warning_level": 2.6,
+        "critical_level": 2.8
+      }
+    },
+    {
+      "canal_datetime": "2026-09-25 20:05",
+      "canal_value": 0.56,
+      "canal_out": 0,
+      "agency": {
+        "agency_name": {
+          "th": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+          "en": "Department of Bangkok",
+          "jp": ""
+        }
+      },
+      "geocode": {
+        "area_code": "1",
+        "area_name": {
+          "th": "กรุงเทพมหานคร",
+          "en": "Bangkok"
+        },
+        "amphoe_name": {
+          "th": "จอมทอง",
+          "en": "Chom Thong District"
+        },
+        "tumbon_name": {
+          "th": "บางขุนเทียน",
+          "en": "Bang Khun Thian"
+        },
+        "province_code": "10",
+        "province_name": {
+          "th": "กรุงเทพมหานคร",
+          "en": "Bangkok"
+        }
+      },
+      "station": {
+        "id": 140,
+        "canal_name": {
+          "th": "ค.สนามชัย-บางขุนเทียน"
+        },
+        "canal_lat": 13.70099,
+        "canal_long": 100.46486,
+        "canal_oldcode": "WL.SNC.02",
+        "bank": 1.87,
+        "warning_level": 0.5,
+        "critical_level": 0.6
+      }
+    },
+    {
+      "canal_datetime": "2023-10-23 11:05",
+      "canal_value": -0.71,
+      "canal_out": 0,
+      "agency": {
+        "agency_name": {
+          "th": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+          "en": "Department of Bangkok",
+          "jp": ""
+        }
+      },
+      "geocode": {
+        "area_code": "1",
+        "area_name": {
+          "th": "กรุงเทพมหานคร",
+          "en": "Bangkok"
+        },
+        "amphoe_name": {
+          "th": "บางกะปิ",
+          "en": "Bang Kapi District"
+        },
+        "tumbon_name": {
+          "th": "หัวหมาก",
+          "en": "Hua Mak"
+        },
+        "province_code": "10",
+        "province_name": {
+          "th": "กรุงเทพมหานคร",
+          "en": "Bangkok"
+        }
+      },
+      "station": {
+        "id": 212,
+        "canal_name": {
+          "th": "ค.แสนแสบ รามคำแหง 9"
+        },
+        "canal_lat": 13.75228,
+        "canal_long": 100.60555,
+        "canal_oldcode": "WL.SSB.05",
+        "bank": 2,
+        "warning_level": -0.1,
+        "critical_level": 0.1
+      }
+    },
+    {
+      "canal_datetime": "2026-09-25 20:05",
+      "canal_value": -0.2,
+      "canal_out": 1.44,
+      "agency": {
+        "agency_name": {
+          "th": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+          "en": "Department of Bangkok",
+          "jp": ""
+        }
+      },
+      "geocode": {
+        "area_code": "2",
+        "area_name": {
+          "th": "ภาคกลาง",
+          "en": "Central"
+        },
+        "amphoe_name": {
+          "th": "พระประแดง",
+          "en": "Phra Pradaeng District"
+        },
+        "tumbon_name": {
+          "th": "ทรงคนอง",
+          "en": "Song Khanong"
+        },
+        "province_code": "11",
+        "province_name": {
+          "th": "สมุทรปราการ",
+          "en": "Samut Prakan"
+        }
+      },
+      "station": {
+        "id": 96,
+        "canal_name": {
+          "th": "ปตร.คลองวัดด่าน"
+        },
+        "canal_lat": 13.67068,
+        "canal_long": 100.54016,
+        "canal_oldcode": "WL.KDN.01",
+        "bank": 2.8,
+        "warning_level": 2.6,
+        "critical_level": 2.8
+      }
+    }
+  ]
+}

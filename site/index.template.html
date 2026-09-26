@@ -1,0 +1,653 @@
+<title>FloodConnect</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet"></noscript>
+<style>
+  :root{
+    --gutter: 16px;
+    --bg: #F5F7F8;
+    --surface: #FFFFFF;
+    --surface-2: #E9EFF1;
+    --text: #10202B;
+    --text-muted: #45606B;
+    --border: #CBD8DC;
+    --accent: #0B3C5D;
+    --accent-2: #1F7A8C;
+    --alert: #C0392B;
+    --alert-strong: #8E2A1F;
+    --warning: #D68910;
+    --warning-text: #945F0B; /* darkened for AA text contrast; --warning itself stays for stripes/large fills */
+    --ok: #2E7D32;
+    --neutral: #6B7A80;
+    --neutral-text: #5F6D72; /* darkened for AA text contrast; --neutral stays for stripes/large fills */
+    --on-accent: #FFFFFF;
+    --focus-ring: #1F7A8C;
+    --link: #0B3C5D;
+    /* calm navy hero card (dedicated tokens -- never reuse --accent here, that was the
+       dark-mode inversion bug: --accent itself changes to a bright sky-blue in dark mode). */
+    --hero-bg: #0B3C5D;
+    --on-hero: #FFFFFF;
+    --hero-muted: rgba(255,255,255,.74);
+    --hero-border: rgba(255,255,255,.28);
+    /* dedicated flood-tier ladder -- stripe/dot/label all read from these, never from
+       --accent/--accent-2, so tier colour can never collide with brand/UI colour again. */
+    --tier-3: #C0392B; --tier-2: #D98A1F; --tier-1: #C9A227; --tier-1-text: #7A5F00; --tier-0: #8A9AA0;
+    --font-body: "Noto Sans Thai","Sarabun",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --font-display: "Noto Sans Thai","Sarabun",system-ui,sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --bg: #0A161D;
+      --surface: #132430;
+      --surface-2: #1B2E3A;
+      --text: #E9F1F3;
+      --text-muted: #9FB7BF;
+      --border: #2C4450;
+      --accent: #5AA9D6;
+      --accent-2: #4FC3D4;
+      --alert: #FF7A68;
+      --alert-strong: #FF9A8C;
+      --warning: #F5BB4E;
+      --warning-text: #F5BB4E;
+      --ok: #74CE82;
+      --neutral: #9AACB2;
+      --neutral-text: #9AACB2;
+      --on-accent: #08141B;
+      --focus-ring: #4FC3D4;
+      --link: #8AD1F0;
+      --hero-bg: #10344A;
+      --on-hero: #E9F1F3;
+      --hero-muted: rgba(233,241,243,.72);
+      --hero-border: rgba(233,241,243,.24);
+      --tier-3: #FF7A68; --tier-2: #F5BB4E; --tier-1: #E6C95A; --tier-1-text: #E6C95A; --tier-0: #9AACB2;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --bg: #0A161D;
+    --surface: #132430;
+    --surface-2: #1B2E3A;
+    --text: #E9F1F3;
+    --text-muted: #9FB7BF;
+    --border: #2C4450;
+    --accent: #5AA9D6;
+    --accent-2: #4FC3D4;
+    --alert: #FF7A68;
+    --alert-strong: #FF9A8C;
+    --warning: #F5BB4E;
+    --warning-text: #F5BB4E;
+    --ok: #74CE82;
+    --neutral: #9AACB2;
+    --neutral-text: #9AACB2;
+    --on-accent: #08141B;
+    --focus-ring: #4FC3D4;
+    --link: #8AD1F0;
+    --hero-bg: #10344A;
+    --on-hero: #E9F1F3;
+    --hero-muted: rgba(233,241,243,.72);
+    --hero-border: rgba(233,241,243,.24);
+    --tier-3: #FF7A68; --tier-2: #F5BB4E; --tier-1: #E6C95A; --tier-1-text: #E6C95A; --tier-0: #9AACB2;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ -webkit-text-size-adjust: 100%; }
+  body{
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 1.125rem; /* 18px at the default 16px root -- was a hardcoded 18px, which
+                             meant the A+/A- buttons (which scale the ROOT font-size) never
+                             enlarged body text at all. rem lets it actually scale. */
+    line-height: 1.6;
+    padding-inline: var(--gutter);
+    padding-block: 14px 48px;
+  }
+  main{ max-width: 640px; margin-inline: auto; }
+  h1,h2,h3{ font-family: var(--font-display); line-height: 1.3; color: var(--text); }
+  h1{ font-size: 1.6rem; margin: 0; font-weight:700; }
+  .subtitle{ font-size:1rem; color: var(--text-muted); margin: 2px 0 0; }
+  h2{ font-size: 1.2rem; margin: 0 0 10px; padding-top: 28px; border-top: 3px solid var(--border); padding-block-start: 20px; }
+  section:first-of-type h2{ border-top: none; padding-top: 0; }
+  p{ margin: 0 0 10px; }
+  a{ color: var(--link); }
+  a:not(:hover){ text-decoration-thickness: 1.5px; }
+  small, .small{ font-size: 1rem; color: var(--text-muted); }
+  .pump-table .code{ display:block; font-size:0.9rem; font-weight:400; color: var(--text-muted); margin-top:2px; }
+  .num, td, .value{ font-variant-numeric: tabular-nums; }
+  ul{ padding-inline-start: 1.3em; margin: 0 0 10px; }
+  li{ margin-bottom: 4px; }
+
+  :focus-visible{ outline: 3px solid var(--focus-ring); outline-offset: 2px; border-radius: 2px; }
+
+  @media (prefers-reduced-motion: no-preference){
+    .tier-toggle, button, details summary{ transition: background-color .15s ease, border-color .15s ease; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ scroll-behavior: auto !important; }
+  }
+
+  /* ---- top bar ---- */
+  .topbar{
+    display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+    padding-block: 4px 12px;
+  }
+  .topbar .titlewrap{ flex: 1 1 auto; }
+  .fontctl{ display:flex; gap:6px; flex: 0 0 auto; }
+  .fontctl button{
+    min-width:48px; min-height:48px; border-radius:8px; border:2px solid var(--accent);
+    background: var(--surface); color: var(--accent); font-weight:700; font-size:1.05rem;
+    cursor:pointer;
+  }
+  .fontctl button:hover{ background: var(--surface-2); }
+
+  /* ---- area selector ---- */
+  .area-select-wrap{ margin: 2px 0 14px; }
+  .area-select-wrap label{ display:block; font-size:0.85rem; color: var(--text-muted); margin-bottom:4px; }
+  #area-select{
+    width:100%; min-height:48px; padding:8px 12px; font-size:1.05rem; font-family: var(--font-body);
+    border-radius:8px; border:1.5px solid var(--border); background: var(--surface); color: var(--text);
+  }
+
+  /* ---- hero: calm navy card (dedicated --hero-bg/--on-hero, both themes -- never --accent) ---- */
+  .banner{
+    padding: 18px 16px 20px; margin: 2px 0 14px; border-radius:12px;
+    background: var(--hero-bg); color: var(--on-hero);
+  }
+  .banner .place{
+    font-size:1rem; letter-spacing:.03em; color: var(--hero-muted); margin:0 0 10px; font-weight:500;
+  }
+  .status-heading{ margin: 0 0 10px; }
+  .status-heading .status-place{
+    font-family: var(--font-display); font-weight:700; font-size:1.1rem; color: var(--hero-muted);
+    margin:0 0 2px;
+  }
+  .status-heading .status-word{
+    font-family: var(--font-display); font-weight:700; line-height:1.15;
+    font-size: clamp(2rem, 7vw, 2.4rem); color: var(--on-hero); margin:0;
+  }
+  .banner .now{
+    font-size:1.25rem; font-weight:700; line-height:1.4; margin:0 0 14px; color: var(--on-hero);
+  }
+  .banner .watch{
+    font-size:1.08rem; font-weight:500; line-height:1.5; margin:0 0 16px; color: var(--on-hero);
+  }
+  .banner .watch strong{ color: inherit; font-weight:700; }
+  .why-heading, .hours-heading{
+    font-family: var(--font-display); font-size:0.95rem; font-weight:700; color: var(--hero-muted);
+    margin:0 0 6px; text-transform:none; letter-spacing:.01em;
+  }
+  .why-list, .hours-list{ list-style:none; margin:0 0 16px; padding:0; }
+  .why-list li, .hours-list li{
+    display:flex; align-items:baseline; gap:8px; padding:8px 0; border-bottom:1px solid var(--hero-border);
+  }
+  .why-list li:last-child, .hours-list li:last-child{ border-bottom:none; }
+  .why-emoji{ flex:0 0 auto; font-size:1.05rem; }
+  .why-text{ flex:1 1 auto; font-size:1rem; color: var(--on-hero); }
+  .why-text strong{ font-weight:700; }
+  .why-time{ font-size:0.85rem; color: var(--hero-muted); white-space:nowrap; }
+  .why-dot{ width:9px; height:9px; border-radius:50%; flex:0 0 auto; margin-inline-start:auto; }
+  .why-dot-red{ background: var(--alert); }
+  .why-dot-amber{ background: var(--warning); }
+  .why-dot-green{ background: var(--ok); }
+  .why-dot-grey{ background: var(--hero-muted); }
+  .hours-list li{ border-bottom:none; border-inline-start:3px solid var(--hero-border); padding-inline-start:10px; }
+  .banner .note{ font-size:0.85rem; color: var(--hero-muted); margin:0; }
+
+  .stale-ribbon-wrap{ margin: 12px 0 0; }
+  .stale-ribbon{
+    display:inline-flex; align-items:center; gap:6px; color: var(--warning);
+    border:1.5px solid currentColor; border-radius:999px; font-weight:600;
+    font-size:0.85rem; letter-spacing:.01em; padding:4px 12px; background:transparent;
+  }
+
+  .callrow{ display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
+  .callbtn{
+    flex:1 1 150px; display:inline-flex; align-items:center; justify-content:center;
+    min-height:48px; border-radius:10px; background: var(--on-hero); color: var(--hero-bg);
+    font-weight:700; text-decoration:none; padding:0 14px; text-align:center;
+  }
+  .callbtn:hover{ opacity:.9; }
+
+  /* ---- one 14px inline-SVG dot for every tier -- replaces the old emoji severity markers.
+     Colour comes from the same .label-* class the text label already uses, never a new hue. ---- */
+  .dot{ width:.8em; height:.8em; vertical-align:-.05em; margin-right:.35em; flex:0 0 auto; }
+
+  section{ margin-bottom: 4px; }
+
+  /* ---- zone cards ---- */
+  .tier-card{ border-radius:8px; border:1px solid var(--border); overflow:hidden; margin-bottom:12px; background:var(--surface); }
+  .tier-card .stripe{ height:8px; width:100%; }
+  .tier-card .body{ padding:14px 16px; }
+  .tier-card .name{ font-weight:700; font-size:1.1rem; margin-bottom:8px; }
+  .tier-card .prepline{ font-weight:600; margin:8px 0 0; }
+  .zone-chip-list{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:2px; }
+  .zone-chip{
+    border:1px solid var(--border); border-radius:6px; padding:5px 10px; font-size:0.98rem;
+    background: var(--surface-2);
+  }
+  .stripe-red{ background: var(--tier-3); } .label-red{ color: var(--tier-3); }
+  .stripe-orange{ background: var(--tier-2); } .label-orange{ color: var(--tier-2); }
+  .stripe-yellow{ background: var(--tier-1); } .label-yellow{ color: var(--tier-1-text); }
+  .stripe-grey{ background: var(--tier-0); } .label-grey{ color: var(--tier-0); }
+
+  details{ border:1px solid var(--border); border-radius:8px; margin-bottom:10px; background:var(--surface); }
+  details > summary{
+    cursor:pointer; list-style:none; padding:12px 16px; font-weight:700; min-height:48px;
+    display:flex; align-items:center; gap:8px;
+  }
+  details > summary::-webkit-details-marker{ display:none; }
+  details > summary::before{ content:"+"; display:inline-block; width:1em; font-weight:700; color: var(--accent-2); }
+  details[open] > summary::before{ content:"–"; }
+  details .tier-body{ padding: 0 16px 14px; }
+
+  /* ---- worsen/better two-column ---- */
+  .wb-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+  @media (max-width:520px){ .wb-grid{ grid-template-columns:1fr; } }
+  .wb-card{ border-radius:8px; border:1px solid var(--border); padding:14px 16px; background:var(--surface); }
+  .wb-card.worse{ border-top:4px solid var(--alert); }
+  .wb-card.better{ border-top:4px solid var(--ok); }
+  .wb-card h3{ font-size:1.05rem; margin:0 0 8px; }
+  .wb-card ul{ margin:0 0 8px; padding-inline-start:1.1em; }
+  .wb-card li{ margin-bottom:5px; font-size:1rem; }
+  .wb-card .action{ font-size:0.95rem; font-weight:600; color: var(--text-muted); margin:0; }
+
+  /* ---- tables ---- */
+  .tablewrap{ overflow-x:auto; margin-bottom:14px; border:1px solid var(--border); border-radius:8px; }
+  .table-lead{ font-size:1rem; color: var(--text-muted); margin: 0 0 8px; }
+  table{ border-collapse: collapse; width:100%; font-size:1rem; }
+  caption{ text-align:left; caption-side: top; padding:8px 12px 6px; }
+  th, td{ padding:9px 12px; border-bottom:1px solid var(--border); text-align:left; vertical-align:top; }
+  thead th{ background: var(--surface-2); font-weight:700; }
+  tbody tr:last-child td{ border-bottom:none; }
+  .thresh{ color:var(--text-muted); font-size:0.9rem; }
+
+  /* Desktop/tablet: normal table, wide enough to need a min-width + horizontal scroll.
+     Phones (<=480px): stacked "card" rows instead -- no min-width, no sideways scroll,
+     each cell labelled with its column header via data-label. */
+  @media (min-width:481px){
+    table{ min-width:480px; }
+  }
+  @media (max-width:480px){
+    .tablewrap{ border:none; overflow-x:visible; }
+    .tablewrap table, .tablewrap thead, .tablewrap tbody, .tablewrap tr, .tablewrap th, .tablewrap td{
+      display:block; width:100%;
+    }
+    .tablewrap caption{ display:block; width:100%; padding:0 0 8px; margin-bottom:0; }
+    .tablewrap thead{ position:absolute; left:-9999px; top:-9999px; } /* keep for screen readers via table semantics lost, so repeat header as data-label instead */
+    .tablewrap tbody tr{
+      border:1px solid var(--border); border-radius:8px; padding:10px 12px; margin-bottom:10px; background:var(--surface);
+    }
+    .tablewrap tbody td{
+      border:none; padding:6px 0; display:flex; gap:10px; align-items:flex-start;
+    }
+    .tablewrap tbody td::before{
+      content: attr(data-label); flex:0 0 42%; max-width:42%; font-weight:700; color:var(--text-muted);
+    }
+
+    /* ---- pump cards: full-width bold title row + right-aligned status, code on its own
+       small line, narrower value-label column -- fixes the tall cramped key/value grid and
+       the mid-word Thai line breaks the reviewer flagged. Scoped to .pump-table only so the
+       generic card layout above is untouched for canal/tide/exit/hospital tables. ---- */
+    .pump-table tbody tr{ display:flex; flex-wrap:wrap; column-gap:8px; align-items:flex-start; }
+    .pump-table tbody td{ flex:1 1 100%; }
+    .pump-table tbody td:first-child{
+      order:1; flex:1 1 auto; display:block; font-weight:700; font-size:1.05rem;
+      padding-bottom:2px; word-break:keep-all; overflow-wrap:break-word;
+    }
+    .pump-table tbody td:first-child::before{ display:none; }
+    .pump-table tbody td:first-child .nw{ white-space:nowrap; }
+    .pump-table tbody td:nth-child(4){ order:2; flex:0 0 auto; margin-inline-start:auto; }
+    .pump-table tbody td:nth-child(4)::before{ display:none; }
+    .pump-table tbody td:nth-child(2){ order:3; }
+    .pump-table tbody td:nth-child(3){ order:4; }
+    .pump-table tbody td:nth-child(5){ order:5; }
+    .pump-table tbody td::before{ flex:0 0 7.5em; max-width:7.5em; }
+  }
+
+  .pill{
+    display:inline-block; padding:3px 10px; border-radius:999px; font-weight:700; font-size:0.92rem;
+    border:1.5px solid currentColor;
+  }
+  .pill-ok{ color: var(--ok); }
+  .pill-warn{ color: var(--warning-text); }
+  .pill-crit{ color: var(--alert); }
+  .pill-over{ color: var(--alert-strong); background: rgba(192,57,43,.12); }
+  .pill-none{ color: var(--neutral-text); }
+  .pill-stale{ color: var(--neutral-text); background: rgba(107,122,128,.14); }
+
+  .stat-fail{ color: var(--alert); font-weight:700; }
+  .stat-ok{ color: var(--ok); font-weight:700; }
+
+  /* ---- forecast section ---- */
+  .fcard{ border:1px solid var(--border); border-radius:8px; padding:14px 16px; margin-bottom:12px; background:var(--surface); }
+  .fcard h3{ font-size:1.05rem; margin:0 0 8px; }
+  .nowcast-link{
+    display:inline-flex; align-items:center; min-height:48px; padding:0 16px; border-radius:8px;
+    background: var(--accent-2); color: var(--on-accent); font-weight:700; text-decoration:none; margin-top:6px;
+  }
+  .nowcast-link:hover{ opacity:.92; }
+
+  /* ---- help / hospitals ---- */
+  .hlp-line{ margin:0 0 8px; }
+  .hlp-line .hotline{ font-weight:700; color: var(--text); }
+  .care-box{
+    background: var(--surface-2); border:1px solid var(--border); border-radius:8px;
+    padding:14px 16px; margin:14px 0; font-size:1rem;
+  }
+  .care-box strong{ color: var(--alert-strong); }
+  .helpers-note{ font-size:0.95rem; color: var(--text-muted); margin-top:10px; }
+
+  /* ---- footer ---- */
+  footer{ margin-top:30px; padding-top:20px; border-top:3px solid var(--border); font-size:1rem; color:var(--text-muted); }
+  footer h2{ font-size:1.1rem; border:none; padding:0; margin-bottom:8px; }
+  .sources-list{ padding-inline-start:1.1em; margin:0 0 14px; }
+  .sources-list li{ margin-bottom:6px; }
+  .sources-list a{ display:inline-flex; align-items:center; min-height:44px; padding-inline:4px; }
+  .hotline{ font-weight:700; color: var(--text); }
+  .credit{ margin-top:14px; font-size:0.92rem; }
+
+  /* every tel:/source link gets a real 44px tap target, page-wide */
+  a[href^="tel:"]{ display:inline-flex; align-items:center; min-height:44px; padding-inline:4px; }
+
+  .empty-note{ color: var(--text-muted); font-style: normal; }
+
+  @media (max-width:400px){
+    .topbar{ flex-wrap:wrap; }
+  }
+</style>
+<main>
+  <div class="topbar">
+    <div class="titlewrap">
+      <h1>FloodConnect</h1>
+      <p class="subtitle" id="page-subtitle">{{ACTIVE_SUBTITLE}}</p>
+    </div>
+    <div class="fontctl" role="group" aria-label="ปรับขนาดตัวอักษร">
+      <button type="button" id="font-minus" aria-label="ลดขนาดตัวอักษร">A−</button>
+      <button type="button" id="font-plus" aria-label="เพิ่มขนาดตัวอักษร">A+</button>
+    </div>
+  </div>
+
+  <div class="area-select-wrap">
+    <label for="area-select">เลือกพื้นที่ที่ต้องการดู</label>
+    <select id="area-select" aria-label="เลือกพื้นที่ที่ต้องการดู">
+      <option value="sammakorn" selected>📍 หมู่บ้านสัมมากร (รามคำแหง 112)</option>
+      <option value="ram53">📍 ซอยรามคำแหง 53</option>
+    </select>
+  </div>
+
+  <!--AREA_TEMPLATE_START-->
+  <section class="area-block" data-area="__AREA__" id="area-__AREA__"{{AREA_HIDDEN}}>
+
+    <section class="banner" aria-label="สถานการณ์ตอนนี้" id="banner-section-__AREA__">
+      <p class="place" id="banner-place-__AREA__">{{PLACE_PIN}}</p>
+      <div class="status-heading">
+        <p class="status-place" id="status-place-__AREA__">{{HEADING_LABEL}}</p>
+        <p class="status-word" id="banner-word-__AREA__">{{STATUS_WORD}}</p>
+      </div>
+      <p class="now" id="banner-now-__AREA__">ตอนนี้ อาจทำได้: {{NOW_LINE}}</p>
+      <p class="watch" id="banner-watch-__AREA__">{{STATUS_WATCH}}</p>
+
+      <h3 class="why-heading">ทำไมถึงบอกแบบนี้</h3>
+      <ul class="why-list" id="why-list-__AREA__">{{WHY_LIST}}</ul>
+
+      <h3 class="hours-heading">อีก 3–5 ชั่วโมงข้างหน้า</h3>
+      <ul class="hours-list" id="hours-list-__AREA__">{{HOURS_LIST}}</ul>
+
+      <p class="note" id="banner-note-__AREA__">{{STATUS_NOTE}}</p>
+      <div class="stale-ribbon-wrap" id="banner-stale-__AREA__"{{STALE_RIBBON_HIDDEN}}>
+        <span class="stale-ribbon">ข้อมูลบางส่วนเก่า — ดูเวลาท้ายแต่ละบรรทัด</span>
+      </div>
+
+      <div class="callrow">
+        <a class="callbtn" href="tel:1669">โทร 1669 เหตุฉุกเฉิน</a>
+        <a class="callbtn" href="tel:1555">โทร 1555 แจ้งน้ำท่วม กทม.</a>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-zones-__AREA__">
+      <h2 id="h-zones-__AREA__">{{ZONES_HEADING}}</h2>
+      <div id="zone-groups-__AREA__">{{ZONES_HTML}}</div>
+    </section>
+
+    <section aria-labelledby="h-pump-__AREA__">
+      <h2 id="h-pump-__AREA__">{{PUMP_HEADING}}</h2>
+      <p class="table-lead" id="pump-lead-__AREA__">{{PUMP_LEAD}}</p>
+      <div class="tablewrap pump-table">
+        <table>
+          <caption class="small">{{PUMP_CAPTION}}</caption>
+          <thead><tr><th>บึง / สถานี</th><th>ระดับน้ำ</th><th>ปั๊มเดิน (เปิดอยู่/ทั้งหมด)</th><th>สถานะ</th><th>เวลา</th></tr></thead>
+          <tbody id="pump-rows-__AREA__">{{PUMP_ROWS}}</tbody>
+        </table>
+      </div>
+    </section>
+
+    <details id="canal-details-__AREA__">
+      <summary>คลองรอบบ้าน</summary>
+      <div class="tier-body">
+        <h3 style="margin:0 0 6px;font-size:1.05rem;">{{CANAL_NORTH_LABEL}}</h3>
+        <div class="tablewrap"><table>
+          <thead><tr><th>สถานี</th><th>ระดับน้ำ</th><th>สถานะ</th><th>เวลา</th></tr></thead>
+          <tbody id="canal-north-__AREA__">{{CANAL_NORTH_ROWS}}</tbody>
+        </table></div>
+        <h3 style="margin:14px 0 6px;font-size:1.05rem;">{{CANAL_SOUTH_LABEL}}</h3>
+        <div class="tablewrap"><table>
+          <thead><tr><th>สถานี</th><th>ระดับน้ำ</th><th>สถานะ</th><th>เวลา</th></tr></thead>
+          <tbody id="canal-south-__AREA__">{{CANAL_SOUTH_ROWS}}</tbody>
+        </table></div>
+        <h3 style="margin:14px 0 6px;font-size:1.05rem;">ต้นน้ำ (ลาดกระบัง / มีนบุรี / ประเวศ)</h3>
+        <div class="tablewrap"><table>
+          <thead><tr><th>สถานี</th><th>ระดับน้ำ</th><th>สถานะ</th><th>เวลา</th></tr></thead>
+          <tbody id="canal-upstream-__AREA__">{{CANAL_UPSTREAM_ROWS}}</tbody>
+        </table></div>
+        <details id="canal-stale-details-__AREA__">
+          <summary>ข้อมูลเก่า (เกิน 24 ชม. หรือสถานีไกลกว่า 5 กม.)</summary>
+          <div class="tier-body">
+            <div class="tablewrap"><table>
+              <thead><tr><th>สถานี</th><th>ระดับน้ำ</th><th>สถานะ</th><th>เวลา</th></tr></thead>
+              <tbody id="canal-stale-__AREA__">{{CANAL_STALE_ROWS}}</tbody>
+            </table></div>
+          </div>
+        </details>
+      </div>
+    </details>
+
+    <details id="forecast-details-__AREA__">
+      <summary>ทางการบอกว่าอะไรกำลังมา</summary>
+      <div class="tier-body">
+        <div class="fcard">
+          <h3>ฝนที่ตกไปแล้วใน 24 ชั่วโมงที่ผ่านมา</h3>
+          <p id="rain-text-__AREA__">{{RAIN_TEXT}}</p>
+          <p id="rain-forecast-__AREA__">{{RAIN_FORECAST_LINE}}</p>
+          <a class="nowcast-link" id="nowcast-link-__AREA__" href="https://dds.bangkok.go.th/nowcast/" target="_blank" rel="noopener">ดูภาพเรดาร์ฝน 3 ชม. ของ กทม.</a>
+        </div>
+
+        <div class="fcard">
+          <h3>น้ำขึ้นน้ำลง — แม่น้ำเจ้าพระยา</h3>
+          <p id="tide-next-__AREA__">{{TIDE_NEXT}}</p>
+          <p class="small" id="tide-basis-__AREA__">{{TIDE_BASIS}}</p>
+          <div class="tablewrap"><table>
+            <thead><tr><th>วันที่</th><th>เหตุการณ์</th><th>เวลา</th><th>ระดับ (ม. เทียบทะเลปานกลาง)</th></tr></thead>
+            <tbody id="tide-week-__AREA__">{{TIDE_WEEK_ROWS}}</tbody>
+          </table></div>
+          <details id="tide-more-details-__AREA__"><summary>ดูอีก 7 วันข้างหน้า</summary>
+            <div class="tier-body">
+              <div class="tablewrap"><table>
+                <thead><tr><th>วันที่</th><th>เหตุการณ์</th><th>เวลา</th><th>ระดับ (ม.)</th></tr></thead>
+                <tbody id="tide-week-more-__AREA__">{{TIDE_WEEK_MORE_ROWS}}</tbody>
+              </table></div>
+            </div>
+          </details>
+        </div>
+
+        <div class="fcard" id="dds-card-__AREA__">
+          <h3>ตัวเลขจากรายงานประจำวันของสำนักการระบายน้ำ (คัดมาบางบรรทัด)</h3>
+          <ul id="dds-quotes-__AREA__">{{DDS_QUOTES_HTML}}</ul>
+        </div>
+      </div>
+    </details>
+
+    <details id="exit-details-__AREA__">
+      <summary>ทางออกจาก{{EXIT_PLACE_WORD}}</summary>
+      <div class="tier-body">
+        <div class="tablewrap"><table>
+          <thead><tr><th>เส้นทาง</th><th>รายงานล่าสุด</th></tr></thead>
+          <tbody id="exit-rows-__AREA__">{{EXIT_ROWS}}</tbody>
+        </table></div>
+        <h3 style="margin:14px 0 6px;font-size:1.05rem;">ถนนใกล้เคียงที่มีรายงานน้ำท่วม</h3>
+        <div class="tablewrap"><table>
+          <thead><tr><th>ถนน</th><th>ระดับน้ำ</th><th>ห่างจาก{{EXIT_PLACE_WORD}}</th><th>เวลารายงาน</th></tr></thead>
+          <tbody id="floodroad-rows-__AREA__">{{FLOODROAD_ROWS}}</tbody>
+        </table></div>
+        <p class="small">* = หน่วยงานทำเครื่องหมายว่ายังไม่ยืนยันซ้ำ</p>
+      </div>
+    </details>
+
+    <details id="community-details-__AREA__">
+      <summary>เสียงจากอินเทอร์เน็ต</summary>
+      <div class="tier-body">
+        <p class="small">รายงานสาธารณะที่คนในพื้นที่โพสต์ อ่านคู่กับข้อมูลทางการ ไม่เก็บชื่อผู้โพสต์ <span class="small">(social listening)</span></p>
+        <div class="tablewrap"><table>
+          <thead><tr><th>เวลา</th><th>{{COMMUNITY_COL2_LABEL}}</th><th>สภาพที่รายงาน</th></tr></thead>
+          <tbody id="community-rows-__AREA__">{{COMMUNITY_ROWS}}</tbody>
+        </table></div>
+      </div>
+    </details>
+
+    <details id="help-details-__AREA__">
+      <summary>ถ้าต้องการความช่วยเหลือ</summary>
+      <div class="tier-body">
+        <p class="hlp-line">หน้านี้ยังไม่มีเบอร์โทรฉุกเฉินที่ตรวจสอบจากแหล่งข้อมูลทางการที่ใช้สร้างหน้านี้
+          — ดูลิงก์หน่วยงาน (สสน., สำนักการระบายน้ำ กทม., สำนักงานเขต) ในหัวข้อ "แหล่งข้อมูล" ท้ายหน้าเพื่อค้นเบอร์ที่ถูกต้อง
+          · ถ้าน้ำใกล้ปลั๊กไฟ ให้ตัดไฟชั้นล่างก่อน</p>
+
+        <h3 style="margin:14px 0 6px;font-size:1.05rem;">โรงพยาบาลใกล้บ้าน</h3>
+        <div class="tablewrap"><table>
+          <thead><tr><th>โรงพยาบาล</th><th>ระยะทาง</th><th>โทร</th></tr></thead>
+          <tbody id="hospital-rows-__AREA__">{{HOSPITAL_ROWS}}</tbody>
+        </table></div>
+        <p class="small">ทางไป รพ. อาจท่วม ดูส่วนทางออกด้านบน</p>
+
+        <div class="care-box">
+          <strong>ดูแลเป็นพิเศษ:</strong> ผู้สูงอายุ ผู้ป่วยติดเตียง เด็กเล็ก ผู้ใช้เครื่องมือแพทย์ที่ต้องใช้ไฟ — ย้ายขึ้นชั้นบน แจ้งเพื่อนบ้าน เตรียมยา 3–5 วัน ระวังไฟดูด/น้ำสกปรก
+        </div>
+        <p class="helpers-note">ช่วยกันหลายฝ่าย: นิติบุคคลหมู่บ้าน/ชุมชน · สำนักงานเขต (กระสอบทราย) · สำนักการระบายน้ำ (ปั๊ม) · ถ้าคุณเป็นพยาบาล/อสส./จิตอาสาในพื้นที่ แจ้งผู้นำชุมชน</p>
+      </div>
+    </details>
+
+  </section>
+  <!--AREA_TEMPLATE_END-->
+
+  <footer>
+    <h2>แหล่งข้อมูล</h2>
+    <ul class="sources-list" id="sources-list">{{SOURCES_LIST}}</ul>
+    <p><strong>รวบรวมข้อมูลจากภาครัฐโดยประชาชน ไม่ใช่ประกาศทางการ เป็นการอ่านค่าจากหน่วยงาน ไม่ใช่การพยากรณ์ อาจคลาดเคลื่อนหรือช้า โปรดตรวจสอบด้วยตัวเองอีกครั้ง</strong></p>
+    <p class="credit">หน้านี้จัดทำขึ้นเพื่อให้ข้อมูลแก่คนในหมู่บ้านสัมมากร (รามคำแหง 112) และซอยรามคำแหง 53 ไม่ใช่หน่วยงานราชการ · ขอบคุณข้อมูลจาก สสน., สำนักการระบายน้ำ กทม., กรมอุทกศาสตร์ กองทัพเรือ, สำนักงานเขต และชาวบ้านที่ช่วยกันรายงาน</p>
+    <p class="credit">แผนที่/ถนน/คลอง: © OpenStreetMap contributors</p>
+  </footer>
+</main>
+
+
+<script type="application/json" id="data">{{DATA_JSON}}</script>
+<script>
+(function(){
+  "use strict";
+  /* This script only ENHANCES the static server-rendered content above (font size,
+     area switching, remembering the viewer's chosen area, staleness re-check against
+     the viewer's own clock). Every number/table/line the page shows was already
+     rendered server-side by build_page.py from data.json -- turning JavaScript off
+     loses none of the content, only these conveniences. */
+
+  var AREAS = ["sammakorn", "ram53"];
+  var D = null;
+  try{ D = JSON.parse(document.getElementById("data").textContent); }catch(e){ D = null; }
+
+  /* ---------------- font size control ---------------- */
+  function initFontControls(){
+    var STEPS = [100, 112, 124, 136];
+    var i = 0;
+    try{
+      var saved = localStorage.getItem("floodconnect_fontstep");
+      if(saved !== null){ i = Math.max(0, Math.min(STEPS.length-1, parseInt(saved,10)||0)); }
+    }catch(e){}
+    function apply(){
+      document.documentElement.style.fontSize = STEPS[i] + "%";
+      try{ localStorage.setItem("floodconnect_fontstep", String(i)); }catch(e){}
+    }
+    apply();
+    var plus = document.getElementById("font-plus");
+    var minus = document.getElementById("font-minus");
+    if(plus) plus.addEventListener("click", function(){ i = Math.min(STEPS.length-1, i+1); apply(); });
+    if(minus) minus.addEventListener("click", function(){ i = Math.max(0, i-1); apply(); });
+  }
+
+  /* ---------------- area switching ---------------- */
+  function showArea(area){
+    if(AREAS.indexOf(area) === -1) area = "sammakorn";
+    AREAS.forEach(function(a){
+      var sec = document.getElementById("area-" + a);
+      if(!sec) return;
+      if(a === area){ sec.removeAttribute("hidden"); } else { sec.setAttribute("hidden", ""); }
+    });
+    var select = document.getElementById("area-select");
+    if(select) select.value = area;
+    try{ localStorage.setItem("floodconnect_area", area); }catch(e){}
+  }
+
+  function initAreaSwitch(){
+    var initial = "sammakorn";
+    if(window.location.hash === "#ram53"){
+      initial = "ram53";
+    } else {
+      try{
+        var saved = localStorage.getItem("floodconnect_area");
+        if(saved && AREAS.indexOf(saved) !== -1) initial = saved;
+      }catch(e){}
+    }
+    showArea(initial);
+    var select = document.getElementById("area-select");
+    if(select){
+      select.addEventListener("change", function(){ showArea(select.value); });
+    }
+  }
+
+  /* ---------------- staleness ribbon re-check against the viewer's own clock ---------- */
+  function hoursAgoNow(iso){
+    if(!iso) return null;
+    var d = new Date(iso);
+    if(isNaN(d.getTime())) return null;
+    return (Date.now() - d.getTime()) / 3600000;
+  }
+  function recheckStaleness(){
+    if(!D || !D.areas) return;
+    AREAS.forEach(function(area){
+      var ad = D.areas[area];
+      if(!ad) return;
+      var items = (ad.stations_near||[]).concat(ad.pumps||[]);
+      var anyOld = items.some(function(x){
+        var h = hoursAgoNow(x.observed_at);
+        return h === null || h > 2;
+      });
+      var el = document.getElementById("banner-stale-" + area);
+      if(!el) return;
+      if(anyOld){ el.removeAttribute("hidden"); } else { el.setAttribute("hidden", ""); }
+    });
+  }
+
+  function init(){
+    initFontControls();
+    initAreaSwitch();
+    recheckStaleness();
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>

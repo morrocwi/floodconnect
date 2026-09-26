@@ -1,0 +1,84 @@
+{
+  "waterStation": [
+    {
+      "water_id": "10",
+      "station_name": "ค.บางพรม-ถ.กาญจนาฯ",
+      "water_station_info": {
+        "water_name": "จุดวัดคลองบางพรม ตอนถนนกาญจนาภิเษก",
+        "water_shortname": "ค.บางพรม ถ.กาญจนาฯ",
+        "latitude": 13.76264,
+        "longitude": 100.39624,
+        "river_name": "คลองบางพรม"
+      },
+      "water_level_last": {
+        "wl_in": 0.34,
+        "site_timestamp": "/Date(1790098800000)/"
+      }
+    },
+    {
+      "water_id": "100",
+      "station_name": "ค.ทวีวัฒนา-ภาษีฯ",
+      "water_station_info": {
+        "water_name": "จุดวัดคลองทวีวัฒนา ตอนคลองภาษีเจริญ",
+        "water_shortname": "ค.ทวีวัฒนา-ภาษีฯ",
+        "latitude": 13.69163,
+        "longitude": 100.38106,
+        "river_name": "คลองทวีวัฒนา"
+      },
+      "water_level_last": {
+        "wl_in": 0.25,
+        "site_timestamp": "/Date(1790098500000)/"
+      }
+    },
+    {
+      "water_id": "102",
+      "station_name": "ส.คลองแจงร้อน",
+      "water_station_info": {
+        "water_name": "สถานีสูบน้ำ คลองแจงร้อน",
+        "water_shortname": "ส.คลองแจงร้อน",
+        "latitude": 13.67634,
+        "longitude": 100.52111,
+        "river_name": "คลองแจงร้อน"
+      },
+      "water_level_last": {
+        "wl_in": 0.46,
+        "site_timestamp": "/Date(1790098800000)/"
+      }
+    },
+    {
+      "water_id": "104",
+      "station_name": "ส.คลองเลนเปน",
+      "water_station_info": {
+        "water_name": "สถานีสูบน้ำ คลองเลนเปน",
+        "water_shortname": "ส.คลองเลนเปน",
+        "latitude": 13.60695,
+        "longitude": 100.41311,
+        "river_name": "คลองเลนเปน"
+      },
+      "water_level_last": {
+        "wl_in": -0.82,
+        "site_timestamp": "/Date(1790098800000)/"
+      }
+    },
+    {
+      "water_id": "105",
+      "station_name": "ส.คลองระหาญ",
+      "water_station_info": {
+        "water_name": "สถานีสูบน้ำ คลองระหาญ",
+        "water_shortname": "ส.คลองระหาญ",
+        "latitude": 13.60384,
+        "longitude": 100.3946,
+        "river_name": "คลองระหาญ"
+      },
+      "water_level_last": {
+        "wl_in": -1.19,
+        "site_timestamp": "/Date(1790098800000)/"
+      }
+    }
+  ],
+  "stationMap": [],
+  "arrowMap": [],
+  "riverMap": [],
+  "listRiverMap": [],
+  "dailyheightwater": []
+}

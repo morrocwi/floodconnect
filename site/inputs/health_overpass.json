@@ -1,0 +1,134 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-05-06T03:25:00Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 5679154233,
+  "lat": 13.7404216,
+  "lon": 100.6536188,
+  "tags": {
+    "amenity": "hospital",
+    "healthcare": "hospital",
+    "name": "Serene Hospital",
+    "operator": "Serene"
+  }
+},
+{
+  "type": "node",
+  "id": 9583012584,
+  "lat": 13.7610564,
+  "lon": 100.6361759,
+  "tags": {
+    "amenity": "hospital",
+    "healthcare": "hospital"
+  }
+},
+{
+  "type": "way",
+  "id": 258727420,
+  "center": {
+    "lat": 13.7347423,
+    "lon": 100.6454946
+  },
+  "tags": {
+    "addr:housenumber": "2677",
+    "addr:postcode": "10250",
+    "addr:street": "ถนนพัฒนาการ",
+    "amenity": "hospital",
+    "building": "yes",
+    "emergency": "yes",
+    "healthcare": "hospital",
+    "layer": "1",
+    "name": "โรงพยาบาล วิภาราม",
+    "name:en": "Vibharam Hospital",
+    "phone": "0 2722 2500",
+    "website": "https://www.vibharam.com/"
+  }
+},
+{
+  "type": "way",
+  "id": 258733174,
+  "center": {
+    "lat": 13.7580245,
+    "lon": 100.6368222
+  },
+  "tags": {
+    "addr:housenumber": "436",
+    "addr:postcode": "10240",
+    "addr:street": "ถนนรามคำแหง",
+    "amenity": "hospital",
+    "emergency": "yes",
+    "healthcare": "hospital",
+    "name": "โรงพยาบาล รามคำแหง",
+    "name:en": "Ramkhamhaeng Hospital",
+    "phone": "0 2374 0200",
+    "website": "https://www.ram-hosp.co.th/",
+    "wikidata": "Q13026866"
+  }
+},
+{
+  "type": "way",
+  "id": 338834358,
+  "center": {
+    "lat": 13.7721804,
+    "lon": 100.6369087
+  },
+  "tags": {
+    "addr:city": "กรุงเทพมหานคร",
+    "addr:housenumber": "1",
+    "addr:postcode": "10240",
+    "addr:street": "ซอยลาดพร้าว 111",
+    "amenity": "hospital",
+    "emergency": "yes",
+    "healthcare": "hospital",
+    "name": "โรงพยาบาลเวชธานี",
+    "name:en": "Vejthani Hospital",
+    "name:th": "โรงพยาบาลเวชธานี",
+    "phone": "02 734 0000",
+    "website": "https://www.vejthani.com/",
+    "wikidata": "Q7918740",
+    "wikimedia_commons": "Category:Vejthani Hospital"
+  }
+},
+{
+  "type": "way",
+  "id": 626617238,
+  "center": {
+    "lat": 13.7939042,
+    "lon": 100.6887858
+  },
+  "tags": {
+    "addr:city": "แขวงคันนายาว",
+    "addr:housenumber": "212",
+    "addr:street": "ถนนเสรีไทย",
+    "amenity": "hospital",
+    "healthcare": "hospital",
+    "healthcare:speciality": "สัตว์;รักษาสัตว์;หมา;แมว;กระต่าย;ผ่าตัดกระดู;ผ่าตัดทั้วไป;บริการนอกสถานที่",
+    "name": "serithai animalclinic",
+    "name:th": "สถานพยาบาลสัตว์เสรีไทย"
+  }
+},
+{
+  "type": "way",
+  "id": 626810304,
+  "center": {
+    "lat": 13.7799742,
+    "lon": 100.6761541
+  },
+  "tags": {
+    "amenity": "hospital",
+    "healthcare": "hospital",
+    "name": "โรงพยาบาลเกษมราษฎร์ รามคำแหง",
+    "name:en": "Kasemrad Hospital Ramkhamhaeng",
+    "name:th": "โรงพยาบาลเกษมราษฎร์ รามคำแหง"
+  }
+}
+
+  ]
+}

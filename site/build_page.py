@@ -1,0 +1,962 @@
+#!/usr/bin/env python3
+"""build_page.py -- inject data.json (TWO areas) into index.template.html -> index.html.
+
+Read-only with respect to the outside world. Renders EVERY table/section SERVER-SIDE for
+both areas (so the page communicates everything with JavaScript turned off), by extracting
+the single `<!--AREA_TEMPLATE_START--> ... <!--AREA_TEMPLATE_END-->` block from the
+template, filling it once per area (with that area's own data + labels + `__AREA__` id
+suffix), and concatenating the two renders into the page. Client JS only enhances
+(font size, area switching, remembering the viewer's chosen area, staleness re-check
+against the viewer's own clock).
+
+Publish-safety invariant enforced here: the OUTPUT file must start with the literal bytes
+"<title>" -- no <!DOCTYPE>, <html>, <head>, <body>, or <meta charset/viewport> tags, since
+this page is embedded as a fragment, never served as a standalone document. This script
+strips any such tags that accidentally end up in the template and asserts the final byte
+sequence before writing.
+
+Usage:
+    python3 build_page.py
+    python3 build_page.py --data other_data.json --template other_template.html --out other.html
+"""
+import argparse
+import datetime
+import json
+import re
+import sys
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+PLACEHOLDER = "{{DATA_JSON}}"
+AREA_START = "<!--AREA_TEMPLATE_START-->"
+AREA_END = "<!--AREA_TEMPLATE_END-->"
+AREA_SLOT_RE = re.compile(re.escape(AREA_START) + r"(.*?)" + re.escape(AREA_END), re.DOTALL)
+
+BANGKOK_TZ = datetime.timezone(datetime.timedelta(hours=7))
+
+THAI_DIGITS = {"๐": "0", "๑": "1", "๒": "2", "๓": "3", "๔": "4",
+               "๕": "5", "๖": "6", "๗": "7", "๘": "8", "๙": "9"}
+THAI_MONTHS = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+               "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."]
+
+ZONE_META = {
+    "red":    {"label": "น้ำเข้าบ้านแล้ว",
+               "prep": "ยกของขึ้นสูง ปิดเบรกเกอร์ชั้นล่าง"},
+    "orange": {"label": "น้ำเข้าโรงรถ", "prep": "เตรียมกระสอบทราย ย้ายรถให้พ้นน้ำ"},
+    "yellow": {"label": "ถนนท่วม", "prep": "ย้ายรถเมื่อถนนเริ่มขัง"},
+    "grey":   {"label": "ยังไม่มีรายงาน (ไม่ได้แปลว่าปลอดภัย)", "prep": None},
+}
+
+# ---------------------------------------------------------------------------
+# Premium icon system (maintainer ruling 2026-09-26): the maintainers asked to raise
+# this page to "world-class app" quality -- readable, calm, premium framing --
+# benchmarked against Apple Weather / Google weather cards / UK
+# check-for-flooding. Emoji render inconsistently across Android/iOS/LINE and
+# read as an AI-generated-page tell, so every severity/section icon below is a
+# single outline inline-SVG (24px grid, 1.75px stroke, currentColor, no fill)
+# instead of an emoji glyph. Emoji are kept ONLY inside the native <option>
+# dropdown, which cannot render inline SVG.
+ICON_PATHS = {
+    "pin": '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+    "magnifier": '<circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>',
+    "pump": '<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>',
+    "wave": '<path d="M2 15c1.5-2 3-2 4.5 0s3 2 4.5 0 3-2 4.5 0 3 2 4.5 0"/><path d="M2 9c1.5-2 3-2 4.5 0s3 2 4.5 0 3-2 4.5 0 3 2 4.5 0"/>',
+    "link": '<path d="M10 13a5 5 0 0 0 7.07 0l1.41-1.41a5 5 0 0 0-7.07-7.07L10 6"/><path d="M14 11a5 5 0 0 0-7.07 0l-1.41 1.41a5 5 0 0 0 7.07 7.07L14 18"/>',
+    "rain": '<path d="M16 13v8"/><path d="M8 13v8"/><path d="M12 15v8"/><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/>',
+    "moon": '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
+    "exit": '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+    "hospital": '<rect x="3" y="3" width="18" height="18" rx="3"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>',
+    "phone": '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>',
+    "doc": '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+    "clock": '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+    "check": '<polyline points="20 6 9 17 4 12"/>',
+}
+
+
+def icon(name, size=24, extra_cls=""):
+    """One outline inline-SVG icon, currentColor, from ICON_PATHS. `size` is a
+    CSS px class (ic-16/20/24/40); `extra_cls` adds e.g. a dot-colour class."""
+    body = ICON_PATHS.get(name, ICON_PATHS["doc"])
+    cls = f"ic ic-{size}" + (f" {extra_cls}" if extra_cls else "")
+    return (f'<svg class="{cls}" viewBox="0 0 24 24" aria-hidden="true" '
+            f'fill="none" stroke="currentColor" stroke-width="1.75" '
+            f'stroke-linecap="round" stroke-linejoin="round">{body}</svg>')
+
+
+def sec_label(name, text):
+    """Section-header content: small icon + uppercase-tracking label text,
+    used inside every <h2 class="sec-label"> / <summary> in the template."""
+    return f'{icon(name, 20)}<span>{text}</span>'
+
+
+def tier_dot(zone_key):
+    """One 14px inline-SVG dot, coloured via the existing .label-<key> class -- replaces the
+    old bare emoji (🔴🟠🟡⚪) severity markers. Never a second icon alongside it."""
+    return (f'<svg class="dot label-{zone_key}" viewBox="0 0 10 10" aria-hidden="true">'
+            f'<circle cx="5" cy="5" r="5" fill="currentColor"/></svg>')
+
+STATUS_PILL = {
+    "NORMAL": ("pill-ok", "ปกติ"), "WATCH": ("pill-warn", "เส้นเตือน"),
+    "CRITICAL": ("pill-crit", "เส้นอันตราย"), "OVERBANK": ("pill-over", "ล้นตลิ่ง"),
+    "NO_THRESHOLD": ("pill-none", "ไม่มีข้อมูล"),
+}
+
+AREA_LABELS = {
+    "sammakorn": {
+        "dropdown": "หมู่บ้านสัมมากร (รามคำแหง 112)",
+        "heading": "หมู่บ้านสัมมากร (รามคำแหง 112)",
+        "pin": "หมู่บ้านสัมมากร รามคำแหง 112 เขตสะพานสูง",
+        "subtitle": "น้ำสัมมากร (ราม 112) วันนี้",
+        "exit_place_word": "หมู่บ้าน",
+        "zones_heading": "ซอยไหนต้องระวังอะไร",
+        "pump_heading": "บึงและปั๊มในหมู่บ้าน",
+        "pump_caption": "ระดับน้ำและปั๊มเดิน/ปั๊มเสีย 4 สถานีของหมู่บ้าน",
+        "canal_north_label": "ฝั่งเหนือ — คลองแสนแสบ",
+        "canal_south_label": "ฝั่งใต้ — คลองทับช้าง / ประเวศ / หัวหมาก",
+        "pond_word": "บึงในหมู่บ้าน",
+    },
+    "ram53": {
+        "dropdown": "ซอยรามคำแหง 53",
+        "heading": "ซอยรามคำแหง 53",
+        "pin": "ซอยรามคำแหง 53 เขตวังทองหลาง",
+        "subtitle": "น้ำรามคำแหง 53 วันนี้",
+        "exit_place_word": "ซอย",
+        "zones_heading": "สถานการณ์ในซอย",
+        "pump_heading": "สถานีสูบน้ำใกล้ซอย",
+        "pump_caption": "ระดับน้ำและปั๊มเดิน/ปั๊มเสีย 4 สถานีใกล้ซอย",
+        "canal_north_label": "ฝั่งเหนือ",
+        "canal_south_label": "ฝั่งใต้",
+        "pond_word": "ปั๊มริมคลองใกล้ซอย",
+    },
+}
+
+
+def normalize_digits(s):
+    if not s:
+        return s
+    return "".join(THAI_DIGITS.get(ch, ch) for ch in s)
+
+
+def clean_soi_name(s):
+    t = normalize_digits(s or "")
+    t = re.sub(r"\s*\([^)]*\)\s*$", "", t)
+    return t.strip()
+
+
+def esc(s):
+    if s is None:
+        return ""
+    return (str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            .replace('"', "&quot;").replace("'", "&#39;"))
+
+
+def to_bkk(iso):
+    if not iso:
+        return None
+    try:
+        dt = datetime.datetime.fromisoformat(iso)
+    except ValueError:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=BANGKOK_TZ)
+    return dt.astimezone(BANGKOK_TZ)
+
+
+def fmt_hm(iso):
+    dt = to_bkk(iso)
+    return dt.strftime("%H:%M") if dt else "--:--"
+
+
+def hours_ago(iso, now_dt):
+    dt = to_bkk(iso)
+    if dt is None or now_dt is None:
+        return None
+    return (now_dt - dt).total_seconds() / 3600.0
+
+
+def fmt_time_full(iso, now_dt):
+    dt = to_bkk(iso)
+    if dt is None:
+        return "ไม่ทราบเวลา"
+    age = hours_ago(iso, now_dt)
+    base = f"{dt.strftime('%H:%M')} น. ({dt.day} {THAI_MONTHS[dt.month - 1]}"
+    if age is None or age > 24 or age < 0:
+        days = round((age or 0) / 24)
+        base += f" {dt.year + 543}, {days} วันก่อน)" if days >= 1 else " ข้อมูลเก่า)"
+    else:
+        base += ")"
+    return base
+
+
+def obs_time_label(iso, now_dt):
+    """Short 'ค่าเมื่อ HH:MM' / 'ค่าเมื่อคืน HH:MM' label for the hero's why-list lines."""
+    dt = to_bkk(iso)
+    if dt is None or now_dt is None:
+        return "ไม่มีข้อมูลเวลา"
+    hm = dt.strftime("%H:%M")
+    if dt.date() == now_dt.date():
+        return f"ค่าเมื่อ {hm}"
+    if dt.date() == (now_dt - datetime.timedelta(days=1)).date():
+        return f"ค่าเมื่อคืน {hm}"
+    return f"ค่าเมื่อ {dt.day} {THAI_MONTHS[dt.month - 1]} {hm}"
+
+
+def thai_hour_phrase(h):
+    h = h % 24
+    if h == 0:
+        return "เที่ยงคืน"
+    if 1 <= h <= 5:
+        return f"ตี {h}"
+    if 6 <= h <= 11:
+        return f"{h} โมงเช้า"
+    if h == 12:
+        return "เที่ยง"
+    if h == 13:
+        return "บ่ายโมง"
+    if h in (14, 15):
+        return f"บ่าย {h - 12} โมง"
+    if 16 <= h <= 18:
+        return f"{h - 12} โมงเย็น"
+    return f"{h - 18} ทุ่ม"
+
+
+def thai_clock_exact(dt):
+    if dt is None:
+        return "--"
+    return thai_hour_phrase(dt.hour) + (f" {dt.minute:02d}" if dt.minute else "")
+
+
+def thai_hour_window_label(dt, offset_hours):
+    if dt is None:
+        return "--"
+    shifted = dt + datetime.timedelta(hours=offset_hours)
+    return thai_hour_phrase(shifted.hour)
+
+
+def status_pill_html(status):
+    cls, label = STATUS_PILL.get(status, STATUS_PILL["NO_THRESHOLD"])
+    return f'<span class="pill {cls}" aria-label="สถานะคลอง: {esc(label)}">{esc(label)}</span>'
+
+
+def status_pill_aged_html(status, observed_at, now_dt):
+    h = hours_ago(observed_at, now_dt)
+    if h is None or h > 24:
+        return '<span class="pill pill-stale">ข้อมูลเก่า ใช้ไม่ได้</span>'
+    return status_pill_html(status)
+
+
+def next_high_water(area):
+    tide = area.get("tide") or {}
+    highs = tide.get("next_high") or []
+    return highs[0] if highs else None
+
+
+# ---------------- pump wording (item C: same wording everywhere) ----------------
+
+def pump_wording(p, now_dt):
+    """Returns (text, kind) where kind in {fail, idle, missing, ok}. Never merges
+    ขัดข้อง and ไม่ได้เดิน counts -- callers must count each kind separately."""
+    h = hours_ago(p.get("observed_at"), now_dt)
+    if p.get("status_th") == "ขัดข้อง":
+        return "ปั๊มขัดข้อง (ตามที่ กทม. รายงาน)", "fail"
+    if h is None or h > 2:
+        return "ไม่มีข้อมูลล่าสุด", "missing"
+    if (p.get("pumps_on") or 0) == 0:
+        total = p.get("pumps_total")
+        return f"ปั๊มไม่ได้เดิน (0/{total}) — อาจยังไม่เปิดหรือไม่มีข้อมูล", "idle"
+    return "ปกติ", "ok"
+
+
+def pump_counts(pumps, now_dt):
+    fail = idle = missing = ok = 0
+    for p in pumps:
+        _, kind = pump_wording(p, now_dt)
+        if kind == "fail":
+            fail += 1
+        elif kind == "idle":
+            idle += 1
+        elif kind == "missing":
+            missing += 1
+        else:
+            ok += 1
+    return {"fail": fail, "idle": idle, "missing": missing, "ok": ok, "total": len(pumps)}
+
+
+# ---------------- status word + factors ----------------
+
+def compute_status(area, now_dt, pc):
+    near = [s for s in (area.get("stations_near") or []) if s.get("role") in ("north", "south")]
+    fresh_near = [s for s in near
+                  if (h := hours_ago(s.get("observed_at"), now_dt)) is not None and h <= 24
+                  and s.get("status") != "NO_THRESHOLD"]
+    fresh_crit = sum(1 for s in fresh_near if s.get("status") in ("CRITICAL", "OVERBANK"))
+    upstream = [s for s in (area.get("stations_near") or []) if s.get("role") == "upstream"]
+    fresh_up = [s for s in upstream
+                if (h := hours_ago(s.get("observed_at"), now_dt)) is not None and h <= 24]
+    up_crit = sum(1 for s in fresh_up if s.get("status") in ("CRITICAL", "OVERBANK"))
+    all_ok = bool(fresh_near) and all(s.get("status") in ("NORMAL", "WATCH") for s in fresh_near)
+    pumps_all_normal = pc["total"] > 0 and pc["fail"] == 0 and pc["idle"] == 0
+    rain_mm = (area.get("rain") or {}).get("mm_24h")
+    rain_ok = rain_mm is not None and rain_mm < 30
+    if pc["fail"] > 0 or fresh_crit >= 2:
+        word = "น้ำยังขึ้น"
+    elif all_ok and pumps_all_normal and rain_ok:
+        word = "น้ำเริ่มลด"
+    else:
+        word = "ยังบอกไม่ได้ — เตรียมพร้อมไว้ก่อน"
+    return {"word": word, "near": near, "fresh_near": fresh_near, "fresh_crit": fresh_crit,
+            "upstream": upstream, "fresh_up": fresh_up, "up_crit": up_crit}
+
+
+def build_watch_line(area, st, pc, now_dt, forecast):
+    """One calm sentence, at most ~20 words -- the single strongest factor only
+    (maintainer ruling 2026-09-26: infographic style, fewer words per line)."""
+    mag = icon("magnifier", 20)
+    hw = next_high_water(area)
+    candidates = []
+    if pc["fail"] > 0:
+        candidates.append((3, f"ปั๊มบึงเสีย {pc['fail']} จุด"))
+    if st["up_crit"] > 0:
+        candidates.append((2, f"ต้นน้ำเกินเส้นอันตราย {st['up_crit']} จุด"))
+    if st["fresh_crit"] > 0:
+        candidates.append((2, f"คลองรอบบ้าน {st['fresh_crit']} จุดเกินเส้นอันตราย"))
+    if forecast and forecast.get("direction") == "rising":
+        candidates.append((1, "ฝนกำลังเพิ่มขึ้น"))
+    candidates.sort(key=lambda c: -c[0])
+    top_factor = candidates[0][1] if candidates else None
+
+    if not hw:
+        text = top_factor or "เฝ้าดูสถานการณ์ต่อไป"
+        return f"{mag} ต้องเฝ้าระวัง: {text}"
+    hw_dt = to_bkk(hw.get("time"))
+    hw_label = f"<strong>{thai_clock_exact(hw_dt)}</strong>"
+    if not top_factor:
+        return f"{mag} ต้องเฝ้าระวัง: น้ำหนุนสูงสุด {hw_label}"
+    win_start = thai_hour_window_label(hw_dt, -2)
+    win_end = thai_hour_window_label(hw_dt, 2)
+    return (f"{mag} ต้องเฝ้าระวังช่วง <strong>{win_start}–{win_end}</strong> "
+            f"— น้ำหนุนสูงสุด {hw_label} และ{top_factor}")
+
+
+# ---------------- hero "why" list (5 lines, maintainer-mandated bullet format) ----------------
+
+def rain_band_word(mm):
+    if mm is None:
+        return None
+    if mm > 150:
+        return "มากผิดปกติ"
+    if mm > 90:
+        return "มาก"
+    if mm >= 30:
+        return "ปานกลาง"
+    return "น้อย"
+
+
+def _why_li(emoji, label, value_text, time_text, dot):
+    time_html = f' <span class="why-time">({esc(time_text)})</span>' if time_text else ""
+    return (f'<li><span class="why-emoji">{emoji}</span>'
+            f'<span class="why-text"><strong>{esc(label)}</strong> — {esc(value_text)}{time_html}</span>'
+            f'<span class="why-dot why-dot-{dot}" aria-hidden="true"></span></li>')
+
+
+def build_why_list(area, st, pc, now_dt, pond_word):
+    items = []
+
+    # 1. ปั๊มบึงในหมู่บ้าน / ปั๊มริมคลองใกล้ซอย
+    pumps = area.get("pumps") or []
+    clauses = []
+    if pc["fail"] > 0:
+        clauses.append(f"ขัดข้อง {pc['fail']} จุด")
+    if pc["idle"] > 0:
+        clauses.append(f"ไม่ได้เดิน {pc['idle']} จุด")
+    if not clauses and pc["missing"] > 0 and pc["ok"] == 0:
+        clauses.append("ไม่มีข้อมูลล่าสุด")
+    if not clauses:
+        on = sum((p.get("pumps_on") or 0) for p in pumps)
+        total = sum((p.get("pumps_total") or 0) for p in pumps)
+        clauses.append(f"ปกติ ปั๊มเดิน {on}/{total} จุด" if pumps else "ไม่มีข้อมูลปั๊ม")
+    dot = "red" if pc["fail"] > 0 else ("amber" if pc["idle"] > 0 else ("grey" if pc["ok"] == 0 else "green"))
+    newest_pump = max((p.get("observed_at") for p in pumps if p.get("observed_at")), default=None)
+    items.append(_why_li("🏊", pond_word, ", ".join(clauses), obs_time_label(newest_pump, now_dt), dot))
+
+    # 2. คลองรอบบ้าน
+    fresh_near = st["fresh_near"]
+    crit = st["fresh_crit"]
+    total = len(fresh_near)
+    if total == 0:
+        items.append(_why_li("🌊", "คลองรอบบ้าน", "ไม่มีข้อมูลสด (≤24 ชม., ≤5 กม.)", None, "grey"))
+    else:
+        text = f"เกินเส้นอันตราย {crit} จาก {total} จุด" if crit > 0 else f"ปกติ {total} จุด"
+        newest = max((s.get("observed_at") for s in fresh_near if s.get("observed_at")), default=None)
+        items.append(_why_li("🌊", "คลองรอบบ้าน", text, obs_time_label(newest, now_dt),
+                              "red" if crit > 0 else "green"))
+
+    # 3. น้ำจากต้นทาง
+    fresh_up = st["fresh_up"]
+    up_crit_stations = [s for s in fresh_up if s.get("status") in ("CRITICAL", "OVERBANK")]
+    up_total = len(fresh_up)
+    if up_total == 0:
+        items.append(_why_li("🔗", "น้ำจากต้นทาง", "ไม่มีข้อมูลสด", None, "grey"))
+    elif not up_crit_stations:
+        items.append(_why_li("🔗", "น้ำจากต้นทาง", f"ปกติ (0/{up_total} จุด)", None, "green"))
+    else:
+        places = []
+        for s in up_crit_stations:
+            name = s.get("short_name") or s.get("name") or ""
+            if name and name not in places:
+                places.append(name)
+        places_text = ", ".join(places[:3])
+        dot = "red" if len(up_crit_stations) >= up_total / 2.0 else "amber"
+        items.append(_why_li("🔗", "น้ำจากต้นทาง",
+                              f"{places_text} ยังสูง ({len(up_crit_stations)}/{up_total} จุด)", None, dot))
+
+    # 4. ฝน 24 ชม.
+    rain = area.get("rain")
+    if rain and rain.get("mm_24h") is not None:
+        mm = rain["mm_24h"]
+        word = rain_band_word(mm)
+        loc = f"{rain.get('station') or 'สถานีใกล้เคียง'}, ห่าง {rain.get('dist_km', 0):.1f} กม."
+        dot = "red" if mm > 90 else ("amber" if mm >= 30 else "green")
+        items.append(_why_li("🌧️", "ฝน 24 ชม.", f"{mm:.0f} มม. {word}", loc, dot))
+    else:
+        items.append(_why_li("🌧️", "ฝน 24 ชม.", "ไม่มีข้อมูล", None, "grey"))
+
+    # 5. น้ำหนุน
+    hw = next_high_water(area)
+    if hw:
+        hw_dt = to_bkk(hw.get("time"))
+        height = hw.get("height_m")
+        h_text = f"{height:+.1f} ม." if height is not None else "--"
+        items.append(_why_li("🌕", "น้ำหนุน", f"ขึ้นสูงสุด {thai_clock_exact(hw_dt)} ({h_text})", None, "grey"))
+    else:
+        items.append(_why_li("🌕", "น้ำหนุน", "ไม่มีข้อมูล", None, "grey"))
+
+    return "".join(items)
+
+
+def build_hours_list(area, st, pc, now_dt, forecast):
+    lines = []
+    forecast = forecast or {}
+    if forecast.get("available") and forecast.get("direction") == "rising":
+        items = forecast.get("items") or []
+        h_start = items[0].get("h") if items else None
+        h_end = items[-1].get("h") if items else None
+        if h_start and h_end:
+            lines.append(f"🌧️ ฝนกำลังจะตกเพิ่มขึ้น ช่วง {esc(h_start)}–{esc(h_end)} น.")
+        else:
+            lines.append("🌧️ ฝนกำลังจะตกเพิ่มขึ้น")
+    elif forecast.get("available") and forecast.get("direction") == "falling":
+        items = forecast.get("items") or []
+        h_end = items[-1].get("h") if items else None
+        lines.append(f"🌤️ ฝนกำลังจะเบาลง หลัง {esc(h_end)} น." if h_end else "🌤️ ฝนกำลังจะเบาลง")
+    elif forecast.get("available"):
+        lines.append("🌧️ ฝนยังตกต่อ")
+    else:
+        lines.append("ยังไม่มีพยากรณ์ฝนรายชั่วโมง — ดูเรดาร์ กทม.")
+
+    hw = next_high_water(area)
+    if hw:
+        hw_dt = to_bkk(hw.get("time"))
+        lines.append(f"🌕 น้ำหนุนขึ้นสูงสุด {thai_clock_exact(hw_dt)}")
+
+    if pc["fail"] > 0 or pc["idle"] > 0:
+        bits = []
+        if pc["fail"] > 0:
+            bits.append(f"ขัดข้อง {pc['fail']} จุด")
+        if pc["idle"] > 0:
+            bits.append(f"ไม่ได้เดิน {pc['idle']} จุด")
+        lines.append("🏊 ปั๊มบึง " + ", ".join(bits))
+    else:
+        lines.append("🏊 ปั๊มบึงเดินปกติ")
+
+    if len(st["fresh_near"]) > 0:
+        lines.append(f"🌊 คลองรอบบ้าน {st['fresh_crit']}/{len(st['fresh_near'])} จุดเกินเส้นอันตราย")
+
+    lines = lines[:4]
+    return "".join(f'<li><span class="why-text">{ln}</span></li>' for ln in lines)
+
+
+# ---------------- hero "ตอนนี้: ..." action line (item 9) ----------------
+
+def build_now_line(area):
+    """One OPTIONAL-suggestion line for right under the verdict word: the reader decides.
+    Never an imperative command, never a phrase granting or waiving permission."""
+    tiers = area.get("tiers") or []
+    has_t1 = any(t.get("tier") == "T1" and (t.get("sois") or []) for t in tiers)
+    if has_t1:
+        prep = ZONE_META["red"]["prep"] or ""
+        first_action = prep.split(" · ")[0].strip()
+        if first_action:
+            return first_action
+    return "เตรียมพร้อมไว้ก่อน — ยกของสำคัญขึ้นสูง ชาร์จมือถือ เตรียมไฟฉาย-ยา-น้ำดื่ม"
+
+
+# ---------------- zones (Sammakorn tiers; ram53 note) ----------------
+
+def build_zones_html(area):
+    tiers = area.get("tiers") or []
+    if not tiers:
+        note = esc(area.get("tiers_note") or "ยังไม่มีข้อมูล")
+        return f'<p class="empty-note">{note}</p>'
+    by_tier = {t.get("tier"): (t.get("sois") or []) for t in tiers}
+    groups = {"red": by_tier.get("T1", []), "orange": by_tier.get("T2", []),
+              "yellow": (by_tier.get("T3", []) or []) + (by_tier.get("T4", []) or []),
+              "grey": by_tier.get("T5", [])}
+
+    def card(zone_key, sois, open_by_default=False):
+        meta = ZONE_META[zone_key]
+        dot = tier_dot(zone_key)
+        chips = "".join(f'<span class="zone-chip">{esc(clean_soi_name(s.get("soi")))}</span>' for s in sois) \
+            or '<span class="empty-note small">ไม่มีซอยในกลุ่มนี้</span>'
+        prep_line = f'<p class="prepline">{esc(meta["prep"])}</p>' if meta["prep"] else ""
+        body = (f'<div class="body"><div class="name">{dot}{meta["label"]} ({len(sois)} ซอย)</div>'
+                f'<div class="zone-chip-list">{chips}</div>{prep_line}</div>')
+        if zone_key == "grey":
+            open_attr = " open" if open_by_default else ""
+            return (f"<details{open_attr}><summary>{dot}{meta['label']} ({len(sois)} ซอย)</summary>"
+                    f'<div class="tier-body"><div class="zone-chip-list">{chips}</div></div></details>')
+        return f'<div class="tier-card"><div class="stripe stripe-{zone_key}"></div>{body}</div>'
+
+    return (card("red", groups["red"]) + card("orange", groups["orange"])
+            + card("yellow", groups["yellow"]) + card("grey", groups["grey"], open_by_default=False))
+
+
+# ---------------- pumps ----------------
+
+def build_pump_rows(area, now_dt):
+    pumps = area.get("pumps") or []
+    rows = []
+    for p in pumps:
+        text, kind = pump_wording(p, now_dt)
+        cls = "stat-fail" if kind in ("fail", "idle", "missing") else "stat-ok"
+        if kind in ("fail", "missing"):
+            level = "ไม่มีค่า"
+        elif p.get("level_m") is None:
+            level = "ไม่มีค่า"
+        else:
+            level = f"{p['level_m']:.2f} ม."
+        pond_name = esc(p.get("pond_name") or p.get("name"))
+        rows.append(
+            "<tr>"
+            f'<td data-label="บึง / สถานี"><span class="nw">{pond_name}</span>'
+            f'<small class="code">{esc(p.get("code"))}</small></td>'
+            f'<td class="num" data-label="ระดับน้ำ">{esc(level)}</td>'
+            f'<td class="num" data-label="ปั๊มเดิน">{esc(p.get("pumps_on"))}/{esc(p.get("pumps_total"))}</td>'
+            f'<td class="{cls}" data-label="สถานะ">{esc(text)}</td>'
+            f'<td data-label="เวลา">{fmt_time_full(p.get("observed_at"), now_dt)}</td>'
+            "</tr>"
+        )
+    rows_html = "".join(rows) or '<tr><td colspan="5" class="empty-note">ไม่มีข้อมูลปั๊มในชุดข้อมูลนี้</td></tr>'
+    pc = pump_counts(pumps, now_dt)
+    bits = []
+    if pc["fail"]:
+        bits.append(f"ขัดข้อง {pc['fail']}")
+    if pc["idle"]:
+        bits.append(f"ไม่ได้เดิน {pc['idle']}")
+    lead = (f"จาก {len(pumps)} สถานี: " + ", ".join(bits)) if bits else \
+        (f"ปกติทั้ง {len(pumps)} สถานี" if pumps else "")
+    return rows_html, lead
+
+
+# ---------------- canals ----------------
+
+def canal_row_html(s, now_dt):
+    thresh = []
+    if s.get("warning") is not None:
+        thresh.append(f"เส้นเตือน {s['warning']:.2f}")
+    if s.get("critical") is not None:
+        thresh.append(f"เส้นอันตราย {s['critical']:.2f}")
+    if s.get("bank") is not None:
+        thresh.append(f"ล้นตลิ่ง {s['bank']:.2f}")
+    thresh_html = (f'<br><span class="thresh">เกณฑ์ (ม. เทียบระดับน้ำในคลอง): {" / ".join(thresh)}</span>'
+                   if thresh else "")
+    value = "–" if s.get("value_m") is None else f"{s['value_m']:.2f} ม."
+    return (
+        "<tr>"
+        f'<td data-label="สถานี">{esc(s.get("name"))}<br><span class="small">{esc(s.get("code"))} · ห่าง '
+        f'{s.get("dist_km", 0):.1f} กม.</span>{thresh_html}</td>'
+        f'<td class="num" data-label="ระดับน้ำ">{esc(value)}</td>'
+        f'<td data-label="สถานะ">{status_pill_aged_html(s.get("status"), s.get("observed_at"), now_dt)}</td>'
+        f'<td data-label="เวลา">{fmt_time_full(s.get("observed_at"), now_dt)}</td>'
+        "</tr>"
+    )
+
+
+def build_canal_rows(area, now_dt):
+    stations = [s for s in (area.get("stations_near") or [])
+                if s.get("role") in ("north", "south") and (s.get("dist_km") or 0) <= 5]
+    fresh, stale = [], []
+    for s in stations:
+        h = hours_ago(s.get("observed_at"), now_dt)
+        (fresh if (h is not None and h <= 24) else stale).append(s)
+    north = [s for s in fresh if s.get("role") == "north"]
+    south = [s for s in fresh if s.get("role") == "south"]
+    empty = '<tr><td colspan="4" class="empty-note">ไม่มีสถานีสดในชุดข้อมูลนี้</td></tr>'
+    north_html = "".join(canal_row_html(s, now_dt) for s in north) or empty
+    south_html = "".join(canal_row_html(s, now_dt) for s in south) or empty
+    stale_html = "".join(canal_row_html(s, now_dt) for s in stale) or \
+        '<tr><td colspan="4" class="empty-note">ไม่มี</td></tr>'
+
+    upstream = [s for s in (area.get("stations_near") or []) if s.get("role") == "upstream"]
+    upstream_html = "".join(canal_row_html(s, now_dt) for s in upstream) or \
+        '<tr><td colspan="4" class="empty-note">ไม่มีข้อมูลต้นน้ำในชุดข้อมูลนี้</td></tr>'
+    return north_html, south_html, stale_html, upstream_html
+
+
+# ---------------- forecast (rain 24h + rain forecast strip + tide + DDS) ----------------
+
+def build_forecast_fragments(area, now_dt_local, forecast, rain_forecast_area_note):
+    rain = area.get("rain")
+    if rain:
+        rain_text = (
+            f'สถานีที่ใกล้ที่สุด: <strong>{esc(rain.get("station"))}</strong> '
+            f'(ห่าง {rain.get("dist_km", 0):.1f} กม.) วัดฝนสะสม 24 ชม. ได้ '
+            f'<span class="num">{(rain.get("mm_24h") or 0):.1f}</span> มม. — '
+            f'อ่านเมื่อ {fmt_time_full(rain.get("observed_at"), now_dt_local)} · {esc(rain.get("agency_th"))}'
+        )
+    else:
+        rain_text = "ไม่มีข้อมูลฝนในชุดข้อมูลนี้"
+
+    forecast = forecast or {}
+    if forecast.get("available"):
+        note = f' <span class="small">({esc(rain_forecast_area_note)})</span>' if rain_forecast_area_note else ""
+        dirn = forecast.get("direction")
+        items = forecast.get("items") or []
+        if dirn == "rising" and items:
+            fc_text = f"🌧️ ฝนกำลังจะตกเพิ่มขึ้น ช่วง {esc(items[0].get('h'))}–{esc(items[-1].get('h'))} น."
+        elif dirn == "falling":
+            fc_text = "🌤️ ฝนกำลังจะเบาลง"
+        else:
+            fc_text = "🌧️ ฝนยังตกต่อ"
+        fc_text += (f'{note} <span class="small">— {esc(forecast.get("source"))}, '
+                    f'ไม่ใช่ของหน่วยงานรัฐไทย</span>')
+    else:
+        note = f' ({esc(rain_forecast_area_note)})' if rain_forecast_area_note else ""
+        fc_text = f'{esc(forecast.get("status") or "ยังไม่มีพยากรณ์ฝนรายชั่วโมง — ดูเรดาร์ กทม.")}{note}'
+
+    tide = area.get("tide") or {}
+    hw = next_high_water(area)
+    if hw:
+        hw_dt = to_bkk(hw.get("time"))
+        tide_next = (f'น้ำขึ้นสูงสุดรอบถัดไป: <strong>{thai_clock_exact(hw_dt)} '
+                     f'({hw_dt.strftime("%H:%M")} น.)</strong> ระดับ '
+                     f'<span class="num">{(hw.get("height_m") or 0):.2f}</span> ม.')
+    else:
+        tide_next = "ไม่มีข้อมูลรอบถัดไป"
+    station_th = tide.get("station_th") or "กรมอุทกศาสตร์ กองทัพเรือ"
+    tide_basis = (f"พยากรณ์ทางดาราศาสตร์จาก{esc(station_th)} เท่านั้น ไม่รวมน้ำเหนือ/ฝน "
+                  "วัดจากระดับทะเลปานกลาง (MSL) — เทียบกับตัวเลขคลองไม่ได้ ใช้คนละมาตรฐาน")
+
+    def tide_rows_html(days):
+        rows = []
+        for day in days:
+            events = day.get("events") or []
+            for i, ev in enumerate(events):
+                date_cell = (f'<td rowspan="{len(events)}" data-label="วันที่">{esc(day.get("date"))}</td>'
+                             if i == 0 else '<td data-label="วันที่"></td>')
+                rows.append("<tr>" + date_cell +
+                            f'<td data-label="เหตุการณ์">{"น้ำขึ้น" if ev.get("kind")=="HW" else "น้ำลง"}</td>'
+                            f'<td class="num" data-label="เวลา">{esc(ev.get("t"))} น.</td>'
+                            f'<td class="num" data-label="ระดับ (ม.)">{(ev.get("h") or 0):.2f}</td></tr>')
+        return "".join(rows)
+
+    week = tide.get("week") or []
+    tide_week_rows = tide_rows_html(week[:2]) or '<tr><td colspan="4" class="empty-note">ไม่มีข้อมูล</td></tr>'
+    tide_week_more_rows = tide_rows_html(week[2:]) or '<tr><td colspan="4" class="empty-note">ไม่มีข้อมูล</td></tr>'
+
+    quotes = area.get("dds_quotes") or []
+    dds_html = "".join(f"<li>{esc(q.get('text'))}</li>" for q in quotes)
+
+    return rain_text, fc_text, tide_next, tide_basis, tide_week_rows, tide_week_more_rows, dds_html
+
+
+# ---------------- exits / flood roads ----------------
+
+def build_exit_rows(area):
+    exits = area.get("exits") or []
+    rows = []
+    for e in exits:
+        if e.get("is_community_report"):
+            bits = ["ชาวบ้านรายงาน"]
+            if e.get("report_date_th"):
+                bits.append(esc(e["report_date_th"]))
+            if e.get("report_time_th"):
+                bits.append(esc(e["report_time_th"]) + " น.")
+            body = f'{esc(e.get("status_from_reports"))} <span class="small">({" ".join(bits)})</span>'
+        else:
+            body = f'<span class="empty-note">{esc(e.get("status_from_reports"))}</span>'
+        rows.append(f'<tr><td data-label="เส้นทาง">{esc(e.get("name"))}</td>'
+                    f'<td data-label="รายงานล่าสุด">{body}</td></tr>')
+    return "".join(rows) or '<tr><td colspan="2" class="empty-note">ไม่มีข้อมูล</td></tr>'
+
+
+def build_floodroad_rows(area, now_dt):
+    roads = [r for r in (area.get("flood_roads") or []) if (r.get("depth_cm") or 0) > 0]
+    rows = []
+    for r in roads:
+        h = hours_ago(r.get("observed_at"), now_dt)
+        old_tag = ' <span class="small">(ข้อมูลเก่า)</span>' if (h is None or h > 24) else ""
+        rows.append(f'<tr><td data-label="ถนน">{esc(r.get("name"))}{old_tag}</td>'
+                    f'<td class="num" data-label="ระดับน้ำ">{(r.get("depth_cm") or 0):.0f} ซม.</td>'
+                    f'<td data-label="ห่างจากพื้นที่">{(r.get("dist_km") or 0):.1f} กม.</td>'
+                    f'<td data-label="เวลารายงาน">{fmt_time_full(r.get("observed_at"), now_dt)}</td></tr>')
+    return "".join(rows) or \
+        '<tr><td colspan="4" class="empty-note">ไม่มีรายงานถนนน้ำท่วมใกล้เคียง (0 ซม. ไม่แสดง)</td></tr>'
+
+
+def build_community_rows(area):
+    rows = [f'<tr><td class="num" data-label="เวลา">{esc(r.get("time"))}</td>'
+            f'<td data-label="จุด">{esc(clean_soi_name(r.get("place")))}</td>'
+            f'<td data-label="สภาพที่รายงาน">{esc(r.get("state") or "-")}</td></tr>'
+            for r in (area.get("community") or [])]
+    return "".join(rows) or '<tr><td colspan="3" class="empty-note">ยังไม่มีรายงานในชุดข้อมูลนี้</td></tr>'
+
+
+def build_hospital_rows(area):
+    rows = []
+    for h in area.get("hospitals") or []:
+        phone = h.get("phone")
+        phone_html = f'<a href="tel:{esc((phone or "").replace(" ", ""))}">{esc(phone)}</a>' if phone else "-"
+        rows.append(f'<tr><td data-label="โรงพยาบาล">{esc(h.get("name"))}</td>'
+                    f'<td class="num" data-label="ระยะทาง">{(h.get("dist_km") or 0):.1f} กม.</td>'
+                    f'<td data-label="โทร">{phone_html}</td></tr>')
+    return "".join(rows) or '<tr><td colspan="3" class="empty-note">ไม่มีข้อมูลโรงพยาบาลในชุดข้อมูลนี้</td></tr>'
+
+
+def build_sources_list(sources, now_dt):
+    items = []
+    for s in sources or []:
+        link = (f' — <a href="{esc(s.get("url"))}" target="_blank" rel="noopener">ลิงก์ต้นทาง</a>'
+                if s.get("url") else "")
+        items.append(f"<li><strong>{esc(s.get('agency_th'))}</strong> · อ่านเมื่อ "
+                     f"{fmt_time_full(s.get('fetched_at'), now_dt)}{link}</li>")
+    return "".join(items)
+
+
+# ---------------- one area's full fragment map ----------------
+
+def build_area_fragments(area_id, area, now_dt, forecast):
+    labels = AREA_LABELS[area_id]
+    pumps = area.get("pumps") or []
+    pc = pump_counts(pumps, now_dt)
+    st = compute_status(area, now_dt, pc)
+
+    rain_forecast_note = area.get("rain_forecast_area_note")
+    watch_line = build_watch_line(area, st, pc, now_dt, forecast)
+    why_list = build_why_list(area, st, pc, now_dt, labels["pond_word"])
+    hours_list = build_hours_list(area, st, pc, now_dt, forecast)
+
+    staleness = area.get("staleness") or {}
+    newest = staleness.get("newest_official_obs")
+    status_note = f"ดูจากเครื่องวัดของ กทม. เมื่อ {fmt_hm(newest)}" if newest else "ยังไม่มีเวลาที่อ่านค่าล่าสุด"
+    status_note += " · รวบรวมโดยประชาชน ไม่ใช่ประกาศทางการ"
+    now_line = build_now_line(area)
+
+    any_old = any((h := hours_ago(x.get("observed_at"), now_dt)) is None or h > 2
+                  for x in (area.get("stations_near") or []) + pumps)
+    stale_ribbon_hidden = "" if any_old else " hidden"
+
+    zones_html = build_zones_html(area)
+    pump_rows_html, pump_lead = build_pump_rows(area, now_dt)
+    canal_north, canal_south, canal_stale, canal_upstream = build_canal_rows(area, now_dt)
+    rain_text, fc_text, tide_next, tide_basis, tide_week_rows, tide_week_more_rows, dds_html = \
+        build_forecast_fragments(area, now_dt, forecast, rain_forecast_note)
+    exit_rows = build_exit_rows(area)
+    floodroad_rows = build_floodroad_rows(area, now_dt)
+    community_rows = build_community_rows(area)
+    hospital_rows = build_hospital_rows(area)
+
+    return {
+        "{{PLACE_PIN}}": esc(labels["pin"]),
+        "{{HEADING_LABEL}}": esc(labels["heading"]),
+        "{{STATUS_WORD}}": esc(st["word"]),
+        "{{NOW_LINE}}": esc(now_line),
+        "{{STATUS_WATCH}}": watch_line,  # already HTML (has <strong>)
+        "{{WHY_LIST}}": why_list,
+        "{{HOURS_LIST}}": hours_list,
+        "{{STATUS_NOTE}}": esc(status_note),
+        "{{STALE_RIBBON_HIDDEN}}": stale_ribbon_hidden,
+        "{{ZONES_HEADING}}": esc(labels["zones_heading"]),
+        "{{ZONES_HTML}}": zones_html,
+        "{{PUMP_HEADING}}": esc(labels["pump_heading"]),
+        "{{PUMP_CAPTION}}": esc(labels["pump_caption"]),
+        "{{PUMP_LEAD}}": esc(pump_lead),
+        "{{PUMP_ROWS}}": pump_rows_html,
+        "{{CANAL_NORTH_LABEL}}": esc(labels["canal_north_label"]),
+        "{{CANAL_SOUTH_LABEL}}": esc(labels["canal_south_label"]),
+        "{{CANAL_NORTH_ROWS}}": canal_north,
+        "{{CANAL_SOUTH_ROWS}}": canal_south,
+        "{{CANAL_UPSTREAM_ROWS}}": canal_upstream,
+        "{{CANAL_STALE_ROWS}}": canal_stale,
+        "{{RAIN_TEXT}}": rain_text,
+        "{{RAIN_FORECAST_LINE}}": fc_text,
+        "{{TIDE_NEXT}}": tide_next,
+        "{{TIDE_BASIS}}": tide_basis,
+        "{{TIDE_WEEK_ROWS}}": tide_week_rows,
+        "{{TIDE_WEEK_MORE_ROWS}}": tide_week_more_rows,
+        "{{DDS_QUOTES_HTML}}": dds_html,
+        "{{EXIT_PLACE_WORD}}": esc(labels["exit_place_word"]),
+        "{{EXIT_ROWS}}": exit_rows,
+        "{{FLOODROAD_ROWS}}": floodroad_rows,
+        "{{COMMUNITY_COL2_LABEL}}": esc(area.get("community_label") or "จุด"),
+        "{{COMMUNITY_ROWS}}": community_rows,
+        "{{HOSPITAL_ROWS}}": hospital_rows,
+    }
+
+
+def render_area_block(area_template, area_id, area, now_dt, forecast, hidden):
+    block = area_template
+    for placeholder, value in build_area_fragments(area_id, area, now_dt, forecast).items():
+        block = block.replace(placeholder, value)
+    block = block.replace("{{AREA_HIDDEN}}", " hidden" if hidden else "")
+    block = block.replace("__AREA__", area_id)
+    return block
+
+
+# ---------------- top-level assembly ----------------
+
+def strip_disallowed_wrapper_tags(html_text: str) -> str:
+    """Publish-safety net: this page is a fragment (starts with <title>, no <!DOCTYPE>,
+    <html>, <head>, <body>, or <meta charset/viewport>). Strip any such tags if they ever
+    end up in the template so a future template edit cannot silently break the contract."""
+    html_text = re.sub(r"<!DOCTYPE[^>]*>", "", html_text, flags=re.IGNORECASE)
+    for tag in ("html", "head", "body"):
+        html_text = re.sub(rf"</?{tag}[^>]*>", "", html_text, flags=re.IGNORECASE)
+    html_text = re.sub(r'<meta[^>]+charset=[^>]*>', "", html_text, flags=re.IGNORECASE)
+    html_text = re.sub(r'<meta\s+name=["\']viewport["\'][^>]*>', "", html_text, flags=re.IGNORECASE)
+    return html_text.strip()
+
+
+def wrap_full_document(fragment: str) -> str:
+    """Wrap the <title>-first Artifact-contract fragment in a full HTML document (doctype,
+    head with charset/viewport meta, lang="th", body) for GitHub Pages, which needs a
+    standalone document rather than an embeddable fragment."""
+    m = re.match(r"(<title>.*?</title>)(.*)", fragment, flags=re.DOTALL)
+    if m:
+        title_tag, rest = m.group(1), m.group(2)
+    else:
+        title_tag, rest = "<title>FloodConnect</title>", fragment
+    return (
+        "<!DOCTYPE html>\n"
+        '<html lang="th">\n'
+        "<head>\n"
+        '<meta charset="utf-8">\n'
+        '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+        f"{title_tag}\n"
+        "</head>\n"
+        "<body>\n"
+        f"{rest.strip()}\n"
+        "</body>\n"
+        "</html>\n"
+    )
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--data", default=str(HERE / "dist" / "data.json"))
+    ap.add_argument("--template", default=str(HERE / "index.template.html"))
+    ap.add_argument("--out", default=str(HERE / "dist" / "floodconnect.html"),
+                     help="Artifact-contract fragment file (starts with <title>).")
+    ap.add_argument("--out-full", default=str(HERE / "dist" / "index.html"),
+                     help="Full HTML document (doctype/head/body) for GitHub Pages.")
+    args = ap.parse_args()
+
+    data_path = Path(args.data)
+    template_path = Path(args.template)
+    out_path = Path(args.out)
+    out_full_path = Path(args.out_full)
+
+    if not data_path.exists():
+        print(f"ERROR: data file not found: {data_path}", file=sys.stderr)
+        return 1
+    if not template_path.exists():
+        print(f"ERROR: template file not found: {template_path}", file=sys.stderr)
+        return 1
+
+    try:
+        parsed = json.loads(data_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        print(f"ERROR: {data_path} is not valid JSON: {e}", file=sys.stderr)
+        return 1
+
+    json_text = json.dumps(parsed, ensure_ascii=False, separators=(",", ":"))
+    json_text = json_text.replace("</script", "<\\/script")
+
+    template = template_path.read_text(encoding="utf-8")
+    if PLACEHOLDER not in template:
+        print(f"ERROR: placeholder {PLACEHOLDER!r} not found in {template_path}", file=sys.stderr)
+        return 1
+    if template.count(PLACEHOLDER) != 1:
+        print(f"ERROR: placeholder {PLACEHOLDER!r} must appear exactly once", file=sys.stderr)
+        return 1
+
+    m = AREA_SLOT_RE.search(template)
+    if not m:
+        print("ERROR: AREA_TEMPLATE_START/END markers not found", file=sys.stderr)
+        return 1
+    area_template = m.group(1)
+
+    now_dt = to_bkk(parsed.get("generated_at_bkk")) or datetime.datetime.now(BANGKOK_TZ)
+    forecast = parsed.get("forecast")
+    areas = parsed.get("areas") or {}
+    default_area = parsed.get("default_area") or "sammakorn"
+
+    static_ok = True
+    try:
+        blocks = []
+        for area_id in ("sammakorn", "ram53"):
+            area = areas.get(area_id)
+            if area is None:
+                continue
+            blocks.append(render_area_block(area_template, area_id, area, now_dt, forecast,
+                                             hidden=(area_id != default_area)))
+        area_sections_html = "".join(blocks)
+
+        asof = fmt_hm(parsed.get("generated_at_bkk"))
+        active_subtitle = f'{esc(AREA_LABELS[default_area]["subtitle"])} · อัปเดต {esc(asof)}'
+
+        all_sources = parsed.get("all_sources") or []
+        sources_list = build_sources_list(all_sources, now_dt)
+    except Exception as e:  # fail-soft: never crash with zero output
+        print(f"WARNING: static server-side render failed ({e}); page will be degraded", file=sys.stderr)
+        area_sections_html = ""
+        active_subtitle = "FloodConnect"
+        sources_list = ""
+        static_ok = False
+
+    def _area_slot_repl(_match, html=area_sections_html):
+        return html
+
+    template = AREA_SLOT_RE.sub(_area_slot_repl, template, count=1)
+    template = template.replace("{{ACTIVE_SUBTITLE}}", active_subtitle)
+    template = template.replace("{{SOURCES_LIST}}", sources_list)
+    template = template.replace(PLACEHOLDER, json_text)
+
+    # Any placeholder left unfilled must not leak into the shipped page as a literal string.
+    leftover = re.findall(r"\{\{[A-Z_]+\}\}", template)
+    for ph in set(leftover):
+        template = template.replace(ph, "")
+
+    template = strip_disallowed_wrapper_tags(template)
+    if not template.startswith("<title>"):
+        print("ERROR: rendered page does not start with '<title>' -- publish-safety contract broken",
+              file=sys.stderr)
+        return 1
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(template, encoding="utf-8")
+    size_kb = out_path.stat().st_size / 1024
+    print(f"wrote {out_path} ({size_kb:.1f} KB) from {data_path.name} + {template_path.name}; "
+          f"static_ok={static_ok}")
+    if size_kb > 300:
+        print("WARNING: page exceeds the 300 KB budget", file=sys.stderr)
+
+    full_doc = wrap_full_document(template)
+    out_full_path.parent.mkdir(parents=True, exist_ok=True)
+    out_full_path.write_text(full_doc, encoding="utf-8")
+    print(f"wrote {out_full_path} ({out_full_path.stat().st_size / 1024:.1f} KB, full document)")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

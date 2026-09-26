@@ -1,0 +1,71 @@
+name: FloodConnect
+
+# Rebuilds the public FloodConnect page every 30 minutes from live official snapshots,
+# with no AI in the loop and no dependency on any single person's machine or home internet.
+# See site/DATA_README.md for the full source map and site/build_data.py's module
+# docstring for the epistemic discipline this pipeline follows.
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+
+concurrency:
+  group: floodconnect-pages
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: pip install pyyaml requests
+
+      - name: Install pdftotext (poppler-utils)
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+
+      - name: Collect live snapshots (tolerant of per-source failures)
+        # collect.py already isolates one source's failure from the rest (see its `run()`);
+        # some BMA hosts (weather.bangkok.go.th / dds.bangkok.go.th) may 403 from GitHub's
+        # shared IP ranges -- this step must still succeed and build with whatever fetched.
+        run: python3 collect.py --all
+
+      - name: Build data.json
+        run: python3 site/build_data.py
+
+      - name: Build page (floodconnect.html + index.html)
+        run: python3 site/build_page.py
+
+      - name: Add .nojekyll
+        run: touch site/dist/.nojekyll
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
