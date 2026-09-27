@@ -1,0 +1,336 @@
+# FloodConnect community self-help DAG
+#
+# STATUS: DECLARED TOPOLOGY / NOT YET FIELD-VERIFIED FOR ROUTING.
+#
+# This file creates real graph structure for the two FloodConnect areas, but it does NOT
+# claim that any internal refuge, egress point, or external safe place is currently safe.
+# Those operational fields remain UNKNOWN until a person physically verifies them.
+#
+# The graph is intentionally layered so every edge moves forward:
+# 0 household -> 1 buddy_cell -> 2 zone -> 3 internal_safe -> 4 egress -> 5 external_safe
+# A direct edge may skip layers, but may never point backward or sideways.
+
+version: "0.1"
+status: "proposal_operational_schema"
+epistemic_note_th: >
+  ไฟล์นี้ประกาศ "โครงเครือข่ายที่จะใช้" ไม่ได้ประกาศว่าทางใดปลอดภัยจริง ณ ตอนนี้
+  node/edge ที่ยังไม่ได้ตรวจภาคสนามต้องคง status=UNKNOWN, fresh=false และ
+  field_verified/verified_safe=false; community_dag.py จะไม่ใช้เส้นทางเหล่านี้นำทางคน.
+
+privacy_rule_th: >
+  เก็บเฉพาะสิ่งที่จำเป็นต่อการช่วยเหลือ เช่น จำนวนคน ความต้องการช่วยเคลื่อนย้าย และสถานะติดต่อ
+  หลีกเลี่ยงชื่อเต็ม เลขบ้าน โรคประจำตัว หรือข้อมูลส่วนบุคคลละเอียดในกราฟสาธารณะ.
+
+layers:
+  0: "คน/ครัวเรือน — ทำให้ตัวเองอยู่รอดก่อน"
+  1: "buddy cell — กลุ่มบ้านช่วยตรวจสอบกัน"
+  2: "zone — พื้นที่ย่อยรวมคำขอ/ทรัพยากร"
+  3: "internal safe — จุดพัก/รวมพลในพื้นที่ที่ตรวจแล้ว"
+  4: "egress — ประตูออก/ทางเชื่อมออกจากพื้นที่"
+  5: "external safe — node ปลอดภัยภายนอกที่ตรวจภาคสนามแล้ว"
+
+nodes:
+  # ---------------------------------------------------------------------------
+  # Sammakorn (current FloodConnect area; centre already declared elsewhere in repo)
+  # ---------------------------------------------------------------------------
+  sammakorn_household_template:
+    kind: household
+    layer: 0
+    area_id: sammakorn
+    label_th: "ครัวเรือนในหมู่บ้านสัมมากร (template สำหรับสร้าง node จริงรายกลุ่มบ้าน)"
+    template: true
+    status: UNKNOWN
+    fresh: false
+    capacity_persons: null
+    occupied_persons: null
+    services: []
+
+  sammakorn_buddy_cell:
+    kind: buddy_cell
+    layer: 1
+    area_id: sammakorn
+    label_th: "เครือข่ายเพื่อนบ้าน/บ้านคู่ช่วยเหลือ สัมมากร"
+    status: UNKNOWN
+    fresh: false
+    capacity_persons: null
+    occupied_persons: null
+    services: [comms]
+
+  sammakorn_zone:
+    kind: zone
+    layer: 2
+    area_id: sammakorn
+    label_th: "node พื้นที่หมู่บ้านสัมมากร"
+    status: UNKNOWN
+    fresh: false
+    capacity_persons: null
+    occupied_persons: null
+    services: [comms, coordination]
+
+  sammakorn_internal_safe:
+    kind: internal_safe
+    layer: 3
+    area_id: sammakorn
+    label_th: "จุดปลอดภัยภายในสัมมากร — ยังต้องสำรวจ/ยืนยัน"
+    status: UNKNOWN
+    fresh: false
+    capacity_persons: null
+    occupied_persons: null
+    services: []
+
+  sammakorn_egress:
+    kind: egress
+    layer: 4
+    area_id: sammakorn
+    label_th: "ทางออกจากสัมมากร — ต้องกำหนดเป็นจุดจริงและตรวจภาคสนาม"
+    status: UNKNOWN
+    fresh: false
+    capacity_persons: null
+    occupied_persons: null
+    services: []
+
+  # ---------------------------------------------------------------------------
+  # Ramkhamhaeng 53 (current FloodConnect area)
+  # ---------------------------------------------------------------------------
+  ram53_household_template:
+    kind: household
+    layer: 0
+    area_id: ram53
+    label_th: "ครัวเรือนในซอยรามคำแหง 53 (template สำหรับสร้าง node จริงรายกลุ่มบ้าน)"
+    template: true
+    status: UNKNOWN
+    fresh: false
+    capacity_persons: null
+    occupied_persons: null
+    services: []
+
+  ram53_buddy_cell:
+    kind: buddy_cell
+    layer: 1
+    area_id: ram53
+    label_th: "เครือข่ายเพื่อนบ้าน/บ้านคู่ช่วยเหลือ รามคำแหง 53"
+    status: UNKNOWN
+    fresh: false
+    capacity_persons: null
+    occupied_persons: null
+    services: [comms]
+
+  ram53_zone:
+    kind: zone
+    layer: 2
+    area_id: ram53
+    label_th: "node พื้นที่ซอยรามคำแหง 53"
+    status: UNKNOWN
+    fresh: false
+    capacity_persons: null
+    occupied_persons: null
+    services: [comms, coordination]
+
+  ram53_internal_safe:
+    kind: internal_safe
+    layer: 3
+    area_id: ram53
+    label_th: "จุดปลอดภัยภายในรามคำแหง 53 — ยังต้องสำรวจ/ยืนยัน"
+    status: UNKNOWN
+    fresh: false
+    capacity_persons: null
+    occupied_persons: null
+    services: []
+
+  ram53_egress:
+    kind: egress
+    layer: 4
+    area_id: ram53
+    label_th: "ทางออกจากรามคำแหง 53 — ต้องกำหนดเป็นจุดจริงและตรวจภาคสนาม"
+    status: UNKNOWN
+    fresh: false
+    capacity_persons: null
+    occupied_persons: null
+    services: []
+
+  # ---------------------------------------------------------------------------
+  # Shared external-safe-node slots.
+  # IMPORTANT: these are placeholders, not claims that a named place is safe.
+  # Replace each with a concrete surveyed place and set verified_safe=true only after
+  # checking access, power/electrical hazard, flood state, capacity and needed services.
+  # ---------------------------------------------------------------------------
+  external_safe_bkk_east_01:
+    kind: external_safe
+    layer: 5
+    area_id: external
+    label_th: "จุดปลอดภัยภายนอก #1 — ยังไม่กำหนดสถานที่จริง"
+    status: UNKNOWN
+    fresh: false
+    verified_safe: false
+    capacity_persons: null
+    occupied_persons: null
+    services: []
+
+  external_safe_bkk_east_02:
+    kind: external_safe
+    layer: 5
+    area_id: external
+    label_th: "จุดปลอดภัยภายนอก #2 — สำรองคนละทิศทาง/คนละ failure domain"
+    status: UNKNOWN
+    fresh: false
+    verified_safe: false
+    capacity_persons: null
+    occupied_persons: null
+    services: []
+
+edges:
+  # Sammakorn chain
+  - id: sam_hh_to_buddy
+    from: sammakorn_household_template
+    to: sammakorn_buddy_cell
+    status: UNKNOWN
+    safety: UNKNOWN
+    fresh: false
+    field_verified: false
+    modes: [walk]
+    max_group: null
+    distance_m: null
+
+  - id: sam_buddy_to_zone
+    from: sammakorn_buddy_cell
+    to: sammakorn_zone
+    status: UNKNOWN
+    safety: UNKNOWN
+    fresh: false
+    field_verified: false
+    modes: [walk]
+    max_group: null
+    distance_m: null
+
+  - id: sam_zone_to_internal
+    from: sammakorn_zone
+    to: sammakorn_internal_safe
+    status: UNKNOWN
+    safety: UNKNOWN
+    fresh: false
+    field_verified: false
+    modes: [walk, vehicle]
+    max_group: null
+    distance_m: null
+
+  - id: sam_internal_to_egress
+    from: sammakorn_internal_safe
+    to: sammakorn_egress
+    status: UNKNOWN
+    safety: UNKNOWN
+    fresh: false
+    field_verified: false
+    modes: [walk, vehicle]
+    max_group: null
+    distance_m: null
+
+  - id: sam_egress_to_external_01
+    from: sammakorn_egress
+    to: external_safe_bkk_east_01
+    status: UNKNOWN
+    safety: UNKNOWN
+    fresh: false
+    field_verified: false
+    modes: [walk, vehicle]
+    max_group: null
+    distance_m: null
+
+  - id: sam_egress_to_external_02
+    from: sammakorn_egress
+    to: external_safe_bkk_east_02
+    status: UNKNOWN
+    safety: UNKNOWN
+    fresh: false
+    field_verified: false
+    modes: [walk, vehicle]
+    max_group: null
+    distance_m: null
+
+  # Ram 53 chain
+  - id: ram_hh_to_buddy
+    from: ram53_household_template
+    to: ram53_buddy_cell
+    status: UNKNOWN
+    safety: UNKNOWN
+    fresh: false
+    field_verified: false
+    modes: [walk]
+    max_group: null
+    distance_m: null
+
+  - id: ram_buddy_to_zone
+    from: ram53_buddy_cell
+    to: ram53_zone
+    status: UNKNOWN
+    safety: UNKNOWN
+    fresh: false
+    field_verified: false
+    modes: [walk]
+    max_group: null
+    distance_m: null
+
+  - id: ram_zone_to_internal
+    from: ram53_zone
+    to: ram53_internal_safe
+    status: UNKNOWN
+    safety: UNKNOWN
+    fresh: false
+    field_verified: false
+    modes: [walk, vehicle]
+    max_group: null
+    distance_m: null
+
+  - id: ram_internal_to_egress
+    from: ram53_internal_safe
+    to: ram53_egress
+    status: UNKNOWN
+    safety: UNKNOWN
+    fresh: false
+    field_verified: false
+    modes: [walk, vehicle]
+    max_group: null
+    distance_m: null
+
+  - id: ram_egress_to_external_01
+    from: ram53_egress
+    to: external_safe_bkk_east_01
+    status: UNKNOWN
+    safety: UNKNOWN
+    fresh: false
+    field_verified: false
+    modes: [walk, vehicle]
+    max_group: null
+    distance_m: null
+
+  - id: ram_egress_to_external_02
+    from: ram53_egress
+    to: external_safe_bkk_east_02
+    status: UNKNOWN
+    safety: UNKNOWN
+    fresh: false
+    field_verified: false
+    modes: [walk, vehicle]
+    max_group: null
+    distance_m: null
+
+field_verification_minimum:
+  node:
+    - "สถานะน้ำ/ไฟฟ้า/โครงสร้าง ณ จุด"
+    - "จำนวนคนที่รับเพิ่มได้"
+    - "การเข้าถึงสำหรับกลุ่มเป้าหมาย"
+    - "ช่องทางสื่อสาร"
+    - "เวลาและผู้ตรวจ (เก็บชื่อผู้ตรวจภายใน ไม่ต้องเผยแพร่สาธารณะ)"
+  edge:
+    - "ผ่านได้จริงด้วย mode ที่ประกาศ"
+    - "ไม่มีจุดไฟฟ้า/ฝาท่อ/กระแสน้ำอันตรายที่ผู้ตรวจพบ"
+    - "จุดต้นทางและปลายทางเชื่อมถึงกันจริง"
+    - "ระยะหรือเวลาที่วัดได้ถ้ามี"
+    - "เวลา checked_at และอายุข้อมูลที่ยอมรับได้"
+
+activation_order_th:
+  - "0 SELF: เช็กคนในบ้าน ไฟฟ้า ยา น้ำ โทรศัพท์ และทางออกของตัวเอง"
+  - "1 BUDDY: เช็กบ้านคู่/กลุ่มบ้านว่าติดต่อได้และต้องการความช่วยเหลืออะไร"
+  - "2 ZONE: รวม demand + supply + ทางผ่านได้ โดยไม่เปิดเผยข้อมูลส่วนบุคคลเกินจำเป็น"
+  - "3 INTERNAL SAFE: เปิดใช้เฉพาะจุดที่ field-verified และยัง fresh"
+  - "4 EGRESS: ยืนยันทางออกอย่างน้อย 2 ทางที่ failure domain ต่างกันเมื่อทำได้"
+  - "5 EXTERNAL SAFE: ส่งต่อเฉพาะ node ที่ verified_safe=true, SAFE, fresh และ capacity พอ"
