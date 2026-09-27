@@ -40,6 +40,22 @@
 
 ---
 
+
+## Community self-help DAG
+
+FloodConnect now includes a **human-response DAG** in addition to water/flood readouts:
+
+`Self / Household → Buddy cell → Zone → Internal safe node → Egress → Verified external safe node`
+
+- Model + field protocol: `docs/COMMUNITY_SELF_HELP_DAG.md`
+- Declared topology for the current FloodConnect areas: `site/inputs/community/self_help_dag.yaml`
+- Validator / constraint-first route selector: `community_dag.py`
+- Tests: `tests/test_community_dag.py`
+
+The routing layer is deliberately fail-closed: **UNKNOWN, stale, blocked, or unverified routes are not used**.
+It does not create a flood-risk score or declare a place safe from map proximity alone. An external target must
+be field-verified, fresh, explicitly `SAFE`, have enough declared capacity, and provide any required services.
+
 ## Technical
 
 The sections below are the original technical documentation for the underlying river-network
