@@ -108,3 +108,84 @@ def test_build_waterbalance_section_html_dedupes_for_ram53():
         None, [], bp.AREA_LABELS["ram53"], drain_timeline=None, now_dt=NOW)
     assert "หมู่บ้านสัมมากร" in html
     assert "<svg" not in html
+
+
+# --- level_trend_html (review MUST-FIX #1: trend arrows on every station/pump row) -------
+
+def test_level_trend_html_renders_arrow_word_delta_with_prev_data():
+    row = {
+        "value_m": 1.50, "prev_value_m": 1.20,
+        "observed_at": "2026-09-26T11:00:00+00:00",
+        "prev_observed_at": "2026-09-26T09:00:00+00:00",
+    }
+    html = bp.level_trend_html(row, "value_m", "prev_value_m", NOW)
+    assert "trend-ic" in html and "#i-trend-up" in html
+    assert "ขึ้น" in html
+    assert "+0.30 ม." in html
+
+
+def test_level_trend_html_pump_falling():
+    row = {
+        "level_m": 0.50, "prev_level_m": 0.90,
+        "observed_at": "2026-09-26T11:00:00+00:00",
+        "prev_observed_at": "2026-09-26T09:00:00+00:00",
+    }
+    html = bp.level_trend_html(row, "level_m", "prev_level_m", NOW)
+    assert "#i-trend-down" in html
+    assert "ลง" in html
+    assert "−0.40 ม." in html
+
+
+def test_level_trend_html_fallback_when_no_prev_reading():
+    row = {"value_m": 1.50, "prev_value_m": None,
+           "observed_at": "2026-09-26T11:00:00+00:00", "prev_observed_at": None}
+    html = bp.level_trend_html(row, "value_m", "prev_value_m", NOW)
+    assert "ยังบอกไม่ได้ (ไม่มีค่าก่อนหน้า)" in html
+    assert "#i-trend-unknown" in html
+    # never blank
+    assert html.strip() != ""
+
+
+# --- 2026-09-27 targeted fix: no fake trend arrow on a row with no real reading ----------
+
+def test_level_trend_html_no_value_fallback_when_current_missing():
+    """cur_val itself is None -- must get the distinct "no value" wording, never the
+    "no previous" wording, and never a delta number."""
+    row = {"value_m": None, "prev_value_m": 1.20,
+           "observed_at": None, "prev_observed_at": "2026-09-26T09:00:00+00:00"}
+    html = bp.level_trend_html(row, "value_m", "prev_value_m", NOW)
+    assert "ยังบอกไม่ได้ (ไม่มีค่าวัด)" in html
+    assert "ยังบอกไม่ได้ (ไม่มีค่าก่อนหน้า)" not in html
+    assert "+0.00 ม." not in html
+    assert "trend-delta" not in html
+
+
+def test_level_trend_html_no_data_flag_suppresses_fake_steady_arrow():
+    """Even when level_m/prev_level_m both happen to be numeric (e.g. a leftover 0.0
+    from a pump reported ขัดข้อง), caller-passed no_data=True must still block the
+    delta -- a fake "คงที่ +0.00 ม." on a no-data row is worse than no arrow at all."""
+    row = {"level_m": 0.0, "prev_level_m": 0.0,
+           "observed_at": "2026-09-26T11:00:00+00:00",
+           "prev_observed_at": "2026-09-26T09:00:00+00:00"}
+    html = bp.level_trend_html(row, "level_m", "prev_level_m", NOW, no_data=True)
+    assert "ยังบอกไม่ได้ (ไม่มีค่าวัด)" in html
+    assert "+0.00 ม." not in html
+    assert "trend-delta" not in html
+
+
+def test_build_pump_rows_no_fake_trend_on_no_data_pump():
+    """End-to-end: a pump station BMA reports ขัดข้อง (fail) must render the
+    "ไม่มีข้อมูลล่าสุด" level text AND the unknown-glyph "ไม่มีค่าวัด" trend fallback --
+    never a "+0.00 ม." delta badge next to it."""
+    area = {"pumps": [{
+        "code": "ST.SPS.02", "name_th": "สถานีสูบน้ำ 2",
+        "level_m": 0.0, "prev_level_m": 0.0,
+        "prev_observed_at": "2026-09-26T09:00:00+00:00",
+        "pumps_on": 0, "pumps_total": 4,
+        "status_th": "ขัดข้อง",
+        "observed_at": "2026-09-26T11:00:00+00:00",
+    }]}
+    rows_html, _lead = bp.build_pump_rows(area, NOW)
+    assert "ยังบอกไม่ได้ (ไม่มีค่าวัด)" in rows_html
+    assert "+0.00 ม." not in rows_html
+    assert rows_html.count("ไม่มีข้อมูลล่าสุด") >= 1

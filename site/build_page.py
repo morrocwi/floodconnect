@@ -74,15 +74,157 @@ ICON_PATHS = {
     "bolt": '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
 }
 
+# Trend/arrow icon bodies (FloodConnect redesign 2026-09-27, §3a) -- one set of
+# up/down/steady/unknown glyphs, shared by every trend component on the page.
+TREND_PATHS = {
+    "trend-up": '<path d="M12 19V5M5 12l7-7 7 7"/>',
+    "trend-down": '<path d="M12 5v14M19 12l-7 7-7-7"/>',
+    "trend-steady": '<path d="M5 12h14"/><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/>',
+    "trend-unknown": '<path d="M9.1 9a3 3 0 1 1 4.2 2.7c-.8.4-1.3 1.1-1.3 2v.8"/><circle cx="12" cy="18" r="1.2" fill="currentColor"/>',
+}
+
+
+def build_icon_sprite_html():
+    """One <symbol> sprite, emitted once per page, holding every icon body in
+    ICON_PATHS plus the 4 trend glyphs in TREND_PATHS (§3a)."""
+    parts = ['<svg width="0" height="0" style="position:absolute" aria-hidden="true" '
+             'focusable="false"><defs>']
+    for k, v in ICON_PATHS.items():
+        parts.append(f'<symbol id="i-{k}" viewBox="0 0 24 24">{v}</symbol>')
+    for k, v in TREND_PATHS.items():
+        parts.append(f'<symbol id="i-{k}" viewBox="0 0 24 24">{v}</symbol>')
+    parts.append("</defs></svg>")
+    return "".join(parts)
+
 
 def icon(name, size=24, extra_cls=""):
-    """One outline inline-SVG icon, currentColor, from ICON_PATHS. `size` is a
-    CSS px class (ic-16/20/24/40); `extra_cls` adds e.g. a dot-colour class."""
-    body = ICON_PATHS.get(name, ICON_PATHS["doc"])
+    """One outline inline-SVG icon, currentColor, referencing the <symbol>
+    sprite (build_icon_sprite_html) instead of inlining the path body. `size`
+    is a CSS px class (ic-16/20/24/40); `extra_cls` adds e.g. a dot-colour class."""
+    use_name = name if name in ICON_PATHS else "doc"
     cls = f"ic ic-{size}" + (f" {extra_cls}" if extra_cls else "")
     return (f'<svg class="{cls}" viewBox="0 0 24 24" aria-hidden="true" '
             f'fill="none" stroke="currentColor" stroke-width="1.75" '
-            f'stroke-linecap="round" stroke-linejoin="round">{body}</svg>')
+            f'stroke-linecap="round" stroke-linejoin="round">'
+            f'<use href="#i-{use_name}"/></svg>')
+
+
+def trend_html(direction, semantic, word, label=None, delta_text=None, size="md"):
+    """One up/down/steady/unknown trend component (§3b). `direction` in
+    {up,down,steady,unknown}; `semantic` in {worse,better,steady,unknown} --
+    kept separate so the arrow's meaning never rides on colour alone."""
+    parts = [f'<span class="trend trend-{semantic} trend-{size}" data-dir="{direction}">']
+    if label is not None:
+        parts.append(f'<span class="trend-label">{esc(label)}</span>')
+    parts.append(
+        '<svg class="trend-ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" '
+        'stroke="currentColor" stroke-width="2.5" stroke-linecap="round" '
+        f'stroke-linejoin="round"><use href="#i-trend-{direction}"/></svg>'
+    )
+    parts.append(f'<span class="trend-word">{esc(word)}</span>')
+    if delta_text is not None:
+        parts.append(f'<span class="trend-delta">{esc(delta_text)}</span>')
+    parts.append("</span>")
+    return "".join(parts)
+
+
+def _status_word_trend(word):
+    """Maps compute_status()'s status word to (direction, semantic) -- §3e.
+    Never 'steady': 'ยังบอกไม่ได้' is not a claim the level is flat, so an
+    undetermined status always renders as the unknown glyph (over-warn rule)."""
+    if word == "น้ำยังขึ้น":
+        return ("up", "worse")
+    if word == "น้ำเริ่มลด":
+        return ("down", "better")
+    return ("unknown", "unknown")
+
+
+def status_arrow_html(word):
+    """§3c hero status badge: a 56px round arrow badge, colour-only (the word
+    itself sits next to it as text -- see .status-word in the template)."""
+    direction, semantic = _status_word_trend(word)
+    return (f'<span class="status-arrow trend-{semantic}" aria-hidden="true">'
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" '
+            f'stroke-linecap="round" stroke-linejoin="round"><use href="#i-trend-{direction}"/>'
+            '</svg></span>')
+
+
+def rain_trend(forecast):
+    """§3e rain-trend mapping: reads forecast.direction (computed upstream in
+    build_data.py -- never recomputed here) into (direction, semantic, word)."""
+    forecast = forecast or {}
+    if not forecast.get("available") or forecast.get("direction") in (None, "unavailable"):
+        return ("unknown", "unknown", "ยังบอกไม่ได้")
+    d = forecast.get("direction")
+    if d == "rising":
+        return ("up", "worse", "มากขึ้น")
+    if d == "falling":
+        return ("down", "better", "เบาลง")
+    if d == "steady":
+        if forecast.get("next6h_mm") == 0:
+            return ("steady", "steady", "ไม่มีฝน")
+        return ("steady", "steady", "ใกล้เคียงเดิม")
+    return ("unknown", "unknown", "ยังบอกไม่ได้")
+
+
+# Declared sensor-resolution cutoff below which a canal/pump delta is read as "steady"
+# rather than a real rise/fall -- 0.02 m, the SAME value `canal_graph.py`'s
+# `DEFAULT_EPSILON_M` declares for the east_chain.yaml `sensor_resolution_m` gate
+# (Toledo PROP-FLOOD-04). Not a new formula: build_page.py has no import path to that
+# module (stdlib-only, no sys.path juggling for a page render), so the value is copied
+# here as a literal with this comment as its provenance pointer -- never re-derived.
+LEVEL_TREND_STEADY_EPSILON_M = 0.02
+
+# Minimum age gap (hours) build_data.py's previous-reading lookup enforces (>= 60 min,
+# PROP-FLOOD-01 lag-k retained difference) before we trust the comparison at all --
+# guards against a rounding/duplicate-timestamp artefact reading as a real delta. No
+# upper bound: a widely-spaced pair (a real collection gap) is still a valid retained
+# difference, just an older one -- the row's own observed-time label already shows that.
+LEVEL_TREND_MIN_GAP_H = 0.9
+
+
+def level_trend_html(row, cur_key, prev_key, now_dt, no_data=False):
+    """§3e canal/pump delta rule (redesign v2 review fix MUST-FIX #1). Renders an
+    up/down/steady arrow + Thai word + signed delta for every row using
+    `prev_value_m`/`prev_level_m` + `prev_observed_at` now emitted by
+    build_data.py's previous-retained-reading lookup (PROP-FLOOD-01 lag-k retained
+    difference against data/observations.sqlite). Never returns "" -- a row with no
+    usable prior reading (missing, or the sole candidate is younger than the minimum
+    gap) gets the explicit "ยังบอกไม่ได้ (ไม่มีค่าก่อนหน้า)" fallback with the unknown
+    glyph, never a blank cell.
+
+    2026-09-27 targeted fix: a row whose CURRENT reading is itself missing/no-data
+    (caller passes `no_data=True`, using the exact same condition that prints
+    "ไม่มีข้อมูลล่าสุด" in the value cell -- e.g. a pump reported ขัดข้อง/stale by
+    pump_wording(), regardless of whatever `level_m` happens to hold) must NEVER show
+    a delta number ("+0.00 ม." etc) next to a "no data" row -- a fake steady arrow on
+    a row with no real reading is worse than no arrow at all (founder ruling). This is
+    checked BEFORE the no-previous-reading fallback below, and gets its own distinct
+    wording so "no current value" is never confused with "no previous value"."""
+    NO_VALUE = trend_html("unknown", "unknown", "ยังบอกไม่ได้ (ไม่มีค่าวัด)", size="sm")
+    NO_PREV = trend_html("unknown", "unknown", "ยังบอกไม่ได้ (ไม่มีค่าก่อนหน้า)", size="sm")
+    prev_val = row.get(prev_key)
+    prev_at = row.get("prev_observed_at")
+    cur_val = row.get(cur_key)
+    observed_at = row.get("observed_at")
+    if no_data or cur_val is None or observed_at is None:
+        return NO_VALUE
+    if prev_val is None or prev_at is None:
+        return NO_PREV
+    try:
+        gap_h = abs((to_bkk(observed_at) - to_bkk(prev_at)).total_seconds()) / 3600.0
+    except Exception:
+        gap_h = None
+    if gap_h is None or gap_h < LEVEL_TREND_MIN_GAP_H:
+        return NO_PREV
+    delta = cur_val - prev_val
+    if abs(delta) < LEVEL_TREND_STEADY_EPSILON_M:
+        sign = "+" if delta >= 0 else "−"
+        return trend_html("steady", "steady", "คงที่",
+                           delta_text=f"{sign}{abs(delta):.2f} ม.", size="sm")
+    if delta > 0:
+        return trend_html("up", "worse", "ขึ้น", delta_text=f"+{delta:.2f} ม.", size="sm")
+    return trend_html("down", "better", "ลง", delta_text=f"−{abs(delta):.2f} ม.", size="sm")
 
 
 def sec_label(name, text):
@@ -107,6 +249,7 @@ AREA_LABELS = {
     "sammakorn": {
         "dropdown": "หมู่บ้านสัมมากร (รามคำแหง 112)",
         "heading": "หมู่บ้านสัมมากร (รามคำแหง 112)",
+        "district": "สะพานสูง",
         "pin": "หมู่บ้านสัมมากร รามคำแหง 112 เขตสะพานสูง",
         "subtitle": "น้ำสัมมากร (ราม 112) วันนี้",
         "exit_place_word": "หมู่บ้าน",
@@ -120,6 +263,7 @@ AREA_LABELS = {
     "ram53": {
         "dropdown": "ซอยรามคำแหง 53",
         "heading": "ซอยรามคำแหง 53",
+        "district": "วังทองหลาง",
         "pin": "ซอยรามคำแหง 53 เขตวังทองหลาง",
         "subtitle": "น้ำรามคำแหง 53 วันนี้",
         "exit_place_word": "ซอย",
@@ -150,6 +294,16 @@ def esc(s):
         return ""
     return (str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
             .replace('"', "&quot;").replace("'", "&#39;"))
+
+
+def _thai_days_phrase(text):
+    """A declared-facts value like '2-3 days' / '1 day' may arrive from the
+    briefing source in English; render it in Thai without changing the number."""
+    if not text:
+        return text
+    s = str(text)
+    s = s.replace("days", "วัน").replace("day", "วัน")
+    return s
 
 
 def to_bkk(iso):
@@ -260,7 +414,7 @@ def pump_wording(p, now_dt):
     ขัดข้อง and ไม่ได้เดิน counts -- callers must count each kind separately."""
     h = hours_ago(p.get("observed_at"), now_dt)
     if p.get("status_th") == "ขัดข้อง":
-        return ("กทม. รายงาน 'ขัดข้อง' (ไม่ทราบสาเหตุ: เครื่อง ไฟ หรือสัญญาณ — ตรวจหน้างานได้)", "fail")
+        return ("ขัดข้อง (กทม. รายงาน สาเหตุไม่ทราบ)", "fail")
     if h is None or h > 2:
         return "ไม่มีข้อมูลล่าสุด", "missing"
     if (p.get("pumps_on") or 0) == 0:
@@ -317,7 +471,7 @@ def build_watch_line(area, st, pc, now_dt, forecast):
     hw = next_high_water(area)
     candidates = []
     if pc["fail"] > 0:
-        candidates.append((3, f"ปั๊มบึงขัดข้อง {pc['fail']} จุด"))
+        candidates.append((3, f"ปั๊มบึงขัดข้อง {pc['fail']} จุด (กทม. รายงาน สาเหตุไม่ทราบ)"))
     if st["up_crit"] > 0:
         candidates.append((2, f"ต้นน้ำเกินเส้นอันตราย {st['up_crit']} จุด"))
     if st["fresh_crit"] > 0:
@@ -391,7 +545,7 @@ def build_indicator_tiles(area, st, pc, now_dt, pond_word):
         tiles.append(_tile("pump", "–", "ปั๊มบึง", "grey"))
     else:
         dot = "red" if pc["fail"] > 0 else ("amber" if pc["idle"] > 0 else ("grey" if pc["ok"] == 0 else "green"))
-        label = "ขัดข้อง (กทม. รายงาน)" if pc["fail"] > 0 else "ปั๊มบึง"
+        label = "ขัดข้อง (กทม. รายงาน สาเหตุไม่ทราบ)" if pc["fail"] > 0 else "ปั๊มบึง"
         newest_pump = max((p.get("observed_at") for p in pumps if p.get("observed_at")), default=None)
         idle_line = f"ไม่ได้เดิน {pc['idle']}" if pc["idle"] > 0 else None
         tiles.append(_tile("pump", f"{pc['fail']}/{total_pumps}", label, dot, obs_time_label(newest_pump, now_dt),
@@ -494,11 +648,13 @@ def build_hours_list(area, st, pc, now_dt, forecast, area_id=None):
     # "อีก 3-5 ชั่วโมงข้างหน้า" -- trend_word compares the next-3h sum against the
     # following-3h sum (see build_data.py::_trend_word), read straight from the data
     # rather than re-derived here.
+    rain_direction, rain_semantic, rain_word = rain_trend(forecast)
+    rain_trend_ic = trend_html(rain_direction, rain_semantic, rain_word, size="sm")
     if forecast.get("available"):
         trend_word = forecast.get("trend_word") or "ฝนยังตกต่อ"
-        lines.append(f"{rain_ic} อีก 3–5 ชั่วโมงข้างหน้า: {esc(trend_word)}")
+        lines.append(f"{rain_ic} {rain_trend_ic} อีก 3–5 ชั่วโมงข้างหน้า: {esc(trend_word)}")
     else:
-        lines.append(f"{rain_ic} ยังไม่มีพยากรณ์รายชั่วโมง")
+        lines.append(f"{rain_ic} {rain_trend_ic} ยังไม่มีพยากรณ์รายชั่วโมง")
 
     hw = next_high_water(area)
     if hw:
@@ -506,7 +662,7 @@ def build_hours_list(area, st, pc, now_dt, forecast, area_id=None):
         lines.append(f"{moon_ic} น้ำหนุนสูงสุด {thai_clock_exact(hw_dt)}")
 
     if pc["fail"] > 0:
-        lines.append(f"{pump_ic} ปั๊มบึงขัดข้อง {pc['fail']} จุด")
+        lines.append(f"{pump_ic} ปั๊มบึงขัดข้อง {pc['fail']} จุด (กทม. รายงาน สาเหตุไม่ทราบ)")
     elif pc["idle"] > 0:
         lines.append(f"{pump_ic} ปั๊มบึงไม่ได้เดิน {pc['idle']} จุด")
     else:
@@ -579,18 +735,25 @@ def build_pump_rows(area, now_dt):
     for p in pumps:
         text, kind = pump_wording(p, now_dt)
         cls = "stat-fail" if kind in ("fail", "idle", "missing") else "stat-ok"
-        if kind in ("fail", "missing"):
-            level = "ไม่มีข้อมูลล่าสุด"
-        elif p.get("level_m") is None:
+        # 2026-09-27: kind in (fail, missing) means BMA's own PumpHistory status/staleness
+        # says this station has no real current reading -- ขัดข้อง (fail, unknown cause per
+        # BMA) or stale >2h (missing). Treat that as no-data for the TREND too, even if
+        # `level_m` itself parsed to a float (including 0.0): a pump reported ขัดข้อง is not
+        # reporting a trustworthy level, so 0.0 there is a placeholder/leftover reading, not
+        # a real measurement, and must never feed a fake "คงที่ +0.00 ม." trend badge.
+        no_level_data = kind in ("fail", "missing") or p.get("level_m") is None
+        if no_level_data:
             level = "ไม่มีข้อมูลล่าสุด"
         else:
             level = f"{p['level_m']:.2f} ม."
+        trend = level_trend_html(p, "level_m", "prev_level_m", now_dt, no_data=no_level_data)
+        trend_block = f"<br>{trend}" if trend else ""
         pond_name = esc(p.get("pond_name") or p.get("name"))
         rows.append(
             "<tr>"
             f'<td data-label="บึง / สถานี"><span class="nw">{pond_name}</span>'
             f'<small class="code">{esc(p.get("code"))}</small></td>'
-            f'<td class="num" data-label="ระดับน้ำ">{esc(level)}</td>'
+            f'<td class="num" data-label="ระดับน้ำ">{esc(level)}{trend_block}</td>'
             f'<td class="num" data-label="ปั๊มเดิน">{esc(p.get("pumps_on"))}/{esc(p.get("pumps_total"))}</td>'
             f'<td class="{cls}" data-label="สถานะ">{esc(text)}</td>'
             f'<td data-label="เวลา">{fmt_time_full(p.get("observed_at"), now_dt)}</td>'
@@ -625,12 +788,15 @@ def canal_row_html(s, now_dt):
     thresh_short = " · ".join(thresh)
     time_label = obs_time_label(s.get("observed_at"), now_dt)
     meta_line = f"{thresh_short} · {time_label}" if thresh_short else time_label
-    value = "–" if s.get("value_m") is None else f"{s['value_m']:.2f} ม."
+    no_level_data = s.get("value_m") is None
+    value = "–" if no_level_data else f"{s['value_m']:.2f} ม."
+    trend = level_trend_html(s, "value_m", "prev_value_m", now_dt, no_data=no_level_data)
+    trend_block = f"<br>{trend}" if trend else ""
     return (
         "<tr>"
         f'<td data-label="สถานี">{esc(s.get("name"))}<br><span class="small">{esc(s.get("code"))} · ห่าง '
         f'{s.get("dist_km", 0):.1f} กม.</span></td>'
-        f'<td class="num" data-label="ระดับน้ำ">{esc(value)}</td>'
+        f'<td class="num" data-label="ระดับน้ำ">{esc(value)}{trend_block}</td>'
         f'<td data-label="สถานะ">{status_pill_aged_html(s.get("status"), s.get("observed_at"), now_dt)}</td>'
         f'<td data-label="เกณฑ์ / เวลา">{esc(meta_line)}</td>'
         "</tr>"
@@ -740,8 +906,10 @@ def build_forecast_fragments(area, now_dt_local, forecast, rain_forecast_area_no
             for i, ev in enumerate(events):
                 date_cell = (f'<td rowspan="{len(events)}" data-label="วันที่">{esc(day.get("date"))}</td>'
                              if i == 0 else '<td data-label="วันที่"></td>')
+                ev_html = (trend_html("up", "worse", "น้ำขึ้น", size="sm") if ev.get("kind") == "HW"
+                           else trend_html("down", "better", "น้ำลง", size="sm"))
                 rows.append("<tr>" + date_cell +
-                            f'<td data-label="เหตุการณ์">{"น้ำขึ้น" if ev.get("kind")=="HW" else "น้ำลง"}</td>'
+                            f'<td data-label="เหตุการณ์">{ev_html}</td>'
                             f'<td class="num" data-label="เวลา">{esc(ev.get("t"))} น.</td>'
                             f'<td class="num" data-label="ระดับ (ม.)">{(ev.get("h") or 0):.2f}</td></tr>')
         return "".join(rows)
@@ -893,8 +1061,10 @@ def build_worsen_better_html(area, st, pc, now_dt, forecast):
 # ---------------- optional advice section (5 short suggestions) --------------
 
 # SAFETY_FACT (2026-09-26, maintainer-requested after the คลองจั่น electrocution death):
-# stated as a FACT, never a command -- never "ไม่ต้อง/ห้าม/ไม่ควร".
-SAFETY_FACT = ("⚠ วันนี้มีผู้เสียชีวิตจากไฟฟ้าดูดในน้ำท่วมที่แฟลตคลองจั่น (ข่าว 26 ก.ย.) "
+# stated as a FACT, never a command -- never "ไม่ต้อง/ห้าม/ไม่ควร". The leading glyph is
+# rendered separately (icon("bolt",20), inline SVG) instead of an emoji -- MUST-FIX 6:
+# emoji render as a colour glyph on Android/LINE, so SAFETY_FACT itself stays plain text.
+SAFETY_FACT = ("วันนี้มีผู้เสียชีวิตจากไฟฟ้าดูดในน้ำท่วมที่แฟลตคลองจั่น (ข่าว 26 ก.ย.) "
                "— ไฟฟ้ากับน้ำท่วมอันตรายถึงชีวิต")
 
 ADVICE_ITEMS = [
@@ -974,9 +1144,10 @@ def build_bangkok_east_html(bangkok_east):
             f'{ba["backlog_volume_m3"]:,.0f} ลบ.ม. ÷ ({ba["pumping_capacity_m3s"]:,.0f} ลบ.ม./วิ × 3,600) '
             f'= {ba["outflow_per_hour_m3"]:,.0f} ลบ.ม./ชม. ≈ '
             f'<span class="num">{ba["hours_if_no_new_rain"]:.0f} ชม. (≈{ba["days_if_no_new_rain"]:.1f} วัน)</span> '
-            f'ถ้าฝนหยุดและสูบเต็มกำลัง — ตรงกับที่ กทม. แถลง {esc(ba.get("briefing_stated_days"))} '
+            f'ถ้าฝนหยุดและสูบเต็มกำลัง — ตรงกับที่ กทม. แถลง '
+            f'{esc(_thai_days_phrase(ba.get("briefing_stated_days")))} '
             f'{_tag_pill("official_report")}</p>'
-            f'<p class="small">รวมฝนที่ยังจะตกอีก (Open-Meteo คาด 24 ชม. ข้างหน้า, third-party, upper bound): '
+            f'<p class="small">รวมฝนที่ยังจะตกอีก (Open-Meteo คาด 24 ชม. ข้างหน้า, บุคคลที่สาม, ค่าบนสุดของช่วง): '
             f'ช่วงเวลา {esc(range_text)} วัน — {esc(ba.get("caveat_th"))}</p>'
         )
 
@@ -1005,7 +1176,12 @@ def build_bangkok_east_html(bangkok_east):
                  '— นี่คือการเทียบตัวเลขต้นน้ำ/ปลายน้ำ (upper bound) ไม่ใช่ผลลัพธ์สมการสมดุลน้ำที่แท้จริง</em></p>')
     next_step = bangkok_east.get("next_step_th")
     if next_step:
-        parts.append(f'<p class="small">ขั้นต่อไป: {esc(next_step)}</p>')
+        # Render a clean Thai-only sentence: the upstream field may carry an
+        # English gloss plus internal file-path references after " -- ";
+        # keep only the Thai lead clause for the public page.
+        next_step_th_only = next_step.split(" -- ")[0].strip()
+        parts.append(f'<p class="small">ขั้นต่อไป: คำนวณรายหมู่บ้านเมื่อทราบพื้นที่รับน้ำและกำลังปั๊มของหมู่บ้าน '
+                     f'({esc(next_step_th_only)})</p>')
     parts.append("</div>")
     return "".join(parts)
 
@@ -1027,9 +1203,10 @@ def build_village_waterbalance_html(water_balance, labels):
     def field_word(f):
         return field_th.get(f, f)
 
-    present_html = "".join(f'<li class="ok">✔ {esc(field_word(f))}</li>' for f in present) or "<li>—</li>"
+    check_ic = icon("check", 16)
+    present_html = "".join(f'<li class="ok">{check_ic} {esc(field_word(f))} (มีแล้ว)</li>' for f in present) or "<li>—</li>"
     missing_words = [field_word(f) for f in missing]
-    missing_html = "".join(f'<li class="missing">✘ {esc(field_word(f))}</li>' for f in missing) or "<li>—</li>"
+    missing_html = "".join(f'<li class="missing">{esc(field_word(f))} (ยังขาด)</li>' for f in missing) or "<li>—</li>"
 
     if status == "REFUSED":
         sentence = f'ยังคำนวณไม่ได้ — ระบบปฏิเสธเพราะขาด: {esc(", ".join(missing_words) or "ไม่ทราบ")}'
@@ -1043,12 +1220,13 @@ def build_village_waterbalance_html(water_balance, labels):
         f'<ul class="wb-inputs-missing">{missing_html}</ul></div>'
         f'<p class="wb-refused-sentence"><strong>{esc(sentence)}</strong></p>'
         f'<p class="small">รหัสเหตุผล: {esc(", ".join(reasons) or "—")} '
-        f'(สูตรที่ลงทะเบียน PROP-FLOOD-03, ยังเป็นข้อเสนอ, PR #60 รอตรวจ)</p>'
+        f'(สูตรยังเป็นข้อเสนอ ยังไม่ผ่านการตรวจ)</p>'
         f'</div>'
     )
 
 
-_SCENARIO_COLOR = {"c0": "#1e8f4e", "c50": "#d98c0f", "c100": "#c0392b", "d_jma": "#8e2411"}
+_SCENARIO_COLOR = {"c0": "var(--ok)", "c50": "var(--warning-text)", "c100": "var(--alert)",
+                    "d_jma": "var(--alert-strong)"}
 _SCENARIO_DASH = {"d_jma": "3,2"}
 _HALF_DAY_TH = [(0, 5, "เช้ามืด"), (6, 11, "เช้า"), (12, 16, "บ่าย"), (17, 19, "เย็น"), (20, 23, "คืน")]
 
@@ -1101,8 +1279,8 @@ def _svg_chart_frame(W, H, PAD_L, PAD_R, PAD_T, PAD_B, n, t0, now_dt, tide_windo
     if forecast_coverage_hours is not None and forecast_coverage_hours < n:
         gx = x_of(forecast_coverage_hours)
         parts.append(f'<rect x="{gx:.0f}" y="{PAD_T}" width="{(W - PAD_R - gx):.0f}" '
-                     f'height="{plot_h}" fill="#d9dde2" opacity="0.5"/>')
-        parts.append(f'<text x="{gx + 4:.0f}" y="{PAD_T + 11}" font-size="8" fill="#5b6472">'
+                     f'height="{plot_h}" style="fill:var(--border)" opacity="0.5"/>')
+        parts.append(f'<text x="{gx + 4:.0f}" y="{PAD_T + 11}" font-size="12" style="fill:var(--text-muted)">'
                      f'ไม่มีพยากรณ์ — สมมติฝน 0</text>')
 
     # tide (high-water ±2h) shading
@@ -1114,28 +1292,28 @@ def _svg_chart_frame(W, H, PAD_L, PAD_R, PAD_T, PAD_B, n, t0, now_dt, tide_windo
         h0c, h1c = max(h0, 0), min(h1, n)
         x0, x1 = x_of(h0c), x_of(h1c)
         parts.append(f'<rect x="{x0:.0f}" y="{PAD_T}" width="{max(x1 - x0, 1):.0f}" '
-                     f'height="{plot_h}" fill="#b39ddb" opacity="0.22"/>')
+                     f'height="{plot_h}" fill="var(--tide-shade)" opacity="0.22"/>')
         if i == 0:
-            parts.append(f'<text x="{x0 + 2:.0f}" y="{PAD_T + 22}" font-size="8" '
-                         f'fill="#6a4fa0">น้ำหนุน — สูบออกได้ช้าลง</text>')
+            parts.append(f'<text x="{x0 + 2:.0f}" y="{PAD_T + 22}" font-size="12" '
+                         f'fill="var(--tide-text)">น้ำหนุน — สูบออกได้ช้าลง</text>')
 
     # day gridlines + x labels
     for h in range(0, n + 1, 48):
         x = x_of(h)
         parts.append(f'<line x1="{x:.0f}" y1="{PAD_T}" x2="{x:.0f}" y2="{PAD_T + plot_h}" '
-                     f'stroke="#d8dee6" stroke-width="1" stroke-dasharray="2,2"/>')
+                     f'style="stroke:var(--border)" stroke-width="1" stroke-dasharray="2,2"/>')
         label = f"+{h}ชม."
         if t0:
             dt_h = t0 + datetime.timedelta(hours=h)
             label = f"{_half_day_word(dt_h.hour)} {dt_h.day}/{dt_h.month}"
-        parts.append(f'<text x="{x:.0f}" y="{H - 10}" font-size="8.5" fill="#5b6472" '
+        parts.append(f'<text x="{x:.0f}" y="{H - 10}" font-size="12" style="fill:var(--text-muted)" '
                      f'text-anchor="middle">{esc(label)}</text>')
 
     # "ตอนนี้" (now) marker at h=0
     x_now = x_of(0)
     parts.append(f'<line x1="{x_now:.0f}" y1="{PAD_T}" x2="{x_now:.0f}" y2="{PAD_T + plot_h}" '
-                 f'stroke="#333" stroke-width="1.4"/>')
-    parts.append(f'<text x="{x_now + 3:.0f}" y="{PAD_T + 10}" font-size="8.5" fill="#333">ตอนนี้</text>')
+                 f'style="stroke:var(--text)" stroke-width="1.4"/>')
+    parts.append(f'<text x="{x_now + 3:.0f}" y="{PAD_T + 10}" font-size="12" style="fill:var(--text)">ตอนนี้</text>')
 
     return parts, x_of, plot_w, plot_h
 
@@ -1188,7 +1366,7 @@ def build_drain_timeline_svg(drain_timeline, now_dt, tide_windows=None):
             bx = x_of(h)
             by = PAD_T + plot_h - bh
             parts.append(f'<rect x="{bx:.0f}" y="{by:.0f}" width="{bar_w:.0f}" height="{bh:.0f}" '
-                         f'fill="#8ec9ee" opacity="0.5"/>')
+                         f'fill="var(--accent-2)" opacity="0.5"/>')
 
     parts.extend(frame_parts)
 
@@ -1197,10 +1375,10 @@ def build_drain_timeline_svg(drain_timeline, now_dt, tide_windows=None):
         y = PAD_T + plot_h - frac * plot_h
         val = frac * v_max_m
         parts.append(f'<line x1="{PAD_L}" y1="{y:.0f}" x2="{W - PAD_R}" y2="{y:.0f}" '
-                     f'stroke="#eef1f4" stroke-width="1"/>')
-        parts.append(f'<text x="{PAD_L - 6}" y="{y + 3:.0f}" font-size="9" fill="#5b6472" '
+                     f'style="stroke:var(--border)" stroke-width="1"/>')
+        parts.append(f'<text x="{PAD_L - 6}" y="{y + 3:.0f}" font-size="12" style="fill:var(--text-muted)" '
                      f'text-anchor="end">{val:.0f}</text>')
-    parts.append(f'<text x="12" y="{PAD_T + 8}" font-size="9" fill="#5b6472">ล้าน ลบ.ม.</text>')
+    parts.append(f'<text x="12" y="{PAD_T + 8}" font-size="12" style="fill:var(--text-muted)">ล้าน ลบ.ม.</text>')
 
     # c=0..c=1 uncertainty band (shaded fill between the two extreme scenarios) --
     # sampled every RENDER_STRIDE hours (see rain-bar comment above)
@@ -1211,11 +1389,11 @@ def build_drain_timeline_svg(drain_timeline, now_dt, tide_windows=None):
         bot_pts = [(x_of(h), y_of(c0["values_m3"][h])) for h in idxs]
         path_pts = top_pts + list(reversed(bot_pts))
         path = "M " + " L ".join(f"{x:.0f},{y:.0f}" for x, y in path_pts) + " Z"
-        parts.append(f'<path d="{path}" fill="#c0392b" opacity="0.08"/>')
+        parts.append(f'<path d="{path}" style="fill:var(--alert)" opacity="0.08"/>')
 
     # scenario lines (d_jma drawn thin+dashed per peer review, others solid)
     for key, s in scenarios.items():
-        color = _SCENARIO_COLOR.get(key, "#333")
+        color = _SCENARIO_COLOR.get(key, "var(--text)")
         dash = _SCENARIO_DASH.get(key)
         width = 1.4 if key == "d_jma" else 2.2
         dash_attr = f' stroke-dasharray="{dash}"' if dash else ""
@@ -1230,7 +1408,7 @@ def build_drain_timeline_svg(drain_timeline, now_dt, tide_windows=None):
         s = scenarios.get(key)
         if not s:
             continue
-        color = _SCENARIO_COLOR.get(key, "#333")
+        color = _SCENARIO_COLOR.get(key, "var(--text)")
         legend_rows.append(
             f'<li><span class="legend-swatch" style="background:{color}"></span>'
             f'{esc(label_th)} — {esc(_fmt_end_time_th(s.get("end_time_utc"), now_dt))}</li>'
@@ -1238,7 +1416,7 @@ def build_drain_timeline_svg(drain_timeline, now_dt, tide_windows=None):
 
     return (
         '<div class="drain-timeline">'
-        + "".join(parts)
+        + f'<div class="chart-scroll">{"".join(parts)}</div>'
         + f'<ul class="drain-legend">{"".join(legend_rows)}</ul>'
         + f'<p class="small drain-footnote">{esc(drain_timeline.get("footnote_th"))}</p>'
         + '</div>'
@@ -1250,9 +1428,9 @@ DRAIN_TIMELINE_SCENARIOS_LABELS = [("c0", 0.0, "ฝนหยุด (c=0)"), ("c5
                                     ("d_jma", 0.5, "แบบจำลองที่ฝนมากที่สุด (JMA, c=0.5)")]
 
 _PUMP_SCENARIO_STYLE = {
-    "pump0": {"color": "#c0392b", "dash": ""},
-    "pump2": {"color": "#d98c0f", "dash": "5,3"},
-    "pump2_gravity": {"color": "#1e8f4e", "dash": "2,2"},
+    "pump0": {"color": "var(--alert)", "dash": ""},
+    "pump2": {"color": "var(--warning-text)", "dash": "5,3"},
+    "pump2_gravity": {"color": "var(--ok)", "dash": "2,2"},
 }
 
 
@@ -1304,7 +1482,7 @@ def build_village_panel_svg(sammakorn_rough, now_dt, tide_windows=None):
             bx = x_of(h)
             by = PAD_T + plot_h - bh
             parts.append(f'<rect x="{bx:.0f}" y="{by:.0f}" width="{bar_w:.0f}" height="{bh:.0f}" '
-                         f'fill="#8ec9ee" opacity="0.5"/>')
+                         f'fill="var(--accent-2)" opacity="0.5"/>')
 
     parts.extend(frame_parts)
 
@@ -1312,10 +1490,10 @@ def build_village_panel_svg(sammakorn_rough, now_dt, tide_windows=None):
         y = PAD_T + plot_h - frac * plot_h
         val = frac * v_max
         parts.append(f'<line x1="{PAD_L}" y1="{y:.0f}" x2="{W - PAD_R}" y2="{y:.0f}" '
-                     f'stroke="#eef1f4" stroke-width="1"/>')
-        parts.append(f'<text x="{PAD_L - 6}" y="{y + 3:.0f}" font-size="9" fill="#5b6472" '
+                     f'style="stroke:var(--border)" stroke-width="1"/>')
+        parts.append(f'<text x="{PAD_L - 6}" y="{y + 3:.0f}" font-size="12" style="fill:var(--text-muted)" '
                      f'text-anchor="end">{val:.0f}</text>')
-    parts.append(f'<text x="12" y="{PAD_T + 8}" font-size="9" fill="#5b6472">ซม. (เฉลี่ย)</text>')
+    parts.append(f'<text x="12" y="{PAD_T + 8}" font-size="12" style="fill:var(--text-muted)">ซม. (เฉลี่ย)</text>')
 
     idxs = sorted(set(list(range(0, n + 1, RENDER_STRIDE)) + [n]))
     if band:
@@ -1323,10 +1501,10 @@ def build_village_panel_svg(sammakorn_rough, now_dt, tide_windows=None):
         bot_pts = [(x_of(h), y_of(band["depth_low_cm"][h])) for h in idxs]
         path_pts = top_pts + list(reversed(bot_pts))
         path = "M " + " L ".join(f"{x:.0f},{y:.0f}" for x, y in path_pts) + " Z"
-        parts.append(f'<path d="{path}" fill="#c0392b" opacity="0.12"/>')
+        parts.append(f'<path d="{path}" style="fill:var(--alert)" opacity="0.12"/>')
 
     for key, s in scenarios.items():
-        style = _PUMP_SCENARIO_STYLE.get(key, {"color": "#333", "dash": ""})
+        style = _PUMP_SCENARIO_STYLE.get(key, {"color": "var(--text)", "dash": ""})
         pts = " ".join(f"{x_of(h):.0f},{y_of(s['values_cm'][h]):.0f}" for h in idxs)
         dash_attr = f' stroke-dasharray="{style["dash"]}"' if style["dash"] else ""
         parts.append(f'<polyline points="{pts}" fill="none" stroke="{style["color"]}" '
@@ -1337,7 +1515,7 @@ def build_village_panel_svg(sammakorn_rough, now_dt, tide_windows=None):
     if pump0 and pump0["values_cm"]:
         last_h = len(pump0["values_cm"]) - 1
         ax, ay = x_of(last_h * 0.6), y_of(pump0["values_cm"][int(last_h * 0.6)])
-        parts.append(f'<text x="{ax:.0f}" y="{(ay - 8):.0f}" font-size="9" fill="#c0392b" '
+        parts.append(f'<text x="{ax:.0f}" y="{(ay - 8):.0f}" font-size="12" style="fill:var(--alert)" '
                      f'text-anchor="middle">ไม่ลดเอง — ต้องปั๊ม</text>')
 
     parts.append("</svg>")
@@ -1349,7 +1527,7 @@ def build_village_panel_svg(sammakorn_rough, now_dt, tide_windows=None):
         s = scenarios.get(key)
         if not s:
             continue
-        style = _PUMP_SCENARIO_STYLE.get(key, {"color": "#333"})
+        style = _PUMP_SCENARIO_STYLE.get(key, {"color": "var(--text)"})
         legend_rows.append(f'<li><span class="legend-swatch" style="background:{style["color"]}">'
                            f'</span>{esc(s.get("label_th") or labels_th.get(key, key))}</li>')
 
@@ -1361,7 +1539,7 @@ def build_village_panel_svg(sammakorn_rough, now_dt, tide_windows=None):
 
     return (
         '<div class="village-panel">'
-        + "".join(parts)
+        + f'<div class="chart-scroll">{"".join(parts)}</div>'
         + f'<ul class="drain-legend">{"".join(legend_rows)}</ul>'
         + (f'<p class="small">{esc(range_note)}</p>' if range_note else "")
         + f'<p class="small">{esc(sammakorn_rough.get("caption_th"))}</p>'
@@ -1372,6 +1550,31 @@ def build_village_panel_svg(sammakorn_rough, now_dt, tide_windows=None):
 
 
 _THAI_MONTH_SHORT = {9: "ก.ย.", 10: "ต.ค."}
+
+_FLAG_MODEL_NAMES = ["ECMWF", "GFS", "ICON", "JMA", "GEM", "Météo-France", "UKMO", "CMA"]
+_FLAG_DATE_RE = re.compile(r"^(\d{4})-(\d{2})-(\d{2}):\s*(.*)$")
+
+
+def _thai_flag_sentence(raw):
+    """MUST-FIX 4: forecast_7day_compare.json's own flag strings (compare.flags) are
+    English prose written for a data file, e.g. '2026-09-27: JMA (81.4mm) far above the
+    rest...' -- never shown raw on a Thai public page. Never re-derives the flag (its
+    truth value stays in build_data.py); only re-phrases the already-computed English
+    sentence into a short Thai one, naming the date and, when detectable, the model.
+    Unmapped shapes fall back to a generic Thai line rather than leaking English text."""
+    m = _FLAG_DATE_RE.match(raw or "")
+    date_label = None
+    rest = raw or ""
+    if m:
+        y, mo, d, rest = m.groups()
+        date_label = f"{int(d)} {_THAI_MONTH_SHORT.get(int(mo), mo)}"
+    models = [name for name in _FLAG_MODEL_NAMES if name in rest]
+    if date_label and models:
+        return (f"แบบจำลอง {'/'.join(dict.fromkeys(models))} คาดฝนต่างจากแบบจำลองอื่นอย่างเห็นได้ชัด "
+                f"ในวันที่ {date_label} (พิจารณาเอง)")
+    if date_label:
+        return f"แบบจำลองบางตัวคาดฝนต่างกันมากในวันที่ {date_label} (พิจารณาเอง)"
+    return "แบบจำลองบางตัวคาดฝนต่างกันมาก (พิจารณาเอง)"
 
 
 def build_daily_rain_table_html(compare, briefing=None):
@@ -1400,14 +1603,25 @@ def build_daily_rain_table_html(compare, briefing=None):
 
     flags = compare.get("flags") or {}
     flag_lines = []
+    flag_ic = icon("doc", 16)
     for f in (flags.get("model_disagreement") or []) + (flags.get("heavy_burst_gt_50mm_after_today") or []):
-        flag_lines.append(f'<p class="small flag-line">⚠ {esc(f)}</p>')
+        flag_lines.append(f'<p class="small flag-line">{flag_ic}<span>{esc(_thai_flag_sentence(f))}</span></p>')
 
     tmd = (compare.get("sources") or {}).get("tmd") or {}
     tmd_html = ""
     if tmd:
-        tmd_html = (f'<p class="small">{_tag_pill("official_report")} กรมอุตุฯ 24 ชม.: '
-                    f'{esc(tmd.get("content"))} — ยังไม่มีพยากรณ์ 7 วันเป็นตัวเลขจากหน่วยงานรัฐที่ดึงได้</p>')
+        tmd_content = (tmd.get("content") or "").strip()
+        if tmd_content:
+            # Restore rendering the ACTUAL fetched TMD text (escaped) -- a prior edit
+            # regressed this to a fixed boilerplate sentence regardless of content
+            # (review MUST-FIX #4). The boilerplate below is now only the fallback for
+            # when TMD content genuinely could not be fetched (tmd_content empty).
+            tmd_html = (f'<p class="small">{_tag_pill("official_report")} กรมอุตุฯ: '
+                        f'{esc(tmd_content)}</p>')
+        else:
+            tmd_html = (f'<p class="small">{_tag_pill("official_report")} กรมอุตุฯ มีเฉพาะพยากรณ์ 24 ชม. '
+                        f'(ฝนหนักถึงหนักมาก แจ้งเตือนน้ำท่วมฉับพลัน/น้ำป่าไหลหลาก) '
+                        f'ยังไม่มีพยากรณ์ 7 วันเป็นตัวเลขจากหน่วยงานรัฐที่ดึงได้</p>')
 
     briefing_tmd_note = (briefing or {}).get("tmd_forecast_note_th")
     briefing_tmd_html = ""
@@ -1548,8 +1762,10 @@ _CG_NODE_POS = {
     "hmk01": (10, 250), "lbk03": (150, 250), "kjn01": (290, 250), "ram53_canal": (430, 250),
 }
 _CG_STATUS_COLOR = {
-    "NORMAL": "#2E7D32", "WATCH": "#D68910", "CRITICAL": "#C0392B", "OVERBANK": "#8E2A1F",
-    "NO_GAUGE": "#8A9AA0", "NO_DATA": "#8A9AA0", "NO_THRESHOLD": "#8A9AA0",
+    "NORMAL": "var(--ok)", "WATCH": "var(--warning-text)", "CRITICAL": "var(--alert)",
+    "OVERBANK": "var(--alert-strong)",
+    "NO_GAUGE": "var(--neutral-text)", "NO_DATA": "var(--neutral-text)",
+    "NO_THRESHOLD": "var(--neutral-text)",
 }
 _CG_HIGHLIGHT_NODE = "sammakorn_pond"
 
@@ -1617,9 +1833,9 @@ def build_canal_graph_svg(canal_graph):
         f'<svg class="canal-graph-svg" viewBox="0 0 {max_x} {max_y}" '
         f'role="img" aria-label="ผังคลอง น้ำไหลจากไหนไปไหนตอนนี้">',
         '<defs>'
-        '<marker id="cgArrB" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L8,4L0,8Z" fill="#1F7A8C"/></marker>'
-        '<marker id="cgArrO" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L8,4L0,8Z" fill="#D68910"/></marker>'
-        '<marker id="cgArrG" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L8,4L0,8Z" fill="#8A9AA0"/></marker>'
+        '<marker id="cgArrB" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L8,4L0,8Z" style="fill:var(--accent-2)"/></marker>'
+        '<marker id="cgArrO" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L8,4L0,8Z" style="fill:var(--warning)"/></marker>'
+        '<marker id="cgArrG" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L8,4L0,8Z" style="fill:var(--neutral)"/></marker>'
         '</defs>'
     ]
 
@@ -1651,14 +1867,14 @@ def build_canal_graph_svg(canal_graph):
         parts.append(f'<line class="{cls}" x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}"{marker_attr}/>')
         if status == "CONTROLLED":
             mx, my = (x1 + x2) / 2, (y1 + y2) / 2
-            parts.append(f'<text class="cg-lock" x="{mx}" y="{my - 6}" text-anchor="middle">🔒</text>')
+            parts.append(f'<text class="cg-lock" x="{mx}" y="{my - 6}" text-anchor="middle">(คุม)</text>')
 
     # -- node boxes on top --
     for nid, n in nodes.items():
         if nid not in _CG_NODE_POS:
             continue
         x, y = _CG_NODE_POS[nid]
-        color = _CG_STATUS_COLOR.get(n.get("status"), "#8A9AA0")
+        color = _CG_STATUS_COLOR.get(n.get("status"), "var(--neutral-text)")
         label = esc(n.get("label_th") or nid)
         value = n.get("value_m")
         value_txt = f"{value:.2f} ม." if isinstance(value, (int, float)) else "ไม่มีเครื่องวัด"
@@ -1696,7 +1912,7 @@ def build_canal_graph_section_html(canal_graph):
         f'<p class="cg-synthesis">{synthesis}</p>'
         '<details id="canal-graph-details">'
         '<summary><span>ผังคลอง — น้ำไหลจากไหนไปไหน (ตอนนี้)</span></summary>'
-        + legend + svg +
+        + legend + f'<div class="chart-scroll">{svg}</div>' +
         '<p class="small">ทิศทางมาจากการเทียบระดับน้ำสองจุดจริง (readout) — เส้นบาง/เทาคือคลองที่ยังไม่มี'
         'เครื่องวัดครบสองฝั่ง แสดงแค่ทิศทางที่ออกแบบไว้ (relay, ไม่ใช่การวัด)</p>'
         '</details></section>'
@@ -1902,11 +2118,12 @@ def build_area_fragments(area_id, area, now_dt, forecast, bangkok_east=None, bri
         ) if burden_ledger and burden_ledger.get("available") else ""
 
     return {
-        "{{PLACE_PIN}}": icon("pin", 16) + f'<span>{esc(labels["pin"])}</span>',
-        "{{HEADING_LABEL}}": esc(labels["heading"]),
+        "{{HEADING_LABEL}}": esc(f'{labels["heading"]} · {labels["district"]}'),
         "{{STATUS_WORD}}": esc(st["word"]),
+        "{{STATUS_ARROW}}": status_arrow_html(st["word"]),
+        "{{RAIN_TREND}}": trend_html(*rain_trend(forecast), label="ฝน 3 ชม.ข้างหน้า", size="lg"),
         "{{NOW_LINE}}": esc(now_line),
-        "{{SAFETY_FACT}}": esc(SAFETY_FACT),
+        "{{SAFETY_FACT}}": icon("bolt", 20) + f'<span>{esc(SAFETY_FACT)}</span>',
         "{{STATUS_WATCH}}": watch_line,  # already HTML (has <strong> + icon)
         "{{WHY_LIST}}": indicator_tiles,
         "{{CANAL_GRAPH_SECTION_HTML}}": canal_graph_section_html,
@@ -1970,6 +2187,22 @@ def render_area_block(area_template, area_id, area, now_dt, forecast, hidden,
     block = block.replace("{{AREA_HIDDEN}}", " hidden" if hidden else "")
     block = block.replace("__AREA__", area_id)
     return block
+
+
+def build_client_json(data):
+    """The minimal object the client-side <script id="data"> JSON needs --
+    recheckStaleness() reads only areas[*].stations_near/pumps[].observed_at
+    (index.template.html <script>), so nothing else travels to the browser."""
+    areas = data.get("areas") or {}
+    out_areas = {}
+    for aid, a in areas.items():
+        out_areas[aid] = {
+            "stations_near": [{"observed_at": s.get("observed_at")}
+                               for s in (a.get("stations_near") or [])],
+            "pumps": [{"observed_at": p.get("observed_at")}
+                      for p in (a.get("pumps") or [])],
+        }
+    return {"areas": out_areas}
 
 
 # ---------------- top-level assembly ----------------
@@ -2038,18 +2271,15 @@ def main():
         print(f"ERROR: {data_path} is not valid JSON: {e}", file=sys.stderr)
         return 1
 
-    # Size budget fix 2026-09-26: everything in this page is already server-rendered
-    # into HTML (the water-balance chart, capacity table, daily rain table etc.) --
-    # the embedded <script id="data"> JSON only needs to carry what client JS actually
-    # reads (recheckStaleness() reads `areas[*].stations_near`/`.pumps` observed_at
-    # only, per index.template.html). Bulky fields that exist purely for build-time
-    # HTML rendering are dropped from the EMBEDDED copy only; the standalone
-    # dist/data.json written separately still has everything, unabridged.
-    embed_parsed = dict(parsed)
-    for _k in ("capacity_records", "drain_timeline", "sammakorn_rough", "forecast_7day_compare",
-               "canal_graph", "burden_ledger"):
-        embed_parsed.pop(_k, None)
-    json_text = json.dumps(embed_parsed, ensure_ascii=False, separators=(",", ":"))
+    # Size budget fix 2026-09-26, tightened 2026-09-27: everything in this page is
+    # already server-rendered into HTML (the water-balance chart, capacity table,
+    # daily rain table etc.) -- the embedded <script id="data"> JSON only needs to
+    # carry what client JS actually reads (recheckStaleness() reads
+    # `areas[*].stations_near`/`.pumps[].observed_at` only, per index.template.html).
+    # build_client_json() keeps ONLY those keys; the standalone dist/data.json written
+    # separately still has everything, unabridged.
+    client_json = build_client_json(parsed)
+    json_text = json.dumps(client_json, ensure_ascii=False, separators=(",", ":"))
     json_text = json_text.replace("</script", "<\\/script")
 
     template = template_path.read_text(encoding="utf-8")
@@ -2119,6 +2349,7 @@ def main():
         return html
 
     template = AREA_SLOT_RE.sub(_area_slot_repl, template, count=1)
+    template = template.replace("{{ICON_SPRITE}}", build_icon_sprite_html())
     template = template.replace("{{ACTIVE_SUBTITLE}}", active_subtitle)
     template = template.replace("{{SOURCES_LIST}}", sources_list)
     template = template.replace(PLACEHOLDER, json_text)
