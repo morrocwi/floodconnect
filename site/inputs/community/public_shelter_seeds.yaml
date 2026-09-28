@@ -1,0 +1,154 @@
+# FloodConnect Public Shelter Seed Strategy
+# Search hints for government/public facilities that may be fast to upgrade.
+# Facility type is NEVER evidence of safety or capability. Every real site must pass
+# Dry Gate and field-verify each capability before promotion.
+version: "0.1"
+status: "search_strategy_fail_closed"
+
+principles:
+  - "facility_type is a discovery hint, not a safety claim"
+  - "Dry Gate precedes every shelter-operation level"
+  - "prefer existing public infrastructure before building a new field site when appropriate"
+  - "health facilities are protected critical-service nodes; do not default them to general shelter use"
+  - "search for clusters of complementary public nodes, not one building that must do everything"
+  - "actual promotion depends on verified capability gaps, not archetype priority"
+
+discovery_order:
+  - public_school
+  - public_sports_youth_center
+  - district_municipal_office
+  - primary_health_center
+  - hospital
+
+archetypes:
+  public_school:
+    default_role: shelter_seed
+    preferred_when:
+      - dry_gate_passed
+      - heavy_vehicle_access_verified
+      - last_mile_interface_reachable
+    inspect_first:
+      - hall_or_gym
+      - toilets
+      - potable_water
+      - service_water
+      - electricity
+      - kitchen_or_cafeteria
+      - loading_yard
+      - storage_space
+      - sleeping_space
+      - bathing_or_washing
+      - structural_and_fire_safety
+    likely_fast_upgrade_path:
+      - SO_L0_DRY_INTERFACE
+      - SO_L1_RELIEF_TRANSFER
+      - SO_L2_DAY_SUPPORT
+      - SO_L3_OVERNIGHT_SHELTER
+    non_inference: "school label grants no capability until field-verified"
+
+  public_sports_youth_center:
+    default_role: shelter_seed
+    preferred_when:
+      - dry_gate_passed
+      - large_open_floor_area_verified
+      - parking_loading_access_verified
+    inspect_first:
+      - hall_or_gym
+      - toilets
+      - showers
+      - accessible_waiting_area
+      - parking_loading
+      - potable_water
+      - electricity
+      - kitchen_or_food_service
+      - privacy_partition_need
+    likely_fast_upgrade_path:
+      - SO_L0_DRY_INTERFACE
+      - SO_L1_RELIEF_TRANSFER
+      - SO_L2_DAY_SUPPORT
+      - SO_L3_OVERNIGHT_SHELTER
+    non_inference: "sports-center label grants no shelter level"
+
+  district_municipal_office:
+    default_role: logistics_information_hub
+    preferred_when:
+      - dry_gate_passed
+      - official_communications_available
+      - public_vehicle_access_verified
+    inspect_first:
+      - communications
+      - loading_unloading
+      - storage
+      - power
+      - public_vehicle_fleet_access
+      - local_area_information
+      - potable_water
+      - toilets
+    likely_fast_upgrade_path:
+      - SO_L0_DRY_INTERFACE
+      - SO_L1_RELIEF_TRANSFER
+    linked_roles:
+      - local_convergence_board
+      - resource_staging
+      - route_status_exchange
+    non_inference: "government-office label does not imply overnight suitability"
+
+  primary_health_center:
+    default_role: health_support_node
+    preferred_when:
+      - dry_gate_passed
+      - clinical_service_continuity_verified
+    inspect_first:
+      - health_referral_access
+      - medicine_health_support
+      - cold_chain
+      - critical_power
+      - accessible_transport
+      - communications
+    linked_roles:
+      - SO_L2_DAY_SUPPORT
+      - medical_referral
+      - vulnerable_support
+    general_shelter_default: false
+    non_inference: "health-center capability should support nearby shelter nodes without disrupting clinical function"
+
+  hospital:
+    default_role: critical_health_referral_node
+    general_shelter_default: false
+    preferred_use:
+      - emergency_referral
+      - inpatient_continuity
+      - ambulance_handoff
+      - specialist_support
+    inspect_if_officially_designated_as_shelter:
+      - separated_shelter_area
+      - dry_gate_passed
+      - clinical_flow_separation
+      - ambulance_access_preserved
+      - utilities_capacity
+      - infection_control
+      - evacuation_and_fire_plan
+    hard_rule: "do not route general evacuees to hospital solely because it is a public building"
+
+cluster_pattern:
+  name: "Public Shelter Support Cluster"
+  example:
+    logistics_information: district_municipal_office
+    shelter_seed: public_school
+    overflow_or_large_hall: public_sports_youth_center
+    health_support: primary_health_center
+    critical_referral: hospital
+  principle: "capabilities may be distributed across nearby verified nodes"
+
+search_formula:
+  hard_gate: "DryGate(site,t)=TRUE"
+  candidate_set: "public facilities with verified access to dry-side logistics and affected-side last-mile interface"
+  next_level_gap: "Gap_L(site)=required_capabilities(L) - verified_capabilities(site)"
+  selection_rule: "among Dry-Gate-passing candidates, prefer the candidate with the smallest hard capability gap to the required operational level; break ties by verified access/throughput, then distance"
+  weighted_score: false
+
+evidence:
+  thai_ddpm_shelter_manual: "https://cnt.disaster.go.th/"
+  sphere_handbook: "https://handbook.spherestandards.org/"
+  unhcr_collective_centres: "https://emergency.unhcr.org/emergency-assistance/settlement-and-shelter/settlement-shelter-interventions/collective-centres"
+  who_safe_health_facilities: "https://www.who.int/activities/making-health-facilities-safe-in-emergencies-and-disasters"
