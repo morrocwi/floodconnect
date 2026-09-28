@@ -565,11 +565,11 @@ C_{g,e}(t,H)
 \end{cases}
 \]
 
-If \(G_{g,e}=0\), convergence for that essential is \`NOT_REQUIRED\`, not a proof that the whole
+If \(G_{g,e}=0\), convergence for that essential is `NOT_REQUIRED`, not a proof that the whole
 household/zone is safe.
 
-The executable implementation is \`convergence_feasibility.py\` with states
-\`FEASIBLE / INFEASIBLE / NOT_REQUIRED / UNKNOWN\`.
+The executable implementation is `convergence_feasibility.py` with states
+`FEASIBLE / INFEASIBLE / NOT_REQUIRED / UNKNOWN`.
 
 #### Coordination is infrastructure, not a person
 
