@@ -97,6 +97,10 @@ return/relocation/closure.
 - Shelter operation capability ladder: `shelter_operation_ladder.py`
 - Shelter ladder evidence: `docs/SHELTER_OPERATION_CAPABILITY_LADDER.md`
 - Shelter ladder tests: `tests/test_shelter_operation_ladder.py`
+- Public shelter seed strategy: `public_shelter_seed.py`
+- Public-facility archetypes: `site/inputs/community/public_shelter_seeds.yaml`
+- Public shelter seed evidence/design: `docs/PUBLIC_SHELTER_SEED_STRATEGY.md`
+- Public shelter seed tests: `tests/test_public_shelter_seed.py`
 - Operational tool registry: `site/inputs/community/operational_tools.yaml`
 - Operational resource capability evidence: `operational_resources.py`
 - Operational resource capability graph: `docs/OPERATIONAL_RESOURCE_CAPABILITY_GRAPH.md`
