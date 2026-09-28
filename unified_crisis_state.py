@@ -247,6 +247,44 @@ def _movement_state(
     return state, {"route": route.as_dict()}
 
 
+def derive_shelter_response_pattern(
+    node: dict[str, Any],
+    *,
+    phase: str = "OCCUPIED",
+    group_size: int = 1,
+) -> dict[str, Any]:
+    """Derive shelter lifecycle response pattern from the existing shelter screener."""
+    phase_u = str(phase).upper()
+    screen = sd.screen_shelter_candidate(node, phase=phase_u, group_size=group_size)
+
+    if screen.state == "SHELTER_UNRESOLVED":
+        return {
+            "pattern": "VERIFY",
+            "screen": screen.as_dict(),
+            "phase": phase_u,
+        }
+
+    if not screen.admitted:
+        return {
+            "pattern": "SHELTER_INTERVENTION_RELOCATION",
+            "screen": screen.as_dict(),
+            "phase": phase_u,
+        }
+
+    if phase_u == "RECOVERY":
+        return {
+            "pattern": "RECOVERY_RETURN",
+            "screen": screen.as_dict(),
+            "phase": phase_u,
+        }
+
+    return {
+        "pattern": "SHELTER_OPERATION",
+        "screen": screen.as_dict(),
+        "phase": phase_u,
+    }
+
+
 def derive_crisis_state(
     doc: dict[str, Any],
     household_id: str,
