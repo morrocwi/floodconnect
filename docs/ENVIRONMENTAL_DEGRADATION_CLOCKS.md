@@ -181,3 +181,81 @@ This allows SAFE_NOW -> DEGRADING -> UNSAFE without waiting for water depth to r
 This module does not provide instructions for entering sewers/manholes/confined spaces, chemical sulfide treatment, improvised gas neutralization or unmonitored wastewater dosing.
 
 When sewer gas/H2S is suspected in a low/enclosed space, the safe operational response is source isolation, avoidance, qualified monitoring and appropriate ventilation/engineering control—not smell-based testing or improvised entry.
+
+## 16. Finite temporal accumulation — Toledo discipline
+
+FloodConnect never represents an infinite environmental history.
+
+Every accumulation request declares one finite observation window:
+
+[
+W=[t_0,t_1],qquad t_1>t_0
+]
+
+and one finite verified event set:
+
+[
+E_W={e_1,ldots,e_n},qquad n<infty
+]
+
+For mechanism (m), exact active duration inside that window is:
+
+[
+A_m(W)
+=
+sum_{j=1}^{k_m}
+left(t^{end}_{m,j}-t^{start}_{m,j}ight)
+]
+
+where all declared durations are represented as rational values (Q/Fraction), not infinity
+or an silently rounded floating-point accumulation.
+
+The ledger records separately:
+- current episode duration inside the declared window;
+- cumulative active duration inside the declared window;
+- recurrence count;
+- whether the mechanism remains active at the window end;
+- number of currently active mechanisms;
+- maximum concurrent mechanisms observed inside the finite window.
+
+These are **temporal diagnostics, not a risk score**.
+
+### Left censoring
+
+If an event is observed active but its START is unknown:
+
+[
+OBSERVED_ACTIVE land START=UNKNOWN
+Rightarrow LEFT_CENSORED
+]
+
+FloodConnect does not assign zero hours and does not extrapolate backward.
+
+### Incomplete history
+
+If the operator cannot certify that the event history for the declared window is complete:
+
+[
+complete
+e true
+Rightarrow REFUSED
+]
+
+for exact accumulated duration.
+
+### Mitigation is not resolution
+
+A mitigation event is retained on the timeline but does not stop the clock:
+
+[
+MITIGATION 
+otRightarrow RESOLVED
+]
+
+Only a verified resolution event can close an active interval.
+
+This follows the same epistemic discipline as the finite Toledo water-balance layer:
+bounded declared objects, finite diagnostics and first-class refusal instead of silent
+defaults.
+
+Implementation: `finite_temporal_ledger.py`.
