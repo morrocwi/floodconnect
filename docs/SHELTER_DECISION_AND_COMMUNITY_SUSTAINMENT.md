@@ -113,10 +113,28 @@ resupply mechanism for:
 Do not invent a universal 24/48/72-hour number in code. `T` must be supplied by the
 planning context, official guidance, or a clearly declared operator decision.
 
-### C. People and support needs
-- persons who cannot self-move are identified as demand, not counted as helpers;
-- critical medical/accessibility needs are supportable;
-- vulnerable households can be checked by buddy/zone mechanisms.
+### C. People, household composition and support needs
+Do not store one undifferentiated "vulnerable count". Separate:
+- children by broad life stage;
+- older adults;
+- pregnant/postpartum persons;
+- chronic/acute illness, disability/functional limitation, bed/home-bound status;
+- functional dependencies (supervision, mobility, medicine, time-critical care, powered medical
+  devices, communication, special diet, infant feeding);
+- living arrangement (alone / pair / family group / multigenerational / group care);
+- declared caregiver/helper/buddy/medical/logistics links.
+
+Rules:
+- demographic category triggers assessment but does not itself prove incapacity;
+- persons who cannot self-move are demand, not counted as helpers;
+- co-residence is not evidence of caregiver capability;
+- a vulnerable person living alone requires a buddy/reassessment link to be checked;
+- a single caregiver supporting dependents requires a backup link to be checked;
+- every declared hard functional need must have a current support link, otherwise
+  `vulnerable_support` fails or remains UNKNOWN.
+
+See the need-support matching formalization in
+`docs/THAI_DISTRIBUTED_LIFELINE_CONVERGENCE.md`.
 
 ### D. Communication and reassessment
 - at least one working communication/reassessment mechanism exists;
