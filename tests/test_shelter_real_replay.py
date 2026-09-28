@@ -13,6 +13,7 @@ import shelter_decision as sd
 def _base_sustain(**overrides):
     x = {
         "fresh": True,
+        "assessed_horizon_h": 72,
         "physical_safety": "SAFE",
         "potable_water_for_horizon": "SUFFICIENT",
         "service_water_for_horizon": "SUFFICIENT",
@@ -49,8 +50,15 @@ def _ready_shelter():
         "management_staffing": "READY",
         "waste_management": "READY",
         "sleeping_protection": "READY",
-        "perimeter_flood_defense": "READY",
-        "dewatering_capability": "READY",
+        "privacy_dignity": "READY",
+        "child_safeguarding": "READY",
+        "gbv_protection": "READY",
+        "feedback_complaints": "READY",
+        "family_unity": "READY",
+        "psychosocial_referral": "READY",
+        "residual_flood_exposure": "NONE",
+        "perimeter_flood_defense": "NOT_REQUIRED",
+        "dewatering_capability": "NOT_REQUIRED",
         "post_flood_cleaning": "READY",
         "exit_closure_plan": "READY",
     }
@@ -118,6 +126,11 @@ def test_real_mechanism_dry_kitchen_can_move_food_inward_without_becoming_shelte
                 "capacity_persons": 0,
                 "occupied_persons": 0,
                 "services": ["food_for_horizon"],
+                "support": {
+                    "fresh": True,
+                    "assessed_horizon_h": 72,
+                    "resources": {"food_for_horizon": "SUFFICIENT"},
+                },
             },
         },
         "edges": [],
@@ -128,10 +141,12 @@ def test_real_mechanism_dry_kitchen_can_move_food_inward_without_becoming_shelte
             "status": "OPEN",
             "fresh": True,
             "field_verified": True,
+            "capacity_status": "SUFFICIENT",
+            "arrival_before_failure": True,
             "resources": ["food_for_horizon"],
         }],
     }
-    delivery = sd.evaluate_support_delivery(doc, "home", "kitchen", ["food_for_horizon"])
+    delivery = sd.evaluate_support_delivery(doc, "home", "kitchen", ["food_for_horizon"], 24)
     assert delivery.admitted is True
 
     # Service node identity must not be laundered into a shelter declaration.
