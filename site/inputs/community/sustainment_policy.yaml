@@ -46,7 +46,11 @@ sustainment:
     - communications
     - vulnerable_support
   planning_horizon_h: null
-  rule: "planning horizon is caller/authority declared; never default to 24/48/72 h"
+  assessed_horizon_h: null
+  rule: >
+    planning horizon is caller/authority declared; every SUFFICIENT/INSUFFICIENT assessment
+    must declare assessed_horizon_h and assessed_horizon_h must be >= requested planning_horizon_h;
+    never default to 24/48/72 h
 
 escalation:
   states: [ESCALATABLE, ISOLATED, UNKNOWN]
@@ -54,13 +58,34 @@ escalation:
 
 decision_states:
   - STAY_AND_SUSTAIN
+  - STAY_AND_PREPARE
+  - STAY_AND_PREPARE_WINDOW_CLOSING
   - RESUPPLY_WINDOW
+  - REQUEST_OR_RECEIVE_SUPPORT_DELIVERY
+  - VERIFY_SUPPORT_CAPACITY_OR_TIMING
+  - REQUEST_LOGISTICS_OR_REASSESS_MOVEMENT
   - PREPARE_TO_MOVE
-  - REQUEST_LOGISTICS_OR_ASSISTED_EVACUATION
+  - REQUEST_ASSISTED_EVACUATION
   - EVACUATE_ROUTE
   - SHELTER_OPERATION
   - RETURN_RELOCATE_CLOSE
+  - VERIFY_AND_PREPARE
   - VERIFY_BEFORE_ACTION
+
+support_capability:
+  applies_to: [buddy_cell, zone, supply_point, community_kitchen, civil_society_provider]
+  rule: "support capability is not occupancy viability"
+  requires:
+    - fresh_support_assessment
+    - assessed_horizon_h_covers_requested_horizon
+    - requested_resource_status_SUFFICIENT
+  delivery_path:
+    verified_path_only_state: PATH_ONLY
+    need_closable_state: NEED_CLOSABLE
+    need_closable_requires:
+      - fresh_field_verified_support_path
+      - path_capacity_status_SUFFICIENT
+      - arrival_before_failure_true
 
 resupply_window:
   automatic_travel_instruction: false
@@ -68,9 +93,19 @@ resupply_window:
     - current_node_physical_safety_SAFE
     - declared_horizon_resource_gap
     - verified_supply_point
+    - verified_stock_for_each_requested_resource
+    - supplier_assessed_horizon_covers_requested_horizon
     - fresh_field_verified_movement_path
     - route_mode_feasible
     - no_conflicting_official_movement_instruction
+
+forward_hazard:
+  independent_from_current_state: true
+  states: [NONE, LOW, WATCH, HIGH, CRITICAL, ACTIVE, UNKNOWN]
+  rule: >
+    current SAFE/SUSTAINABLE may coexist with forward WATCH/HIGH/CRITICAL/ACTIVE;
+    forward hazard may trigger preparation or preserve a closing mobility window but never
+    fabricates an evacuation decision
 
 shelter_phases:
   PRE_OPEN:
@@ -80,9 +115,12 @@ shelter_phases:
     - communications
     - capacity
     - management_staffing
-    - perimeter_flood_defense
-    - dewatering_capability
+    - residual_flood_exposure
     - exit_closure_plan
+    conditional:
+      when_residual_flood_exposure_PRESENT_or_LIKELY:
+        - perimeter_flood_defense
+        - dewatering_capability
   OCCUPIED:
     - site_hazard_safety
     - structural_fire_safety
@@ -101,6 +139,12 @@ shelter_phases:
     - management_staffing
     - waste_management
     - sleeping_protection
+    - privacy_dignity
+    - child_safeguarding
+    - gbv_protection
+    - feedback_complaints
+    - family_unity
+    - psychosocial_referral
     - exit_closure_plan
   RECOVERY:
     - site_hazard_safety
@@ -143,6 +187,7 @@ member_need_profile:
     - needs_communication_assistance
     - needs_special_diet
     - needs_infant_feeding
+    - needs_maternal_health_access
 
   living_arrangement:
     categorical:
@@ -192,8 +237,9 @@ member_need_profile:
     - "child/adolescent present -> caregiver link must be checked"
     - "single caregiver + dependents -> backup caregiver/buddy link must be checked"
     - "older adult + declared mobility/medicine/communication/supervision need -> older-adult support link required"
-    - "pregnant/postpartum -> maternal-health/transport support link must be checked"
-    - "illness/bedbound/essential medicine/time-critical care -> medical support link required"
+    - "pregnant/postpartum alone is an assessment trigger; maternal-health support link becomes hard only when a functional maternal-health need is declared"
+    - "essential medicine/time-critical care/bedbound or power-dependent care -> medical support link required"
+    - "chronic illness label alone does not create a medical-support hard constraint"
     - "mobility dependency -> mobility support link required"
     - "power-dependent medical device -> backup-power support link required"
     - "communication dependency -> communication support link required"
@@ -214,6 +260,14 @@ defaults:
   allow_unverified_shelter: false
   allow_inferred_stock_duration: false
   allow_building_type_as_safety_proxy: false
+
+privacy_architecture:
+  public_aggregate_layer:
+    allowed: "counts, functional needs, coverage gaps, no names/diagnoses/phone/address"
+  restricted_local_roster:
+    purpose: "last-mile buddy/zone/responder delivery to actual households"
+    storage_rule: "must not be committed to the public FloodConnect repository"
+    identifiers: "local pseudonymous/authorized references only"
 
 implementation:
   code_module: "shelter_decision.py"
