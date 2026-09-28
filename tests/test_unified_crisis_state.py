@@ -254,3 +254,22 @@ def test_animal_topology_is_modifier_not_new_crisis_type():
     state = ucs.derive_crisis_state(doc, "h", 24)
     assert state.animal_topology == "COMPANION"
     assert state.action_pattern == "STAY_SUSTAIN"
+
+
+def test_shelter_lifecycle_patterns_are_executable():
+    doc = _base_doc()
+    shelter = doc["nodes"]["i"]
+    occupied = ucs.derive_shelter_response_pattern(shelter, phase="OCCUPIED")
+    assert occupied["pattern"] == "SHELTER_OPERATION"
+
+    shelter["shelter"]["service_water"] = "INSUFFICIENT"
+    degraded = ucs.derive_shelter_response_pattern(shelter, phase="OCCUPIED")
+    assert degraded["pattern"] == "SHELTER_INTERVENTION_RELOCATION"
+
+
+def test_recovery_pattern_requires_recovery_constraints():
+    doc = _base_doc()
+    shelter = doc["nodes"]["i"]
+    shelter["shelter"]["post_flood_cleaning"] = "READY"
+    recovery = ucs.derive_shelter_response_pattern(shelter, phase="RECOVERY")
+    assert recovery["pattern"] == "RECOVERY_RETURN"
