@@ -11,6 +11,16 @@ shown at the bottom of this file.
 registration (PROP-FLOOD-01/02) first. `epistemic_note` in the JSON says this in Thai
 for anyone reading the raw file directly.
 
+
+## Static governance reference (not emitted to `data.json`)
+
+`site/inputs/governance/thailand_water_governance_reference.json` is a curated,
+partially-verified institutional map extracted from a third-party civic infographic and
+cross-checked against official Thai water-governance sources. It is **context only**:
+it is not live telemetry, not a forecast, not an authoritative exhaustive agency register,
+and is deliberately kept outside `site/inputs/official/` and `sources/registry.yaml`.
+See `docs/THAILAND_WATER_GOVERNANCE.md` for verification notes and provenance.
+
 ## Top-level fields
 
 - `generated_at_bkk` — when this script ran, Bangkok local time (UTC+7). Not an official
