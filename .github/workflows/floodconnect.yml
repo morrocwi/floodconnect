@@ -40,7 +40,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y poppler-utils
 
       - name: Test lifeline convergence and shelter primitives
-        run: python3 -m pytest tests/test_convergence_feasibility.py tests/test_convergence_board.py tests/test_shelter_operation_ladder.py tests/test_operational_tools_registry.py tests/test_operational_resources.py -q
+        run: python3 -m pytest tests/test_convergence_feasibility.py tests/test_convergence_board.py tests/test_shelter_operation_ladder.py tests/test_operational_tools_registry.py tests/test_operational_resources.py tests/test_public_shelter_seed.py -q
 
       - name: Collect live snapshots (tolerant of per-source failures)
         # collect.py already isolates one source's failure from the rest (see its `run()`);
