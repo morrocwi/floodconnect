@@ -92,6 +92,8 @@ return/relocation/closure.
 - Unified state tests: `tests/test_unified_crisis_state.py`
 - Lifeline convergence feasibility: `convergence_feasibility.py`
 - Convergence tests: `tests/test_convergence_feasibility.py`
+- Shared dry-node Kanban: `convergence_board.py`
+- Kanban tests: `tests/test_convergence_board.py`
 
 FloodConnect now also models **safe-now -> degrading -> unsafe** transitions that can occur
 without rising water depth: sewage/backflow contamination, sewer-gas/H2S uncertainty,
