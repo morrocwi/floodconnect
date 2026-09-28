@@ -307,6 +307,15 @@ def evaluate_sustainment(
         elif value == UNKNOWN:
             unknowns.append(field_name)
 
+    member_profile = node.get("member_need_profile")
+    if isinstance(member_profile, dict):
+        dependency = evaluate_dependency_coverage(member_profile)
+        if dependency.state == "DEPENDENCY_SUPPORT_GAP":
+            gaps.append("member_dependency_support")
+            reasons.append(REASON_VULNERABLE_SUPPORT_GAP)
+        elif dependency.state == "DEPENDENCY_COVERAGE_UNKNOWN":
+            unknowns.append("member_dependency_support")
+
     if gaps:
         return SustainmentResult(
             NOT_SUSTAINABLE,
