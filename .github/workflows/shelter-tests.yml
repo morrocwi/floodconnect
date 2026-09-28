@@ -5,10 +5,12 @@ on:
     paths:
       - "community_dag.py"
       - "shelter_decision.py"
+      - "environmental_degradation.py"
       - "site/inputs/community/**"
       - "tests/test_community_dag.py"
       - "tests/test_shelter_decision.py"
       - "tests/test_shelter_real_replay.py"
+      - "tests/test_environmental_degradation.py"
       - ".github/workflows/shelter-tests.yml"
   push:
     branches: [main]
@@ -34,8 +36,8 @@ jobs:
           python-version: "3.11"
       - run: pip install pyyaml pytest
       - name: Compile
-        run: python -m py_compile community_dag.py shelter_decision.py
+        run: python -m py_compile community_dag.py shelter_decision.py environmental_degradation.py
       - name: Run community + shelter tests
         env:
           PYTHONPATH: .
-        run: pytest -q tests/test_community_dag.py tests/test_shelter_decision.py tests/test_shelter_real_replay.py
+        run: pytest -q tests/test_community_dag.py tests/test_shelter_decision.py tests/test_shelter_real_replay.py tests/test_environmental_degradation.py
