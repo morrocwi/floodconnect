@@ -312,3 +312,105 @@ def test_official_evacuation_with_no_verified_route_requests_assistance():
     result = sd.recommend_protective_state(doc, "h", 24)
     assert result.state == "REQUEST_ASSISTED_EVACUATION"
     assert result.admitted is False
+
+
+def test_verified_inward_delivery_preserves_household_support_option():
+    doc = _movement_chain()
+    doc["nodes"]["h"]["sustainment"]["food_for_horizon"] = "INSUFFICIENT"
+    doc["nodes"]["kitchen"] = {
+        "kind": "supply_point",
+        "layer": 5,
+        "status": "SAFE",
+        "fresh": True,
+        "verified_service": True,
+        "capacity_persons": 0,
+        "occupied_persons": 0,
+        "services": ["food_for_horizon"],
+    }
+    doc["support_edges"] = [{
+        "id": "kitchen_to_household",
+        "from": "kitchen",
+        "to": "h",
+        "status": "OPEN",
+        "fresh": True,
+        "field_verified": True,
+        "resources": ["food_for_horizon"],
+    }]
+    result = sd.evaluate_support_delivery(
+        doc, "h", "kitchen", ["food_for_horizon"]
+    )
+    assert result.admitted is True
+    assert result.state == "SUPPORT_DELIVERY_AVAILABLE"
+
+
+def test_unverified_inward_delivery_does_not_push_people_to_assume_supply():
+    doc = _movement_chain()
+    doc["nodes"]["h"]["sustainment"]["food_for_horizon"] = "INSUFFICIENT"
+    doc["nodes"]["kitchen"] = {
+        "kind": "supply_point",
+        "layer": 5,
+        "status": "SAFE",
+        "fresh": True,
+        "verified_service": True,
+        "capacity_persons": 0,
+        "occupied_persons": 0,
+        "services": ["food_for_horizon"],
+    }
+    doc["support_edges"] = [{
+        "id": "kitchen_to_household",
+        "from": "kitchen",
+        "to": "h",
+        "status": "OPEN",
+        "fresh": True,
+        "field_verified": False,
+        "resources": ["food_for_horizon"],
+    }]
+    result = sd.evaluate_support_delivery(
+        doc, "h", "kitchen", ["food_for_horizon"]
+    )
+    assert result.admitted is False
+    assert sd.REASON_SUPPORT_DELIVERY_PATH_UNVERIFIED in result.reason_codes
+
+
+def test_protective_state_prefers_verified_delivery_before_unverified_self_movement():
+    doc = _movement_chain()
+    doc["nodes"]["h"]["sustainment"]["food_for_horizon"] = "INSUFFICIENT"
+    doc["nodes"]["h"]["sustainment"]["support_providers"] = ["kitchen"]
+    doc["nodes"]["kitchen"] = {
+        "kind": "supply_point",
+        "layer": 5,
+        "status": "SAFE",
+        "fresh": True,
+        "verified_service": True,
+        "capacity_persons": 0,
+        "occupied_persons": 0,
+        "services": ["food_for_horizon"],
+    }
+    doc["support_edges"] = [{
+        "id": "kitchen_to_household",
+        "from": "kitchen",
+        "to": "h",
+        "status": "OPEN",
+        "fresh": True,
+        "field_verified": True,
+        "resources": ["food_for_horizon"],
+    }]
+    for edge in doc["edges"]:
+        edge["fresh"] = False
+    result = sd.recommend_protective_state(doc, "h", 24)
+    assert result.admitted is True
+    assert result.state == "REQUEST_OR_RECEIVE_SUPPORT_DELIVERY"
+
+
+def test_shop_presence_without_verified_stock_is_not_resupply():
+    doc = _movement_chain()
+    doc["nodes"]["h"]["sustainment"]["food_for_horizon"] = "INSUFFICIENT"
+    doc["nodes"]["shop"]["verified_service"] = False
+    doc["nodes"]["h"]["sustainment"]["resupply"] = {
+        "supplier_node": "shop",
+        "route_edges": ["hb", "bz", "zi", "ie", "es"],
+        "official_movement_conflict": False,
+    }
+    result = sd.evaluate_resupply_window(doc, "h", 24, mode="walk")
+    assert result.admitted is False
+    assert sd.REASON_RESUPPLY_DESTINATION_UNVERIFIED in result.reason_codes
