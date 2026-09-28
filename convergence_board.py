@@ -19,6 +19,8 @@ from dataclasses import dataclass, asdict
 from math import isfinite
 from typing import Any, Iterable, Optional
 
+import shelter_operation_ladder as so
+
 SELECTED = "SELECTED"
 UNKNOWN = "UNKNOWN"
 NO_FEASIBLE_INTERFACE = "NO_FEASIBLE_INTERFACE"
@@ -64,25 +66,23 @@ def _finite_nonnegative(value: Any) -> Optional[float]:
 
 
 def select_nearest_dry_interface(candidates: Iterable[dict[str, Any]]) -> InterfaceSelection:
-    """Select the nearest known dry shared interface without hiding uncertainty."""
+    """Select the nearest node that is already a verified SO-L0 dry interface.
+
+    Shelter-operation capability is the gate.  A candidate is eligible only when
+    shelter_operation_ladder confirms SO-L0 or higher. UNKNOWN shelter-operation
+    evidence preserves UNKNOWN here rather than being silently ignored.
+    """
 
     known: list[tuple[float, str]] = []
     unresolved = False
 
     for raw in candidates:
-        hard = (
-            raw.get("dry"),
-            raw.get("verified"),
-            raw.get("fresh"),
-            raw.get("provider_reachable"),
-            raw.get("community_reachable"),
-            raw.get("distribution_feasible"),
-        )
+        assessment = so.evaluate_shelter_operation(raw)
 
-        if any(v is False for v in hard):
-            continue
-        if any(v is not True for v in hard):
-            unresolved = True
+        if assessment.level is None:
+            if assessment.state == so.UNKNOWN:
+                unresolved = True
+            # Explicit hard-gate failure is ineligible, not an UNKNOWN candidate.
             continue
 
         node_id = raw.get("node_id")
@@ -95,13 +95,13 @@ def select_nearest_dry_interface(candidates: Iterable[dict[str, Any]]) -> Interf
     if unresolved:
         return InterfaceSelection(
             UNKNOWN,
-            reason_codes=("UNRESOLVED_INTERFACE_CANDIDATE",),
+            reason_codes=("UNRESOLVED_SO_L0_INTERFACE_CANDIDATE",),
         )
 
     if not known:
         return InterfaceSelection(
             NO_FEASIBLE_INTERFACE,
-            reason_codes=("NO_VERIFIED_DRY_SHARED_INTERFACE",),
+            reason_codes=("NO_VERIFIED_DRY_SO_L0_INTERFACE",),
         )
 
     distance, node_id = min(known, key=lambda x: (x[0], x[1]))
