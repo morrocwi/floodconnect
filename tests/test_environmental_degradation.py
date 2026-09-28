@@ -402,7 +402,7 @@ def test_temporal_ledger_reports_finite_concurrency_not_risk_score():
     result = ftl.accumulate_environment_timeline(node)
     assert result.max_concurrent_mechanisms == 2
     assert result.active_mechanism_count == 0
-    assert result.details["finite_mechanism_count"] == len(ftl.MECHANISMS)
+    assert result.details["finite_mechanism_count"] == 3
 
 
 def test_missing_coverage_refuses_instead_of_inventing_zero_hours():
