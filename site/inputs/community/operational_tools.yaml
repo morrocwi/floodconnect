@@ -1,0 +1,236 @@
+# FloodConnect operational tool/resource capability registry.
+# One canonical place for vehicles, watercraft and deployable field tools.
+# A registry entry declares capabilities; it NEVER declares a real route/site safe.
+# Real deployment state is evaluated by operational_tools.py.
+version: "0.1"
+status: "operational_registry_fail_closed"
+
+principles:
+  - "tool presence != usable capability"
+  - "vehicle type != floodwater route safety"
+  - "verified/fresh/operable deployment required before capability credit"
+  - "qualified operator required when declared by the tool type"
+  - "tools may enable node capabilities, edge capabilities, or both"
+  - "route/site hard safety gates always dominate tool capability"
+
+tools:
+  standard_passenger_car:
+    category: vehicle
+    label: "Passenger car / sedan"
+    provides: [personnel_transport_light, light_cargo_transport]
+    edge_effect: [dry_road_mobility]
+    requires_qualified_operator: false
+    floodwater_entry: PROHIBITED_BY_DEFAULT
+
+  passenger_van_minibus:
+    category: vehicle
+    label: "Passenger van / minibus"
+    provides: [multi_person_transport, assisted_evacuee_transport, light_cargo_transport]
+    edge_effect: [dry_road_mass_mobility]
+    requires_qualified_operator: false
+    floodwater_entry: PROHIBITED_BY_DEFAULT
+
+  pickup_4x4:
+    category: vehicle
+    label: "4x4 pickup / utility vehicle"
+    provides: [personnel_transport, relief_cargo_transport, rough_surface_access]
+    edge_effect: [rough_terrain_mobility, dry_road_logistics]
+    requires_qualified_operator: false
+    floodwater_entry: NOT_INFERRED_FROM_4X4
+
+  high_clearance_response_vehicle:
+    category: vehicle
+    label: "High-clearance response vehicle / truck"
+    provides: [personnel_transport, relief_cargo_transport, assisted_evacuee_transport, last_mile_transfer]
+    edge_effect: [specialized_flood_response_mobility]
+    requires_qualified_operator: true
+    floodwater_entry: "ONLY_WITH_SPECIALIZED_TEAM_AND_VERIFIED_ROUTE"
+
+  heavy_cargo_truck:
+    category: vehicle
+    label: "Heavy cargo truck"
+    provides: [bulk_relief_transport, palletized_cargo_transport]
+    edge_effect: [bulk_dry_road_logistics]
+    requires_qualified_operator: true
+    floodwater_entry: PROHIBITED_BY_DEFAULT
+
+  atv_utv:
+    category: vehicle
+    label: "ATV / UTV"
+    provides: [last_mile_transfer, light_cargo_transport, narrow_route_access, patient_transport_if_fitted]
+    edge_effect: [rough_terrain_last_mile]
+    requires_qualified_operator: true
+    floodwater_entry: "NO_SWIFTWATER; ROUTE_SPECIFIC_ONLY"
+
+  motorcycle:
+    category: vehicle
+    label: "Motorcycle"
+    provides: [messenger_courier, very_light_cargo_transport]
+    edge_effect: [dry_route_courier]
+    requires_qualified_operator: false
+    floodwater_entry: PROHIBITED_BY_DEFAULT
+
+  powered_rescue_boat:
+    category: watercraft
+    label: "Powered flood/rescue boat"
+    provides: [waterborne_person_transport, assisted_evacuee_transport, patient_transport_if_fitted, animal_transport, relief_cargo_transport]
+    edge_effect: [verified_water_route_mobility]
+    requires_qualified_operator: true
+    floodwater_entry: "MISSION_TYPED_WATERCRAFT_REQUIRED"
+
+  inflatable_rescue_boat:
+    category: watercraft
+    label: "Inflatable rescue boat"
+    provides: [waterborne_person_transport, assisted_evacuuee_transport, patient_transport_if_fitted, animal_transport]
+    edge_effect: [verified_water_route_mobility]
+    requires_qualified_operator: true
+    floodwater_entry: "MISSION_TYPED_WATERCRAFT_REQUIRED"
+
+  hand_launch_raft_skiff:
+    category: watercraft
+    label: "Hand-launch raft / skiff / non-powered craft"
+    provides: [short_water_transfer, person_transport_small_group, light_cargo_transport]
+    edge_effect: [verified_low_energy_water_route]
+    requires_qualified_operator: true
+    floodwater_entry: "MISSION_AND_WATER_CONDITION_SPECIFIC"
+
+  wheelchair:
+    category: mobility
+    label: "Wheelchair"
+    provides: [mobility_assistance]
+    node_effect: [accessible_waiting_area]
+    requires_qualified_operator: false
+
+  stretcher_litter:
+    category: mobility
+    label: "Stretcher / litter"
+    provides: [patient_handling, patient_transport_support]
+    node_effect: [basic_first_aid_access]
+    requires_qualified_operator: true
+
+  pfd_lifejacket_set:
+    category: safety
+    label: "PFD / life jacket set"
+    provides: [water_rescue_ppe]
+    edge_effect: [water_route_personnel_ppe]
+    requires_qualified_operator: false
+
+  portable_radio_repeater:
+    category: communications
+    label: "Portable radio / repeater / field communications"
+    provides: [communications_available, field_coordination, route_status_reporting]
+    node_effect: [communications_available]
+    requires_qualified_operator: false
+
+  portable_lighting:
+    category: power_light
+    label: "Portable lighting"
+    provides: [basic_lighting_or_daylight, night_lighting]
+    node_effect: [basic_lighting_or_daylight, night_lighting]
+    requires_qualified_operator: false
+
+  generator_or_battery_station:
+    category: power_light
+    label: "Generator / battery power station"
+    provides: [critical_power_if_required, charging_power]
+    node_effect: [critical_power_if_required]
+    requires_qualified_operator: true
+
+  potable_water_tank:
+    category: wash
+    label: "Potable-water tank / verified drinking-water supply"
+    provides: [potable_water, drinking_water_for_workers]
+    node_effect: [potable_water, drinking_water_for_workers]
+    requires_qualified_operator: false
+
+  service_water_tank:
+    category: wash
+    label: "Clean service-water tank"
+    provides: [service_water]
+    node_effect: [service_water]
+    requires_qualified_operator: false
+
+  portable_toilet_handwash:
+    category: wash
+    label: "Portable toilet + handwashing"
+    provides: [toilets_and_hand_hygiene, sanitation_wastewater]
+    node_effect: [toilets_and_hand_hygiene, sanitation_wastewater]
+    requires_qualified_operator: false
+
+  portable_pump_dewatering:
+    category: drainage
+    label: "Portable pump / dewatering set"
+    provides: [dewatering_capability]
+    node_effect: [drainage_support]
+    requires_qualified_operator: true
+    note: "does not make a wet operating footprint pass the Dry Gate until dryness is field-verified"
+
+  tent_tarp_weather_shelter:
+    category: shelter
+    label: "Tent / tarpaulin / weather shelter"
+    provides: [weather_protection]
+    node_effect: [weather_protection]
+    requires_qualified_operator: false
+
+  bedding_sleep_kit:
+    category: shelter
+    label: "Bedding / sleeping kit"
+    provides: [bedding_or_sleeping_surfaces]
+    node_effect: [bedding_or_sleeping_surfaces]
+    requires_qualified_operator: false
+
+  privacy_partition:
+    category: shelter
+    label: "Privacy partition"
+    provides: [privacy_and_dignity]
+    node_effect: [privacy_and_dignity]
+    requires_qualified_operator: false
+
+  first_aid_bls_aed:
+    category: health
+    label: "First-aid / BLS / AED kit"
+    provides: [basic_first_aid_access, medicine_health_support]
+    node_effect: [basic_first_aid_access]
+    requires_qualified_operator: true
+
+  cold_chain_box:
+    category: health
+    label: "Cold-chain box / powered medical refrigeration"
+    provides: [medicine_cold_chain]
+    node_effect: [medicine_health_support]
+    requires_qualified_operator: false
+
+  mobile_kitchen:
+    category: food
+    label: "Mobile/community kitchen capability"
+    provides: [safe_food_preparation_or_provision]
+    node_effect: [safe_food_preparation_or_provision]
+    requires_qualified_operator: true
+
+  pallet_jack_forklift:
+    category: logistics
+    label: "Pallet jack / forklift"
+    provides: [safe_loading_unloading, goods_staging_area, bulk_handling]
+    node_effect: [safe_loading_unloading, goods_staging_area]
+    requires_qualified_operator: true
+
+  waste_bins_collection:
+    category: waste
+    label: "Waste bins + collection arrangement"
+    provides: [waste_handling, solid_waste_management]
+    node_effect: [waste_handling, solid_waste_management]
+    requires_qualified_operator: false
+
+  animal_carrier_crate:
+    category: animal
+    label: "Animal carrier / crate / restraint set"
+    provides: [animal_transport, animal_containment_transport]
+    edge_effect: [animal_movement_support]
+    requires_qualified_operator: false
+
+  veterinary_mobile_kit:
+    category: animal
+    label: "Mobile veterinary support kit/team"
+    provides: [veterinary_support, animal_medication_support]
+    node_effect: [animal_plan_if_present]
+    requires_qualified_operator: true
