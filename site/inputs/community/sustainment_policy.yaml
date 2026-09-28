@@ -154,6 +154,45 @@ convergence_feasibility:
       - route_interface_ledger
     rule: "rotating coordinators may operate the ledgers; losing one person must not erase shared operational state"
 
+shelter_operation_ladder:
+  id: SOCL
+  name: "Shelter Operation Capability Ladder"
+  module: "shelter_operation_ladder.py"
+  provenance: "FloodConnect repo-specific synthesis informed by Thai DDPM, Sphere, UNHCR/CCCM, WHO/CDC and shelter-location research"
+  claimed_global_standard: false
+  weighted_score: false
+  cumulative: true
+  hard_rule:
+    name: VERIFIED_DRY_OPERATING_FOOTPRINT
+    equation: "not DryGate(v,t) -> NoShelterOperation(v,t)"
+    requires:
+      - dry_operating_surface_true
+      - dry_status_verified_true
+      - dry_status_fresh_true
+      - immediate_site_hazard_safe_true
+      - drainage_not_blocking_operation_true
+    rule: "FALSE blocks every shelter-operation level; UNKNOWN cannot be promoted to L0"
+  levels:
+    SO_L0_DRY_INTERFACE:
+      purpose: "minimum dry operating node for shared information/transfer"
+      adds: [provider_access_verified, community_distribution_access_verified, communications_available, basic_first_aid_access]
+      overnight_allowed: false
+    SO_L1_RELIEF_TRANSFER:
+      adds: [safe_loading_unloading, goods_staging_area, people_vehicle_separation, basic_lighting_or_daylight, drinking_water_for_workers, waste_handling]
+      overnight_allowed: false
+    SO_L2_DAY_SUPPORT:
+      adds: [capacity_declared, potable_water, toilets_and_hand_hygiene, weather_protection, accessible_waiting_area, food_distribution_safe, health_referral_access, vulnerable_support]
+      overnight_allowed: false
+    SO_L3_OVERNIGHT_SHELTER:
+      adds: [sleeping_space, bedding_or_sleeping_surfaces, privacy_and_dignity, bathing_or_washing, safe_food_preparation_or_provision, night_lighting, structural_and_fire_safety, medicine_health_support, critical_power_if_required, resident_accountability, protection_arrangements]
+      overnight_allowed: true
+    SO_L4_FULL_SHELTER_OPERATION:
+      adds: [service_water, sanitation_wastewater, solid_waste_management, resupply_continuity, maintenance_staffing_or_mechanism, feedback_complaints, child_safeguarding, gbv_protection, family_unity, psychosocial_referral, animal_plan_if_present, contingency_relocation_plan, return_or_closure_plan, reassessment_cycle]
+      overnight_allowed: true
+  promotion_rule: "highest level whose cumulative hard requirements are all TRUE; failed/UNKNOWN next-level field stops promotion"
+  lvcn_relation: "SOCL describes physical-node capability; LVCN independently determines the lowest support layer needed by people"
+  local_convergence_board_relation: "LCB requires SO_L0_DRY_INTERFACE or higher"
+
 convergence_board:
   id: LCB
   name: "Local Convergence Board"
@@ -163,7 +202,8 @@ convergence_board:
   command_hierarchy_required: false
   automatic_dispatch: false
   interface_selection:
-    purpose: "nearest verified dry transfer/distribution interface shared by provider and community sides"
+    purpose: "nearest node already verified as SO_L0_DRY_INTERFACE or higher and shared by provider and community sides"
+    requires_shelter_operation_level: "SO_L0_DRY_INTERFACE"
     hard_predicates:
       - dry_true
       - verified_true
