@@ -84,6 +84,10 @@ return/relocation/closure.
 - Environmental time-to-unsafety engine: `environmental_degradation.py`
 - Environmental degradation equations/evidence: `docs/ENVIRONMENTAL_DEGRADATION_CLOCKS.md`
 - Environmental tests: `tests/test_environmental_degradation.py`
+- Human–Animal Household Unit: `human_animal_household.py`
+- Human–animal equations/evidence: `docs/HUMAN_ANIMAL_HOUSEHOLD_UNIT.md`
+- Thai animal field evidence: `site/inputs/community/human_animal_field_evidence.md`
+- Human–animal tests: `tests/test_human_animal_household.py`
 
 FloodConnect now also models **safe-now -> degrading -> unsafe** transitions that can occur
 without rising water depth: sewage/backflow contamination, sewer-gas/H2S uncertainty,

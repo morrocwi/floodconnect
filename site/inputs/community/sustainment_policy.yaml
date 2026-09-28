@@ -185,6 +185,117 @@ shelter_phases:
     - post_flood_cleaning
     - exit_closure_plan
 
+human_animal_household_unit:
+  id: HAHU
+  provenance: "FloodConnect repo-specific construct informed by Thai flood response and disaster pet-evacuation literature"
+  claimed_global_standard: false
+
+  principle: >
+    A household may include animals that materially affect food, water, sanitation,
+    transport and shelter decisions. Human and animal ledgers remain separate, but the
+    household-unit plan must cover both when animals are declared co-resident/co-evacuating.
+
+  plan_modes:
+    - NONE
+    - CO_RESIDENT_CO_EVACUATING
+    - SEPARATE_VERIFIED_PLAN
+    - UNKNOWN
+
+  animal_types:
+    companion:
+      - dog
+      - cat
+      - bird
+      - rabbit_or_small_mammal
+      - reptile
+      - fish
+      - other_companion
+    livestock_or_working:
+      - cattle_or_buffalo
+      - pig
+      - goat_or_sheep
+      - poultry
+      - horse
+      - other_livestock
+    community_or_stray:
+      handling: "zone/civil-society/veterinary response, not private household ownership inference"
+
+  hard_resource_fields:
+    - animal_food_for_horizon
+    - animal_drinking_water_for_horizon
+    - animal_medication_for_horizon
+    - animal_waste_hygiene_for_horizon
+
+  hard_function_fields:
+    - animal_containment_transport
+    - animal_identification_records
+    - animal_veterinary_support
+
+  conditional_fields:
+    cats_indoor_or_shelter:
+      - cat_litter_for_horizon
+    veterinary_need_declared:
+      - veterinary_support_at_destination_required
+
+  horizon:
+    assessed_horizon_h_required: true
+    no_default_horizon: true
+    finite_only: true
+    equation: "T_animal_resource = 24 * (stock + verified_inflow) / declared_daily_demand"
+    zero_demand_rule: "never return infinity; use NOT_REQUIRED explicitly or UNKNOWN"
+
+  resource_equations:
+    animal_drinking_water:
+      preferred: "D(T) = T * sum(declared animal daily water demand)"
+      note: >
+        owner/veterinary/measured consumption is preferred. Dog/cat veterinary maintenance
+        formulas may be used only as explicit planning estimates, never silent defaults.
+    animal_food:
+      preferred: "D(T) = T * sum(declared normal feed rate)"
+      fallback_reference: "RER = 70 * BWkg^0.75; MER = k * RER for dog/cat starting estimates"
+      note: "actual feed rate/product instructions override generic estimate when known"
+    cat_litter:
+      equation: "D_litter(T) = declared_litter_burn_rate * T"
+      universal_default_allowed: false
+
+  transport_constraint:
+    equation: "AnimalMove = containment AND transport_capacity AND route AND destination_compatibility"
+    rule: >
+      failure of animal transport never justifies keeping people in a physically unsafe
+      location; request assisted evacuation with animals or a separate verified animal plan.
+
+  destination_service_need:
+    co_evacuating: companion_animal_accommodation
+    optional_veterinary_need: veterinary_support
+
+  animal_accommodation:
+    required_fields:
+      - accepted_species
+      - animal_capacity
+      - animal_drinking_water
+      - animal_food
+      - animal_waste_management
+      - animal_containment_area
+      - separation_from_food_preparation
+    optional_declared_fields:
+      - veterinary_support
+      - quarantine_or_isolation_area
+      - allergy_separation
+      - bite_scratch_management
+      - vaccination_or_record_check
+
+  effective_unit_horizon:
+    equation: "T_HAHU = min(T_human_effective, T_animal_effective)"
+    rule: >
+      this is a household-unit continuity horizon; immediate human life safety still has
+      priority and cannot be overridden by animal resource deficits.
+
+  privacy:
+    public_layer: "species/category counts and resource/support gaps only"
+    restricted_local_roster: >
+      owner/animal identity, microchip/vaccination data and exact pickup location may exist
+      only in authorized operational systems and must not be committed to the public repository.
+
 member_need_profile:
   privacy: "aggregate operational needs only; no names, diagnoses, phone numbers, room/house identifiers"
 

@@ -567,3 +567,46 @@ Sanitation=FUNCTIONAL
 
 The separation is important in Thai flood cases where bottled drinking water can still be
 available while tap/service water, toilets or drainage fail.
+
+
+## Human–Animal Household Unit
+
+Thai flood response repeatedly shows that household continuity may include companion animals
+and, in some settings, livestock/working animals. FloodConnect therefore models:
+
+U_h = H_h union A_h
+
+while keeping human and animal resource ledgers separate.
+
+For a co-resident/co-evacuating animal unit:
+
+B_a_r(T) = Stock_a_r + VerifiedInflow_a_r(T) - Demand_a_r(T)
+
+and the household-unit effective horizon is:
+
+T_HAHU = min(T_human_effective, T_animal_effective)
+
+Animal hard constraints may include:
+- animal drinking water;
+- species-appropriate feed;
+- required medication;
+- litter/waste hygiene;
+- containment/transport;
+- animal-compatible destination;
+- veterinary support when declared necessary.
+
+Evacuation feasibility becomes:
+
+Move_HAHU =
+HumanRoute
+AND AnimalContainment
+AND AnimalTransportCapacity
+AND DestinationAnimalCompatibility
+
+A failed animal constraint never authorizes remaining in a physically unsafe location.
+The action becomes assisted evacuation with animals or a separate verified animal plan.
+
+See:
+- docs/HUMAN_ANIMAL_HOUSEHOLD_UNIT.md
+- human_animal_household.py
+- site/inputs/community/human_animal_field_evidence.md
