@@ -1,0 +1,84 @@
+# Proposal-only policy skeleton for Shelter Decision & Community Sustainment.
+# This file contains NO live state and NO claim that any current node is safe.
+# See docs/SHELTER_DECISION_AND_COMMUNITY_SUSTAINMENT.md.
+
+version: "0.1"
+status: "proposal_not_operational"
+
+construct:
+  id: LVCN
+  name: "Lowest Viable Community Node"
+  provenance: "FloodConnect repo-specific proposal"
+  claimed_global_standard: false
+
+classification:
+  allowed:
+    - VIABLE_AND_ESCALATABLE
+    - VIABLE_BUT_ISOLATED
+    - NOT_VIABLE
+    - UNKNOWN
+
+decision_states:
+  - STAY_AND_SUSTAIN
+  - RESUPPLY_WINDOW
+  - PREPARE_TO_MOVE
+  - SHELTER_SITE_SCREENING
+  - EVACUATE_ROUTE
+  - SHELTER_OPERATION
+  - RETURN_RELOCATE_CLOSE
+
+evaluation_order:
+  - household
+  - buddy_cell
+  - zone
+  - internal_safe
+  - egress
+  - external_safe
+
+hard_constraints:
+  - physical_safety
+  - potable_water_for_horizon
+  - food_for_horizon
+  - essential_medicine_for_horizon
+  - critical_power
+  - wash
+  - communications
+  - vulnerable_support
+  - escalation_mechanism
+
+defaults:
+  planning_horizon_h: null
+  unknown_is_safe: false
+  allow_weighted_override: false
+  allow_unverified_route: false
+  allow_unverified_shelter: false
+  allow_inferred_stock_duration: false
+
+resupply_window:
+  requires:
+    - current_node_physically_safe
+    - declared_need_within_planning_horizon
+    - supplier_verified
+    - route_field_verified
+    - route_fresh
+    - route_mode_feasible
+    - no_conflicting_official_movement_instruction
+  automatic_travel_instruction: false
+
+shelter_screening:
+  requires:
+    - hazard_flood_safety
+    - structural_fire_safety
+    - access_accessibility
+    - water_wash
+    - power_if_required
+    - communications
+    - capacity
+    - medical_accessibility_support
+    - resupply_access
+    - management_maintenance
+    - exit_closure_plan
+
+implementation:
+  code_module: null
+  note: "No evaluator is implemented yet. Next agent must follow the HANDOFF document."
