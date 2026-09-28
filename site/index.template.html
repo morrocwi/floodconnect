@@ -42,6 +42,16 @@
     --card-radius: 16px;
     --font-body: "Noto Sans Thai","Sarabun",system-ui,-apple-system,"Segoe UI",sans-serif;
     --font-display: "Noto Sans Thai","Sarabun",system-ui,sans-serif;
+    /* trend-arrow aliases (redesign 2026-09-27, §2) -- resolve through var() on the
+       same element so they follow the dark-mode overrides above automatically. */
+    --trend-worse:   var(--alert);
+    --trend-better:  var(--ok);
+    --trend-steady:  var(--neutral-text);
+    --trend-unknown: var(--warning-text);
+    /* tide-window shading (SVG charts) -- dedicated tokens so the purple tide band
+       never breaks dark mode as a fixed hex fill/text colour (redesign v2 review fix). */
+    --tide-shade: #b39ddb;
+    --tide-text: #6a4fa0;
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark){
@@ -71,6 +81,8 @@
       --hero-border: rgba(233,241,243,.24);
       --tier-3: #FF7A68; --tier-2: #F5BB4E; --tier-1: #E6C95A; --tier-1-text: #E6C95A; --tier-0: #9AACB2;
       --line: #2C4450;
+      --tide-shade: #9575CD;
+      --tide-text: #C9A8F2;
     }
   }
   :root[data-theme="dark"]{
@@ -99,6 +111,8 @@
     --hero-border: rgba(233,241,243,.24);
     --tier-3: #FF7A68; --tier-2: #F5BB4E; --tier-1: #E6C95A; --tier-1-text: #E6C95A; --tier-0: #9AACB2;
     --line: #2C4450;
+    --tide-shade: #9575CD;
+    --tide-text: #C9A8F2;
   }
 
   *{ box-sizing: border-box; }
@@ -125,7 +139,7 @@
      2026-09-26: "one card language"), not a bare oversized heading. */
   h2.sec-label, summary.sec-label{
     display:flex; align-items:center; gap:8px;
-    font-size:0.8125rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    font-size:1rem; font-weight:700;
     color: var(--text-muted); margin: 0 0 14px; padding-top: 32px; border-top: 1px solid var(--line);
     padding-block-start: 24px;
   }
@@ -134,7 +148,7 @@
   a{ color: var(--link); }
   a:not(:hover){ text-decoration-thickness: 1.5px; }
   small, .small{ font-size: 1rem; color: var(--text-muted); }
-  .pump-table .code{ display:block; font-size:0.9rem; font-weight:400; color: var(--text-muted); margin-top:2px; }
+  .pump-table .code{ display:block; font-size:1rem; font-weight:400; color: var(--text-muted); margin-top:2px; }
   .num, td, .value{ font-variant-numeric: tabular-nums; }
   ul{ padding-inline-start: 1.3em; margin: 0 0 10px; }
   li{ margin-bottom: 4px; }
@@ -148,12 +162,14 @@
     *{ scroll-behavior: auto !important; }
   }
 
-  /* ---- top bar ---- */
+  /* ---- top bar (redesign: compact brand row, status word must land within
+     the first ~200px -- MUST-FIX 7) ---- */
   .topbar{
-    display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
-    padding-block: 4px 12px;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding-block: 4px 10px;
   }
   .topbar .titlewrap{ flex: 1 1 auto; }
+  .topbar h1{ font-size:1.1rem; }
   .fontctl{ display:flex; gap:6px; flex: 0 0 auto; }
   .fontctl button{
     min-width:48px; min-height:48px; border-radius:8px; border:2px solid var(--accent);
@@ -162,9 +178,10 @@
   }
   .fontctl button:hover{ background: var(--surface-2); }
 
-  /* ---- area selector ---- */
+  /* ---- area selector (label removed from view -- MUST-FIX 7 -- the <select>
+     already carries the same text as aria-label, so nothing is lost for
+     screen readers) ---- */
   .area-select-wrap{ margin: 2px 0 14px; }
-  .area-select-wrap label{ display:block; font-size:0.85rem; color: var(--text-muted); margin-bottom:4px; }
   #area-select{
     width:100%; min-height:48px; padding:8px 12px; font-size:1.05rem; font-family: var(--font-body);
     border-radius:8px; border:1.5px solid var(--border); background: var(--surface); color: var(--text);
@@ -178,16 +195,14 @@
        2026-09-26: "one card language" -- every other card is flat + hairline). */
     box-shadow: 0 1px 2px rgba(10,22,29,.16), 0 12px 28px -8px rgba(10,22,29,.28);
   }
-  .banner .place{
-    display:flex; align-items:center; gap:8px;
-    font-size:1rem; letter-spacing:.03em; color: var(--hero-muted); margin:0 0 12px; font-weight:500;
-  }
-  .status-heading{ margin: 0 0 10px; }
+  .status-heading{ margin: 0 0 10px; font-size:1rem; font-weight:400; }
   .status-heading .status-place{
+    display:block;
     font-family: var(--font-display); font-weight:700; font-size:1.1rem; color: var(--hero-muted);
     margin:0 0 2px;
   }
   .status-heading .status-word{
+    display:block;
     font-family: var(--font-display); font-weight:700; line-height:1.15;
     font-size: clamp(2rem, 7vw, 2.4rem); color: var(--on-hero); margin:0;
   }
@@ -199,13 +214,15 @@
   }
   .banner .watch strong{ color: inherit; font-weight:700; }
   .banner .safety-fact{
-    font-size:0.98rem; font-weight:600; line-height:1.5; margin:0 0 14px;
+    display:flex; align-items:flex-start; gap:8px;
+    font-size:1.0625rem; font-weight:600; line-height:1.5; margin:0 0 14px;
     padding:10px 12px; border-radius:10px; background: rgba(255,190,60,.14);
     border:1px solid rgba(255,190,60,.4); color: var(--on-hero);
   }
+  .banner .safety-fact svg{ flex:0 0 auto; margin-top:2px; }
   .banner .safety-fact:empty{ display:none; }
   .why-heading, .hours-heading{
-    font-family: var(--font-display); font-size:0.95rem; font-weight:700; color: var(--hero-muted);
+    font-family: var(--font-display); font-size:1.05rem; font-weight:700; color: var(--hero-muted);
     margin:0 0 6px; text-transform:none; letter-spacing:.01em;
   }
   .why-list, .hours-list{ list-style:none; margin:0 0 16px; padding:0; }
@@ -216,20 +233,20 @@
   .why-emoji{ flex:0 0 auto; font-size:1.05rem; }
   .why-text{ flex:1 1 auto; font-size:1rem; color: var(--on-hero); }
   .why-text strong{ font-weight:700; }
-  .why-time{ font-size:0.85rem; color: var(--hero-muted); white-space:nowrap; }
+  .why-time{ font-size:1rem; color: var(--hero-muted); white-space:nowrap; }
   .why-dot{ width:9px; height:9px; border-radius:50%; flex:0 0 auto; margin-inline-start:auto; }
   .why-dot-red{ background: var(--alert); }
   .why-dot-amber{ background: var(--warning); }
   .why-dot-green{ background: var(--ok); }
   .why-dot-grey{ background: var(--hero-muted); }
   .hours-list li{ border-bottom:none; border-inline-start:3px solid var(--hero-border); padding-inline-start:10px; }
-  .banner .note{ font-size:0.85rem; color: var(--hero-muted); margin:0; }
+  .banner .note{ font-size:1rem; color: var(--hero-muted); margin:0; }
 
   .stale-ribbon-wrap{ margin: 12px 0 0; }
   .stale-ribbon{
     display:inline-flex; align-items:center; gap:6px; color: var(--warning);
     border:1.5px solid currentColor; border-radius:999px; font-weight:600;
-    font-size:0.85rem; letter-spacing:.01em; padding:4px 12px; background:transparent;
+    font-size:1rem; letter-spacing:.01em; padding:4px 12px; background:transparent;
   }
 
   .callrow{ display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
@@ -253,6 +270,33 @@
   .ic-24{ width:24px; height:24px; }
   .ic-40{ width:40px; height:40px; }
 
+  /* ---- trend/arrow component (redesign 2026-09-27, §3d): direction and the
+     colour of its meaning are kept separate -- rain going down is good, water
+     going up is bad -- so the icon is never the only carrier of meaning; the
+     Thai word next to it always is. ---- */
+  .trend{display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px 8px;min-height:48px;
+    padding:8px 16px;border-radius:999px;background:var(--surface);color:var(--text);
+    border:1.5px solid var(--border);font-weight:700;font-size:1.05rem;line-height:1.3}
+  .banner .trend{border:2px solid var(--hero-border);margin:4px 0 12px}
+  .trend-label{font-weight:600;color:var(--text-muted);font-size:1rem}
+  .trend-ic{width:24px;height:24px;flex:0 0 auto}
+  .trend-lg .trend-ic{width:28px;height:28px}
+  .trend-sm{min-height:36px;padding:4px 12px;font-size:1rem}
+  .trend-sm .trend-ic{width:20px;height:20px}
+  .trend-delta{font-weight:600;color:var(--text-muted);font-variant-numeric:tabular-nums}
+  .trend-worse .trend-ic{color:var(--trend-worse)}
+  .trend-better .trend-ic{color:var(--trend-better)}
+  .trend-steady .trend-ic{color:var(--trend-steady)}
+  .trend-unknown .trend-ic{color:var(--trend-unknown)}
+  .status-row{display:flex;align-items:center;gap:14px}
+  .status-arrow{flex:0 0 56px;width:56px;height:56px;border-radius:50%;background:var(--surface);
+    display:inline-flex;align-items:center;justify-content:center}
+  .status-arrow svg{width:36px;height:36px}
+  .status-arrow.trend-worse{color:var(--trend-worse)}
+  .status-arrow.trend-better{color:var(--trend-better)}
+  .status-arrow.trend-unknown{color:var(--trend-unknown)}
+  .group-divider{margin-top:32px;border-top:1px solid var(--line);padding-top:16px}
+
   section{ margin-bottom: 4px; }
 
   /* ---- card language: one shared look for every card on the page -- 16px
@@ -265,7 +309,7 @@
   }
   .tier-card .body{ padding:20px 22px; }
   .tier-card .name{ display:flex; align-items:center; gap:10px; font-weight:700; font-size:1.1rem; margin-bottom:10px; }
-  .tier-card .prepline{ font-weight:600; margin:10px 0 0; font-size:0.98rem; }
+  .tier-card .prepline{ font-weight:600; margin:10px 0 0; font-size:1rem; }
   .zone-chip-list{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:2px; }
   .zone-chip{
     border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:1rem;
@@ -297,10 +341,10 @@
   .wb-card{ border-radius: var(--card-radius); border:1px solid var(--line); border-left-width:4px; padding:20px 22px; background:var(--surface); }
   .wb-card.worse{ border-left-color: var(--alert); }
   .wb-card.better{ border-left-color: var(--ok); }
-  .wb-card h3{ font-size:0.95rem; margin:0 0 12px; font-weight:700; }
+  .wb-card h3{ font-size:1rem; margin:0 0 12px; font-weight:700; }
   .wb-list{ list-style:none; margin:0 0 10px; padding:0; }
   .wb-list li{ display:flex; align-items:flex-start; gap:10px; margin-bottom:10px; font-size:1rem; }
-  .wb-card .action{ font-size:0.92rem; font-weight:600; color: var(--text-muted); margin:0; }
+  .wb-card .action{ font-size:1rem; font-weight:600; color: var(--text-muted); margin:0; }
 
   /* ---- optional-advice section (short suggestions, icon-led) ---- */
   .advice-list{ list-style:none; margin:0; padding:0; }
@@ -319,10 +363,10 @@
   }
   .tile svg.ic{ color: var(--on-hero); margin-bottom:2px; }
   .tile-value{ font-size:1.5rem; font-weight:700; color: var(--on-hero); line-height:1.1; }
-  .tile-label{ font-size:0.8rem; color: var(--hero-muted); line-height:1.3; }
-  .tile-status{ display:flex; align-items:center; gap:5px; font-size:0.8rem; color: var(--on-hero); font-weight:600; margin-top:2px; }
-  .tile-extra{ font-size:0.72rem; color: var(--hero-muted); }
-  .tile-time{ font-size:0.72rem; color: var(--hero-muted); }
+  .tile-label{ font-size:1rem; color: var(--hero-muted); line-height:1.3; }
+  .tile-status{ display:flex; align-items:center; gap:5px; font-size:1rem; color: var(--on-hero); font-weight:600; margin-top:2px; }
+  .tile-extra{ font-size:1rem; color: var(--hero-muted); }
+  .tile-time{ font-size:1rem; color: var(--hero-muted); }
 
   /* ---- tables ---- */
   .tablewrap{ overflow-x:auto; max-width:100%; margin-bottom:14px; border:1px solid var(--border); border-radius:8px; }
@@ -332,7 +376,7 @@
   th, td{ padding:9px 12px; border-bottom:1px solid var(--border); text-align:left; vertical-align:top; }
   thead th{ background: var(--surface-2); font-weight:700; }
   tbody tr:last-child td{ border-bottom:none; }
-  .thresh{ color:var(--text-muted); font-size:0.9rem; }
+  .thresh{ color:var(--text-muted); font-size:1rem; }
 
   /* Desktop/tablet: normal table, wide enough to need a min-width + horizontal scroll.
      Phones (<=600px): stacked "card" rows instead -- no min-width, no sideways scroll,
@@ -370,8 +414,8 @@
     .pump-table tbody td:first-child .nw{ white-space:nowrap; }
     .pump-table tbody td:nth-child(2){ order:2; font-size:1.2rem; font-weight:700; } /* ระดับน้ำ */
     .pump-table tbody td:nth-child(4){ order:3; } /* สถานะ pill, same line as value */
-    .pump-table tbody td:nth-child(3){ order:4; flex:1 1 100%; font-size:0.85rem; color:var(--text-muted); margin-top:2px; } /* ปั๊มเดิน */
-    .pump-table tbody td:nth-child(5){ order:5; font-size:0.85rem; color:var(--text-muted); } /* เวลา, same line as ปั๊มเดิน */
+    .pump-table tbody td:nth-child(3){ order:4; flex:1 1 100%; font-size:1rem; color:var(--text-muted); margin-top:2px; } /* ปั๊มเดิน */
+    .pump-table tbody td:nth-child(5){ order:5; font-size:1rem; color:var(--text-muted); } /* เวลา, same line as ปั๊มเดิน */
     .pump-table tbody td:nth-child(5)::before{ content:"· "; color:var(--text-muted); }
 
     /* ---- canal/water-level cards (คลองรอบบ้าน north/south/upstream/stale): station
@@ -389,12 +433,16 @@
     .canal-table tbody td:first-child .small{ display:block; font-weight:400; margin-top:2px; }
     .canal-table tbody td:nth-child(2){ order:2; font-size:1.25rem; font-weight:700; } /* ระดับน้ำ */
     .canal-table tbody td:nth-child(3){ order:3; } /* สถานะ pill, same line as value */
-    .canal-table tbody td:nth-child(4){ order:4; flex:1 1 100%; font-size:0.85rem; color:var(--text-muted); } /* เกณฑ์ + เวลา */
+    .canal-table tbody td:nth-child(4){ order:4; flex:1 1 100%; font-size:1rem; color:var(--text-muted); } /* เกณฑ์ + เวลา */
+  }
+
+  @media (max-width:360px){
+    .tile-grid{ grid-template-columns:1fr; }
   }
 
   .pill{
     display:inline-flex; align-items:center; min-height:28px; padding:4px 14px; border-radius:999px;
-    font-weight:700; font-size:0.92rem; border:1.5px solid currentColor;
+    font-weight:700; font-size:1rem; border:1.5px solid currentColor;
   }
   .pill-ok{ color: var(--ok); }
   .pill-warn{ color: var(--warning-text); }
@@ -409,24 +457,25 @@
   /* ---- canal graph (ผังคลอง) ---- */
   .canal-graph-wrap{ margin: 10px 0 4px; }
   .cg-synthesis{ font-weight:600; margin:6px 0; }
-  .canal-graph-svg{ width:100%; height:auto; display:block; margin-top:8px; }
-  .cg-node-label{ font-size:11px; fill: var(--text); font-weight:700; }
-  .cg-node-value{ font-size:11px; font-weight:700; }
+  .chart-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; margin-top:8px; }
+  .canal-graph-svg{ width:100%; min-width:760px; height:auto; display:block; }
+  .cg-node-label{ font-size:14px; fill: var(--text); font-weight:700; }
+  .cg-node-value{ font-size:14px; font-weight:700; }
   .cg-node-hi rect{ stroke-width:3.5; filter: drop-shadow(0 0 2px var(--accent-2)); }
-  .cg-edge-measured{ stroke:#1F7A8C; stroke-width:2.5; }
-  .cg-edge-controlled{ stroke:#D68910; stroke-width:2.5; }
-  .cg-edge-design{ stroke:#8A9AA0; stroke-width:1.4; stroke-dasharray:2 3; }
-  .cg-edge-unknown{ stroke:#8A9AA0; stroke-width:1.2; stroke-dasharray:1 4; }
-  .cg-lock{ font-size:12px; }
+  .cg-edge-measured{ stroke: var(--accent-2); stroke-width:2.5; }
+  .cg-edge-controlled{ stroke: var(--warning); stroke-width:2.5; }
+  .cg-edge-design{ stroke: var(--neutral); stroke-width:1.4; stroke-dasharray:2 3; }
+  .cg-edge-unknown{ stroke: var(--neutral); stroke-width:1.2; stroke-dasharray:1 4; }
+  .cg-lock{ font-size:14px; fill: var(--warning-text); font-weight:700; }
   .cg-legend-item{ margin-right:12px; white-space:nowrap; }
   .cg-swatch{ display:inline-block; width:14px; height:3px; margin-right:4px; vertical-align:middle; }
-  .cg-swatch-blue{ background:#1F7A8C; }
-  .cg-swatch-orange{ background:#D68910; }
-  .cg-swatch-grey{ background:#8A9AA0; }
+  .cg-swatch-blue{ background: var(--accent-2); }
+  .cg-swatch-orange{ background: var(--warning); }
+  .cg-swatch-grey{ background: var(--neutral); }
 
   /* ---- burden ledger (ผลที่วัดได้ที่ประตูน้ำ) ---- */
   .burden-ledger-wrap{ margin: 10px 0 4px; }
-  .bl-zone-heading{ font-size:0.95rem; margin:10px 0 4px; }
+  .bl-zone-heading{ font-size:1rem; margin:10px 0 4px; }
   .bl-zone-list{ margin:0 0 6px; padding-left:1.2em; }
   .bl-zone-list li{ margin-bottom:4px; }
 
@@ -447,44 +496,46 @@
     padding:14px 16px; margin:14px 0; font-size:1rem;
   }
   .care-box strong{ color: var(--alert-strong); }
-  .helpers-note{ font-size:0.95rem; color: var(--text-muted); margin-top:10px; }
+  .helpers-note{ font-size:1rem; color: var(--text-muted); margin-top:10px; }
 
   /* ---- footer ---- */
   footer{ margin-top:30px; padding-top:20px; border-top:3px solid var(--border); font-size:1rem; color:var(--text-muted); }
   footer h2.sec-label{ border:none; padding:0; margin-bottom:12px; }
   .sources-list{ list-style:none; padding:0; margin:0 0 14px; }
   .sources-list li{ display:flex; align-items:flex-start; gap:8px; margin-bottom:8px; }
-  .sources-list a{ display:inline-flex; align-items:center; min-height:44px; padding-inline:4px; }
+  .sources-list a{ display:inline-flex; align-items:center; min-height:48px; padding-inline:4px; }
   .hotline{ font-weight:700; color: var(--text); }
-  .credit{ margin-top:14px; font-size:0.92rem; }
+  .credit{ margin-top:14px; font-size:1rem; }
 
-  /* every tel:/source link gets a real 44px tap target, page-wide */
-  a[href^="tel:"]{ display:inline-flex; align-items:center; min-height:44px; padding-inline:4px; }
+  /* every tel:/source link gets a real 48px tap target, page-wide */
+  a[href^="tel:"]{ display:inline-flex; align-items:center; min-height:48px; padding-inline:4px; }
 
   .empty-note{ color: var(--text-muted); font-style: normal; }
 
-  /* Water-balance section (Toledo PROP-FLOOD-03, proposal) -- 2026-09-26 */
-  .tag-pill{ display:inline-block; padding:1px 7px; border-radius:10px; font-size:0.82rem;
-             font-weight:600; background:#eef1f4; color:#3a4250; white-space:nowrap; }
-  .tag-verified, .tag-measured{ background:#e3f3e9; color:#1e6b3f; }
-  .tag-relayed{ background:#fdf0dd; color:#8a5a10; }
-  .tag-open, .tag-none{ background:#f1eef6; color:#5b4a86; }
-  .tag-official_report, .tag-official_forecast{ background:#e4edfb; color:#20488f; }
-  .drain-timeline-svg, .village-panel-svg{ width:100%; height:auto; display:block; }
+  /* Water-balance section (registered formula, still a proposal) -- 2026-09-26.
+     Colours moved onto theme tokens (MUST-FIX 3) so every pill stays legible
+     in dark mode instead of a hard-coded light-mode-only hex pair. */
+  .tag-pill{ display:inline-block; padding:1px 7px; border-radius:10px; font-size:1rem;
+             font-weight:600; background: var(--surface-2); color: var(--text); white-space:nowrap; }
+  .tag-verified, .tag-measured{ background: var(--surface-2); color: var(--ok); }
+  .tag-relayed{ background: var(--surface-2); color: var(--warning-text); }
+  .tag-open, .tag-none{ background: var(--surface-2); color: var(--neutral-text); }
+  .tag-official_report, .tag-official_forecast{ background: var(--surface-2); color: var(--accent); }
+  .drain-timeline-svg, .village-panel-svg{ width:100%; min-width:640px; height:auto; display:block; }
   .drain-legend{ list-style:none; padding:0; margin:8px 0; display:flex; flex-wrap:wrap; gap:10px 16px; }
-  .drain-legend li{ display:flex; align-items:center; gap:6px; font-size:0.9rem; }
+  .drain-legend li{ display:flex; align-items:center; gap:6px; font-size:1rem; }
   .legend-swatch{ display:inline-block; width:14px; height:4px; border-radius:2px; }
   .waterbalance-caveat{ background:#fdf6e3; border:1px solid #eadfb4; border-radius:8px;
-                         padding:8px 12px; font-size:0.92rem; margin-bottom:10px; }
-  .mini-capacity-table, .daily-rain-table{ width:100%; border-collapse:collapse; font-size:0.92rem; }
+                         padding:8px 12px; font-size:1rem; margin-bottom:10px; }
+  .mini-capacity-table, .daily-rain-table{ width:100%; border-collapse:collapse; font-size:1rem; }
   .mini-capacity-table td, .mini-capacity-table th,
   .daily-rain-table td, .daily-rain-table th{ padding:5px 8px; border-bottom:1px solid var(--border); text-align:left; }
   .wb-inputs-grid{ display:flex; flex-wrap:wrap; gap:0 24px; }
   .wb-inputs-grid ul{ list-style:none; padding:0; margin:4px 0; }
-  .wb-inputs-present li.ok{ color:#1e6b3f; }
-  .wb-inputs-missing li.missing{ color:#a4373a; }
+  .wb-inputs-present li.ok{ color: var(--ok); }
+  .wb-inputs-missing li.missing{ color: var(--alert); }
   .wb-refused-sentence{ font-size:1rem; }
-  .flag-line{ color:#a4373a; }
+  .flag-line{ display:flex; align-items:flex-start; gap:6px; color: var(--alert); }
   .briefing-hero{ font-weight:600; margin:4px 0; }
 
   @media (max-width:400px){
@@ -492,10 +543,10 @@
   }
 </style>
 <main>
+  {{ICON_SPRITE}}
   <div class="topbar">
     <div class="titlewrap">
       <h1>FloodConnect</h1>
-      <p class="subtitle" id="page-subtitle">{{ACTIVE_SUBTITLE}}</p>
     </div>
     <div class="fontctl" role="group" aria-label="ปรับขนาดตัวอักษร">
       <button type="button" id="font-minus" aria-label="ลดขนาดตัวอักษร">A−</button>
@@ -504,7 +555,6 @@
   </div>
 
   <div class="area-select-wrap">
-    <label for="area-select">เลือกพื้นที่ที่ต้องการดู</label>
     <select id="area-select" aria-label="เลือกพื้นที่ที่ต้องการดู">
       <option value="sammakorn" selected>หมู่บ้านสัมมากร (รามคำแหง 112)</option>
       <option value="ram53">ซอยรามคำแหง 53</option>
@@ -515,11 +565,11 @@
   <section class="area-block" data-area="__AREA__" id="area-__AREA__"{{AREA_HIDDEN}}>
 
     <section class="banner" aria-label="สถานการณ์ตอนนี้" id="banner-section-__AREA__">
-      <p class="place" id="banner-place-__AREA__">{{PLACE_PIN}}</p>
-      <div class="status-heading">
-        <p class="status-place" id="status-place-__AREA__">{{HEADING_LABEL}}</p>
-        <p class="status-word" id="banner-word-__AREA__">{{STATUS_WORD}}</p>
-      </div>
+      <h2 class="status-heading">
+        <span class="status-place" id="status-place-__AREA__">{{HEADING_LABEL}}</span>
+        <span class="status-row">{{STATUS_ARROW}}<span class="status-word" id="banner-word-__AREA__">{{STATUS_WORD}}</span></span>
+      </h2>
+      <div class="rain-trend" id="rain-trend-__AREA__">{{RAIN_TREND}}</div>
       <div class="briefing-hero-wrap" id="briefing-hero-__AREA__"{{BRIEFING_HERO_HIDDEN}}>{{BRIEFING_HERO_HTML}}</div>
       <p class="now" id="banner-now-__AREA__">ตอนนี้ อาจทำได้: {{NOW_LINE}}</p>
       <p class="safety-fact" id="banner-safety-fact-__AREA__">{{SAFETY_FACT}}</p>
@@ -527,10 +577,6 @@
 
       <h3 class="why-heading">ทำไมถึงบอกแบบนี้</h3>
       <div class="tile-grid" id="why-list-__AREA__">{{WHY_LIST}}</div>
-
-      <div id="canal-graph-__AREA__">{{CANAL_GRAPH_SECTION_HTML}}</div>
-
-      <div id="burden-ledger-__AREA__">{{BURDEN_LEDGER_SECTION_HTML}}</div>
 
       <h3 class="hours-heading">อีก 3–5 ชั่วโมงข้างหน้า</h3>
       <ul class="hours-list" id="hours-list-__AREA__">{{HOURS_LIST}}</ul>
@@ -548,12 +594,12 @@
     </section>
 
     <section aria-labelledby="h-wb-__AREA__">
-      <h2 class="sec-label" id="h-wb-__AREA__"><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>แนวโน้ม</span></h2>
+      <h2 class="sec-label" id="h-wb-__AREA__"><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-clock"/></svg><span>แนวโน้ม</span></h2>
       <div id="wb-__AREA__">{{WB_HTML}}</div>
     </section>
 
     <section aria-labelledby="h-advice-__AREA__">
-      <h2 class="sec-label" id="h-advice-__AREA__"><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>สิ่งที่อาจทำได้ในช่วงนี้ (พิจารณาเอง)</span></h2>
+      <h2 class="sec-label" id="h-advice-__AREA__"><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-check"/></svg><span>สิ่งที่อาจทำได้ในช่วงนี้ (พิจารณาเอง)</span></h2>
       <div id="advice-__AREA__">{{ADVICE_HTML}}</div>
     </section>
 
@@ -574,8 +620,10 @@
       </div>
     </section>
 
+    <h2 class="sec-label group-divider"><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-doc"/></svg><span>ข้อมูลละเอียด แตะเพื่อเปิดดู</span></h2>
+
     <details id="canal-details-__AREA__">
-      <summary><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c1.5-2 3-2 4.5 0s3 2 4.5 0 3-2 4.5 0 3 2 4.5 0"/><path d="M2 9c1.5-2 3-2 4.5 0s3 2 4.5 0 3-2 4.5 0 3 2 4.5 0"/></svg><span>คลองรอบบ้าน</span></summary>
+      <summary><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-wave"/></svg><span>คลองรอบบ้าน</span></summary>
       <div class="tier-body">
         <p class="table-lead">เกณฑ์ของ กทม. เทียบระดับน้ำในคลอง (ม.): เส้นเตือน / เส้นอันตราย / ล้นตลิ่ง — ตัวเลขเฉพาะจุดของแต่ละสถานีอยู่ในบรรทัดเล็กใต้ค่าน้ำของแถวนั้น</p>
         <h3 style="margin:0 0 6px;font-size:1.05rem;">{{CANAL_NORTH_LABEL}}</h3>
@@ -602,11 +650,15 @@
             </table></div>
           </div>
         </details>
+
+        <div id="canal-graph-__AREA__">{{CANAL_GRAPH_SECTION_HTML}}</div>
+
+        <div id="burden-ledger-__AREA__">{{BURDEN_LEDGER_SECTION_HTML}}</div>
       </div>
     </details>
 
     <details id="forecast-details-__AREA__">
-      <summary><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 13v8"/><path d="M8 13v8"/><path d="M12 15v8"/><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/></svg><span>ทางการบอกว่าอะไรกำลังมา</span></summary>
+      <summary><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-rain"/></svg><span>ทางการบอกว่าอะไรกำลังมา</span></summary>
       <div class="tier-body">
         <div class="fcard">
           <h3>ฝนที่ตกไปแล้วใน 24 ชั่วโมงที่ผ่านมา</h3>
@@ -641,7 +693,7 @@
     </details>
 
     <details id="exit-details-__AREA__">
-      <summary><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>ทางออกจาก{{EXIT_PLACE_WORD}}</span></summary>
+      <summary><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-exit"/></svg><span>ทางออกจาก{{EXIT_PLACE_WORD}}</span></summary>
       <div class="tier-body">
         <div class="tablewrap"><table>
           <thead><tr><th>เส้นทาง</th><th>รายงานล่าสุด</th></tr></thead>
@@ -657,7 +709,7 @@
     </details>
 
     <details id="community-details-__AREA__">
-      <summary><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>เสียงจากอินเทอร์เน็ต</span></summary>
+      <summary><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-doc"/></svg><span>เสียงจากอินเทอร์เน็ต</span></summary>
       <div class="tier-body">
         <p class="small">รายงานสาธารณะที่คนในพื้นที่โพสต์ อ่านคู่กับข้อมูลทางการ ไม่เก็บชื่อผู้โพสต์ <span class="small">(social listening)</span></p>
         <div class="tablewrap"><table>
@@ -675,7 +727,7 @@
     </details>
 
     <details id="help-details-__AREA__">
-      <summary><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><span>ถ้าต้องการความช่วยเหลือ</span></summary>
+      <summary><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-hospital"/></svg><span>ถ้าต้องการความช่วยเหลือ</span></summary>
       <div class="tier-body">
         <p class="hlp-line">หน้านี้ยังไม่มีเบอร์โทรฉุกเฉินที่ตรวจสอบจากแหล่งข้อมูลทางการที่ใช้สร้างหน้านี้
           — ดูลิงก์หน่วยงาน (สสน., สำนักการระบายน้ำ กทม., สำนักงานเขต) ในหัวข้อ "แหล่งข้อมูล" ท้ายหน้าเพื่อค้นเบอร์ที่ถูกต้อง
@@ -697,7 +749,7 @@
     </details>
 
     <details id="waterbalance-details-__AREA__">
-      <summary><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 8 4 11.5 4 15.5A8 8 0 0 0 20 15.5C20 11.5 16 8 12 2Z"/></svg><span>สมดุลน้ำ (สูตรที่ลงทะเบียน PROP-FLOOD-03, ยังเป็นข้อเสนอ)</span></summary>
+      <summary><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 8 4 11.5 4 15.5A8 8 0 0 0 20 15.5C20 11.5 16 8 12 2Z"/></svg><span>สมดุลน้ำ (สูตรยังเป็นข้อเสนอ ยังไม่ผ่านการตรวจ)</span></summary>
       <div class="tier-body">
         <div id="waterbalance-section-__AREA__">{{WATERBALANCE_SECTION_HTML}}</div>
       </div>
@@ -707,12 +759,13 @@
   <!--AREA_TEMPLATE_END-->
 
   <footer>
-    <h2 class="sec-label"><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>แหล่งข้อมูล</span></h2>
+    <h2 class="sec-label"><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-doc"/></svg><span>แหล่งข้อมูล</span></h2>
     <ul class="sources-list" id="sources-list">{{SOURCES_LIST}}</ul>
     <p><strong>รวบรวมข้อมูลจากภาครัฐโดยประชาชน ไม่ใช่ประกาศทางการ เป็นการอ่านค่าจากหน่วยงาน ไม่ใช่การพยากรณ์ อาจคลาดเคลื่อนหรือช้า โปรดตรวจสอบด้วยตัวเองอีกครั้ง</strong></p>
     <p class="credit">หน้านี้จัดทำขึ้นเพื่อให้ข้อมูลแก่คนในหมู่บ้านสัมมากร (รามคำแหง 112) และซอยรามคำแหง 53 ไม่ใช่หน่วยงานราชการ · ขอบคุณข้อมูลจาก สสน., สำนักการระบายน้ำ กทม., กรมอุทกศาสตร์ กองทัพเรือ, สำนักงานเขต และชาวบ้านที่ช่วยกันรายงาน</p>
     <p class="credit">แผนที่/ถนน/คลอง: © OpenStreetMap contributors</p>
     <p class="credit">ระยะทางวัดจากจุดอ้างอิงในหมู่บ้าน (ซอย 44) / กลางซอยราม 53</p>
+    <p class="credit">ทีม ศูนย์ความรู้พลเมืองปัญญาประดิษฐ์ โดย อารยานิกะห์ วิสาหกิจเพื่อสังคม ประเทศไทย</p>
   </footer>
 </main>
 

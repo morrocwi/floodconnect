@@ -22,3 +22,6 @@ site/dist/
 .leakdeny.local
 *.local
 .playwright-mcp/
+
+# Rescued dead-session scratchpad staging (data.json/html blobs -- never committed)
+.redesign_v2_staging/

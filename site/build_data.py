@@ -4,10 +4,10 @@ build_data.py -- FloodConnect data.json builder (TWO AREAS: หมู่บ้�
 
 READ-ONLY. Never fetches the network EXCEPT the one optional Playwright navigation for
 the hourly rain-forecast strip (item D), which fails soft to "no forecast" if Playwright
-or the page layout is unavailable. All flood/canal/pump/tide/community data is read from CACHED official snapshots under this
-repo's `raw/live/` (produced by `collect.py`, re-fetched every run, never committed) plus the
-curated compiled files checked into `site/inputs/`, and writes `data.json` next to this
-script.
+or the page layout is unavailable. All flood/canal/pump/tide/community data is read from
+CACHED official snapshots already on disk under `raw/` (repo root, relative to this file)
+plus compiled files under this script's own `sammakorn/` and `ram53/` input trees, and
+writes `data.json` next to this script.
 
 Schema (2026-09-26, area-generalised):
   {
@@ -39,6 +39,7 @@ import csv
 import datetime
 import json
 import re
+import sqlite3
 import subprocess
 import sys
 from pathlib import Path
@@ -51,22 +52,87 @@ except ImportError:
 
 # --- Paths --------------------------------------------------------------------------
 HERE = Path(__file__).resolve().parent          # .../repo/site
-REPO_ROOT = HERE.parent                          # .../repo
-RAW = REPO_ROOT / "raw"                          # live snapshots from collect.py (git-ignored)
-INPUTS = HERE / "inputs"                         # curated, checked-into-git compiled files
-COMMUNITY_DIR = INPUTS / "community"
-UPSTREAM_REPORT_PATH = INPUTS / "upstream_watchlist.md"
-RAM53_DIR = INPUTS / "ram53"
+FLOOD_KG = HERE.parent                           # .../repo (repo root)
+RAW = FLOOD_KG / "raw"
+SAMMAKORN = HERE / "inputs"                      # curated, checked-into-git compiled files
+COMMUNITY_DIR = SAMMAKORN / "community"
+UPSTREAM_REPORT_PATH = SAMMAKORN / "upstream_watchlist.md"
+RAM53_DIR = SAMMAKORN / "ram53"
 KHLONGCHAN_SOCIAL_PATH = RAM53_DIR / "social_timeline_khlongchan_2026-09-26.md"
-TIDE_DIR = INPUTS / "tide"
-BALANCE_DIR = INPUTS / "areas"                    # *.balance.yaml -- PROP-FLOOD-03 inputs
-CANALS_DIR = INPUTS / "canals"                    # *.yaml -- PROP-FLOOD-04 declared graphs
-CAPACITY_JSON_PATH = INPUTS / "capacity" / "bma_capacity.json"
-OFFICIAL_DIR = INPUTS / "official"
+BALANCE_DIR = FLOOD_KG / "site" / "inputs" / "areas"       # *.balance.yaml -- PROP-FLOOD-03 inputs
+CANALS_DIR = FLOOD_KG / "site" / "inputs" / "canals"       # *.yaml -- PROP-FLOOD-04 declared graphs
+CAPACITY_JSON_PATH = FLOOD_KG / "site" / "inputs" / "capacity" / "bma_capacity.json"
+OFFICIAL_DIR = FLOOD_KG / "site" / "inputs" / "official"
 BRIEFING_1300_PATH = OFFICIAL_DIR / "bma_briefing_2026-09-26_1300.json"
 BRIEFING_PATH = OFFICIAL_DIR / "bma_briefing_2026-09-26_1615.json"  # newest -- supersedes 13:00 on the hero line
 
 OUT_JSON = HERE / "dist" / "data.json"
+
+# --- Retained-history lookup (review MUST-FIX #1: trend arrows on every station/pump
+# row) ------------------------------------------------------------------------------
+# `data/observations.sqlite` is collect.py's append-only observation store (never
+# rewritten in place -- see its `ux_observations_identity_v2` unique index). This
+# build never writes to it, only reads the already-collected history back out, so a
+# "previous retained reading" is always a real earlier readout, never a fabricated
+# one. This is Toledo PROP-FLOOD-01's lag-k retained-difference construction (RISING/
+# FLAT/FALLING/NO_READOUT), applied here with k defined by "most recent reading at
+# least PREV_READING_MIN_GAP_HOURS older than the current one" -- not a new formula.
+OBS_DB_PATH = FLOOD_KG / "data" / "observations.sqlite"
+PREV_READING_MIN_GAP_HOURS = 1.0
+_CANAL_SOURCE_ID = "thaiwater_canal_waterlevel"
+_PUMP_SOURCE_ID = "bma_pumphistory"
+
+
+def open_observations_db() -> sqlite3.Connection | None:
+    """Read-only connection to the append-only observation store, or None if it is
+    absent -- callers must degrade to "no prior reading" (never fabricate one), never
+    raise, since this DB is optional local cache, not a required input."""
+    if not OBS_DB_PATH.exists():
+        return None
+    try:
+        uri = f"file:{OBS_DB_PATH}?mode=ro"
+        conn = sqlite3.connect(uri, uri=True)
+        return conn
+    except sqlite3.Error:
+        return None
+
+
+def previous_reading(conn: sqlite3.Connection | None, source_id: str, station_code,
+                      cur_value, cur_observed_at_iso: str | None,
+                      min_gap_hours: float = PREV_READING_MIN_GAP_HOURS) -> dict | None:
+    """Look up the most recent retained observation for (source_id, station_code) that
+    is at least `min_gap_hours` OLDER than `cur_observed_at_iso` -- the lag-k retained
+    reading PROP-FLOOD-01's trend construction compares against. Returns
+    {"value": float, "observed_at": iso_str, "delta": cur_value - value} or None when
+    the DB, station_code, current value/timestamp, or any qualifying prior row is
+    missing -- never a guessed/interpolated value."""
+    if conn is None or not station_code or cur_value is None or not cur_observed_at_iso:
+        return None
+    try:
+        cur_dt = datetime.datetime.fromisoformat(cur_observed_at_iso)
+    except (TypeError, ValueError):
+        return None
+    cutoff_dt = cur_dt - datetime.timedelta(hours=min_gap_hours)
+    cutoff_iso = cutoff_dt.isoformat()
+    try:
+        row = conn.execute(
+            "SELECT value, observed_at_utc FROM observations "
+            "WHERE source_id = ? AND station_code = ? AND observed_at_utc <= ? "
+            "ORDER BY observed_at_utc DESC LIMIT 1",
+            (source_id, station_code, cutoff_iso),
+        ).fetchone()
+    except sqlite3.Error:
+        return None
+    if row is None or row[0] is None:
+        return None
+    prev_value, prev_observed_at = row
+    try:
+        prev_value = float(prev_value)
+    except (TypeError, ValueError):
+        return None
+    return {"value": prev_value, "observed_at": prev_observed_at,
+            "delta": cur_value - prev_value}
+
 
 _HOUSE_RANGE_RE = re.compile(r"\s*\(\d+\s*[-–]\s*\d+\)")
 
@@ -78,7 +144,7 @@ def strip_house_range(s):
         return s
     return _HOUSE_RANGE_RE.sub("", s).strip()
 
-sys.path.insert(0, str(REPO_ROOT))
+sys.path.insert(0, str(FLOOD_KG))
 try:
     import parsers  # noqa: E402 -- repo-root parsers.py (openmeteo forecast parser, etc.)
 except Exception:  # pragma: no cover - defensive fallback, same posture as lwl below
@@ -268,8 +334,7 @@ def load_rain(generated_at_utc_iso: str, centre_lat: float, centre_lon: float) -
     # collect.py's thaiwater_rain_24h collector (added 2026-09-26, red-team fix HIGH-3)
     # writes a fresh snapshot every run to raw/live/thaiwater_rain_24h/<ts>.json; the
     # raw/gapfill/rain_24h*.json manual snapshot is now only a fallback for a run where
-    # that collector hasn't run yet or failed (e.g. local dev, or a CI run before this
-    # collector existed).
+    # that collector hasn't run yet or failed.
     #
     # RAIN NOW (2026-09-26): the snapshot carries `rain_1h` alongside `rain_24h` per
     # station -- this function now also returns the 3 NEAREST gauges within
@@ -326,7 +391,7 @@ def load_rain(generated_at_utc_iso: str, centre_lat: float, centre_lon: float) -
 # --- 4. Tide (Royal Thai Navy Hydrographic Dept, astronomical prediction, shared) ---------
 
 def load_tide(generated_at_utc_iso: str) -> tuple[dict | None, Path | None]:
-    path = newest_file(TIDE_DIR, "*.json")
+    path = newest_file(RAW / "tide", "*.json")
     if path is None:
         return None, None
     try:
@@ -404,7 +469,9 @@ def parse_flood_road_records(data: dict) -> list[dict]:
 def load_flood_roads(generated_at_utc_iso: str, centre_lat: float, centre_lon: float) -> tuple[list[dict], Path | None]:
     path = newest_file_any(RAW / "live" / "thaiwater_flood_road")
     if path is None:
-        return [], None
+        path = SAMMAKORN / "flood_road.json"
+        if not path.exists():
+            return [], None
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
@@ -449,8 +516,29 @@ def _short_upstream_name(name: str) -> str:
     return n.strip("- ").strip()
 
 
+def _attach_prev_reading(entry: dict, obs_conn, source_id: str, station_code,
+                          cur_key: str, prev_key: str) -> None:
+    """Mutate `entry` in place: add `prev_key` (prev_value_m/prev_level_m),
+    `prev_observed_at`, and `delta_m` from the retained-history lookup (review
+    MUST-FIX #1). Always sets all three keys, explicitly to None when no qualifying
+    prior reading exists -- build_page.py's fallback rendering relies on the keys
+    being present (never simply absent) so it can tell "checked, none found" apart
+    from "field never wired up"."""
+    prev = previous_reading(obs_conn, source_id, station_code, entry.get(cur_key),
+                             entry.get("observed_at"))
+    if prev is None:
+        entry[prev_key] = None
+        entry["prev_observed_at"] = None
+        entry["delta_m"] = None
+    else:
+        entry[prev_key] = prev["value"]
+        entry["prev_observed_at"] = prev["observed_at"]
+        entry["delta_m"] = prev["delta"]
+
+
 def build_upstream_stations(canal_by_code: dict, generated_at_utc_iso: str,
-                             centre_lat: float, centre_lon: float) -> list[dict]:
+                             centre_lat: float, centre_lon: float,
+                             obs_conn=None) -> list[dict]:
     watch = parse_upstream_watchlist(UPSTREAM_REPORT_PATH)
     out = []
     for w in watch:
@@ -472,15 +560,15 @@ def build_upstream_stations(canal_by_code: dict, generated_at_utc_iso: str,
                 s["level_m"], s.get("warning_level"), s.get("critical_level"), s.get("bank")
             )
             # Red-team fix MEDIUM-4 (2026-09-26): store the safe-float'd threshold values
-            # (None on anything non-numeric), not the raw agency field -- otherwise a
-            # downstream f"{x:.2f}" in build_page.py would crash on a non-numeric value
-            # that classify_level itself already tolerated.
+            # (None on anything non-numeric), never the raw agency field.
             entry.update({"value_m": lwl.safe_float(s["level_m"]), "out_m": s.get("canal_out"),
                           "warning": lwl.safe_float(s.get("warning_level")),
                           "critical": lwl.safe_float(s.get("critical_level")),
                           "bank": lwl.safe_float(s.get("bank")), "status": status,
                           "observed_at": s.get("observed_at"),
                           "stale": is_stale(s.get("observed_at"), generated_at_utc_iso)})
+        _attach_prev_reading(entry, obs_conn, _CANAL_SOURCE_ID, w["code"],
+                             "value_m", "prev_value_m")
         out.append(entry)
     return out
 
@@ -489,7 +577,8 @@ def build_upstream_stations(canal_by_code: dict, generated_at_utc_iso: str,
 
 def build_near_stations(canal_stations: list[dict], exclude_codes: set,
                          generated_at_utc_iso: str, centre_lat: float, centre_lon: float,
-                         radius_km: float = NEAR_STATION_RADIUS_KM) -> list[dict]:
+                         radius_km: float = NEAR_STATION_RADIUS_KM,
+                         obs_conn=None) -> list[dict]:
     out = []
     for s in canal_stations:
         code = s.get("canal_oldcode")
@@ -501,9 +590,8 @@ def build_near_stations(canal_stations: list[dict], exclude_codes: set,
         status = lwl.classify_level(
             s["level_m"], s.get("warning_level"), s.get("critical_level"), s.get("bank")
         )
-        # Red-team fix MEDIUM-4 (2026-09-26): safe-float the stored thresholds too --
-        # see build_upstream_stations's identical comment above.
-        out.append({
+        # Red-team fix MEDIUM-4 (2026-09-26): safe-float the stored thresholds too.
+        entry = {
             "code": code, "name": s.get("name_th"), "dist_km": round(dist, 2),
             "value_m": lwl.safe_float(s["level_m"]), "out_m": s.get("canal_out"),
             "warning": lwl.safe_float(s.get("warning_level")),
@@ -512,7 +600,10 @@ def build_near_stations(canal_stations: list[dict], exclude_codes: set,
             "observed_at": s.get("observed_at"),
             "stale": is_stale(s.get("observed_at"), generated_at_utc_iso),
             "role": "north" if s["lat"] >= centre_lat else "south",
-        })
+        }
+        _attach_prev_reading(entry, obs_conn, _CANAL_SOURCE_ID, code,
+                             "value_m", "prev_value_m")
+        out.append(entry)
     out.sort(key=lambda r: r["dist_km"])
     return out
 
@@ -521,7 +612,8 @@ def build_near_stations(canal_stations: list[dict], exclude_codes: set,
 
 def build_pumps(pump_rows: list[dict], generated_at_utc_iso: str,
                  centre_lat: float, centre_lon: float,
-                 radius_km: float = PUMP_RADIUS_KM) -> list[dict]:
+                 radius_km: float = PUMP_RADIUS_KM,
+                 obs_conn=None) -> list[dict]:
     out = []
     for r in pump_rows:
         dist_m = None
@@ -531,14 +623,17 @@ def build_pumps(pump_rows: list[dict], generated_at_utc_iso: str,
             )
         if dist_m is not None and dist_m > radius_km * 1000.0:
             continue
-        out.append({
+        entry = {
             "code": r["station_code"], "name": r.get("name_th"), "dist_m": dist_m,
             "level_m": r.get("level_m"), "pumps_on": r.get("pumps_on"),
             "pumps_total": r.get("pumps_total"), "gate": r.get("gate_open"),
             "status_th": r.get("status_th"), "observed_at": r.get("observed_at"),
             "stale": is_stale(r.get("observed_at"), generated_at_utc_iso),
             "pond_name": POND_NAME_BY_PUMP_CODE.get(r["station_code"]),
-        })
+        }
+        _attach_prev_reading(entry, obs_conn, _PUMP_SOURCE_ID, r["station_code"],
+                             "level_m", "prev_level_m")
+        out.append(entry)
     out.sort(key=lambda r: (r["dist_m"] if r["dist_m"] is not None else 1e9))
     return out
 
@@ -569,7 +664,7 @@ def _first_time_bucket(first_time: str | None, depth_cm) -> str:
 
 
 def build_tiers_sammakorn() -> tuple[list[dict], str]:
-    yaml_path = newest_file(COMMUNITY_DIR, "soi_tiers_*.yaml")
+    yaml_path = newest_file(RAW / "community", "soi_tiers_*.yaml")
     doc = None
     if yaml_path is not None and HAVE_YAML:
         try:
@@ -589,7 +684,7 @@ def build_tiers_sammakorn() -> tuple[list[dict], str]:
                  for t in TIER_ORDER if buckets[t]]
         return tiers, "รวบรวมจากรายงานชาวบ้านวันที่ 26 ก.ย. 2569"
 
-    csv_path = newest_file(COMMUNITY_DIR, "low_areas_*.csv")
+    csv_path = newest_file(RAW / "community", "low_areas_*.csv")
     if csv_path is None:
         return [], "ยังไม่มีข้อมูลรายงานชาวบ้านแยกรายซอยในชุดข้อมูลนี้"
     buckets = {t: [] for t in TIER_ORDER}
@@ -646,36 +741,27 @@ def build_ram53_community(social_md_path: Path) -> list[dict]:
     return out
 
 
-# --- 9c. คลองจั่น/บางกะปิ "เสียงจากอินเทอร์เน็ต" -- คลองจั่นอยู่ในโซ่คลองของราม 53 -----------
+# --- คลองจั่น/บางกะปิ "เสียงจากอินเทอร์เน็ต" -- คลองจั่นอยู่ในโซ่คลองของราม 53 --------------
 #
-# Added 2026-09-26 (maintainer request): แฟลตเคหะคลองจั่น is on the same canal chain as ram53
+# Added 2026-09-26 (founder request): แฟลตเคหะคลองจั่น is on the same canal chain as ram53
 # (แสนแสบ -> คลองจั่น), so its social-media reports are ram53-relevant community signal, and
-# a nearby-area sub-line for sammakorn too. Same time/place/state-only, no-personal-name
-# discipline as build_ram53_community -- a media OUTLET (สวพ.FM91, PPTV HD 36, The Bangkok
-# Insight) is named as an agency, since it published a public byline-free news item, not a
-# private individual; a personal Facebook post/page ("Facebook (บุคคล)"/"(เพจ)"/"(คลิป)") is
-# never named, same as every other "ชาวบ้านรายงาน" row in this codebase.
+# a nearby-area sub-line for sammakorn too. A named media outlet (สวพ.FM91, PPTV HD 36, The
+# Bangkok Insight) is named as an agency; a personal Facebook post/page/clip is never named.
 
 _KHLONGCHAN_ROW_RE = _RAM53_ROW_RE  # identical 4-column table shape
 
 
 def _khlongchan_source_label(raw_source: str) -> str | None:
-    """A named media outlet -> its name (agency disclosure); a personal post/page/clip ->
-    None (never named). `raw_source` is the table's own "แหล่ง" column text."""
     s = (raw_source or "").strip()
     if not s:
         return None
     if re.search(r"บุคคล|เพจ|คลิป", s):
         return None
-    # "The Bangkok Insight / ข่าว" / "PPTV HD 36 / ข่าว" -> drop the generic " / ข่าว" suffix
     s = re.sub(r"\s*/\s*ข่าว\s*$", "", s).strip()
     return s or None
 
 
 def build_khlongchan_community(social_md_path: Path) -> list[dict]:
-    """Returns rows in the table's own (ascending) time order: [{time, place, state}], with
-    a named media outlet's name folded into `state` as "... (<outlet>)" -- never a personal
-    name. Same table shape as build_ram53_community, reused here rather than re-implemented."""
     if not social_md_path.exists():
         return []
     out = []
@@ -736,7 +822,7 @@ def build_exits_ram53() -> list[dict]:
 
 # --- 10b. Hospitals (Overpass cache, ≤5km else []) -----------------------------------------
 
-HEALTH_OVERPASS_PATH = INPUTS / "health_overpass.json"
+HEALTH_OVERPASS_PATH = SAMMAKORN / "health_overpass.json"
 VET_NAME_MARKERS = ("animalclinic", "สัตว์")
 
 
@@ -794,10 +880,9 @@ def _dds_fix_name(name: str) -> str:
 
 
 def build_dds_quotes(relevant_names: list[str]) -> tuple[list[dict], dict | None, Path | None]:
-    # collect.py writes the live PDF to raw/live/dds_daily_pdf/<timestamp>.pdf
-    # (see collect.py's _cache_raw); raw/dds_reports/ is a manual/legacy drop
-    # location kept only as a fallback so an older manually-placed file still
-    # works (2026-09-26 red-team fix -- these two paths had silently diverged).
+    # collect.py writes the live PDF to raw/live/dds_daily_pdf/<timestamp>.pdf;
+    # raw/dds_reports/ is a manual/legacy drop location kept only as a fallback
+    # (2026-09-26 red-team fix HIGH-2: the two paths had silently diverged).
     pdf_path = newest_file(RAW / "live" / "dds_daily_pdf", "*.pdf")
     if pdf_path is None:
         pdf_path = newest_file(RAW / "dds_reports", "dds_daily_*.pdf")
@@ -853,14 +938,12 @@ def build_dds_quotes(relevant_names: list[str]) -> tuple[list[dict], dict | None
 
 # --- 12. Hourly rain forecast -- Open-Meteo (third-party, open, no key) ------------------
 #
-# The previous version of this function did one Playwright navigation to Google's
-# hourly-precipitation strip; GitHub Actions runners have no Playwright/Chromium install
-# by default and no sanctioned reason to scrape Google from CI. Replaced 2026-09-26 with
-# collect.py's `collect_openmeteo_forecast` (a plain JSON GET, no key, works fine in CI),
-# which writes `raw/live/openmeteo_forecast/<ts>_<area_id>.json` per area. This function
-# only READS that cached snapshot -- no network call here, same discipline as every other
-# `load_*` function in this file. Still fails soft to "unavailable" if the collector
-# hasn't run yet or the snapshot can't be parsed.
+# Replaced 2026-09-26: the previous version did one Playwright navigation to Google's
+# hourly-precipitation strip. Replaced with collect.py's `collect_openmeteo_forecast` (a
+# plain JSON GET, no key), which writes `raw/live/openmeteo_forecast/<ts>_<area_id>.json`
+# per area. This function only READS that cached snapshot -- no network call here, same
+# discipline as every other `load_*` function in this file. Fails soft to "unavailable"
+# if the collector hasn't run yet or the snapshot can't be parsed.
 
 _FORECAST_UNAVAILABLE = {
     "available": False,
@@ -937,9 +1020,9 @@ def build_forecast_short(rows: list[dict], fetched_at_iso: str | None) -> dict:
         "h48_72_mm": _sum(48, 72),
         "first_dry_6h_start": _first_dry_6h_start(rows),
         "fetched_at": fetched_at_iso,
-        # Full hourly series (up to Open-Meteo's forecast_days=3 horizon, ~72h) for the
-        # drain-timeline chart's rain-input term -- `hourly` above only keeps 12 rows for
-        # the short forecast strip; this keeps everything parse_openmeteo_forecast gave us.
+        # Full hourly series (up to Open-Meteo's forecast horizon) for the
+        # drain-timeline chart's rain-input term -- `hourly` above only keeps 12 rows
+        # for the short forecast strip; this keeps everything parse_openmeteo_forecast gave us.
         "hourly_full": [{"time_local": r["time_local"], "mm": round(r["mm"], 2)} for r in rows],
     }
 
@@ -1275,7 +1358,7 @@ def build_briefing_summary(briefing: dict | None) -> dict | None:
         "disaster_response_support": v("disaster_response_support"),
         "shelters": v("shelters"),
         "bedridden_patients_moved": v("bedridden_patients_moved"),
-        "hotlines": v("hotlines") or ["1555", "Traffy Fondue", "district office (sandbags)", "1669"],
+        "hotlines": v("hotlines") or ["1555", "Traffy Fondue", "สำนักงานเขต (ขอกระสอบทราย)", "1669"],
         "temporary_parking": v("temporary_parking") or [],
         "monday_note_th": v("monday_2026-09-28"),
         "conditional_outlook_th": v("conditional_outlook"),
@@ -1322,8 +1405,6 @@ def build_sources(rain: dict | None, canal_path, pump_path, rain_path, flood_roa
         })
     return out
 
-
-# --- Water balance (Toledo PROP-FLOOD-03, proposal, PR #60 pending) --------------------
 
 def load_capacity_records() -> list[dict]:
     """Load site/inputs/capacity/bma_capacity.json's curated records list. Returns []
@@ -1471,8 +1552,8 @@ def build_bangkok_east_upper_bound(rain: dict | None, forecast: dict | None) -> 
                 "briefing_stated_days": (facts.get("estimated_drain_time_if_no_new_rain") or {}).get("value"),
                 "caveat_th": ("52 ชม./2.2 วัน มาจากเลข V=223 ล้าน ลบ.ม. และ Q=1,200 ลบ.ม./วิ ที่ กทม. "
                               "แถลงเองเมื่อ 13:00 -- เป็นเลขคณิตธรรมดา (V หาร Q) ไม่ใช่แบบจำลอง; "
-                              "ช่วงบนของช่วง (with forecast rain) บวกฝนที่ Open-Meteo (third-party) "
-                              "คาดว่าจะตกอีกใน 24 ชม.ข้างหน้าเข้าไปเป็นปริมาณน้ำเพิ่มเติม (upper bound, "
+                              "ช่วงบนของช่วง (รวมฝนคาดการณ์) บวกฝนที่ Open-Meteo (แบบจำลองเปิด บุคคลที่สาม) "
+                              "คาดว่าจะตกอีกใน 24 ชม.ข้างหน้าเข้าไปเป็นปริมาณน้ำเพิ่มเติม (ค่าบนสุดของช่วง, "
                               "ไม่ใช่ตัวเลขที่ กทม. แถลง)"),
             }
 
@@ -1543,6 +1624,7 @@ def build_canal_graph_readout(canal_by_code: dict, generated_at_utc_iso: str) ->
         nodes[nid] = {"label_th": n.get("label_th"), "canal_oldcode": code,
                       "is_gate": bool(n.get("is_gate")), "value_m": value_m,
                       "status": status, "observed_at": observed_at, "stale": stale}
+
     return {
         "available": True,
         "graph_id": graph.get("graph_id", "east_chain"),
@@ -1710,25 +1792,25 @@ def build_area_data(*, area_id: str, label: str, centre_lat: float, centre_lon: 
                      generated_at_bkk: str, generated_at_utc_iso: str, now_local,
                      canal_stations: list[dict], canal_by_code: dict,
                      canal_path, pump_station_codes: list[str], tide: dict | None,
-                     dds_relevant_names: list[str], is_ram53: bool = False) -> dict:
+                     dds_relevant_names: list[str], is_ram53: bool = False,
+                     obs_conn=None) -> dict:
     pump_rows, pump_path = load_pump_rows(pump_station_codes)
     rain, rain_path = load_rain(generated_at_utc_iso, centre_lat, centre_lon)
     flood_roads, flood_road_path = load_flood_roads(generated_at_utc_iso, centre_lat, centre_lon)
     forecast, forecast_path = load_openmeteo_forecast(area_id, now_local)
     capacity = build_capacity_comparison(rain, forecast)
 
-    upstream_stations = build_upstream_stations(canal_by_code, generated_at_utc_iso, centre_lat, centre_lon)
+    upstream_stations = build_upstream_stations(canal_by_code, generated_at_utc_iso, centre_lat, centre_lon,
+                                                 obs_conn=obs_conn)
     upstream_codes = {s["code"] for s in upstream_stations}
     near_stations = build_near_stations(canal_stations, upstream_codes, generated_at_utc_iso,
-                                         centre_lat, centre_lon)
+                                         centre_lat, centre_lon, obs_conn=obs_conn)
     stations_near = near_stations + upstream_stations
 
-    pumps = build_pumps(pump_rows, generated_at_utc_iso, centre_lat, centre_lon)
+    pumps = build_pumps(pump_rows, generated_at_utc_iso, centre_lat, centre_lon, obs_conn=obs_conn)
     dds_quotes, dds_report, dds_pdf_path = build_dds_quotes(dds_relevant_names)
     hospitals = build_hospitals(centre_lat, centre_lon)
 
-    # คลองจั่น/บางกะปิ is on ram53's own canal chain (แสนแสบ -> คลองจั่น) -- its social
-    # timeline is ram53-relevant community signal, and a "nearby area" note for sammakorn.
     khlongchan_rows = build_khlongchan_community(KHLONGCHAN_SOCIAL_PATH)
     nearby_community = khlongchan_rows[-3:]  # newest 3 (table is in ascending time order)
 
@@ -1796,9 +1878,6 @@ def build_area_data(*, area_id: str, label: str, centre_lat: float, centre_lon: 
         "community": community,
         "community_label": community_label,
         "water_balance": water_balance,
-        # Newest 3 คลองจั่น/บางกะปิ social-media reports, sammakorn only -- ram53 already has
-        # the full khlongchan set folded into `community` above (it's on ram53's own canal
-        # chain), so showing it again here would duplicate the same rows.
         "nearby_community": [] if is_ram53 else nearby_community,
         "nearby_community_label": "พื้นที่ใกล้เคียง (บางกะปิ/คลองจั่น)",
     }
@@ -1817,6 +1896,10 @@ def main():
 
     dds_names = ["สะพานสูง", "แสนแสบ", "ประเวศ", "วังทองหลาง", "บางกะปิ"]
 
+    # Retained-history DB for trend arrows (review MUST-FIX #1) -- opened once, read-only,
+    # shared by both areas' station/pump builders; closed at the end of main().
+    obs_conn = open_observations_db()
+
     sammakorn = build_area_data(
         area_id="sammakorn", label="หมู่บ้านสัมมากร (รามคำแหง 112)",
         centre_lat=13.758235, centre_lon=100.676084,
@@ -1825,6 +1908,7 @@ def main():
         canal_stations=canal_stations, canal_by_code=canal_by_code, canal_path=canal_path,
         pump_station_codes=["ST.SPS.01", "ST.SPS.02", "ST.SPS.03", "ST.SPS.04"],
         tide=tide, dds_relevant_names=dds_names, is_ram53=False,
+        obs_conn=obs_conn,
     )
     ram53 = build_area_data(
         area_id="ram53", label="ซอยรามคำแหง 53",
@@ -1834,7 +1918,10 @@ def main():
         canal_stations=canal_stations, canal_by_code=canal_by_code, canal_path=canal_path,
         pump_station_codes=["ST.WTL.01", "ST.BKP.01", "ST.BKP.06", "ST.BKP.02"],
         tide=tide, dds_relevant_names=dds_names, is_ram53=True,
+        obs_conn=obs_conn,
     )
+    if obs_conn is not None:
+        obs_conn.close()
     # Each area now gets its OWN Open-Meteo forecast (its own lat/lon), not a borrowed
     # district forecast -- see load_openmeteo_forecast / collect_openmeteo_forecast.
 
@@ -1848,12 +1935,12 @@ def main():
             all_sources.append(s)
 
     # TMD (กรมอุตุนิยมวิทยา) official forecast could not be fetched in this pipeline
-    # (TLS/API-key access this CI environment does not have) -- Open-Meteo above is the
+    # (TLS/API-key access this environment does not have) -- Open-Meteo above is the
     # stand-in, always labelled third-party. This caveat is surfaced in the sources
     # footer (see build_page.py's sources block), not silently hidden.
-    forecast_caveat_th = ("พยากรณ์ฝนที่แสดงมาจาก Open-Meteo (แบบจำลองเปิด third-party) "
-                           "เนื่องจากไม่สามารถดึงพยากรณ์อย่างเป็นทางการจากกรมอุตุนิยมวิทยา "
-                           "(TMD) ได้ในระบบอัตโนมัตินี้ (ติด TLS/ต้องใช้ API key)")
+    forecast_caveat_th = ("พยากรณ์ฝนที่แสดงมาจาก Open-Meteo (แบบจำลองเปิด บุคคลที่สาม) "
+                           "เนื่องจากดึงข้อมูลอัตโนมัติจากกรมอุตุนิยมวิทยา "
+                           "(TMD) ไม่ได้ในระบบนี้")
 
     # Bangkok-wide/east-zone water-balance upper-bound (maintainer decision 2026-09-26):
     # runs FIRST, ahead of the village sub-units, using sammakorn's own rain/forecast
@@ -1899,7 +1986,6 @@ def main():
         "areas": {"sammakorn": sammakorn, "ram53": ram53},
     }
 
-    OUT_JSON.parent.mkdir(parents=True, exist_ok=True)
     OUT_JSON.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
     counts = {"areas": {}}

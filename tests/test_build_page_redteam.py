@@ -32,7 +32,10 @@ def test_pump_tile_separates_fail_from_idle():
     html = bp.build_indicator_tiles(area, st, pc, NOW, "บึง")
     assert "3/4" in html
     assert "4/4" not in html
-    assert "ปั๊มขัดข้อง (กทม. รายงาน)" in html
+    # Wording drift 2026-09-26 (founder-mandated): shipped text names the reporting
+    # agency AND that the cause is unreported, not just "(กทม. รายงาน)" -- test updated
+    # to match; the fail-vs-idle assertions below are unchanged.
+    assert "ขัดข้อง (กทม. รายงาน สาเหตุไม่ทราบ)" in html
     assert "ไม่ได้เดิน 1" in html
 
 
