@@ -49,20 +49,41 @@ FloodConnect invariant:
 
 HumanRouteFeasible does not imply HouseholdUnitRouteFeasible when animals are declared as co-evacuating dependents.
 
-## 3. Animal resource vector
+## 3. Three separate animal evaluators
 
-For animal a:
+FloodConnect no longer uses one combined animal-unit check for staying, moving and sheltering.
 
-R_a = {water, food, medicine, waste/hygiene, containment, veterinary support, identification}
+### 3.1 Animal sustainment
+This asks whether declared animal dependents can continue safely for the planning horizon.
 
-For a declared planning horizon T:
+Hard resource/function fields may include:
+- animal drinking water;
+- species-appropriate food/feed;
+- required medication;
+- litter/waste hygiene;
+- veterinary support only when explicitly required.
 
-B_a_r(T) = Stock_a_r + VerifiedInflow_a_r(T) - Demand_a_r(T)
+Containment equipment and transport readiness are deliberately excluded from stay-at-home sustainment.
 
-The animal unit is supportable only when every required hard constraint is known adequate.
+`Missing carrier != home non-sustainable`
 
-UNKNOWN != SUFFICIENT.
+### 3.2 Animal movement readiness
+This is evaluated only when movement may be needed.
 
+It can include:
+- carrier/crate/leash/harness or other species-appropriate containment;
+- identification/records;
+- verified transport capacity;
+- handler continuity for assistance animals.
+
+States: `READY / NOT_READY / UNKNOWN`.
+
+### 3.3 Animal destination compatibility
+This checks whether the destination can receive the declared animal topology.
+
+Companion, assistance, livestock and community/stray animals are not forced through the same pathway.
+
+This separation prevents an evacuation-preparedness gap from being misread as a household-resource failure.
 ## 4. Finite resource horizon
 
 For any animal resource r, when stock, verified inflow and daily demand are measured in compatible finite units:
@@ -128,53 +149,92 @@ Animal waste management also includes dog waste bags, pee pads where used, litte
 
 CDC evacuation-centre guidance recommends regular litter-box cleaning, leash/carrier control, separation from food areas and hygiene after animal waste handling.
 
-## 8. Transport / containment
+## 8. Movement readiness
 
-For co-evacuating animals:
+For co-evacuating animals, movement readiness is evaluated separately from sustainment.
 
-C_transport = Containment AND TransportCapacity AND Route AND DestinationCompatibility
+`AnimalMoveReady = containment AND identification/handler continuity AND transport_capacity`
 
-Examples include cat carrier/crate, dog leash/harness/carrier as appropriate, vehicle/boat space, species accepted by destination and sufficient animal capacity.
+The movement route itself must still be field-verified and feasible.
 
-This is a hard constraint, not a weighted score.
+If occupancy is physically unsafe but animal movement is not ready:
 
-If physical safety fails but animal transport is not feasible, the correct state is REQUEST_ASSISTED_EVACUATION_WITH_ANIMALS, not a recommendation to remain in an unsafe home.
+`PhysicalUnsafe AND AnimalMoveNotReady -> REQUEST_ASSISTED_EVACUATION_WITH_ANIMALS`
 
-## 9. Destination compatibility
+The system must not convert this into a recommendation to remain in an unsafe location.
 
-A shelter safe for people is not automatically usable for a household with animals.
+## 9. Destination compatibility and co-located animal nodes
 
-A co-evacuating destination should declare accepted species, animal capacity, animal drinking water, animal food, waste/litter management, containment/separate animal area, separation from food-preparation areas and veterinary referral when needed.
+A human shelter can be compatible with animals in two ways:
 
-For co-evacuating households:
+1. animal accommodation is embedded in the human shelter; or
+2. the human shelter links to a fresh, operational, co-located animal service node.
 
-Shelter_HAHU = Shelter_human AND AnimalAccommodation
+This supports real layouts such as:
 
-If a separate verified animal plan exists, human and animal destinations may differ.
+`Human shelter <-> linked animal area/veterinary node`
 
-## 10. Household-unit sustainment
+rather than requiring animals to sleep inside the human sleeping area.
 
-Let T_H be the human effective horizon and T_A be the earliest animal hard-constraint horizon.
+Compatibility checks include:
+- accepted species;
+- free animal capacity;
+- animal drinking water;
+- animal food/feed;
+- animal waste/litter management;
+- containment area;
+- separation from food preparation;
+- veterinary support when explicitly required.
 
-T_A = min(T_animal_water, T_animal_food, T_animal_medicine, T_animal_waste, T_animal_care)
+## 10. Household-unit continuity
 
-For a household that keeps animals with it:
+Let:
+- `T_H` = human effective horizon;
+- `T_A` = animal sustainment horizon.
 
-T_HAHU = min(T_H, T_A)
+For a co-resident household unit:
 
-This does not mean animal food overrides immediate human life safety. It means the declared household unit is not fully sustainable beyond the first failing human/animal hard constraint.
+`T_HAHU = min(T_H, T_A)`
+
+Movement readiness and destination compatibility are not part of this stay/sustain minimum.
+They are checked only when movement is considered.
+
+This means:
+- food/litter failure can shorten household-unit continuity;
+- lack of a carrier does not shorten safe-home sustainment;
+- lack of a carrier becomes critical when movement is necessary.
 
 ## 11. Animal topology
 
-FloodConnect distinguishes at least four operational animal types:
+FloodConnect now distinguishes animal topology from species list.
 
-1. Companion animals co-resident/co-evacuating: dog, cat, bird, rabbit/small mammal, reptile, fish or other companion animal.
-2. Companion animals with a separate verified plan: boarding, veterinary facility, animal shelter or trusted caregiver.
-3. Livestock/working animals: cattle/buffalo, pigs, goats/sheep, poultry, horses and others. These often require separate feed, space and transport nodes rather than human-shelter co-location.
-4. Community/stray animals: generally a zone/civil-society/veterinary response problem rather than one private household ledger.
+### Companion animals
+Examples: dog, cat, bird, rabbit/small mammal, reptile, fish.
 
-This typology follows observed Thai flood response rather than assuming every animal uses the same evacuation/shelter pathway.
+Destination capability: `companion_animal_accommodation`.
 
+### Assistance animals
+This is a role, not a species.
+
+An assistance animal is modeled as part of human functional-support continuity.
+Destination capability: `assistance_animal_access`.
+
+It must not be redirected to a pet-only shelter as though it were ordinary companion accommodation.
+
+### Livestock / working animals
+Examples: cattle/buffalo, pigs, goats/sheep, poultry, horses.
+
+Destination capability: `livestock_holding`.
+
+These typically require separate feed, holding space and transport nodes.
+
+### Community / stray animals
+These are not inferred as private household dependents.
+
+Operational capability: `community_animal_handoff`, normally through zone/civil-society/veterinary response.
+
+### Mixed topology
+One household or response node may involve more than one topology. FloodConnect reports `MIXED` rather than forcing one animal type to stand in for all others.
 ## 12. Privacy
 
 Public/community graph may store species/category counts, resource gaps and accommodation needs, but no pet name, owner phone, microchip number or exact house identifier.
