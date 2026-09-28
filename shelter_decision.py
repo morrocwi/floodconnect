@@ -750,15 +750,222 @@ def screen_shelter_candidate(
     )
 
 
-def aggregate_member_need_profile(profile: dict[str, Any]) -> dict[str, Any]:
-    """Return privacy-preserving operational demand categories.
+VULNERABILITY_COUNT_FIELDS = (
+    "child_0_5",
+    "child_6_12",
+    "adolescent_13_17",
+    "older_adult_60_plus",
+    "pregnant_person",
+    "postpartum_person",
+    "chronic_or_acute_illness",
+    "disability_or_functional_limitation",
+    "bedbound_or_homebound",
+)
 
-    The public graph should store aggregate counts/flags, not names, diagnoses, phone
-    numbers or room/house identifiers.  Medical fields are functional needs rather than
-    diagnoses.
+FUNCTIONAL_NEED_COUNT_FIELDS = (
+    "needs_continuous_supervision",
+    "needs_mobility_assistance",
+    "needs_essential_medication",
+    "needs_time_critical_medical_followup",
+    "needs_power_dependent_medical_device",
+    "needs_communication_assistance",
+    "needs_special_diet",
+    "needs_infant_feeding",
+)
+
+SUPPORT_LINK_FIELDS = (
+    "child_caregiver_link_uncovered",
+    "backup_caregiver_link_uncovered",
+    "older_adult_support_link_uncovered",
+    "pregnancy_support_link_uncovered",
+    "medical_support_link_uncovered",
+    "mobility_support_link_uncovered",
+    "power_dependency_support_link_uncovered",
+    "communication_support_link_uncovered",
+    "living_alone_buddy_link_uncovered",
+)
+
+LIVING_ARRANGEMENTS = {
+    "ALONE",
+    "PAIR",
+    "FAMILY_GROUP",
+    "MULTIGENERATIONAL",
+    "GROUP_CARE",
+    "UNKNOWN",
+}
+
+
+def _count(profile: dict[str, Any], field_name: str) -> Optional[int]:
+    value = profile.get(field_name)
+    if value is None or value == UNKNOWN:
+        return None
+    try:
+        n = int(value)
+    except (TypeError, ValueError):
+        return None
+    return n if n >= 0 else None
+
+
+def classify_group_configuration(profile: dict[str, Any]) -> DecisionResult:
+    """Classify household/group composition without turning demographics into risk scores.
+
+    The returned tags describe *who is together with whom* so the support matcher can ask
+    the right questions. Tags NEVER by themselves mean unsafe or non-viable.
+
+    Examples:
+    - an older-only pair is not assumed helpless;
+    - an older adult + child household is flagged for assessment, not automatically failed;
+    - a multigenerational household may have strong internal support, but helper capacity
+      still must be declared by function.
+    """
+    total = _count(profile, "total_persons")
+    if total is None:
+        return DecisionResult(
+            False,
+            "GROUP_CONFIGURATION_UNKNOWN",
+            (REASON_UNKNOWN_ESSENTIAL,),
+            {"unknown": ["total_persons"]},
+        )
+
+    counts = {k: _count(profile, k) for k in VULNERABILITY_COUNT_FIELDS}
+    known_counts = {k: (v or 0) for k, v in counts.items() if v is not None}
+    unknown_counts = [k for k, v in counts.items() if v is None]
+
+    children = sum(known_counts.get(k, 0) for k in ("child_0_5", "child_6_12", "adolescent_13_17"))
+    older = known_counts.get("older_adult_60_plus", 0)
+    pregnant = known_counts.get("pregnant_person", 0)
+    postpartum = known_counts.get("postpartum_person", 0)
+    illness = known_counts.get("chronic_or_acute_illness", 0)
+    disability = known_counts.get("disability_or_functional_limitation", 0)
+    bedbound = known_counts.get("bedbound_or_homebound", 0)
+    adults = _count(profile, "adult_18_59")
+    adults = adults if adults is not None else max(0, total - children - older)
+
+    tags: list[str] = []
+    if total == 1:
+        tags.append("LIVES_ALONE")
+    elif total == 2:
+        tags.append("PAIR")
+    elif total >= 3:
+        tags.append("GROUP")
+
+    if children > 0 and older > 0 and adults == 0:
+        tags.append("CHILD_WITH_OLDER_ONLY")
+    if older > 0 and older == total:
+        tags.append("OLDER_ONLY_HOUSEHOLD")
+    if pregnant > 0 and total == 1:
+        tags.append("PREGNANT_ALONE")
+    if postpartum > 0 and total == 1:
+        tags.append("POSTPARTUM_ALONE")
+    if (illness > 0 or disability > 0 or bedbound > 0) and total == 1:
+        tags.append("HEALTH_DEPENDENCY_ALONE")
+    if children > 0 and adults > 0 and older > 0:
+        tags.append("MULTIGENERATIONAL")
+    if _count(profile, "single_caregiver_household") not in {None, 0}:
+        tags.append("SINGLE_CAREGIVER_WITH_DEPENDENTS")
+    if _count(profile, "dependents_without_co_resident_capable_adult") not in {None, 0}:
+        tags.append("NO_CO_RESIDENT_CAPABLE_ADULT")
+
+    dependency_types = sum(
+        1 for k in FUNCTIONAL_NEED_COUNT_FIELDS if (_count(profile, k) or 0) > 0
+    )
+    if dependency_types >= 2:
+        tags.append("MULTIPLE_FUNCTIONAL_DEPENDENCIES")
+
+    living = profile.get("living_arrangement", "UNKNOWN")
+    if living not in LIVING_ARRANGEMENTS:
+        living = "UNKNOWN"
+
+    return DecisionResult(
+        True,
+        "GROUP_CONFIGURATION_CLASSIFIED",
+        (),
+        {
+            "living_arrangement": living,
+            "composition_tags": tags,
+            "unknown_demographic_counts": unknown_counts,
+            "note": "composition tags trigger assessment; they do not determine viability",
+        },
+    )
+
+
+def required_support_links(profile: dict[str, Any]) -> tuple[str, ...]:
+    """Return the minimum link types that must be checked for this declared composition.
+
+    These are FloodConnect operational assessment rules, not a claim that every person in
+    a demographic category is dependent. Demographic category triggers an assessment;
+    functional-need fields trigger the hard support-link requirement.
+    """
+    required: list[str] = []
+
+    children = sum((_count(profile, k) or 0) for k in ("child_0_5", "child_6_12"))
+    adolescents = _count(profile, "adolescent_13_17") or 0
+    if children > 0 or adolescents > 0:
+        required.append("child_caregiver_link_uncovered")
+
+    if (_count(profile, "single_caregiver_household") or 0) > 0 and (
+        children > 0
+        or (_count(profile, "needs_continuous_supervision") or 0) > 0
+        or (_count(profile, "needs_mobility_assistance") or 0) > 0
+    ):
+        required.append("backup_caregiver_link_uncovered")
+
+    # Older age alone is not a dependency. Require a support link only when a functional
+    # support need is actually declared.
+    if (_count(profile, "older_adult_60_plus") or 0) > 0 and any(
+        (_count(profile, k) or 0) > 0
+        for k in (
+            "needs_mobility_assistance",
+            "needs_essential_medication",
+            "needs_communication_assistance",
+            "needs_continuous_supervision",
+        )
+    ):
+        required.append("older_adult_support_link_uncovered")
+
+    # Pregnancy/postpartum trigger a health/transport support check; absence is not inferred
+    # from pregnancy itself, only from the explicit uncovered-link field.
+    if (_count(profile, "pregnant_person") or 0) > 0 or (_count(profile, "postpartum_person") or 0) > 0:
+        required.append("pregnancy_support_link_uncovered")
+
+    if any(
+        (_count(profile, k) or 0) > 0
+        for k in (
+            "needs_essential_medication",
+            "needs_time_critical_medical_followup",
+            "chronic_or_acute_illness",
+            "bedbound_or_homebound",
+        )
+    ):
+        required.append("medical_support_link_uncovered")
+
+    if (_count(profile, "needs_mobility_assistance") or 0) > 0:
+        required.append("mobility_support_link_uncovered")
+
+    if (_count(profile, "needs_power_dependent_medical_device") or 0) > 0:
+        required.append("power_dependency_support_link_uncovered")
+
+    if (_count(profile, "needs_communication_assistance") or 0) > 0:
+        required.append("communication_support_link_uncovered")
+
+    if _count(profile, "total_persons") == 1 and (
+        any((_count(profile, k) or 0) > 0 for k in VULNERABILITY_COUNT_FIELDS)
+        or any((_count(profile, k) or 0) > 0 for k in FUNCTIONAL_NEED_COUNT_FIELDS)
+    ):
+        required.append("living_alone_buddy_link_uncovered")
+
+    return _dedup(required)
+
+
+def aggregate_member_need_profile(profile: dict[str, Any]) -> dict[str, Any]:
+    """Return privacy-preserving operational demand and composition categories.
+
+    Store counts/links, not names, diagnoses, phone numbers, room numbers or household
+    identifiers. Health is represented as a functional dependency, not a diagnosis.
     """
     allowed = (
-        # age/life-stage groups
+        "total_persons",
+        "living_arrangement",
         "child_0_5",
         "child_6_12",
         "adolescent_13_17",
@@ -766,17 +973,17 @@ def aggregate_member_need_profile(profile: dict[str, Any]) -> dict[str, Any]:
         "older_adult_60_plus",
         "pregnant_person",
         "postpartum_person",
-
-        # health / functional dependency
-        "mobility_assistance",
-        "essential_medication",
-        "time_critical_medical_followup",
-        "medical_device_power_dependency",
-        "communication_assistance",
-        "special_diet",
-        "infant_feeding",
-
-        # living arrangement / household composition
+        "chronic_or_acute_illness",
+        "disability_or_functional_limitation",
+        "bedbound_or_homebound",
+        "needs_continuous_supervision",
+        "needs_mobility_assistance",
+        "needs_essential_medication",
+        "needs_time_critical_medical_followup",
+        "needs_power_dependent_medical_device",
+        "needs_communication_assistance",
+        "needs_special_diet",
+        "needs_infant_feeding",
         "single_person_household",
         "older_adult_alone",
         "single_caregiver_household",
@@ -784,64 +991,78 @@ def aggregate_member_need_profile(profile: dict[str, Any]) -> dict[str, Any]:
         "co_resident_capable_adults",
         "co_resident_caregivers",
         "unreachable_households",
-
-        # declared support-link coverage; do not infer from age alone
-        "child_caregiver_link_uncovered",
-        "older_adult_support_link_uncovered",
-        "pregnancy_support_link_uncovered",
-        "medical_support_link_uncovered",
-        "living_alone_buddy_link_uncovered",
-    )
+    ) + SUPPORT_LINK_FIELDS
     out = {k: profile.get(k) for k in allowed if k in profile}
+    out["required_support_links"] = list(required_support_links(profile))
+    config = classify_group_configuration(profile)
+    if config.admitted:
+        out["composition_tags"] = config.details.get("composition_tags", [])
     out["privacy"] = "aggregate_operational_needs_only"
     return out
 
 
 def evaluate_dependency_coverage(profile: dict[str, Any]) -> DecisionResult:
-    """Check whether declared functional dependencies have a support link.
+    """Check whether the household's *required* support relationships are covered.
 
-    This is intentionally relationship-based, not demographic scoring.
-    Being a child, older adult, pregnant person or patient does not by itself mean
-    "not viable". The failure condition is an explicitly declared support dependency
-    that lacks a corresponding caregiver/buddy/medical/logistics link.
+    Pairing logic is functional:
+    - children -> caregiver link;
+    - single caregiver + dependents -> backup-caregiver link;
+    - older adult -> support link only when functional need is declared;
+    - pregnancy/postpartum -> pregnancy/health/transport support check;
+    - illness/bedbound/medication -> medical support link;
+    - living alone + vulnerability/dependency -> buddy/reassessment link.
 
-    Input is aggregate only; no names or diagnoses are required.
+    This avoids both errors: treating all older/pregnant/ill people as helpless, and
+    ignoring the fact that two dependent people living together may still have no helper.
     """
-    uncovered_fields = (
-        "child_caregiver_link_uncovered",
-        "older_adult_support_link_uncovered",
-        "pregnancy_support_link_uncovered",
-        "medical_support_link_uncovered",
-        "living_alone_buddy_link_uncovered",
-    )
-    missing = []
-    uncovered = []
-    for field_name in uncovered_fields:
+    required = required_support_links(profile)
+    if not required:
+        return DecisionResult(True, "NO_SPECIAL_DEPENDENCY_LINK_REQUIRED", (), {})
+
+    unknown: list[str] = []
+    uncovered: list[str] = []
+    for field_name in required:
         value = profile.get(field_name, UNKNOWN)
         if value == UNKNOWN or value is None:
-            missing.append(field_name)
+            unknown.append(field_name)
             continue
         try:
             if int(value) > 0:
                 uncovered.append(field_name)
         except (TypeError, ValueError):
-            missing.append(field_name)
+            unknown.append(field_name)
 
     if uncovered:
         return DecisionResult(
             False,
             "DEPENDENCY_SUPPORT_GAP",
             (REASON_VULNERABLE_SUPPORT_GAP,),
-            {"uncovered_links": uncovered},
+            {
+                "required_links": list(required),
+                "uncovered_links": uncovered,
+                "composition": classify_group_configuration(profile).details,
+            },
         )
-    if missing:
+    if unknown:
         return DecisionResult(
             False,
             "DEPENDENCY_COVERAGE_UNKNOWN",
             (REASON_UNKNOWN_ESSENTIAL,),
-            {"unknown_links": missing},
+            {
+                "required_links": list(required),
+                "unknown_links": unknown,
+                "composition": classify_group_configuration(profile).details,
+            },
         )
-    return DecisionResult(True, "DEPENDENCY_COVERED", (), {})
+    return DecisionResult(
+        True,
+        "DEPENDENCY_COVERED",
+        (),
+        {
+            "required_links": list(required),
+            "composition": classify_group_configuration(profile).details,
+        },
+    )
 
 
 def recommend_protective_state(
