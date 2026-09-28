@@ -39,6 +39,7 @@ KIND_LAYER = {
     "internal_safe": 3,
     "egress": 4,
     "external_safe": 5,
+    "supply_point": 5,
 }
 
 NODE_STATUS = {"SAFE", "DEGRADED", "UNSAFE", "UNKNOWN"}
@@ -331,6 +332,150 @@ def _extend_state(
         except (TypeError, ValueError):
             out["unknown_distance"] += 1
     return out
+
+
+def validate_declared_edge_path(
+    doc: dict[str, Any],
+    start_node: str,
+    target_node: str,
+    edge_ids: Iterable[str],
+    *,
+    group_size: int = 1,
+    mode: str = "walk",
+) -> RouteResult:
+    """Validate one explicitly declared movement path with the same hard constraints.
+
+    This is used by resupply/service journeys where the destination is not necessarily
+    an external shelter. It does not search or optimize; it validates exactly the edge
+    sequence supplied by the caller.
+    """
+    if group_size < 1:
+        return RouteResult(False, reason="group_size must be >= 1")
+
+    check = validate_document(doc)
+    if not check["valid"]:
+        return RouteResult(False, reason="invalid DAG: " + "; ".join(check["errors"]))
+
+    nodes = _nodes(doc)
+    edges = _edges(doc)
+    if start_node not in nodes or target_node not in nodes:
+        return RouteResult(False, reason="unknown start or target node")
+
+    by_id = {edge.get("id"): edge for edge in edges if edge.get("id")}
+    current = start_node
+    path = [start_node]
+    state = {
+        "assisted_edges": 0,
+        "degraded_nodes": 0,
+        "caution_edges": 0,
+        "unknown_capacity": 0,
+        "bottleneck_slack": None,
+        "unknown_distance": 0,
+        "distance_m": 0.0,
+        "hops": 0,
+    }
+
+    edge_ids = list(edge_ids)
+    if not edge_ids:
+        return RouteResult(False, reason="empty declared edge path")
+
+    for edge_id in edge_ids:
+        edge = by_id.get(edge_id)
+        if edge is None:
+            return RouteResult(False, reason=f"unknown edge id: {edge_id}")
+        if edge.get("from") != current:
+            return RouteResult(False, reason=f"non-contiguous edge path at {edge_id}")
+        if not _edge_ok(edge, group_size, mode):
+            return RouteResult(False, reason=f"edge not feasible: {edge_id}")
+        dest_id = edge.get("to")
+        dest = nodes.get(dest_id)
+        if dest is None or not _transit_node_ok(dest, group_size):
+            return RouteResult(False, reason=f"destination/transit node not feasible: {dest_id}")
+        state = _extend_state(state, edge, dest, group_size)
+        current = dest_id
+        path.append(current)
+
+    if current != target_node:
+        return RouteResult(False, reason="declared path does not end at target")
+
+    return RouteResult(
+        True,
+        path=tuple(path),
+        target=target_node,
+        score=_rank_key(state),
+        reason="declared path satisfies movement hard constraints",
+    )
+
+
+def find_feasible_route_to_target(
+    doc: dict[str, Any],
+    start_node: str,
+    target_node: str,
+    *,
+    group_size: int = 1,
+    mode: str = "walk",
+) -> RouteResult:
+    """Find a constraint-feasible movement path to one declared target node.
+
+    Unlike find_safe_route(), this helper does not require target kind=external_safe;
+    the target must still be fresh and operationally usable as a transit/destination.
+    """
+    if group_size < 1:
+        return RouteResult(False, reason="group_size must be >= 1")
+
+    check = validate_document(doc)
+    if not check["valid"]:
+        return RouteResult(False, reason="invalid DAG: " + "; ".join(check["errors"]))
+
+    nodes = _nodes(doc)
+    edges = _edges(doc)
+    if start_node not in nodes or target_node not in nodes:
+        return RouteResult(False, reason="unknown start or target node")
+
+    outgoing: dict[str, list[dict[str, Any]]] = {n: [] for n in nodes}
+    for edge in edges:
+        if edge.get("from") in outgoing:
+            outgoing[edge["from"]].append(edge)
+
+    initial = {
+        "assisted_edges": 0,
+        "degraded_nodes": 0,
+        "caution_edges": 0,
+        "unknown_capacity": 0,
+        "bottleneck_slack": None,
+        "unknown_distance": 0,
+        "distance_m": 0.0,
+        "hops": 0,
+    }
+    best_state: dict[str, dict[str, Any]] = {start_node: initial}
+    best_path: dict[str, tuple[str, ...]] = {start_node: (start_node,)}
+
+    for u in check["topological_order"]:
+        if u not in best_state:
+            continue
+        for edge in outgoing[u]:
+            v = edge["to"]
+            dest = nodes[v]
+            if not _edge_ok(edge, group_size, mode):
+                continue
+            if not _transit_node_ok(dest, group_size):
+                continue
+            cand_state = _extend_state(best_state[u], edge, dest, group_size)
+            cand_path = best_path[u] + (v,)
+            if v not in best_state or _rank_key(cand_state) < _rank_key(best_state[v]):
+                best_state[v] = cand_state
+                best_path[v] = cand_path
+
+    if target_node not in best_state:
+        return RouteResult(False, reason="no feasible route to declared target")
+
+    return RouteResult(
+        True,
+        path=best_path[target_node],
+        target=target_node,
+        score=_rank_key(best_state[target_node]),
+        reason="constraint-feasible route to declared target",
+    )
 
 
 def find_safe_route(
