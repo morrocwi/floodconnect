@@ -169,40 +169,84 @@ Khlong Saphan Sung into storage. The exact gate/pipe/pump mechanism at Pond 1 is
 **Unknown:** whether Pond 1 and Pond 2 are directly connected through a buried pipe or another
 internal conveyance. Do not add that edge until BOQ/as-built evidence is found.
 
-## Current best system DAG
+## Canonical working model — legacy interconnected ponds + new Saen Saep outlet
+
+The current working model is:
+
+1. **Legacy village system:** the original Sammakorn ponds form one interconnected storage
+   network. Historical BMA wording says the large ponds were **เชื่อมต่อกัน** before the
+   BMA monkey-cheek project was completed.
+
+2. **Do not interpret "interconnected" as every pond having a direct pipe to every other pond.**
+   The exact internal topology may be chain, trunk, culvert, pipe, or local channel. What is
+   supported is system-level hydraulic connectivity.
+
+3. **BMA project intervention:** the most useful current hypothesis is that BMA added/improved a
+   conveyance route from the central storage area toward the large terminal station
+   `ST.SPS.01 = สถานีสูบน้ำคลองบ้านม้า 2`, which then discharges at the Saen Saep side.
+
+Working topology:
 
 ```text
-                         [Khlong Saphan Sung]
+                ORIGINAL SAMMAKORN STORAGE NETWORK
+        +-----------------------------------------------+
+        |                                               |
+        |   Pond 1 ----?---- Pond 2/central ----?---- Pond 4
+        |      \              |                  /       |
+        |       \             |                 /        |
+        |        +---- legacy interconnected network ----+
+        |                                               |
+        +-------------------------+---------------------+
                                   |
-                         CAPTURE hypothesis
+                                  | NEW / IMPROVED CONVEYANCE
+                                  | exact route unresolved
                                   v
-                            [Pond 1]
-                           ST.SPS.04
+                         Khlong Ban Ma 2 corridor
                                   |
-                       ? hidden interconnection ?
+                                  v
+                             ST.SPS.01
+                         4.0 m3/s terminal
                                   |
-                                  X   (UNVERIFIED)
-                                  |
-Road / Ramkhamhaeng ---> [Pond 2]
-                         ST.SPS.03
-                              |
-                              | hidden/local conveyance
-                              v
-                       [Khlong Ban Ma 2]
-                              |
-                              v
-                         ST.SPS.01
-                       4.0 m3/s terminal
-                              |
-                              v
-                        KHLONG SAEN SAEP
-
-Southern branch:
-[Pond 4] <-> ST.SPS.02 <-> Khlong Wat Yai -> Khlong Ban Ma network
+                                  v
+                           KHLONG SAEN SAEP
 ```
 
-This is a **dynamic hydraulic graph**, not a permanently one-directional river DAG. Capture
-and recovery directions may differ by gate/pump operation and head difference.
+### Role of ST.SPS.02 / 03 / 04 under this model
+
+- `ST.SPS.02` at Pond 4 / Khlong Wat Yai: interface/control asset on the interconnected
+  pond system. **Inflow vs outflow remains unresolved.**
+- `ST.SPS.03` at Pond 2 / Khlong Ban Ma 2: interface/control asset at the central pond.
+  It may participate in road-water capture, redistribution, or drawdown. Exact pump
+  direction remains unresolved.
+- `ST.SPS.04` at Pond 1 / Khlong Saphan Sung: interface/control asset at the eastern pond.
+  It may participate in capture from road drainage / Saphan Sung overflow. Exact pump
+  direction remains unresolved.
+- `ST.SPS.01` at Khlong Ban Ma 2: treated as the **main terminal outlet to the Saen Saep
+  side** in the current working model.
+
+### Important epistemic distinction
+
+Supported:
+
+```text
+Pond system = interconnected
+Pond system -> new/improved outlet corridor -> ST.SPS.01 -> Saen Saep
+```
+
+Still unresolved:
+
+```text
+Pond 1 -> Pond 2 direct pipe?
+Pond 4 -> Pond 2 direct pipe?
+Which exact pipe/channel is the new outlet corridor?
+Does ST.SPS.02 pump into or out of Pond 4?
+Does ST.SPS.03 pump into or out of Pond 2?
+Does ST.SPS.04 pump into or out of Pond 1?
+```
+
+This avoids a false precision problem: the network can be historically interconnected even
+when the pairwise pipe map is unknown.
+
 
 ## Gate semantics
 
