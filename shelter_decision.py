@@ -100,6 +100,9 @@ REASON_SHELTER_CAPACITY_UNKNOWN = "SHELTER_CAPACITY_UNKNOWN"
 REASON_SHELTER_CAPACITY_INSUFFICIENT = "SHELTER_CAPACITY_INSUFFICIENT"
 REASON_NO_FEASIBLE_SAFE_ROUTE = "NO_FEASIBLE_SAFE_ROUTE"
 REASON_INVALID_NODE_KIND = "INVALID_NODE_KIND"
+REASON_SUPPORT_PROVIDER_UNVERIFIED = "SUPPORT_PROVIDER_UNVERIFIED"
+REASON_SUPPORT_DELIVERY_PATH_UNVERIFIED = "SUPPORT_DELIVERY_PATH_UNVERIFIED"
+REASON_SUPPORT_RESOURCE_UNAVAILABLE = "SUPPORT_RESOURCE_UNAVAILABLE"
 
 
 _FIELD_REASON = {
@@ -606,6 +609,74 @@ def evaluate_resupply_window(
     )
 
 
+
+def evaluate_support_delivery(
+    doc: dict[str, Any],
+    recipient_id: str,
+    provider_id: str,
+    resources: Iterable[str],
+) -> DecisionResult:
+    """Evaluate service/resource delivery TOWARD a household/zone.
+
+    This is deliberately different from RESUPPLY_WINDOW: the recipient does not need to
+    travel. It represents Thai field patterns such as community kitchens, foundations,
+    buddy cells or zone volunteers carrying food/water/medicine toward isolated homes.
+
+    Quantitative throughput is not inferred here. The function only admits a categorical
+    deliverability claim when provider and support path are fresh and verified.
+    """
+    nodes = doc.get("nodes") or {}
+    recipient = nodes.get(recipient_id)
+    provider = nodes.get(provider_id)
+    requested = tuple(dict.fromkeys(resources))
+
+    if not isinstance(recipient, dict):
+        return DecisionResult(False, "SUPPORT_DELIVERY_NOT_ADMITTED", ("UNKNOWN_RECIPIENT",))
+    if not isinstance(provider, dict):
+        return DecisionResult(
+            False, "SUPPORT_DELIVERY_NOT_ADMITTED", (REASON_SUPPORT_PROVIDER_UNVERIFIED,)
+        )
+    if not requested:
+        return DecisionResult(False, "SUPPORT_DELIVERY_NOT_ADMITTED", ("NO_RESOURCE_REQUEST",))
+
+    if (
+        provider.get("fresh") is not True
+        or provider.get("status") not in {"SAFE", "DEGRADED"}
+    ):
+        return DecisionResult(
+            False, "SUPPORT_DELIVERY_NOT_ADMITTED", (REASON_SUPPORT_PROVIDER_UNVERIFIED,)
+        )
+
+    provider_resources = set(provider.get("services") or []) | set(provider.get("resources") or [])
+    missing = [r for r in requested if r not in provider_resources and "*" not in provider_resources]
+    if missing:
+        return DecisionResult(
+            False,
+            "SUPPORT_DELIVERY_NOT_ADMITTED",
+            (REASON_SUPPORT_RESOURCE_UNAVAILABLE,),
+            {"missing_resources": missing},
+        )
+
+    if not _support_path_exists(doc, provider_id, recipient_id, requested):
+        return DecisionResult(
+            False,
+            "SUPPORT_DELIVERY_NOT_ADMITTED",
+            (REASON_SUPPORT_DELIVERY_PATH_UNVERIFIED,),
+        )
+
+    return DecisionResult(
+        True,
+        "SUPPORT_DELIVERY_AVAILABLE",
+        (),
+        {
+            "provider_node": provider_id,
+            "recipient_node": recipient_id,
+            "resources": list(requested),
+            "note": "categorical deliverability only; no throughput inferred",
+        },
+    )
+
+
 def screen_shelter_candidate(
     node: dict[str, Any],
     *,
@@ -760,6 +831,24 @@ def recommend_protective_state(
         )
 
     if sustain.state == NOT_SUSTAINABLE:
+        # Resource failure does not automatically mean the person should enter floodwater.
+        # First check declared support providers that can deliver the missing resources inward.
+        providers = (node.get("sustainment") or {}).get("support_providers") or []
+        for provider_id in providers:
+            delivery = evaluate_support_delivery(
+                doc,
+                household_id,
+                provider_id,
+                sustain.gaps,
+            )
+            if delivery.admitted:
+                return DecisionResult(
+                    True,
+                    "REQUEST_OR_RECEIVE_SUPPORT_DELIVERY",
+                    (),
+                    delivery.details,
+                )
+
         route = cd.find_safe_route(
             doc,
             household_id,
