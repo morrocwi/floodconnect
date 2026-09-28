@@ -187,13 +187,12 @@ shelter_phases:
 
 human_animal_household_unit:
   id: HAHU
-  provenance: "FloodConnect repo-specific construct informed by Thai flood response and disaster pet-evacuation literature"
+  provenance: "FloodConnect repo-specific construct informed by Thai flood response and disaster animal-evacuation literature"
   claimed_global_standard: false
 
   principle: >
-    A household may include animals that materially affect food, water, sanitation,
-    transport and shelter decisions. Human and animal ledgers remain separate, but the
-    household-unit plan must cover both when animals are declared co-resident/co-evacuating.
+    Human and animal ledgers remain separate. Animal sustainment, movement readiness and
+    destination compatibility are separate evaluators and must not be collapsed.
 
   plan_modes:
     - NONE
@@ -201,75 +200,49 @@ human_animal_household_unit:
     - SEPARATE_VERIFIED_PLAN
     - UNKNOWN
 
-  animal_types:
+  animal_topology:
     companion:
-      - dog
-      - cat
-      - bird
-      - rabbit_or_small_mammal
-      - reptile
-      - fish
-      - other_companion
+      species: [dog, cat, bird, rabbit_or_small_mammal, reptile, fish, other_companion]
+      destination_need: companion_animal_accommodation
+    assistance:
+      role_not_species: true
+      destination_need: assistance_animal_access
+      rule: "treat as human functional-support continuity; do not redirect to pet-only shelter"
     livestock_or_working:
-      - cattle_or_buffalo
-      - pig
-      - goat_or_sheep
-      - poultry
-      - horse
-      - other_livestock
+      species: [cattle_or_buffalo, pig, goat_or_sheep, poultry, horse, other_livestock]
+      destination_need: livestock_holding
     community_or_stray:
-      handling: "zone/civil-society/veterinary response, not private household ownership inference"
+      destination_need: community_animal_handoff
+      rule: "zone/civil-society/veterinary response; do not infer private household ownership"
 
-  hard_resource_fields:
-    - animal_food_for_horizon
-    - animal_drinking_water_for_horizon
-    - animal_medication_for_horizon
-    - animal_waste_hygiene_for_horizon
+  sustainment:
+    hard_resource_fields:
+      - animal_food_for_horizon
+      - animal_drinking_water_for_horizon
+      - animal_medication_for_horizon
+      - animal_waste_hygiene_for_horizon
+    conditional:
+      cats_indoor_or_shelter:
+        - cat_litter_for_horizon
+      veterinary_support_required:
+        - animal_veterinary_support
+    excludes:
+      - animal_containment_transport
+      - animal_identification_records
+    rule: "lack of carrier/transport equipment does not make a physically safe home non-sustainable"
 
-  hard_function_fields:
-    - animal_containment_transport
-    - animal_identification_records
-    - animal_veterinary_support
+  movement_readiness:
+    fields:
+      - animal_containment_transport
+      - animal_identification_records
+      - animal_transport_capacity_verified
+    assistance_animal_conditional:
+      - assistance_animal_handler_continuity
+    states: [READY, NOT_READY, UNKNOWN]
 
-  conditional_fields:
-    cats_indoor_or_shelter:
-      - cat_litter_for_horizon
-    veterinary_need_declared:
-      - veterinary_support_at_destination_required
-
-  horizon:
-    assessed_horizon_h_required: true
-    no_default_horizon: true
-    finite_only: true
-    equation: "T_animal_resource = 24 * (stock + verified_inflow) / declared_daily_demand"
-    zero_demand_rule: "never return infinity; use NOT_REQUIRED explicitly or UNKNOWN"
-
-  resource_equations:
-    animal_drinking_water:
-      preferred: "D(T) = T * sum(declared animal daily water demand)"
-      note: >
-        owner/veterinary/measured consumption is preferred. Dog/cat veterinary maintenance
-        formulas may be used only as explicit planning estimates, never silent defaults.
-    animal_food:
-      preferred: "D(T) = T * sum(declared normal feed rate)"
-      fallback_reference: "RER = 70 * BWkg^0.75; MER = k * RER for dog/cat starting estimates"
-      note: "actual feed rate/product instructions override generic estimate when known"
-    cat_litter:
-      equation: "D_litter(T) = declared_litter_burn_rate * T"
-      universal_default_allowed: false
-
-  transport_constraint:
-    equation: "AnimalMove = containment AND transport_capacity AND route AND destination_compatibility"
-    rule: >
-      failure of animal transport never justifies keeping people in a physically unsafe
-      location; request assisted evacuation with animals or a separate verified animal plan.
-
-  destination_service_need:
-    co_evacuating: companion_animal_accommodation
-    optional_veterinary_need: veterinary_support
-
-  animal_accommodation:
-    required_fields:
+  destination_compatibility:
+    embedded_or_linked_node_allowed: true
+    required_accommodation_fields:
       - accepted_species
       - animal_capacity
       - animal_drinking_water
@@ -284,17 +257,75 @@ human_animal_household_unit:
       - bite_scratch_management
       - vaccination_or_record_check
 
+  horizon:
+    assessed_horizon_h_required: true
+    no_default_horizon: true
+    finite_only: true
+    equation: "T_animal_resource = 24 * (stock + verified_inflow) / declared_daily_demand"
+    zero_demand_rule: "never return infinity; use NOT_REQUIRED explicitly or UNKNOWN"
+
   effective_unit_horizon:
-    equation: "T_HAHU = min(T_human_effective, T_animal_effective)"
+    equation: "T_HAHU = min(T_human_effective, T_animal_sustainment)"
     rule: >
-      this is a household-unit continuity horizon; immediate human life safety still has
-      priority and cannot be overridden by animal resource deficits.
+      immediate human life safety has priority. If occupancy becomes unsafe and animal
+      movement/destination is not ready, request assisted evacuation rather than recommend staying.
 
   privacy:
     public_layer: "species/category counts and resource/support gaps only"
     restricted_local_roster: >
       owner/animal identity, microchip/vaccination data and exact pickup location may exist
       only in authorized operational systems and must not be committed to the public repository.
+
+service_node_model:
+  kind: service_node
+  allowed_layers: [2, 3, 4, 5]
+  principle: "topology kind is separate from functional capability"
+  capabilities_examples:
+    - food_preparation
+    - food_distribution
+    - drinking_water
+    - clean_service_water
+    - medicine
+    - charging
+    - communications
+    - boat_transfer
+    - veterinary_support
+    - animal_feed
+    - companion_animal_accommodation
+    - assistance_animal_access
+    - livestock_holding
+    - community_animal_handoff
+  rule: >
+    a Thai school, mosque, private kitchen, shop, veterinary team or local-government point
+    may expose multiple capabilities without being forced into one exclusive service label.
+
+unified_crisis_state:
+  module: "unified_crisis_state.py"
+  equation: "Z_i(t,T) = (O,F,M,S,E,H,A,P)"
+  weighted_risk_score: false
+  dimensions:
+    O_occupancy: [SAFE, DEGRADING, UNSAFE, UNKNOWN]
+    F_function: [INTACT, GAP_CLOSABLE, GAP_UNCLOSABLE, UNKNOWN]
+    M_movement: [SELF_MOVE, ASSISTED_ROUTE, ASSISTED_REQUIRED, UNVERIFIED, UNKNOWN]
+    S_support: [L0_HOUSEHOLD, L1_BUDDY, L2_ZONE, L3_COMMUNITY, L4_EXTERNAL, NO_VIABLE, UNKNOWN]
+    E_environment: [STABLE, DEGRADING, UNSAFE, UNKNOWN]
+    H_forward_hazard: [NONE, LOW, WATCH, HIGH, CRITICAL, ACTIVE, UNKNOWN]
+    A_animal_topology: [HUMAN_ONLY, COMPANION, ASSISTANCE, LIVESTOCK, COMMUNITY, MIXED, UNKNOWN]
+    P_phase: [PREPARE, RESPONSE, SHELTER, RECOVERY, UNKNOWN]
+  response_patterns:
+    - STAY_SUSTAIN
+    - STAY_PREPARE
+    - STAY_PREPARE_WINDOW_CLOSING
+    - RESUPPLY
+    - DELIVER_INWARD
+    - ESCALATE_SUPPORT
+    - MOVE
+    - ASSISTED_EVACUATION
+    - SHELTER_INTERVENTION_RELOCATION
+    - RECOVERY_RETURN
+    - VERIFY_PREPARE
+    - VERIFY
+  rule: "response patterns are derived from state; they are not mutually exclusive disaster types"
 
 member_need_profile:
   privacy: "aggregate operational needs only; no names, diagnoses, phone numbers, room/house identifiers"
