@@ -1,7 +1,7 @@
 # HANDOFF — Shelter Decision, Sustainment & Lowest Viable Community Node
 
-**Branch:** `proposal/shelter-sustainment`  
-**Status:** design proposal, not operational logic  
+**Branch:** `feature/lvcn-shelter-operational`  
+**Status:** implementation present; keep fail-closed and test before merge  
 **Primary design:** `docs/SHELTER_DECISION_AND_COMMUNITY_SUSTAINMENT.md`
 
 ## Goal
@@ -38,8 +38,9 @@ UNHCR, CCCM or academic standard.
 Evaluate in ascending support layer:
 
 ```text
-household -> buddy_cell -> zone -> internal_safe/community shelter
-          -> egress -> verified external_safe
+household -> buddy_cell -> zone -> internal_safe/community shelter -> verified external_safe
+
+`egress` is NOT an LVCN candidate; it remains a movement connector in `community_dag.py`.
 ```
 
 A social node can be the LVCN even if people remain in their homes.
@@ -47,11 +48,12 @@ A social node can be the LVCN even if people remain in their homes.
 ### 3. Constraint-first
 Do not build a weighted safety/resilience score.
 
-Classification:
-- `VIABLE_AND_ESCALATABLE`
-- `VIABLE_BUT_ISOLATED`
-- `NOT_VIABLE`
-- `UNKNOWN`
+Two separate classifications:
+- sustainment: `SUSTAINABLE / NOT_SUSTAINABLE / UNKNOWN`;
+- escalation: `ESCALATABLE / ISOLATED / UNKNOWN`.
+
+Exact LVCN: `EXACT_LVCN`. If lower layers remain UNKNOWN, a higher known candidate is only
+`KNOWN_VIABLE_UPPER_BOUND`.
 
 Missing safety-critical input stays `UNKNOWN`.
 
@@ -66,6 +68,25 @@ instruction to travel.
 
 ### 6. Shelter is a lifecycle
 Screening -> access -> operation -> maintenance -> return/relocate/closure.
+
+## Current implementation
+
+- `shelter_decision.py`: implemented pure decision functions.
+- `community_dag.py`: exposes declared-path and target-path validators using existing hard constraints.
+- `self_help_dag.yaml`: all sustainment fields fail closed to UNKNOWN; support network separated.
+- `sustainment_policy.yaml`: operational schema, no live safety claims.
+- `tests/test_shelter_decision.py`: fail-closed unit/integration suite.
+- `docs/THAI_DISTRIBUTED_LIFELINE_CONVERGENCE.md`: Thailand-first equations and typology.
+- `site/inputs/community/shelter_field_evidence_2026-09-28.md`: qualitative field failure modes.
+
+### Peer-review corrections already applied
+
+1. Egress removed from LVCN candidates.
+2. Movement DAG separated from lateral/backward support/resource network.
+3. Sustainment separated from evacuation/escalation capability.
+4. Higher known viable nodes cannot erase lower UNKNOWN.
+5. Drinking water separated from service water.
+6. Shelter requirements are phase-aware: PRE_OPEN / OCCUPIED / RECOVERY.
 
 ## Existing code that must remain authoritative
 
@@ -85,8 +106,8 @@ Screening -> access -> operation -> maintenance -> return/relocate/closure.
 2. All new operational values default to `UNKNOWN` / null / false.
 3. Add schema validation; do not change routing behavior yet.
 
-### Phase B — pure evaluator
-Create a small module, suggested name `shelter_decision.py`, with pure functions:
+### Phase B — pure evaluator — IMPLEMENTED
+`shelter_decision.py` now provides:
 
 ```python
 evaluate_sustainment(node, planning_horizon_h) -> classification
@@ -115,11 +136,11 @@ Suggested refusal/reason vocabulary:
 - `SHELTER_CAPACITY_UNKNOWN`
 - `NO_FEASIBLE_SAFE_ROUTE`
 
-### Phase C — integrate without coupling
+### Phase C — integrate without coupling — IMPLEMENTED
 Use existing `community_dag.py` only to determine whether a declared movement/resupply
 edge is feasible. Do not duplicate route rules in the new module.
 
-### Phase D — tests
+### Phase D — tests — IMPLEMENTED, CI required green
 Minimum test cases:
 
 1. household fully viable -> household is LVCN;
@@ -135,7 +156,7 @@ Minimum test cases:
 11. every layer UNKNOWN -> return UNKNOWN/REFUSED, never choose a node;
 12. official movement conflict -> do not recommend resupply movement.
 
-### Phase E — real-event anti-leakage replay
+### Phase E — real-event anti-leakage replay — ACTIVE
 Use only timestamp-available evidence.
 
 Priority fixtures:
