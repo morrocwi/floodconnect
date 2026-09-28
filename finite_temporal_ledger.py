@@ -307,7 +307,7 @@ def accumulate_environment_timeline(node: dict[str, Any]) -> TemporalLedgerResul
         # cumulative_h is exact *inside W* when the left boundary is ACTIVE or INACTIVE and
         # the window is certified complete. UNKNOWN left-boundary state with no declared
         # onset cannot produce an exact cumulative duration.
-        cumulative_out = None if left_state == "UNKNOWN" else cumulative
+        cumulative_out = None if (left_state == "UNKNOWN" or observed_without_start) else cumulative
 
         outputs.append(
             MechanismAccumulation(
