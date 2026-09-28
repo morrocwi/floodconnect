@@ -82,75 +82,127 @@ purpose is to move water from the internal Sammakorn system toward public canals
 ultimately Saen Saep. A buried pipe may run under or along a road, but that is not the
 same as discharging water "onto the road".
 
-## Pond-level asset model
+## Verified BMA station-code mapping
 
-### Pond 1
+BMA PumpHistory on 28 Sep 2026 directly maps the Saphan Sung codes:
 
+| code | BMA station name | capacity / pumps |
+|---|---|---|
+| `ST.SPS.01` | สถานีสูบน้ำคลองบ้านม้า 2 | 4.00 m3/s = 4 x 1.00 |
+| `ST.SPS.02` | สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่ | 2.00 m3/s = 2 x 1.00 |
+| `ST.SPS.03` | สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2 | 0.75 m3/s = 3 x 0.25 |
+| `ST.SPS.04` | สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง | 1.00 m3/s = 2 x 0.50 |
+
+This mapping is now canonical. Earlier FloodConnect versions shifted the codes and incorrectly
+invented `ST.SPS.03 = Pond 3`; that mapping is withdrawn.
+
+### ST.SPS.01 — Khlong Ban Ma 2 terminal station
+
+Verified:
+- BMA name: `สถานีสูบน้ำคลองบ้านม้า 2`.
+- capacity 4.00 m3/s, four 1.00 m3/s pumps.
+- BMA canal inventory: Khlong Ban Ma 2 connects Khlong Saen Saep to Sammakorn Village.
+- MEA separately calls this asset `สถานีสูบน้ำคลองบ้านม้า 2 ตอนคลองแสนแสบ`.
+
+Strong working interpretation:
 ```text
-local drainage -> [unresolved intake] -> Pond 1
-Pond 1 -> ST.SPS.01 -> interface associated with Khlong Saphan Sung
+internal Sammakorn / Khlong Ban Ma 2
+              -> ST.SPS.01
+              -> Saen Saep-side network
 ```
 
-Verified design capacity: **1.00 m3/s (2 x 0.50)**.
+Calling it the **main outlet/gateway for the village** is a strong topology hypothesis because
+it is the largest-capacity station and sits at the Ban Ma 2–Saen Saep end. It is not yet a
+verbatim BMA designation.
 
-### Pond 2
+### ST.SPS.02 — Pond 4 / Khlong Wat Yai
 
+Verified:
+- BMA name: `สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่`.
+- capacity 2.00 m3/s, two 1.00 m3/s pumps.
+- BMA canal inventory identifies Khlong Wat Yai Bon as connecting to Khlong Ban Ma.
+
+Working topology:
 ```text
-local drainage -> [unresolved intake / buried conveyance] -> Pond 2
-Pond 2 -> ST.SPS.02 -> interface associated with Khlong Ban Ma 2
+southern Sammakorn / Pond 4
+        <-> ST.SPS.02
+        <-> Khlong Wat Yai system
+        -> Khlong Ban Ma network
 ```
 
-Verified design capacity: **0.75 m3/s (3 x 0.25)**.
+Exact intake/discharge direction by operating mode still requires the as-built drawing.
 
-This does **not** mean Pond 2 must visibly touch an open canal. BMA's canal inventory says
-Khlong Ban Ma 2 terminates at/extends to Sammakorn Village, while the project budget
-contains multiple pipe connections. The exact connection from Pond 2 to that canal remains
-an **as-built question**.
+### ST.SPS.03 — Pond 2 / Khlong Ban Ma 2
 
-### Pond 3
+Verified:
+- BMA name: `สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2`.
+- capacity 0.75 m3/s, three 0.25 m3/s pumps.
+- located in the central Sammakorn retention system.
 
-The 2567 control-structure table excerpt used here does not list Pond 3. The original
-project budget has a second `2 x 0.50 m3/s` station after accounting for Pond 1, so Pond 3
-is a plausible match, but this is **inference only** and must not be promoted to verified
-asset data without a direct record.
-
-### Pond 4
-
+Supported system-function hypothesis:
 ```text
-local drainage -> [unresolved intake] -> Pond 4
-Pond 4 -> ST.SPS.04 -> interface named "ตอนคลองวัดใหญ่"
+road / internal drainage
+        -> Pond 2 storage
+        ->/from ST.SPS.03 interface
+        -> Khlong Ban Ma 2 system
 ```
 
-Verified design capacity: **2.00 m3/s (2 x 1.00)**.
+BMA says the Sammakorn monkey-cheek receives water from the village/Ramkhamhaeng area, but
+**whether ST.SPS.03 itself pumps road/drain water into Pond 2 remains unverified**. The road
+capture role is supported; the exact actuator/direction is not.
 
-The station name and field imagery locate the structure at the pond edge, but the exact
-buried discharge route from Khlong Wat Yai onward still requires an as-built plan.
+### ST.SPS.04 — Pond 1 / Khlong Saphan Sung
 
-## Separate downstream station: Khlong Ban Ma 2
+Verified:
+- BMA name: `สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง`.
+- capacity 1.00 m3/s, two 0.50 m3/s pumps.
 
-BMA lists a separate asset:
-
+Supported capture hypothesis:
 ```text
-Khlong Ban Ma 2 -> Pump station Khlong Ban Ma 2 -> Saen Saep-side network
+road drainage + Khlong Saphan Sung high-water diversion
+                       -> Pond 1
 ```
 
-Capacity: **4.00 m3/s (4 x 1.00)**.
+The 2018 project description says the retention system helps draw water associated with
+Khlong Saphan Sung into storage. The exact gate/pipe/pump mechanism at Pond 1 is unresolved.
 
-MEA also distinguishes `สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2` from
-`สถานีสูบน้ำคลองบ้านม้า 2 ตอนคลองแสนแสบ`. Treat these as **different nodes**.
+**Unknown:** whether Pond 1 and Pond 2 are directly connected through a buried pipe or another
+internal conveyance. Do not add that edge until BOQ/as-built evidence is found.
 
-Therefore the topology can contain two pumping stages:
+## Current best system DAG
 
 ```text
-Pond 2
-  -> pond pump ST.SPS.02
-  -> local/pipe/canal conveyance
-  -> Khlong Ban Ma 2
-  -> downstream Ban Ma 2 pump/control structure
-  -> Saen Saep
+                         [Khlong Saphan Sung]
+                                  |
+                         CAPTURE hypothesis
+                                  v
+                            [Pond 1]
+                           ST.SPS.04
+                                  |
+                       ? hidden interconnection ?
+                                  |
+                                  X   (UNVERIFIED)
+                                  |
+Road / Ramkhamhaeng ---> [Pond 2]
+                         ST.SPS.03
+                              |
+                              | hidden/local conveyance
+                              v
+                       [Khlong Ban Ma 2]
+                              |
+                              v
+                         ST.SPS.01
+                       4.0 m3/s terminal
+                              |
+                              v
+                        KHLONG SAEN SAEP
+
+Southern branch:
+[Pond 4] <-> ST.SPS.02 <-> Khlong Wat Yai -> Khlong Ban Ma network
 ```
 
-The middle pipe/channel geometry is still unresolved.
+This is a **dynamic hydraulic graph**, not a permanently one-directional river DAG. Capture
+and recovery directions may differ by gate/pump operation and head difference.
 
 ## Gate semantics
 
@@ -260,3 +312,10 @@ Therefore FloodConnect should model the system as **time-dependent bidirectional
 What remains unresolved is whether the capture phase uses only gravity through a gate/pipe,
 or whether any separate inlet pump assists flow. The presence of ST.SPS.01–04 must not be
 used as proof of inlet pumping.
+
+
+## Live code source
+
+- BMA PumpHistory live station table:
+  https://weather.bangkok.go.th/Station/PumpHistory
+  (28 Sep 2026 table rows ST.SPS.01–04 provide the exact code/name mapping.)
