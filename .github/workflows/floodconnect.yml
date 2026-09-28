@@ -39,6 +39,9 @@ jobs:
       - name: Install pdftotext (poppler-utils)
         run: sudo apt-get update && sudo apt-get install -y poppler-utils
 
+      - name: Test lifeline convergence feasibility
+        run: python3 -m pytest tests/test_convergence_feasibility.py -q
+
       - name: Collect live snapshots (tolerant of per-source failures)
         # collect.py already isolates one source's failure from the rest (see its `run()`);
         # some BMA hosts (weather.bangkok.go.th / dds.bangkok.go.th) may 403 from GitHub's
