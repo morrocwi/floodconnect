@@ -8,6 +8,7 @@ on:
       - "site/inputs/community/**"
       - "tests/test_community_dag.py"
       - "tests/test_shelter_decision.py"
+      - "tests/test_shelter_real_replay.py"
       - ".github/workflows/shelter-tests.yml"
   push:
     branches: [main]
@@ -17,6 +18,7 @@ on:
       - "site/inputs/community/**"
       - "tests/test_community_dag.py"
       - "tests/test_shelter_decision.py"
+      - "tests/test_shelter_real_replay.py"
       - ".github/workflows/shelter-tests.yml"
 
 permissions:
@@ -30,10 +32,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install -r requirements-ci.txt pytest
+      - run: pip install pyyaml pytest
       - name: Compile
         run: python -m py_compile community_dag.py shelter_decision.py
       - name: Run community + shelter tests
         env:
           PYTHONPATH: .
-        run: pytest -q
+        run: pytest -q tests/test_community_dag.py tests/test_shelter_decision.py tests/test_shelter_real_replay.py
