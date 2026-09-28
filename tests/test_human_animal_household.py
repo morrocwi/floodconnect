@@ -359,3 +359,18 @@ def test_lvcn_skips_human_only_shelter_for_coevacuating_cat():
     result = sd.find_lowest_viable_node(doc, "h", 24)
     assert result.node_id == "x"
     assert result.node_kind == "external_safe"
+
+
+def test_unknown_evacuation_plan_does_not_poison_safe_home_sustainment():
+    p = _animal_profile(plan_mode="UNKNOWN")
+    stay = hahu.evaluate_animal_sustainment(p, 24)
+    move = hahu.evaluate_animal_movement_readiness(p)
+    assert stay.state == hahu.SUSTAINABLE
+    assert move.state == hahu.UNKNOWN
+
+
+def test_missing_identification_record_is_advisory_not_universal_movement_blocker():
+    p = _animal_profile(animal_identification_records="UNKNOWN")
+    move = hahu.evaluate_animal_movement_readiness(p)
+    assert move.state == hahu.READY
+    assert "animal_identification_records" in move.details["advisory_unknowns"]
