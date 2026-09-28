@@ -62,6 +62,9 @@ ANIMAL_SUSTAINMENT_FIELDS = (
 
 ANIMAL_MOVEMENT_FIELDS = (
     "animal_containment_transport",
+)
+
+ANIMAL_MOVEMENT_ADVISORY_FIELDS = (
     "animal_identification_records",
 )
 
@@ -186,21 +189,11 @@ def evaluate_animal_sustainment(
         return AnimalUnitResult(SUSTAINABLE, details={"total_animals": 0, "topology": topology})
 
     mode = str(profile.get("plan_mode", "UNKNOWN")).upper()
-    if mode not in MODES or mode == "UNKNOWN":
-        return AnimalUnitResult(
-            UNKNOWN,
-            reason_codes=("UNKNOWN_ANIMAL_PLAN_MODE",),
-            unknown_fields=("plan_mode",),
-            details={"total_animals": count, "topology": topology},
-        )
-    if mode == "NONE":
-        return AnimalUnitResult(
-            UNKNOWN,
-            reason_codes=("ANIMALS_PRESENT_WITHOUT_PLAN",),
-            unknown_fields=("plan_mode",),
-            details={"total_animals": count, "topology": topology},
-        )
+    if mode not in MODES:
+        mode = "UNKNOWN"
 
+    # Movement-plan readiness is intentionally NOT a stay/sustain hard constraint.
+    # Only a declared separate-care plan changes where sustainment is evaluated.
     horizon_ok, horizon_reason = _horizon_ok(profile, planning_horizon_h)
     if not horizon_ok:
         return AnimalUnitResult(
@@ -332,6 +325,11 @@ def evaluate_animal_movement_readiness(profile: dict[str, Any]) -> AnimalUnitRes
         unknowns.append("animal_transport_capacity_verified")
         reasons.append("ANIMAL_TRANSPORT_CAPACITY_UNVERIFIED")
 
+    advisory_unknowns: list[str] = []
+    for field_name in ANIMAL_MOVEMENT_ADVISORY_FIELDS:
+        if _state(profile.get(field_name)) == UNKNOWN:
+            advisory_unknowns.append(field_name)
+
     # Assistance animal handler/continuity is a human functional dependency.
     if topology["assistance_animal_count"] > 0:
         handler = _state(profile.get("assistance_animal_handler_continuity"))
@@ -346,14 +344,18 @@ def evaluate_animal_movement_readiness(profile: dict[str, Any]) -> AnimalUnitRes
         return AnimalUnitResult(
             NOT_READY, tuple(dict.fromkeys(reasons)), tuple(dict.fromkeys(gaps)),
             tuple(dict.fromkeys(unknowns)), animal_route_needs(profile),
-            {"topology": topology},
+            {"topology": topology, "advisory_unknowns": advisory_unknowns},
         )
     if unknowns:
         return AnimalUnitResult(
             UNKNOWN, tuple(dict.fromkeys(reasons)), (), tuple(dict.fromkeys(unknowns)),
-            animal_route_needs(profile), {"topology": topology},
+            animal_route_needs(profile), {"topology": topology, "advisory_unknowns": advisory_unknowns},
         )
-    return AnimalUnitResult(READY, route_needs=animal_route_needs(profile), details={"topology": topology})
+    return AnimalUnitResult(
+        READY,
+        route_needs=animal_route_needs(profile),
+        details={"topology": topology, "advisory_unknowns": advisory_unknowns},
+    )
 
 
 def animal_route_needs(profile: dict[str, Any]) -> tuple[str, ...]:
