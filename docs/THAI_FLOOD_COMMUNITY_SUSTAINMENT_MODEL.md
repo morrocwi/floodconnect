@@ -391,33 +391,153 @@ A central kitchen therefore becomes useful only when:
 Likewise, "1,000 meals produced" is an output measure, not proof that the highest-need
 households were reached.
 
-## 9. Crisis typology
+## 9. Unified crisis-state model and operational response patterns
 
-### Type 1 — Water hazard high, household functions intact
-Action: stay/sustain + watch + maintain escalation information.
+FloodConnect no longer treats crisis "types" as mutually exclusive boxes.
 
-### Type 2 — House safe, one/more lifelines failing, route still verified
-Action: resupply window or support delivery depending on who can move safely.
+The executable state of household/community unit i is represented as an orthogonal vector:
 
-### Type 3 — House safe, routes degraded/unknown, external supplies exist
-Action: buddy/zone aggregation + last-mile delivery; no unsafe self-resupply.
+[
+Z_i(t,T)=
+left(
+O_i,,
+F_i,,
+M_i,,
+S_i,,
+E_i,,
+H_i,,
+A_i,,
+P_i
+ight)
+]
 
-### Type 4 — Local community service capacity failing
-Action: connect zone to civil-society/private/local-government nodes; deploy mobile/micro hubs.
+where:
 
-### Type 5 — Occupancy unsafe but movement available
-Action: prepare/move to verified shelter/relative/private destination.
+- (O) **Occupancy safety** = SAFE / DEGRADING / UNSAFE / UNKNOWN
+- (F) **Essential-function state** = INTACT / GAP_CLOSABLE / GAP_UNCLOSABLE / UNKNOWN
+- (M) **Movement state** = SELF_MOVE / ASSISTED_ROUTE / ASSISTED_REQUIRED / UNVERIFIED / UNKNOWN
+- (S) **Support depth** = L0 household / L1 buddy / L2 zone / L3 community / L4 external / no viable / unknown
+- (E) **Environmental degradation** = STABLE / DEGRADING / UNSAFE / UNKNOWN
+- (H) **Forward hazard** = NONE / LOW / WATCH / HIGH / CRITICAL / ACTIVE / UNKNOWN
+- (A) **Human–animal topology** = HUMAN_ONLY / COMPANION / ASSISTANCE / LIVESTOCK / COMMUNITY / MIXED
+- (P) **Operational phase** = PREPARE / RESPONSE / SHELTER / RECOVERY / UNKNOWN
 
-### Type 6 — Occupancy unsafe and movement unavailable
-Action: assisted evacuation/rescue request; household cannot be treated as self-sustaining.
+No scalar risk score is produced.
 
-### Type 7 — Shelter itself degrades
-Action: resupply/intervention/relocation based on failed function; shelter identity does not
-override current constraints.
+The decision operator is:
 
-### Type 8 — Water recedes but recovery lifelines fail
-Action: cleaning/WASH/electrical/health/return support; do not close incident merely because
-water level falls.
+[
+pi(Z_i,T)
+ightarrow
+	ext{Operational Response Pattern}
+]
+
+The patterns are derived actions, not mutually exclusive disaster classes:
+
+### STAY / SUSTAIN
+Current occupancy is viable and essential functions are intact.
+
+### STAY / PREPARE
+Current occupancy remains viable while forward hazard is elevated.
+
+### RESUPPLY
+A resource deficit exists, current occupancy is safe, and verified self-resupply remains feasible.
+
+### DELIVER INWARD
+A resource deficit exists but moving the missing function toward the household is safer/more appropriate than moving the household.
+
+### ESCALATE SUPPORT
+Household/buddy/zone support cannot yet close the deficit; connect to higher support/service layers.
+
+### MOVE
+Occupancy is unsafe/non-viable and a verified feasible route/destination exists.
+
+### ASSISTED EVACUATION
+Occupancy is unsafe/non-viable but independent movement, animal transport, or destination compatibility is not verified.
+
+### SHELTER INTERVENTION / RELOCATION
+A shelter that was previously viable loses one or more hard functions or develops environmental degradation.
+
+### RECOVERY / RETURN
+Water may have receded, but cleaning, WASH, electricity, environmental health, medical follow-up or safe return functions remain incomplete.
+
+### VERIFY / REFUSE
+Critical state is unknown or stale. FloodConnect does not collapse missing evidence into a safe action.
+
+These patterns can coexist over time and are derived from the state vector. For example:
+
+[
+O=SAFE,quad F=GAP_CLOSABLE,quad H=HIGH,quad A=COMPANION
+]
+
+may yield inward delivery now plus preparation for a closing mobility window, without inventing a new "animal flood type".
+
+### Human–animal continuity inside the vector
+
+Human–animal state is not a separate crisis type.
+
+For declared animal dependents, FloodConnect now separates:
+
+[
+AnimalSustainment
+]
+
+(food, drinking water, required medication, litter/waste hygiene, required veterinary care)
+
+from:
+
+[
+AnimalMovementReadiness
+]
+
+(containment, handler continuity, identification, transport capacity)
+
+and:
+
+[
+AnimalDestinationCompatibility
+]
+
+(assistance-animal access, companion-animal accommodation, livestock holding, capacity and animal services).
+
+Thus:
+
+[
+MissingCarrier
+
+otRightarrow
+HomeNotSustainable
+]
+
+but:
+
+[
+PhysicalUnsafe
+land
+AnimalMovementNotReady
+Rightarrow
+AssistedEvacuation
+]
+
+not "stay because the animal cannot move".
+
+### Capability-based service nodes
+
+Service identity is also separated from topology.
+
+A node may be a generic `service_node` at a declared operational layer and expose multiple capabilities such as:
+
+`food_preparation`, `clean_water`, `medicine`, `charging`, `boat_transfer`,
+`veterinary_support`, `animal_feed`, `companion_animal_accommodation`,
+`livestock_holding`.
+
+This avoids forcing a Thai mosque, school, private kitchen, shop, veterinary team or local-government point into one exclusive label when it performs several functions at once.
+
+Implementation:
+- `unified_crisis_state.py`
+- `human_animal_household.py`
+- `community_dag.py`
+- `shelter_decision.py`
 
 ## 10. Relationship to Toledo
 
