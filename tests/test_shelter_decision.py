@@ -4,8 +4,18 @@ import shelter_decision as sd
 
 
 def _node(kind, *, sustain=None, status="SAFE", fresh=True, capacity=20, occupied=0):
+    layers = {
+        "household": 0,
+        "buddy_cell": 1,
+        "zone": 2,
+        "internal_safe": 3,
+        "egress": 4,
+        "external_safe": 5,
+        "supply_point": 5,
+    }
     out = {
         "kind": kind,
+        "layer": layers[kind],
         "status": status,
         "fresh": fresh,
         "capacity_persons": capacity,
@@ -77,6 +87,7 @@ def _movement_chain():
         "x": _node("external_safe", sustain=_sustain(), capacity=100),
         "shop": {
             "kind": "supply_point",
+            "layer": 5,
             "status": "SAFE",
             "fresh": True,
             "verified_service": True,
