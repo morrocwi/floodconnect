@@ -687,6 +687,28 @@ def find_lowest_viable_node(
             if not screen.admitted:
                 evaluations.append((node_id, NOT_SUSTAINABLE))
                 continue
+
+            animal_profile = household.get("animal_profile")
+            if isinstance(animal_profile, dict) and hahu.declared_animal_count(animal_profile) > 0:
+                animal_move = hahu.evaluate_animal_movement_readiness(animal_profile)
+                if animal_move.state == hahu.UNKNOWN:
+                    lower_unresolved.append(node_id)
+                    evaluations.append((node_id, UNKNOWN))
+                    continue
+                if animal_move.state != hahu.READY:
+                    evaluations.append((node_id, NOT_SUSTAINABLE))
+                    continue
+                animal_destination = hahu.screen_animal_destination(
+                    node, animal_profile, doc=doc
+                )
+                if animal_destination.state == hahu.UNKNOWN:
+                    lower_unresolved.append(node_id)
+                    evaluations.append((node_id, UNKNOWN))
+                    continue
+                if animal_destination.state != hahu.SUSTAINABLE:
+                    evaluations.append((node_id, NOT_SUSTAINABLE))
+                    continue
+
             reachable = _movement_route_to_target(
                 doc, household_id, node_id, group_size=group_size, mode=mode
             )
@@ -768,7 +790,7 @@ def evaluate_resupply_window(
     supplier_node = nodes.get(supplier) if supplier else None
     if (
         not isinstance(supplier_node, dict)
-        or supplier_node.get("kind") != "supply_point"
+        or supplier_node.get("kind") not in {"supply_point", "service_node"}
         or supplier_node.get("fresh") is not True
         or supplier_node.get("verified_service") is not True
         or supplier_node.get("status") not in {"SAFE", "DEGRADED"}
@@ -1333,7 +1355,7 @@ def _forward_hazard_state(
 
 
 def _household_animal_route_context(
-    nodes: dict[str, Any],
+    doc: dict[str, Any],
     household: dict[str, Any],
     route_target: Optional[str] = None,
 ) -> tuple[tuple[str, ...], Optional[DecisionResult]]:
@@ -1345,6 +1367,7 @@ def _household_animal_route_context(
     if route_target is None:
         return needs, None
 
+    nodes = doc.get("nodes") or {}
     target = nodes.get(route_target)
     if not isinstance(target, dict):
         return needs, DecisionResult(
@@ -1353,7 +1376,7 @@ def _household_animal_route_context(
             ("ANIMAL_DESTINATION_UNKNOWN",),
         )
 
-    accommodation = hahu.screen_animal_accommodation(target, profile)
+    accommodation = hahu.screen_animal_destination(target, profile, doc=doc)
     if accommodation.state == hahu.SUSTAINABLE:
         return needs, DecisionResult(True, "ANIMAL_DESTINATION_ADMISSIBLE", (), {})
     if accommodation.state == hahu.NOT_SUSTAINABLE:
@@ -1389,12 +1412,18 @@ def recommend_protective_state(
     sustain = evaluate_sustainment(node, planning_horizon_h)
     block = node.get("sustainment") or {}
     animal_profile = node.get("animal_profile")
-    animal_needs, _ = _household_animal_route_context(nodes, node)
-    animal_transport_ready = (
-        True
+    animal_needs, _ = _household_animal_route_context(doc, node)
+    route_service_needs = (
+        ()
         if not isinstance(animal_profile, dict)
-        else hahu.transport_ready(animal_profile)
+        else hahu.movement_route_service_needs(animal_profile)
     )
+    animal_movement = (
+        None
+        if not isinstance(animal_profile, dict)
+        else hahu.evaluate_animal_movement_readiness(animal_profile)
+    )
+    animal_transport_ready = animal_movement is None or animal_movement.state == hahu.READY
     official = block.get("official_instruction", "NONE")
     forward_state, forward_block, forward_reasons = _forward_hazard_state(
         node, planning_horizon_h, forward_hazard
@@ -1402,10 +1431,10 @@ def recommend_protective_state(
 
     if official == "EVACUATE":
         route = cd.find_safe_route(
-            doc, household_id, group_size=group_size, mode=mode, needs=animal_needs
+            doc, household_id, group_size=group_size, mode=mode, needs=route_service_needs
         )
         if route.found and animal_transport_ready:
-            _, animal_target = _household_animal_route_context(nodes, node, route.target)
+            _, animal_target = _household_animal_route_context(doc, node, route.target)
             if animal_target is None or animal_target.admitted:
                 return DecisionResult(
                     True, "EVACUATE_ROUTE", (),
@@ -1424,6 +1453,9 @@ def recommend_protective_state(
                 {
                     "official": True,
                     "animal_transport_ready": animal_transport_ready,
+                    "animal_movement_state": (
+                        None if animal_movement is None else animal_movement.state
+                    ),
                     "animal_route_needs": list(animal_needs),
                 },
             )
@@ -1460,7 +1492,7 @@ def recommend_protective_state(
             doc, household_id, group_size=group_size, mode=mode, needs=animal_needs
         )
         if route.found and animal_transport_ready:
-            _, animal_target = _household_animal_route_context(nodes, node, route.target)
+            _, animal_target = _household_animal_route_context(doc, node, route.target)
             if animal_target is None or animal_target.admitted:
                 return DecisionResult(
                     True,
@@ -1481,6 +1513,9 @@ def recommend_protective_state(
                 {
                     "cause": "PHYSICAL_UNSAFE",
                     "animal_transport_ready": animal_transport_ready,
+                    "animal_movement_state": (
+                        None if animal_movement is None else animal_movement.state
+                    ),
                     "animal_route_needs": list(animal_needs),
                 },
             )
