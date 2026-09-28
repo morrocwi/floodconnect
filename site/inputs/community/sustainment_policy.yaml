@@ -331,6 +331,47 @@ environmental_degradation:
       automatic_credit: false
       note: "Thai official guidance may recommend context-specific treatments; FloodConnect does not assign extra safe hours without measured/validated effect"
 
+  temporal_accumulation:
+    module: "finite_temporal_ledger.py"
+    toledo_alignment:
+      bounded_window_required: true
+      finite_event_set_required: true
+      exact_duration_arithmetic: "Fraction/Q"
+      infinity_sentinel_allowed: false
+      unknown_prior_history_as_zero_allowed: false
+      incomplete_history_numeric_accumulation_allowed: false
+    timeline_window:
+      required_fields: [start, end, complete, covered_mechanisms, left_boundary_state]
+      rule: >
+        end > start and both timestamps finite/declared; complete must be true for exact
+        accumulation; covered_mechanisms is a finite explicit set; every covered mechanism
+        must declare left_boundary_state ACTIVE/INACTIVE/UNKNOWN.
+      zero_duration_rule: >
+        absence of events means zero accumulation only for a covered mechanism whose left
+        boundary state is explicitly INACTIVE and whose window is certified complete.
+    event_types: [START, OBSERVED_ACTIVE, MITIGATION, RESOLVED]
+    verified_event_required: true
+    left_censoring:
+      rule: >
+        OBSERVED_ACTIVE without a verified START proves activity but not onset.
+        ACTIVE at the left boundary proves finite within-window activity but not the true
+        episode start. Mark LEFT_CENSORED; report a finite lower bound for current episode age
+        where justified and never extrapolate backward outside the window.
+    transition_rules:
+      - "duplicate START while active is invalid"
+      - "RESOLVED without START is invalid"
+      - "MITIGATION never stops a clock; only verified RESOLVED does"
+    outputs:
+      - current_episode_h_q
+      - cumulative_h_q
+      - recurrence_count
+      - active_at_window_end
+      - active_mechanism_count
+      - max_concurrent_mechanisms
+    interpretation: >
+      These outputs are finite temporal bookkeeping within one declared observation window.
+      They are not toxicity, pathogen, resilience, or risk scores.
+
   node_fields:
     - evaluated_at
     - sewage_intrusion

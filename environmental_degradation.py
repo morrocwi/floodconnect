@@ -16,6 +16,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Optional
 
+import finite_temporal_ledger as ftl
+
 UNKNOWN = "UNKNOWN"
 STABLE = "STABLE"
 DEGRADING = "DEGRADING"
@@ -130,6 +132,15 @@ def evaluate_environmental_degradation(
     mitigations: list[str] = []
     details: dict[str, Any] = {}
     deadlines: list[Optional[float]] = []
+
+    # Optional Toledo-aligned finite history. If declared, it must be a bounded complete
+    # window with a finite verified event list. Invalid/incomplete history is not treated
+    # as zero prior exposure.
+    if "timeline_window" in env or "timeline" in env:
+        temporal = ftl.accumulate_environment_timeline(node)
+        details["finite_temporal_ledger"] = temporal.as_dict()
+        if temporal.refused:
+            unknowns.append("finite_temporal_ledger")
 
     # 1) Flood/sewage contamination: immediate, not an aging clock.
     sewage = str(env.get("sewage_intrusion", UNKNOWN)).upper()

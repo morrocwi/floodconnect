@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 import environmental_degradation as ed
+import finite_temporal_ledger as ftl
 import shelter_decision as sd
 
 
@@ -245,3 +246,219 @@ def test_shelter_environmental_failure_rejects_occupancy():
     result = sd.screen_shelter_candidate(shelter, phase="OCCUPIED")
     assert result.admitted is False
     assert "environmental_degradation" in result.details["failed"]
+
+
+def test_finite_temporal_ledger_accumulates_only_declared_window():
+    node = {
+        "environment": {
+            "timeline_window": {
+                "start": "2026-09-28T00:00:00+00:00",
+                "end": "2026-09-28T12:00:00+00:00",
+                "complete": True,
+                "covered_mechanisms": ["standing_water", "stagnation", "sewer_gas_odor"],
+                "left_boundary_state": {
+                    "standing_water": "INACTIVE",
+                    "stagnation": "INACTIVE",
+                    "sewer_gas_odor": "INACTIVE",
+                },
+            },
+            "timeline": [
+                {"mechanism": "standing_water", "event": "START", "at": "2026-09-28T01:00:00+00:00", "verified": True},
+                {"mechanism": "standing_water", "event": "RESOLVED", "at": "2026-09-28T04:00:00+00:00", "verified": True},
+                {"mechanism": "standing_water", "event": "START", "at": "2026-09-28T08:00:00+00:00", "verified": True},
+            ],
+        }
+    }
+    result = ftl.accumulate_environment_timeline(node)
+    assert result.status == ftl.OK
+    standing = ftl.mechanism(result, "standing_water")
+    assert standing is not None
+    assert str(standing.cumulative_h) == "7"
+    assert str(standing.current_episode_h) == "4"
+    assert standing.recurrence_count == 2
+    assert result.window_h is not None and str(result.window_h) == "12"
+
+
+def test_incomplete_temporal_window_refuses_exact_accumulation():
+    node = {
+        "environment": {
+            "timeline_window": {
+                "start": "2026-09-28T00:00:00+00:00",
+                "end": "2026-09-28T12:00:00+00:00",
+                "complete": False,
+                "covered_mechanisms": ["standing_water"],
+                "left_boundary_state": {"standing_water": "INACTIVE"},
+            },
+            "timeline": [],
+        }
+    }
+    result = ftl.accumulate_environment_timeline(node)
+    assert result.status == ftl.REFUSED
+    assert ftl.REASON_INCOMPLETE_WINDOW in result.reason_codes
+
+
+def test_observed_active_without_start_is_left_censored_not_zero():
+    node = {
+        "environment": {
+            "timeline_window": {
+                "start": "2026-09-28T00:00:00+00:00",
+                "end": "2026-09-28T12:00:00+00:00",
+                "complete": True,
+                "covered_mechanisms": ["standing_water", "stagnation", "sewer_gas_odor"],
+                "left_boundary_state": {
+                    "standing_water": "INACTIVE",
+                    "stagnation": "INACTIVE",
+                    "sewer_gas_odor": "INACTIVE",
+                },
+            },
+            "timeline": [
+                {"mechanism": "sewer_gas_odor", "event": "OBSERVED_ACTIVE", "at": "2026-09-28T06:00:00+00:00", "verified": True},
+            ],
+        }
+    }
+    result = ftl.accumulate_environment_timeline(node)
+    assert result.status == ftl.OK
+    odor = ftl.mechanism(result, "sewer_gas_odor")
+    assert odor is not None
+    assert odor.left_censored is True
+    assert odor.cumulative_h is None
+    assert odor.current_episode_h is None
+    assert ftl.REASON_LEFT_CENSORED in result.reason_codes
+
+
+def test_event_outside_finite_window_refuses():
+    node = {
+        "environment": {
+            "timeline_window": {
+                "start": "2026-09-28T00:00:00+00:00",
+                "end": "2026-09-28T12:00:00+00:00",
+                "complete": True,
+                "covered_mechanisms": ["standing_water", "stagnation", "sewer_gas_odor"],
+                "left_boundary_state": {
+                    "standing_water": "INACTIVE",
+                    "stagnation": "INACTIVE",
+                    "sewer_gas_odor": "INACTIVE",
+                },
+            },
+            "timeline": [
+                {"mechanism": "standing_water", "event": "START", "at": "2026-09-27T23:00:00+00:00", "verified": True},
+            ],
+        }
+    }
+    result = ftl.accumulate_environment_timeline(node)
+    assert result.status == ftl.REFUSED
+    assert ftl.REASON_EVENT_OUTSIDE_WINDOW in result.reason_codes
+
+
+def test_mitigation_event_does_not_silently_stop_clock():
+    node = {
+        "environment": {
+            "timeline_window": {
+                "start": "2026-09-28T00:00:00+00:00",
+                "end": "2026-09-28T12:00:00+00:00",
+                "complete": True,
+                "covered_mechanisms": ["standing_water", "stagnation", "sewer_gas_odor"],
+                "left_boundary_state": {
+                    "standing_water": "INACTIVE",
+                    "stagnation": "INACTIVE",
+                    "sewer_gas_odor": "INACTIVE",
+                },
+            },
+            "timeline": [
+                {"mechanism": "stagnation", "event": "START", "at": "2026-09-28T02:00:00+00:00", "verified": True},
+                {"mechanism": "stagnation", "event": "MITIGATION", "at": "2026-09-28T05:00:00+00:00", "verified": True},
+            ],
+        }
+    }
+    result = ftl.accumulate_environment_timeline(node)
+    stagnation = ftl.mechanism(result, "stagnation")
+    assert stagnation is not None
+    assert str(stagnation.current_episode_h) == "10"
+    assert str(stagnation.cumulative_h) == "10"
+
+
+def test_temporal_ledger_reports_finite_concurrency_not_risk_score():
+    node = {
+        "environment": {
+            "timeline_window": {
+                "start": "2026-09-28T00:00:00+00:00",
+                "end": "2026-09-28T12:00:00+00:00",
+                "complete": True,
+                "covered_mechanisms": ["standing_water", "stagnation", "sewer_gas_odor"],
+                "left_boundary_state": {
+                    "standing_water": "INACTIVE",
+                    "stagnation": "INACTIVE",
+                    "sewer_gas_odor": "INACTIVE",
+                },
+            },
+            "timeline": [
+                {"mechanism": "standing_water", "event": "START", "at": "2026-09-28T01:00:00+00:00", "verified": True},
+                {"mechanism": "stagnation", "event": "START", "at": "2026-09-28T03:00:00+00:00", "verified": True},
+                {"mechanism": "standing_water", "event": "RESOLVED", "at": "2026-09-28T05:00:00+00:00", "verified": True},
+                {"mechanism": "stagnation", "event": "RESOLVED", "at": "2026-09-28T06:00:00+00:00", "verified": True},
+            ],
+        }
+    }
+    result = ftl.accumulate_environment_timeline(node)
+    assert result.max_concurrent_mechanisms == 2
+    assert result.active_mechanism_count == 0
+    assert result.details["finite_mechanism_count"] == 3
+
+
+def test_missing_coverage_refuses_instead_of_inventing_zero_hours():
+    node = {
+        "environment": {
+            "timeline_window": {
+                "start": "2026-09-28T00:00:00+00:00",
+                "end": "2026-09-28T12:00:00+00:00",
+                "complete": True,
+            },
+            "timeline": [],
+        }
+    }
+    result = ftl.accumulate_environment_timeline(node)
+    assert result.status == ftl.REFUSED
+    assert ftl.REASON_MISSING_COVERAGE in result.reason_codes
+
+
+def test_active_at_left_boundary_gives_finite_window_accumulation_but_censored_episode_age():
+    node = {
+        "environment": {
+            "timeline_window": {
+                "start": "2026-09-28T00:00:00+00:00",
+                "end": "2026-09-28T12:00:00+00:00",
+                "complete": True,
+                "covered_mechanisms": ["standing_water"],
+                "left_boundary_state": {"standing_water": "ACTIVE"},
+            },
+            "timeline": [],
+        }
+    }
+    result = ftl.accumulate_environment_timeline(node)
+    standing = ftl.mechanism(result, "standing_water")
+    assert result.status == ftl.OK
+    assert standing is not None
+    assert str(standing.cumulative_h) == "12"
+    assert standing.current_episode_h is None
+    assert str(standing.current_episode_lower_bound_h) == "12"
+    assert standing.left_censored is True
+
+
+def test_uncovered_mechanism_event_refuses():
+    node = {
+        "environment": {
+            "timeline_window": {
+                "start": "2026-09-28T00:00:00+00:00",
+                "end": "2026-09-28T12:00:00+00:00",
+                "complete": True,
+                "covered_mechanisms": ["standing_water"],
+                "left_boundary_state": {"standing_water": "INACTIVE"},
+            },
+            "timeline": [
+                {"mechanism": "stagnation", "event": "START", "at": "2026-09-28T01:00:00+00:00", "verified": True},
+            ],
+        }
+    }
+    result = ftl.accumulate_environment_timeline(node)
+    assert result.status == ftl.REFUSED
+    assert ftl.REASON_EVENT_OUTSIDE_COVERAGE in result.reason_codes
