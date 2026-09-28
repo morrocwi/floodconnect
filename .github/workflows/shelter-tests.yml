@@ -6,6 +6,7 @@ on:
       - "community_dag.py"
       - "shelter_decision.py"
       - "environmental_degradation.py"
+      - "finite_temporal_ledger.py"
       - "site/inputs/community/**"
       - "tests/test_community_dag.py"
       - "tests/test_shelter_decision.py"
@@ -36,7 +37,7 @@ jobs:
           python-version: "3.11"
       - run: pip install pyyaml pytest
       - name: Compile
-        run: python -m py_compile community_dag.py shelter_decision.py environmental_degradation.py
+        run: python -m py_compile community_dag.py shelter_decision.py environmental_degradation.py finite_temporal_ledger.py
       - name: Run community + shelter tests
         env:
           PYTHONPATH: .
