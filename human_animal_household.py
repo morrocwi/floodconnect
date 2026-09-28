@@ -390,6 +390,23 @@ def animal_route_needs(profile: dict[str, Any]) -> tuple[str, ...]:
     return tuple(dict.fromkeys(needs))
 
 
+def movement_route_service_needs(profile: dict[str, Any]) -> tuple[str, ...]:
+    """Capabilities that must be on the human movement destination itself.
+
+    Companion/livestock accommodation may be satisfied by a linked co-located animal node,
+    so those capabilities are screened separately by screen_animal_destination().
+    Assistance-animal access stays attached to the human destination.
+    """
+    topology = classify_animal_topology(profile)
+    if (
+        declared_animal_count(profile) > 0
+        and str(profile.get("plan_mode", "UNKNOWN")).upper() == "CO_RESIDENT_CO_EVACUATING"
+        and topology["assistance_animal_count"] > 0
+    ):
+        return ("assistance_animal_access",)
+    return ()
+
+
 def transport_ready(profile: dict[str, Any]) -> bool:
     """Backward-compatible boolean wrapper for movement readiness."""
     return evaluate_animal_movement_readiness(profile).state == READY
