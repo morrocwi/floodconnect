@@ -94,6 +94,11 @@ return/relocation/closure.
 - Convergence tests: `tests/test_convergence_feasibility.py`
 - Shared dry-node Kanban: `convergence_board.py`
 - Kanban tests: `tests/test_convergence_board.py`
+- Shelter operation capability ladder: `shelter_operation_ladder.py`
+- Shelter ladder evidence: `docs/SHELTER_OPERATION_CAPABILITY_LADDER.md`
+- Shelter ladder tests: `tests/test_shelter_operation_ladder.py`
+
+**Shelter-operation hard rule:** NO verified dry operating footprint -> NO shelter-operation level. `SO-L0_DRY_INTERFACE` is the minimum physical node; higher levels cumulatively add transfer, day-support, overnight, and full-shelter capabilities.
 
 FloodConnect now also models **safe-now -> degrading -> unsafe** transitions that can occur
 without rising water depth: sewage/backflow contamination, sewer-gas/H2S uncertainty,
