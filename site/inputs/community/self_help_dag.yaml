@@ -44,6 +44,69 @@ nodes:
     capacity_persons: null
     occupied_persons: null
     services: []
+    support_candidates:
+      - sammakorn_household_template
+      - sammakorn_buddy_cell
+      - sammakorn_zone
+      - sammakorn_internal_safe
+      - external_safe_bkk_east_01
+      - external_safe_bkk_east_02
+    member_need_profile:
+      privacy: aggregate_operational_needs_only
+      total_persons: null
+      living_arrangement: UNKNOWN
+      child_0_5: null
+      child_6_12: null
+      adolescent_13_17: null
+      adult_18_59: null
+      older_adult_60_plus: null
+      pregnant_person: null
+      postpartum_person: null
+      chronic_or_acute_illness: null
+      disability_or_functional_limitation: null
+      bedbound_or_homebound: null
+      needs_continuous_supervision: null
+      needs_mobility_assistance: null
+      needs_essential_medication: null
+      needs_time_critical_medical_followup: null
+      needs_power_dependent_medical_device: null
+      needs_communication_assistance: null
+      needs_special_diet: null
+      needs_infant_feeding: null
+      single_caregiver_household: null
+      dependents_without_co_resident_capable_adult: null
+      co_resident_capable_adults: null
+      co_resident_caregivers: null
+      child_caregiver_link_uncovered: UNKNOWN
+      backup_caregiver_link_uncovered: UNKNOWN
+      older_adult_support_link_uncovered: UNKNOWN
+      pregnancy_support_link_uncovered: UNKNOWN
+      medical_support_link_uncovered: UNKNOWN
+      mobility_support_link_uncovered: UNKNOWN
+      power_dependency_support_link_uncovered: UNKNOWN
+      communication_support_link_uncovered: UNKNOWN
+      living_alone_buddy_link_uncovered: UNKNOWN
+    sustainment:
+      checked_at: null
+      fresh: false
+      physical_safety: UNKNOWN
+      potable_water_for_horizon: UNKNOWN
+      service_water_for_horizon: UNKNOWN
+      food_for_horizon: UNKNOWN
+      essential_medicine_for_horizon: UNKNOWN
+      critical_power: UNKNOWN
+      sanitation_hygiene: UNKNOWN
+      communications: UNKNOWN
+      vulnerable_support: UNKNOWN
+      official_instruction: NONE
+      resupply:
+        supplier_node: null
+        route_edges: []
+        official_movement_conflict: false
+      escalation:
+        status: UNKNOWN
+        fresh: false
+        verified: false
 
   sammakorn_buddy_cell:
     kind: buddy_cell
@@ -55,6 +118,27 @@ nodes:
     capacity_persons: null
     occupied_persons: null
     services: [comms]
+    sustainment:
+      checked_at: null
+      fresh: false
+      physical_safety: UNKNOWN
+      potable_water_for_horizon: UNKNOWN
+      service_water_for_horizon: UNKNOWN
+      food_for_horizon: UNKNOWN
+      essential_medicine_for_horizon: UNKNOWN
+      critical_power: UNKNOWN
+      sanitation_hygiene: UNKNOWN
+      communications: UNKNOWN
+      vulnerable_support: UNKNOWN
+      official_instruction: NONE
+      resupply:
+        supplier_node: null
+        route_edges: []
+        official_movement_conflict: false
+      escalation:
+        status: UNKNOWN
+        fresh: false
+        verified: false
 
   sammakorn_zone:
     kind: zone
@@ -66,6 +150,27 @@ nodes:
     capacity_persons: null
     occupied_persons: null
     services: [comms, coordination]
+    sustainment:
+      checked_at: null
+      fresh: false
+      physical_safety: UNKNOWN
+      potable_water_for_horizon: UNKNOWN
+      service_water_for_horizon: UNKNOWN
+      food_for_horizon: UNKNOWN
+      essential_medicine_for_horizon: UNKNOWN
+      critical_power: UNKNOWN
+      sanitation_hygiene: UNKNOWN
+      communications: UNKNOWN
+      vulnerable_support: UNKNOWN
+      official_instruction: NONE
+      resupply:
+        supplier_node: null
+        route_edges: []
+        official_movement_conflict: false
+      escalation:
+        status: UNKNOWN
+        fresh: false
+        verified: false
 
   sammakorn_internal_safe:
     kind: internal_safe
@@ -77,6 +182,27 @@ nodes:
     capacity_persons: null
     occupied_persons: null
     services: []
+    sustainment:
+      checked_at: null
+      fresh: false
+      physical_safety: UNKNOWN
+      potable_water_for_horizon: UNKNOWN
+      service_water_for_horizon: UNKNOWN
+      food_for_horizon: UNKNOWN
+      essential_medicine_for_horizon: UNKNOWN
+      critical_power: UNKNOWN
+      sanitation_hygiene: UNKNOWN
+      communications: UNKNOWN
+      vulnerable_support: UNKNOWN
+      official_instruction: NONE
+      resupply:
+        supplier_node: null
+        route_edges: []
+        official_movement_conflict: false
+      escalation:
+        status: UNKNOWN
+        fresh: false
+        verified: false
 
   sammakorn_egress:
     kind: egress
@@ -103,6 +229,69 @@ nodes:
     capacity_persons: null
     occupied_persons: null
     services: []
+    support_candidates:
+      - ram53_household_template
+      - ram53_buddy_cell
+      - ram53_zone
+      - ram53_internal_safe
+      - external_safe_bkk_east_01
+      - external_safe_bkk_east_02
+    member_need_profile:
+      privacy: aggregate_operational_needs_only
+      total_persons: null
+      living_arrangement: UNKNOWN
+      child_0_5: null
+      child_6_12: null
+      adolescent_13_17: null
+      adult_18_59: null
+      older_adult_60_plus: null
+      pregnant_person: null
+      postpartum_person: null
+      chronic_or_acute_illness: null
+      disability_or_functional_limitation: null
+      bedbound_or_homebound: null
+      needs_continuous_supervision: null
+      needs_mobility_assistance: null
+      needs_essential_medication: null
+      needs_time_critical_medical_followup: null
+      needs_power_dependent_medical_device: null
+      needs_communication_assistance: null
+      needs_special_diet: null
+      needs_infant_feeding: null
+      single_caregiver_household: null
+      dependents_without_co_resident_capable_adult: null
+      co_resident_capable_adults: null
+      co_resident_caregivers: null
+      child_caregiver_link_uncovered: UNKNOWN
+      backup_caregiver_link_uncovered: UNKNOWN
+      older_adult_support_link_uncovered: UNKNOWN
+      pregnancy_support_link_uncovered: UNKNOWN
+      medical_support_link_uncovered: UNKNOWN
+      mobility_support_link_uncovered: UNKNOWN
+      power_dependency_support_link_uncovered: UNKNOWN
+      communication_support_link_uncovered: UNKNOWN
+      living_alone_buddy_link_uncovered: UNKNOWN
+    sustainment:
+      checked_at: null
+      fresh: false
+      physical_safety: UNKNOWN
+      potable_water_for_horizon: UNKNOWN
+      service_water_for_horizon: UNKNOWN
+      food_for_horizon: UNKNOWN
+      essential_medicine_for_horizon: UNKNOWN
+      critical_power: UNKNOWN
+      sanitation_hygiene: UNKNOWN
+      communications: UNKNOWN
+      vulnerable_support: UNKNOWN
+      official_instruction: NONE
+      resupply:
+        supplier_node: null
+        route_edges: []
+        official_movement_conflict: false
+      escalation:
+        status: UNKNOWN
+        fresh: false
+        verified: false
 
   ram53_buddy_cell:
     kind: buddy_cell
@@ -114,6 +303,27 @@ nodes:
     capacity_persons: null
     occupied_persons: null
     services: [comms]
+    sustainment:
+      checked_at: null
+      fresh: false
+      physical_safety: UNKNOWN
+      potable_water_for_horizon: UNKNOWN
+      service_water_for_horizon: UNKNOWN
+      food_for_horizon: UNKNOWN
+      essential_medicine_for_horizon: UNKNOWN
+      critical_power: UNKNOWN
+      sanitation_hygiene: UNKNOWN
+      communications: UNKNOWN
+      vulnerable_support: UNKNOWN
+      official_instruction: NONE
+      resupply:
+        supplier_node: null
+        route_edges: []
+        official_movement_conflict: false
+      escalation:
+        status: UNKNOWN
+        fresh: false
+        verified: false
 
   ram53_zone:
     kind: zone
@@ -125,6 +335,27 @@ nodes:
     capacity_persons: null
     occupied_persons: null
     services: [comms, coordination]
+    sustainment:
+      checked_at: null
+      fresh: false
+      physical_safety: UNKNOWN
+      potable_water_for_horizon: UNKNOWN
+      service_water_for_horizon: UNKNOWN
+      food_for_horizon: UNKNOWN
+      essential_medicine_for_horizon: UNKNOWN
+      critical_power: UNKNOWN
+      sanitation_hygiene: UNKNOWN
+      communications: UNKNOWN
+      vulnerable_support: UNKNOWN
+      official_instruction: NONE
+      resupply:
+        supplier_node: null
+        route_edges: []
+        official_movement_conflict: false
+      escalation:
+        status: UNKNOWN
+        fresh: false
+        verified: false
 
   ram53_internal_safe:
     kind: internal_safe
@@ -136,6 +367,27 @@ nodes:
     capacity_persons: null
     occupied_persons: null
     services: []
+    sustainment:
+      checked_at: null
+      fresh: false
+      physical_safety: UNKNOWN
+      potable_water_for_horizon: UNKNOWN
+      service_water_for_horizon: UNKNOWN
+      food_for_horizon: UNKNOWN
+      essential_medicine_for_horizon: UNKNOWN
+      critical_power: UNKNOWN
+      sanitation_hygiene: UNKNOWN
+      communications: UNKNOWN
+      vulnerable_support: UNKNOWN
+      official_instruction: NONE
+      resupply:
+        supplier_node: null
+        route_edges: []
+        official_movement_conflict: false
+      escalation:
+        status: UNKNOWN
+        fresh: false
+        verified: false
 
   ram53_egress:
     kind: egress
@@ -165,6 +417,27 @@ nodes:
     capacity_persons: null
     occupied_persons: null
     services: []
+    sustainment:
+      checked_at: null
+      fresh: false
+      physical_safety: UNKNOWN
+      potable_water_for_horizon: UNKNOWN
+      service_water_for_horizon: UNKNOWN
+      food_for_horizon: UNKNOWN
+      essential_medicine_for_horizon: UNKNOWN
+      critical_power: UNKNOWN
+      sanitation_hygiene: UNKNOWN
+      communications: UNKNOWN
+      vulnerable_support: UNKNOWN
+      official_instruction: NONE
+      resupply:
+        supplier_node: null
+        route_edges: []
+        official_movement_conflict: false
+      escalation:
+        status: UNKNOWN
+        fresh: false
+        verified: false
 
   external_safe_bkk_east_02:
     kind: external_safe
@@ -177,6 +450,89 @@ nodes:
     capacity_persons: null
     occupied_persons: null
     services: []
+    sustainment:
+      checked_at: null
+      fresh: false
+      physical_safety: UNKNOWN
+      potable_water_for_horizon: UNKNOWN
+      service_water_for_horizon: UNKNOWN
+      food_for_horizon: UNKNOWN
+      essential_medicine_for_horizon: UNKNOWN
+      critical_power: UNKNOWN
+      sanitation_hygiene: UNKNOWN
+      communications: UNKNOWN
+      vulnerable_support: UNKNOWN
+      official_instruction: NONE
+      resupply:
+        supplier_node: null
+        route_edges: []
+        official_movement_conflict: false
+      escalation:
+        status: UNKNOWN
+        fresh: false
+        verified: false
+
+  # ---------------------------------------------------------------------------
+  # Supply/service points are placeholders only. They are NOT shelters.
+  # ---------------------------------------------------------------------------
+  sammakorn_supply_point_01:
+    kind: supply_point
+    layer: 5
+    area_id: sammakorn
+    label_th: "จุดเติมของจำเป็นสัมมากร #1 — ยังไม่กำหนด/ยืนยัน"
+    status: UNKNOWN
+    fresh: false
+    verified_service: false
+    capacity_persons: null
+    occupied_persons: null
+    services: []
+
+  ram53_supply_point_01:
+    kind: supply_point
+    layer: 5
+    area_id: ram53
+    label_th: "จุดเติมของจำเป็นรามคำแหง 53 #1 — ยังไม่กำหนด/ยืนยัน"
+    status: UNKNOWN
+    fresh: false
+    verified_service: false
+    capacity_persons: null
+    occupied_persons: null
+    services: []
+
+support_edges:
+  # Resource/help delivery graph. Unlike movement edges, this is NOT required to be a DAG.
+  # Resources can move toward households while people remain in place.
+  - id: sam_zone_support_to_buddy
+    from: sammakorn_zone
+    to: sammakorn_buddy_cell
+    status: UNKNOWN
+    fresh: false
+    field_verified: false
+    resources: []
+
+  - id: sam_buddy_support_to_household
+    from: sammakorn_buddy_cell
+    to: sammakorn_household_template
+    status: UNKNOWN
+    fresh: false
+    field_verified: false
+    resources: []
+
+  - id: ram_zone_support_to_buddy
+    from: ram53_zone
+    to: ram53_buddy_cell
+    status: UNKNOWN
+    fresh: false
+    field_verified: false
+    resources: []
+
+  - id: ram_buddy_support_to_household
+    from: ram53_buddy_cell
+    to: ram53_household_template
+    status: UNKNOWN
+    fresh: false
+    field_verified: false
+    resources: []
 
 edges:
   # Sammakorn chain
@@ -305,6 +661,29 @@ edges:
   - id: ram_egress_to_external_02
     from: ram53_egress
     to: external_safe_bkk_east_02
+    status: UNKNOWN
+    safety: UNKNOWN
+    fresh: false
+    field_verified: false
+    modes: [walk, vehicle]
+    max_group: null
+    distance_m: null
+
+
+  - id: sam_egress_to_supply_01
+    from: sammakorn_egress
+    to: sammakorn_supply_point_01
+    status: UNKNOWN
+    safety: UNKNOWN
+    fresh: false
+    field_verified: false
+    modes: [walk, vehicle]
+    max_group: null
+    distance_m: null
+
+  - id: ram_egress_to_supply_01
+    from: ram53_egress
+    to: ram53_supply_point_01
     status: UNKNOWN
     safety: UNKNOWN
     fresh: false

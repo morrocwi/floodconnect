@@ -1,6 +1,6 @@
 # Shelter Decision & Community Sustainment
 
-> **Status:** proposal / research-backed design layer / not an evacuation order.
+> **Status:** implemented fail-closed decision layer / not an evacuation order.
 >
 > This document extends the existing Community Self-Help DAG. It does **not** declare any
 > current place safe, does not create a flood-risk score, and does not replace official
@@ -58,30 +58,31 @@ household
   -> buddy_cell
   -> zone
   -> internal_safe / community shelter
-  -> egress
   -> verified external_safe
+
+`egress` is deliberately excluded from LVCN candidates. It is a movement connector, not a
+unit that can sustain people.
 ```
 
-For a declared planning horizon `T` and evaluation time `t`, a node can be classified as:
+For a declared planning horizon `T` and evaluation time `t`, FloodConnect separates
+two axes that must not be collapsed:
 
-- `VIABLE_AND_ESCALATABLE`
-- `VIABLE_BUT_ISOLATED`
-- `NOT_VIABLE`
-- `UNKNOWN`
+- sustainment: `SUSTAINABLE / NOT_SUSTAINABLE / UNKNOWN`;
+- escalation capability: `ESCALATABLE / ISOLATED / UNKNOWN`.
 
-The **Lowest Viable Community Node** is the lowest-layer node that can keep the affected
-people safe and supplied for the declared horizon without inventing missing data.
+A safe and supplied household can therefore be `(SUSTAINABLE, ISOLATED)`. Unknown escape
+mobility must not turn safe occupancy into "not viable", and must not trigger risky self-evacuation.
 
-Formally:
+The **Lowest Viable Community Node** is the lowest support layer that is known to sustain the
+affected people for the declared horizon **and is actually connected to them by the appropriate
+graph**: identity at household level, verified support delivery for buddy/zone, and verified
+resident movement for shelter nodes.
 
-[
-LVCN(h,t,T)
-=
-min_{ell(v)}
-{v in C_h : Viable(v,t,T)=VIABLE_AND_ESCALATABLE}
-]
+If any lower layer remains `UNKNOWN`, a higher known viable node is returned only as
+`KNOWN_VIABLE_UPPER_BOUND`, never falsely reported as the exact LVCN.
 
-where `C_h` is the declared support/escalation chain for household or group `h`.
+The full Thailand-first equation/crosswalk is in
+`docs/THAI_DISTRIBUTED_LIFELINE_CONVERGENCE.md`.
 
 This is **not** "the smallest shelter". A buddy cell or zone may be the LVCN if households can
 remain in place while resources, communication, checks, and assistance are pooled at that
@@ -101,34 +102,52 @@ For planning horizon `T`, evaluate the following as hard/declared states:
 ### B. Essential sustainment
 For the declared horizon, the node has either enough declared resources or a feasible
 resupply mechanism for:
-- potable water;
-- food appropriate to the group;
-- essential medicines / medical consumables;
+- potable/drinking water;
+- **service water** for toilets, washing and cleaning (separate from drinking water);
+- food appropriate to the group, including declared special/infant needs;
+- essential medicines / medical consumables and time-critical health access;
 - critical power needs where required;
-- minimum hygiene / sanitation needs.
+- minimum hygiene / sanitation needs;
+- communication/reassessment and functional support needs.
 
 Do not invent a universal 24/48/72-hour number in code. `T` must be supplied by the
 planning context, official guidance, or a clearly declared operator decision.
 
-### C. People and support needs
-- persons who cannot self-move are identified as demand, not counted as helpers;
-- critical medical/accessibility needs are supportable;
-- vulnerable households can be checked by buddy/zone mechanisms.
+### C. People, household composition and support needs
+Do not store one undifferentiated "vulnerable count". Separate:
+- children by broad life stage;
+- older adults;
+- pregnant/postpartum persons;
+- chronic/acute illness, disability/functional limitation, bed/home-bound status;
+- functional dependencies (supervision, mobility, medicine, time-critical care, powered medical
+  devices, communication, special diet, infant feeding);
+- living arrangement (alone / pair / family group / multigenerational / group care);
+- declared caregiver/helper/buddy/medical/logistics links.
+
+Rules:
+- demographic category triggers assessment but does not itself prove incapacity;
+- persons who cannot self-move are demand, not counted as helpers;
+- co-residence is not evidence of caregiver capability;
+- a vulnerable person living alone requires a buddy/reassessment link to be checked;
+- a single caregiver supporting dependents requires a backup link to be checked;
+- every declared hard functional need must have a current support link, otherwise
+  `vulnerable_support` fails or remains UNKNOWN.
+
+See the need-support matching formalization in
+`docs/THAI_DISTRIBUTED_LIFELINE_CONVERGENCE.md`.
 
 ### D. Communication and reassessment
 - at least one working communication/reassessment mechanism exists;
 - offline fallback may satisfy this requirement if the digital system is unavailable.
 
-### E. Escalation state
-A node is `VIABLE_AND_ESCALATABLE` only when there is also a declared escalation mechanism
-if conditions deteriorate, such as:
-- a fresh verified route;
-- an assisted route;
-- a verified responder/logistics mechanism;
-- another explicit contingency.
+### E. Escalation state — reported separately
+Escalation capability is important but is **not part of the sustainment truth value**. Report:
+- `ESCALATABLE` when a current verified fallback mechanism exists;
+- `ISOLATED` when a declared fallback is unavailable/blocked;
+- `UNKNOWN` when not verified.
 
-If sustainment is currently possible but no escalation path/mechanism can be verified,
-classify `VIABLE_BUT_ISOLATED`, not fully viable.
+This preserves the distinction between "safe to remain for the declared horizon" and "can leave
+safely if conditions change".
 
 ## 4. Decision states
 
@@ -190,7 +209,24 @@ accessibility, health support, power, communications, maintenance, supply and go
 Shelter lifecycle must include exit/return/relocation/closure rather than assuming an opened
 site remains appropriate indefinitely.
 
-## 5. Resource pooling changes the required node level
+## 5. Movement and support are different networks
+
+Resident movement remains in `community_dag.py` as the fail-closed movement DAG.
+
+Resource/help delivery is represented separately as `support_edges`. It is **not a DAG**:
+food, water, medicine, charging, health support or helpers may move laterally or back toward a
+household while residents remain in place.
+
+Therefore:
+
+[
+G_{move} \neq G_{support}
+]
+
+A resource gap can be closed by buddy/zone only when a current field-verified support path
+explicitly carries the required resource category. Geographic proximity is never enough.
+
+## 6. Resource pooling changes the required node level
 
 The LVCN concept intentionally separates **where people sleep** from **where support is
 organized**.
@@ -223,7 +259,7 @@ not:
 	ext{move people to the largest available shelter as early as possible}
 ]
 
-## 6. Minimum data model (proposal)
+## 7. Minimum data model
 
 Do not implement numeric defaults. Every field may remain `UNKNOWN`.
 
@@ -263,7 +299,7 @@ The initial implementation should prefer categorical evidence over guessed resou
 quantities. Quantitative stock-duration models may be added later only when the inputs and
 units are measured/declared.
 
-## 7. Interaction with hydrology
+## 8. Interaction with hydrology
 
 The sustainment layer does not replace hydrologic reasoning.
 
@@ -291,7 +327,7 @@ WaterNetwork
 A coarse hydrologic warning must never be laundered into a claim that a particular shelter
 or route is safe.
 
-## 8. Evidence and global anchors
+## 9. Evidence and global anchors
 
 FloodConnect should reuse established guidance rather than invent shelter criteria.
 
@@ -320,7 +356,7 @@ These sources support evacuation/shelter decision, site suitability, access, lif
 capacity and time-varying demand. **They do not establish FloodConnect's LVCN construct.**
 LVCN remains a repo proposal that must be tested against real events.
 
-## 9. Safety invariants
+## 10. Safety invariants
 
 1. `UNKNOWN != SAFE`.
 2. No weighted safety score may override a failed hard constraint.
@@ -335,6 +371,15 @@ LVCN remains a repo proposal that must be tested against real events.
 10. Historical tests must be anti-leakage: only information available at replay time may be
     used.
 
-## 10. Intended next implementation
+## 11. Thailand-specific integration and implementation
 
-See `docs/HANDOFF_SHELTER_DECISION_AND_SUSTAINMENT.md`.
+The operational implementation is:
+- `shelter_decision.py` — sustainment, LVCN, resupply, shelter lifecycle and action state;
+- `community_dag.py` — movement constraints/routes;
+- `site/inputs/community/self_help_dag.yaml` — fail-closed topology/schema;
+- `site/inputs/community/sustainment_policy.yaml` — policy/schema;
+- `docs/THAI_DISTRIBUTED_LIFELINE_CONVERGENCE.md` — Thailand-first mathematical/ecosystem model;
+- `site/inputs/community/shelter_field_evidence_2026-09-28.md` — relayed field failure modes;
+- `tests/test_shelter_decision.py` — deterministic fail-closed tests.
+
+See `docs/HANDOFF_SHELTER_DECISION_AND_SUSTAINMENT.md` for continuation rules.
