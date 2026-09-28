@@ -51,6 +51,41 @@ nodes:
       - sammakorn_internal_safe
       - external_safe_bkk_east_01
       - external_safe_bkk_east_02
+    member_need_profile:
+      privacy: aggregate_operational_needs_only
+      total_persons: null
+      living_arrangement: UNKNOWN
+      child_0_5: null
+      child_6_12: null
+      adolescent_13_17: null
+      adult_18_59: null
+      older_adult_60_plus: null
+      pregnant_person: null
+      postpartum_person: null
+      chronic_or_acute_illness: null
+      disability_or_functional_limitation: null
+      bedbound_or_homebound: null
+      needs_continuous_supervision: null
+      needs_mobility_assistance: null
+      needs_essential_medication: null
+      needs_time_critical_medical_followup: null
+      needs_power_dependent_medical_device: null
+      needs_communication_assistance: null
+      needs_special_diet: null
+      needs_infant_feeding: null
+      single_caregiver_household: null
+      dependents_without_co_resident_capable_adult: null
+      co_resident_capable_adults: null
+      co_resident_caregivers: null
+      child_caregiver_link_uncovered: UNKNOWN
+      backup_caregiver_link_uncovered: UNKNOWN
+      older_adult_support_link_uncovered: UNKNOWN
+      pregnancy_support_link_uncovered: UNKNOWN
+      medical_support_link_uncovered: UNKNOWN
+      mobility_support_link_uncovered: UNKNOWN
+      power_dependency_support_link_uncovered: UNKNOWN
+      communication_support_link_uncovered: UNKNOWN
+      living_alone_buddy_link_uncovered: UNKNOWN
     sustainment:
       checked_at: null
       fresh: false
@@ -201,6 +236,41 @@ nodes:
       - ram53_internal_safe
       - external_safe_bkk_east_01
       - external_safe_bkk_east_02
+    member_need_profile:
+      privacy: aggregate_operational_needs_only
+      total_persons: null
+      living_arrangement: UNKNOWN
+      child_0_5: null
+      child_6_12: null
+      adolescent_13_17: null
+      adult_18_59: null
+      older_adult_60_plus: null
+      pregnant_person: null
+      postpartum_person: null
+      chronic_or_acute_illness: null
+      disability_or_functional_limitation: null
+      bedbound_or_homebound: null
+      needs_continuous_supervision: null
+      needs_mobility_assistance: null
+      needs_essential_medication: null
+      needs_time_critical_medical_followup: null
+      needs_power_dependent_medical_device: null
+      needs_communication_assistance: null
+      needs_special_diet: null
+      needs_infant_feeding: null
+      single_caregiver_household: null
+      dependents_without_co_resident_capable_adult: null
+      co_resident_capable_adults: null
+      co_resident_caregivers: null
+      child_caregiver_link_uncovered: UNKNOWN
+      backup_caregiver_link_uncovered: UNKNOWN
+      older_adult_support_link_uncovered: UNKNOWN
+      pregnancy_support_link_uncovered: UNKNOWN
+      medical_support_link_uncovered: UNKNOWN
+      mobility_support_link_uncovered: UNKNOWN
+      power_dependency_support_link_uncovered: UNKNOWN
+      communication_support_link_uncovered: UNKNOWN
+      living_alone_buddy_link_uncovered: UNKNOWN
     sustainment:
       checked_at: null
       fresh: false
