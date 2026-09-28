@@ -88,6 +88,8 @@ return/relocation/closure.
 - Human–animal equations/evidence: `docs/HUMAN_ANIMAL_HOUSEHOLD_UNIT.md`
 - Thai animal field evidence: `site/inputs/community/human_animal_field_evidence.md`
 - Human–animal tests: `tests/test_human_animal_household.py`
+- Unified crisis-state readout: `unified_crisis_state.py`
+- Unified state tests: `tests/test_unified_crisis_state.py`
 
 FloodConnect now also models **safe-now -> degrading -> unsafe** transitions that can occur
 without rising water depth: sewage/backflow contamination, sewer-gas/H2S uncertainty,

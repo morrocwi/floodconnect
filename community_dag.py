@@ -39,8 +39,11 @@ KIND_LAYER = {
     "internal_safe": 3,
     "egress": 4,
     "external_safe": 5,
-    "supply_point": 5,
+    "supply_point": 5,  # backward-compatible legacy service node
+    "service_node": None,  # capability-based service node; declared layer must be 2..5
 }
+
+SERVICE_NODE_LAYERS = {2, 3, 4, 5}
 
 NODE_STATUS = {"SAFE", "DEGRADED", "UNSAFE", "UNKNOWN"}
 EDGE_STATUS = {"OPEN", "ASSISTED", "BLOCKED", "UNKNOWN"}
@@ -109,7 +112,13 @@ def validate_document(doc: dict[str, Any]) -> dict[str, Any]:
         if kind not in KIND_LAYER:
             errors.append(f"{node_id}: unknown kind {kind!r}")
             continue
-        if layer != KIND_LAYER[kind]:
+        if kind == "service_node":
+            if layer not in SERVICE_NODE_LAYERS:
+                errors.append(
+                    f"{node_id}: service_node layer {layer!r} must be one of "
+                    f"{sorted(SERVICE_NODE_LAYERS)}"
+                )
+        elif layer != KIND_LAYER[kind]:
             errors.append(
                 f"{node_id}: layer {layer!r} does not match kind {kind!r} "
                 f"(expected {KIND_LAYER[kind]})"
@@ -208,9 +217,17 @@ def _free_capacity(node: dict[str, Any]) -> int | None:
         return None
 
 
+def node_capabilities(node: dict[str, Any]) -> set[str]:
+    """Return declared functional capabilities independent of topology kind.
+
+    `services` remains supported for backward compatibility; new nodes should prefer
+    `capabilities`. A node may expose several capabilities at once.
+    """
+    return set(node.get("services") or []) | set(node.get("capabilities") or [])
+
+
 def _node_services_ok(node: dict[str, Any], needs: set[str]) -> bool:
-    have = set(node.get("services") or [])
-    return needs.issubset(have)
+    return needs.issubset(node_capabilities(node))
 
 
 def _target_ok(node: dict[str, Any], group_size: int, needs: set[str]) -> bool:

@@ -265,3 +265,112 @@ def test_animal_profile_unknown_does_not_become_safe():
     r = sd.evaluate_sustainment(node, 24)
     assert r.state == sd.UNKNOWN
     assert "animal_drinking_water_for_horizon" in r.unknown_fields
+
+
+def test_missing_carrier_does_not_make_safe_home_animal_sustainment_fail():
+    p = _animal_profile(
+        animal_containment_transport="INSUFFICIENT",
+        animal_transport_capacity_verified=False,
+    )
+    stay = hahu.evaluate_animal_sustainment(p, 24)
+    move = hahu.evaluate_animal_movement_readiness(p)
+    assert stay.state == hahu.SUSTAINABLE
+    assert move.state == hahu.NOT_READY
+    assert "animal_containment_transport" in move.gaps
+
+
+def test_assistance_animal_uses_human_access_not_pet_accommodation():
+    p = _animal_profile(
+        counts={"dog": 1},
+        assistance_animal_count=1,
+        assistance_animal_handler_continuity="SUFFICIENT",
+    )
+    assert hahu.movement_route_service_needs(p) == ("assistance_animal_access",)
+    node = {
+        "kind": "external_safe",
+        "status": "SAFE",
+        "fresh": True,
+        "capabilities": ["assistance_animal_access"],
+    }
+    result = hahu.screen_animal_destination(node, p)
+    assert result.state == hahu.SUSTAINABLE
+
+
+def test_livestock_requires_livestock_holding_not_companion_pet_shelter():
+    p = _animal_profile(
+        total_animals=2,
+        counts={"goat_or_sheep": 2},
+        cats_indoor_or_shelter=False,
+    )
+    companion_only = {
+        "kind": "external_safe",
+        "status": "SAFE",
+        "fresh": True,
+        "capabilities": ["companion_animal_accommodation"],
+        "animal_accommodation": {
+            "fresh": True,
+            "verified": True,
+            "accepted_species": ["goat_or_sheep"],
+            "animal_capacity": 10,
+            "animals_present": 0,
+            "animal_drinking_water": "SUFFICIENT",
+            "animal_food": "SUFFICIENT",
+            "animal_waste_management": "SUFFICIENT",
+            "animal_containment_area": "SUFFICIENT",
+            "separation_from_food_preparation": "SUFFICIENT",
+        },
+    }
+    result = hahu.screen_animal_destination(companion_only, p)
+    assert result.state == hahu.NOT_SUSTAINABLE
+    assert "livestock_holding" in result.gaps
+
+
+def test_linked_colocated_animal_node_can_make_human_shelter_compatible():
+    doc = _doc(pet_compatible=False)
+    doc["nodes"]["x"]["linked_animal_node"] = "pets"
+    doc["nodes"]["pets"] = {
+        "kind": "service_node",
+        "layer": 5,
+        "status": "SAFE",
+        "fresh": True,
+        "capabilities": ["companion_animal_accommodation"],
+        "animal_accommodation": {
+            "fresh": True,
+            "verified": True,
+            "accepted_species": ["cat"],
+            "animal_capacity": 20,
+            "animals_present": 0,
+            "animal_drinking_water": "SUFFICIENT",
+            "animal_food": "SUFFICIENT",
+            "animal_waste_management": "SUFFICIENT",
+            "animal_containment_area": "SUFFICIENT",
+            "separation_from_food_preparation": "SUFFICIENT",
+        },
+    }
+    p = doc["nodes"]["h"]["animal_profile"]
+    result = hahu.screen_animal_destination(doc["nodes"]["x"], p, doc=doc)
+    assert result.state == hahu.SUSTAINABLE
+
+
+def test_lvcn_skips_human_only_shelter_for_coevacuating_cat():
+    doc = _doc(pet_compatible=True)
+    doc["nodes"]["h"]["support_candidates"] = ["i", "x"]
+    # Internal shelter is safe for people but has no animal compatibility.
+    result = sd.find_lowest_viable_node(doc, "h", 24)
+    assert result.node_id == "x"
+    assert result.node_kind == "external_safe"
+
+
+def test_unknown_evacuation_plan_does_not_poison_safe_home_sustainment():
+    p = _animal_profile(plan_mode="UNKNOWN")
+    stay = hahu.evaluate_animal_sustainment(p, 24)
+    move = hahu.evaluate_animal_movement_readiness(p)
+    assert stay.state == hahu.SUSTAINABLE
+    assert move.state == hahu.UNKNOWN
+
+
+def test_missing_identification_record_is_advisory_not_universal_movement_blocker():
+    p = _animal_profile(animal_identification_records="UNKNOWN")
+    move = hahu.evaluate_animal_movement_readiness(p)
+    assert move.state == hahu.READY
+    assert "animal_identification_records" in move.details["advisory_unknowns"]
