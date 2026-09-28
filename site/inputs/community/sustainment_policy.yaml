@@ -1,84 +1,140 @@
-# Proposal-only policy skeleton for Shelter Decision & Community Sustainment.
-# This file contains NO live state and NO claim that any current node is safe.
-# See docs/SHELTER_DECISION_AND_COMMUNITY_SUSTAINMENT.md.
+# FloodConnect Shelter Decision & Community Sustainment policy.
+# Operational schema rules only. This file contains NO live claim that a node is safe.
 
-version: "0.1"
-status: "proposal_not_operational"
+version: "0.2"
+status: "operational_schema_fail_closed"
 
 construct:
   id: LVCN
   name: "Lowest Viable Community Node"
-  provenance: "FloodConnect repo-specific proposal"
+  provenance: "FloodConnect repo-specific proposal informed by disaster/shelter literature"
   claimed_global_standard: false
 
-classification:
-  allowed:
-    - VIABLE_AND_ESCALATABLE
-    - VIABLE_BUT_ISOLATED
-    - NOT_VIABLE
-    - UNKNOWN
+architecture:
+  hydrology_control: "separate readout layer"
+  movement_graph: "community_dag.py DAG; people/vehicle movement only"
+  support_network: "directed non-DAG support_edges; resources/helpers may move laterally/backward"
+  rule: "never infer support delivery from movement topology alone"
+
+lvcn:
+  candidate_kinds:
+    - household
+    - buddy_cell
+    - zone
+    - internal_safe
+    - external_safe
+  excluded_kinds:
+    - egress
+    - supply_point
+  exactness:
+    exact: EXACT_LVCN
+    higher_known_candidate_when_lower_unknown: KNOWN_VIABLE_UPPER_BOUND
+  rule: "a higher known viable node must not erase UNKNOWN at a lower layer"
+
+sustainment:
+  states: [SUSTAINABLE, NOT_SUSTAINABLE, UNKNOWN]
+  physical_safety: [SAFE, UNSAFE, UNKNOWN]
+  resource_state: [SUFFICIENT, INSUFFICIENT, NOT_REQUIRED, UNKNOWN]
+  required_fields:
+    - physical_safety
+    - potable_water_for_horizon
+    - service_water_for_horizon
+    - food_for_horizon
+    - essential_medicine_for_horizon
+    - critical_power
+    - sanitation_hygiene
+    - communications
+    - vulnerable_support
+  planning_horizon_h: null
+  rule: "planning horizon is caller/authority declared; never default to 24/48/72 h"
+
+escalation:
+  states: [ESCALATABLE, ISOLATED, UNKNOWN]
+  rule: "escalation capability is reported separately and never changes a safe/supplied node into NOT_SUSTAINABLE"
 
 decision_states:
   - STAY_AND_SUSTAIN
   - RESUPPLY_WINDOW
   - PREPARE_TO_MOVE
-  - SHELTER_SITE_SCREENING
+  - REQUEST_LOGISTICS_OR_ASSISTED_EVACUATION
   - EVACUATE_ROUTE
   - SHELTER_OPERATION
   - RETURN_RELOCATE_CLOSE
+  - VERIFY_BEFORE_ACTION
 
-evaluation_order:
-  - household
-  - buddy_cell
-  - zone
-  - internal_safe
-  - egress
-  - external_safe
+resupply_window:
+  automatic_travel_instruction: false
+  requires:
+    - current_node_physical_safety_SAFE
+    - declared_horizon_resource_gap
+    - verified_supply_point
+    - fresh_field_verified_movement_path
+    - route_mode_feasible
+    - no_conflicting_official_movement_instruction
 
-hard_constraints:
-  - physical_safety
-  - potable_water_for_horizon
-  - food_for_horizon
-  - essential_medicine_for_horizon
-  - critical_power
-  - wash
-  - communications
-  - vulnerable_support
-  - escalation_mechanism
+shelter_phases:
+  PRE_OPEN:
+    - site_hazard_safety
+    - structural_fire_safety
+    - access_accessibility
+    - communications
+    - capacity
+    - management_staffing
+    - perimeter_flood_defense
+    - dewatering_capability
+    - exit_closure_plan
+  OCCUPIED:
+    - site_hazard_safety
+    - structural_fire_safety
+    - access_accessibility
+    - drinking_water
+    - service_water
+    - sanitation_hygiene
+    - food_special_diets
+    - medicine_health
+    - critical_power
+    - communications
+    - capacity
+    - member_accountability
+    - vulnerable_support
+    - resupply_access
+    - management_staffing
+    - waste_management
+    - sleeping_protection
+    - exit_closure_plan
+  RECOVERY:
+    - site_hazard_safety
+    - service_water
+    - sanitation_hygiene
+    - medicine_health
+    - communications
+    - waste_management
+    - post_flood_cleaning
+    - exit_closure_plan
+
+member_need_profile:
+  privacy: "aggregate operational needs only; no names, diagnoses, phone numbers, room/house identifiers"
+  fields:
+    - total_persons
+    - older_adult_alone
+    - single_caregiver
+    - infant_feeding
+    - mobility_assistance
+    - essential_medication
+    - time_critical_medical_followup
+    - communication_assistance
+    - special_diet
+    - unreachable_households
 
 defaults:
-  planning_horizon_h: null
   unknown_is_safe: false
   allow_weighted_override: false
   allow_unverified_route: false
   allow_unverified_shelter: false
   allow_inferred_stock_duration: false
-
-resupply_window:
-  requires:
-    - current_node_physically_safe
-    - declared_need_within_planning_horizon
-    - supplier_verified
-    - route_field_verified
-    - route_fresh
-    - route_mode_feasible
-    - no_conflicting_official_movement_instruction
-  automatic_travel_instruction: false
-
-shelter_screening:
-  requires:
-    - hazard_flood_safety
-    - structural_fire_safety
-    - access_accessibility
-    - water_wash
-    - power_if_required
-    - communications
-    - capacity
-    - medical_accessibility_support
-    - resupply_access
-    - management_maintenance
-    - exit_closure_plan
+  allow_building_type_as_safety_proxy: false
 
 implementation:
-  code_module: null
-  note: "No evaluator is implemented yet. Next agent must follow the HANDOFF document."
+  code_module: "shelter_decision.py"
+  movement_module: "community_dag.py"
+  note: "Hydrology, movement, sustainment and support remain separate claim layers."
