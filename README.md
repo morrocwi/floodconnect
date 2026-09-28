@@ -246,6 +246,21 @@ To activate: get API access, then implement the function per its docstring.
   clip — acceptable for a first version, but don't assume every node is inside Thailand
   without checking.
 
+## Sammakorn canal ↔ gate ↔ pond ↔ pump hydraulic DAG
+
+FloodConnect now models the Sammakorn retention system as **two different hydraulic edges** rather than one ambiguous bidirectional link:
+
+`external canal → gate/gravity → retention pond → pump → receiving canal → wider canal network`
+
+- `gate/gravity` = controlled inflow into available storage when the external water surface is above the pond.
+- `pump` = mechanical outflow from the pond toward a receiving canal.
+- `pumped inflow` into the four ponds is **not established** and must not be inferred from the phrase “ดึงน้ำเข้าบึง”.
+- Missing water levels, gate state, or receiving-canal condition remain `UNKNOWN` / fail-closed.
+
+Human-readable model: `docs/SAMMAKORN_HYDRAULIC_DAG.md`
+
+Machine-readable topology/state rules: `site/inputs/canals/sammakorn_hydraulic_dag.yaml`
+
 ## Live canal water level
 
 `live_water_level.py` attaches a live Bangkok canal water-level reading onto the canal
