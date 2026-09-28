@@ -245,7 +245,84 @@ These are system/process failure modes, **not essential traits of Thai people**:
 10. **recovery discontinuity** — food rescue is visible during inundation, while cleaning,
    sanitation restoration, health follow-up and return support can become the next bottleneck.
 
-## 5. Minimum-function bottleneck
+## 5. Household composition and dependency pairing
+
+FloodConnect must not represent vulnerability as one scalar or one undifferentiated
+`vulnerable_people` count.
+
+Use two independent dimensions:
+
+1. **who is present** — age/life stage and functional needs;
+2. **who/what supports whom** — caregiver, buddy, medical, power, mobility and logistics links.
+
+Examples:
+
+```text
+child_0_5
+  -> caregiver
+  -> feeding / hygiene
+  -> assisted evacuation
+
+older_adult + mobility dependency
+  -> caregiver or buddy
+  -> essential medicine
+  -> mobility/transport support
+
+pregnant/postpartum person
+  -> companion/buddy
+  -> maternal-health access
+  -> transport/referral if needed
+
+time-critical patient
+  -> caregiver/buddy
+  -> verified medical referral
+  -> verified transport
+
+medical-device power dependency
+  -> critical power
+  -> backup power
+  -> medical escalation
+
+single-person household
+  -> buddy/check-in relation
+
+single-caregiver household + dependents
+  -> backup caregiver/buddy relation
+```
+
+The important variable is therefore not simply whether a person belongs to a demographic
+group. It is whether a **declared functional dependency is covered**.
+
+Let (D_h) be the set of declared dependencies in household (h), and let (L_d(t)) be
+the state of the required support link for dependency (d):
+
+[
+C_h(t)=
+egin{cases}
+COVERED,& L_d(t)=VERIFIED orall din D_h\
+UNCOVERED,& exists din D_h: L_d(t)=FAILED\
+UNKNOWN,& 	ext{otherwise}
+end{cases}
+]
+
+This avoids two errors:
+- treating every older adult/pregnant person/child as incapable;
+- treating a household with multiple adults as automatically self-sufficient.
+
+Living arrangement is therefore first-class:
+- single-person household;
+- older adult living alone;
+- single-caregiver household;
+- dependents with no co-resident capable adult;
+- multiple capable adults;
+- co-resident caregiver(s).
+
+A demographic category alone never changes LVCN status. An uncovered **functional support
+dependency** can.
+
+---
+
+## 6. Minimum-function bottleneck
 
 For a community c, define categorical minimum-function state:
 
@@ -267,7 +344,7 @@ Score=sum_r w_rF_r
 because a high food score cannot compensate for unsafe electricity, absent water, or an
 unmet dialysis/medical-transfer dependency.
 
-## 6. Human-Work-Data-Resource decomposition
+## 7. Human-Work-Data-Resource decomposition
 
 Thai community research identifies four contributing domains. FloodConnect maps them as:
 
@@ -285,7 +362,7 @@ where:
 The intersection symbol is deliberate: FloodConnect does not average these into a resilience
 score. A missing critical domain can block an action.
 
-## 7. Demand-supply gap for Thai volunteer/civil-society response
+## 8. Demand-supply gap for Thai volunteer/civil-society response
 
 For zone z and resource r:
 
@@ -314,7 +391,7 @@ A central kitchen therefore becomes useful only when:
 Likewise, "1,000 meals produced" is an output measure, not proof that the highest-need
 households were reached.
 
-## 8. Crisis typology
+## 9. Crisis typology
 
 ### Type 1 — Water hazard high, household functions intact
 Action: stay/sustain + watch + maintain escalation information.
@@ -342,7 +419,7 @@ override current constraints.
 Action: cleaning/WASH/electrical/health/return support; do not close incident merely because
 water level falls.
 
-## 9. Relationship to Toledo
+## 10. Relationship to Toledo
 
 Toledo remains the physical conservation/refusal layer:
 
@@ -391,7 +468,7 @@ quad not guessed substitution.
 This is the core FloodConnect extension: **conservation of water is coupled to conservation
 of essential community function.**
 
-## 10. Research/falsification agenda
+## 11. Research/falsification agenda
 
 The model should be rejected or revised if real event replay shows that:
 - lower-node sustainment cannot be represented without forced centralization;
