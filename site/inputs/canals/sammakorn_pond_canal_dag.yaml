@@ -1,24 +1,15 @@
-version: 2
+version: 3
 area_id: sammakorn_retention_system
 status: evidence_backed_asbuilt_links_unresolved
 canonical: true
 
 claim_boundary:
   note_th: >
-    โมเดลนี้ยืนยันระดับระบบและชื่อ/กำลังสถานีบางจุด แต่ยังไม่ยืนยันแนวท่อ intake/discharge
-    ของบึงแต่ละบึง จนกว่าจะพบ BOQ/แบบก่อสร้าง/As-built.
+    รหัส ST.SPS.01-04 และชื่อสถานียืนยันตรงจาก BMA PumpHistory แล้ว.
+    ทิศการไหลและแนวท่อบางช่วงยังเป็น working hypothesis จนกว่าจะได้ BOQ/As-built.
   fail_closed: true
 
 nodes:
-  - id: sammakorn_pond_system
-    type: retention_storage
-    label_th: บึงรับน้ำหมู่บ้านสัมมากร
-    storage_area_m2: 227200
-    max_control_level_m_rtsd: 0.50
-    min_control_level_m_rtsd: -0.50
-    storage_capacity_m3: 454400
-    source: bma_monkeycheek
-
   - id: khlong_saen_saep
     type: trunk_canal
     label_th: คลองแสนแสบ
@@ -31,119 +22,133 @@ nodes:
       to: sammakorn_village
       width_m: [3, 5]
       length_m: 1410
-    source: saphan_sung_action_plan_2568
+    source: bma_canal_inventory_2561
 
-  - id: external_receiving_canal_group
-    type: canal_group
-    members:
-      - khlong_huamak
-      - khlong_ban_ma
-      - khlong_saphan_sung
-    source: government_inspection_2023
+  - id: khlong_wat_yai
+    type: canal
+    label_th: คลองวัดใหญ่/คลองวัดใหญ่บน
+    topology:
+      connects_to: khlong_ban_ma
+    source: bma_flood_plan_2555
 
-interfaces:
-  - id: road_local_drainage_to_ponds
-    from: road_and_internal_drainage
-    to: sammakorn_pond_system
-    mechanism: unresolved_collection_network
-    possible_components:
-      - gravity_pipe
-      - box_drain
-      - local_channel
-      - pump
-    direction_status: system_role_verified_exact_mechanism_unknown
-    evidence:
-      - bma_monkeycheek
-      - project_budget_scope
-    rule: do_not_force_gravity_only_or_pump_only
-
-  - id: ponds_to_external_canal_system
-    from: sammakorn_pond_system
-    to: external_receiving_canal_group
-    mechanism: pump_stations_1_to_4
-    direction_status: verified_at_system_level
-    source: government_inspection_2023
-
-  - id: external_network_to_saen_saep
-    from: external_receiving_canal_group
-    to: khlong_saen_saep
-    mechanism: canal_network_and_control_structures
-    direction_status: topology_dependent
+  - id: sammakorn_pond_1
+    type: retention_storage
+  - id: sammakorn_pond_2
+    type: retention_storage
+  - id: sammakorn_pond_4
+    type: retention_storage
 
 pump_assets:
   - code: ST.SPS.01
-    label_th: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง
-    pond: sammakorn_pond_1
-    associated_interface: khlong_saphan_sung
-    design_capacity_m3s: 1.0
-    pumps:
-      count: 2
-      each_m3s: 0.5
-    gate: present_controlled_by_water_condition
-    coordinates: [13.7706, 100.6798]
-    hydraulic_direction:
-      status: system_outflow_supported_exact_pipe_route_unresolved
-    source: bma_flood_plan_2567
-
-  - code: ST.SPS.02
-    label_th: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2
-    pond: sammakorn_pond_2
-    associated_interface: khlong_ban_ma_2
-    design_capacity_m3s: 0.75
-    pumps:
-      count: 3
-      each_m3s: 0.25
-    gate: present_controlled_by_water_condition
-    coordinates: [13.7670, 100.6771]
-    hydraulic_direction:
-      status: system_outflow_supported_exact_pipe_route_unresolved
-    note_th: >
-      ชื่อ "ตอนคลองบ้านม้า 2" ไม่ได้พิสูจน์ว่าบึง 2 ติดคลองเปิดโดยตรง.
-      แนวเชื่อมอาจเป็นท่อ/ลำรางที่ยังต้องยืนยันจาก As-built.
-    source: bma_flood_plan_2567
-
-  - code: ST.SPS.03
-    label_th: สถานีสูบน้ำบึงที่ 3
-    pond: sammakorn_pond_3
-    associated_interface: unknown
-    design_capacity_m3s: null
-    inference_candidate:
-      value_m3s: 1.0
-      basis: remaining_project_budget_station_family_2x0.50
-      verified: false
-    hydraulic_direction:
-      status: system_outflow_supported_asset_details_unresolved
-
-  - code: ST.SPS.04
-    label_th: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่
-    pond: sammakorn_pond_4
-    associated_interface: khlong_wat_yai
-    design_capacity_m3s: 2.0
-    pumps:
-      count: 2
-      each_m3s: 1.0
-    gate: present_controlled_by_water_condition
-    coordinates: [13.7555, 100.6795]
-    hydraulic_direction:
-      status: system_outflow_supported_exact_pipe_route_unresolved
-    source: bma_flood_plan_2567
-
-  - code: bma_khlong_ban_ma_2_station
+    identity_verified: true
     label_th: สถานีสูบน้ำคลองบ้านม้า 2
-    pond: null
-    associated_interface: khlong_ban_ma_2
+    role: terminal_ban_ma_2_station
     design_capacity_m3s: 4.0
     pumps:
       count: 4
       each_m3s: 1.0
     coordinates: [13.7763, 100.6713]
-    distinct_from: ST.SPS.02
-    source:
-      - bma_flood_plan_2567
-      - mea_2024
+    associated_interface: khlong_ban_ma_2
+    saen_saep_endpoint:
+      status: supported
+      evidence: mea_names_station_at_khlong_saen_saep
+    village_main_outlet:
+      status: strong_working_hypothesis
+      basis:
+        - largest_capacity_in_local_cluster
+        - ban_ma_2_connects_sammakorn_to_saen_saep
+        - mea_station_name_at_saen_saep
+
+  - code: ST.SPS.02
+    identity_verified: true
+    label_th: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่
+    role: pond_4_interface
+    pond: sammakorn_pond_4
+    design_capacity_m3s: 2.0
+    pumps:
+      count: 2
+      each_m3s: 1.0
+    coordinates: [13.7555, 100.6795]
+    associated_interface: khlong_wat_yai
+    southern_connection_to_ban_ma:
+      status: topology_supported
+      basis: khlong_wat_yai_bon_connects_to_khlong_ban_ma
+    exact_pump_direction:
+      status: unresolved_asbuilt
+
+  - code: ST.SPS.03
+    identity_verified: true
+    label_th: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2
+    role: pond_2_interface
+    pond: sammakorn_pond_2
+    design_capacity_m3s: 0.75
+    pumps:
+      count: 3
+      each_m3s: 0.25
+    coordinates: [13.7670, 100.6771]
+    associated_interface: khlong_ban_ma_2
+    road_to_pond_capture:
+      status: supported_system_function_exact_actuator_unresolved
+    exact_pump_direction:
+      status: unresolved_asbuilt
+
+  - code: ST.SPS.04
+    identity_verified: true
+    label_th: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง
+    role: pond_1_interface
+    pond: sammakorn_pond_1
+    design_capacity_m3s: 1.0
+    pumps:
+      count: 2
+      each_m3s: 0.5
+    coordinates: [13.7706, 100.6798]
+    associated_interface: khlong_saphan_sung
+    capture_from_road_and_saphan_sung:
+      status: supported_system_function_exact_actuator_unresolved
+    exact_pump_direction:
+      status: unresolved_asbuilt
+
+edges:
+  - id: ban_ma_2_to_saen_saep_terminal
+    from: khlong_ban_ma_2
+    via: ST.SPS.01
+    to: khlong_saen_saep
+    status: strongly_supported
+    note: exact hydraulic configuration still requires as-built
+
+  - id: pond4_to_wat_yai_ban_ma_branch
+    from: sammakorn_pond_4
+    via: ST.SPS.02
+    to: khlong_wat_yai
+    then_to: khlong_ban_ma
+    status: partial_topology_exact_pump_direction_unresolved
+
+  - id: road_to_pond2_capture
+    from: road_and_internal_drainage
+    to: sammakorn_pond_2
+    via_or_near: ST.SPS.03
+    status: working_hypothesis
+    exact_mechanism: unknown
+
+  - id: saphan_sung_to_pond1_capture
+    from:
+      - road_and_internal_drainage
+      - khlong_saphan_sung
+    to: sammakorn_pond_1
+    via_or_near: ST.SPS.04
+    status: working_hypothesis
+    exact_mechanism: unknown
+
+  - id: pond1_to_pond2_hidden_connection
+    from: sammakorn_pond_1
+    to: sammakorn_pond_2
+    status: unknown_do_not_assume
+    required_evidence:
+      - BOQ
+      - asbuilt
+      - pipe_profile
 
 project_hidden_conveyance:
-  source: project_budget_scope
   project_code: "0412002-55-30"
   items:
     - type: drainage_pipe_connection
@@ -158,105 +163,43 @@ project_hidden_conveyance:
     - type: box_drain
       dimensions_m: [2.0, 2.0]
       length_m_approx: 15
-  epistemic_note: >
-    These quantities prove engineered hidden conveyance exists but do not map any
-    individual pipe to a pond or prove flow direction.
-
-gate_semantics:
-  role: hydraulic_connection_control
-  instantaneous_flow_direction:
-    requires:
-      - compatible_water_level_on_both_sides
-      - known_gate_geometry
-    default: unknown
-  rule: gate_open_does_not_equal_flow_direction
-
-dag:
-  verified_system_path:
-    - road_and_internal_drainage
-    - sammakorn_pond_system
-    - pump_stations_1_to_4
-    - external_canal_network
-    - khlong_saen_saep
-  pond_2_candidate_path:
-    - sammakorn_pond_2
-    - ST.SPS.02
-    - hidden_or_local_conveyance_unknown_geometry
-    - khlong_ban_ma_2
-    - bma_khlong_ban_ma_2_station
-    - khlong_saen_saep
-  pond_2_candidate_path_status: partial_topology_not_asbuilt_verified
+  note: quantities prove hidden conveyance exists but not which pond-to-pond edge exists
 
 epistemic:
   verified:
-    - bma_retention_role_receive_from_village_release_to_saen_saep
-    - pond_pump_system_outflow_toward_external_canals
-    - khlong_ban_ma_2_connects_saen_saep_to_sammakorn_village
-    - pond_1_station_capacity_and_association
-    - pond_2_station_capacity_and_association
-    - pond_4_station_capacity_and_association
-    - separate_khlong_ban_ma_2_station
+    - ST.SPS.01_is_khlong_ban_ma_2_station
+    - ST.SPS.02_is_pond4_khlong_wat_yai
+    - ST.SPS.03_is_pond2_khlong_ban_ma_2
+    - ST.SPS.04_is_pond1_khlong_saphan_sung
+    - ban_ma_2_connects_saen_saep_to_sammakorn
+    - wat_yai_bon_connects_to_ban_ma
     - project_contains_hidden_pipe_connections
-  not_established:
-    - exact_road_drainage_to_each_pond_mechanism
-    - exact_intake_discharge_pipe_for_each_pond_station
-    - pond_3_asset_details
-    - exact_khlong_wat_yai_downstream_route
-    - reversible_pump_operation
-  required_to_close:
-    - BOQ_PorRor4
-    - construction_general_layout
-    - pump_station_plan_section
-    - pipe_profile
-    - asbuilt_drawings
+  working_hypotheses:
+    - ST.SPS.01_is_main_sammakorn_outlet_to_saen_saep
+    - pond2_captures_road_internal_drainage
+    - pond1_captures_road_and_saphan_sung_overflow
+  unknown:
+    - exact_pump_direction_ST.SPS.02
+    - exact_pump_direction_ST.SPS.03
+    - exact_pump_direction_ST.SPS.04
+    - direct_hidden_connection_pond1_to_pond2
+    - exact_intake_discharge_pipe_routes
+  fail_closed: true
 
 sources:
-  bma_monkeycheek:
-    url: https://monkeycheek.bangkok.go.th/mngkaccordion/27
-  saphan_sung_action_plan_2568:
-    url: https://webportal.bangkok.go.th/public/user_files_editor/99/ITA/2568/Action_Plan_2568.pdf
-  bma_flood_plan_library:
-    url: https://dds.bangkok.go.th/content/doc3/index.php
+  bma_pumphistory_live:
+    url: https://weather.bangkok.go.th/Station/PumpHistory
+    verified_date: 2026-09-28
+    note: exact ST.SPS.01-04 code/name mapping
   bma_flood_plan_2567:
-    note: official BMA plan; station table cross-checked against indexed mirror
-  project_budget_scope:
-    url: https://budget.bangkok.go.th/main/upload/2015/09/29/A20150929142318.pdf
+    note: capacities, pump counts, coordinates, pond gate operating note
+  bma_canal_inventory_2561:
+    note: Khlong Ban Ma 2 from Saen Saep to Sammakorn Village, 1.41 km
+  bma_flood_plan_2555:
+    note: Khlong Wat Yai Bon connects Khlong Thap Chang Lower to Khlong Ban Ma
   government_inspection_2023:
     url: https://www.thailandplus.tv/archives/690882
   mea_2024:
     url: https://www.mea.or.th/public-relations/corporate-news-activities/announcement/OpMsOL7FX
-
-
-working_hypothesis:
-  id: ban_ma_system_to_sammakorn_capture
-  status: supported_system_function_exact_hardware_unresolved
-  direction_during_capture:
-    from:
-      - khlong_ban_ma
-      - khlong_ban_ma_2
-      - khlong_saphan_sung
-    to: sammakorn_pond_system
-  mechanism:
-    status: unresolved
-    candidates:
-      - controlled_gravity_pipe
-      - gate_diversion
-      - local_channel
-      - separate_inlet_pump
-    prohibited_inference:
-      - do_not_assume_ST_SPS_01_04_are_inlet_pumps
-  evidence:
-    - bma_2018_description_draws_water_from_three_canals_into_retention
-    - bma_private_monkeycheek_pre_lowering_role
-  operational_cycle:
-    - phase: PRE_DRAIN
-      direction: pond_to_external_network
-      driver: pump
-    - phase: CAPTURE
-      direction: external_network_to_pond
-      driver: hydraulic_diversion_unknown_mechanism
-    - phase: HOLD
-      direction: none_or_limited
-    - phase: RECOVERY
-      direction: pond_to_external_network
-      driver: pump
+  project_budget_scope:
+    project_code: "0412002-55-30"
