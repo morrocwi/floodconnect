@@ -8,22 +8,31 @@ on:
       - "environmental_degradation.py"
       - "finite_temporal_ledger.py"
       - "human_animal_household.py"
+      - "unified_crisis_state.py"
       - "site/inputs/community/**"
       - "tests/test_community_dag.py"
       - "tests/test_shelter_decision.py"
       - "tests/test_shelter_real_replay.py"
       - "tests/test_environmental_degradation.py"
       - "tests/test_human_animal_household.py"
+      - "tests/test_unified_crisis_state.py"
       - ".github/workflows/shelter-tests.yml"
   push:
     branches: [main]
     paths:
       - "community_dag.py"
       - "shelter_decision.py"
+      - "environmental_degradation.py"
+      - "finite_temporal_ledger.py"
+      - "human_animal_household.py"
+      - "unified_crisis_state.py"
       - "site/inputs/community/**"
       - "tests/test_community_dag.py"
       - "tests/test_shelter_decision.py"
       - "tests/test_shelter_real_replay.py"
+      - "tests/test_environmental_degradation.py"
+      - "tests/test_human_animal_household.py"
+      - "tests/test_unified_crisis_state.py"
       - ".github/workflows/shelter-tests.yml"
 
 permissions:
@@ -39,8 +48,8 @@ jobs:
           python-version: "3.11"
       - run: pip install pyyaml pytest
       - name: Compile
-        run: python -m py_compile community_dag.py shelter_decision.py environmental_degradation.py finite_temporal_ledger.py human_animal_household.py
+        run: python -m py_compile community_dag.py shelter_decision.py environmental_degradation.py finite_temporal_ledger.py human_animal_household.py unified_crisis_state.py
       - name: Run community + shelter tests
         env:
           PYTHONPATH: .
-        run: pytest -q tests/test_community_dag.py tests/test_shelter_decision.py tests/test_shelter_real_replay.py tests/test_environmental_degradation.py tests/test_human_animal_household.py
+        run: pytest -q tests/test_community_dag.py tests/test_shelter_decision.py tests/test_shelter_real_replay.py tests/test_environmental_degradation.py tests/test_human_animal_household.py tests/test_unified_crisis_state.py
