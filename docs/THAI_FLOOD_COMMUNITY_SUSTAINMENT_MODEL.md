@@ -496,3 +496,74 @@ losses avoided or optimized evacuation time without deployed comparison data.
 - FEMA, *Planning Considerations: Evacuation and Shelter-in-Place*.
 - Existing FloodConnect field evidence:
   `site/inputs/community/shelter_field_evidence_2026-09-28.md`.
+
+
+## Water lifeline separation
+
+FloodConnect treats three household water-related functions as independent hard constraints:
+
+1. **Drinking water — น้ำดื่ม**
+   Internal field: `potable_water_for_horizon`.
+
+   This is water verified suitable for ingestion and oral-consumption uses where potable
+   water is required. It is not inferred from clear appearance, lack of odor, or the
+   availability of other household water.
+
+2. **Clean service water — น้ำสะอาดสำหรับใช้**
+   Internal field: `service_water_for_horizon`.
+
+   This supports declared hygiene/service functions such as washing, bathing and cleaning.
+   It is not automatically drinkable.
+
+3. **Sanitation function — ระบบส้วม/ระบายน้ำเสีย**
+   Internal field: `sanitation_hygiene`.
+
+   This represents whether toilets, drains and wastewater can function safely. A household
+   may have both bottled drinking water and clean service water while sanitation still fails
+   because of sewer surcharge/backflow.
+
+For a declared planning horizon T:
+
+[
+T_{drink}=rac{Stock_{drink}+VerifiedInflow_{drink}}{DemandRate_{drink}}
+]
+
+[
+T_{clean}=rac{Stock_{clean}+VerifiedInflow_{clean}}{DemandRate_{clean}}
+]
+
+where quantitative division is used only when stock, inflow and demand-rate units are
+measured/declared.
+
+The effective household WASH horizon is:
+
+[
+T_{WASH}
+=
+min(
+T_{drink},
+T_{clean},
+T_{sanitation}
+)
+]
+
+This means:
+
+[
+DrinkingWater=SUFFICIENT
+
+otRightarrow
+CleanWater=SUFFICIENT
+]
+
+and:
+
+[
+CleanWater=SUFFICIENT
+
+otRightarrow
+Sanitation=FUNCTIONAL
+]
+
+The separation is important in Thai flood cases where bottled drinking water can still be
+available while tap/service water, toilets or drainage fail.
