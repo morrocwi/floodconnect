@@ -1,7 +1,7 @@
 # FloodConnect operational tool/resource capability registry.
 # One canonical place for vehicles, watercraft and deployable field tools.
 # A registry entry declares capabilities; it NEVER declares a real route/site safe.
-# Real deployment state is evaluated by operational_tools.py.
+# Real deployment capability evidence is evaluated by operational_resources.py.
 version: "0.1"
 status: "operational_registry_fail_closed"
 
@@ -49,6 +49,24 @@ tools:
     provides: [personnel_transport_light, light_cargo_transport]
     edge_effect: [dry_road_mobility]
     requires_qualified_operator: false
+    floodwater_entry: PROHIBITED_BY_DEFAULT
+
+  ambulance_medical_transport:
+    category: vehicle
+    label: "Ambulance / medical transport vehicle"
+    provides: [patient_transport, medical_transport, health_referral_transport]
+    edge_effect: [verified_medical_transport]
+    node_effect: [health_referral_access]
+    requires_qualified_operator: true
+    floodwater_entry: PROHIBITED_BY_DEFAULT
+    note: "last-mile extraction and medical transport are separate legs unless the actual vehicle/team is verified for both"
+
+  accessible_passenger_vehicle:
+    category: vehicle
+    label: "Accessible passenger vehicle / wheelchair transport"
+    provides: [assisted_evacuee_transport, mobility_assistance, wheelchair_transport]
+    edge_effect: [accessible_dry_transport]
+    requires_qualified_operator: true
     floodwater_entry: PROHIBITED_BY_DEFAULT
 
   passenger_van_minibus:
