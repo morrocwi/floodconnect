@@ -1,0 +1,205 @@
+{
+  "schema_version": "1.0",
+  "as_of": "2026-09-28",
+  "purpose": "Static institutional/governance reference for FloodConnect. This file is not telemetry, not a forecast, and is not an operational command registry.",
+  "source": {
+    "name": "Bureaucracy Lab Thailand",
+    "source_class": "third_party_civic_mapping",
+    "input": "User-supplied screenshots",
+    "qr_shortlink": "https://www.canvaqr.com/RGTu3YixQ4",
+    "qr_destination_status": "unresolved_from_available_web_access"
+  },
+  "epistemic_status": {
+    "overall": "partially_verified",
+    "rule": "Source-claimed counts are preserved as claims. Structural roles are promoted to verified anchors only where independently supported by official sources.",
+    "do_not_use_for": [
+      "declaring an agency the operational incident commander without current official confirmation",
+      "treating agency counts as a complete current legal register",
+      "flood forecasting or risk scoring"
+    ]
+  },
+  "source_claims": {
+    "headline": {
+      "agencies": 38,
+      "parent_bodies": 12,
+      "status": "source_claim_only",
+      "note": "The exact 38-agency / 12-parent-body current enumeration was not independently confirmed as an authoritative exhaustive list."
+    },
+    "mission_overlap_counts": [
+      {"mission_th": "น้ำท่วม/ภัยพิบัติ", "agency_count": 14},
+      {"mission_th": "ภัยแล้ง/เพิ่มน้ำต้นทุน", "agency_count": 11},
+      {"mission_th": "น้ำประปา/อุปโภคบริโภค", "agency_count": 9},
+      {"mission_th": "แหล่งน้ำขนาดเล็ก/ชุมชน", "agency_count": 9},
+      {"mission_th": "คุณภาพน้ำ/น้ำเสีย", "agency_count": 9},
+      {"mission_th": "ข้อมูล/พยากรณ์", "agency_count": 7},
+      {"mission_th": "นโยบาย/แผน/กำกับ", "agency_count": 6},
+      {"mission_th": "น้ำเกษตร/ชลประทาน", "agency_count": 5},
+      {"mission_th": "ป่าต้นน้ำ/อนุรักษ์ดินและน้ำ", "agency_count": 5},
+      {"mission_th": "ชายฝั่ง/ทะเล", "agency_count": 5},
+      {"mission_th": "พลังงาน/เขื่อนไฟฟ้า", "agency_count": 2},
+      {"mission_th": "ทางน้ำ/การเดินเรือ", "agency_count": 2},
+      {"mission_th": "ลุ่มน้ำระหว่างประเทศ", "agency_count": 2},
+      {"mission_th": "น้ำบาดาล", "agency_count": 1}
+    ],
+    "callouts": [
+      {
+        "id": "flood_disaster",
+        "title_th": "น้ำท่วม: ผู้เล่นมากที่สุด",
+        "agency_count": 14,
+        "parent_body_count": 10,
+        "summary_th": "แหล่งต้นทางระบุว่าภารกิจตั้งแต่พยากรณ์ฝน บริหารเขื่อน ระบายน้ำเมือง จนถึงการช่วยเหลือผู้ประสบภัยกระจายอยู่หลายหน่วยงาน และ สทนช. ทำหน้าที่ประสานเมื่อเกิดวิกฤต",
+        "agency_tokens_verbatim": [
+          "สทนช.",
+          "คกก.ลุ่มน้ำ",
+          "กรมชลประทาน",
+          "กรมทรัพยากรน้ำ",
+          "ทร.",
+          "ปภ.",
+          "ยธ.",
+          "กทม.",
+          "อปท.",
+          "GISTDA",
+          "อต.",
+          "กฟผ.",
+          "วท.",
+          "บทพ."
+        ],
+        "status": "source_claim_with_partial_official_verification"
+      },
+      {
+        "id": "small_water_sources",
+        "title_th": "แหล่งน้ำขนาดเล็ก: ทำซ้ำกันมากที่สุด",
+        "agency_count": 9,
+        "parent_body_count": 5,
+        "summary_th": "แหล่งต้นทางระบุว่าสระน้ำ ฝาย และแหล่งน้ำชุมชนอาจถูกพัฒนาโดยหลายหน่วยงานในพื้นที่ใกล้กัน และชี้ปัญหาการบำรุงรักษาหลังส่งมอบให้ อปท.",
+        "agency_tokens_verbatim": [
+          "สำนักงาน กปร.",
+          "กรมชลประทาน",
+          "กรมพัฒนาที่ดิน",
+          "ส.ป.ก.",
+          "กรมทรัพยากรน้ำ",
+          "กรมน้ำบาดาล",
+          "สถ.",
+          "อปท.",
+          "บทพ."
+        ],
+        "status": "source_claim"
+      },
+      {
+        "id": "water_supply",
+        "title_th": "น้ำประปา: สองมาตรฐานเมือง-ชนบท",
+        "agency_count": 9,
+        "parent_body_count": 4,
+        "summary_th": "แหล่งต้นทางแยกบทบาทประปาเมืองของ กปน./กปภ. ออกจากประปาหมู่บ้านที่เกี่ยวข้องกับ อปท. และหน่วยงานสนับสนุนด้านระบบ น้ำบาดาล และคุณภาพน้ำ",
+        "agency_tokens_verbatim": [
+          "กรมทรัพยากรน้ำ",
+          "กรมน้ำบาดาล",
+          "กปน.",
+          "กปภ.",
+          "สถ.",
+          "อปท.",
+          "East Water",
+          "กนอ.",
+          "กรมอนามัย"
+        ],
+        "status": "source_claim"
+      }
+    ]
+  },
+  "verified_anchors": [
+    {
+      "id": "nwc",
+      "name_th": "คณะกรรมการทรัพยากรน้ำแห่งชาติ (กนช.)",
+      "verified": true,
+      "verification_note": "พ.ร.บ.ทรัพยากรน้ำ พ.ศ. 2561 มาตรา 9 จัดให้มี กนช. และกำหนดให้นายกรัฐมนตรีเป็นประธาน",
+      "official_sources": [
+        "https://twuo.onwr.go.th/storage/data/type_22/158529_1689566916.pdf"
+      ]
+    },
+    {
+      "id": "onwr",
+      "name_th": "สำนักงานทรัพยากรน้ำแห่งชาติ (สทนช.)",
+      "name_en": "Office of the National Water Resources",
+      "verified": true,
+      "parent_th": "สำนักนายกรัฐมนตรี",
+      "roles": [
+        "ฝ่ายเลขานุการ/หน่วยกลางเชิงบูรณาการของคณะกรรมการทรัพยากรน้ำแห่งชาติ",
+        "สนับสนุนการจัดทำและบูรณาการแผนปฏิบัติการด้านทรัพยากรน้ำและงบประมาณ",
+        "สนับสนุนการประสานงานระดับลุ่มน้ำและภาวะวิกฤตตามกรอบกฎหมาย"
+      ],
+      "official_sources": [
+        "https://twuo.onwr.go.th/storage/data/type_22/158529_1689566916.pdf",
+        "https://onwr4.onwr.go.th/wp-content/uploads/2025/04/TWP-%E0%B8%84%E0%B8%B9%E0%B9%88%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%88%E0%B8%B1%E0%B8%94%E0%B8%97%E0%B8%B3%E0%B9%81%E0%B8%9C%E0%B8%99%E0%B8%9B%E0%B8%8F%E0%B8%B4%E0%B8%9A%E0%B8%B1%E0%B8%95%E0%B8%B4%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%94%E0%B9%89%E0%B8%B2%E0%B8%99%E0%B8%97%E0%B8%A3%E0%B8%B1%E0%B8%9E%E0%B8%A2%E0%B8%B2-2.pdf"
+      ]
+    },
+    {
+      "id": "basin_committees",
+      "name_th": "คณะกรรมการลุ่มน้ำ",
+      "verified": true,
+      "basin_count": 22,
+      "verification_note": "เอกสาร สทนช. อ้างอิงพระราชกฤษฎีกากำหนดลุ่มน้ำ พ.ศ. 2564 ซึ่งแบ่งลุ่มน้ำของประเทศไทยเป็น 22 ลุ่มน้ำ",
+      "official_sources": [
+        "https://snwrc.onwr.go.th/wp-content/uploads/2025/04/%E0%B8%84%E0%B8%B9%E0%B9%88%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B9%84%E0%B8%94%E0%B9%89%E0%B8%A1%E0%B8%B2%E0%B8%8B%E0%B8%B6%E0%B9%88%E0%B8%87%E0%B8%81%E0%B8%A3%E0%B8%A3%E0%B8%A1%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%A5%E0%B8%B8%E0%B9%88%E0%B8%A1%E0%B8%99%E0%B9%89%E0%B8%B3%E0%B8%AF-%E0%B8%9B%E0%B8%A3%E0%B8%B1%E0%B8%9A%E0%B8%9B%E0%B8%A3_compressed.pdf"
+      ]
+    },
+    {
+      "id": "rid",
+      "name_th": "กรมชลประทาน",
+      "verified": true,
+      "roles": [
+        "บริหารจัดการน้ำเพื่อการเกษตร อุปโภคบริโภค อุตสาหกรรม การคมนาคมทางน้ำ พลังงาน และระบบนิเวศในภารกิจชลประทาน",
+        "ป้องกันและบรรเทาภัยอันเกิดจากน้ำในขอบเขตภารกิจ"
+      ],
+      "official_sources": [
+        "https://www2.rid.go.th/web-upload/1xff0d34e409a13ef56eea54c52a291126/202506/m_page/7/49/file_download/c8ed7b1c85fbd197e5f204e491a96d34.pdf"
+      ]
+    },
+    {
+      "id": "dwr",
+      "name_th": "กรมทรัพยากรน้ำ",
+      "verified": true,
+      "roles": [
+        "พัฒนา อนุรักษ์ ฟื้นฟู และบริหารจัดการทรัพยากรน้ำตามภารกิจกรม",
+        "จัดทำข้อมูล มาตรฐาน เฝ้าระวัง และเตือนภัยที่เกี่ยวข้อง"
+      ],
+      "official_sources": [
+        "https://www.dwr.go.th/QAndA.php"
+      ]
+    },
+    {
+      "id": "tmd",
+      "name_th": "กรมอุตุนิยมวิทยา",
+      "verified": true,
+      "roles": [
+        "ตรวจอากาศ พยากรณ์อากาศ และออกคำเตือนภัยธรรมชาติทางอุตุนิยมวิทยา"
+      ],
+      "official_sources": [
+        "https://tmd.go.th/department/core-mission"
+      ]
+    },
+    {
+      "id": "gistda",
+      "name_th": "สำนักงานพัฒนาเทคโนโลยีอวกาศและภูมิสารสนเทศ (องค์การมหาชน)",
+      "short_name": "GISTDA",
+      "verified": true,
+      "roles": [
+        "ติดตามและเผยแพร่ข้อมูลพื้นที่น้ำท่วมจากข้อมูลดาวเทียม/ภูมิสารสนเทศ"
+      ],
+      "official_sources": [
+        "https://www.gistda.or.th/th/news-category/situation/water-situation/",
+        "https://disaster.gistda.or.th/landing/services"
+      ]
+    }
+  ],
+  "unresolved_abbreviations_preserved_verbatim": [
+    "ทร.",
+    "ยธ.",
+    "วท.",
+    "บทพ."
+  ],
+  "historical_cross_check": {
+    "note": "งานวิชาการในอดีตเคยรายงานโครงสร้างงานน้ำ 38 หน่วยงานใน 10 กระทรวงในช่วงเวลาศึกษาหนึ่ง จึงสนับสนุนเพียงว่าระบบมีหลายหน่วยงาน แต่ไม่ยืนยันตัวเลข 38/12 ของอินโฟกราฟิกปัจจุบัน",
+    "source": "https://so03.tci-thaijo.org/index.php/papojournal/article/view/260568"
+  },
+  "operational_rule": "FloodConnect should route live incident interpretation through verified operational sources already registered in sources/registry.yaml. This governance map is explanatory context only."
+}
