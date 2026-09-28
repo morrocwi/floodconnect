@@ -113,6 +113,29 @@ def _truth(value: Any) -> Optional[bool]:
     return None
 
 
+def _requirement_truth(node: dict[str, Any], field: str) -> Optional[bool]:
+    """Resolve one non-Dry-Gate requirement.
+
+    Explicit node state wins. If the field is otherwise UNKNOWN/missing, a tool/resource
+    deployment may satisfy it only through explicit verified capability evidence with
+    freshness, operability, capacity and planning-horizon coverage all confirmed.
+    """
+    direct = _truth(node.get(field))
+    if direct is not None:
+        return direct
+
+    evidence = (node.get("verified_tool_capabilities") or {}).get(field)
+    if not isinstance(evidence, dict):
+        return None
+
+    required = ("verified", "fresh", "operable", "capacity_ok", "horizon_ok")
+    if any(evidence.get(k) is False for k in required):
+        return False
+    if all(evidence.get(k) is True for k in required):
+        return True
+    return None
+
+
 def evaluate_shelter_operation(node: dict[str, Any]) -> ShelterOperationResult:
     """Return highest defensible shelter-operation level under cumulative hard gates."""
 
@@ -143,7 +166,7 @@ def evaluate_shelter_operation(node: dict[str, Any]) -> ShelterOperationResult:
         level_failed = []
         level_unknown = []
         for field in LEVEL_REQUIREMENTS[level]:
-            value = _truth(node.get(field))
+            value = _requirement_truth(node, field)
             if value is False:
                 level_failed.append(field)
             elif value is None:
