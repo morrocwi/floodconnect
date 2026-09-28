@@ -1,18 +1,28 @@
 import convergence_board as cb
 
 
+def l0_candidate(node_id, distance, **overrides):
+    data = {
+        "node_id": node_id,
+        "distance_to_affected_m": distance,
+        "dry_operating_surface": True,
+        "dry_status_verified": True,
+        "dry_status_fresh": True,
+        "immediate_site_hazard_safe": True,
+        "drainage_not_blocking_operation": True,
+        "provider_access_verified": True,
+        "community_distribution_access_verified": True,
+        "communications_available": True,
+        "basic_first_aid_access": True,
+    }
+    data.update(overrides)
+    return data
+
+
 def test_selects_nearest_verified_dry_shared_interface():
     result = cb.select_nearest_dry_interface([
-        {
-            "node_id": "q_far", "dry": True, "verified": True, "fresh": True,
-            "provider_reachable": True, "community_reachable": True,
-            "distribution_feasible": True, "distance_to_affected_m": 900,
-        },
-        {
-            "node_id": "q_near", "dry": True, "verified": True, "fresh": True,
-            "provider_reachable": True, "community_reachable": True,
-            "distribution_feasible": True, "distance_to_affected_m": 300,
-        },
+        l0_candidate("q_far", 900),
+        l0_candidate("q_near", 300),
     ])
     assert result.state == cb.SELECTED
     assert result.node_id == "q_near"
@@ -21,16 +31,8 @@ def test_selects_nearest_verified_dry_shared_interface():
 
 def test_closer_wet_node_is_not_candidate():
     result = cb.select_nearest_dry_interface([
-        {
-            "node_id": "wet", "dry": False, "verified": True, "fresh": True,
-            "provider_reachable": True, "community_reachable": True,
-            "distribution_feasible": True, "distance_to_affected_m": 100,
-        },
-        {
-            "node_id": "dry", "dry": True, "verified": True, "fresh": True,
-            "provider_reachable": True, "community_reachable": True,
-            "distribution_feasible": True, "distance_to_affected_m": 400,
-        },
+        l0_candidate("wet", 100, dry_operating_surface=False),
+        l0_candidate("dry", 400),
     ])
     assert result.state == cb.SELECTED
     assert result.node_id == "dry"
@@ -38,16 +40,8 @@ def test_closer_wet_node_is_not_candidate():
 
 def test_unknown_candidate_prevents_false_nearest_claim():
     result = cb.select_nearest_dry_interface([
-        {
-            "node_id": "known", "dry": True, "verified": True, "fresh": True,
-            "provider_reachable": True, "community_reachable": True,
-            "distribution_feasible": True, "distance_to_affected_m": 500,
-        },
-        {
-            "node_id": "maybe_closer", "dry": True, "verified": None, "fresh": True,
-            "provider_reachable": True, "community_reachable": True,
-            "distribution_feasible": True, "distance_to_affected_m": 100,
-        },
+        l0_candidate("known", 500),
+        l0_candidate("maybe_closer", 100, dry_status_verified=None),
     ])
     assert result.state == cb.UNKNOWN
 
