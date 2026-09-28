@@ -56,7 +56,7 @@ The routing layer is deliberately fail-closed: **UNKNOWN, stale, blocked, or unv
 It does not create a flood-risk score or declare a place safe from map proximity alone. An external target must
 be field-verified, fresh, explicitly `SAFE`, have enough declared capacity, and provide any required services.
 
-### Shelter decision + community sustainment (proposal)
+### Shelter decision + community sustainment
 
 FloodConnect now has a proposal layer for the question that comes **before** evacuation:
 what is the **lowest support node at which the household/community can still remain safe and
@@ -64,16 +64,23 @@ function for a declared planning horizon**?
 
 The repo-specific construct is **Lowest Viable Community Node (LVCN)**:
 
-`household → buddy_cell → zone → internal/community shelter → egress → external_safe`
+`household → buddy_cell → zone → internal/community shelter → external_safe`
+
+`egress` remains a movement connector and is not an LVCN candidate. Resource/help delivery is
+a separate support network, because supplies/helpers can move inward while residents stay put.
 
 The aim is to preserve safe self-sustainment at the lowest feasible layer, not to move people
 to a shelter earlier than necessary. It also introduces the states `STAY_AND_SUSTAIN`,
 `RESUPPLY_WINDOW`, `PREPARE_TO_MOVE`, shelter screening/operation, and
 return/relocation/closure.
 
+- Decision engine: `shelter_decision.py`
 - Design + research anchors: `docs/SHELTER_DECISION_AND_COMMUNITY_SUSTAINMENT.md`
+- Thailand-first equations/typology: `docs/THAI_DISTRIBUTED_LIFELINE_CONVERGENCE.md`
 - AI implementation handoff: `docs/HANDOFF_SHELTER_DECISION_AND_SUSTAINMENT.md`
-- Proposal-only policy skeleton: `site/inputs/community/sustainment_policy.yaml`
+- Operational fail-closed schema: `site/inputs/community/sustainment_policy.yaml`
+- Field failure modes: `site/inputs/community/shelter_field_evidence_2026-09-28.md`
+- Tests: `tests/test_shelter_decision.py`
 
 **LVCN is a FloodConnect proposal, not a claimed FEMA/Sphere/UNHCR/CCCM standard.**
 The design remains fail-closed: no universal stock-duration default, no weighted safety score,
