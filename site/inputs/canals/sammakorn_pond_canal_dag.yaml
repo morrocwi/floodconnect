@@ -178,3 +178,37 @@ sources:
     project_code: "0412002-55-30"
   historical_connected_ponds:
     note: BMA-era reporting described the large Sammakorn ponds as connected before completion of the monkey-cheek project
+
+
+functional_architecture:
+  status: working_hypothesis
+  pattern: three_capture_interfaces_one_terminal_outlet
+  inlet_side:
+    - station: ST.SPS.04
+      source:
+        - road_internal_drainage
+        - khlong_saphan_sung_side
+      destination: sammakorn_pond_1
+      confidence: medium
+      status: capture_role_supported_exact_pump_direction_unverified
+    - station: ST.SPS.03
+      source:
+        - road_internal_drainage
+      destination: sammakorn_pond_2
+      confidence: medium
+      status: capture_role_supported_exact_pump_direction_unverified
+    - station: ST.SPS.02
+      source:
+        - khlong_ban_ma_side
+      destination: sammakorn_pond_4
+      confidence: low_to_medium
+      status: working_hypothesis_direction_unverified
+  storage:
+    node: sammakorn_legacy_interconnected_ponds
+    pairwise_geometry: unknown
+  outlet_side:
+    - station: ST.SPS.01
+      source: sammakorn_interconnected_storage_network
+      destination: khlong_saen_saep
+      confidence: high_working_hypothesis
+      status: main_terminal_outlet_model
