@@ -189,6 +189,42 @@ operational_resource_graph:
     weighted_score: false
 
 
+public_shelter_seed_strategy:
+  id: PSSS
+  name: "Public Shelter Seed Strategy"
+  module: "public_shelter_seed.py"
+  registry: "site/inputs/community/public_shelter_seeds.yaml"
+  claimed_global_standard: false
+  purpose: "discover public facilities that can be upgraded quickly using existing infrastructure"
+  hard_rules:
+    - "facility type is discovery metadata only"
+    - "Dry Gate / SO-L0 must be confirmed before shelter-seed admission"
+    - "hospital and primary-health-centre default roles are health support, not general shelter"
+    - "official designation is required before a hospital enters general-shelter selection"
+    - "final selection uses verified capability gaps, not archetype preference"
+  discovery_order:
+    - public_school
+    - public_sports_youth_center
+    - district_municipal_office
+    - primary_health_center
+    - hospital
+  selection:
+    target_level_default: "SO_L3_OVERNIGHT_SHELTER"
+    weighted_score: false
+    lexicographic_order:
+      - fewer_failed_hard_requirements_to_target
+      - fewer_unknown_hard_requirements_to_target
+      - verified_two_sided_access
+      - shorter_declared_distance_to_affected_area
+  cluster_pattern:
+    logistics_information: district_municipal_office
+    main_shelter_seed: public_school
+    overflow_large_hall: public_sports_youth_center
+    health_support: primary_health_center
+    critical_referral: hospital
+  lvcn_relation: "PSSS chooses a physical candidate; LVCN independently determines whether people need to use that node"
+
+
 shelter_operation_ladder:
   id: SOCL
   name: "Shelter Operation Capability Ladder"
