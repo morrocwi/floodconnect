@@ -431,46 +431,35 @@ KNOWN_VIABLE_UPPER_BOUND
 
 not an exact LVCN.
 
-## 10. Protective-action typology
+## 10. Operational response patterns from the unified state
 
-The same framework supports different Thai flood forms without one universal action.
+This document previously used T0-T5 as a protective-action typology. Those labels are now treated as examples of **where a missing function is resolved**, not as mutually exclusive crisis types.
 
-### T0 — SELF
-Home is physically safe and essential margins are non-negative.
+The canonical executable state is now:
 
-Action class: `STAY_AND_SUSTAIN`.
+`Z_i(t,T) = (O, F, M, S, E, H, A, P)`
 
-### T1 — MUTUAL AID
-Home remains physically safe but one or more essential gaps can be closed by a verified
-buddy/support path.
+and response patterns are derived from that state:
 
-Action class: keep residents in place; move the missing function inward.
+- `STAY_SUSTAIN` — occupancy viable, functions intact;
+- `STAY_PREPARE` — viable now, forward hazard elevated;
+- `RESUPPLY` — safe self-resupply window exists;
+- `DELIVER_INWARD` — move the missing function toward residents;
+- `ESCALATE_SUPPORT` — household/buddy/zone cannot yet close the gap;
+- `MOVE` — occupancy non-viable and verified independent movement exists;
+- `ASSISTED_EVACUATION` — occupancy non-viable but self-movement/animal movement/destination is not verified;
+- `SHELTER_OPERATION` — occupied shelter passes current hard constraints;
+- `SHELTER_INTERVENTION_RELOCATION` — shelter itself loses a hard constraint;
+- `RECOVERY_RETURN` — recovery-phase constraints are verified;
+- `VERIFY` / `VERIFY_PREPARE` — critical evidence remains unknown.
 
-### T2 — ZONE / MICRO-HUB
-Several households need pooled water, charging, food, medicine, communication or local transport.
+Old T0-T5 descriptions can still be read as support-depth examples:
 
-Action class: distribute functions through the zone; people need not sleep at the hub.
+`self -> buddy -> zone -> civic/private bridge -> public transfer -> external shelter`
 
-### T3 — CIVIC / PRIVATE BRIDGE
-A dry-area kitchen, foundation, religious/community organisation, business or volunteer logistics
-node has capacity that can cross the flood boundary through a verified path.
+but they are no longer the primary typology.
 
-Action class: last-mile support inward.
-
-### T4 — PUBLIC TRANSFER / ASSISTED MOBILITY
-Local support cannot close a hard deficit, but responders can reach a transfer node or perform
-assisted movement.
-
-Action class: `PREPARE_TO_MOVE` / `REQUEST_ASSISTED_EVACUATION`.
-
-### T5 — FULL EXTERNAL SHELTER
-Occupancy safety fails or essential functions cannot be restored locally and a verified route to a
-fully screened shelter exists.
-
-Action class: `EVACUATE_ROUTE`.
-
-The classes describe **where the missing function is resolved**, not a social ranking.
-
+This prevents new dimensions such as environmental degradation, assistance animals or livestock from requiring new numbered crisis types. They modify the state vector and therefore the derived response pattern.
 ## 11. Convergence: community and state move toward each other
 
 Let (r_g) be the lowest functional layer currently reachable from inside the community and
