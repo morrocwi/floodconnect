@@ -154,6 +154,48 @@ convergence_feasibility:
       - route_interface_ledger
     rule: "rotating coordinators may operate the ledgers; losing one person must not erase shared operational state"
 
+convergence_board:
+  id: LCB
+  name: "Local Convergence Board"
+  module: "convergence_board.py"
+  provenance: "FloodConnect TDLC concrete field primitive"
+  claimed_global_standard: false
+  command_hierarchy_required: false
+  automatic_dispatch: false
+  interface_selection:
+    purpose: "nearest verified dry transfer/distribution interface shared by provider and community sides"
+    hard_predicates:
+      - dry_true
+      - verified_true
+      - fresh_true
+      - provider_reachable_true
+      - community_reachable_true
+      - distribution_feasible_true
+    nearest_metric: "declared distance_to_affected_m"
+    equation: "q* = argmin_{q in Q_dry} d(q, affected_zone)"
+    fail_closed_rule: "if an otherwise-eligible candidate has unresolved hard evidence or comparable distance, exact nearest = UNKNOWN"
+  kanban:
+    lanes: [NEED, SUPPLY, ROUTE]
+    principle: "shared state, not central command"
+    card_states: [OPEN, CLAIMED, DONE, BLOCKED]
+    need_fields:
+      required: [card_id, zone_id, resource, quantity, updated_at]
+      optional: [needed_by, state]
+    supply_fields:
+      required: [card_id, provider_id, resource, quantity, at_node, updated_at]
+      optional: [modes, state]
+    route_fields:
+      required: [card_id, from_node, to_zone, status, verified, fresh, updated_at]
+      optional: [modes, bottleneck_capacity, travel_time_h, state]
+  privacy:
+    public_board: "aggregate operational references only"
+    prohibited_public_fields: [name, full_name, phone, diagnosis, exact_address, house_number, room_number, personal_id]
+  non_inference_rules:
+    - "card presence is not proof of delivery"
+    - "supply card is not proof that a need is covered"
+    - "route card must be fresh and verified before operational use"
+    - "FloodConnect may surface candidate matches but does not assign authority or fabricate dispatch"
+
 resupply_window:
   automatic_travel_instruction: false
   requires:
