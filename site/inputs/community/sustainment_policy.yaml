@@ -232,10 +232,11 @@ human_animal_household_unit:
     rule: "lack of carrier/transport equipment does not make a physically safe home non-sustainable"
 
   movement_readiness:
-    fields:
+    hard_fields:
       - animal_containment_transport
-      - animal_identification_records
       - animal_transport_capacity_verified
+    advisory_fields:
+      - animal_identification_records
     assistance_animal_conditional:
       - assistance_animal_handler_continuity
     states: [READY, NOT_READY, UNKNOWN]
@@ -321,6 +322,7 @@ unified_crisis_state:
     - ESCALATE_SUPPORT
     - MOVE
     - ASSISTED_EVACUATION
+    - SHELTER_OPERATION
     - SHELTER_INTERVENTION_RELOCATION
     - RECOVERY_RETURN
     - VERIFY_PREPARE
