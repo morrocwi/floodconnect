@@ -34,4 +34,6 @@ jobs:
       - name: Compile
         run: python -m py_compile community_dag.py shelter_decision.py
       - name: Run community + shelter tests
+        env:
+          PYTHONPATH: .
         run: pytest -q tests/test_community_dag.py tests/test_shelter_decision.py
