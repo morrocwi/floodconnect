@@ -248,6 +248,77 @@ This avoids a false precision problem: the network can be historically interconn
 when the pairwise pipe map is unknown.
 
 
+## Working hydraulic architecture — three capture interfaces, one terminal outlet
+
+The current functional hypothesis is:
+
+```text
+                 EAST / SAPHAN SUNG
+road + Saphan Sung overflow
+             |
+             v
+        ST.SPS.04
+             |
+             v
+          Pond 1
+             \
+              \
+               +--------------------+
+                                    |
+ROAD / INTERNAL DRAINAGE            |
+             |                      |
+             v                      |
+        ST.SPS.03                   |
+             |                      |
+             v                      |
+       Pond 2 / CENTRAL ------------+----> interconnected pond network
+                                    |
+                                    |
+REAR / SOUTH / BAN MA               |
+Khlong Ban Ma                       |
+             |                      |
+             v                      |
+        ST.SPS.02                   |
+             |                      |
+             v                      |
+          Pond 4 -------------------+
+                                    |
+                                    | central outlet connection
+                                    v
+                               ST.SPS.01
+                            4.0 m3/s terminal
+                                    |
+                                    v
+                              KHLONG SAEN SAEP
+```
+
+Interpretation:
+
+- **ST.SPS.01**: strongest role assignment — main terminal **outlet** from the Sammakorn
+  storage network to the Saen Saep side.
+- **ST.SPS.04**: eastern **capture/inlet-side** station serving Pond 1 from road drainage
+  and the Khlong Saphan Sung side. Exact hydraulic actuator/direction remains a working
+  hypothesis until as-built confirmation.
+- **ST.SPS.03**: central **capture/inlet-side** station serving Pond 2 from road/internal
+  drainage. Exact pipe route remains unresolved.
+- **ST.SPS.02**: rear/southern Ban Ma-side interface serving Pond 4. Current working
+  hypothesis favors **capture from the Ban Ma side into Pond 4**, but this has lower
+  confidence than the ST.SPS.01 outlet role and remains unresolved without the pump
+  plan/section or as-built drawing.
+
+This yields a **3-in / 1-out** functional model:
+
+```text
+ST.SPS.04 -> Pond 1 \
+ST.SPS.03 -> Pond 2  > interconnected storage -> ST.SPS.01 -> Saen Saep
+ST.SPS.02 -> Pond 4 /
+```
+
+The internal pond-to-pond connection geometry is not yet mapped. "Interconnected storage"
+means hydraulic system connectivity, not a claim that every pond has a direct pipe to the
+central pond.
+
+
 ## Gate semantics
 
 A gate at a pond station is a control structure, but its exact hydraulic side must not be
