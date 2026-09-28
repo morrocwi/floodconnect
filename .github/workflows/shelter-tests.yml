@@ -1,0 +1,37 @@
+name: Shelter decision tests
+
+on:
+  pull_request:
+    paths:
+      - "community_dag.py"
+      - "shelter_decision.py"
+      - "site/inputs/community/**"
+      - "tests/test_community_dag.py"
+      - "tests/test_shelter_decision.py"
+      - ".github/workflows/shelter-tests.yml"
+  push:
+    branches: [main]
+    paths:
+      - "community_dag.py"
+      - "shelter_decision.py"
+      - "site/inputs/community/**"
+      - "tests/test_community_dag.py"
+      - "tests/test_shelter_decision.py"
+      - ".github/workflows/shelter-tests.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pyyaml pytest
+      - name: Compile
+        run: python -m py_compile community_dag.py shelter_decision.py
+      - name: Run community + shelter tests
+        run: pytest -q tests/test_community_dag.py tests/test_shelter_decision.py
