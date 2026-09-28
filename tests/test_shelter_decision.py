@@ -489,3 +489,90 @@ def test_unknown_dependency_link_stays_unknown():
     result = sd.evaluate_dependency_coverage(profile)
     assert result.admitted is False
     assert result.state == "DEPENDENCY_COVERAGE_UNKNOWN"
+
+
+def test_child_with_older_only_is_flagged_but_not_declared_unsafe():
+    profile = {
+        "total_persons": 2,
+        "child_0_5": 1,
+        "older_adult_60_plus": 1,
+        "adult_18_59": 0,
+        "living_arrangement": "PAIR",
+    }
+    result = sd.classify_group_configuration(profile)
+    assert result.admitted is True
+    assert "CHILD_WITH_OLDER_ONLY" in result.details["composition_tags"]
+    assert result.state == "GROUP_CONFIGURATION_CLASSIFIED"
+
+
+def test_two_older_adults_are_not_assumed_to_be_helpers():
+    profile = {
+        "total_persons": 2,
+        "older_adult_60_plus": 2,
+        "needs_mobility_assistance": 1,
+        "older_adult_support_link_uncovered": 0,
+        "mobility_support_link_uncovered": "UNKNOWN",
+    }
+    result = sd.evaluate_dependency_coverage(profile)
+    assert result.admitted is False
+    assert result.state == "DEPENDENCY_COVERAGE_UNKNOWN"
+    assert "mobility_support_link_uncovered" in result.details["unknown_links"]
+
+
+def test_single_caregiver_with_child_requires_backup_link():
+    profile = {
+        "total_persons": 2,
+        "child_0_5": 1,
+        "adult_18_59": 1,
+        "single_caregiver_household": 1,
+        "child_caregiver_link_uncovered": 0,
+        "backup_caregiver_link_uncovered": 1,
+    }
+    required = sd.required_support_links(profile)
+    assert "child_caregiver_link_uncovered" in required
+    assert "backup_caregiver_link_uncovered" in required
+    result = sd.evaluate_dependency_coverage(profile)
+    assert result.state == "DEPENDENCY_SUPPORT_GAP"
+
+
+def test_pregnant_person_living_alone_requires_support_and_buddy_checks():
+    profile = {
+        "total_persons": 1,
+        "pregnant_person": 1,
+        "living_arrangement": "ALONE",
+        "pregnancy_support_link_uncovered": 0,
+        "living_alone_buddy_link_uncovered": 0,
+    }
+    required = sd.required_support_links(profile)
+    assert "pregnancy_support_link_uncovered" in required
+    assert "living_alone_buddy_link_uncovered" in required
+    result = sd.evaluate_dependency_coverage(profile)
+    assert result.admitted is True
+
+
+def test_medically_dependent_person_alone_requires_medical_and_buddy_links():
+    profile = {
+        "total_persons": 1,
+        "chronic_or_acute_illness": 1,
+        "needs_time_critical_medical_followup": 1,
+        "medical_support_link_uncovered": 0,
+        "living_alone_buddy_link_uncovered": 0,
+    }
+    required = sd.required_support_links(profile)
+    assert "medical_support_link_uncovered" in required
+    assert "living_alone_buddy_link_uncovered" in required
+
+
+def test_multigenerational_household_tag_does_not_assume_support_capacity():
+    profile = {
+        "total_persons": 4,
+        "child_0_5": 1,
+        "adult_18_59": 2,
+        "older_adult_60_plus": 1,
+        "living_arrangement": "MULTIGENERATIONAL",
+        "child_caregiver_link_uncovered": "UNKNOWN",
+    }
+    result = sd.classify_group_configuration(profile)
+    assert "MULTIGENERATIONAL" in result.details["composition_tags"]
+    coverage = sd.evaluate_dependency_coverage(profile)
+    assert coverage.state == "DEPENDENCY_COVERAGE_UNKNOWN"
