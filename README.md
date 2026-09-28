@@ -97,6 +97,10 @@ return/relocation/closure.
 - Shelter operation capability ladder: `shelter_operation_ladder.py`
 - Shelter ladder evidence: `docs/SHELTER_OPERATION_CAPABILITY_LADDER.md`
 - Shelter ladder tests: `tests/test_shelter_operation_ladder.py`
+- Operational tool registry: `site/inputs/community/operational_tools.yaml`
+- Operational resource capability evidence: `operational_resources.py`
+- Operational resource capability graph: `docs/OPERATIONAL_RESOURCE_CAPABILITY_GRAPH.md`
+- Tool/resource tests: `tests/test_operational_tools_registry.py`, `tests/test_operational_resources.py`
 
 **Shelter-operation hard rule:** NO verified dry operating footprint -> NO shelter-operation level. `SO-L0_DRY_INTERFACE` is the minimum physical node; higher levels cumulatively add transfer, day-support, overnight, and full-shelter capabilities.
 
