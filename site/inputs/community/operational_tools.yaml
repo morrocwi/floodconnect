@@ -13,6 +13,35 @@ principles:
   - "tools may enable node capabilities, edge capabilities, or both"
   - "route/site hard safety gates always dominate tool capability"
 
+tool_node_schema:
+  kind: tool_node
+  graph: operational_resource_graph
+  spatial_layer: null
+  may_attach_to: [node, edge]
+  required_instance_fields: [tool_id, verified, fresh, operable]
+  optional_instance_fields: [count, at_node, on_edge, operator_qualified, capacity, capacity_unit, usable_until]
+  routing_rule: "tool_node is not a movement/shelter destination by itself"
+  capability_rule: "type declares possible capability; concrete verified deployment declares usable capability"
+
+capability_cascade:
+  equation: "tool_deployment -> delta_capability(node_or_edge) -> {movement, lifeline_convergence, local_convergence_board, shelter_operation, human_animal}"
+  reverse_equation: "tool_loss -> capability_loss -> node_downgrade_or_edge_loss -> possible_LVCN_escalation"
+  hard_boundaries:
+    - "tool capability never overrides Dry Gate"
+    - "vehicle/watercraft type never overrides route safety"
+    - "capacity/horizon must be adequate before satisfying a shelter hard requirement"
+    - "operator qualification remains a separate hard condition where required"
+
+evidence:
+  thai_ddpm:
+    rescue_equipment_catalog: "https://catalog.disaster.go.th/en/dataset/dpm-gd003"
+    equipment_gis: "https://gis-portal.disaster.go.th/arcgis/rest/services/Map116/DPM_rescue_equipment_DSS/MapServer/0"
+    equipment_training: "https://elearning.disaster.go.th/subjects/SJ66-00067"
+  global:
+    fema_resource_typing: "https://preptoolkit.fema.gov/web/national-resource-hub/resource-typing"
+    fema_swiftwater_team: "https://rtlt.preptoolkit.fema.gov/Public/Resource/View/8-508-1020"
+    cdc_floodwater_vehicle_safety: "https://www.cdc.gov/floods/safety/floodwater-after-a-disaster-or-emergency-safety.html"
+
 tools:
   standard_passenger_car:
     category: vehicle
