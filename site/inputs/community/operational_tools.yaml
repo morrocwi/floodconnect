@@ -70,6 +70,36 @@ tools:
     requires_qualified_operator: false
     floodwater_entry: PROHIBITED_BY_DEFAULT
 
+
+  evacuation_transport_truck:
+    category: vehicle
+    label: "Dedicated evacuation / disaster transport truck"
+    provides: [multi_person_transport, assisted_evacuee_transport, relief_cargo_transport]
+    edge_effect: [verified_evacuation_transport]
+    requires_qualified_operator: true
+    floodwater_entry: "MISSION_AND_ROUTE_SPECIFIC"
+
+  mobile_drinking_water_truck:
+    category: mobile_service
+    label: "Mobile drinking-water production/supply truck"
+    provides: [potable_water, drinking_water_for_workers, bulk_drinking_water_supply]
+    node_effect: [potable_water, drinking_water_for_workers]
+    requires_qualified_operator: true
+
+  mobile_cooking_truck:
+    category: mobile_service
+    label: "Mobile cooking / food-production truck"
+    provides: [safe_food_preparation_or_provision, bulk_meal_production]
+    node_effect: [safe_food_preparation_or_provision]
+    requires_qualified_operator: true
+
+  mobile_power_lighting_truck:
+    category: mobile_service
+    label: "Mobile power / lighting truck"
+    provides: [critical_power_if_required, charging_power, basic_lighting_or_daylight, night_lighting]
+    node_effect: [critical_power_if_required, basic_lighting_or_daylight, night_lighting]
+    requires_qualified_operator: true
+
   powered_rescue_boat:
     category: watercraft
     label: "Powered flood/rescue boat"
@@ -81,7 +111,7 @@ tools:
   inflatable_rescue_boat:
     category: watercraft
     label: "Inflatable rescue boat"
-    provides: [waterborne_person_transport, assisted_evacuuee_transport, patient_transport_if_fitted, animal_transport]
+    provides: [waterborne_person_transport, assisted_evacuee_transport, patient_transport_if_fitted, animal_transport]
     edge_effect: [verified_water_route_mobility]
     requires_qualified_operator: true
     floodwater_entry: "MISSION_TYPED_WATERCRAFT_REQUIRED"
