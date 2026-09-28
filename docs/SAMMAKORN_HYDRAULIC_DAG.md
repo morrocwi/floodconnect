@@ -201,9 +201,6 @@ Working topology:
                                   | NEW / IMPROVED CONVEYANCE
                                   | exact route unresolved
                                   v
-                         Khlong Ban Ma 2 corridor
-                                  |
-                                  v
                              ST.SPS.01
                          4.0 m3/s terminal
                                   |
@@ -230,7 +227,7 @@ Supported:
 
 ```text
 Pond system = interconnected
-Pond system -> new/improved outlet corridor -> ST.SPS.01 -> Saen Saep
+Pond system -> central outlet connection -> ST.SPS.01 -> Saen Saep
 ```
 
 Still unresolved:
@@ -434,3 +431,37 @@ used as proof of inlet pumping.
 - BMA PumpHistory live station table:
   https://weather.bangkok.go.th/Station/PumpHistory
   (28 Sep 2026 table rows ST.SPS.01–04 provide the exact code/name mapping.)
+
+
+## Aggregate Sammakorn water-level observation
+
+BMA water station detail:
+
+`https://weather.bangkok.go.th/water/StationDetail?id=284`
+
+is treated in FloodConnect as the **whole-village / aggregate Sammakorn water-level
+observation** supplied by the user.
+
+Graph semantics:
+
+```text
+                  ┌──────────────────────────────┐
+                  │ interconnected pond network │
+                  │       Sammakorn storage     │
+                  └──────────────┬───────────────┘
+                                 │ observed by
+                                 v
+                     BMA water station id=284
+                         H_sammakorn(t)
+                                 │
+                                 ├── compare with Saen Saep level
+                                 ├── compare with road elevation
+                                 └── evaluate drawdown / storage trend
+```
+
+This is an **observation node**, not a hydraulic flow edge.
+
+Use `H_sammakorn(t)` as a system-level proxy for the connected storage network, with an
+important caveat: interconnected ponds can still have temporary local head differences while
+pumps, gates, pipes or culverts are operating. Therefore the station must not be interpreted
+as proving that every pond has exactly the same instantaneous water level.
