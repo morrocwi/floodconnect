@@ -326,3 +326,18 @@ disagree; this system shows the disagreement as an explicit contradictions secti
 never resolves it). Full pipeline diagram, the trust-tier vocabulary, the host-safety
 rule, and how to add a new source: **`docs/DATA_SYSTEM.md`** (Thai-first, English
 summary at the end).
+
+## Sammakorn pond–canal hydraulic DAG
+
+FloodConnect now separates the Sammakorn pond/canal interface into two different hydraulic edges:
+
+```text
+CANAL/DRAIN --[GATE + GRAVITY]--> POND
+POND        --[PUMP]-----------> RECEIVING CANAL
+```
+
+- Human-readable model: `docs/SAMMAKORN_POND_CANAL_DAG.md`
+- Machine-readable topology: `site/inputs/canals/sammakorn_pond_canal_dag.yaml`
+
+Key rule: **“draw water into the pond” does not automatically mean “pump into the pond.”**
+Current evidence supports controlled/gravity inflow into storage and verified pumped outflow from Sammakorn pump stations 1–4. Exact gate geometry and the station-to-specific-canal mapping remain fail-closed where unverified.
