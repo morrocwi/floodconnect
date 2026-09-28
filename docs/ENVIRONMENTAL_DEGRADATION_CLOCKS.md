@@ -259,3 +259,52 @@ bounded declared objects, finite diagnostics and first-class refusal instead of 
 defaults.
 
 Implementation: `finite_temporal_ledger.py`.
+
+
+### Coverage is itself finite and declared
+
+A finite window does not imply that every possible mechanism was observed.
+
+Each calculation therefore declares a finite covered subset:
+
+[
+M_W={m_1,ldots,m_q},qquad q<infty
+]
+
+and a left-boundary state for every covered mechanism:
+
+[
+B_m(t_0)in{ACTIVE,INACTIVE,UNKNOWN}
+]
+
+Only a mechanism in (M_W) can receive a numeric accumulated duration.
+
+In particular:
+
+[
+NoEvents(m)
+
+otRightarrow
+A_m(W)=0
+]
+
+unless all of the following are true:
+
+1. (min M_W);
+2. the window is certified complete;
+3. (B_m(t_0)=INACTIVE);
+4. no verified START occurs inside the window.
+
+If (B_m(t_0)=ACTIVE), FloodConnect can compute exact **within-window** active time from
+(t_0), but the true episode age is left-censored:
+
+[
+Age_{episode}(t_1)ge t_1-t_0
+]
+
+not equal to a fabricated finite onset before (t_0).
+
+If (B_m(t_0)=UNKNOWN), exact cumulative duration for that mechanism is withheld.
+
+This prevents an unobserved mechanism from becoming a false zero and preserves Toledo's
+finite-object/refusal discipline.
