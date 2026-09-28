@@ -112,3 +112,53 @@ def test_full_operation_when_all_hard_requirements_pass():
     assert result.state == "LEVEL_CONFIRMED"
     assert result.level == so.LEVEL_4
     assert result.next_level is None
+
+
+def test_verified_tool_capability_can_satisfy_missing_level_requirement():
+    node = base_node()
+    node["potable_water"] = None
+    node["verified_tool_capabilities"] = {
+        "potable_water": {
+            "verified": True,
+            "fresh": True,
+            "operable": True,
+            "capacity_ok": True,
+            "horizon_ok": True,
+        }
+    }
+    result = so.evaluate_shelter_operation(node)
+    assert result.level == so.LEVEL_4
+
+
+def test_tool_capability_without_capacity_or_horizon_stays_unknown():
+    node = base_node()
+    node["potable_water"] = None
+    node["verified_tool_capabilities"] = {
+        "potable_water": {
+            "verified": True,
+            "fresh": True,
+            "operable": True,
+            "capacity_ok": None,
+            "horizon_ok": True,
+        }
+    }
+    result = so.evaluate_shelter_operation(node)
+    assert result.level == so.LEVEL_1
+    assert result.next_level == so.LEVEL_2
+    assert "potable_water" in result.unknown_fields
+
+
+def test_tool_capability_never_overrides_dry_gate():
+    node = base_node(dry_operating_surface=False)
+    node["verified_tool_capabilities"] = {
+        "dry_operating_surface": {
+            "verified": True,
+            "fresh": True,
+            "operable": True,
+            "capacity_ok": True,
+            "horizon_ok": True,
+        }
+    }
+    result = so.evaluate_shelter_operation(node)
+    assert result.state == so.NO_SHELTER_OPERATION
+    assert result.level is None
