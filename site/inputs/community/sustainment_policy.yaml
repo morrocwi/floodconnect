@@ -116,6 +116,44 @@ support_capability:
       - path_capacity_status_SUFFICIENT
       - arrival_before_failure_true
 
+
+convergence_feasibility:
+  id: LCF
+  name: "Lifeline Convergence Feasibility"
+  module: "convergence_feasibility.py"
+  provenance: "FloodConnect TDLC repo-specific operational construct"
+  claimed_global_standard: false
+  weighted_score: false
+  states: [FEASIBLE, INFEASIBLE, NOT_REQUIRED, UNKNOWN]
+  semantics:
+    feasible: "at least one declared provider/interface/path tuple closes every hard constraint"
+    infeasible: "declared evidence proves all available candidates fail at least one hard constraint"
+    not_required: "declared demand gap for this essential is zero"
+    unknown: "required demand, supply, interface, path, capacity or timing evidence is missing/stale/unverified"
+  canonical_terms:
+    demand_gap: "G_g,e = max(0, D_g,e - X_g,e)"
+    deliverable_quantity: "Q_p,g,e = min(S_p,e, B_P(p,g),e)"
+    response_slack: "Lambda_g,e = T_fail_g,e - T_arrive_p->g,e"
+  feasible_requires:
+    - declared_positive_demand_gap
+    - verified_fresh_interface_in_community_provider_reach_intersection
+    - verified_fresh_mode_feasible_support_path
+    - provider_supply_covers_gap
+    - path_capacity_covers_gap
+    - arrival_before_failure
+  fail_closed_rules:
+    - "unverified/stale interface -> UNKNOWN, not FEASIBLE"
+    - "unverified/stale path -> UNKNOWN, not FEASIBLE"
+    - "unknown supply/capacity/timing -> UNKNOWN, not zero and not infinity"
+    - "explicitly absent interface/path or insufficient supply/capacity or late arrival -> INFEASIBLE"
+  coordination_state:
+    principle: "coordination is persistent shared infrastructure, not a single-person dependency"
+    ledgers:
+      - demand_ledger
+      - resource_ledger
+      - route_interface_ledger
+    rule: "rotating coordinators may operate the ledgers; losing one person must not erase shared operational state"
+
 resupply_window:
   automatic_travel_instruction: false
   requires:
