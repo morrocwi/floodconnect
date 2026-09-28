@@ -596,6 +596,97 @@ This construct exposes a common last-mile pattern without assuming that centrali
 solution: multiple independent providers can remain independent while sharing the minimum state
 needed to prevent duplicate concentration, invisible demand and bottleneck pile-ups.
 
+
+### 11B. Concrete field primitive — nearest dry interface + shared Kanban
+
+LCF above is the feasibility equation. The minimum field implementation is intentionally simpler:
+**find the nearest verified dry interface that both sides can use, then share only the state needed
+for independent teams to coordinate themselves.**
+
+Define the candidate dry interfaces:
+
+\[
+Q_{dry}(t)=\{q:
+Dry(q)\land Verified(q)\land Fresh(q)\land
+ProviderReach(q)\land CommunityReach(q)\land DistributionFeasible(q)\}
+\]
+
+When comparable distance-to-affected-area values are declared for every otherwise-eligible
+candidate, select:
+
+\[
+\boxed{
+q^*(t)=\arg\min_{q\in Q_{dry}(t)} d(q,Z_{affected})
+}
+\]
+
+This means **the nearest dry point that can actually function as a transfer/distribution
+interface**, not simply the geometrically nearest dry road. If an otherwise-eligible candidate has
+unknown dryness, verification, reachability or comparable distance, FloodConnect must not claim an
+exact nearest node; return `UNKNOWN`.
+
+At \(q^*\), the operational shared state is a small Kanban:
+
+\[
+\boxed{
+K(q^*,t)=\{NEED,\ SUPPLY,\ ROUTE\}
+}
+\]
+
+**NEED card**
+- `zone_id`
+- `resource`
+- `quantity`
+- optional declared `needed_by` / failure deadline
+- `updated_at`
+- state such as `OPEN / CLAIMED / DONE / BLOCKED`
+
+**SUPPLY card**
+- `provider_id` or team reference
+- `resource`
+- `quantity` / capability
+- `at_node`
+- supported movement mode(s), when relevant
+- `updated_at`
+
+**ROUTE card**
+- `from_node`
+- `to_zone`
+- usable mode(s)
+- `status = OPEN / ASSISTED / BLOCKED / UNKNOWN`
+- `verified`, `fresh`
+- optional declared bottleneck capacity / travel time
+- `updated_at`
+
+The board is **shared state, not a command hierarchy**. No chief, dispatcher or single controller is
+required by the construct. Teams may publish/update their own cards and take work they can perform.
+FloodConnect may surface candidate matches, but must not fabricate an assignment or declare delivery
+complete without an updated card/evidence.
+
+```text
+outside providers / trucks / donations
+                |
+                v
+      q* = nearest verified dry interface
+                |
+        shared Kanban: NEED | SUPPLY | ROUTE
+                |
+        +-------+--------+
+        |       |        |
+      zone A  zone B   zone C
+        |                |
+     buddy/household   deeper last-mile
+```
+
+This turns the broad LCF equation into a field object that can be implemented with a whiteboard,
+paper cards, shared spreadsheet, chat board or software. The medium is not the architecture; the
+three shared information lanes are.
+
+Privacy remains aggregate/public by default: no names, diagnoses, phone numbers, exact house/room
+identifiers or other personal identifiers belong on the public board.
+
+Executable reference: `convergence_board.py`; tests: `tests/test_convergence_board.py`.
+
 ## 12. Thailand-specific strengths represented explicitly
 
 These are capacities to measure, not stereotypes:
