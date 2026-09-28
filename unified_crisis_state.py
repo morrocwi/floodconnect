@@ -123,7 +123,7 @@ def _animal_topology_label(node: dict[str, Any]) -> tuple[str, dict[str, Any]]:
         present.append("COMMUNITY")
     if not present:
         return "ANIMAL_TOPOLOGY_UNKNOWN", topo
-    return (present[0] if len(present) == 1 else "MIXED_" + "_".join(present)), topo
+    return (present[0] if len(present) == 1 else "MIXED"), topo
 
 
 def _support_state(
