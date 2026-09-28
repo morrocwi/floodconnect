@@ -122,3 +122,46 @@ These cases demonstrate failure modes and missing fields. They do not calibrate 
 quantities, stock-duration thresholds, route speeds, flood depths, shelter capacities, or
 probabilities. Every operational value remains UNKNOWN until declared/verified for the
 specific node and time.
+
+
+## Case D — dry private kitchen serving flooded zones
+
+Source: public post from a halal food business/community volunteer, relayed by maintainer on
+28 Sep 2026.
+
+Reported pattern:
+- the kitchen itself was in a zone described as normal/dry enough to buy ingredients and cook;
+- it voluntarily converted that local operating capacity into cooked meals for flooded areas;
+- almost 1,000 meal boxes were reported delivered during one day, while incoming requests
+  still exceeded available output;
+- some affected people reportedly had to travel through floodwater for one to two hours to
+  seek food, with no certainty that shops would still have stock.
+
+Schema/model consequences:
+1. A `community_kitchen` is a **service node**, not automatically a shelter.
+2. Dry-area production capacity can support flooded households without relocating them.
+3. Meal production count is not coverage; delivery to declared demand nodes must be tracked.
+4. Travel burden and stock uncertainty can convert nominal shop access into unusable
+   self-resupply.
+5. When verified last-mile delivery exists, the support graph can preserve a lower LVCN
+   (household/buddy/zone) by moving food toward people rather than people toward food.
+6. Quantitative throughput must not be generalized from this one reported kitchen/day.
+
+## Case E — civil-society survival-bag + cooked-food parallel supply
+
+Source: public post from Muslim for Peace Foundation, relayed by maintainer on 28 Sep 2026.
+
+Reported pattern:
+- the organization prepared survival bags and separately distributed cooked meals;
+- support targeted flood-affected and difficult-to-access areas;
+- the response used more than one resource form: immediately consumable food plus household
+  stocks for continued sustainment.
+
+Schema/model consequences:
+1. `prepared_meal` and `household_stock_bundle` are different resource/service types.
+2. A zone may need both immediate consumption and multi-period sustainment support.
+3. Civil-society nodes should be able to operate in parallel with state/local-government
+   logistics rather than being forced into a single command-tree graph.
+4. Resource promises/packing are not counted as delivered availability until a destination
+   support edge is verified.
+5. Coverage should be destination-aware to reduce duplicated delivery and missed households.
