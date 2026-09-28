@@ -489,6 +489,113 @@ move people outward only as far as required for viability.}
 
 This is a design objective, not a claim that self-reliance replaces public duty.
 
+### 11A. Lifeline Convergence Feasibility — canonical constraint
+
+The field failure this construct targets is **not simply supply shortage**. It is the case where
+supplies, responders or vehicles exist, but the required essential function still cannot reach the
+right group through a usable interface/path with enough capacity before the function fails.
+
+FloodConnect names this **Lifeline Convergence Feasibility (LCF)**. It is a hard feasibility
+predicate, not a weighted coordination/risk score.
+
+For group \(g\), essential \(e\), time \(t\), and planning horizon \(H\), define the declared gap:
+
+\[
+G_{g,e}(t,H)
+=
+\max\left(0,D_{g,e}(H)-X_{g,e}(t)\right)
+\]
+
+For a provider \(p\) and verified support path \(P(p,g)\), the maximum declared deliverable
+quantity is:
+
+\[
+Q_{p,g,e}(t,H)
+=
+\min\left(S_{p,e}(t,H),B_{P(p,g),e}(t,H)\right)
+\]
+
+A candidate interface \(q\) is admissible only when it is a current, verified meeting point of the
+community-side and provider-side reachable sets:
+
+\[
+q \in Reach_{community}(t)\cap Reach_{provider}(t)
+\]
+
+The canonical convergence predicate is:
+
+\[
+\boxed{
+C_{g,e}(t,H)=1
+}
+\]
+
+iff there exists at least one declared tuple \((p,q,P)\) such that:
+
+\[
+\boxed{
+q\in Reach_{community}(t)\cap Reach_{provider}(t)
+\;\land\;
+VerifiedFresh(q,P)
+\;\land\;
+Q_{p,g,e}(t,H)\ge G_{g,e}(t,H)
+\;\land\;
+T^{arrive}_{p\to g,e}<T^{fail}_{g,e}
+}
+\]
+
+Interpretation:
+
+- **supply present is insufficient evidence** — provider stock must cover the declared gap;
+- **a route drawn on a map is insufficient evidence** — the path/interface must be fresh,
+  field-verified and mode-feasible;
+- **large upstream supply does not override a small bottleneck** — deliverable quantity is bounded by
+  the path/interface capacity;
+- **eventual delivery is insufficient** — delivery must arrive before the relevant lifeline fails.
+
+Three-valued semantics are mandatory:
+
+\[
+C_{g,e}(t,H)
+=
+\begin{cases}
+1,& \text{at least one candidate tuple closes all hard constraints}\\
+0,& \text{declared evidence proves every candidate fails at least one hard constraint}\\
+\bot,& \text{otherwise / required evidence is missing, stale or unverified}
+\end{cases}
+\]
+
+If \(G_{g,e}=0\), convergence for that essential is \`NOT_REQUIRED\`, not a proof that the whole
+household/zone is safe.
+
+The executable implementation is \`convergence_feasibility.py\` with states
+\`FEASIBLE / INFEASIBLE / NOT_REQUIRED / UNKNOWN\`.
+
+#### Coordination is infrastructure, not a person
+
+A chief-of-staff / incident-command role may improve operations, but TDLC must not make one person a
+single point of failure. The minimum shared operational layer is:
+
+\[
+SharedState(t)
+=
+\{DemandLedger,\ ResourceLedger,\ RouteInterfaceLedger\}
+\]
+
+The ledgers answer three different questions:
+
+1. **Demand ledger** — who/which zone needs what, how much, and by when;
+2. **Resource ledger** — which provider has what usable quantity/capability;
+3. **Route/interface ledger** — where transfer is actually possible, by which mode, with what
+   freshness and bottleneck capacity.
+
+People may rotate; the shared state must persist. A coordinator allocates against this state rather
+than relying on memory or first-arrival visibility.
+
+This construct exposes a common last-mile pattern without assuming that centralisation is the only
+solution: multiple independent providers can remain independent while sharing the minimum state
+needed to prevent duplicate concentration, invisible demand and bottleneck pile-ups.
+
 ## 12. Thailand-specific strengths represented explicitly
 
 These are capacities to measure, not stereotypes:
