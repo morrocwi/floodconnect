@@ -28,6 +28,7 @@ from dataclasses import dataclass, field
 from typing import Any, Iterable, Optional
 
 import community_dag as cd
+import environmental_degradation as envd
 
 
 UNKNOWN = "UNKNOWN"
@@ -112,6 +113,9 @@ REASON_SUPPORT_ARRIVAL_TOO_LATE = "SUPPORT_ARRIVAL_TOO_LATE"
 REASON_SUPPLIER_STOCK_UNKNOWN = "SUPPLIER_STOCK_UNKNOWN"
 REASON_SUPPLIER_STOCK_INSUFFICIENT = "SUPPLIER_STOCK_INSUFFICIENT"
 REASON_FORWARD_HAZARD_UNKNOWN = "FORWARD_HAZARD_UNKNOWN"
+REASON_ENVIRONMENTAL_DEGRADATION_UNSAFE = "ENVIRONMENTAL_DEGRADATION_UNSAFE"
+REASON_ENVIRONMENTAL_DEGRADATION_UNKNOWN = "ENVIRONMENTAL_DEGRADATION_UNKNOWN"
+REASON_ENVIRONMENTAL_DEGRADATION_WITHIN_HORIZON = "ENVIRONMENTAL_DEGRADATION_WITHIN_HORIZON"
 
 
 _FIELD_REASON = {
@@ -355,6 +359,30 @@ def evaluate_sustainment(
         elif dependency.state == "DEPENDENCY_COVERAGE_UNKNOWN":
             unknowns.append("member_dependency_support")
 
+    env_unknown_reason = None
+    if isinstance(node.get("environment"), dict):
+        env_result = envd.evaluate_environmental_degradation(node)
+        if env_result.state == envd.UNSAFE:
+            gaps.append("environmental_health")
+            reasons.append(REASON_ENVIRONMENTAL_DEGRADATION_UNSAFE)
+        elif env_result.state == envd.UNKNOWN:
+            unknowns.append("environmental_health")
+            env_unknown_reason = REASON_ENVIRONMENTAL_DEGRADATION_UNKNOWN
+        elif (
+            env_result.state == envd.DEGRADING
+            and env_result.next_deadline_h is not None
+            and planning_horizon_h is not None
+            and env_result.next_deadline_h <= float(planning_horizon_h)
+        ):
+            env_block = node.get("environment") or {}
+            mitigation_ready = (
+                env_block.get("mitigation_plan_verified") is True
+                and env_block.get("mitigation_before_deadline") is True
+            )
+            if not mitigation_ready:
+                unknowns.append("environmental_health")
+                env_unknown_reason = REASON_ENVIRONMENTAL_DEGRADATION_WITHIN_HORIZON
+
     if gaps:
         return SustainmentResult(
             NOT_SUSTAINABLE,
@@ -365,9 +393,12 @@ def evaluate_sustainment(
         )
 
     if unknowns:
+        unknown_reasons = [REASON_UNKNOWN_ESSENTIAL]
+        if env_unknown_reason:
+            unknown_reasons.append(env_unknown_reason)
         return SustainmentResult(
             UNKNOWN,
-            (REASON_UNKNOWN_ESSENTIAL,),
+            _dedup(unknown_reasons),
             (),
             tuple(unknowns),
             escalation_state,
@@ -895,6 +926,18 @@ def screen_shelter_candidate(
         elif value not in {True, "SAFE", "SUFFICIENT", "AVAILABLE", "READY", NOT_REQUIRED}:
             unknown.append(field_name)
 
+    environment_details = {}
+    env_required = block.get("environmental_assessment_required") is True
+    if isinstance(node.get("environment"), dict):
+        env_result = envd.evaluate_environmental_degradation(node)
+        environment_details = env_result.as_dict()
+        if env_result.state == envd.UNSAFE:
+            failed.append("environmental_degradation")
+        elif env_result.state == envd.UNKNOWN:
+            unknown.append("environmental_degradation")
+    elif env_required:
+        unknown.append("environmental_degradation")
+
     services = set(node.get("services") or [])
     missing_needs = set(needs) - services
     if missing_needs:
@@ -905,7 +948,7 @@ def screen_shelter_candidate(
             False,
             "SHELTER_REJECTED",
             (REASON_SHELTER_UNSAFE,),
-            {"failed": failed, "unknown": unknown, "phase": phase},
+            {"failed": failed, "unknown": unknown, "phase": phase, "environment": environment_details},
         )
     if unknown:
         reasons = [REASON_SHELTER_UNKNOWN]
@@ -915,14 +958,14 @@ def screen_shelter_candidate(
             False,
             "SHELTER_UNRESOLVED",
             _dedup(reasons),
-            {"unknown": unknown, "phase": phase},
+            {"unknown": unknown, "phase": phase, "environment": environment_details},
         )
 
     return DecisionResult(
         True,
         "SHELTER_ADMISSIBLE",
         (),
-        {"phase": phase},
+        {"phase": phase, "environment": environment_details},
     )
 
 
