@@ -39,8 +39,8 @@ jobs:
       - name: Install pdftotext (poppler-utils)
         run: sudo apt-get update && sudo apt-get install -y poppler-utils
 
-      - name: Test lifeline convergence feasibility
-        run: python3 -m pytest tests/test_convergence_feasibility.py -q
+      - name: Test lifeline convergence primitives
+        run: python3 -m pytest tests/test_convergence_feasibility.py tests/test_convergence_board.py -q
 
       - name: Collect live snapshots (tolerant of per-source failures)
         # collect.py already isolates one source's failure from the rest (see its `run()`);
