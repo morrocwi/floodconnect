@@ -341,14 +341,22 @@ environmental_degradation:
       unknown_prior_history_as_zero_allowed: false
       incomplete_history_numeric_accumulation_allowed: false
     timeline_window:
-      required_fields: [start, end, complete]
-      rule: "end > start and both timestamps finite/declared; complete must be true for exact accumulation"
+      required_fields: [start, end, complete, covered_mechanisms, left_boundary_state]
+      rule: >
+        end > start and both timestamps finite/declared; complete must be true for exact
+        accumulation; covered_mechanisms is a finite explicit set; every covered mechanism
+        must declare left_boundary_state ACTIVE/INACTIVE/UNKNOWN.
+      zero_duration_rule: >
+        absence of events means zero accumulation only for a covered mechanism whose left
+        boundary state is explicitly INACTIVE and whose window is certified complete.
     event_types: [START, OBSERVED_ACTIVE, MITIGATION, RESOLVED]
     verified_event_required: true
     left_censoring:
       rule: >
         OBSERVED_ACTIVE without a verified START proves activity but not onset.
-        Mark LEFT_CENSORED; do not assign cumulative/current episode hours.
+        ACTIVE at the left boundary proves finite within-window activity but not the true
+        episode start. Mark LEFT_CENSORED; report a finite lower bound for current episode age
+        where justified and never extrapolate backward outside the window.
     transition_rules:
       - "duplicate START while active is invalid"
       - "RESOLVED without START is invalid"
