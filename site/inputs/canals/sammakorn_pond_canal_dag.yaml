@@ -225,3 +225,38 @@ sources:
     url: https://www.thailandplus.tv/archives/690882
   mea_2024:
     url: https://www.mea.or.th/public-relations/corporate-news-activities/announcement/OpMsOL7FX
+
+
+working_hypothesis:
+  id: ban_ma_system_to_sammakorn_capture
+  status: supported_system_function_exact_hardware_unresolved
+  direction_during_capture:
+    from:
+      - khlong_ban_ma
+      - khlong_ban_ma_2
+      - khlong_saphan_sung
+    to: sammakorn_pond_system
+  mechanism:
+    status: unresolved
+    candidates:
+      - controlled_gravity_pipe
+      - gate_diversion
+      - local_channel
+      - separate_inlet_pump
+    prohibited_inference:
+      - do_not_assume_ST_SPS_01_04_are_inlet_pumps
+  evidence:
+    - bma_2018_description_draws_water_from_three_canals_into_retention
+    - bma_private_monkeycheek_pre_lowering_role
+  operational_cycle:
+    - phase: PRE_DRAIN
+      direction: pond_to_external_network
+      driver: pump
+    - phase: CAPTURE
+      direction: external_network_to_pond
+      driver: hydraulic_diversion_unknown_mechanism
+    - phase: HOLD
+      direction: none_or_limited
+    - phase: RECOVERY
+      direction: pond_to_external_network
+      driver: pump
