@@ -1,0 +1,137 @@
+version: 1
+area_id: sammakorn_retention_system
+status: evidence_backed_with_unknowns
+
+nodes:
+  - id: sammakorn_pond_system
+    type: retention_storage
+    label_th: บึงรับน้ำหมู่บ้านสัมมากร
+    storage_area_m2: 227200
+    max_control_level_m_rtsd: 0.50
+    min_control_level_m_rtsd: -0.50
+    storage_capacity_m3: 454400
+    source: bma_monkeycheek
+
+  - id: khlong_saen_saep
+    type: trunk_canal
+    label_th: คลองแสนแสบ
+
+  - id: khlong_ban_ma_2
+    type: canal
+    label_th: คลองบ้านม้า 2
+    topology:
+      connects_from: khlong_saen_saep
+      connects_to: sammakorn_village
+    source: saphan_sung_action_plan_2568
+
+  - id: external_receiving_canals
+    type: canal_group
+    members:
+      - khlong_huamak
+      - khlong_ban_ma
+      - khlong_saphan_sung
+    source: government_inspection_2023
+
+interfaces:
+  - id: external_to_pond_capture
+    from: external_drainage_or_connected_canal
+    to: sammakorn_pond_system
+    mechanism: gravity
+    actuator: gate_or_inlet_control
+    direction_status: conditional
+    conditions:
+      - gate_open
+      - H_external_gt_H_pond
+      - pond_storage_available
+    pumped_inflow:
+      verified: false
+      status: not_established
+    evidence_status: hydraulic_role_supported_exact_asset_mapping_unknown
+
+  - id: pond_to_external_release
+    from: sammakorn_pond_system
+    to: external_receiving_canals
+    mechanism: pump
+    actuator: pump_station
+    direction_status: verified
+    conditions:
+      - pump_available
+      - receiving_canal_can_accept
+    evidence_status: direct_operational_evidence
+
+pump_assets:
+  group_id: sammakorn_pump_stations_1_4
+  codes_live:
+    - ST.SPS.01
+    - ST.SPS.02
+    - ST.SPS.03
+    - ST.SPS.04
+  functional_direction:
+    from: sammakorn_pond_system
+    to: external_receiving_canals
+    verified: true
+  receiving_canals_documented:
+    - khlong_huamak
+    - khlong_ban_ma
+    - khlong_saphan_sung
+  exact_station_to_canal_mapping:
+    status: partial
+    known:
+      ST.SPS.02:
+        associated_with: khlong_ban_ma_2
+        evidence: mea_2024
+    unknown:
+      - ST.SPS.01
+      - ST.SPS.03
+      - ST.SPS.04
+
+gate_logic:
+  role: hydraulic_isolation_and_flow_permission
+  states:
+    open:
+      effect: permits hydraulic connection
+    partial:
+      effect: throttles hydraulic connection
+    closed:
+      effect: isolates pond and canal
+  rules:
+    - if: H_external_gt_H_pond_and_storage_available
+      then: gravity_inflow_possible
+    - if: pond_near_storage_limit
+      then: inflow_should_be_constrained_according_to_operator_rule
+    - if: unwanted_backflow_risk
+      then: isolate_connection
+  note: exact field gate geometry and operating thresholds remain unverified
+
+dag:
+  capture:
+    - external_drainage_or_connected_canal
+    - gate_or_inlet_control
+    - sammakorn_pond_system
+  release:
+    - sammakorn_pond_system
+    - pump_station
+    - external_receiving_canals
+    - khlong_saen_saep_or_wider_network
+
+epistemic:
+  verified:
+    - bma_retention_role
+    - pumped_outflow_from_sammakorn_system
+    - ban_ma_2_connection_between_saen_saep_and_sammakorn
+  not_established:
+    - pumps_1_4_pump_water_into_ponds
+    - all_station_to_specific_canal_pairs
+    - reversible_pump_operation
+    - exact_gate_geometry
+  fail_closed: true
+
+sources:
+  bma_monkeycheek:
+    url: https://monkeycheek.bangkok.go.th/mngkaccordion/27
+  saphan_sung_action_plan_2568:
+    url: https://webportal.bangkok.go.th/public/user_files_editor/99/ITA/2568/Action_Plan_2568.pdf
+  government_inspection_2023:
+    url: https://www.thailandplus.tv/archives/690882
+  mea_2024:
+    url: https://www.mea.or.th/public-relations/corporate-news-activities/announcement/OpMsOL7FX
