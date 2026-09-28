@@ -31,6 +31,35 @@ lvcn:
     higher_known_candidate_when_lower_unknown: KNOWN_VIABLE_UPPER_BOUND
   rule: "a higher known viable node must not erase UNKNOWN at a lower layer"
 
+water_lifelines:
+  principle: "DRINKING WATER != CLEAN SERVICE WATER != SANITATION FUNCTION"
+  drinking_water:
+    internal_field: potable_water_for_horizon
+    user_label_th: "น้ำดื่ม"
+    meaning: >
+      water verified suitable for direct ingestion and other oral-consumption uses such as
+      preparing drinks/food/infant formula/medicine when potable-quality water is required.
+    must_not_be_inferred_from: [clear_appearance, lack_of_odor, service_water_available]
+  clean_service_water:
+    internal_field: service_water_for_horizon
+    user_label_th: "น้ำสะอาดสำหรับใช้"
+    meaning: >
+      water suitable for declared hygiene/service uses such as washing, bathing and cleaning;
+      it is not automatically considered safe to drink.
+    must_not_be_inferred_from: [drinking_water_stock, floodwater_presence]
+  sanitation_function:
+    internal_field: sanitation_hygiene
+    user_label_th: "ระบบส้วมและสุขาภิบาล"
+    meaning: >
+      ability to use toilets/drainage/wastewater safely. Having clean service water does not
+      prove that sewage can drain or that toilets will not backflow.
+  horizon_equation: >
+    T_WASH_effective = min(T_drinking_water, T_clean_service_water, T_sanitation_function)
+  rule: >
+    Failure/UNKNOWN in one water lifeline must not be overwritten by sufficiency in another.
+    Example: bottled drinking water may be sufficient while clean washing water or toilet
+    drainage is unavailable.
+
 sustainment:
   states: [SUSTAINABLE, NOT_SUSTAINABLE, UNKNOWN]
   physical_safety: [SAFE, UNSAFE, UNKNOWN]
