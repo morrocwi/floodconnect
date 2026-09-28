@@ -35,6 +35,10 @@ REASON_INVALID_EVENT = "INVALID_EVENT"
 REASON_UNVERIFIED_EVENT = "UNVERIFIED_EVENT"
 REASON_INVALID_TRANSITION = "INVALID_TRANSITION"
 REASON_LEFT_CENSORED = "LEFT_CENSORED"
+REASON_MISSING_COVERAGE = "MISSING_COVERAGE"
+REASON_INVALID_COVERAGE = "INVALID_COVERAGE"
+REASON_MISSING_BOUNDARY_STATE = "MISSING_BOUNDARY_STATE"
+REASON_EVENT_OUTSIDE_COVERAGE = "EVENT_OUTSIDE_COVERAGE"
 
 ALLOWED_EVENTS = {"START", "OBSERVED_ACTIVE", "MITIGATION", "RESOLVED"}
 
@@ -60,6 +64,7 @@ class MechanismAccumulation:
     recurrence_count: int
     active_at_window_end: Optional[bool]
     left_censored: bool = False
+    current_episode_lower_bound_h: Optional[Fraction] = None
 
     def as_dict(self) -> dict[str, Any]:
         def q(x: Optional[Fraction]) -> Optional[str]:
@@ -71,6 +76,7 @@ class MechanismAccumulation:
             "recurrence_count": self.recurrence_count,
             "active_at_window_end": self.active_at_window_end,
             "left_censored": self.left_censored,
+            "current_episode_lower_bound_h_q": q(self.current_episode_lower_bound_h),
         }
 
 
@@ -131,10 +137,12 @@ def _delta_hours_q(a: datetime, b: datetime) -> Fraction:
     return Fraction(total_us, 3_600_000_000)
 
 
-def _window(env: dict[str, Any]) -> tuple[Optional[datetime], Optional[datetime], list[str]]:
+def _window(
+    env: dict[str, Any],
+) -> tuple[Optional[datetime], Optional[datetime], tuple[str, ...], dict[str, str], list[str]]:
     w = env.get("timeline_window")
     if not isinstance(w, dict):
-        return None, None, [REASON_MISSING_WINDOW]
+        return None, None, (), {}, [REASON_MISSING_WINDOW]
     start = _parse_time(w.get("start"))
     end = _parse_time(w.get("end"))
     reasons = []
@@ -142,7 +150,29 @@ def _window(env: dict[str, Any]) -> tuple[Optional[datetime], Optional[datetime]
         reasons.append(REASON_INVALID_WINDOW)
     if w.get("complete") is not True:
         reasons.append(REASON_INCOMPLETE_WINDOW)
-    return start, end, reasons
+
+    raw_covered = w.get("covered_mechanisms")
+    if not isinstance(raw_covered, list) or not raw_covered:
+        covered: tuple[str, ...] = ()
+        reasons.append(REASON_MISSING_COVERAGE)
+    else:
+        covered = tuple(dict.fromkeys(str(x) for x in raw_covered))
+        if any(m not in MECHANISMS for m in covered):
+            reasons.append(REASON_INVALID_COVERAGE)
+
+    raw_boundary = w.get("left_boundary_state")
+    boundary: dict[str, str] = {}
+    if not isinstance(raw_boundary, dict):
+        reasons.append(REASON_MISSING_BOUNDARY_STATE)
+    else:
+        for mechanism in covered:
+            state = str(raw_boundary.get(mechanism, "")).upper()
+            if state not in {"ACTIVE", "INACTIVE", "UNKNOWN"}:
+                reasons.append(REASON_MISSING_BOUNDARY_STATE)
+            else:
+                boundary[mechanism] = state
+
+    return start, end, covered, boundary, reasons
 
 
 def accumulate_environment_timeline(node: dict[str, Any]) -> TemporalLedgerResult:
@@ -150,7 +180,7 @@ def accumulate_environment_timeline(node: dict[str, Any]) -> TemporalLedgerResul
     if not isinstance(env, dict):
         return TemporalLedgerResult(REFUSED, reason_codes=(REASON_MISSING_WINDOW,))
 
-    start, end, window_reasons = _window(env)
+    start, end, covered, boundary, window_reasons = _window(env)
     if window_reasons:
         return TemporalLedgerResult(
             REFUSED,
@@ -186,6 +216,9 @@ def accumulate_environment_timeline(node: dict[str, Any]) -> TemporalLedgerResul
         if mechanism not in MECHANISMS or event not in ALLOWED_EVENTS or at is None:
             reasons.append(REASON_INVALID_EVENT)
             continue
+        if mechanism not in covered:
+            reasons.append(REASON_EVENT_OUTSIDE_COVERAGE)
+            continue
         if at < start or at > end:
             reasons.append(REASON_EVENT_OUTSIDE_WINDOW)
             continue
@@ -203,7 +236,7 @@ def accumulate_environment_timeline(node: dict[str, Any]) -> TemporalLedgerResul
 
     parsed.sort(key=lambda x: (x[0], x[1], x[2]))
 
-    by_mechanism: dict[str, list[tuple[datetime, str]]] = {m: [] for m in MECHANISMS}
+    by_mechanism: dict[str, list[tuple[datetime, str]]] = {m: [] for m in covered}
     for at, mechanism, event in parsed:
         by_mechanism[mechanism].append((at, event))
 
@@ -213,13 +246,19 @@ def accumulate_environment_timeline(node: dict[str, Any]) -> TemporalLedgerResul
     # concurrency sweep uses verified START/RESOLVED only.
     sweep: list[tuple[datetime, int]] = []
 
-    for mechanism in MECHANISMS:
+    for mechanism in covered:
         seq = by_mechanism[mechanism]
-        active_start: Optional[datetime] = None
+        left_state = boundary.get(mechanism, "UNKNOWN")
+        active_start: Optional[datetime] = start if left_state == "ACTIVE" else None
         cumulative = Fraction(0, 1)
         recurrence = 0
-        left_censored = False
-        observed_without_start = False
+        left_censored = left_state in {"ACTIVE", "UNKNOWN"}
+        observed_without_start = left_state == "UNKNOWN"
+
+        if left_state == "ACTIVE":
+            # Active at t0 is a finite within-window fact, but the full episode onset lies
+            # before/at the left boundary and therefore remains censored.
+            sweep.append((start, +1))
 
         for at, event in seq:
             if event == "START":
@@ -248,10 +287,16 @@ def accumulate_environment_timeline(node: dict[str, Any]) -> TemporalLedgerResul
         current_episode_h: Optional[Fraction]
         active_at_end: Optional[bool]
 
+        lower_bound_h: Optional[Fraction] = None
         if active_start is not None:
-            current_episode_h = _delta_hours_q(active_start, end)
-            cumulative += current_episode_h
+            within_window_episode_h = _delta_hours_q(active_start, end)
+            cumulative += within_window_episode_h
             active_at_end = True
+            if left_censored:
+                current_episode_h = None
+                lower_bound_h = within_window_episode_h
+            else:
+                current_episode_h = within_window_episode_h
         elif observed_without_start:
             current_episode_h = None
             active_at_end = None
@@ -259,14 +304,20 @@ def accumulate_environment_timeline(node: dict[str, Any]) -> TemporalLedgerResul
             current_episode_h = None
             active_at_end = False
 
+        # cumulative_h is exact *inside W* when the left boundary is ACTIVE or INACTIVE and
+        # the window is certified complete. UNKNOWN left-boundary state with no declared
+        # onset cannot produce an exact cumulative duration.
+        cumulative_out = None if left_state == "UNKNOWN" else cumulative
+
         outputs.append(
             MechanismAccumulation(
                 mechanism=mechanism,
-                cumulative_h=None if left_censored else cumulative,
+                cumulative_h=cumulative_out,
                 current_episode_h=current_episode_h,
                 recurrence_count=recurrence,
                 active_at_window_end=active_at_end,
                 left_censored=left_censored,
+                current_episode_lower_bound_h=lower_bound_h,
             )
         )
 
@@ -282,7 +333,9 @@ def accumulate_environment_timeline(node: dict[str, Any]) -> TemporalLedgerResul
 
     # If any mechanism is left-censored, only that mechanism's exact cumulative duration is
     # withheld; the finite ledger itself remains valid for mechanisms with complete intervals.
-    sweep.sort(key=lambda x: (x[0], -x[1]))
+    # Half-open interval semantics [START, RESOLVED): at the same timestamp, close old
+    # intervals before opening new ones so concurrency is not inflated by a zero-duration overlap.
+    sweep.sort(key=lambda x: (x[0], 0 if x[1] < 0 else 1))
     concurrent = 0
     max_concurrent = 0
     for _, delta in sweep:
@@ -303,7 +356,8 @@ def accumulate_environment_timeline(node: dict[str, Any]) -> TemporalLedgerResul
         reason_codes=((REASON_LEFT_CENSORED,) if left else ()),
         details={
             "event_count": len(parsed),
-            "finite_mechanism_count": len(MECHANISMS),
+            "finite_mechanism_count": len(covered),
+            "covered_mechanisms": list(covered),
             "left_censored_mechanisms": left,
             "interpretation": (
                 "durations are exact within the declared finite complete window only; "
