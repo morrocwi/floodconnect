@@ -452,10 +452,11 @@ def test_vulnerable_groups_are_kept_as_distinct_aggregate_categories():
 
 def test_dependency_pairing_gap_is_explicit_not_demographic_score():
     profile = {
-        "child_caregiver_link_uncovered": 0,
+        "total_persons": 1,
+        "older_adult_60_plus": 1,
+        "needs_mobility_assistance": 1,
         "older_adult_support_link_uncovered": 1,
-        "pregnancy_support_link_uncovered": 0,
-        "medical_support_link_uncovered": 0,
+        "mobility_support_link_uncovered": 0,
         "living_alone_buddy_link_uncovered": 0,
     }
     result = sd.evaluate_dependency_coverage(profile)
@@ -466,11 +467,10 @@ def test_dependency_pairing_gap_is_explicit_not_demographic_score():
 
 def test_all_dependency_links_covered():
     profile = {
+        "total_persons": 2,
+        "adult_18_59": 1,
+        "child_0_5": 1,
         "child_caregiver_link_uncovered": 0,
-        "older_adult_support_link_uncovered": 0,
-        "pregnancy_support_link_uncovered": 0,
-        "medical_support_link_uncovered": 0,
-        "living_alone_buddy_link_uncovered": 0,
     }
     result = sd.evaluate_dependency_coverage(profile)
     assert result.admitted is True
@@ -479,10 +479,11 @@ def test_all_dependency_links_covered():
 
 def test_unknown_dependency_link_stays_unknown():
     profile = {
-        "child_caregiver_link_uncovered": 0,
+        "total_persons": 1,
+        "older_adult_60_plus": 1,
+        "needs_mobility_assistance": 1,
         "older_adult_support_link_uncovered": "UNKNOWN",
-        "pregnancy_support_link_uncovered": 0,
-        "medical_support_link_uncovered": 0,
+        "mobility_support_link_uncovered": 0,
         "living_alone_buddy_link_uncovered": 0,
     }
     result = sd.evaluate_dependency_coverage(profile)
