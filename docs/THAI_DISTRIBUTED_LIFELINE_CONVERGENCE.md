@@ -565,3 +565,61 @@ Real-data/real-report tests should ask:
 
 No claim about saved lives, response efficiency or superiority to current Thai practice is licensed
 until prospective deployment data exist.
+
+
+## 16. Environmental degradation clocks — safe now can become unsafe later
+
+Water depth alone does not determine occupancy duration. FloodConnect now adds environmental
+degradation clocks for flood-affected household/shelter nodes.
+
+The key distinction is:
+
+[
+Depth(t) 	ext{ unchanged}
+
+otRightarrow
+OccupancySafety(t) 	ext{ unchanged}
+]
+
+Use:
+
+[
+T^{effective}_i
+=
+min
+left(
+T^{resource}_i,
+T^{environment}_i,
+T^{access}_i,
+T^{forward-hazard}_i
+ight)
+]
+
+where the environmental horizon is the earliest **known** deadline among mechanisms such as
+wet-material/mold progression and standing-water control cycles. Unknown clocks are not infinity.
+
+Immediate contamination mechanisms do not receive a time grace period:
+suspected/confirmed sewage intrusion or sewer backflow can fail WASH/sanitation immediately.
+
+Time-dependent mechanisms are kept separate:
+- wet indoor materials: 24–48 h mold-prevention clock from CDC guidance;
+- standing water: vector-control starts immediately; weekly source-reduction cycle is tracked;
+- stagnant/organic/sewage-loaded water: anaerobic odor/H2S formation is plausible, but no ppm
+  is inferred without measurement;
+- sewer gas: odor is a trigger to investigate, never a clearance test;
+- dry drain traps and sewer surcharge/backflow are different pathways and use different controls.
+
+The intervention operator is:
+
+[
+M_k:(T^{trigger},State)ightarrow(T'^{trigger},State')
+]
+
+but an intervention receives **no guaranteed extension** unless the effect is verified. This is
+important for Thai operational practices: drainage, waste removal, EM/biological treatment,
+aeration or other actions may be recommended by local/health authorities in context, but
+FloodConnect does not convert them into extra "safe hours" without measurement.
+
+See:
+`docs/ENVIRONMENTAL_DEGRADATION_CLOCKS.md`
+and `environmental_degradation.py`.

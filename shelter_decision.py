@@ -28,6 +28,7 @@ from dataclasses import dataclass, field
 from typing import Any, Iterable, Optional
 
 import community_dag as cd
+import environmental_degradation as envd
 
 
 UNKNOWN = "UNKNOWN"
@@ -103,6 +104,18 @@ REASON_INVALID_NODE_KIND = "INVALID_NODE_KIND"
 REASON_SUPPORT_PROVIDER_UNVERIFIED = "SUPPORT_PROVIDER_UNVERIFIED"
 REASON_SUPPORT_DELIVERY_PATH_UNVERIFIED = "SUPPORT_DELIVERY_PATH_UNVERIFIED"
 REASON_SUPPORT_RESOURCE_UNAVAILABLE = "SUPPORT_RESOURCE_UNAVAILABLE"
+REASON_MISSING_ASSESSED_HORIZON = "MISSING_ASSESSED_HORIZON"
+REASON_ASSESSED_HORIZON_TOO_SHORT = "ASSESSED_HORIZON_TOO_SHORT"
+REASON_SUPPORT_CAPACITY_UNKNOWN = "SUPPORT_CAPACITY_UNKNOWN"
+REASON_SUPPORT_CAPACITY_INSUFFICIENT = "SUPPORT_CAPACITY_INSUFFICIENT"
+REASON_SUPPORT_ARRIVAL_UNKNOWN = "SUPPORT_ARRIVAL_UNKNOWN"
+REASON_SUPPORT_ARRIVAL_TOO_LATE = "SUPPORT_ARRIVAL_TOO_LATE"
+REASON_SUPPLIER_STOCK_UNKNOWN = "SUPPLIER_STOCK_UNKNOWN"
+REASON_SUPPLIER_STOCK_INSUFFICIENT = "SUPPLIER_STOCK_INSUFFICIENT"
+REASON_FORWARD_HAZARD_UNKNOWN = "FORWARD_HAZARD_UNKNOWN"
+REASON_ENVIRONMENTAL_DEGRADATION_UNSAFE = "ENVIRONMENTAL_DEGRADATION_UNSAFE"
+REASON_ENVIRONMENTAL_DEGRADATION_UNKNOWN = "ENVIRONMENTAL_DEGRADATION_UNKNOWN"
+REASON_ENVIRONMENTAL_DEGRADATION_WITHIN_HORIZON = "ENVIRONMENTAL_DEGRADATION_WITHIN_HORIZON"
 
 
 _FIELD_REASON = {
@@ -125,8 +138,7 @@ SHELTER_PHASE_REQUIREMENTS = {
         "communications",
         "capacity",
         "management_staffing",
-        "perimeter_flood_defense",
-        "dewatering_capability",
+        "residual_flood_exposure",
         "exit_closure_plan",
     ),
     "OCCUPIED": (
@@ -147,6 +159,12 @@ SHELTER_PHASE_REQUIREMENTS = {
         "management_staffing",
         "waste_management",
         "sleeping_protection",
+        "privacy_dignity",
+        "child_safeguarding",
+        "gbv_protection",
+        "feedback_complaints",
+        "family_unity",
+        "psychosocial_referral",
         "exit_closure_plan",
     ),
     "RECOVERY": (
@@ -233,6 +251,22 @@ def _resource_value(block: dict[str, Any], field_name: str) -> str:
     return UNKNOWN
 
 
+def _horizon_coverage(block: dict[str, Any], planning_horizon_h: Optional[float]) -> tuple[bool, str | None]:
+    if planning_horizon_h is None or planning_horizon_h <= 0:
+        return False, REASON_MISSING_PLANNING_HORIZON
+    assessed = block.get("assessed_horizon_h")
+    if assessed is None:
+        return False, REASON_MISSING_ASSESSED_HORIZON
+    try:
+        assessed_f = float(assessed)
+        requested_f = float(planning_horizon_h)
+    except (TypeError, ValueError):
+        return False, REASON_MISSING_ASSESSED_HORIZON
+    if assessed_f < requested_f:
+        return False, REASON_ASSESSED_HORIZON_TOO_SHORT
+    return True, None
+
+
 def _escalation_state(block: dict[str, Any]) -> tuple[str, list[str]]:
     esc = block.get("escalation") or {}
     status = esc.get("status", UNKNOWN)
@@ -277,6 +311,15 @@ def evaluate_sustainment(
             escalation_state=_escalation_state(block)[0],
         )
 
+    horizon_ok, horizon_reason = _horizon_coverage(block, planning_horizon_h)
+    if not horizon_ok:
+        return SustainmentResult(
+            UNKNOWN,
+            (horizon_reason,),
+            unknown_fields=("assessed_horizon_h",),
+            escalation_state=_escalation_state(block)[0],
+        )
+
     physical = block.get("physical_safety", UNKNOWN)
     escalation_state, escalation_reasons = _escalation_state(block)
 
@@ -316,6 +359,30 @@ def evaluate_sustainment(
         elif dependency.state == "DEPENDENCY_COVERAGE_UNKNOWN":
             unknowns.append("member_dependency_support")
 
+    env_unknown_reason = None
+    if isinstance(node.get("environment"), dict):
+        env_result = envd.evaluate_environmental_degradation(node)
+        if env_result.state == envd.UNSAFE:
+            gaps.append("environmental_health")
+            reasons.append(REASON_ENVIRONMENTAL_DEGRADATION_UNSAFE)
+        elif env_result.state == envd.UNKNOWN:
+            unknowns.append("environmental_health")
+            env_unknown_reason = REASON_ENVIRONMENTAL_DEGRADATION_UNKNOWN
+        elif (
+            env_result.state == envd.DEGRADING
+            and env_result.next_deadline_h is not None
+            and planning_horizon_h is not None
+            and env_result.next_deadline_h <= float(planning_horizon_h)
+        ):
+            env_block = node.get("environment") or {}
+            mitigation_ready = (
+                env_block.get("mitigation_plan_verified") is True
+                and env_block.get("mitigation_before_deadline") is True
+            )
+            if not mitigation_ready:
+                unknowns.append("environmental_health")
+                env_unknown_reason = REASON_ENVIRONMENTAL_DEGRADATION_WITHIN_HORIZON
+
     if gaps:
         return SustainmentResult(
             NOT_SUSTAINABLE,
@@ -326,9 +393,12 @@ def evaluate_sustainment(
         )
 
     if unknowns:
+        unknown_reasons = [REASON_UNKNOWN_ESSENTIAL]
+        if env_unknown_reason:
+            unknown_reasons.append(env_unknown_reason)
         return SustainmentResult(
             UNKNOWN,
-            (REASON_UNKNOWN_ESSENTIAL,),
+            _dedup(unknown_reasons),
             (),
             tuple(unknowns),
             escalation_state,
@@ -349,15 +419,26 @@ def _support_edges(doc: dict[str, Any]) -> list[dict[str, Any]]:
     return raw if isinstance(raw, list) else []
 
 
-def _support_path_exists(
+def _support_path_assessment(
     doc: dict[str, Any],
     provider: str,
     recipient: str,
     required_resources: Iterable[str],
-) -> bool:
-    """Directed resource-delivery reachability over the non-DAG support network."""
+) -> tuple[str, tuple[str, ...]]:
+    """Return UNVERIFIED, PATH_ONLY, or NEED_CLOSABLE for a support path.
+
+    PATH_ONLY means a fresh field-verified path exists, but capacity and/or arrival-before-
+    failure are not yet demonstrated. NEED_CLOSABLE requires every edge on at least one path
+    to declare sufficient capacity and timely arrival for the requested resources.
+    """
     required = set(required_resources)
-    outgoing: dict[str, list[dict[str, Any]]] = {}
+    outgoing_verified: dict[str, list[dict[str, Any]]] = {}
+    outgoing_closable: dict[str, list[dict[str, Any]]] = {}
+    capacity_unknown = False
+    arrival_unknown = False
+    capacity_failed = False
+    arrival_failed = False
+
     for edge in _support_edges(doc):
         if edge.get("status") not in {"OPEN", "ASSISTED"}:
             continue
@@ -366,20 +447,110 @@ def _support_path_exists(
         resources = set(edge.get("resources") or [])
         if required and "*" not in resources and not required.issubset(resources):
             continue
-        outgoing.setdefault(edge.get("from"), []).append(edge)
 
-    seen = {provider}
-    queue = [provider]
-    while queue:
-        u = queue.pop(0)
-        if u == recipient:
-            return True
-        for edge in outgoing.get(u, []):
-            v = edge.get("to")
-            if v and v not in seen:
-                seen.add(v)
-                queue.append(v)
-    return False
+        outgoing_verified.setdefault(edge.get("from"), []).append(edge)
+
+        cap = edge.get("capacity_status", UNKNOWN)
+        arrive = edge.get("arrival_before_failure", UNKNOWN)
+        cap_ok = cap in {SUFFICIENT, True}
+        arrive_ok = arrive is True
+
+        if cap == UNKNOWN or cap is None:
+            capacity_unknown = True
+        elif not cap_ok:
+            capacity_failed = True
+        if arrive == UNKNOWN or arrive is None:
+            arrival_unknown = True
+        elif arrive is not True:
+            arrival_failed = True
+
+        if cap_ok and arrive_ok:
+            outgoing_closable.setdefault(edge.get("from"), []).append(edge)
+
+    def reachable(graph: dict[str, list[dict[str, Any]]]) -> bool:
+        seen = {provider}
+        queue = [provider]
+        while queue:
+            u = queue.pop(0)
+            if u == recipient:
+                return True
+            for edge in graph.get(u, []):
+                v = edge.get("to")
+                if v and v not in seen:
+                    seen.add(v)
+                    queue.append(v)
+        return False
+
+    if not reachable(outgoing_verified):
+        return "UNVERIFIED", (REASON_SUPPORT_DELIVERY_PATH_UNVERIFIED,)
+    if reachable(outgoing_closable):
+        return "NEED_CLOSABLE", ()
+
+    reasons: list[str] = []
+    if capacity_failed:
+        reasons.append(REASON_SUPPORT_CAPACITY_INSUFFICIENT)
+    elif capacity_unknown:
+        reasons.append(REASON_SUPPORT_CAPACITY_UNKNOWN)
+    if arrival_failed:
+        reasons.append(REASON_SUPPORT_ARRIVAL_TOO_LATE)
+    elif arrival_unknown:
+        reasons.append(REASON_SUPPORT_ARRIVAL_UNKNOWN)
+    return "PATH_ONLY", _dedup(reasons or [REASON_SUPPORT_CAPACITY_UNKNOWN, REASON_SUPPORT_ARRIVAL_UNKNOWN])
+
+
+def _support_path_exists(
+    doc: dict[str, Any],
+    provider: str,
+    recipient: str,
+    required_resources: Iterable[str],
+) -> bool:
+    state, _ = _support_path_assessment(doc, provider, recipient, required_resources)
+    return state != "UNVERIFIED"
+
+
+def evaluate_support_capability(
+    node: dict[str, Any],
+    required_resources: Iterable[str],
+    planning_horizon_h: Optional[float],
+) -> DecisionResult:
+    """Evaluate a buddy/zone/provider as a support layer, not an occupancy site."""
+    block = node.get("support")
+    if not isinstance(block, dict):
+        return DecisionResult(False, "SUPPORT_CAPABILITY_UNKNOWN", (REASON_SUPPORT_CAPACITY_UNKNOWN,))
+    if block.get("fresh") is not True:
+        return DecisionResult(False, "SUPPORT_CAPABILITY_UNKNOWN", (REASON_STALE_SUSTAINMENT,))
+    horizon_ok, horizon_reason = _horizon_coverage(block, planning_horizon_h)
+    if not horizon_ok:
+        return DecisionResult(False, "SUPPORT_CAPABILITY_UNKNOWN", (horizon_reason,))
+
+    resources = block.get("resources") or {}
+    unknown: list[str] = []
+    insufficient: list[str] = []
+    for resource in dict.fromkeys(required_resources):
+        entry = resources.get(resource, UNKNOWN)
+        status = entry.get("status", UNKNOWN) if isinstance(entry, dict) else entry
+        if status in {SUFFICIENT, True, "AVAILABLE"}:
+            continue
+        if status in {INSUFFICIENT, False, "OUT", "UNAVAILABLE"}:
+            insufficient.append(resource)
+        else:
+            unknown.append(resource)
+
+    if insufficient:
+        return DecisionResult(
+            False,
+            "SUPPORT_CAPABILITY_INSUFFICIENT",
+            (REASON_SUPPORT_CAPACITY_INSUFFICIENT,),
+            {"insufficient_resources": insufficient},
+        )
+    if unknown:
+        return DecisionResult(
+            False,
+            "SUPPORT_CAPABILITY_UNKNOWN",
+            (REASON_SUPPORT_CAPACITY_UNKNOWN,),
+            {"unknown_resources": unknown},
+        )
+    return DecisionResult(True, "SUPPORT_CAPABLE", (), {"resources": list(dict.fromkeys(required_resources))})
 
 
 def _movement_route_to_target(
@@ -412,110 +583,117 @@ def find_lowest_viable_node(
     group_size: int = 1,
     mode: str = "walk",
 ) -> LVCNResult:
-    """Find the exact LVCN or a known-viable upper bound.
-
-    Egress is excluded. Social support nodes require a verified support-delivery path
-    toward the household for the household's declared resource gaps. Shelter nodes
-    require a verified movement route to the shelter.
-
-    If any lower layer is UNKNOWN, a higher known-viable candidate is returned only as
-    KNOWN_VIABLE_UPPER_BOUND, never falsely labelled the exact lowest node.
-    """
+    """Find the lowest known support layer without conflating support with occupancy."""
     nodes = doc.get("nodes") or {}
-    if household_id not in nodes:
-        return LVCNResult(
-            NO_VIABLE_NODE,
-            reason_codes=("UNKNOWN_HOUSEHOLD",),
-        )
+    household = nodes.get(household_id)
+    if not isinstance(household, dict):
+        return LVCNResult(NO_VIABLE_NODE, reason_codes=("UNKNOWN_HOUSEHOLD",))
 
-    household = nodes[household_id]
     candidates = household.get("support_candidates")
     if not isinstance(candidates, list) or not candidates:
-        return LVCNResult(
-            NO_VIABLE_NODE,
-            reason_codes=(REASON_NO_DECLARED_SUPPORT_CHAIN,),
-        )
+        return LVCNResult(NO_VIABLE_NODE, reason_codes=(REASON_NO_DECLARED_SUPPORT_CHAIN,))
+
+    # Never trust YAML/list order for "lowest": normalize by the repository layer ranking.
+    ranked: list[tuple[int, int, str, dict[str, Any]]] = []
+    for position, node_id in enumerate(candidates):
+        node = nodes.get(node_id)
+        if not isinstance(node, dict):
+            ranked.append((999, position, node_id, {}))
+            continue
+        kind = node.get("kind")
+        if kind in SUPPORTABLE_KINDS:
+            ranked.append((SUPPORTABLE_KINDS[kind], position, node_id, node))
+    ranked.sort(key=lambda x: (x[0], x[1]))
 
     household_eval = evaluate_sustainment(household, planning_horizon_h)
-    household_gaps = set(household_eval.gaps)
+    household_gaps = tuple(g for g in household_eval.gaps if g != "physical_safety")
     physical = (household.get("sustainment") or {}).get("physical_safety", UNKNOWN)
 
     lower_unresolved: list[str] = []
     evaluations: list[tuple[str, str]] = []
 
-    for node_id in candidates:
-        node = nodes.get(node_id)
-        if not isinstance(node, dict):
+    for _, _, node_id, node in ranked:
+        if not node:
             lower_unresolved.append(node_id)
             evaluations.append((node_id, UNKNOWN))
             continue
-
         kind = node.get("kind")
-        if kind not in SUPPORTABLE_KINDS:
-            # egress/supply points/etc. are connectors/services, not viable community nodes.
-            continue
 
-        ev = evaluate_sustainment(node, planning_horizon_h)
-        evaluations.append((node_id, ev.state))
-
-        if ev.state == UNKNOWN:
-            lower_unresolved.append(node_id)
-            continue
-        if ev.state != SUSTAINABLE:
-            continue
-
-        admissible = False
-
-        if node_id == household_id or kind == "household":
-            admissible = True
-
-        elif kind in {"buddy_cell", "zone"}:
-            # Social support can close resource/service gaps only while the home itself is
-            # physically safe. Unsafe occupancy requires movement, not more supplies.
-            if physical == SAFE and household_gaps:
-                admissible = _support_path_exists(
-                    doc, node_id, household_id, household_gaps
-                )
-            elif physical == SAFE and not household_gaps:
-                # A higher social node is unnecessary if the household is already
-                # sustainable; if household was UNKNOWN for another reason, do not use
-                # the higher node to wash that uncertainty away.
-                admissible = False
-
-        elif kind in {"internal_safe", "external_safe"}:
-            screen = screen_shelter_candidate(
-                node,
-                phase="OCCUPIED",
-                group_size=group_size,
+        if kind == "household":
+            ev_state = household_eval.state if node_id == household_id else evaluate_sustainment(node, planning_horizon_h).state
+            evaluations.append((node_id, ev_state))
+            if ev_state == UNKNOWN:
+                lower_unresolved.append(node_id)
+                continue
+            if ev_state != SUSTAINABLE:
+                continue
+            exact = not lower_unresolved
+            return LVCNResult(
+                EXACT_LVCN if exact else KNOWN_VIABLE_UPPER_BOUND,
+                node_id=node_id,
+                node_kind=kind,
+                exact=exact,
+                lower_unresolved=tuple(lower_unresolved),
+                reason_codes=(() if exact else (REASON_LOWER_NODE_UNRESOLVED,)),
+                evaluations=tuple(evaluations),
             )
-            if screen.admitted:
-                admissible = _movement_route_to_target(
-                    doc,
-                    household_id,
-                    node_id,
-                    group_size=group_size,
-                    mode=mode,
-                )
 
-        if not admissible:
-            continue
+        if kind in {"buddy_cell", "zone"}:
+            # A social layer does not need to be habitable. It must be able to close the
+            # household's declared resource gaps through a verified, sufficient, timely path.
+            if physical != SAFE or not household_gaps:
+                evaluations.append((node_id, NOT_SUSTAINABLE))
+                continue
+            cap = evaluate_support_capability(node, household_gaps, planning_horizon_h)
+            path_state, path_reasons = _support_path_assessment(
+                doc, node_id, household_id, household_gaps
+            )
+            if cap.state == "SUPPORT_CAPABILITY_UNKNOWN" or path_state == "PATH_ONLY":
+                lower_unresolved.append(node_id)
+                evaluations.append((node_id, UNKNOWN))
+                continue
+            if not cap.admitted or path_state != "NEED_CLOSABLE":
+                evaluations.append((node_id, NOT_SUSTAINABLE))
+                continue
+            evaluations.append((node_id, SUSTAINABLE))
+            exact = not lower_unresolved
+            return LVCNResult(
+                EXACT_LVCN if exact else KNOWN_VIABLE_UPPER_BOUND,
+                node_id=node_id,
+                node_kind=kind,
+                exact=exact,
+                lower_unresolved=tuple(lower_unresolved),
+                reason_codes=(() if exact else (REASON_LOWER_NODE_UNRESOLVED,)),
+                evaluations=tuple(evaluations),
+            )
 
-        exact = not lower_unresolved
-        return LVCNResult(
-            EXACT_LVCN if exact else KNOWN_VIABLE_UPPER_BOUND,
-            node_id=node_id,
-            node_kind=kind,
-            exact=exact,
-            lower_unresolved=tuple(lower_unresolved),
-            reason_codes=(
-                () if exact else (REASON_LOWER_NODE_UNRESOLVED,)
-            ),
-            evaluations=tuple(evaluations),
-        )
+        if kind in {"internal_safe", "external_safe"}:
+            screen = screen_shelter_candidate(node, phase="OCCUPIED", group_size=group_size)
+            if screen.state == "SHELTER_UNRESOLVED":
+                lower_unresolved.append(node_id)
+                evaluations.append((node_id, UNKNOWN))
+                continue
+            if not screen.admitted:
+                evaluations.append((node_id, NOT_SUSTAINABLE))
+                continue
+            reachable = _movement_route_to_target(
+                doc, household_id, node_id, group_size=group_size, mode=mode
+            )
+            evaluations.append((node_id, SUSTAINABLE if reachable else NOT_SUSTAINABLE))
+            if not reachable:
+                continue
+            exact = not lower_unresolved
+            return LVCNResult(
+                EXACT_LVCN if exact else KNOWN_VIABLE_UPPER_BOUND,
+                node_id=node_id,
+                node_kind=kind,
+                exact=exact,
+                lower_unresolved=tuple(lower_unresolved),
+                reason_codes=(() if exact else (REASON_LOWER_NODE_UNRESOLVED,)),
+                evaluations=tuple(evaluations),
+            )
 
-    reasons: list[str] = []
-    if lower_unresolved:
-        reasons.append(REASON_LOWER_NODE_UNRESOLVED)
+    reasons = [REASON_LOWER_NODE_UNRESOLVED] if lower_unresolved else []
     return LVCNResult(
         NO_VIABLE_NODE,
         lower_unresolved=tuple(lower_unresolved),
@@ -582,6 +760,20 @@ def evaluate_resupply_window(
             (REASON_RESUPPLY_DESTINATION_UNVERIFIED,),
         )
 
+    stock = evaluate_support_capability(supplier_node, gaps, planning_horizon_h)
+    if not stock.admitted:
+        reason = (
+            REASON_SUPPLIER_STOCK_INSUFFICIENT
+            if stock.state == "SUPPORT_CAPABILITY_INSUFFICIENT"
+            else REASON_SUPPLIER_STOCK_UNKNOWN
+        )
+        return DecisionResult(
+            False,
+            "RESUPPLY_NOT_ADMITTED",
+            (reason,) + stock.reason_codes,
+            stock.details,
+        )
+
     route_edges = rs.get("route_edges")
     fn = getattr(cd, "validate_declared_edge_path", None)
     if not isinstance(route_edges, list) or not route_edges or fn is None:
@@ -624,16 +816,9 @@ def evaluate_support_delivery(
     recipient_id: str,
     provider_id: str,
     resources: Iterable[str],
+    planning_horizon_h: Optional[float] = None,
 ) -> DecisionResult:
-    """Evaluate service/resource delivery TOWARD a household/zone.
-
-    This is deliberately different from RESUPPLY_WINDOW: the recipient does not need to
-    travel. It represents Thai field patterns such as community kitchens, foundations,
-    buddy cells or zone volunteers carrying food/water/medicine toward isolated homes.
-
-    Quantitative throughput is not inferred here. The function only admits a categorical
-    deliverability claim when provider and support path are fresh and verified.
-    """
+    """Distinguish a usable path from a support flow that can actually close the need."""
     nodes = doc.get("nodes") or {}
     recipient = nodes.get(recipient_id)
     provider = nodes.get(provider_id)
@@ -642,46 +827,45 @@ def evaluate_support_delivery(
     if not isinstance(recipient, dict):
         return DecisionResult(False, "SUPPORT_DELIVERY_NOT_ADMITTED", ("UNKNOWN_RECIPIENT",))
     if not isinstance(provider, dict):
-        return DecisionResult(
-            False, "SUPPORT_DELIVERY_NOT_ADMITTED", (REASON_SUPPORT_PROVIDER_UNVERIFIED,)
-        )
+        return DecisionResult(False, "SUPPORT_DELIVERY_NOT_ADMITTED", (REASON_SUPPORT_PROVIDER_UNVERIFIED,))
     if not requested:
         return DecisionResult(False, "SUPPORT_DELIVERY_NOT_ADMITTED", ("NO_RESOURCE_REQUEST",))
+    if provider.get("fresh") is not True or provider.get("status") not in {"SAFE", "DEGRADED"}:
+        return DecisionResult(False, "SUPPORT_DELIVERY_NOT_ADMITTED", (REASON_SUPPORT_PROVIDER_UNVERIFIED,))
 
-    if (
-        provider.get("fresh") is not True
-        or provider.get("status") not in {"SAFE", "DEGRADED"}
-    ):
-        return DecisionResult(
-            False, "SUPPORT_DELIVERY_NOT_ADMITTED", (REASON_SUPPORT_PROVIDER_UNVERIFIED,)
-        )
+    capability = evaluate_support_capability(provider, requested, planning_horizon_h)
+    path_state, path_reasons = _support_path_assessment(
+        doc, provider_id, recipient_id, requested
+    )
 
-    provider_resources = set(provider.get("services") or []) | set(provider.get("resources") or [])
-    missing = [r for r in requested if r not in provider_resources and "*" not in provider_resources]
-    if missing:
-        return DecisionResult(
-            False,
-            "SUPPORT_DELIVERY_NOT_ADMITTED",
-            (REASON_SUPPORT_RESOURCE_UNAVAILABLE,),
-            {"missing_resources": missing},
-        )
+    if path_state == "UNVERIFIED":
+        return DecisionResult(False, "SUPPORT_DELIVERY_NOT_ADMITTED", path_reasons)
 
-    if not _support_path_exists(doc, provider_id, recipient_id, requested):
+    if not capability.admitted or path_state != "NEED_CLOSABLE":
+        reasons = capability.reason_codes + path_reasons
         return DecisionResult(
             False,
-            "SUPPORT_DELIVERY_NOT_ADMITTED",
-            (REASON_SUPPORT_DELIVERY_PATH_UNVERIFIED,),
+            "SUPPORT_DELIVERY_PATH_ONLY",
+            _dedup(reasons),
+            {
+                "provider_node": provider_id,
+                "recipient_node": recipient_id,
+                "resources": list(requested),
+                "path_state": path_state,
+                "capability_state": capability.state,
+                "note": "a route/provider may exist, but need closure within the planning horizon is not demonstrated",
+            },
         )
 
     return DecisionResult(
         True,
-        "SUPPORT_DELIVERY_AVAILABLE",
+        "SUPPORT_DELIVERY_NEED_CLOSABLE",
         (),
         {
             "provider_node": provider_id,
             "recipient_node": recipient_id,
             "resources": list(requested),
-            "note": "categorical deliverability only; no throughput inferred",
+            "path_state": path_state,
         },
     )
 
@@ -710,6 +894,20 @@ def screen_shelter_candidate(
     unknown: list[str] = []
     for field_name in required:
         value = block.get(field_name, UNKNOWN)
+        if field_name == "residual_flood_exposure":
+            if value in {"NONE", NOT_REQUIRED, False}:
+                continue
+            if value in {"PRESENT", "LIKELY", True}:
+                for conditional in ("perimeter_flood_defense", "dewatering_capability"):
+                    cv = block.get(conditional, UNKNOWN)
+                    if cv in {False, "UNSAFE", "INSUFFICIENT", "UNAVAILABLE", "BLOCKED"}:
+                        failed.append(conditional)
+                    elif cv not in {True, "SAFE", "SUFFICIENT", "AVAILABLE", "READY", NOT_REQUIRED}:
+                        unknown.append(conditional)
+                continue
+            unknown.append(field_name)
+            continue
+
         if field_name == "capacity":
             cap = node.get("capacity_persons")
             occ = node.get("occupied_persons")
@@ -728,6 +926,18 @@ def screen_shelter_candidate(
         elif value not in {True, "SAFE", "SUFFICIENT", "AVAILABLE", "READY", NOT_REQUIRED}:
             unknown.append(field_name)
 
+    environment_details = {}
+    env_required = block.get("environmental_assessment_required") is True
+    if isinstance(node.get("environment"), dict):
+        env_result = envd.evaluate_environmental_degradation(node)
+        environment_details = env_result.as_dict()
+        if env_result.state == envd.UNSAFE:
+            failed.append("environmental_degradation")
+        elif env_result.state == envd.UNKNOWN:
+            unknown.append("environmental_degradation")
+    elif env_required:
+        unknown.append("environmental_degradation")
+
     services = set(node.get("services") or [])
     missing_needs = set(needs) - services
     if missing_needs:
@@ -738,7 +948,7 @@ def screen_shelter_candidate(
             False,
             "SHELTER_REJECTED",
             (REASON_SHELTER_UNSAFE,),
-            {"failed": failed, "unknown": unknown, "phase": phase},
+            {"failed": failed, "unknown": unknown, "phase": phase, "environment": environment_details},
         )
     if unknown:
         reasons = [REASON_SHELTER_UNKNOWN]
@@ -748,14 +958,14 @@ def screen_shelter_candidate(
             False,
             "SHELTER_UNRESOLVED",
             _dedup(reasons),
-            {"unknown": unknown, "phase": phase},
+            {"unknown": unknown, "phase": phase, "environment": environment_details},
         )
 
     return DecisionResult(
         True,
         "SHELTER_ADMISSIBLE",
         (),
-        {"phase": phase},
+        {"phase": phase, "environment": environment_details},
     )
 
 
@@ -780,6 +990,7 @@ FUNCTIONAL_NEED_COUNT_FIELDS = (
     "needs_communication_assistance",
     "needs_special_diet",
     "needs_infant_feeding",
+    "needs_maternal_health_access",
 )
 
 SUPPORT_LINK_FIELDS = (
@@ -932,9 +1143,12 @@ def required_support_links(profile: dict[str, Any]) -> tuple[str, ...]:
     ):
         required.append("older_adult_support_link_uncovered")
 
-    # Pregnancy/postpartum trigger a health/transport support check; absence is not inferred
-    # from pregnancy itself, only from the explicit uncovered-link field.
-    if (_count(profile, "pregnant_person") or 0) > 0 or (_count(profile, "postpartum_person") or 0) > 0:
+    # Pregnancy/postpartum are assessment triggers, not automatic dependency labels.
+    # A hard support link is required only when a functional maternal-health need is declared.
+    if (
+        ((_count(profile, "pregnant_person") or 0) > 0 or (_count(profile, "postpartum_person") or 0) > 0)
+        and (_count(profile, "needs_maternal_health_access") or 0) > 0
+    ):
         required.append("pregnancy_support_link_uncovered")
 
     if any(
@@ -942,8 +1156,8 @@ def required_support_links(profile: dict[str, Any]) -> tuple[str, ...]:
         for k in (
             "needs_essential_medication",
             "needs_time_critical_medical_followup",
-            "chronic_or_acute_illness",
             "bedbound_or_homebound",
+            "needs_power_dependent_medical_device",
         )
     ):
         required.append("medical_support_link_uncovered")
@@ -993,6 +1207,7 @@ def aggregate_member_need_profile(profile: dict[str, Any]) -> dict[str, Any]:
         "needs_communication_assistance",
         "needs_special_diet",
         "needs_infant_feeding",
+        "needs_maternal_health_access",
         "single_person_household",
         "older_adult_alone",
         "single_caregiver_household",
@@ -1074,6 +1289,30 @@ def evaluate_dependency_coverage(profile: dict[str, Any]) -> DecisionResult:
     )
 
 
+def _forward_hazard_state(
+    node: dict[str, Any],
+    planning_horizon_h: Optional[float],
+    explicit: Optional[dict[str, Any]] = None,
+) -> tuple[str, dict[str, Any], tuple[str, ...]]:
+    block = explicit if isinstance(explicit, dict) else (node.get("sustainment") or {}).get("forward_hazard")
+    if not isinstance(block, dict):
+        return UNKNOWN, {}, (REASON_FORWARD_HAZARD_UNKNOWN,)
+    if block.get("fresh") is not True:
+        return UNKNOWN, block, (REASON_FORWARD_HAZARD_UNKNOWN,)
+    state = str(block.get("state", UNKNOWN)).upper()
+    valid = {"NONE", "LOW", "WATCH", "HIGH", "CRITICAL", "ACTIVE"}
+    if state not in valid:
+        return UNKNOWN, block, (REASON_FORWARD_HAZARD_UNKNOWN,)
+    horizon = block.get("horizon_h")
+    if horizon is not None and planning_horizon_h is not None:
+        try:
+            if float(horizon) < float(planning_horizon_h):
+                return UNKNOWN, block, (REASON_FORWARD_HAZARD_UNKNOWN,)
+        except (TypeError, ValueError):
+            return UNKNOWN, block, (REASON_FORWARD_HAZARD_UNKNOWN,)
+    return state, block, ()
+
+
 def recommend_protective_state(
     doc: dict[str, Any],
     household_id: str,
@@ -1081,96 +1320,129 @@ def recommend_protective_state(
     *,
     group_size: int = 1,
     mode: str = "walk",
+    forward_hazard: Optional[dict[str, Any]] = None,
 ) -> DecisionResult:
-    """Small deterministic state machine; no risk score and no forced binary choice."""
+    """Decision operator keeping current viability separate from forward hazard."""
     nodes = doc.get("nodes") or {}
     node = nodes.get(household_id)
     if not isinstance(node, dict):
         return DecisionResult(False, "UNKNOWN", ("UNKNOWN_HOUSEHOLD",))
 
     sustain = evaluate_sustainment(node, planning_horizon_h)
-    official = (node.get("sustainment") or {}).get("official_instruction", "NONE")
+    block = node.get("sustainment") or {}
+    official = block.get("official_instruction", "NONE")
+    forward_state, forward_block, forward_reasons = _forward_hazard_state(
+        node, planning_horizon_h, forward_hazard
+    )
 
-    # Surface official evacuation instruction without pretending an unsafe route is safe.
     if official == "EVACUATE":
-        route = cd.find_safe_route(
-            doc,
-            household_id,
-            group_size=group_size,
-            mode=mode,
-        )
+        route = cd.find_safe_route(doc, household_id, group_size=group_size, mode=mode)
         if route.found:
             return DecisionResult(
-                True,
-                "EVACUATE_ROUTE",
-                (),
+                True, "EVACUATE_ROUTE", (),
                 {"route": list(route.path), "target": route.target, "official": True},
             )
         return DecisionResult(
-            False,
-            "REQUEST_ASSISTED_EVACUATION",
-            (REASON_NO_FEASIBLE_SAFE_ROUTE,),
-            {"official": True},
+            False, "REQUEST_ASSISTED_EVACUATION",
+            (REASON_NO_FEASIBLE_SAFE_ROUTE,), {"official": True},
         )
+
+    physical = block.get("physical_safety", UNKNOWN)
 
     if sustain.state == SUSTAINABLE:
-        rs = evaluate_resupply_window(
-            doc,
-            household_id,
-            planning_horizon_h,
-            mode=mode,
-            group_size=group_size,
-        )
-        if rs.admitted:
-            return rs
+        if forward_state in {"WATCH", "HIGH", "CRITICAL", "ACTIVE"}:
+            state = "STAY_AND_PREPARE"
+            if forward_block.get("mobility_window_closing") is True:
+                state = "STAY_AND_PREPARE_WINDOW_CLOSING"
+            return DecisionResult(
+                True,
+                state,
+                sustain.reason_codes,
+                {
+                    "escalation_state": sustain.escalation_state,
+                    "current_state": "SUSTAINABLE",
+                    "forward_hazard": forward_state,
+                    "mobility_window_closing": forward_block.get("mobility_window_closing", UNKNOWN),
+                },
+            )
         return DecisionResult(
-            True,
-            "STAY_AND_SUSTAIN",
-            sustain.reason_codes,
-            {"escalation_state": sustain.escalation_state},
+            True, "STAY_AND_SUSTAIN", sustain.reason_codes,
+            {"escalation_state": sustain.escalation_state, "forward_hazard": forward_state},
         )
 
-    if sustain.state == NOT_SUSTAINABLE:
-        # Resource failure does not automatically mean the person should enter floodwater.
-        # First check declared support providers that can deliver the missing resources inward.
-        providers = (node.get("sustainment") or {}).get("support_providers") or []
+    if sustain.state == NOT_SUSTAINABLE and physical == UNSAFE:
+        route = cd.find_safe_route(doc, household_id, group_size=group_size, mode=mode)
+        if route.found:
+            return DecisionResult(
+                True, "PREPARE_TO_MOVE", sustain.reason_codes,
+                {"route": list(route.path), "target": route.target, "cause": "PHYSICAL_UNSAFE"},
+            )
+        return DecisionResult(
+            False, "REQUEST_ASSISTED_EVACUATION",
+            (REASON_NO_FEASIBLE_SAFE_ROUTE,) + sustain.reason_codes,
+            {"cause": "PHYSICAL_UNSAFE"},
+        )
+
+    if sustain.state == NOT_SUSTAINABLE and physical == SAFE:
+        # Resource/service deficit: move the missing function first, not the person.
+        providers = block.get("support_providers") or []
+        path_only: list[dict[str, Any]] = []
         for provider_id in providers:
             delivery = evaluate_support_delivery(
-                doc,
-                household_id,
-                provider_id,
-                sustain.gaps,
+                doc, household_id, provider_id, sustain.gaps, planning_horizon_h
             )
             if delivery.admitted:
                 return DecisionResult(
-                    True,
-                    "REQUEST_OR_RECEIVE_SUPPORT_DELIVERY",
-                    (),
-                    delivery.details,
+                    True, "REQUEST_OR_RECEIVE_SUPPORT_DELIVERY", (),
+                    delivery.details | {"forward_hazard": forward_state},
                 )
+            if delivery.state == "SUPPORT_DELIVERY_PATH_ONLY":
+                path_only.append(delivery.details)
 
-        route = cd.find_safe_route(
-            doc,
-            household_id,
-            group_size=group_size,
-            mode=mode,
+        rs = evaluate_resupply_window(
+            doc, household_id, planning_horizon_h, mode=mode, group_size=group_size
         )
-        if route.found:
+        if rs.admitted:
+            details = dict(rs.details)
+            details["forward_hazard"] = forward_state
+            details["mobility_window_closing"] = forward_block.get("mobility_window_closing", UNKNOWN)
+            return DecisionResult(True, rs.state, rs.reason_codes, details)
+
+        if path_only:
             return DecisionResult(
-                True,
-                "PREPARE_TO_MOVE",
-                (),
-                {"route": list(route.path), "target": route.target},
+                False,
+                "VERIFY_SUPPORT_CAPACITY_OR_TIMING",
+                (REASON_SUPPORT_CAPACITY_UNKNOWN, REASON_SUPPORT_ARRIVAL_UNKNOWN),
+                {"candidate_support": path_only, "forward_hazard": forward_state},
             )
+
         return DecisionResult(
             False,
-            "REQUEST_LOGISTICS_OR_ASSISTED_EVACUATION",
-            (REASON_NO_FEASIBLE_SAFE_ROUTE,) + sustain.reason_codes,
+            "REQUEST_LOGISTICS_OR_REASSESS_MOVEMENT",
+            sustain.reason_codes,
+            {
+                "cause": "RESOURCE_OR_SERVICE_DEFICIT",
+                "forward_hazard": forward_state,
+                "note": "resource deficit alone does not justify evacuation",
+            },
+        )
+
+    # Current state unresolved. Forward hazard may justify preparation, never a fabricated
+    # evacuation decision.
+    if forward_state in {"WATCH", "HIGH", "CRITICAL", "ACTIVE"}:
+        return DecisionResult(
+            False,
+            "VERIFY_AND_PREPARE",
+            _dedup(sustain.reason_codes + forward_reasons),
+            {
+                "unknown_fields": list(sustain.unknown_fields),
+                "forward_hazard": forward_state,
+            },
         )
 
     return DecisionResult(
         False,
         "VERIFY_BEFORE_ACTION",
-        sustain.reason_codes,
-        {"unknown_fields": list(sustain.unknown_fields)},
+        _dedup(sustain.reason_codes + forward_reasons),
+        {"unknown_fields": list(sustain.unknown_fields), "forward_hazard": forward_state},
     )

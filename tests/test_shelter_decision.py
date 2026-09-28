@@ -30,6 +30,7 @@ def _node(kind, *, sustain=None, status="SAFE", fresh=True, capacity=20, occupie
 def _sustain(**overrides):
     block = {
         "fresh": True,
+        "assessed_horizon_h": 72,
         "physical_safety": "SAFE",
         "potable_water_for_horizon": "SUFFICIENT",
         "service_water_for_horizon": "SUFFICIENT",
@@ -70,8 +71,15 @@ def _shelter_ready():
         "management_staffing": "READY",
         "waste_management": "READY",
         "sleeping_protection": "READY",
-        "perimeter_flood_defense": "READY",
-        "dewatering_capability": "READY",
+        "privacy_dignity": "READY",
+        "child_safeguarding": "READY",
+        "gbv_protection": "READY",
+        "feedback_complaints": "READY",
+        "family_unity": "READY",
+        "psychosocial_referral": "READY",
+        "residual_flood_exposure": "NONE",
+        "perimeter_flood_defense": "NOT_REQUIRED",
+        "dewatering_capability": "NOT_REQUIRED",
         "post_flood_cleaning": "READY",
         "exit_closure_plan": "READY",
     }
@@ -94,8 +102,37 @@ def _movement_chain():
             "capacity_persons": 100,
             "occupied_persons": 0,
             "services": ["food", "water"],
+            "support": {
+                "fresh": True,
+                "assessed_horizon_h": 72,
+                "resources": {
+                    "food_for_horizon": "SUFFICIENT",
+                    "potable_water_for_horizon": "SUFFICIENT",
+                    "service_water_for_horizon": "SUFFICIENT",
+                    "essential_medicine_for_horizon": "SUFFICIENT",
+                    "sanitation_hygiene": "SUFFICIENT",
+                    "communications": "SUFFICIENT",
+                    "vulnerable_support": "SUFFICIENT",
+                    "critical_power": "SUFFICIENT",
+                },
+            },
         },
     }
+    for support_id in ("b", "z"):
+        nodes[support_id]["support"] = {
+            "fresh": True,
+            "assessed_horizon_h": 72,
+            "resources": {
+                "food_for_horizon": "SUFFICIENT",
+                "potable_water_for_horizon": "SUFFICIENT",
+                "service_water_for_horizon": "SUFFICIENT",
+                "essential_medicine_for_horizon": "SUFFICIENT",
+                "sanitation_hygiene": "SUFFICIENT",
+                "communications": "SUFFICIENT",
+                "vulnerable_support": "SUFFICIENT",
+                "critical_power": "SUFFICIENT",
+            },
+        }
     nodes["i"]["shelter"] = _shelter_ready()
     nodes["x"]["shelter"] = _shelter_ready()
     nodes["x"]["verified_safe"] = True
@@ -175,6 +212,8 @@ def test_buddy_can_close_resource_gap_only_with_verified_support_edge():
         "status": "OPEN",
         "fresh": True,
         "field_verified": True,
+        "capacity_status": "SUFFICIENT",
+        "arrival_before_failure": True,
         "resources": ["food_for_horizon"],
     }]
     result = sd.find_lowest_viable_node(doc, "h", 24)
@@ -311,7 +350,7 @@ def test_not_sustainable_without_route_requests_logistics_not_unsafe_walkout():
     for edge in doc["edges"]:
         edge["fresh"] = False
     result = sd.recommend_protective_state(doc, "h", 24)
-    assert result.state == "REQUEST_LOGISTICS_OR_ASSISTED_EVACUATION"
+    assert result.state == "REQUEST_LOGISTICS_OR_REASSESS_MOVEMENT"
     assert result.admitted is False
 
 
@@ -337,6 +376,11 @@ def test_verified_inward_delivery_preserves_household_support_option():
         "capacity_persons": 0,
         "occupied_persons": 0,
         "services": ["food_for_horizon"],
+        "support": {
+            "fresh": True,
+            "assessed_horizon_h": 72,
+            "resources": {"food_for_horizon": "SUFFICIENT"},
+        },
     }
     doc["support_edges"] = [{
         "id": "kitchen_to_household",
@@ -345,13 +389,15 @@ def test_verified_inward_delivery_preserves_household_support_option():
         "status": "OPEN",
         "fresh": True,
         "field_verified": True,
+        "capacity_status": "SUFFICIENT",
+        "arrival_before_failure": True,
         "resources": ["food_for_horizon"],
     }]
     result = sd.evaluate_support_delivery(
-        doc, "h", "kitchen", ["food_for_horizon"]
+        doc, "h", "kitchen", ["food_for_horizon"], 24
     )
     assert result.admitted is True
-    assert result.state == "SUPPORT_DELIVERY_AVAILABLE"
+    assert result.state == "SUPPORT_DELIVERY_NEED_CLOSABLE"
 
 
 def test_unverified_inward_delivery_does_not_push_people_to_assume_supply():
@@ -366,6 +412,11 @@ def test_unverified_inward_delivery_does_not_push_people_to_assume_supply():
         "capacity_persons": 0,
         "occupied_persons": 0,
         "services": ["food_for_horizon"],
+        "support": {
+            "fresh": True,
+            "assessed_horizon_h": 72,
+            "resources": {"food_for_horizon": "SUFFICIENT"},
+        },
     }
     doc["support_edges"] = [{
         "id": "kitchen_to_household",
@@ -377,7 +428,7 @@ def test_unverified_inward_delivery_does_not_push_people_to_assume_supply():
         "resources": ["food_for_horizon"],
     }]
     result = sd.evaluate_support_delivery(
-        doc, "h", "kitchen", ["food_for_horizon"]
+        doc, "h", "kitchen", ["food_for_horizon"], 24
     )
     assert result.admitted is False
     assert sd.REASON_SUPPORT_DELIVERY_PATH_UNVERIFIED in result.reason_codes
@@ -396,6 +447,11 @@ def test_protective_state_prefers_verified_delivery_before_unverified_self_movem
         "capacity_persons": 0,
         "occupied_persons": 0,
         "services": ["food_for_horizon"],
+        "support": {
+            "fresh": True,
+            "assessed_horizon_h": 72,
+            "resources": {"food_for_horizon": "SUFFICIENT"},
+        },
     }
     doc["support_edges"] = [{
         "id": "kitchen_to_household",
@@ -404,6 +460,8 @@ def test_protective_state_prefers_verified_delivery_before_unverified_self_movem
         "status": "OPEN",
         "fresh": True,
         "field_verified": True,
+        "capacity_status": "SUFFICIENT",
+        "arrival_before_failure": True,
         "resources": ["food_for_horizon"],
     }]
     for edge in doc["edges"]:
@@ -540,6 +598,7 @@ def test_pregnant_person_living_alone_requires_support_and_buddy_checks():
         "total_persons": 1,
         "pregnant_person": 1,
         "living_arrangement": "ALONE",
+        "needs_maternal_health_access": 1,
         "pregnancy_support_link_uncovered": 0,
         "living_alone_buddy_link_uncovered": 0,
     }
@@ -576,3 +635,180 @@ def test_multigenerational_household_tag_does_not_assume_support_capacity():
     assert "MULTIGENERATIONAL" in result.details["composition_tags"]
     coverage = sd.evaluate_dependency_coverage(profile)
     assert coverage.state == "DEPENDENCY_COVERAGE_UNKNOWN"
+
+
+def test_sufficient_must_cover_requested_horizon():
+    node = _node("household", sustain=_sustain(assessed_horizon_h=12))
+    result = sd.evaluate_sustainment(node, 24)
+    assert result.state == sd.UNKNOWN
+    assert sd.REASON_ASSESSED_HORIZON_TOO_SHORT in result.reason_codes
+
+
+def test_missing_assessed_horizon_is_unknown_not_safe():
+    block = _sustain()
+    block.pop("assessed_horizon_h")
+    node = _node("household", sustain=block)
+    result = sd.evaluate_sustainment(node, 24)
+    assert result.state == sd.UNKNOWN
+    assert sd.REASON_MISSING_ASSESSED_HORIZON in result.reason_codes
+
+
+def test_lvcn_sorts_candidates_by_support_layer_not_yaml_order():
+    doc = _movement_chain()
+    doc["nodes"]["h"]["sustainment"]["food_for_horizon"] = "INSUFFICIENT"
+    doc["nodes"]["h"]["support_candidates"] = ["x", "z", "b", "h", "i"]
+    doc["support_edges"] = [{
+        "id": "b_to_h",
+        "from": "b",
+        "to": "h",
+        "status": "OPEN",
+        "fresh": True,
+        "field_verified": True,
+        "capacity_status": "SUFFICIENT",
+        "arrival_before_failure": True,
+        "resources": ["food_for_horizon"],
+    }]
+    result = sd.find_lowest_viable_node(doc, "h", 24)
+    assert result.node_id == "b"
+
+
+def test_support_path_without_capacity_or_timing_is_not_need_closable():
+    doc = _movement_chain()
+    doc["nodes"]["h"]["sustainment"]["food_for_horizon"] = "INSUFFICIENT"
+    doc["nodes"]["kitchen"] = {
+        "kind": "supply_point",
+        "layer": 5,
+        "status": "SAFE",
+        "fresh": True,
+        "verified_service": True,
+        "services": ["food_for_horizon"],
+        "support": {
+            "fresh": True,
+            "assessed_horizon_h": 72,
+            "resources": {"food_for_horizon": "SUFFICIENT"},
+        },
+    }
+    doc["support_edges"] = [{
+        "id": "k_to_h",
+        "from": "kitchen",
+        "to": "h",
+        "status": "OPEN",
+        "fresh": True,
+        "field_verified": True,
+        "resources": ["food_for_horizon"],
+    }]
+    result = sd.evaluate_support_delivery(doc, "h", "kitchen", ["food_for_horizon"], 24)
+    assert result.admitted is False
+    assert result.state == "SUPPORT_DELIVERY_PATH_ONLY"
+
+
+def test_resource_deficit_does_not_auto_trigger_shelter_movement():
+    doc = _movement_chain()
+    doc["nodes"]["h"]["sustainment"]["food_for_horizon"] = "INSUFFICIENT"
+    doc["nodes"]["h"]["sustainment"]["support_providers"] = []
+    doc["nodes"]["h"]["sustainment"]["resupply"] = {
+        "supplier_node": None,
+        "route_edges": [],
+        "official_movement_conflict": False,
+    }
+    result = sd.recommend_protective_state(doc, "h", 24)
+    assert result.state == "REQUEST_LOGISTICS_OR_REASSESS_MOVEMENT"
+    assert result.details["cause"] == "RESOURCE_OR_SERVICE_DEFICIT"
+
+
+def test_physical_unsafe_still_moves_to_verified_route():
+    doc = _movement_chain()
+    doc["nodes"]["h"]["sustainment"]["physical_safety"] = "UNSAFE"
+    result = sd.recommend_protective_state(doc, "h", 24)
+    assert result.state == "PREPARE_TO_MOVE"
+    assert result.details["cause"] == "PHYSICAL_UNSAFE"
+
+
+def test_forward_hazard_can_coexist_with_current_stay_state():
+    doc = _movement_chain()
+    result = sd.recommend_protective_state(
+        doc,
+        "h",
+        24,
+        forward_hazard={
+            "fresh": True,
+            "state": "HIGH",
+            "horizon_h": 24,
+            "mobility_window_closing": False,
+        },
+    )
+    assert result.admitted is True
+    assert result.state == "STAY_AND_PREPARE"
+    assert result.details["current_state"] == "SUSTAINABLE"
+    assert result.details["forward_hazard"] == "HIGH"
+
+
+def test_forward_hazard_window_closing_is_not_evacuate_by_itself():
+    doc = _movement_chain()
+    result = sd.recommend_protective_state(
+        doc,
+        "h",
+        24,
+        forward_hazard={
+            "fresh": True,
+            "state": "HIGH",
+            "horizon_h": 24,
+            "mobility_window_closing": True,
+        },
+    )
+    assert result.state == "STAY_AND_PREPARE_WINDOW_CLOSING"
+
+
+def test_supplier_presence_without_verified_stock_is_refused():
+    doc = _movement_chain()
+    doc["nodes"]["h"]["sustainment"]["food_for_horizon"] = "INSUFFICIENT"
+    doc["nodes"]["shop"]["support"]["resources"]["food_for_horizon"] = "UNKNOWN"
+    doc["nodes"]["h"]["sustainment"]["resupply"] = {
+        "supplier_node": "shop",
+        "route_edges": ["hb", "bz", "zi", "ie", "es"],
+        "official_movement_conflict": False,
+    }
+    result = sd.evaluate_resupply_window(doc, "h", 24)
+    assert result.admitted is False
+    assert sd.REASON_SUPPLIER_STOCK_UNKNOWN in result.reason_codes
+
+
+def test_pregnancy_alone_is_assessment_trigger_not_hard_dependency():
+    profile = {
+        "total_persons": 2,
+        "adult_18_59": 1,
+        "pregnant_person": 1,
+    }
+    required = sd.required_support_links(profile)
+    assert "pregnancy_support_link_uncovered" not in required
+
+
+def test_chronic_condition_without_functional_need_does_not_create_medical_link():
+    profile = {
+        "total_persons": 2,
+        "adult_18_59": 2,
+        "chronic_or_acute_illness": 1,
+    }
+    required = sd.required_support_links(profile)
+    assert "medical_support_link_uncovered" not in required
+
+
+def test_flood_defense_is_conditional_for_high_dry_shelter():
+    node = _node("internal_safe", sustain=_sustain())
+    node["shelter"] = _shelter_ready()
+    node["shelter"]["residual_flood_exposure"] = "NONE"
+    node["shelter"].pop("perimeter_flood_defense", None)
+    node["shelter"].pop("dewatering_capability", None)
+    result = sd.screen_shelter_candidate(node, phase="PRE_OPEN")
+    assert result.admitted is True
+
+
+def test_flood_exposed_shelter_requires_defense_and_dewatering():
+    node = _node("internal_safe", sustain=_sustain())
+    node["shelter"] = _shelter_ready()
+    node["shelter"]["residual_flood_exposure"] = "PRESENT"
+    node["shelter"]["perimeter_flood_defense"] = "UNKNOWN"
+    node["shelter"]["dewatering_capability"] = "READY"
+    result = sd.screen_shelter_candidate(node, phase="PRE_OPEN")
+    assert result.admitted is False
+    assert "perimeter_flood_defense" in result.details["unknown"]

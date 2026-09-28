@@ -81,6 +81,15 @@ return/relocation/closure.
 - Operational fail-closed schema: `site/inputs/community/sustainment_policy.yaml`
 - Field failure modes: `site/inputs/community/shelter_field_evidence_2026-09-28.md`
 - Tests: `tests/test_shelter_decision.py`
+- Environmental time-to-unsafety engine: `environmental_degradation.py`
+- Environmental degradation equations/evidence: `docs/ENVIRONMENTAL_DEGRADATION_CLOCKS.md`
+- Environmental tests: `tests/test_environmental_degradation.py`
+
+FloodConnect now also models **safe-now -> degrading -> unsafe** transitions that can occur
+without rising water depth: sewage/backflow contamination, sewer-gas/H2S uncertainty,
+wet-material/mold clocks, standing-water/vector clocks, and stagnant organic-water odor
+potential. These mechanisms remain separate; there is no single universal "age of floodwater"
+threshold.
 
 **LVCN is a FloodConnect proposal, not a claimed FEMA/Sphere/UNHCR/CCCM standard.**
 The design remains fail-closed: no universal stock-duration default, no weighted safety score,
