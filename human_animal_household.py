@@ -504,6 +504,13 @@ def screen_animal_destination(
             )
 
     block, owner_node = _animal_block_for_destination(node, profile, doc)
+    if owner_node.get("fresh") is not True or owner_node.get("status") not in {"SAFE", "DEGRADED"}:
+        return AnimalUnitResult(
+            UNKNOWN,
+            reason_codes=("ANIMAL_ACCOMMODATION_NODE_UNVERIFIED",),
+            unknown_fields=("animal_accommodation_node",),
+            details={"topology": topology},
+        )
     if not isinstance(block, dict):
         return AnimalUnitResult(
             UNKNOWN,
