@@ -758,20 +758,90 @@ def aggregate_member_need_profile(profile: dict[str, Any]) -> dict[str, Any]:
     diagnoses.
     """
     allowed = (
-        "total_persons",
-        "older_adult_alone",
-        "single_caregiver",
-        "infant_feeding",
+        # age/life-stage groups
+        "child_0_5",
+        "child_6_12",
+        "adolescent_13_17",
+        "adult_18_59",
+        "older_adult_60_plus",
+        "pregnant_person",
+        "postpartum_person",
+
+        # health / functional dependency
         "mobility_assistance",
         "essential_medication",
         "time_critical_medical_followup",
+        "medical_device_power_dependency",
         "communication_assistance",
         "special_diet",
+        "infant_feeding",
+
+        # living arrangement / household composition
+        "single_person_household",
+        "older_adult_alone",
+        "single_caregiver_household",
+        "dependents_without_co_resident_capable_adult",
+        "co_resident_capable_adults",
+        "co_resident_caregivers",
         "unreachable_households",
+
+        # declared support-link coverage; do not infer from age alone
+        "child_caregiver_link_uncovered",
+        "older_adult_support_link_uncovered",
+        "pregnancy_support_link_uncovered",
+        "medical_support_link_uncovered",
+        "living_alone_buddy_link_uncovered",
     )
     out = {k: profile.get(k) for k in allowed if k in profile}
     out["privacy"] = "aggregate_operational_needs_only"
     return out
+
+
+def evaluate_dependency_coverage(profile: dict[str, Any]) -> DecisionResult:
+    """Check whether declared functional dependencies have a support link.
+
+    This is intentionally relationship-based, not demographic scoring.
+    Being a child, older adult, pregnant person or patient does not by itself mean
+    "not viable". The failure condition is an explicitly declared support dependency
+    that lacks a corresponding caregiver/buddy/medical/logistics link.
+
+    Input is aggregate only; no names or diagnoses are required.
+    """
+    uncovered_fields = (
+        "child_caregiver_link_uncovered",
+        "older_adult_support_link_uncovered",
+        "pregnancy_support_link_uncovered",
+        "medical_support_link_uncovered",
+        "living_alone_buddy_link_uncovered",
+    )
+    missing = []
+    uncovered = []
+    for field_name in uncovered_fields:
+        value = profile.get(field_name, UNKNOWN)
+        if value == UNKNOWN or value is None:
+            missing.append(field_name)
+            continue
+        try:
+            if int(value) > 0:
+                uncovered.append(field_name)
+        except (TypeError, ValueError):
+            missing.append(field_name)
+
+    if uncovered:
+        return DecisionResult(
+            False,
+            "DEPENDENCY_SUPPORT_GAP",
+            (REASON_VULNERABLE_SUPPORT_GAP,),
+            {"uncovered_links": uncovered},
+        )
+    if missing:
+        return DecisionResult(
+            False,
+            "DEPENDENCY_COVERAGE_UNKNOWN",
+            (REASON_UNKNOWN_ESSENTIAL,),
+            {"unknown_links": missing},
+        )
+    return DecisionResult(True, "DEPENDENCY_COVERED", (), {})
 
 
 def recommend_protective_state(
