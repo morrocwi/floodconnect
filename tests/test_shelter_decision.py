@@ -425,3 +425,66 @@ def test_shop_presence_without_verified_stock_is_not_resupply():
     result = sd.evaluate_resupply_window(doc, "h", 24, mode="walk")
     assert result.admitted is False
     assert sd.REASON_RESUPPLY_DESTINATION_UNVERIFIED in result.reason_codes
+
+
+def test_vulnerable_groups_are_kept_as_distinct_aggregate_categories():
+    profile = {
+        "total_persons": 7,
+        "child_0_5": 1,
+        "child_6_12": 1,
+        "older_adult_60_plus": 2,
+        "pregnant_person": 1,
+        "essential_medication": 2,
+        "single_person_household": 0,
+        "co_resident_caregivers": 2,
+        "name": "MUST_NOT_LEAK",
+        "diagnosis": "MUST_NOT_LEAK",
+    }
+    out = sd.aggregate_member_need_profile(profile)
+    assert out["child_0_5"] == 1
+    assert out["child_6_12"] == 1
+    assert out["older_adult_60_plus"] == 2
+    assert out["pregnant_person"] == 1
+    assert out["co_resident_caregivers"] == 2
+    assert "name" not in out
+    assert "diagnosis" not in out
+
+
+def test_dependency_pairing_gap_is_explicit_not_demographic_score():
+    profile = {
+        "child_caregiver_link_uncovered": 0,
+        "older_adult_support_link_uncovered": 1,
+        "pregnancy_support_link_uncovered": 0,
+        "medical_support_link_uncovered": 0,
+        "living_alone_buddy_link_uncovered": 0,
+    }
+    result = sd.evaluate_dependency_coverage(profile)
+    assert result.admitted is False
+    assert result.state == "DEPENDENCY_SUPPORT_GAP"
+    assert "older_adult_support_link_uncovered" in result.details["uncovered_links"]
+
+
+def test_all_dependency_links_covered():
+    profile = {
+        "child_caregiver_link_uncovered": 0,
+        "older_adult_support_link_uncovered": 0,
+        "pregnancy_support_link_uncovered": 0,
+        "medical_support_link_uncovered": 0,
+        "living_alone_buddy_link_uncovered": 0,
+    }
+    result = sd.evaluate_dependency_coverage(profile)
+    assert result.admitted is True
+    assert result.state == "DEPENDENCY_COVERED"
+
+
+def test_unknown_dependency_link_stays_unknown():
+    profile = {
+        "child_caregiver_link_uncovered": 0,
+        "older_adult_support_link_uncovered": "UNKNOWN",
+        "pregnancy_support_link_uncovered": 0,
+        "medical_support_link_uncovered": 0,
+        "living_alone_buddy_link_uncovered": 0,
+    }
+    result = sd.evaluate_dependency_coverage(profile)
+    assert result.admitted is False
+    assert result.state == "DEPENDENCY_COVERAGE_UNKNOWN"
