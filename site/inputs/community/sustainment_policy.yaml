@@ -154,6 +154,41 @@ convergence_feasibility:
       - route_interface_ledger
     rule: "rotating coordinators may operate the ledgers; losing one person must not erase shared operational state"
 
+operational_resource_graph:
+  id: ORCG
+  name: "Operational Resource Capability Graph"
+  registry: "site/inputs/community/operational_tools.yaml"
+  node_kind: tool_node
+  separate_from_movement_graph: true
+  separate_from_shelter_nodes: true
+  may_attach_to: [node, edge]
+  principles:
+    - "tool presence != usable capability"
+    - "tool type != route/site safety"
+    - "verified/fresh/operable concrete deployment required"
+    - "qualified operator required when declared by resource type"
+  cross_typology_targets:
+    movement:
+      effect: "may add a declared mode/capacity to an otherwise verified edge"
+      hard_boundary: "community_dag route safety/verification remains mandatory"
+    lifeline_convergence:
+      effect: "may add provider transport/service capability and path throughput"
+      hard_boundary: "LCF quantity/timing/interface constraints remain mandatory"
+    local_convergence_board:
+      effect: "may appear as SUPPLY and enable transfer/staging/communication capability"
+      hard_boundary: "LCB location must already pass SO-L0 Dry Gate"
+    shelter_operation:
+      effect: "may contribute capability evidence toward a level requirement"
+      hard_boundary: "tool type alone never promotes a shelter level; adequate capacity/horizon must be verified"
+    human_animal:
+      effect: "may enable containment, veterinary support or compatible transport"
+      hard_boundary: "animal movement readiness/destination compatibility remain separately evaluated"
+  capability_cascade:
+    forward: "tool_deployment -> capability_gain -> edge/node state change -> possible change in LCF/SOLevel/LVCN/HAHU"
+    reverse: "tool_loss -> capability_loss -> edge loss/node downgrade -> possible LVCN escalation"
+    weighted_score: false
+
+
 shelter_operation_ladder:
   id: SOCL
   name: "Shelter Operation Capability Ladder"
