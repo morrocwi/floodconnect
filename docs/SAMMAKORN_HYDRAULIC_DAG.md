@@ -1,186 +1,212 @@
-# Sammakorn Hydraulic DAG — คลอง ↔ ประตู ↔ บึง ↔ ปั๊ม
+# Sammakorn Hydraulic DAG — evidence-first
 
-**Status:** operational model with explicit unknowns. Do not infer unverified pump directions.
+**Status:** evidence-backed topology with unresolved as-built links.
 
-## Core model
+This document supersedes the earlier simplified assumption that every pond has a directly
+verified `canal -> gate -> pond -> pump -> canal` layout. That exact point-to-point layout
+has **not** been established for all ponds.
 
-แก้มลิงต้องแยกทางน้ำเป็น 2 edge คนละหน้าที่:
+## What is verified
 
-```text
-คลอง/ท่อระบายน้ำภายนอก
-        |
-        |  GATE / CONTROLLED INLET
-        |  gravity inflow when H_canal > H_pond
-        v
-      [ บึง ]
-        |
-        |  PUMP / CONTROLLED OUTLET
-        |  mechanical outflow
-        v
-คลองรับน้ำภายนอก → โครงข่ายคลองหลัก → คลองแสนแสบ
-```
+1. BMA's monkey-cheek database describes the aggregate Sammakorn retention system as:
 
-ดังนั้น ห้ามแทนความสัมพันธ์คลองกับบึงด้วยลูกศรเส้นเดียวถาวร.
+   `รับน้ำจากหมู่บ้านสัมมากร -> ระบายน้ำลงสู่คลองแสนแสบ`
 
-## Hydraulic DAG
+2. BMA's 2023 inspection wording says the internal Sammakorn drainage system at pond pump
+   stations 1–4 is used **เพื่อระบายน้ำออกสู่คลองหัวหมาก คลองบ้านม้า และคลองสะพานสูง**.
 
-```text
-                         ┌──────────────────────────────┐
-                         │  external canal / drainage  │
-                         │  C                          │
-                         └──────────────┬───────────────┘
-                                        │
-                         gate_open AND H_C > H_P
-                         gravity / controlled inflow
-                                        │
-                                        v
-                         ┌──────────────────────────────┐
-                         │  retention pond P           │
-                         │  temporary storage          │
-                         └──────────────┬───────────────┘
-                                        │
-                       pump_on AND receiving_capacity
-                           mechanical outflow
-                                        │
-                                        v
-                         ┌──────────────────────────────┐
-                         │ receiving canal R           │
-                         └──────────────┬───────────────┘
-                                        │
-                                        v
-                                wider canal network
-                                        │
-                                        v
-                                  Khlong Saen Saep
-```
+3. BMA's 2567 flood-plan control-structure table identifies:
 
-### Important
+   - Pond station 1, at Khlong Saphan Sung: **1.00 m3/s = 2 x 0.50**
+   - Pond station 2, at Khlong Ban Ma 2: **0.75 m3/s = 3 x 0.25**
+   - Pond station 4, at Khlong Wat Yai: **2.00 m3/s = 2 x 1.00**
+   - Khlong Ban Ma 2 station: **4.00 m3/s = 4 x 1.00**
 
-- `GATE` ไม่ใช่ปั๊ม: ทำหน้าที่เปิด/ปิด hydraulic connection.
-- `PUMP` ไม่ใช่ประตู: ทำหน้าที่สร้าง head เพื่อบังคับน้ำออกจากบึง.
-- คำว่า 'ดึงน้ำเข้าบึง' ไม่ได้แปลว่าต้องมี pump-in; ถ้า H_canal > H_pond และประตูเปิด น้ำเข้าได้ด้วย gravity.
-- ขณะนี้หลักฐานสนับสนุน pump-out ของระบบบึงสัมมากร แต่ **pumped inflow เข้า 4 บึงยังไม่ established**.
+   The table says the pond-station gates are opened/closed according to water condition
+   and level. It does **not** by itself show the buried intake/discharge pipes.
 
-## Node and edge semantics
+4. BMA's Saphan Sung canal inventory says **Khlong Ban Ma 2 runs from Khlong Saen Saep to
+   Sammakorn Village**, width about 3–5 m and length about 1.41 km.
 
-### Nodes
+5. The official BMA project budget scope for project `0412002-55-30` includes:
 
-- `C`: external canal / local drainage node
-- `P`: retention pond / storage node
-- `R`: receiving canal node
-- `S`: Saen Saep trunk node
+   - 4 pump stations matching the design capacity families above;
+   - seven connections of **0.80 m drainage pipe**;
+   - **HDPE 0.50 m ~258 m**;
+   - **HDPE 0.315 m ~135 m**;
+   - a **2.0 x 2.0 m box drain ~15 m**;
+   - canal/embankment works.
 
-### Edge A — canal → pond
+   This proves there are engineered pipe/conveyance links that may not be visible on
+   satellite imagery. The budget summary is **not the full BOQ / ปร.4 / as-built drawing**.
+
+## Evidence-first DAG
+
+The system should currently be represented as:
 
 ```text
-C --[gate / inlet]--> P
+ROAD / HOUSEHOLD DRAINAGE
+          |
+          | collection network
+          | (pipe / drain / local channel; exact mechanism by pond unresolved)
+          v
+  +-------------------+
+  | SAMMAKORN PONDS   |
+  | retention storage |
+  +---------+---------+
+            |
+            | pond pump stations 1–4
+            | direction: INTERNAL SYSTEM -> EXTERNAL CANAL SYSTEM
+            v
+  +-----------------------------+
+  | LOCAL / PUBLIC CONVEYANCE   |
+  | Huamak / Ban Ma /           |
+  | Saphan Sung / Wat Yai etc.  |
+  +--------------+--------------+
+                 |
+                 | canal topology + downstream structures
+                 v
+        +------------------+
+        | KHLONG SAEN SAEP |
+        +------------------+
 ```
 
-Active only when:
+### Important correction
+
+Do **not** claim that road water reaches each pond by gravity only. The project contains
+pipes and pump structures, but the exact road/drain -> pond intake arrangement is still
+unresolved without the construction drawings.
+
+Do **not** claim that a pond pump discharges onto the road surface. The verified system
+purpose is to move water from the internal Sammakorn system toward public canals and
+ultimately Saen Saep. A buried pipe may run under or along a road, but that is not the
+same as discharging water "onto the road".
+
+## Pond-level asset model
+
+### Pond 1
 
 ```text
-gate_state == OPEN
-AND H_C > H_P
-AND pond_storage_available > 0
+local drainage -> [unresolved intake] -> Pond 1
+Pond 1 -> ST.SPS.01 -> interface associated with Khlong Saphan Sung
 ```
 
-Interpretation: **gravity inflow / capture**.
+Verified design capacity: **1.00 m3/s (2 x 0.50)**.
 
-### Edge B — pond → receiving canal
+### Pond 2
 
 ```text
-P --[pump]--> R
+local drainage -> [unresolved intake / buried conveyance] -> Pond 2
+Pond 2 -> ST.SPS.02 -> interface associated with Khlong Ban Ma 2
 ```
 
-Active only when:
+Verified design capacity: **0.75 m3/s (3 x 0.25)**.
+
+This does **not** mean Pond 2 must visibly touch an open canal. BMA's canal inventory says
+Khlong Ban Ma 2 terminates at/extends to Sammakorn Village, while the project budget
+contains multiple pipe connections. The exact connection from Pond 2 to that canal remains
+an **as-built question**.
+
+### Pond 3
+
+The 2567 control-structure table excerpt used here does not list Pond 3. The original
+project budget has a second `2 x 0.50 m3/s` station after accounting for Pond 1, so Pond 3
+is a plausible match, but this is **inference only** and must not be promoted to verified
+asset data without a direct record.
+
+### Pond 4
 
 ```text
-pump_available == true
-AND pump_on > 0
-AND receiving_capacity != BLOCKED
+local drainage -> [unresolved intake] -> Pond 4
+Pond 4 -> ST.SPS.04 -> interface named "ตอนคลองวัดใหญ่"
 ```
 
-Interpretation: **mechanical outflow / pre-drain / recovery drain**.
+Verified design capacity: **2.00 m3/s (2 x 1.00)**.
 
-### Edge C — receiving canal → Saen Saep
+The station name and field imagery locate the structure at the pond edge, but the exact
+buried discharge route from Khlong Wat Yai onward still requires an as-built plan.
+
+## Separate downstream station: Khlong Ban Ma 2
+
+BMA lists a separate asset:
 
 ```text
-R --> ... --> S
+Khlong Ban Ma 2 -> Pump station Khlong Ban Ma 2 -> Saen Saep-side network
 ```
 
-This edge follows the verified canal topology. It is not assumed from geographic bearing.
+Capacity: **4.00 m3/s (4 x 1.00)**.
 
-## Operating states
+MEA also distinguishes `สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2` from
+`สถานีสูบน้ำคลองบ้านม้า 2 ตอนคลองแสนแสบ`. Treat these as **different nodes**.
 
-| State | Gate | Pump | Expected movement | Meaning |
-|---|---|---|---|---|
-| PRE_DRAIN | closed/controlled | ON | P → R | lower pond before rain |
-| CAPTURE | OPEN | usually OFF/controlled | C → P | accept excess water into storage |
-| HOLD | CLOSED/controlled | OFF/limited | none/minimal | keep stored water while downstream is constrained |
-| RECOVERY | closed/controlled | ON | P → R | empty pond after downstream improves |
-| FAIL_CLOSED | UNKNOWN | UNKNOWN | do not infer | insufficient telemetry |
-
-## Minimal equations
-
-### Gravity inflow eligibility
+Therefore the topology can contain two pumping stages:
 
 ```text
-DeltaH_in = H_C - H_P
-gravity_inflow_possible = gate_open AND DeltaH_in > 0 AND storage_available
+Pond 2
+  -> pond pump ST.SPS.02
+  -> local/pipe/canal conveyance
+  -> Khlong Ban Ma 2
+  -> downstream Ban Ma 2 pump/control structure
+  -> Saen Saep
 ```
 
-### Pumped outflow eligibility
+The middle pipe/channel geometry is still unresolved.
 
-```text
-pumped_outflow_possible = pump_on > 0 AND receiving_canal_can_accept
-```
+## Gate semantics
 
-Do not infer actual Q from pump count alone; delivered flow depends on pump curve, head, blockage and operating condition.
+A gate at a pond station is a control structure, but its exact hydraulic side must not be
+guessed. Until the as-built drawing is found:
 
-## Sammakorn implementation
-
-Model each of the four pond systems independently:
-
-```text
-external/local canal C1 -> gate G1 -> pond P1 -> pump ST.SPS.01 -> receiving canal R1
-external/local canal C2 -> gate G2 -> pond P2 -> pump ST.SPS.02 -> receiving canal R2
-external/local canal C3 -> gate G3 -> pond P3 -> pump ST.SPS.03 -> receiving canal R3
-external/local canal C4 -> gate G4 -> pond P4 -> pump ST.SPS.04 -> receiving canal R4
-```
-
-Known at system level: the four-pond project is intended to temporarily store water associated with Khlong Ban Ma, Khlong Ban Ma 2 and Khlong Saphan Sung / Ramkhamhaeng drainage, then drain back to the surrounding canal network.
-
-**Do not assign R1/R3/R4 to a specific named canal until asset-level evidence is found.**
-
-Station 2 may be associated with Khlong Ban Ma 2, but the exact inlet/outlet hydraulic drawing should still be treated separately from the station's location.
+- `gate_open` means a hydraulic connection is permitted;
+- it does **not** prove whether the instantaneous flow is into or out of the pond;
+- flow direction requires compatible water-surface levels on both sides;
+- pump direction must come from asset/design evidence, not from water-level difference alone.
 
 ## Fail-closed rules
 
-1. Missing gate state → `UNKNOWN`, never assume OPEN.
-2. Missing pond water level → cannot determine gravity direction.
-3. Missing external canal level → cannot determine gravity direction.
-4. Pump count > 0 proves operation, not actual discharge.
-5. High receiving-canal water can reduce pump effectiveness; do not assume nameplate flow.
-6. Never convert the word `ดึงน้ำ` into `pump_in` without direct engineering evidence.
+1. Station name `ตอนคลอง X` = verified **association/location label**, not proof that an
+   open canal physically touches the pond.
+2. Satellite absence of an open canal != absence of hydraulic connection.
+3. Project pipe quantities prove hidden conveyance exists, but not which pipe belongs to
+   which pond.
+4. Never assign a specific intake/discharge route from capacity matching alone.
+5. Pond 3 remains unresolved.
+6. The full BOQ/ปร.4, construction plan, pipe profile, and as-built drawings are still
+   required to close the topology.
 
-## Evidence anchors
+## Documents still needed
 
-- BMA identifies monkey-cheek storage as part of Bangkok flood management and separately tracks pump stations and floodgates as drainage assets.
-- Public reporting on the Sammakorn project describes the four ponds as receiving/holding water associated with Ban Ma, Ban Ma 2 and Saphan Sung drainage, then releasing it later.
-- FloodConnect live pump telemetry already exposes pump and gate fields for ST.SPS.01-04; this DAG supplies the missing hydraulic semantics.
+Request/search for project:
 
-## Data requirement for full verification
+**โครงการก่อสร้างแก้มลิงหมู่บ้านสัมมากรและระบบระบายน้ำถนนรามคำแหง**  
+Project budget code: **0412002-55-30**  
+Contract period reported by BMA: **20 Jul 2013 – 21 Jul 2018**  
+Contractor: **บริษัท ชัยเจริญไมตรี จำกัด**
 
-For each pond/station obtain:
+Priority artifacts:
 
-- pond water level and datum
-- outside canal water level and datum
-- gate opening/state
-- pump ON/total
-- pump design direction
-- intake coordinate
-- discharge coordinate
-- receiving canal name
-- pump curve / design Q and head if available
+- แบบ ปร.4 / ปร.5
+- ใบแจ้งปริมาณงานและราคา / BOQ
+- General Layout / Drainage Layout
+- Pump Station Plan & Section for ponds 1–4
+- Intake / Discharge Pipe Plan
+- Pipe Profile
+- Gate Detail
+- As-built Drawing
 
-Then the system can resolve **why water is not moving** rather than only saying a pump is on/off.
+## Sources
+
+- BMA monkey-cheek database:
+  https://monkeycheek.bangkok.go.th/mngkaccordion/27
+- BMA Saphan Sung canal inventory / action plan:
+  https://webportal.bangkok.go.th/public/user_files_editor/99/ITA/2568/Action_Plan_2568.pdf
+- BMA official flood-plan library:
+  https://dds.bangkok.go.th/content/doc3/index.php
+- BMA FY2558 project budget scope:
+  https://budget.bangkok.go.th/main/upload/2015/09/29/A20150929142318.pdf
+- 2023 government inspection wording:
+  https://www.thailandplus.tv/archives/690882
+- MEA 2024 inspection distinguishing the two Ban Ma 2 pump assets:
+  https://www.mea.or.th/public-relations/corporate-news-activities/announcement/OpMsOL7FX
+- BMA statement on contract/contractor:
+  https://www.thaipr.net/general/3647868
