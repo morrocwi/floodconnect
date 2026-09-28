@@ -114,17 +114,57 @@ shelter_phases:
 
 member_need_profile:
   privacy: "aggregate operational needs only; no names, diagnoses, phone numbers, room/house identifiers"
-  fields:
-    - total_persons
-    - older_adult_alone
-    - single_caregiver
-    - infant_feeding
+
+  # Do not collapse these into one 'vulnerable' count. Different groups have different
+  # dependencies and service needs.
+  demographic_life_stage:
+    - child_0_5
+    - child_6_12
+    - adolescent_13_17
+    - adult_18_59
+    - older_adult_60_plus
+    - pregnant_person
+    - postpartum_person
+
+  health_function:
     - mobility_assistance
     - essential_medication
     - time_critical_medical_followup
+    - medical_device_power_dependency
     - communication_assistance
     - special_diet
+    - infant_feeding
+
+  living_arrangement:
+    - single_person_household
+    - older_adult_alone
+    - single_caregiver_household
+    - dependents_without_co_resident_capable_adult
+    - co_resident_capable_adults
+    - co_resident_caregivers
     - unreachable_households
+
+  dependency_link_gaps:
+    - child_caregiver_link_uncovered
+    - older_adult_support_link_uncovered
+    - pregnancy_support_link_uncovered
+    - medical_support_link_uncovered
+    - living_alone_buddy_link_uncovered
+
+  pairing_rule: >
+    Demographic category alone never makes a node non-viable. Evaluate the declared
+    dependency and whether a corresponding caregiver/buddy/medical/logistics support
+    link exists and is reachable/fresh.
+
+  typical_functional_pairings:
+    - "child_0_5 -> caregiver + feeding/hygiene + evacuation assistance"
+    - "child_6_12 -> responsible adult + communication/evacuation supervision"
+    - "older_adult_60_plus with mobility/medical dependency -> caregiver or buddy + medicine/transport link"
+    - "pregnant/postpartum person -> companion/buddy + maternal-health access"
+    - "time-critical patient -> caregiver/buddy + verified medical referral/transport"
+    - "medical-device power dependency -> critical power + backup + medical escalation"
+    - "single-person household -> buddy/check-in link"
+    - "single-caregiver household -> backup caregiver/buddy link for dependents"
 
 defaults:
   unknown_is_safe: false
