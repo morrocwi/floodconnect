@@ -210,3 +210,53 @@ Priority artifacts:
   https://www.mea.or.th/public-relations/corporate-news-activities/announcement/OpMsOL7FX
 - BMA statement on contract/contractor:
   https://www.thaipr.net/general/3647868
+
+
+## Working hypothesis: canal capture into ponds
+
+**Hypothesis status:** supported at system-function level; exact hydraulic hardware path unresolved.
+
+The strongest current interpretation of BMA's 2018 description is that, during a high-water
+capture phase, water associated with **Khlong Ban Ma, Khlong Ban Ma 2 and Khlong Saphan Sung**
+is intentionally diverted/stored in the Sammakorn retention ponds before later release.
+
+Working DAG:
+
+```text
+Khlong Ban Ma / Ban Ma 2 / Saphan Sung
+              |
+              | controlled diversion
+              | pipe / gate / local channel
+              | exact hardware unresolved
+              v
+       Sammakorn retention ponds
+              |
+              | temporary storage
+              v
+          HOLD / BUFFER
+              |
+              | later, when receiving system can accept
+              v
+      pond pump stations 1–4
+              |
+              v
+      public canal network
+              |
+              v
+         Khlong Saen Saep
+```
+
+This hypothesis reconciles two BMA statements that otherwise look contradictory:
+
+1. the ponds help **draw/capture water coming from Ban Ma, Ban Ma 2 and Saphan Sung**; and
+2. private retention ponds, including Sammakorn, were equipped with pumps/gates so operators
+   can **lower pond level in advance** and create storage before heavy rain.
+
+Therefore FloodConnect should model the system as **time-dependent bidirectional exchange**:
+
+- capture phase: external canal/drainage -> pond;
+- recovery/pre-drain phase: pond -> external canal network by pump.
+
+What remains unresolved is whether the capture phase uses only gravity through a gate/pipe,
+or whether any separate inlet pump assists flow. The presence of ST.SPS.01–04 must not be
+used as proof of inlet pumping.
