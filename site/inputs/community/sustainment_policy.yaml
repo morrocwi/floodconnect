@@ -115,8 +115,11 @@ shelter_phases:
 member_need_profile:
   privacy: "aggregate operational needs only; no names, diagnoses, phone numbers, room/house identifiers"
 
-  # Do not collapse these into one 'vulnerable' count. Different groups have different
-  # dependencies and service needs.
+  principle: >
+    Separate demographic/life-stage vulnerability from functional dependency and from
+    living arrangement. A demographic label triggers assessment; hard failure comes from
+    an unmet declared functional need or missing required support link, not age/pregnancy alone.
+
   demographic_life_stage:
     - child_0_5
     - child_6_12
@@ -126,45 +129,83 @@ member_need_profile:
     - pregnant_person
     - postpartum_person
 
-  health_function:
-    - mobility_assistance
-    - essential_medication
-    - time_critical_medical_followup
-    - medical_device_power_dependency
-    - communication_assistance
-    - special_diet
-    - infant_feeding
+  health_status_counts:
+    - chronic_or_acute_illness
+    - disability_or_functional_limitation
+    - bedbound_or_homebound
+
+  functional_need_counts:
+    - needs_continuous_supervision
+    - needs_mobility_assistance
+    - needs_essential_medication
+    - needs_time_critical_medical_followup
+    - needs_power_dependent_medical_device
+    - needs_communication_assistance
+    - needs_special_diet
+    - needs_infant_feeding
 
   living_arrangement:
-    - single_person_household
-    - older_adult_alone
-    - single_caregiver_household
-    - dependents_without_co_resident_capable_adult
-    - co_resident_capable_adults
-    - co_resident_caregivers
-    - unreachable_households
+    categorical:
+      - ALONE
+      - PAIR
+      - FAMILY_GROUP
+      - MULTIGENERATIONAL
+      - GROUP_CARE
+      - UNKNOWN
+    counts_flags:
+      - single_person_household
+      - older_adult_alone
+      - single_caregiver_household
+      - dependents_without_co_resident_capable_adult
+      - co_resident_capable_adults
+      - co_resident_caregivers
+      - unreachable_households
 
-  dependency_link_gaps:
+  required_support_link_checks:
     - child_caregiver_link_uncovered
+    - backup_caregiver_link_uncovered
     - older_adult_support_link_uncovered
     - pregnancy_support_link_uncovered
     - medical_support_link_uncovered
+    - mobility_support_link_uncovered
+    - power_dependency_support_link_uncovered
+    - communication_support_link_uncovered
     - living_alone_buddy_link_uncovered
 
-  pairing_rule: >
-    Demographic category alone never makes a node non-viable. Evaluate the declared
-    dependency and whether a corresponding caregiver/buddy/medical/logistics support
-    link exists and is reachable/fresh.
+  composition_tags:
+    descriptive_only:
+      - LIVES_ALONE
+      - PAIR
+      - GROUP
+      - CHILD_WITH_OLDER_ONLY
+      - OLDER_ONLY_HOUSEHOLD
+      - PREGNANT_ALONE
+      - POSTPARTUM_ALONE
+      - HEALTH_DEPENDENCY_ALONE
+      - MULTIGENERATIONAL
+      - SINGLE_CAREGIVER_WITH_DEPENDENTS
+      - NO_CO_RESIDENT_CAPABLE_ADULT
+      - MULTIPLE_FUNCTIONAL_DEPENDENCIES
+    rule: "tags trigger focused assessment; tags never by themselves mark a household unsafe"
 
-  typical_functional_pairings:
-    - "child_0_5 -> caregiver + feeding/hygiene + evacuation assistance"
-    - "child_6_12 -> responsible adult + communication/evacuation supervision"
-    - "older_adult_60_plus with mobility/medical dependency -> caregiver or buddy + medicine/transport link"
-    - "pregnant/postpartum person -> companion/buddy + maternal-health access"
-    - "time-critical patient -> caregiver/buddy + verified medical referral/transport"
-    - "medical-device power dependency -> critical power + backup + medical escalation"
-    - "single-person household -> buddy/check-in link"
-    - "single-caregiver household -> backup caregiver/buddy link for dependents"
+  pairing_rules:
+    - "child/adolescent present -> caregiver link must be checked"
+    - "single caregiver + dependents -> backup caregiver/buddy link must be checked"
+    - "older adult + declared mobility/medicine/communication/supervision need -> older-adult support link required"
+    - "pregnant/postpartum -> maternal-health/transport support link must be checked"
+    - "illness/bedbound/essential medicine/time-critical care -> medical support link required"
+    - "mobility dependency -> mobility support link required"
+    - "power-dependent medical device -> backup-power support link required"
+    - "communication dependency -> communication support link required"
+    - "living alone + any vulnerability/dependency -> buddy/check-in link required"
+
+  non_inference_rules:
+    - "two older adults living together are not assumed to be mutual caregivers"
+    - "presence of a working-age adult does not imply caregiver capacity"
+    - "pregnancy does not imply immobility"
+    - "older age does not imply dependency"
+    - "illness category does not reveal or store a diagnosis"
+    - "co-residence does not imply the needed support function is available"
 
 defaults:
   unknown_is_safe: false
