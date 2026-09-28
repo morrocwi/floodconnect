@@ -151,6 +151,108 @@ quad	ext{when } P(p,g) 	ext{ is blocked/stale/unverified.}
 
 This avoids the common error "a donor exists, therefore the household is supplied".
 
+## 4A. Person/group composition — needs are matched to support, not scored
+
+FloodConnect separates three things that are often wrongly collapsed:
+
+1. **life-stage / vulnerability group** — child, older adult, pregnant/postpartum, illness/disability;
+2. **functional dependency** — supervision, mobility, medicine, medical follow-up, powered device,
+   communication, special diet, infant feeding;
+3. **living arrangement** — alone, pair, family group, multigenerational, group-care setting.
+
+Thai public-health guidance explicitly prioritises children, older adults, pregnant people,
+bed/home-bound people, people with disabilities and chronic illness during floods. Thai research on
+dependent older adults also shows that preparedness is produced by the relationship among family
+caregivers, community, local administration and health services rather than age alone.
+
+### Composition tags are descriptive, never a risk score
+
+Examples:
+- `LIVES_ALONE`
+- `CHILD_WITH_OLDER_ONLY`
+- `OLDER_ONLY_HOUSEHOLD`
+- `PREGNANT_ALONE`
+- `SINGLE_CAREGIVER_WITH_DEPENDENTS`
+- `MULTIGENERATIONAL`
+- `NO_CO_RESIDENT_CAPABLE_ADULT`
+
+A tag triggers the correct assessment question. It does **not** by itself make a household
+non-viable.
+
+### Need–support matching
+
+Let (N_g(t)) be the finite declared set of functional need tokens in household/group (g).
+A token is a pair ((p,f)): person/member category (p) has declared need function (f).
+
+Let (S_g(t)) be the finite set of available support tokens, from:
+- co-resident helpers/caregivers;
+- buddy/neighbor links;
+- community/zone services;
+- health/public/emergency providers.
+
+A support token (s) may cover need token (n) only when capability, availability and connection
+are declared:
+
+[
+E_{NS}(n,s,t)=1
+iff
+Capability(s,f)=1
+land Available(s,t)=1
+land Connected(s,p,t)=1
+]
+
+where `Connected` may mean co-resident availability, a fresh support edge, or a verified
+health/logistics link depending on the function.
+
+With declared support capacities (cap_s), find a feasible bipartite b-matching (mu). Then:
+
+[
+oxed{
+Uncovered_g(t)
+=
+N_g(t)setminus Covered_{mu}(N_g(t))
+}
+]
+
+and the hard dependency condition is:
+
+[
+oxed{
+DepOK_g(t)=1
+iff
+Uncovered_g(t)=arnothing
+}
+]
+
+If a required need, capability, link or capacity is unknown, `DepOK = bottom/UNKNOWN`, not TRUE.
+
+The current categorical implementation does not invent helper capacity. It records explicit
+`*_link_uncovered` fields and fails closed when a required link is unknown.
+
+### Pairing rules used operationally
+
+- child/adolescent -> caregiver link is checked;
+- single caregiver + dependents -> backup caregiver/buddy link is checked;
+- older adult -> support link becomes mandatory only when a functional need is declared;
+- pregnancy/postpartum -> maternal-health/transport support link is checked;
+- illness/bedbound/essential medication/time-critical care -> medical support link is required;
+- mobility dependency -> mobility support link is required;
+- powered medical device -> critical-power support link is required;
+- communication dependency -> communication support link is required;
+- living alone + vulnerability/dependency -> buddy/reassessment link is required.
+
+Important non-inferences:
+- two older adults together are not assumed to be mutual caregivers;
+- a working-age co-resident is not automatically a capable caregiver;
+- pregnancy does not imply immobility;
+- older age does not imply dependency;
+- co-residence does not imply the needed support function exists.
+
+This representation handles the user's practical question "who is living with whom?" without
+creating an explosive list of every demographic combination.
+
+---
+
 ## 5. Thai Lifeline Margin
 
 For group g sustained at candidate support node v:
