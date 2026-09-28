@@ -172,6 +172,30 @@ No verified dry node -> no operational LCB at that location.
 | Sustainability 2022, 14, 12482 review | travel distance/time, capacity and accessibility |
 | Journal of International Humanitarian Action 2019 temporary-shelter model | safe distance, sewage/waste, energy, water, heavy-vehicle access, physical adequacy |
 
+## 6A. Tool/resource capability integration
+
+Shelter Operation is linked to the Operational Resource Capability Graph (ORCG).
+A deployed tool/resource may contribute evidence toward a non-Dry-Gate requirement only when
+its concrete deployment is verified, fresh, operable, adequately sized/capacitated and valid
+for the declared planning horizon. Operator qualification is also required where the resource type declares it.
+
+The executable input is `verified_tool_capabilities` on a physical node. For example, a verified
+drinking-water truck with adequate capacity/horizon may provide evidence for `potable_water`.
+
+The Dry Gate is intentionally excluded from tool substitution:
+
+`pump present != dry_operating_surface`
+
+After dewatering, the footprint must be field-reassessed and explicitly verified dry.
+
+Cross-typology propagation is documented in `docs/OPERATIONAL_RESOURCE_CAPABILITY_GRAPH.md`:
+
+`tool deployment -> capability gain -> movement/support/shelter change -> possible LVCN change`
+
+The reverse cascade is also tracked conceptually:
+
+`tool loss -> capability loss -> edge loss/node downgrade -> possible LVCN escalation`
+
 ## 7. Implementation
 
 - Executable: `shelter_operation_ladder.py`
