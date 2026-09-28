@@ -358,7 +358,53 @@ field_verified: true
 
 ---
 
-## 12. หลักการสุดท้าย
+## 12. Shelter Decision + Lowest Viable Community Node
+
+DAG เดิมบอกว่า “ถ้าต้องเคลื่อน จะเชื่อมไปยัง node ปลอดภัยอย่างไร” แต่ยังขาดคำถามก่อนหน้านั้น:
+**จริง ๆ แล้วจำเป็นต้องเคลื่อนหรือยัง และระดับ support ต่ำสุดใดทำให้ชุมชนยังอยู่ได้อย่างปลอดภัย**
+
+FloodConnect จึงมี proposal เพิ่มชื่อ **Lowest Viable Community Node (LVCN)** ซึ่งเป็นคำของ repo นี้
+ไม่ใช่มาตรฐานสากลที่อ้างว่ามาจาก FEMA/Sphere/UNHCR/CCCM.
+
+แนวคิดคือประเมินจากชั้นต่ำขึ้นสูง:
+
+```text
+household
+  -> buddy_cell
+  -> zone
+  -> internal/community shelter
+  -> egress
+  -> verified external_safe
+```
+
+ถ้าบ้านหนึ่งขาดยา/น้ำ/การช่วยเคลื่อนย้าย แต่ buddy cell เติมช่องว่างนั้นได้โดยไม่ต้องย้ายคนทั้งกลุ่ม
+buddy cell อาจเป็น node ต่ำสุดที่ทำให้ระบบยังดำรงอยู่ได้. ถ้า buddy ไม่พอแต่ zone รวมทรัพยากรได้
+zone อาจเป็น LVCN. Shelter จึงเป็น **escalation layer** ไม่ใช่จุดเริ่มต้นโดยอัตโนมัติ.
+
+การประเมินต้องเป็น constraint-first และใช้สถานะ:
+
+- `VIABLE_AND_ESCALATABLE`
+- `VIABLE_BUT_ISOLATED`
+- `NOT_VIABLE`
+- `UNKNOWN`
+
+พร้อม decision states:
+
+`STAY_AND_SUSTAIN → RESUPPLY_WINDOW → PREPARE_TO_MOVE → SHELTER_SITE_SCREENING → EVACUATE_ROUTE → SHELTER_OPERATION → RETURN_RELOCATE_CLOSE`
+
+ห้าม hard-code ว่าทุกบ้านต้องมีของ 24/48/72 ชั่วโมง; planning horizon ต้องประกาศจากบริบท/คำแนะนำที่
+อ้างอิงได้. `RESUPPLY_WINDOW` ก็ไม่ใช่คำสั่งให้ออกไปซื้อของ: ต้องมี route + destination ที่สด,
+field-verified และไม่ขัดคำสั่งทางการก่อน.
+
+รายละเอียดทั้งหมดและ research anchors:
+`docs/SHELTER_DECISION_AND_COMMUNITY_SUSTAINMENT.md`
+
+งานสำหรับ AI/นักพัฒนาคนถัดไป:
+`docs/HANDOFF_SHELTER_DECISION_AND_SUSTAINMENT.md`
+
+---
+
+## 13. หลักการสุดท้าย
 
 FloodConnect community DAG ไม่ได้พยายามแทนรัฐหรือหน่วยกู้ภัย
 
