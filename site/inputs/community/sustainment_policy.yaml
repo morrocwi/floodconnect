@@ -261,6 +261,98 @@ defaults:
   allow_inferred_stock_duration: false
   allow_building_type_as_safety_proxy: false
 
+environmental_degradation:
+  module: "environmental_degradation.py"
+  purpose: "represent safe-now -> degrading -> unsafe transitions even when water depth is unchanged"
+  states: [STABLE, DEGRADING, UNSAFE, UNKNOWN]
+  unknown_is_safe: false
+
+  immediate_triggers:
+    sewage_intrusion:
+      states: [NONE, SUSPECTED, CONFIRMED, UNKNOWN]
+      rule: "SUSPECTED/CONFIRMED has no safe-age grace period"
+      effects:
+        - sanitation_hygiene_failure
+        - contaminated-water precautions
+    sewer_backflow:
+      states: [NONE, SUSPECTED, CONFIRMED, UNKNOWN]
+      effects:
+        - sanitation_hygiene_failure
+        - service_water_degradation
+
+  clocks:
+    wet_material_mold:
+      watch_h: 24
+      assume_mold_h: 48
+      evidence_basis: "CDC flood/mold guidance"
+      reset_requires: "fully_dried_and_remediated=true"
+    standing_water_vector:
+      weekly_control_h: 168
+      evidence_basis: "CDC weekly source reduction; some common mosquitoes develop egg-to-adult in ~7-10 days"
+      note: "168 h is a control-cycle deadline, not a universal disease-risk threshold"
+
+  sewer_gas:
+    odor_is_clearance: false
+    h2s_ppm_inference_without_measurement: false
+    qualitative_formation_inputs:
+      - anaerobicity
+      - organic_or_sewage_load
+      - sulfate_if_measured
+      - hydraulic_residence_time_if_measured
+      - temperature_if_measured
+    measured_h2s_trigger_ppm: 10
+    trigger_provenance: "NIOSH occupational 10-minute ceiling; hazard trigger only, not residential clearance"
+    confined_space_entry_allowed: false
+
+  drain_trap:
+    dry_trap_can_open_sewer_gas_path: true
+    note: "trap seal control is distinct from sewer surcharge/backflow control"
+
+  effective_horizon:
+    equation: "T_effective = min(T_resource, T_environment, T_access, T_forward_hazard)"
+    rule: >
+      if a known environmental deadline falls inside the requested planning horizon,
+      the node cannot be claimed sustainable for the full horizon unless a verified
+      mitigation plan will occur before that deadline
+
+  mitigation:
+    clock_extension_requires_verified_effect: true
+    no_unmeasured_guaranteed_extension: true
+    preferred_source_controls:
+      - safe drainage_or_water_removal
+      - rapid drying_of_wet_materials
+      - remove_organic_waste_and_keep_drains_clear
+      - restore_or_isolate_wastewater_function
+      - verified_backflow_protection
+      - maintain_drain_trap_seal_when_dry_trap_is_the_pathway
+      - standing_water_source_reduction
+      - qualified_gas_monitoring_and_safe_ventilation
+    em_or_chemical_treatment:
+      automatic_credit: false
+      note: "Thai official guidance may recommend context-specific treatments; FloodConnect does not assign extra safe hours without measured/validated effect"
+
+  node_fields:
+    - evaluated_at
+    - sewage_intrusion
+    - indoor_floodwater_present
+    - sewer_backflow
+    - drainage_surcharge_possible
+    - backwater_valve_state
+    - sewer_gas_odor
+    - low_lying_or_enclosed_space
+    - ventilation
+    - measured_h2s_ppm
+    - drain_trap_state
+    - indoor_materials_wet
+    - indoor_wet_since
+    - fully_dried_and_remediated
+    - standing_water_present
+    - standing_water_since
+    - water_movement
+    - organic_or_sewage_load
+    - mitigation_plan_verified
+    - mitigation_before_deadline
+
 privacy_architecture:
   public_aggregate_layer:
     allowed: "counts, functional needs, coverage gaps, no names/diagnoses/phone/address"
