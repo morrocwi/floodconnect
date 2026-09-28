@@ -195,6 +195,25 @@ Candidate sites must be screened for at least:
 - ability to receive supplies;
 - management/maintenance and an exit/closure plan.
 
+### 4.4A DRY GATE + Shelter Operation Capability Ladder
+
+Every physical shelter/service node now passes the repo-level **Dry Gate** before any shelter-operation
+capability can be claimed. The actual operating footprint must be dry, currently verified/fresh, free of
+an immediate site hazard, and have drainage that does not prevent safe operation.
+
+`FALSE -> NO_SHELTER_OPERATION`; missing/stale dry evidence -> `UNKNOWN`.
+
+After the Dry Gate, physical-node capability is cumulative:
+
+`SO-L0 dry interface -> SO-L1 relief transfer -> SO-L2 day support -> SO-L3 overnight shelter -> SO-L4 full shelter operation`
+
+These levels are a FloodConnect synthesis, not a claimed external standard. Promotion requires every
+hard requirement through that level; no weighted score or abundance of other services can override a
+failed requirement. See `docs/SHELTER_OPERATION_CAPABILITY_LADDER.md` and
+`shelter_operation_ladder.py`.
+
+This is orthogonal to LVCN: SOCL describes **what a physical node can do**; LVCN describes **the lowest
+support layer people actually need**.
 ### 4.5 EVACUATE_ROUTE
 Only after the destination is currently viable and the path satisfies the existing
 Community DAG fail-closed route constraints.
