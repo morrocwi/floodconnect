@@ -90,6 +90,8 @@ return/relocation/closure.
 - Human–animal tests: `tests/test_human_animal_household.py`
 - Unified crisis-state readout: `unified_crisis_state.py`
 - Unified state tests: `tests/test_unified_crisis_state.py`
+- Lifeline convergence feasibility: `convergence_feasibility.py`
+- Convergence tests: `tests/test_convergence_feasibility.py`
 
 FloodConnect now also models **safe-now -> degrading -> unsafe** transitions that can occur
 without rising water depth: sewage/backflow contamination, sewer-gas/H2S uncertainty,
