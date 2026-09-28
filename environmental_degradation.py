@@ -119,7 +119,8 @@ def evaluate_environmental_degradation(
         )
 
     if now is None:
-        now = datetime.now(timezone.utc)
+        declared_now = _parse_time(env.get("evaluated_at"))
+        now = declared_now if declared_now is not None else datetime.now(timezone.utc)
     elif now.tzinfo is None:
         now = now.replace(tzinfo=timezone.utc)
 
