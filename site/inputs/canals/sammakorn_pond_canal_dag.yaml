@@ -101,21 +101,15 @@ edges:
     status: supported_system_level
     exact_geometry: unknown
 
-  - id: central_pond_to_new_outlet_corridor
-    from: sammakorn_pond_2
-    to: khlong_ban_ma_2
-    type: new_or_improved_conveyance
-    status: working_hypothesis
-    exact_geometry: unknown
-    note_th: >
-      ใช้เป็น working model ว่าโครงการ กทม.เพิ่ม/ปรับปรุงลำรางหรือแนวระบายน้ำ
-      จากบึงกลางไปยังระบบคลองบ้านม้า 2 และ ST.SPS.01.
-
-  - id: ban_ma_2_terminal_to_saen_saep
-    from: khlong_ban_ma_2
+  - id: central_storage_to_terminal_outlet
+    from: sammakorn_legacy_interconnected_ponds
     via: ST.SPS.01
     to: khlong_saen_saep
-    status: strongly_supported_working_topology
+    type: terminal_outlet
+    status: strong_working_hypothesis
+    note_th: >
+      working model ปัจจุบันให้บึงกลาง/เครือข่ายบึงเชื่อมตรงไป ST.SPS.01
+      แล้ว ST.SPS.01 ส่งออกคลองแสนแสบ ไม่แทรกคลองบ้านม้า 2 เป็น node กลางแยกต่างหาก.
 
   - id: pond1_to_pond2_pairwise
     from: sammakorn_pond_1
@@ -212,3 +206,21 @@ functional_architecture:
       destination: khlong_saen_saep
       confidence: high_working_hypothesis
       status: main_terminal_outlet_model
+
+
+observation_assets:
+  - id: BMA_WATER_STATION_284
+    source_url: https://weather.bangkok.go.th/water/StationDetail?id=284
+    role: aggregate_sammakorn_water_level
+    scope: whole_village_interconnected_storage_proxy
+    variable: H_sammakorn_t
+    source_status: user_confirmed_station_scope
+    graph_semantics: observation_node_not_flow_edge
+    caveat: >
+      ใช้เป็นตัวแทนระดับน้ำระบบบึงรวม แต่ห้ามสมมติว่าทุกบึงมีระดับน้ำเท่ากันแบบทันที
+      เพราะยังอาจมี local head difference ระหว่างการสูบ เปิด-ปิดประตู หรือการไหลผ่านท่อ/ท่อลอด.
+    derived_uses:
+      - compare_with_saen_saep_water_level
+      - compare_with_road_elevation
+      - estimate_system_drawdown_rate
+      - detect_storage_trend
