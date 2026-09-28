@@ -76,7 +76,7 @@ It can include:
 - verified transport capacity;
 - handler continuity for assistance animals.
 
-States: `READY / NOT_READY / UNKNOWN`.
+Hard movement state uses containment/transport capacity (and assistance-handler continuity when applicable). Identification/records are tracked as preparedness evidence but are not a universal blocker unless a destination explicitly requires them.\n\nStates: `READY / NOT_READY / UNKNOWN`.
 
 ### 3.3 Animal destination compatibility
 This checks whether the destination can receive the declared animal topology.
