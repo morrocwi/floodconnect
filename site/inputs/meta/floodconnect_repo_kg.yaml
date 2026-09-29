@@ -57,6 +57,73 @@ node_kinds:
   - ARTIFACT
   - OUTPUT
 
+
+node_ontology:
+  hydraulic_node:
+    examples: [river_reach, canal_junction, pond, gate, pump_station, receiving_canal]
+    represents: "water/control topology"
+    may_be_occupied_by_people: false
+    canonical_systems: [RIVER_KG, BANGKOK_CANAL_KG, SAMMAKORN_HYDRAULIC, CANAL_CHAIN_MODEL]
+
+  community_node:
+    examples: [household, buddy_cell, zone, internal_safe, egress, external_safe]
+    represents: "people/support/movement topology"
+    canonical_systems: [COMMUNITY_DAG, LVCN]
+    rule: "egress is a connector, not a sustainment candidate"
+
+  service_node:
+    examples: [supply_point, community_kitchen, civil_society_provider, veterinary_team, charging_point]
+    represents: "functional capability delivery"
+    canonical_systems: [SUSTAINMENT_POLICY, TDLC]
+    rule: "functional capability is separate from occupancy viability"
+
+  shelter_operation_node:
+    examples: [dry_interface, relief_transfer, day_support, overnight_shelter, full_shelter_operation]
+    represents: "physical site capability level"
+    canonical_systems: [SOCL, PSSS]
+    rule: "Dry Gate precedes every level"
+
+  tool_node:
+    examples: [vehicle, boat, pump, generator, water_tank, portable_toilet, radio]
+    represents: "deployable capability resource"
+    canonical_systems: [ORCG]
+    rule: "may attach capability to a node/edge; is not itself a route or shelter destination"
+
+  governance_actor_node:
+    examples: [tmd, rid, dwr, onwr, ddpm_ndwc, bma_dds, hii, province_district_local_authority]
+    represents: "institution/actor identity"
+    canonical_systems: [GOVERNANCE]
+    rule: "identity is canonical; roles are overlays"
+
+  information_product:
+    examples: [observation, forecast, warning, operational_instruction, response_action]
+    represents: "claim/action semantic carried by a source"
+    canonical_systems: [WARNING_TYPOLOGY, SOURCE_REGISTRY, LIVE_DATA_SYSTEM]
+    rule: "product semantics must not be silently promoted into one another"
+
+edge_ontology:
+  hydraulic_flow_edge:
+    systems: [RIVER_KG, SAMMAKORN_HYDRAULIC, CANAL_CHAIN_MODEL]
+    semantics: "water may/does move according to declared topology/control/evidence"
+  resident_movement_edge:
+    systems: [COMMUNITY_DAG]
+    semantics: "people can move only when verified/fresh/mode/capacity constraints pass"
+  lifeline_support_edge:
+    systems: [TDLC, LCF, LVCN]
+    semantics: "resources/helpers/services may move inward/laterally; graph need not be a DAG"
+  tool_capability_attachment:
+    systems: [ORCG]
+    semantics: "verified tool deployment adds declared capability; never overwrites hard safety"
+  role_assignment_edge:
+    systems: [GOVERNANCE, WARNING_TYPOLOGY]
+    semantics: "canonical actor -> one or more warning/operational roles"
+  evidence_feed_edge:
+    systems: [LIVE_DATA_SYSTEM, SOCIAL_LISTENING]
+    semantics: "provenanced evidence feeds evaluators without becoming a command by itself"
+  model_dependency_edge:
+    systems: [FC_ROOT]
+    semantics: "repo-level construct dependency represented in RKG edges"
+
 nodes:
   FC_ROOT:
     kind: DOMAIN_SYSTEM
