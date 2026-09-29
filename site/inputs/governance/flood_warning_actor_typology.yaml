@@ -1,0 +1,195 @@
+# Thai Flood Warning Actor Typology (TFWAT)
+# Role graph for "who observes what / who interprets what / who warns whom".
+# This is NOT an exclusive chain of command. One agency may occupy multiple roles and
+# several agencies may issue valid products in parallel for different hazard domains.
+version: "0.1"
+status: "operational_typology_evidence_informed"
+
+principles:
+  - "actor role != exclusive authority over all flood hazards"
+  - "observation != forecast != public warning != local operational action"
+  - "a weather warning must not be laundered into a street-level inundation claim"
+  - "a water-system status must not be laundered into a public evacuation instruction"
+  - "national integration != last-mile warning delivery"
+  - "last-mile warning should preserve source, hazard, geography, issue time, validity, and action message"
+  - "parallel/overlapping official products are expected; contradictions must remain visible"
+
+role_graph:
+  canonical_flow:
+    - OBSERVE
+    - INTERPRET_SECTOR
+    - INTEGRATE
+    - PUBLIC_WARN
+    - LOCAL_WARN_AND_ACT
+  topology: "directed role graph; parallel edges and skipped stages allowed"
+  equation: "Evidence -> SectorMeaning -> IntegratedSituation -> PublicWarning -> LocalAction"
+  non_inference: "absence of one stage from one actor does not mean the function is absent system-wide"
+
+roles:
+  METEOROLOGICAL_OBSERVER_FORECASTER:
+    layer: OBSERVE_INTERPRET
+    thai_label: "อุตุนิยมวิทยา: ฝน พายุ อากาศ"
+    primary_actor: thai_meteorological_department
+    canonical_outputs:
+      - observed_weather
+      - radar_satellite_weather
+      - rainfall_weather_context
+      - weather_forecast
+      - severe_weather_warning
+    must_not_infer:
+      - exact_local_flood_depth
+      - canal_flow_direction
+      - evacuation_order
+
+  IRRIGATION_WATER_SYSTEM_OPERATOR:
+    layer: OBSERVE_INTERPRET_OPERATE
+    thai_label: "ระบบชลประทาน: อ่าง เขื่อน ประตู ระบาย/จัดสรรน้ำ"
+    primary_actor: royal_irrigation_department
+    canonical_outputs:
+      - irrigation_water_level
+      - reservoir_status
+      - discharge_operation
+      - irrigation_system_forecast
+      - water_management_action
+    must_not_infer:
+      - all_basin_conditions_outside_operated_system
+      - local_public_evacuation_instruction
+
+  FLASH_FLOOD_WATERSHED_EWS:
+    layer: OBSERVE_INTERPRET_WARN
+    thai_label: "น้ำป่า/ต้นน้ำ/พื้นที่เสี่ยง: Early Warning"
+    primary_actor: department_of_water_resources
+    canonical_outputs:
+      - upstream_rainfall_signal
+      - flash_flood_watch
+      - landslide_related_warning
+      - watershed_risk_information
+    must_not_infer:
+      - all_urban_drainage_flooding
+      - irrigation_gate_operation
+
+  NATIONAL_WATER_INTEGRATOR:
+    layer: INTEGRATE_COORDINATE
+    thai_label: "บูรณาการภาพน้ำระดับประเทศ/ข้ามหน่วยงาน"
+    primary_actor: office_of_national_water_resources
+    canonical_outputs:
+      - integrated_water_situation
+      - cross_agency_water_coordination
+      - basin_national_water_plan_context
+      - integrated_decision_support
+    must_not_infer:
+      - automatic_last_mile_delivery
+      - exclusive_ownership_of_underlying_telemetry
+
+  NATIONAL_PUBLIC_WARNING_DISSEMINATOR:
+    layer: PUBLIC_WARN
+    thai_label: "แจ้งเตือนสาธารณภัยต่อประชาชน"
+    primary_actor: ddpm_national_disaster_warning_center
+    canonical_outputs:
+      - national_public_warning
+      - cell_broadcast
+      - warning_level
+      - preparedness_message
+    must_not_infer:
+      - underlying_hazard_measurement_owned_by_ddpm
+      - local_route_safety_without_local_evidence
+
+  LOCAL_LAST_MILE_WARNING_RESPONSE:
+    layer: LOCAL_WARN_AND_ACT
+    thai_label: "จังหวัด/อำเภอ/อปท.: เตือนพื้นที่และช่วยเหลือ"
+    primary_actor: province_district_local_authority
+    canonical_outputs:
+      - local_warning
+      - community_channel_warning
+      - local_route_closure
+      - pump_sandbag_local_action
+      - shelter_opening
+      - rescue_relief_response
+      - local_situation_report
+    must_not_infer:
+      - national_hydrometeorological_forecast_authority
+    examples_of_channels:
+      - village_broadcast
+      - community_radio
+      - social_media
+      - local_official_channels
+      - direct_field_coordination
+
+actors:
+  thai_meteorological_department:
+    th: "กรมอุตุนิยมวิทยา"
+    abbr: TMD
+    roles: [METEOROLOGICAL_OBSERVER_FORECASTER]
+    evidence:
+      mission: "https://tmd.go.th/department/core-mission"
+      forecast_division: "https://www.tmd.go.th/department/weather-forecast-division"
+
+  royal_irrigation_department:
+    th: "กรมชลประทาน"
+    abbr: RID
+    roles: [IRRIGATION_WATER_SYSTEM_OPERATOR]
+    evidence:
+      duty: "https://www.rid.go.th/th/duty_responsibility"
+      water_management: "https://water.rid.go.th/hwm/wmoc/mwater/"
+
+  department_of_water_resources:
+    th: "กรมทรัพยากรน้ำ"
+    abbr: DWR
+    roles: [FLASH_FLOOD_WATERSHED_EWS]
+    evidence:
+      duty: "https://www.dwr.go.th/about_us.php?about_us_id=5"
+      flash_flood_ews: "https://dwr.go.th/uploads/file/infor/2025/Article-250227104243-qMfF.pdf"
+
+  office_of_national_water_resources:
+    th: "สำนักงานทรัพยากรน้ำแห่งชาติ"
+    abbr: ONWR
+    roles: [NATIONAL_WATER_INTEGRATOR]
+    evidence:
+      integration_example: "https://waterchartbangpakong.onwr.go.th/"
+
+  ddpm_national_disaster_warning_center:
+    th: "กรมป้องกันและบรรเทาสาธารณภัย / ศูนย์เตือนภัยพิบัติแห่งชาติ"
+    abbr: "DDPM/NDWC"
+    roles: [NATIONAL_PUBLIC_WARNING_DISSEMINATOR]
+    evidence:
+      warning_catalog: "https://catalog.disaster.go.th/group/warning_information"
+      cell_broadcast: "https://catalog.disaster.go.th/th/dataset/cell-broadcast"
+      ndwc: "https://ndwc.disaster.go.th/ndwc"
+
+  province_district_local_authority:
+    th: "จังหวัด / อำเภอ / องค์กรปกครองส่วนท้องถิ่น"
+    abbr: "Province/District/LAO"
+    roles: [LOCAL_LAST_MILE_WARNING_RESPONSE]
+    evidence:
+      local_warning_channels: "https://www.disaster.go.th/"
+      field_response_example: "https://dpmreporter.disaster.go.th/portal/disaster-news/8119"
+
+product_semantics:
+  observation:
+    meaning: "measurement/readout of a physical or meteorological state"
+    action_authority: false
+  forecast:
+    meaning: "model/analyst estimate of future hazard state"
+    action_authority: false
+  warning:
+    meaning: "official message that a hazard may/does affect a specified population/area"
+    action_authority: "depends on issuer/product"
+  operational_instruction:
+    meaning: "local or competent-authority instruction/action such as closure, evacuation, shelter opening"
+    action_authority: true
+  response_action:
+    meaning: "deployment/action taken to reduce harm"
+    action_authority: true
+
+floodconnect_mapping:
+  data_registry:
+    rule: "each source may declare actor_role and product_semantic in addition to trust_tier"
+  contradiction_engine:
+    rule: "compare like-with-like products first; do not call a weather warning and a canal gauge contradictory merely because they describe different layers"
+  unified_crisis_state:
+    OBSERVE_INTERPRET: "updates H_forward_hazard and environmental/hydrologic evidence"
+    INTEGRATE_COORDINATE: "adds cross-agency situation context; does not overwrite measurements"
+    PUBLIC_WARN: "updates official-warning context"
+    LOCAL_WARN_AND_ACT: "may update movement edges, shelter status, route closures and local response state"
+  local_convergence_board:
+    rule: "WARN/ROUTE cards should retain issuer + product semantic + issued_at + valid_for_area"
