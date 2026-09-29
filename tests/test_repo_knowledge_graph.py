@@ -16,6 +16,7 @@ def test_core_constructs_are_present():
     doc = rkg.load_kg(KG_PATH)
     nodes = doc["nodes"]
     for node_id in (
+        "REPO_KG",
         "RIVER_KG",
         "BANGKOK_CANAL_KG",
         "LIVE_DATA_SYSTEM",
