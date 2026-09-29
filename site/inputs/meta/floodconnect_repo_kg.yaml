@@ -256,6 +256,94 @@ nodes:
     canonical_artifacts: [sources/registry.yaml]
     summary: "Agency/source URL, cadence, auth, licence, trust tier and host-safety rules."
 
+
+  SOCIAL_LISTENING:
+    kind: DATA_PIPELINE
+    label: "Community / Public Social Listening"
+    epistemic_class: FIELD_EVIDENCE
+    canonical_artifacts:
+      - social_listening.py
+      - docs/METHOD_social_listening.md
+    summary: "Place+state+time community/media signals stored without personal names; not an official warning channel."
+    key_boundary: "community report != verified operational truth"
+
+  DRAINAGE_CAPACITY_INPUTS:
+    kind: REGISTRY
+    label: "Drainage Capacity / Area Balance Inputs"
+    epistemic_class: POLICY_SCHEMA
+    canonical_artifacts:
+      - docs/CAPACITY.md
+      - site/inputs/capacity/bma_capacity.json
+      - site/inputs/areas/bangkok_east.balance.yaml
+      - site/inputs/areas/ram53.balance.yaml
+      - site/inputs/areas/sammakorn.balance.yaml
+    summary: "Declared design/capacity and area-balance inputs with explicit OPEN/RELAYED/INSTINCT boundaries."
+
+  WATER_BALANCE:
+    kind: MODEL
+    label: "Toledo Water-Balance Readout (PROP-FLOOD-03)"
+    epistemic_class: PROPOSAL
+    canonical_artifacts:
+      - water_balance.py
+      - site/inputs/areas/bangkok_east.balance.yaml
+      - site/inputs/areas/ram53.balance.yaml
+      - site/inputs/areas/sammakorn.balance.yaml
+    summary: "Finite water-balance step with refusal on missing/stale/undeclared inputs."
+    key_boundary: "proposal; exact delta-S is refused when required A/c/Q/tau declarations are missing"
+
+  CANAL_CHAIN_MODEL:
+    kind: MODEL
+    label: "Declared East Canal Chain Direction Model (PROP-FLOOD-04)"
+    epistemic_class: PROPOSAL
+    canonical_artifacts:
+      - canal_graph.py
+      - site/inputs/canals/east_chain.yaml
+    summary: "Small declared named-canal chain with live direction only where both ends/datum/control evidence allow."
+    key_boundary: "not the citywide OSM canal graph; unresolved direction stays unresolved"
+
+  BURDEN_LEDGER:
+    kind: MODEL
+    label: "Control-Structure Burden Ledger (PROP-FLOOD-05a/05b)"
+    epistemic_class: PROPOSAL
+    canonical_artifacts:
+      - burden_ledger.py
+      - site/inputs/canals/control_structures.yaml
+    summary: "Gradient/control-state burden and zone ordering across declared structures."
+    key_boundary: "proposal; control-state/datum/missing evidence can refuse evaluation"
+
+  HIERARCHICAL_FLOOD_ZOOM:
+    kind: MODEL
+    label: "Hierarchical Urban-to-Point Flood Zoom"
+    epistemic_class: EXECUTABLE_MODEL
+    canonical_artifacts:
+      - hierarchical_flood_zoom.py
+    summary: "Separates urban drainage debt, Toledo storage increment bounds, and point depth; preserves unresolved lower layers."
+    key_boundary: "urban signal does not imply point depth without compatible local water/ground evidence"
+
+  RAW_STAGE_FORECAST:
+    kind: MODEL
+    label: "Raw Stage-Only Persistence Forecast Helper"
+    epistemic_class: PROPOSAL
+    canonical_artifacts:
+      - raw_stage_forecast.py
+    summary: "Two-cycle phase-window threshold persistence using raw stage observations only."
+    key_boundary: "not a hydraulic model; derived alert labels are deliberately excluded"
+
+  PROSPECTIVE_EXPERIMENTS:
+    kind: OUTPUT
+    label: "Locked Prospective / Backtest Experiments"
+    epistemic_class: FIELD_EVIDENCE
+    canonical_artifacts:
+      - experiments/2026-09-bangkok-hierarchical-real-run.md
+      - experiments/2026-09-bangkok-toledo-real-backtest.md
+      - experiments/2026-09-27-kanchanaburi-prospective.md
+      - experiments/2026-09-27-samutsakhon-independent-prospective.md
+      - experiments/2026-09-27-samutsakhon-prospective-audit.md
+      - experiments/2026-09-27-tha008-clean-prospective.md
+      - experiments/2026-09-27-tha008-threshold-audit.md
+    summary: "Timestamped locked tests/audits; failed assumptions remain preserved for anti-hindsight learning."
+    key_boundary: "experiment result/audit != production forecast rule"
+
   CI:
     kind: DATA_PIPELINE
     label: "FloodConnect CI / Pages"
@@ -327,6 +415,24 @@ edges:
   - {from: WARNING_TYPOLOGY, relation: GUIDES_SEMANTIC_INTERPRETATION_OF, to: LIVE_DATA_SYSTEM}
   - {from: WARNING_TYPOLOGY, relation: MAY_PROVIDE_OFFICIAL_WARNING_CONTEXT_TO, to: UNIFIED_CRISIS}
 
+
+  - {from: SOURCE_REGISTRY, relation: CONFIGURES, to: SOCIAL_LISTENING}
+  - {from: SOCIAL_LISTENING, relation: FEEDS_FIELD_EVIDENCE_TO, to: LIVE_DATA_SYSTEM}
+  - {from: LIVE_DATA_SYSTEM, relation: PROVIDES_INPUTS_TO, to: WATER_BALANCE}
+  - {from: DRAINAGE_CAPACITY_INPUTS, relation: CONFIGURES, to: WATER_BALANCE}
+  - {from: LIVE_DATA_SYSTEM, relation: PROVIDES_INPUTS_TO, to: CANAL_CHAIN_MODEL}
+  - {from: CANAL_CHAIN_MODEL, relation: PROVIDES_DIRECTIONAL_CONTEXT_TO, to: BURDEN_LEDGER}
+  - {from: LIVE_DATA_SYSTEM, relation: PROVIDES_INPUTS_TO, to: BURDEN_LEDGER}
+  - {from: DRAINAGE_CAPACITY_INPUTS, relation: PROVIDES_CAPACITY_CONTEXT_TO, to: HIERARCHICAL_FLOOD_ZOOM}
+  - {from: WATER_BALANCE, relation: PROVIDES_STORAGE_CONTEXT_TO, to: HIERARCHICAL_FLOOD_ZOOM}
+  - {from: LIVE_DATA_SYSTEM, relation: PROVIDES_OBSERVATIONS_TO, to: RAW_STAGE_FORECAST}
+  - {from: HIERARCHICAL_FLOOD_ZOOM, relation: TESTED_BY, to: PROSPECTIVE_EXPERIMENTS}
+  - {from: WATER_BALANCE, relation: TESTED_BY, to: PROSPECTIVE_EXPERIMENTS}
+  - {from: RAW_STAGE_FORECAST, relation: TESTED_BY, to: PROSPECTIVE_EXPERIMENTS}
+  - {from: WATER_BALANCE, relation: MAY_FEED_PROPOSAL_READOUT_TO, to: SITE}
+  - {from: CANAL_CHAIN_MODEL, relation: MAY_FEED_PROPOSAL_READOUT_TO, to: SITE}
+  - {from: BURDEN_LEDGER, relation: MAY_FEED_PROPOSAL_READOUT_TO, to: SITE}
+
   - {from: LIVE_DATA_SYSTEM, relation: FEEDS, to: SITE}
   - {from: UNIFIED_CRISIS, relation: MAY_FEED_EXPLAINED_STATE_TO, to: SITE}
   - {from: CI, relation: TESTS_AND_BUILDS, to: SITE}
@@ -342,6 +448,13 @@ hard_non_edges:
   - "GOVERNANCE static role -/-> current incident commander"
   - "WARNING_TYPOLOGY -/-> duplicate actor identity"
   - "support delivery graph -/-> resident movement graph"
+
+  - "social listening -/-> official warning"
+  - "raw stage persistence -/-> hydraulic forecast"
+  - "derived alert label -/-> independent forecast evidence"
+  - "urban drainage signal -/-> exact point flood depth"
+  - "missing Toledo inputs -/-> fabricated water-balance result"
+  - "declared east canal chain -/-> complete Bangkok canal topology"
 
 question_routes:
   current_water_or_flood_status:
@@ -440,6 +553,43 @@ question_routes:
       - unified_crisis_state.py
       - site/inputs/community/sustainment_policy.yaml
 
+
+  social_or_community_reports:
+    start_nodes: [SOCIAL_LISTENING, LIVE_DATA_SYSTEM]
+    read:
+      - social_listening.py
+      - docs/METHOD_social_listening.md
+      - sources/registry.yaml
+    rule: "place/state/time evidence only; preserve publisher/provenance and never promote to official warning"
+
+  experimental_flood_model_or_forecast:
+    start_nodes: [HIERARCHICAL_FLOOD_ZOOM, WATER_BALANCE, RAW_STAGE_FORECAST]
+    then: [CANAL_CHAIN_MODEL, BURDEN_LEDGER, PROSPECTIVE_EXPERIMENTS]
+    read:
+      - hierarchical_flood_zoom.py
+      - water_balance.py
+      - raw_stage_forecast.py
+      - canal_graph.py
+      - burden_ledger.py
+    rule: "proposal/experiment branch; declare missing inputs and audits; do not launder into operational forecast"
+
+  toledo_water_balance_or_capacity:
+    start_nodes: [WATER_BALANCE, DRAINAGE_CAPACITY_INPUTS]
+    read:
+      - water_balance.py
+      - docs/CAPACITY.md
+      - site/inputs/areas/bangkok_east.balance.yaml
+    rule: "exact computation is allowed only over declared finite inputs; OPEN remains OPEN"
+
+  prospective_test_or_backtest:
+    start_nodes: [PROSPECTIVE_EXPERIMENTS]
+    then: [HIERARCHICAL_FLOOD_ZOOM, RAW_STAGE_FORECAST, WATER_BALANCE]
+    read:
+      - experiments/2026-09-bangkok-hierarchical-real-run.md
+      - experiments/2026-09-27-samutsakhon-prospective-audit.md
+      - experiments/2026-09-27-tha008-threshold-audit.md
+    rule: "preserve locked prediction and post-hoc audit separately; no hindsight rewrite"
+
 artifact_precedence:
   governance_identity:
     first: site/inputs/governance/thailand_water_governance_reference.json
@@ -467,6 +617,20 @@ artifact_precedence:
   live_sources:
     first: sources/registry.yaml
     pipeline: [collect.py, parsers.py, store.py, readout.py]
+
+  experimental_water_balance:
+    first: site/inputs/areas/bangkok_east.balance.yaml
+    implementation: water_balance.py
+    capacity_reference: site/inputs/capacity/bma_capacity.json
+  declared_east_canal_chain:
+    first: site/inputs/canals/east_chain.yaml
+    implementation: canal_graph.py
+  control_structure_burden:
+    first: site/inputs/canals/control_structures.yaml
+    implementation: burden_ledger.py
+  social_listening:
+    first: docs/METHOD_social_listening.md
+    implementation: social_listening.py
 
 ai_response_discipline:
   - "state whether claim comes from live observation, static topology, policy/model, field evidence, or inference"
