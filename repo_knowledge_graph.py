@@ -56,6 +56,7 @@ def validate_kg(doc: dict, repo_root: str | Path = HERE) -> list[str]:
         errors.append("duplicate node ids")
 
     allowed_kinds = set(doc.get("node_kinds") or [])
+    allowed_epistemic = set((doc.get("epistemic_classes") or {}).keys())
     for node_id, node in nodes.items():
         if not isinstance(node, dict):
             errors.append(f"{node_id}: node must be a mapping")
@@ -63,6 +64,9 @@ def validate_kg(doc: dict, repo_root: str | Path = HERE) -> list[str]:
         kind = node.get("kind")
         if kind not in allowed_kinds:
             errors.append(f"{node_id}: unknown kind {kind!r}")
+        epistemic = node.get("epistemic_class")
+        if epistemic not in allowed_epistemic:
+            errors.append(f"{node_id}: unknown epistemic_class {epistemic!r}")
         artifacts = node.get("canonical_artifacts") or []
         for artifact in artifacts:
             if not (root / artifact).exists():
@@ -81,6 +85,33 @@ def validate_kg(doc: dict, repo_root: str | Path = HERE) -> list[str]:
             errors.append(f"edge[{idx}]: unknown target node {dst!r}")
         if not rel:
             errors.append(f"edge[{idx}]: missing relation")
+
+    edge_keys = []
+    for edge in edges:
+        if isinstance(edge, dict):
+            edge_keys.append((edge.get("from"), edge.get("relation"), edge.get("to")))
+    if len(edge_keys) != len(set(edge_keys)):
+        errors.append("duplicate edge(s) in RKG")
+
+    for ontology_name in ("node_ontology", "edge_ontology"):
+        ontology = doc.get(ontology_name) or {}
+        if not isinstance(ontology, dict):
+            errors.append(f"{ontology_name} must be a mapping")
+            continue
+        for item_id, item in ontology.items():
+            if not isinstance(item, dict):
+                errors.append(f"{ontology_name}.{item_id} must be a mapping")
+                continue
+            refs = item.get("canonical_systems")
+            if refs is None:
+                refs = item.get("systems")
+            for ref in refs or []:
+                if ref not in nodes:
+                    errors.append(f"{ontology_name}.{item_id}: unknown system node {ref}")
+
+    for artifact in doc.get("ai_boot_sequence") or []:
+        if not (root / artifact).exists():
+            errors.append(f"ai_boot_sequence: missing file {artifact}")
 
     routes = doc.get("question_routes") or {}
     for route_id, route in routes.items():
