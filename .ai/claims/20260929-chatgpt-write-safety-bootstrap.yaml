@@ -1,0 +1,24 @@
+claim_id: "20260929-chatgpt-write-safety-bootstrap"
+status: RELEASED
+writer: "chatgpt"
+branch: "agent/chatgpt/write-safety-protocol"
+base_sha: "1e211cfd543691902ca037ebe78434b36e5161d7"
+nodes:
+  - REPO_KG
+  - AGENT_COORDINATION
+  - CI
+artifacts:
+  - AGENTS.md
+  - CONTRIBUTING.md
+  - .ai/claims/README.md
+  - agent_claims.py
+  - .github/PULL_REQUEST_TEMPLATE.md
+  - .github/CODEOWNERS
+  - .github/workflows/floodconnect.yml
+  - site/inputs/meta/floodconnect_repo_kg.yaml
+intent: "Bootstrap FloodConnect multi-agent write-safety protocol and integration gates."
+created_at: "2026-09-29T15:40:00+07:00"
+expires_at: null
+reviewers: []
+supersedes: null
+note: "Bootstrap exception: the claim protocol did not exist before this implementation began. The work was moved onto a compliant agent/<id>/<task> branch before PR creation; this RELEASED claim preserves provenance without creating an ACTIVE ownership lock."
