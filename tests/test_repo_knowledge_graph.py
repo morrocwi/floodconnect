@@ -33,6 +33,14 @@ def test_core_constructs_are_present():
         "UNIFIED_CRISIS",
         "GOVERNANCE",
         "WARNING_TYPOLOGY",
+        "PROSPECTIVE_EXPERIMENTS",
+        "RAW_STAGE_FORECAST",
+        "HIERARCHICAL_FLOOD_ZOOM",
+        "BURDEN_LEDGER",
+        "CANAL_CHAIN_MODEL",
+        "WATER_BALANCE",
+        "DRAINAGE_CAPACITY_INPUTS",
+        "SOCIAL_LISTENING",
     ):
         assert node_id in nodes
 
@@ -87,6 +95,10 @@ def test_question_routes_cover_major_user_intents():
         "government_agency_or_who_is_responsible",
         "warning_alert_or_who_warns",
         "overall_decision_state",
+        "prospective_test_or_backtest",
+        "toledo_water_balance_or_capacity",
+        "experimental_flood_model_or_forecast",
+        "social_or_community_reports",
     ):
         assert route in routes
 
@@ -97,3 +109,16 @@ def test_jsonld_export_contains_nodes_and_relations():
     graph = exported["@graph"]
     assert any(x.get("@id") == "fc:FC_ROOT" for x in graph)
     assert any(x.get("@type") == "fc:Relation" for x in graph)
+
+
+def test_experimental_models_are_not_connected_as_operational_truth():
+    doc = rkg.load_kg(KG_PATH)
+    assert doc["nodes"]["WATER_BALANCE"]["epistemic_class"] == "PROPOSAL"
+    assert doc["nodes"]["CANAL_CHAIN_MODEL"]["epistemic_class"] == "PROPOSAL"
+    assert doc["nodes"]["BURDEN_LEDGER"]["epistemic_class"] == "PROPOSAL"
+    assert doc["nodes"]["PROSPECTIVE_EXPERIMENTS"]["epistemic_class"] == "FIELD_EVIDENCE"
+
+
+def test_raw_stage_helper_is_not_laundered_into_hydraulic_forecast():
+    doc = rkg.load_kg(KG_PATH)
+    assert "raw stage persistence -/-> hydraulic forecast" in set(doc["hard_non_edges"])
