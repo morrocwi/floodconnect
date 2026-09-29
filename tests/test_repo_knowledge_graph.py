@@ -122,3 +122,28 @@ def test_experimental_models_are_not_connected_as_operational_truth():
 def test_raw_stage_helper_is_not_laundered_into_hydraulic_forecast():
     doc = rkg.load_kg(KG_PATH)
     assert "raw stage persistence -/-> hydraulic forecast" in set(doc["hard_non_edges"])
+
+
+def test_node_ontology_separates_hydraulic_community_service_tool_and_actor_nodes():
+    doc = rkg.load_kg(KG_PATH)
+    ontology = doc["node_ontology"]
+    for kind in (
+        "hydraulic_node",
+        "community_node",
+        "service_node",
+        "shelter_operation_node",
+        "tool_node",
+        "governance_actor_node",
+        "information_product",
+    ):
+        assert kind in ontology
+    assert ontology["tool_node"]["rule"].startswith("may attach capability")
+    assert ontology["governance_actor_node"]["rule"] == "identity is canonical; roles are overlays"
+
+
+def test_edge_ontology_keeps_movement_and_support_separate():
+    doc = rkg.load_kg(KG_PATH)
+    edges = doc["edge_ontology"]
+    assert "resident_movement_edge" in edges
+    assert "lifeline_support_edge" in edges
+    assert edges["resident_movement_edge"]["semantics"] != edges["lifeline_support_edge"]["semantics"]
