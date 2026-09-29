@@ -128,3 +128,31 @@ append-only). `readout.py --centre LAT LON` renders a Markdown+JSON snapshot wit
 inflow, tide surge, drainage), a fixed list of Sammakorn's own nearby stations/pumps, and an
 explicit, never-auto-resolved cross-source contradictions section. There is NO cron/timer
 here -- scheduling is done by the GitHub Actions cron in `.github/workflows/floodconnect.yml`.
+
+## Thai flood warning actor typology
+
+FloodConnect now distinguishes the institutional role of a source from its trust tier.
+`trust_tier` answers **how the item was produced/published**; actor/product metadata answers
+**what role the publisher is playing and what kind of claim the item is**.
+
+Canonical role graph:
+
+`OBSERVE -> INTERPRET_SECTOR -> INTEGRATE -> PUBLIC_WARN -> LOCAL_WARN_AND_ACT`
+
+This is not an exclusive chain of command. Several Thai agencies operate in parallel across
+different hazard domains.
+
+Machine-readable typology:
+`site/inputs/governance/flood_warning_actor_typology.yaml`
+
+Human-readable crosswalk:
+`docs/THAI_FLOOD_WARNING_ACTOR_TYPOLOGY.md`
+
+Recommended provenance fields for new/migrated sources:
+- `actor_role` / `actor_roles`;
+- `product_semantic` (`observation`, `forecast`, `warning`, `operational_instruction`, `response_action`);
+- `hazard_domain`;
+- `valid_for_area` and issue/valid time where applicable.
+
+Important: contradictions should compare like-with-like. A severe-weather warning and a canal
+gauge reading can both be correct because they describe different layers of the system.
