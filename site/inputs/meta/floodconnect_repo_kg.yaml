@@ -23,10 +23,13 @@ meta_invariants:
   - "movement graph != lifeline/support graph"
   - "governance actor identity lives in thailand_water_governance_reference.json verified_anchors"
   - "role overlays must reference canonical actor IDs instead of duplicating agency identity"
+  - "one ACTIVE writer per canonical RKG node for semantic changes"
+  - "substantive concurrent work uses claim-first branch/PR integration"
   - "current incident interpretation uses live/official operational sources; static governance is context only"
   - "user/community reports are evidence inputs, not automatically verified operational truth"
 
 ai_boot_sequence:
+  - "AGENTS.md"
   - "docs/AI_ENTRYPOINT.md"
   - "site/inputs/meta/floodconnect_repo_kg.yaml"
   - "README.md"
@@ -138,6 +141,24 @@ nodes:
       - tests/test_repo_knowledge_graph.py
     summary: "Meta-graph that routes AI/humans to canonical constructs and prevents parallel ontology drift."
     key_boundary: "describes repository architecture; contains no live flood-state claim"
+
+
+  AGENT_COORDINATION:
+    kind: POLICY
+    label: "Multi-Agent Write-Safety Protocol"
+    epistemic_class: POLICY_SCHEMA
+    canonical_artifacts:
+      - AGENTS.md
+      - CONTRIBUTING.md
+      - .ai/claims/README.md
+      - .ai/claims/_template.yaml
+      - agent_claims.py
+      - tests/test_agent_claims.py
+      - .github/PULL_REQUEST_TEMPLATE.md
+      - .github/CODEOWNERS
+      - .github/workflows/floodconnect.yml
+    summary: "Claim-first, one-active-writer-per-canonical-node, branch/PR/full-regression protocol for concurrent AI work."
+    key_boundary: "file-level non-conflict does not imply semantic non-conflict; ownership is by canonical RKG node"
 
   FC_ROOT:
     kind: DOMAIN_SYSTEM
@@ -444,6 +465,9 @@ nodes:
     summary: "Cached/curated presentation layer; must not invent risk score or unsupported operational truth."
 
 edges:
+  - {from: AGENT_COORDINATION, relation: USES_CANONICAL_NODE_IDS_FROM, to: REPO_KG}
+  - {from: FC_ROOT, relation: GOVERNED_FOR_WRITES_BY, to: AGENT_COORDINATION}
+  - {from: CI, relation: ENFORCES, to: AGENT_COORDINATION}
   - {from: REPO_KG, relation: DESCRIBES, to: FC_ROOT}
   - {from: FC_ROOT, relation: EXPOSES_AI_ENTRY_THROUGH, to: REPO_KG}
   - {from: FC_ROOT, relation: CONTAINS, to: RIVER_KG}
@@ -541,6 +565,10 @@ hard_non_edges:
   - "missing Toledo inputs -/-> fabricated water-balance result"
   - "declared east canal chain -/-> complete Bangkok canal topology"
   - "historical S0-S5 backtest state machine -/-> current canonical decision state"
+  - "file-level non-conflict -/-> semantic non-conflict"
+  - "separate branches -/-> separate semantic ownership"
+  - "task-specific test pass -/-> full integration safety"
+  - "expired claim -/-> silent ownership transfer"
 
 question_routes:
   current_water_or_flood_status:
@@ -676,6 +704,16 @@ question_routes:
       - experiments/2026-09-27-tha008-threshold-audit.md
     rule: "preserve locked prediction and post-hoc audit separately; no hindsight rewrite"
 
+
+  multi_agent_write_or_handoff:
+    start_nodes: [AGENT_COORDINATION, REPO_KG]
+    read:
+      - AGENTS.md
+      - .ai/claims/README.md
+      - CONTRIBUTING.md
+      - .github/PULL_REQUEST_TEMPLATE.md
+    rule: "semantic changes require claim-first ownership; one ACTIVE writer per canonical node; implementation merges only through PR + RKG validation + claim validation + full regression"
+
 artifact_precedence:
   governance_identity:
     first: site/inputs/governance/thailand_water_governance_reference.json
@@ -717,6 +755,12 @@ artifact_precedence:
   social_listening:
     first: docs/METHOD_social_listening.md
     implementation: social_listening.py
+
+  multi_agent_coordination:
+    first: AGENTS.md
+    claim_protocol: .ai/claims/README.md
+    validator: agent_claims.py
+    integration_gate: .github/workflows/floodconnect.yml
 
 ai_response_discipline:
   - "state whether claim comes from live observation, static topology, policy/model, field evidence, or inference"
