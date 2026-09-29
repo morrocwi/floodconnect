@@ -334,6 +334,7 @@ nodes:
     label: "Locked Prospective / Backtest Experiments"
     epistemic_class: FIELD_EVIDENCE
     canonical_artifacts:
+      - experiments/2026-09-26-sammakorn-7day-backtest.md
       - experiments/2026-09-bangkok-hierarchical-real-run.md
       - experiments/2026-09-bangkok-toledo-real-backtest.md
       - experiments/2026-09-27-kanchanaburi-prospective.md
@@ -342,7 +343,7 @@ nodes:
       - experiments/2026-09-27-tha008-clean-prospective.md
       - experiments/2026-09-27-tha008-threshold-audit.md
     summary: "Timestamped locked tests/audits; failed assumptions remain preserved for anti-hindsight learning."
-    key_boundary: "experiment result/audit != production forecast rule"
+    key_boundary: "experiment result/audit != production forecast rule; the S0-S5 state machine in the 7-day backtest is historical and superseded by Unified Crisis State"
 
   CI:
     kind: DATA_PIPELINE
@@ -429,6 +430,7 @@ edges:
   - {from: HIERARCHICAL_FLOOD_ZOOM, relation: TESTED_BY, to: PROSPECTIVE_EXPERIMENTS}
   - {from: WATER_BALANCE, relation: TESTED_BY, to: PROSPECTIVE_EXPERIMENTS}
   - {from: RAW_STAGE_FORECAST, relation: TESTED_BY, to: PROSPECTIVE_EXPERIMENTS}
+  - {from: PROSPECTIVE_EXPERIMENTS, relation: HISTORICAL_DECISION_EXPERIMENT_SUPERSEDED_BY, to: UNIFIED_CRISIS}
   - {from: WATER_BALANCE, relation: MAY_FEED_PROPOSAL_READOUT_TO, to: SITE}
   - {from: CANAL_CHAIN_MODEL, relation: MAY_FEED_PROPOSAL_READOUT_TO, to: SITE}
   - {from: BURDEN_LEDGER, relation: MAY_FEED_PROPOSAL_READOUT_TO, to: SITE}
@@ -455,6 +457,7 @@ hard_non_edges:
   - "urban drainage signal -/-> exact point flood depth"
   - "missing Toledo inputs -/-> fabricated water-balance result"
   - "declared east canal chain -/-> complete Bangkok canal topology"
+  - "historical S0-S5 backtest state machine -/-> current canonical decision state"
 
 question_routes:
   current_water_or_flood_status:
