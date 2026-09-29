@@ -1,19 +1,21 @@
 name: FloodConnect
 
-# Rebuilds the public FloodConnect page every 30 minutes from live official snapshots,
-# with no AI in the loop and no dependency on any single person's machine or home internet.
-# See site/DATA_README.md for the full source map and site/build_data.py's module
-# docstring for the epistemic discipline this pipeline follows.
+# Multi-agent safety:
+# - pull_request: validate architecture/claims + full regression before merge.
+# - push/schedule/manual: validate first, then collect/build/deploy.
+# - PR jobs never collect live data or deploy Pages.
 
 on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
   schedule:
     - cron: "*/30 * * * *"
   workflow_dispatch: {}
-  push:
-    branches: [main]
 
 concurrency:
-  group: floodconnect-pages
+  group: floodconnect-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -22,7 +24,8 @@ permissions:
   id-token: write
 
 jobs:
-  build:
+  validate:
+    name: Architecture + full regression
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -42,16 +45,36 @@ jobs:
       - name: Validate repo knowledge graph
         run: python3 repo_knowledge_graph.py --validate
 
-      - name: Test architecture, convergence, shelter and governance primitives
-        run: python3 -m pytest tests/test_repo_knowledge_graph.py tests/test_convergence_feasibility.py tests/test_convergence_board.py tests/test_shelter_operation_ladder.py tests/test_operational_tools_registry.py tests/test_operational_resources.py tests/test_public_shelter_seed.py tests/test_flood_warning_actor_typology.py -q
+      - name: Validate active semantic claims
+        run: python3 agent_claims.py --validate
+
+      - name: Run full regression suite
+        run: python3 -m pytest -q
+
+  build:
+    name: Build live public site
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements-ci.txt
+
+      - name: Install pdftotext (poppler-utils)
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
 
       - name: Collect live snapshots (tolerant of per-source failures)
-        # collect.py already isolates one source's failure from the rest (see its `run()`);
-        # some BMA hosts (weather.bangkok.go.th / dds.bangkok.go.th) may 403 from GitHub's
-        # shared IP ranges -- this step must still succeed and build with whatever fetched.
-        # The `|| echo` is a second layer of tolerance in case collect.py itself ever exits
-        # non-zero (e.g. every single source down at once) -- build_data.py is fail-soft
-        # against missing/partial raw/ snapshots, so the pipeline still produces a page.
+        # collect.py isolates one source's failure from the rest.
+        # Some BMA hosts may reject GitHub shared IPs; site generation remains fail-soft
+        # against partial snapshots.
         run: python3 collect.py --all || echo "collect had failures, continuing"
 
       - name: Build data.json
@@ -69,6 +92,8 @@ jobs:
           path: site/dist
 
   deploy:
+    name: Deploy Pages
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     environment:
