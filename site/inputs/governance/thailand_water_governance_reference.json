@@ -1,7 +1,7 @@
 {
-  "schema_version": "1.0",
-  "as_of": "2026-09-28",
-  "purpose": "Static institutional/governance reference for FloodConnect. This file is not telemetry, not a forecast, and is not an operational command registry.",
+  "schema_version": "1.1",
+  "as_of": "2026-09-29",
+  "purpose": "Canonical static institutional/governance node registry for FloodConnect. Role overlays such as flood-warning typology must reference these actor IDs instead of creating duplicate agency identities. This file is not telemetry, not a forecast, and not an operational command registry.",
   "source": {
     "name": "Bureaucracy Lab Thailand",
     "source_class": "third_party_civic_mapping",
@@ -26,20 +26,62 @@
       "note": "The exact 38-agency / 12-parent-body current enumeration was not independently confirmed as an authoritative exhaustive list."
     },
     "mission_overlap_counts": [
-      {"mission_th": "น้ำท่วม/ภัยพิบัติ", "agency_count": 14},
-      {"mission_th": "ภัยแล้ง/เพิ่มน้ำต้นทุน", "agency_count": 11},
-      {"mission_th": "น้ำประปา/อุปโภคบริโภค", "agency_count": 9},
-      {"mission_th": "แหล่งน้ำขนาดเล็ก/ชุมชน", "agency_count": 9},
-      {"mission_th": "คุณภาพน้ำ/น้ำเสีย", "agency_count": 9},
-      {"mission_th": "ข้อมูล/พยากรณ์", "agency_count": 7},
-      {"mission_th": "นโยบาย/แผน/กำกับ", "agency_count": 6},
-      {"mission_th": "น้ำเกษตร/ชลประทาน", "agency_count": 5},
-      {"mission_th": "ป่าต้นน้ำ/อนุรักษ์ดินและน้ำ", "agency_count": 5},
-      {"mission_th": "ชายฝั่ง/ทะเล", "agency_count": 5},
-      {"mission_th": "พลังงาน/เขื่อนไฟฟ้า", "agency_count": 2},
-      {"mission_th": "ทางน้ำ/การเดินเรือ", "agency_count": 2},
-      {"mission_th": "ลุ่มน้ำระหว่างประเทศ", "agency_count": 2},
-      {"mission_th": "น้ำบาดาล", "agency_count": 1}
+      {
+        "mission_th": "น้ำท่วม/ภัยพิบัติ",
+        "agency_count": 14
+      },
+      {
+        "mission_th": "ภัยแล้ง/เพิ่มน้ำต้นทุน",
+        "agency_count": 11
+      },
+      {
+        "mission_th": "น้ำประปา/อุปโภคบริโภค",
+        "agency_count": 9
+      },
+      {
+        "mission_th": "แหล่งน้ำขนาดเล็ก/ชุมชน",
+        "agency_count": 9
+      },
+      {
+        "mission_th": "คุณภาพน้ำ/น้ำเสีย",
+        "agency_count": 9
+      },
+      {
+        "mission_th": "ข้อมูล/พยากรณ์",
+        "agency_count": 7
+      },
+      {
+        "mission_th": "นโยบาย/แผน/กำกับ",
+        "agency_count": 6
+      },
+      {
+        "mission_th": "น้ำเกษตร/ชลประทาน",
+        "agency_count": 5
+      },
+      {
+        "mission_th": "ป่าต้นน้ำ/อนุรักษ์ดินและน้ำ",
+        "agency_count": 5
+      },
+      {
+        "mission_th": "ชายฝั่ง/ทะเล",
+        "agency_count": 5
+      },
+      {
+        "mission_th": "พลังงาน/เขื่อนไฟฟ้า",
+        "agency_count": 2
+      },
+      {
+        "mission_th": "ทางน้ำ/การเดินเรือ",
+        "agency_count": 2
+      },
+      {
+        "mission_th": "ลุ่มน้ำระหว่างประเทศ",
+        "agency_count": 2
+      },
+      {
+        "mission_th": "น้ำบาดาล",
+        "agency_count": 1
+      }
     ],
     "callouts": [
       {
@@ -130,6 +172,9 @@
       "official_sources": [
         "https://twuo.onwr.go.th/storage/data/type_22/158529_1689566916.pdf",
         "https://onwr4.onwr.go.th/wp-content/uploads/2025/04/TWP-%E0%B8%84%E0%B8%B9%E0%B9%88%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%88%E0%B8%B1%E0%B8%94%E0%B8%97%E0%B8%B3%E0%B9%81%E0%B8%9C%E0%B8%99%E0%B8%9B%E0%B8%8F%E0%B8%B4%E0%B8%9A%E0%B8%B1%E0%B8%95%E0%B8%B4%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%94%E0%B9%89%E0%B8%B2%E0%B8%99%E0%B8%97%E0%B8%A3%E0%B8%B1%E0%B8%9E%E0%B8%A2%E0%B8%B2-2.pdf"
+      ],
+      "flood_warning_roles": [
+        "NATIONAL_WATER_INTEGRATOR"
       ]
     },
     {
@@ -152,6 +197,9 @@
       ],
       "official_sources": [
         "https://www2.rid.go.th/web-upload/1xff0d34e409a13ef56eea54c52a291126/202506/m_page/7/49/file_download/c8ed7b1c85fbd197e5f204e491a96d34.pdf"
+      ],
+      "flood_warning_roles": [
+        "IRRIGATION_WATER_SYSTEM_OPERATOR"
       ]
     },
     {
@@ -164,6 +212,9 @@
       ],
       "official_sources": [
         "https://www.dwr.go.th/QAndA.php"
+      ],
+      "flood_warning_roles": [
+        "FLASH_FLOOD_WATERSHED_EWS"
       ]
     },
     {
@@ -175,6 +226,9 @@
       ],
       "official_sources": [
         "https://tmd.go.th/department/core-mission"
+      ],
+      "flood_warning_roles": [
+        "METEOROLOGICAL_OBSERVER_FORECASTER"
       ]
     },
     {
@@ -188,7 +242,95 @@
       "official_sources": [
         "https://www.gistda.or.th/th/news-category/situation/water-situation/",
         "https://disaster.gistda.or.th/landing/services"
+      ],
+      "flood_warning_roles": [
+        "REMOTE_SENSING_FLOOD_OBSERVER"
       ]
+    },
+    {
+      "id": "ddpm_ndwc",
+      "name_th": "กรมป้องกันและบรรเทาสาธารณภัย / ศูนย์เตือนภัยพิบัติแห่งชาติ",
+      "name_en": "Department of Disaster Prevention and Mitigation / National Disaster Warning Center",
+      "verified": true,
+      "node_kind": "agency_or_subagency",
+      "roles": [
+        "เฝ้าระวังและแจ้งเตือนสาธารณภัยต่อประชาชนผ่านระบบ/ช่องทางเตือนภัย",
+        "เผยแพร่ข้อมูลการแจ้งเตือนสาธารณภัย รวมถึง Cell Broadcast"
+      ],
+      "flood_warning_roles": [
+        "NATIONAL_PUBLIC_WARNING_DISSEMINATOR"
+      ],
+      "official_sources": [
+        "https://catalog.disaster.go.th/th/organization/dpm019",
+        "https://catalog.disaster.go.th/th/dataset/cell-broadcast"
+      ]
+    },
+    {
+      "id": "bma_dds",
+      "name_th": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+      "name_en": "Department of Drainage and Sewerage, Bangkok Metropolitan Administration",
+      "verified": true,
+      "node_kind": "local_operational_agency",
+      "roles": [
+        "วางแผน ควบคุม และบริหารระบบป้องกันน้ำท่วมและระบายน้ำของกรุงเทพมหานคร",
+        "บริหารประตูระบายน้ำ สถานีสูบน้ำ อุโมงค์ระบายน้ำ คลองและโครงสร้างควบคุมน้ำ",
+        "ติดตามสถานการณ์และข้อมูลระบบระบายน้ำเมือง"
+      ],
+      "flood_warning_roles": [
+        "URBAN_DRAINAGE_OPERATOR",
+        "LOCAL_LAST_MILE_WARNING_RESPONSE"
+      ],
+      "official_sources": [
+        "https://gov.bangkok.go.th/OrganizationInfo/b6ade5fe-0e59-4835-b962-e34442207a6a?categoryId=c55227d4-c056-49c3-84b4-c685e37056a6"
+      ],
+      "repo_operational_sources": [
+        "thaiwater_canal_waterlevel",
+        "bma_pumphistory",
+        "dds_daily_pdf",
+        "dds_flood_report"
+      ]
+    },
+    {
+      "id": "hii",
+      "name_th": "สถาบันสารสนเทศทรัพยากรน้ำ (องค์การมหาชน)",
+      "name_en": "Hydro-Informatics Institute (Public Organization)",
+      "short_name": "HII/สสน.",
+      "verified": true,
+      "node_kind": "data_integration_agency",
+      "roles": [
+        "รวบรวม เชื่อมโยง บูรณาการ และวิเคราะห์ข้อมูลทรัพยากรน้ำจากหลายหน่วยงาน",
+        "พัฒนาและให้บริการคลังข้อมูลน้ำแห่งชาติและเทคโนโลยีสารสนเทศทรัพยากรน้ำ"
+      ],
+      "flood_warning_roles": [
+        "HYDRO_DATA_BROKER_AGGREGATOR"
+      ],
+      "official_sources": [
+        "https://www.hii.or.th/",
+        "https://www.hii.or.th/วิสัยทัศน์-พันธกิจ/"
+      ],
+      "repo_operational_sources": [
+        "thaiwater_canal_waterlevel",
+        "thaiwater_flood_road",
+        "thaiwater_rain_24h"
+      ]
+    },
+    {
+      "id": "province_district_local_authority",
+      "name_th": "จังหวัด / อำเภอ / องค์กรปกครองส่วนท้องถิ่น",
+      "name_en": "Provincial / District / Local Administrative Authorities",
+      "verified": true,
+      "node_kind": "actor_class",
+      "roles": [
+        "แจ้งเตือนประชาชนผ่านช่องทางพื้นที่",
+        "ดำเนินมาตรการป้องกันและบรรเทาสาธารณภัยในพื้นที่ เช่น การปิดเส้นทาง เปิดศูนย์พักพิง กู้ภัย และช่วยเหลือ"
+      ],
+      "flood_warning_roles": [
+        "LOCAL_LAST_MILE_WARNING_RESPONSE"
+      ],
+      "official_sources": [
+        "https://www.disaster.go.th/apiv1/clickdownload/download/1368"
+      ],
+      "verification_note": "Actor-class node, not one legal entity. Used as a canonical governance reference for last-mile warning/response roles; actual authority must be resolved to the current province/district/local jurisdiction."
     }
   ],
   "unresolved_abbreviations_preserved_verbatim": [
@@ -201,5 +343,12 @@
     "note": "งานวิชาการในอดีตเคยรายงานโครงสร้างงานน้ำ 38 หน่วยงานใน 10 กระทรวงในช่วงเวลาศึกษาหนึ่ง จึงสนับสนุนเพียงว่าระบบมีหลายหน่วยงาน แต่ไม่ยืนยันตัวเลข 38/12 ของอินโฟกราฟิกปัจจุบัน",
     "source": "https://so03.tci-thaijo.org/index.php/papojournal/article/view/260568"
   },
-  "operational_rule": "FloodConnect should route live incident interpretation through verified operational sources already registered in sources/registry.yaml. This governance map is explanatory context only."
+  "operational_rule": "FloodConnect should route live incident interpretation through verified operational sources already registered in sources/registry.yaml. This governance map is explanatory context only.",
+  "role_overlay_registry": {
+    "canonical_actor_registry": "site/inputs/governance/thailand_water_governance_reference.json#verified_anchors",
+    "overlays": {
+      "flood_warning_actor_typology": "site/inputs/governance/flood_warning_actor_typology.yaml"
+    },
+    "invariant": "Role overlays MUST reference canonical actor IDs from verified_anchors; do not duplicate agency identity/name/source blocks in overlays."
+  }
 }
