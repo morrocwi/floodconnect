@@ -52,6 +52,10 @@ it maps major constructs, source-of-truth artifacts, dependencies, epistemic cla
 non-edges, and question-specific read paths. Before creating a new ontology or node type, check
 the RKG and extend an existing canonical node/artifact whenever possible.
 
+- Multi-agent protocol: `AGENTS.md`
+- Contribution workflow: `CONTRIBUTING.md`
+- Active semantic claims: `.ai/claims/`
+- Claim validator: `agent_claims.py`
 - AI entrypoint: `docs/AI_ENTRYPOINT.md`
 - Canonical Repo KG: `site/inputs/meta/floodconnect_repo_kg.yaml`
 - Human repo graph: `docs/FLOODCONNECT_REPO_KG.md`
