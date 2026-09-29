@@ -49,7 +49,8 @@ def test_core_constructs_are_present():
 
 def test_ai_boot_path_starts_with_single_entrypoint_and_kg():
     doc = rkg.load_kg(KG_PATH)
-    assert doc["ai_boot_sequence"][:2] == [
+    assert doc["ai_boot_sequence"][:3] == [
+        "AGENTS.md",
         "docs/AI_ENTRYPOINT.md",
         "site/inputs/meta/floodconnect_repo_kg.yaml",
     ]
