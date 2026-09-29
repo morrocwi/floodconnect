@@ -125,6 +125,20 @@ edge_ontology:
     semantics: "repo-level construct dependency represented in RKG edges"
 
 nodes:
+
+  REPO_KG:
+    kind: REGISTRY
+    label: "FloodConnect Repository Knowledge Graph"
+    epistemic_class: POLICY_SCHEMA
+    canonical_artifacts:
+      - site/inputs/meta/floodconnect_repo_kg.yaml
+      - docs/AI_ENTRYPOINT.md
+      - docs/FLOODCONNECT_REPO_KG.md
+      - repo_knowledge_graph.py
+      - tests/test_repo_knowledge_graph.py
+    summary: "Meta-graph that routes AI/humans to canonical constructs and prevents parallel ontology drift."
+    key_boundary: "describes repository architecture; contains no live flood-state claim"
+
   FC_ROOT:
     kind: DOMAIN_SYSTEM
     label: "FloodConnect"
@@ -430,6 +444,8 @@ nodes:
     summary: "Cached/curated presentation layer; must not invent risk score or unsupported operational truth."
 
 edges:
+  - {from: REPO_KG, relation: DESCRIBES, to: FC_ROOT}
+  - {from: FC_ROOT, relation: EXPOSES_AI_ENTRY_THROUGH, to: REPO_KG}
   - {from: FC_ROOT, relation: CONTAINS, to: RIVER_KG}
   - {from: FC_ROOT, relation: CONTAINS, to: BANGKOK_CANAL_KG}
   - {from: FC_ROOT, relation: CONTAINS, to: LIVE_DATA_SYSTEM}
