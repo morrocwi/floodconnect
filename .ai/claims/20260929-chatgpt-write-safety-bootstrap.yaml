@@ -7,6 +7,7 @@ nodes:
   - REPO_KG
   - AGENT_COORDINATION
   - CI
+  - LIVE_DATA_SYSTEM
 artifacts:
   - AGENTS.md
   - CONTRIBUTING.md
@@ -16,9 +17,12 @@ artifacts:
   - .github/CODEOWNERS
   - .github/workflows/floodconnect.yml
   - site/inputs/meta/floodconnect_repo_kg.yaml
-intent: "Bootstrap FloodConnect multi-agent write-safety protocol and integration gates."
+  - readout.py
+  - tests/test_readout.py
+  - tests/test_build_page_redteam.py
+intent: "Bootstrap FloodConnect multi-agent write-safety protocol and integration gates; repair deterministic full-regression baseline exposed by the new gate."
 created_at: "2026-09-29T15:40:00+07:00"
 expires_at: null
 reviewers: []
 supersedes: null
-note: "Bootstrap exception: the claim protocol did not exist before this implementation began. The work was moved onto a compliant agent/<id>/<task> branch before PR creation; this RELEASED claim preserves provenance without creating an ACTIVE ownership lock."
+note: "Bootstrap exception: the claim protocol did not exist before this implementation began. The work was moved onto a compliant agent/<id>/<task> branch before PR creation. Full regression then exposed two pre-existing deterministic-test issues: a stale UI wording assertion and historical readout freshness tied to wall-clock time; these were repaired without weakening live freshness semantics. This RELEASED claim preserves provenance without creating an ACTIVE ownership lock."
