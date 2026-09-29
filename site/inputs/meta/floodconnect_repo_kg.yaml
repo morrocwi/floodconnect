@@ -1,0 +1,477 @@
+# FloodConnect Repo Knowledge Graph (RKG)
+# Canonical meta-layer for AI/human orientation.
+# This graph describes repository concepts, source-of-truth artifacts, dependencies,
+# epistemic boundaries, and recommended read paths. It contains NO live flood claim.
+version: "1.0"
+status: "canonical_repo_meta_graph"
+updated_at: "2026-09-29"
+
+purpose:
+  - "let a new AI understand FloodConnect without scanning the whole repository"
+  - "prevent duplicate ontologies / duplicate actor identities / duplicate source-of-truth files"
+  - "route questions to the smallest relevant canonical artifact set"
+  - "make dependency and epistemic boundaries explicit"
+
+meta_invariants:
+  - "UNKNOWN != SAFE"
+  - "no weighted score may override a failed hard constraint"
+  - "topology/connectivity != forecast"
+  - "observation != forecast != warning != operational instruction != response action"
+  - "facility type != shelter safety"
+  - "vehicle/tool type != route safety"
+  - "tool capability never overrides Dry Gate"
+  - "movement graph != lifeline/support graph"
+  - "governance actor identity lives in thailand_water_governance_reference.json verified_anchors"
+  - "role overlays must reference canonical actor IDs instead of duplicating agency identity"
+  - "current incident interpretation uses live/official operational sources; static governance is context only"
+  - "user/community reports are evidence inputs, not automatically verified operational truth"
+
+ai_boot_sequence:
+  - "docs/AI_ENTRYPOINT.md"
+  - "site/inputs/meta/floodconnect_repo_kg.yaml"
+  - "README.md"
+  - "sources/registry.yaml"
+  - "site/inputs/community/sustainment_policy.yaml"
+  - "site/inputs/governance/thailand_water_governance_reference.json"
+
+epistemic_classes:
+  LIVE_OBSERVATION: "fresh measured/relayed operational state; freshness and provenance required"
+  STATIC_TOPOLOGY: "structure/connectivity/reference; not a forecast"
+  POLICY_SCHEMA: "rules/invariants; contains no live site-safety claim"
+  EXECUTABLE_MODEL: "deterministic evaluator given declared inputs; output inherits input limits"
+  ROLE_OVERLAY: "assigns roles to canonical identities; must not duplicate identities"
+  FIELD_EVIDENCE: "relayed case evidence; useful for design/testing but not universal truth"
+  PROPOSAL: "repo-specific construct requiring validation; never present as external standard"
+  DOCUMENTATION: "human explanation of a canonical artifact/model"
+
+node_kinds:
+  - DOMAIN_SYSTEM
+  - MODEL
+  - GRAPH
+  - POLICY
+  - REGISTRY
+  - DATA_PIPELINE
+  - GOVERNANCE_REGISTRY
+  - ROLE_OVERLAY
+  - DECISION_LAYER
+  - ARTIFACT
+  - OUTPUT
+
+nodes:
+  FC_ROOT:
+    kind: DOMAIN_SYSTEM
+    label: "FloodConnect"
+    epistemic_class: DOCUMENTATION
+    canonical_artifacts: [README.md]
+    summary: "Thailand-first flood context, community sustainment, movement, shelter, resource and governance system."
+
+  RIVER_KG:
+    kind: GRAPH
+    label: "Thailand River Flow-Propagation Knowledge Graph"
+    epistemic_class: STATIC_TOPOLOGY
+    canonical_artifacts: [build_kg.py]
+    outputs: [output/thailand_river_flow.graphml, output/thailand_river_flow.jsonld]
+    key_boundary: "HydroRIVERS topology / NEXT_DOWN; not a flood forecast."
+
+  BANGKOK_CANAL_KG:
+    kind: GRAPH
+    label: "Bangkok Canal Network"
+    epistemic_class: STATIC_TOPOLOGY
+    canonical_artifacts: [build_bangkok_canals.py]
+    summary: "Bangkok canal connectivity/conflation/orientation evidence with explicit uncertainty."
+    key_boundary: "edge direction may be unresolved; schematic conflation evidence is not guaranteed hydraulic truth."
+
+  LIVE_DATA_SYSTEM:
+    kind: DATA_PIPELINE
+    label: "Live Flood-Context Data System"
+    epistemic_class: LIVE_OBSERVATION
+    canonical_artifacts:
+      - sources/registry.yaml
+      - collect.py
+      - parsers.py
+      - store.py
+      - readout.py
+      - docs/DATA_SYSTEM.md
+    summary: "Registry-driven one-request-per-source collection, append-only storage, provenance and contradiction readout."
+
+  LIVE_WATER:
+    kind: DATA_PIPELINE
+    label: "Bangkok Live Water / Pump Readout"
+    epistemic_class: LIVE_OBSERVATION
+    canonical_artifacts: [live_water_level.py]
+    summary: "ThaiWater canal stations + BMA PumpHistory attachment/watch layer."
+
+  SAMMAKORN_HYDRAULIC:
+    kind: GRAPH
+    label: "Sammakorn Pond–Canal Hydraulic DAG"
+    epistemic_class: POLICY_SCHEMA
+    canonical_artifacts:
+      - site/inputs/canals/sammakorn_pond_canal_dag.yaml
+      - docs/SAMMAKORN_POND_CANAL_DAG.md
+    summary: "External canal/drain -> gate/gravity -> pond -> pump -> receiving canal; fail-closed on missing state."
+
+  COMMUNITY_DAG:
+    kind: GRAPH
+    label: "Community Self-Help Movement DAG"
+    epistemic_class: POLICY_SCHEMA
+    canonical_artifacts:
+      - site/inputs/community/self_help_dag.yaml
+      - community_dag.py
+      - docs/COMMUNITY_SELF_HELP_DAG.md
+    summary: "Layered resident movement: household -> buddy -> zone -> internal safe -> egress -> external safe."
+
+  SUSTAINMENT_POLICY:
+    kind: POLICY
+    label: "Community Sustainment Policy Schema"
+    epistemic_class: POLICY_SCHEMA
+    canonical_artifacts: [site/inputs/community/sustainment_policy.yaml]
+    summary: "Canonical cross-construct schema for LVCN, water lifelines, convergence, shelter, HAHU, degradation and unified state."
+
+  LVCN:
+    kind: DECISION_LAYER
+    label: "Lowest Viable Community Node"
+    epistemic_class: PROPOSAL
+    canonical_artifacts:
+      - shelter_decision.py
+      - docs/SHELTER_DECISION_AND_COMMUNITY_SUSTAINMENT.md
+      - site/inputs/community/sustainment_policy.yaml
+    summary: "Lowest support layer known to sustain people for the declared horizon without collapsing UNKNOWN."
+    key_boundary: "not an external FEMA/Sphere/UNHCR standard."
+
+  TDLC:
+    kind: MODEL
+    label: "Thai Distributed Lifeline Convergence"
+    epistemic_class: PROPOSAL
+    canonical_artifacts:
+      - docs/THAI_DISTRIBUTED_LIFELINE_CONVERGENCE.md
+      - site/inputs/community/sustainment_policy.yaml
+    summary: "Thailand-first two-network model: people movement + support/lifeline convergence."
+
+  LCF:
+    kind: MODEL
+    label: "Lifeline Convergence Feasibility"
+    epistemic_class: EXECUTABLE_MODEL
+    canonical_artifacts:
+      - convergence_feasibility.py
+      - site/inputs/community/sustainment_policy.yaml
+    summary: "Whether demand gap can be closed by verified interface/path/supply/capacity/timing."
+
+  LCB:
+    kind: MODEL
+    label: "Local Convergence Board"
+    epistemic_class: EXECUTABLE_MODEL
+    canonical_artifacts:
+      - convergence_board.py
+      - site/inputs/community/sustainment_policy.yaml
+    summary: "Nearest verified SO-L0 dry interface + shared NEED/SUPPLY/ROUTE Kanban."
+    key_boundary: "shared state, not a command hierarchy."
+
+  SOCL:
+    kind: MODEL
+    label: "Shelter Operation Capability Ladder"
+    epistemic_class: EXECUTABLE_MODEL
+    canonical_artifacts:
+      - shelter_operation_ladder.py
+      - docs/SHELTER_OPERATION_CAPABILITY_LADDER.md
+      - site/inputs/community/sustainment_policy.yaml
+    summary: "Dry Gate -> SO-L0 interface -> L1 transfer -> L2 day support -> L3 overnight -> L4 full operation."
+    key_boundary: "no verified dry operating footprint => no shelter-operation level."
+
+  ORCG:
+    kind: GRAPH
+    label: "Operational Resource Capability Graph"
+    epistemic_class: POLICY_SCHEMA
+    canonical_artifacts:
+      - site/inputs/community/operational_tools.yaml
+      - operational_resources.py
+      - docs/OPERATIONAL_RESOURCE_CAPABILITY_GRAPH.md
+    summary: "tool_node/resource deployment -> verified capability -> node/edge capability cascade."
+    key_boundary: "inventory presence alone grants no route/site capability."
+
+  PSSS:
+    kind: MODEL
+    label: "Public Shelter Seed Strategy"
+    epistemic_class: EXECUTABLE_MODEL
+    canonical_artifacts:
+      - public_shelter_seed.py
+      - site/inputs/community/public_shelter_seeds.yaml
+      - docs/PUBLIC_SHELTER_SEED_STRATEGY.md
+    summary: "Discover public facilities quickly, then choose by hard capability gap after Dry Gate."
+    key_boundary: "school/sports/hospital labels are discovery hints, not safety claims."
+
+  HAHU:
+    kind: MODEL
+    label: "Human–Animal Household Unit"
+    epistemic_class: EXECUTABLE_MODEL
+    canonical_artifacts:
+      - human_animal_household.py
+      - docs/HUMAN_ANIMAL_HOUSEHOLD_UNIT.md
+      - site/inputs/community/sustainment_policy.yaml
+    summary: "Separates animal sustainment, movement readiness, destination compatibility and household continuity."
+
+  ENV_DEGRADATION:
+    kind: MODEL
+    label: "Environmental Degradation Clocks"
+    epistemic_class: EXECUTABLE_MODEL
+    canonical_artifacts:
+      - environmental_degradation.py
+      - docs/ENVIRONMENTAL_DEGRADATION_CLOCKS.md
+      - site/inputs/community/sustainment_policy.yaml
+    summary: "Safe-now can degrade without rising water: sewage/backflow, wet materials, vectors, sewer gas and finite clocks."
+
+  UNIFIED_CRISIS:
+    kind: DECISION_LAYER
+    label: "Unified Crisis State"
+    epistemic_class: EXECUTABLE_MODEL
+    canonical_artifacts:
+      - unified_crisis_state.py
+      - site/inputs/community/sustainment_policy.yaml
+    state_vector: "Z_i(t,T)=(O,F,M,S,E,H,A,P)"
+    summary: "Composes occupancy, function, movement, support, environment, forward hazard, animal topology and phase."
+
+  GOVERNANCE:
+    kind: GOVERNANCE_REGISTRY
+    label: "Thailand Water Governance Canonical Actor Registry"
+    epistemic_class: STATIC_TOPOLOGY
+    canonical_artifacts:
+      - site/inputs/governance/thailand_water_governance_reference.json
+      - docs/THAILAND_WATER_GOVERNANCE.md
+    summary: "Canonical actor identities and verified governance anchors."
+    key_boundary: "context only; not live incident command or telemetry."
+
+  WARNING_TYPOLOGY:
+    kind: ROLE_OVERLAY
+    label: "Thai Flood Warning Actor Typology"
+    epistemic_class: ROLE_OVERLAY
+    canonical_artifacts:
+      - site/inputs/governance/flood_warning_actor_typology.yaml
+      - docs/THAI_FLOOD_WARNING_ACTOR_TYPOLOGY.md
+    summary: "OBSERVE -> INTERPRET -> INTEGRATE -> PUBLIC_WARN -> LOCAL_WARN_AND_ACT roles over canonical governance actors."
+    key_boundary: "actor identity is referenced from GOVERNANCE; never duplicated here."
+
+  SOURCE_REGISTRY:
+    kind: REGISTRY
+    label: "Operational Source Registry"
+    epistemic_class: POLICY_SCHEMA
+    canonical_artifacts: [sources/registry.yaml]
+    summary: "Agency/source URL, cadence, auth, licence, trust tier and host-safety rules."
+
+  CI:
+    kind: DATA_PIPELINE
+    label: "FloodConnect CI / Pages"
+    epistemic_class: EXECUTABLE_MODEL
+    canonical_artifacts: [.github/workflows/floodconnect.yml]
+    summary: "Tests critical invariants and rebuilds public page on schedule."
+
+  SITE:
+    kind: OUTPUT
+    label: "Public FloodConnect Site"
+    epistemic_class: DOCUMENTATION
+    canonical_artifacts:
+      - site/build_data.py
+      - site/build_page.py
+      - site/DATA_README.md
+    summary: "Cached/curated presentation layer; must not invent risk score or unsupported operational truth."
+
+edges:
+  - {from: FC_ROOT, relation: CONTAINS, to: RIVER_KG}
+  - {from: FC_ROOT, relation: CONTAINS, to: BANGKOK_CANAL_KG}
+  - {from: FC_ROOT, relation: CONTAINS, to: LIVE_DATA_SYSTEM}
+  - {from: FC_ROOT, relation: CONTAINS, to: COMMUNITY_DAG}
+  - {from: FC_ROOT, relation: CONTAINS, to: TDLC}
+  - {from: FC_ROOT, relation: CONTAINS, to: UNIFIED_CRISIS}
+  - {from: FC_ROOT, relation: CONTAINS, to: GOVERNANCE}
+
+  - {from: RIVER_KG, relation: PROVIDES_TOPOLOGY_TO, to: LIVE_DATA_SYSTEM}
+  - {from: RIVER_KG, relation: PROVIDES_CONTEXT_TO, to: BANGKOK_CANAL_KG}
+  - {from: BANGKOK_CANAL_KG, relation: PROVIDES_URBAN_NETWORK_CONTEXT_TO, to: LIVE_WATER}
+  - {from: LIVE_WATER, relation: FEEDS, to: LIVE_DATA_SYSTEM}
+  - {from: SOURCE_REGISTRY, relation: CONFIGURES, to: LIVE_DATA_SYSTEM}
+  - {from: LIVE_DATA_SYSTEM, relation: PROVIDES_EVIDENCE_TO, to: UNIFIED_CRISIS}
+  - {from: LIVE_DATA_SYSTEM, relation: PROVIDES_EVIDENCE_TO, to: SAMMAKORN_HYDRAULIC}
+  - {from: SAMMAKORN_HYDRAULIC, relation: PROVIDES_LOCAL_HYDRAULIC_CONTEXT_TO, to: UNIFIED_CRISIS}
+
+  - {from: COMMUNITY_DAG, relation: PROVIDES_MOVEMENT_TO, to: LVCN}
+  - {from: COMMUNITY_DAG, relation: PROVIDES_MOVEMENT_TO, to: HAHU}
+  - {from: COMMUNITY_DAG, relation: PROVIDES_MOVEMENT_TO, to: UNIFIED_CRISIS}
+  - {from: SUSTAINMENT_POLICY, relation: CONFIGURES, to: LVCN}
+  - {from: SUSTAINMENT_POLICY, relation: CONFIGURES, to: LCF}
+  - {from: SUSTAINMENT_POLICY, relation: CONFIGURES, to: LCB}
+  - {from: SUSTAINMENT_POLICY, relation: CONFIGURES, to: SOCL}
+  - {from: SUSTAINMENT_POLICY, relation: CONFIGURES, to: HAHU}
+  - {from: SUSTAINMENT_POLICY, relation: CONFIGURES, to: ENV_DEGRADATION}
+  - {from: SUSTAINMENT_POLICY, relation: CONFIGURES, to: UNIFIED_CRISIS}
+
+  - {from: TDLC, relation: DEFINES, to: LVCN}
+  - {from: TDLC, relation: DEFINES, to: LCF}
+  - {from: TDLC, relation: DEFINES_FIELD_PRIMITIVE, to: LCB}
+  - {from: LCF, relation: EVALUATES_SUPPORT_FEASIBILITY_FOR, to: LVCN}
+  - {from: SOCL, relation: GATES, to: LCB}
+  - {from: SOCL, relation: PROVIDES_PHYSICAL_NODE_CAPABILITY_TO, to: LVCN}
+  - {from: PSSS, relation: SELECTS_CANDIDATE_FOR, to: SOCL}
+  - {from: ORCG, relation: MAY_ADD_VERIFIED_CAPABILITY_TO, to: SOCL}
+  - {from: ORCG, relation: MAY_ADD_VERIFIED_CAPABILITY_TO, to: COMMUNITY_DAG}
+  - {from: ORCG, relation: MAY_ADD_VERIFIED_CAPABILITY_TO, to: LCF}
+  - {from: ORCG, relation: MAY_ADD_VERIFIED_CAPABILITY_TO, to: LCB}
+  - {from: ORCG, relation: MAY_ADD_VERIFIED_CAPABILITY_TO, to: HAHU}
+  - {from: HAHU, relation: MODIFIES_HOUSEHOLD_REQUIREMENTS_FOR, to: LVCN}
+  - {from: HAHU, relation: FEEDS, to: UNIFIED_CRISIS}
+  - {from: ENV_DEGRADATION, relation: MODIFIES_OCCUPANCY_HORIZON_FOR, to: LVCN}
+  - {from: ENV_DEGRADATION, relation: FEEDS, to: UNIFIED_CRISIS}
+  - {from: LVCN, relation: FEEDS_SUPPORT_STATE_TO, to: UNIFIED_CRISIS}
+  - {from: LCF, relation: FEEDS_FUNCTION_STATE_TO, to: UNIFIED_CRISIS}
+  - {from: SOCL, relation: FEEDS_SHELTER_STATE_TO, to: UNIFIED_CRISIS}
+
+  - {from: GOVERNANCE, relation: PROVIDES_CANONICAL_ACTOR_IDENTITIES_TO, to: WARNING_TYPOLOGY}
+  - {from: WARNING_TYPOLOGY, relation: CLASSIFIES_SOURCE_ROLES_FOR, to: SOURCE_REGISTRY}
+  - {from: WARNING_TYPOLOGY, relation: GUIDES_SEMANTIC_INTERPRETATION_OF, to: LIVE_DATA_SYSTEM}
+  - {from: WARNING_TYPOLOGY, relation: MAY_PROVIDE_OFFICIAL_WARNING_CONTEXT_TO, to: UNIFIED_CRISIS}
+
+  - {from: LIVE_DATA_SYSTEM, relation: FEEDS, to: SITE}
+  - {from: UNIFIED_CRISIS, relation: MAY_FEED_EXPLAINED_STATE_TO, to: SITE}
+  - {from: CI, relation: TESTS_AND_BUILDS, to: SITE}
+
+hard_non_edges:
+  - "RIVER_KG -/-> flood forecast"
+  - "BANGKOK_CANAL_KG -/-> guaranteed hydraulic direction"
+  - "weather forecast -/-> exact local flood depth"
+  - "canal observation -/-> evacuation order"
+  - "tool_node -/-> route safe"
+  - "pump present -/-> Dry Gate passed"
+  - "facility archetype -/-> shelter level"
+  - "GOVERNANCE static role -/-> current incident commander"
+  - "WARNING_TYPOLOGY -/-> duplicate actor identity"
+  - "support delivery graph -/-> resident movement graph"
+
+question_routes:
+  current_water_or_flood_status:
+    start_nodes: [LIVE_DATA_SYSTEM, LIVE_WATER]
+    then: [SAMMAKORN_HYDRAULIC, UNIFIED_CRISIS]
+    read:
+      - sources/registry.yaml
+      - docs/DATA_SYSTEM.md
+      - readout.py
+    rule: "use fresh operational sources; static KG/topology only as context"
+
+  river_or_downstream_connectivity:
+    start_nodes: [RIVER_KG]
+    read: [build_kg.py, README.md]
+    rule: "topology answer only unless current hydrology is separately supplied"
+
+  bangkok_canal_connectivity:
+    start_nodes: [BANGKOK_CANAL_KG, LIVE_WATER]
+    read: [build_bangkok_canals.py, live_water_level.py]
+    rule: "preserve unresolved direction"
+
+  sammakorn_pond_pump_gate:
+    start_nodes: [SAMMAKORN_HYDRAULIC, LIVE_WATER]
+    read:
+      - site/inputs/canals/sammakorn_pond_canal_dag.yaml
+      - docs/SAMMAKORN_POND_CANAL_DAG.md
+      - live_water_level.py
+
+  household_or_community_survival:
+    start_nodes: [LVCN, COMMUNITY_DAG, TDLC]
+    read:
+      - docs/SHELTER_DECISION_AND_COMMUNITY_SUSTAINMENT.md
+      - docs/COMMUNITY_SELF_HELP_DAG.md
+      - site/inputs/community/sustainment_policy.yaml
+
+  route_or_evacuation:
+    start_nodes: [COMMUNITY_DAG, ORCG, HAHU]
+    read:
+      - community_dag.py
+      - site/inputs/community/self_help_dag.yaml
+      - site/inputs/community/operational_tools.yaml
+    rule: "mode/tool never overrides route verification"
+
+  supplies_support_or_last_mile:
+    start_nodes: [LCF, LCB, ORCG, TDLC]
+    read:
+      - convergence_feasibility.py
+      - convergence_board.py
+      - docs/THAI_DISTRIBUTED_LIFELINE_CONVERGENCE.md
+
+  shelter_or_dry_node:
+    start_nodes: [SOCL, PSSS, ORCG]
+    read:
+      - docs/SHELTER_OPERATION_CAPABILITY_LADDER.md
+      - site/inputs/community/public_shelter_seeds.yaml
+      - site/inputs/community/operational_tools.yaml
+    rule: "Dry Gate first"
+
+  public_facility_for_shelter:
+    start_nodes: [PSSS, SOCL]
+    read:
+      - public_shelter_seed.py
+      - docs/PUBLIC_SHELTER_SEED_STRATEGY.md
+    rule: "archetype is search hint only; verified capability gap chooses actual candidate"
+
+  animals_pets_livestock:
+    start_nodes: [HAHU, COMMUNITY_DAG, ORCG]
+    read:
+      - docs/HUMAN_ANIMAL_HOUSEHOLD_UNIT.md
+      - human_animal_household.py
+
+  floodwater_age_sewage_mold_vectors:
+    start_nodes: [ENV_DEGRADATION]
+    read:
+      - docs/ENVIRONMENTAL_DEGRADATION_CLOCKS.md
+      - environmental_degradation.py
+
+  government_agency_or_who_is_responsible:
+    start_nodes: [GOVERNANCE, WARNING_TYPOLOGY]
+    read:
+      - site/inputs/governance/thailand_water_governance_reference.json
+      - site/inputs/governance/flood_warning_actor_typology.yaml
+    rule: "use canonical actor IDs; role != exclusive authority"
+
+  warning_alert_or_who_warns:
+    start_nodes: [WARNING_TYPOLOGY, SOURCE_REGISTRY]
+    read:
+      - docs/THAI_FLOOD_WARNING_ACTOR_TYPOLOGY.md
+      - sources/registry.yaml
+    rule: "classify product semantic before using it"
+
+  overall_decision_state:
+    start_nodes: [UNIFIED_CRISIS]
+    then: [LVCN, LCF, COMMUNITY_DAG, ENV_DEGRADATION, HAHU]
+    read:
+      - unified_crisis_state.py
+      - site/inputs/community/sustainment_policy.yaml
+
+artifact_precedence:
+  governance_identity:
+    first: site/inputs/governance/thailand_water_governance_reference.json
+    overlays:
+      - site/inputs/governance/flood_warning_actor_typology.yaml
+  community_policy:
+    first: site/inputs/community/sustainment_policy.yaml
+    implementations:
+      - shelter_decision.py
+      - convergence_feasibility.py
+      - shelter_operation_ladder.py
+      - unified_crisis_state.py
+  movement:
+    first: site/inputs/community/self_help_dag.yaml
+    implementation: community_dag.py
+  operational_tools:
+    first: site/inputs/community/operational_tools.yaml
+    implementation: operational_resources.py
+  public_shelter_seed:
+    first: site/inputs/community/public_shelter_seeds.yaml
+    implementation: public_shelter_seed.py
+  sammakorn_hydraulics:
+    first: site/inputs/canals/sammakorn_pond_canal_dag.yaml
+    implementation: live_water_level.py
+  live_sources:
+    first: sources/registry.yaml
+    pipeline: [collect.py, parsers.py, store.py, readout.py]
+
+ai_response_discipline:
+  - "state whether claim comes from live observation, static topology, policy/model, field evidence, or inference"
+  - "for current conditions, verify freshness before using a reading"
+  - "for a named real shelter/route, never infer safety from type/name/proximity"
+  - "for government roles, separate canonical actor identity from warning-role overlay"
+  - "when a canonical artifact exists, edit/extend it instead of creating a parallel ontology"
+  - "if a lower-layer state is UNKNOWN, do not erase it by pointing to a higher known layer"
