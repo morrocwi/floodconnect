@@ -139,6 +139,37 @@ Read:
 
 No universal “age of floodwater” threshold exists.
 
+### “Experimental forecast / Toledo / prospective test?”
+
+Read:
+
+- `water_balance.py` — PROP-FLOOD-03
+- `canal_graph.py` — PROP-FLOOD-04
+- `burden_ledger.py` — PROP-FLOOD-05
+- `hierarchical_flood_zoom.py`
+- `raw_stage_forecast.py`
+- `experiments/`
+
+These belong to the **proposal / experiment branch**, not the live operational truth layer.
+
+Important:
+- missing Toledo inputs must remain refused/OPEN;
+- raw-stage persistence is not a hydraulic model;
+- a historical/prospective experiment is not a production forecast rule;
+- the S0–S5 state machine in the early 7-day Sammakorn backtest is historical and has been
+  superseded by `Unified Crisis State`.
+
+### “Community/social reports?”
+
+Read:
+
+- `social_listening.py`
+- `docs/METHOD_social_listening.md`
+- `sources/registry.yaml`
+
+Community/media signals are place+state+time evidence. They do not become official warnings merely
+because they agree with an official source.
+
 ### “Who is responsible / who warns?”
 
 Read identity first:
@@ -209,6 +240,24 @@ This diagram is orientation only. The machine-readable edge list in the RKG is c
 | Sammakorn hydraulic topology | `site/inputs/canals/sammakorn_pond_canal_dag.yaml` |
 | Governance actor identity | `site/inputs/governance/thailand_water_governance_reference.json` |
 | Warning roles | `site/inputs/governance/flood_warning_actor_typology.yaml` |
+
+## 5A. Operational vs proposal vs experiment
+
+FloodConnect contains three branches that must not be collapsed:
+
+```text
+OPERATIONAL
+  live sources -> evidence -> movement/support/shelter -> unified state
+
+PROPOSAL
+  Toledo water balance / declared canal chain / burden ledger / raw-stage helper
+
+EXPERIMENT
+  locked backtests / prospective tests / post-hoc audits
+```
+
+A proposal can be executable without being production truth. An experiment can be valuable evidence
+without becoming the canonical current decision model.
 
 ## 6. Before adding a new construct
 
