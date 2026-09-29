@@ -54,6 +54,7 @@ the RKG and extend an existing canonical node/artifact whenever possible.
 
 - AI entrypoint: `docs/AI_ENTRYPOINT.md`
 - Canonical Repo KG: `site/inputs/meta/floodconnect_repo_kg.yaml`
+- Human repo graph: `docs/FLOODCONNECT_REPO_KG.md`
 - KG validator/exporter: `repo_knowledge_graph.py`
 - KG tests: `tests/test_repo_knowledge_graph.py`
 
