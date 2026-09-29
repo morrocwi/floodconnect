@@ -16,7 +16,11 @@ def conn(tmp_path):
 
 
 def test_build_readout_empty_store_no_crash(conn):
-    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26")
+    result = readout.build_readout(
+        conn, CENTRE_LAT, CENTRE_LON, 5.0,
+        as_of_date="2026-09-26",
+        generated_at_utc="2026-09-26T12:00:00+00:00",
+    )
     assert result["header"]["as_of_date"] == "2026-09-26"
     assert result["header"]["sources_used"] == []
     for key in ("1_ฝน", "2_น้ำเหนือ", "3_น้ำทะเลหนุน", "4_การระบาย"):
