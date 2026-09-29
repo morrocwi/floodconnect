@@ -1,9 +1,23 @@
 # AI Entry Point — Understand FloodConnect Fast
 
+> **Writer agents:** Read `AGENTS.md` before this file. It defines claim-first ownership, branch/PR rules, and integration gates.
+
 > **Start here if you are an AI/agent entering this repository for the first time.**
 >
 > Do **not** scan the repo blindly and do **not** create a new ontology until you have checked
 > the canonical Repo Knowledge Graph (RKG).
+
+## 0A. If you will write
+
+Before semantic changes:
+
+1. read `AGENTS.md`;
+2. check active claims with `python3 agent_claims.py --list`;
+3. if your canonical node is unclaimed, submit/merge a claim-only PR;
+4. start implementation from the updated `main`;
+5. merge only after RKG validation, claim validation, and full regression.
+
+Ownership is by canonical RKG node, not file path.
 
 ## 0. Canonical meta graph
 
