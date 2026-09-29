@@ -105,6 +105,9 @@ return/relocation/closure.
 - Operational resource capability evidence: `operational_resources.py`
 - Operational resource capability graph: `docs/OPERATIONAL_RESOURCE_CAPABILITY_GRAPH.md`
 - Tool/resource tests: `tests/test_operational_tools_registry.py`, `tests/test_operational_resources.py`
+- Thai flood warning actor typology: `site/inputs/governance/flood_warning_actor_typology.yaml`
+- Warning actor crosswalk: `docs/THAI_FLOOD_WARNING_ACTOR_TYPOLOGY.md`
+- Warning typology tests: `tests/test_flood_warning_actor_typology.py`
 
 **Shelter-operation hard rule:** NO verified dry operating footprint -> NO shelter-operation level. `SO-L0_DRY_INTERFACE` is the minimum physical node; higher levels cumulatively add transfer, day-support, overnight, and full-shelter capabilities.
 
