@@ -26,6 +26,32 @@ role_graph:
   non_inference: "absence of one stage from one actor does not mean the function is absent system-wide"
 
 roles:
+  URBAN_DRAINAGE_OPERATOR:
+    layer: OBSERVE_INTERPRET_OPERATE_LOCAL
+    thai_label: "ระบายน้ำเมือง: คลอง ปั๊ม ประตู ถนนน้ำท่วม"
+    primary_actor: bma_drainage_and_sewerage
+    canonical_outputs:
+      - urban_canal_level
+      - pump_gate_status
+      - urban_flooded_road_status
+      - drainage_operation
+      - local_urban_water_situation
+    must_not_infer:
+      - national_weather_forecast
+      - national_public_warning_authority
+
+  HYDRO_DATA_BROKER_AGGREGATOR:
+    layer: DATA_INTEGRATION_SUPPORT
+    thai_label: "โครงสร้างข้อมูลน้ำ/การเผยแพร่ข้อมูลจากหลายหน่วย"
+    primary_actor: hydro_informatics_institute
+    canonical_outputs:
+      - republished_official_telemetry
+      - hydro_data_integration
+      - public_hydro_data_access
+    must_not_infer:
+      - ownership_of_all_upstream_measurements
+      - public_warning_authority
+
   METEOROLOGICAL_OBSERVER_FORECASTER:
     layer: OBSERVE_INTERPRET
     thai_label: "อุตุนิยมวิทยา: ฝน พายุ อากาศ"
@@ -116,6 +142,20 @@ roles:
       - direct_field_coordination
 
 actors:
+  bma_drainage_and_sewerage:
+    th: "สำนักการระบายน้ำ กรุงเทพมหานคร"
+    abbr: "BMA DDS"
+    roles: [URBAN_DRAINAGE_OPERATOR, LOCAL_LAST_MILE_WARNING_RESPONSE]
+    evidence:
+      repo_sources: "sources/registry.yaml#thaiwater_canal_waterlevel,bma_pumphistory,dds_daily_pdf,dds_flood_report"
+
+  hydro_informatics_institute:
+    th: "สถาบันสารสนเทศทรัพยากรน้ำ (องค์การมหาชน)"
+    abbr: "HII/สสน."
+    roles: [HYDRO_DATA_BROKER_AGGREGATOR]
+    evidence:
+      repo_sources: "sources/registry.yaml#thaiwater_canal_waterlevel,thaiwater_flood_road,thaiwater_rain_24h"
+
   thai_meteorological_department:
     th: "กรมอุตุนิยมวิทยา"
     abbr: TMD
