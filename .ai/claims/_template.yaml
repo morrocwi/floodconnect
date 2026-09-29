@@ -1,0 +1,15 @@
+claim_id: "YYYYMMDD-agent-id-task"
+status: ACTIVE
+writer: "agent-id"
+branch: "agent/agent-id/task-slug"
+base_sha: "0000000000000000000000000000000000000000"
+nodes:
+  - REPO_KG
+artifacts:
+  - path/to/file
+intent: "Describe the semantic change."
+created_at: "2026-09-29T15:40:00+07:00"
+expires_at: null
+reviewers: []
+supersedes: null
+note: null
