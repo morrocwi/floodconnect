@@ -41,6 +41,23 @@
 ---
 
 
+
+## AI / Agent entrypoint
+
+**New AI/agent: start with `docs/AI_ENTRYPOINT.md`, then read
+`site/inputs/meta/floodconnect_repo_kg.yaml`.**
+
+The Repo Knowledge Graph (RKG) is the canonical meta-layer for understanding this repository:
+it maps major constructs, source-of-truth artifacts, dependencies, epistemic classes, hard
+non-edges, and question-specific read paths. Before creating a new ontology or node type, check
+the RKG and extend an existing canonical node/artifact whenever possible.
+
+- AI entrypoint: `docs/AI_ENTRYPOINT.md`
+- Canonical Repo KG: `site/inputs/meta/floodconnect_repo_kg.yaml`
+- KG validator/exporter: `repo_knowledge_graph.py`
+- KG tests: `tests/test_repo_knowledge_graph.py`
+
+
 ## Community self-help DAG
 
 FloodConnect now includes a **human-response DAG** in addition to water/flood readouts:
