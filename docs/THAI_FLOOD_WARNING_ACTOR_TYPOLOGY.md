@@ -16,6 +16,18 @@ The typology is a role graph, not a single chain of command.
 
 Stages may run in parallel, skip stages, or be performed by the same actor for a specific hazard.
 
+## 2A. Actor identity is not duplicated
+
+TFWAT is a **role overlay** on the existing FloodConnect governance graph.
+
+Canonical agency/actor identity lives in:
+
+`site/inputs/governance/thailand_water_governance_reference.json#verified_anchors`
+
+This document and its YAML overlay therefore refer to canonical IDs rather than defining a second
+TMD/RID/DWR/ONWR/DDPM/BMA/HII object. This prevents legal/governance/source metadata from drifting
+between parallel registries.
+
 ## 3. Core Thai roles
 
 ### Meteorological observer / forecaster — กรมอุตุนิยมวิทยา (TMD)
