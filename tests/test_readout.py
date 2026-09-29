@@ -16,7 +16,11 @@ def conn(tmp_path):
 
 
 def test_build_readout_empty_store_no_crash(conn):
-    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26")
+    result = readout.build_readout(
+        conn, CENTRE_LAT, CENTRE_LON, 5.0,
+        as_of_date="2026-09-26",
+        generated_at_utc="2026-09-26T12:00:00+00:00",
+    )
     assert result["header"]["as_of_date"] == "2026-09-26"
     assert result["header"]["sources_used"] == []
     for key in ("1_ฝน", "2_น้ำเหนือ", "3_น้ำทะเลหนุน", "4_การระบาย"):
@@ -28,7 +32,7 @@ def test_build_readout_empty_store_no_crash(conn):
 
 
 def test_render_markdown_empty_store_no_crash(conn):
-    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26")
+    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26", generated_at_utc="2026-09-26T12:00:00+00:00")
     md = readout.render_markdown(result)
     assert "# Sammakorn live flood-context readout" in md
     assert "ไม่มีสูตรหรือคะแนนความเสี่ยง" in md  # no-formula epistemic notice always present
@@ -36,7 +40,7 @@ def test_render_markdown_empty_store_no_crash(conn):
 
 def test_no_score_or_formula_language_anywhere_in_output(conn):
     """Epistemic floor: this readout must never present a computed risk score."""
-    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26")
+    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26", generated_at_utc="2026-09-26T12:00:00+00:00")
     md = readout.render_markdown(result)
     forbidden = ["risk_score", "flood_score", "risk score:", "danger level:"]
     for term in forbidden:
@@ -83,7 +87,7 @@ def _seed_fixture_store(conn):
 
 def test_build_readout_with_fixture_store(conn):
     _seed_fixture_store(conn)
-    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26")
+    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26", generated_at_utc="2026-09-26T12:00:00+00:00")
     assert "thaiwater_canal_waterlevel" in result["header"]["sources_used"]
     rain_rows = result["factors"]["1_ฝน"]["measured"]
     assert any(r["value"] == 203.5 for r in rain_rows)
@@ -98,7 +102,7 @@ def test_build_readout_with_fixture_store(conn):
 
 def test_contradiction_detected_between_dds_and_thaiwater_same_station(conn):
     _seed_fixture_store(conn)
-    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26")
+    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26", generated_at_utc="2026-09-26T12:00:00+00:00")
     assert len(result["contradictions"]) >= 1
     c = result["contradictions"][0]
     assert c["topic"] == "canal_level_same_name_candidate"
@@ -122,7 +126,7 @@ def test_contradiction_not_fabricated_from_a_none_value(conn):
         variable="canal_level_0700_m", value=0.90, unit="m",
         observed_at_utc="2026-09-26T00:00:00+00:00", fetched_at_utc=fetched,
         trust_tier="official_report")
-    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26")
+    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26", generated_at_utc="2026-09-26T12:00:00+00:00")
     assert result["contradictions"] == []
 
 
@@ -142,7 +146,7 @@ def test_sammakorn_node_shows_latest_not_oldest_reading(conn):
         variable="canal_water_level_m", value=0.99, unit="m",
         observed_at_utc="2026-09-26T00:00:00+00:00", fetched_at_utc=fetched,
         trust_tier="official_telemetry")
-    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26")
+    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26", generated_at_utc="2026-09-26T12:00:00+00:00")
     ssb07 = next(r for r in result["sammakorn_nodes"]["north (แสนแสบ)"]
                 if r["station_code"] == "WL.SSB.07")
     assert ssb07["value_m"] == 0.99
@@ -159,7 +163,7 @@ def test_stale_reading_tagged_stale_not_measured(conn):
         variable="canal_water_level_m", value=-2.00, unit="m",
         observed_at_utc="2026-06-09T05:10:00+00:00",
         fetched_at_utc="2026-09-26T04:00:00+00:00", trust_tier="official_telemetry")
-    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26")
+    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26", generated_at_utc="2026-09-26T12:00:00+00:00")
     ssb07 = next(r for r in result["sammakorn_nodes"]["north (แสนแสบ)"]
                 if r["station_code"] == "WL.SSB.07")
     assert ssb07["tag"] == "STALE"
@@ -183,7 +187,7 @@ def test_tide_table_filtered_by_local_not_utc_date(conn):
         variable="tide_lw_am_level_m", value=-0.22,
         observed_at_utc="2026-09-26T18:55:00+00:00", fetched_at_utc=fetched,
         trust_tier="official_report")
-    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26")
+    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26", generated_at_utc="2026-09-26T12:00:00+00:00")
     tide_rows = [r for r in result["factors"]["3_น้ำทะเลหนุน"]["official_forecast"]
                  if r["source"] == "dds_tide_pdf"]
     values = {r["value"] for r in tide_rows}

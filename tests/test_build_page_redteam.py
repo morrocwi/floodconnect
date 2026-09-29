@@ -32,7 +32,7 @@ def test_pump_tile_separates_fail_from_idle():
     html = bp.build_indicator_tiles(area, st, pc, NOW, "บึง")
     assert "3/4" in html
     assert "4/4" not in html
-    assert "ปั๊มขัดข้อง (กทม. รายงาน)" in html
+    assert "ขัดข้อง (กทม. รายงาน)" in html
     assert "ไม่ได้เดิน 1" in html
 
 

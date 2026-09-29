@@ -17,6 +17,7 @@ def test_core_constructs_are_present():
     nodes = doc["nodes"]
     for node_id in (
         "REPO_KG",
+        "AGENT_COORDINATION",
         "RIVER_KG",
         "BANGKOK_CANAL_KG",
         "LIVE_DATA_SYSTEM",
@@ -48,7 +49,8 @@ def test_core_constructs_are_present():
 
 def test_ai_boot_path_starts_with_single_entrypoint_and_kg():
     doc = rkg.load_kg(KG_PATH)
-    assert doc["ai_boot_sequence"][:2] == [
+    assert doc["ai_boot_sequence"][:3] == [
+        "AGENTS.md",
         "docs/AI_ENTRYPOINT.md",
         "site/inputs/meta/floodconnect_repo_kg.yaml",
     ]
@@ -96,6 +98,7 @@ def test_question_routes_cover_major_user_intents():
         "government_agency_or_who_is_responsible",
         "warning_alert_or_who_warns",
         "overall_decision_state",
+        "multi_agent_write_or_handoff",
         "prospective_test_or_backtest",
         "toledo_water_balance_or_capacity",
         "experimental_flood_model_or_forecast",
@@ -148,3 +151,13 @@ def test_edge_ontology_keeps_movement_and_support_separate():
     assert "resident_movement_edge" in edges
     assert "lifeline_support_edge" in edges
     assert edges["resident_movement_edge"]["semantics"] != edges["lifeline_support_edge"]["semantics"]
+
+
+def test_multi_agent_coordination_is_gated_by_claims_and_full_ci():
+    doc = rkg.load_kg(KG_PATH)
+    edges = {(x["from"], x["relation"], x["to"]) for x in doc["edges"]}
+    assert ("AGENT_COORDINATION", "USES_CANONICAL_NODE_IDS_FROM", "REPO_KG") in edges
+    assert ("CI", "ENFORCES", "AGENT_COORDINATION") in edges
+    non_edges = set(doc["hard_non_edges"])
+    assert "file-level non-conflict -/-> semantic non-conflict" in non_edges
+    assert "task-specific test pass -/-> full integration safety" in non_edges

@@ -1,0 +1,21 @@
+# FloodConnect canonical integration ownership.
+# CODEOWNERS only becomes an enforced review gate when GitHub branch/ruleset protection
+# requires code-owner review. Until then it is advisory metadata.
+
+* @morrocwi
+
+# Architecture / multi-agent protocol
+/AGENTS.md @morrocwi
+/CONTRIBUTING.md @morrocwi
+/.ai/ @morrocwi
+/site/inputs/meta/ @morrocwi
+/repo_knowledge_graph.py @morrocwi
+/agent_claims.py @morrocwi
+
+# Canonical governance and policy registries
+/site/inputs/governance/ @morrocwi
+/site/inputs/community/ @morrocwi
+/sources/registry.yaml @morrocwi
+
+# CI / integration gate
+/.github/workflows/ @morrocwi
