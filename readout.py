@@ -237,8 +237,11 @@ def _social_listening_section(area: str, rows: list, sammakorn_nodes: dict) -> d
 
 
 def build_readout(conn, centre_lat: float, centre_lon: float, radius_km: float,
-                   as_of_date: str = None) -> dict:
-    generated_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
+                   as_of_date: str = None, generated_at_utc: str = None) -> dict:
+    # Live callers omit generated_at_utc and retain wall-clock freshness semantics.
+    # Tests/backtests may inject an explicit clock so a historical fixture does not
+    # become STALE merely because the test is run days later.
+    generated_at = generated_at_utc or datetime.datetime.now(datetime.timezone.utc).isoformat()
     as_of_date = as_of_date or generated_at[:10]
 
     def dist_km(o):
