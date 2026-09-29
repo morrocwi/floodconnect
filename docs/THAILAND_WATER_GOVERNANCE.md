@@ -97,3 +97,19 @@
 - ห้ามแปลง “จำนวนหน่วยงานที่เกี่ยวข้อง” เป็นคะแนนเสี่ยง
 - ห้ามอนุมานสายบังคับบัญชาในเหตุฉุกเฉินจากแผนภาพนี้เพียงอย่างเดียว
 - ถ้าแหล่งทางการปัจจุบันขัดกับอินโฟกราฟิก ให้ใช้แหล่งทางการปัจจุบันและเก็บความขัดแย้งไว้เป็น provenance
+
+
+## Canonical actor-node rule
+
+As of 2026-09-29, `site/inputs/governance/thailand_water_governance_reference.json#verified_anchors`
+is the **canonical actor identity registry** for FloodConnect governance/institution nodes.
+
+Role-specific systems must reference these IDs instead of copying agency identity into a second
+registry. The warning system therefore uses IDs such as `tmd`, `rid`, `dwr`, `onwr`,
+`ddpm_ndwc`, `bma_dds`, `hii` and `province_district_local_authority`.
+
+`site/inputs/governance/flood_warning_actor_typology.yaml` is a **role overlay**, not another
+agency directory.
+
+This invariant is also represented in the Repo Knowledge Graph:
+`site/inputs/meta/floodconnect_repo_kg.yaml`.
