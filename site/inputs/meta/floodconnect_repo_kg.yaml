@@ -511,6 +511,7 @@ nodes:
       - experiments/2026-09-27-tha008-threshold-audit.md
       - experiments/2026-10-01-dsva-v04-brutal-redteam.md
       - experiments/2026-10-01-dsva-v05-second-order-redteam.md
+      - experiments/2026-10-01-dsva-v06-meta-license-retest.md
     summary: "Timestamped locked tests/audits; failed assumptions remain preserved for anti-hindsight learning."
     key_boundary: "experiment result/audit != production forecast rule; the S0-S5 state machine in the 7-day backtest is historical and superseded by Unified Crisis State"
 
