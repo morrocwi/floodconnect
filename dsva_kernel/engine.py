@@ -318,6 +318,12 @@ def action_obstruction(
     if aid not in ctx["actuation"]:
         return Obstruction("ACTION_OUTSIDE_ACTUATION_ENVELOPE", aid, scope)
 
+    future_error = future_observation_obstruction(
+        action, ctx["observation_envelope"], ledger
+    )
+    if future_error:
+        return Obstruction(future_error, scope=scope)
+
     policy_error = adaptive_policy_obstruction(
         ctx["scenario"],
         action,
@@ -344,12 +350,6 @@ def action_obstruction(
     execution_error = execution_obstruction(action, ledger)
     if execution_error:
         return Obstruction(execution_error, scope=scope)
-
-    future_error = future_observation_obstruction(
-        action, ctx["observation_envelope"], ledger
-    )
-    if future_error:
-        return Obstruction(future_error, scope=scope)
 
     resource_error = resource_obstruction(ctx["scenario"], aid, ledger)
     if resource_error:
