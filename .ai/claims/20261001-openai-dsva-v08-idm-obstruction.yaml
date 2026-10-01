@@ -1,20 +1,25 @@
 claim_id: "20261001-openai-dsva-v08-idm-obstruction"
 status: ACTIVE
 writer: "openai"
-branch: "agent/openai/dsva-v08-idm-obstruction"
-base_sha: "dabaf3cf25a6aa0752335a80973d8dc65e94effc"
+branch: "agent/openai/dsva-v08-idm-obstruction-impl"
+base_sha: "0e47a4d0f51a2759ff11d70a025497a375b343f7"
 nodes:
   - DSVA_DECISION_MODEL
   - DSVA_THEORY
   - REPO_KG
 artifacts:
   - dsva_decision.py
+  - dsva_kernel/core.py
+  - dsva_kernel/requirements.py
+  - dsva_kernel/engine.py
   - docs/research/DSVA_DECISION_MODEL.md
   - docs/research/DSVA_FINITE_OBSTRUCTION_KERNEL.md
   - site/inputs/decision/dsva_decision_schema.json
   - examples/dsva_decision_minimal.json
   - tests/test_dsva_decision.py
   - tests/test_dsva_decision_v08_redteam.py
+  - tests/test_dsva_decision_v08_metamorphic.py
+  - tests/test_dsva_decision_v08_differential.py
   - experiments/2026-10-01-dsva-v08-idm-heavy-redteam.md
   - site/inputs/meta/floodconnect_repo_kg.yaml
   - docs/AI_ENTRYPOINT.md
@@ -23,4 +28,4 @@ created_at: "2026-10-01T23:58:00+07:00"
 expires_at: null
 reviewers: []
 supersedes: "20261001-openai-dsva-decision-model-v07"
-note: "IDM source consulted: morrocwi/information-discrete-math AI_START_HERE.md, METHOD.md, tools/idm_discipline.py, idm/solve.py and idm/results.py. Reuse is conceptual/operator-level only: exact finite readout, ACCEPT/HOLD/BLOCK fail-closed discipline, and cost ledger; no parallel ontology or external runtime dependency is introduced."
+note: "Claim-only PR #35 merged first. Implementation branch starts from updated main 0e47a4d. IDM sources consulted: morrocwi/information-discrete-math AI_START_HERE.md, METHOD.md, tools/idm_discipline.py, idm/solve.py and idm/results.py. Reuse is operator-level only: exact finite readout, fail-closed discipline, retained-reader quotienting and cost ledger; no parallel ontology or external runtime dependency is introduced."

@@ -1,30 +1,177 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://floodconnect.local/schema/dsva-decision-v0.7.json",
-  "title": "DSVA v0.7 finite disaster decision scenario",
+  "$id": "https://floodconnect.local/schema/dsva-decision-v0.8.json",
+  "title": "DSVA v0.8 finite retained disaster decision snapshot",
   "type": "object",
-  "required": ["question", "envelope", "closures", "worlds", "requirements", "actions"],
+  "required": [
+    "question",
+    "envelope",
+    "information_status",
+    "model_invalidated",
+    "closures",
+    "worlds",
+    "disturbances",
+    "requirements",
+    "actor_information",
+    "actions",
+    "valid_until"
+  ],
   "properties": {
     "question": {
       "type": "object",
       "required": ["id", "task", "horizon"],
       "properties": {
-        "id": {"type": "string"},
+        "id": {"type": "string", "minLength": 1},
         "task": {"type": "string"},
         "horizon": {"type": ["number", "integer", "string"]}
       }
     },
-    "information_status": {"enum": ["SUPPORTED", "UNRESOLVED", "CONTRADICTION"]},
+    "envelope": {
+      "type": "object",
+      "required": [
+        "protected_population",
+        "disturbance_envelope",
+        "actuation_envelope",
+        "trace_semantics",
+        "trace_resolution"
+      ],
+      "properties": {
+        "protected_population": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "disturbance_envelope": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "actuation_envelope": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "trace_semantics": {"const": "discrete_retained"},
+        "trace_resolution": {"type": ["number", "integer", "string"]}
+      }
+    },
+    "information_status": {
+      "enum": ["SUPPORTED", "UNRESOLVED", "CONTRADICTION"]
+    },
     "model_invalidated": {"type": "boolean"},
     "closures": {
       "type": "object",
-      "required": ["first_order", "second_order"]
+      "required": ["first_order", "second_order"],
+      "properties": {
+        "first_order": {
+          "type": "object",
+          "required": [
+            "information", "evidence", "state", "transition",
+            "boundary", "capacity", "recovery"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "information": {"type": "boolean"},
+            "evidence": {"type": "boolean"},
+            "state": {"type": "boolean"},
+            "transition": {"type": "boolean"},
+            "boundary": {"type": "boolean"},
+            "capacity": {"type": "boolean"},
+            "recovery": {"type": "boolean"}
+          }
+        },
+        "second_order": {
+          "type": "object",
+          "required": [
+            "applicability", "dependency", "realizability",
+            "execution", "requirement", "verification"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "applicability": {"type": "boolean"},
+            "dependency": {"type": "boolean"},
+            "realizability": {"type": "boolean"},
+            "execution": {"type": "boolean"},
+            "requirement": {"type": "boolean"},
+            "verification": {"type": "boolean"}
+          }
+        }
+      }
     },
-    "worlds": {"type": "array", "minItems": 1},
-    "disturbances": {"type": "array", "minItems": 1},
-    "requirements": {"type": "array", "minItems": 1},
-    "actions": {"type": "array", "minItems": 1},
-    "proposed_action": {"type": "string"},
+    "worlds": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {"type": "string", "minLength": 1},
+          {
+            "type": "object",
+            "required": ["id"],
+            "properties": {"id": {"type": "string", "minLength": 1}}
+          }
+        ]
+      }
+    },
+    "disturbances": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "requirements": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "population", "field", "op"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "population": {
+            "oneOf": [
+              {"type": "string", "minLength": 1},
+              {
+                "type": "array", "minItems": 1, "uniqueItems": true,
+                "items": {"type": "string", "minLength": 1}
+              }
+            ]
+          },
+          "field": {"type": "string", "minLength": 1},
+          "op": {
+            "enum": ["eq", "ne", "ge", "gt", "le", "lt", "in", "not_in", "truthy", "falsy"]
+          },
+          "value": {}
+        }
+      }
+    },
+    "trace_library": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 1,
+        "items": {"type": "object"}
+      }
+    },
+    "actions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "actor", "requires_info", "lease", "effect_time", "outcomes"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "actor": {"type": "string", "minLength": 1},
+          "requires_info": {
+            "type": "array", "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "lease": {
+            "type": "object",
+            "required": ["issue", "expire"],
+            "properties": {
+              "issue": {"type": ["number", "integer", "string"]},
+              "expire": {"type": ["number", "integer", "string"]}
+            }
+          },
+          "effect_time": {"type": ["number", "integer", "string"]},
+          "outcomes": {"type": "object"}
+        }
+      }
+    },
     "typed_reader": {
       "type": "object",
       "properties": {
@@ -32,6 +179,8 @@
         "selected": {"type": "string"},
         "confidence": {"type": "number", "minimum": 0, "maximum": 1}
       }
-    }
+    },
+    "proposed_action": {"type": "string"},
+    "valid_until": {"type": ["number", "integer", "string"]}
   }
 }

@@ -217,16 +217,21 @@ nodes:
 
   DSVA_DECISION_MODEL:
     kind: MODEL
-    label: "DSVA v0.7 executable disaster decision model — finite action-license reference implementation"
+    label: "DSVA v0.8 executable disaster decision model — finite retained obstruction reference kernel"
     epistemic_class: EXECUTABLE_MODEL
     canonical_artifacts:
       - dsva_decision.py
+      - dsva_kernel/core.py
+      - dsva_kernel/requirements.py
+      - dsva_kernel/engine.py
       - docs/research/DSVA_DECISION_MODEL.md
+      - docs/research/DSVA_FINITE_OBSTRUCTION_KERNEL.md
       - site/inputs/decision/dsva_decision_schema.json
       - examples/dsva_decision_minimal.json
       - tests/test_dsva_decision.py
-    summary: "Executable projection of DSVA theory for finite anti-hindsight scenarios: checks first/second-order closures, protected requirements over declared traces, actor-local information, action leases and optional typed-reader proposals; returns only scoped DSVA statuses."
-    key_boundary: "reference decision model != hazard forecast != universal safety proof; finite enumerated worlds/traces inherit caller envelope limits; typed-reader confidence never overrides hard DSVA constraints."
+      - tests/test_dsva_decision_v08_redteam.py
+    summary: "Executable projection of DSVA theory for finite anti-hindsight scenarios. v0.8 adds non-vacuous finite-axis checks, exact rational decision time/resolution, fail-closed malformed-input handling, explicit protected-population coverage, finite retained obstruction certificates, requirement-reader state quotienting and reusable retained trace classes with a cost ledger."
+    key_boundary: "reference decision model != hazard forecast != universal safety proof; exact finite conformance != continuous inter-sample safety != world truth; finite admitted worlds/traces inherit caller envelope limits; typed-reader confidence never overrides hard DSVA constraints."
 
   TOLEDO_ROOT:
     kind: ARTIFACT
@@ -698,13 +703,14 @@ question_routes:
     then: [LIVE_DATA_SYSTEM, UNIFIED_CRISIS, COMMUNITY_DAG, LCF, ORCG]
     read:
       - docs/research/DSVA_DECISION_MODEL.md
+      - docs/research/DSVA_FINITE_OBSTRUCTION_KERNEL.md
       - dsva_decision.py
       - site/inputs/decision/dsva_decision_schema.json
       - examples/dsva_decision_minimal.json
       - tests/test_dsva_decision.py
       - docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md
       - docs/research/DSVA_SECOND_ORDER_LICENSE.md
-    rule: "decision model is an executable finite projection of DSVA, not a hazard forecaster; use only decision-time evidence, preserve declared envelope/horizon/provenance, require actor-local realizability and trace safety, and never allow a typed-reader confidence score to override hard DSVA constraints"
+    rule: "decision model is an executable finite projection of DSVA, not a hazard forecaster; v0.8 requires non-empty finite axes, exact rational horizon/lease/resolution, explicit protected-population coverage, fail-closed malformed input and retained trace coverage; use only decision-time evidence, preserve envelope/horizon/provenance, and never allow typed-reader confidence to override hard DSVA constraints"
 
   current_water_or_flood_status:
     start_nodes: [LIVE_DATA_SYSTEM, LIVE_WATER]

@@ -132,19 +132,21 @@ fresh evidence, validated models and reader-specific constraints.
 Read:
 
 - `docs/research/DSVA_DECISION_MODEL.md`
+- `docs/research/DSVA_FINITE_OBSTRUCTION_KERNEL.md`
 - `dsva_decision.py`
 - `site/inputs/decision/dsva_decision_schema.json`
 - `examples/dsva_decision_minimal.json`
 - `tests/test_dsva_decision.py`
+- `tests/test_dsva_decision_v08_redteam.py`
 
 Run:
 
 ```bash
 python3 dsva_decision.py examples/dsva_decision_minimal.json
-python3 -m pytest -q tests/test_dsva_decision.py
+python3 -m pytest -q tests/test_dsva_decision.py tests/test_dsva_decision_v08_redteam.py
 ```
 
-This is an executable finite projection of DSVA v0.7, not a hazard forecaster. It consumes declared worlds/disturbances/traces and returns a scoped DSVA action-license status. A Jev/LLM/rule/human typed reader may propose an action, but confidence never overrides failed closure, actor-local information, protected requirement, trace-safety, verification, or lease gates.
+This is an executable finite projection of DSVA v0.8, not a hazard forecaster. It consumes declared worlds/disturbances/traces and returns a scoped DSVA action-license status. v0.8 uses an IDM-informed finite retained obstruction kernel: non-empty finite axes, exact rational horizon/lease/resolution checks, fail-closed malformed input, protected-population coverage, retained-state reader quotients, reusable trace classes, and a cost ledger. A Jev/LLM/rule/human typed reader may propose an action, but confidence never overrides failed closure, actor-local information, protected requirement, trace-safety, verification, or lease gates.
 
 ### “What is happening now?”
 
