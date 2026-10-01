@@ -1,4 +1,6 @@
 """Random differential test: optimized DSVA kernel vs a direct finite oracle."""
+import hashlib
+import json
 import random
 
 from dsva_decision import STATUS_HOLD, STATUS_LICENSED, evaluate
@@ -26,7 +28,20 @@ def case(seed):
     worlds = [f"w{i}" for i in range(W)]
     dists = [f"d{i}" for i in range(D)]
     reqs = [
-        {"id": f"R{i}", "population": ["P"], "field": f"r{i}", "bindings": {"P": f"r{i}"}, "op": "eq", "value": 1}
+        {
+            "id": f"R{i}",
+            "population": ["P"],
+            "field": f"r{i}",
+            "bindings": {"P": f"r{i}"},
+            "op": "eq",
+            "value": 1,
+            "function": f"preserve r{i}",
+            "constraint": f"r{i} == 1",
+            "threshold": 1,
+            "horizon": H,
+            "provenance": ["differential-fixture"],
+            "coverageStatus": "COVERED",
+        }
         for i in range(R)
     ]
     good = {f"r{i}": 1 for i in range(R)}
@@ -51,6 +66,7 @@ def case(seed):
         "envelope": {
             "protected_population": ["P"],
             "disturbance_envelope": dists,
+            "observation_envelope": ["now"],
             "actuation_envelope": ["A"],
             "trace_semantics": "discrete_retained",
             "trace_resolution": 1
@@ -72,14 +88,65 @@ def case(seed):
         "disturbances": dists,
         "requirements": reqs,
         "actor_information": {"actor": {"known": ["now"]}},
+        "applicability_evidence": {
+            "model_behavior_signatures": ["compatible"],
+            "observed_behavior_signatures": ["compatible"],
+            "reader": f"Q{seed}",
+        },
+        "dependency_audit": {
+            "lineage": {"sensor": ["source-A"]},
+            "independence_groups": [],
+        },
+        "resource_audit": {"declared_none": True, "resources": {}, "action_use": {}},
+        "hazard_dependency_audit": {
+            "components": ["synthetic"],
+            "factorized": False,
+            "factorization_licensed": False,
+        },
         "trace_library": traces,
         "actions": [{
             "id": "A", "actor": "actor", "requires_info": ["now"],
             "lease": {"issue": 0, "expire": H}, "effect_time": 0,
-            "outcomes": outcomes
+            "outcomes": outcomes,
+            "execution_contract": {
+                "commanded": "A",
+                "realized_status": "BOUNDED",
+                "bound": "all realized outcomes represented in finite traces",
+                "runtime_revalidation_required": False,
+                "runtime_revalidation_status": "NOT_REQUIRED",
+            }
         }],
         "proposed_action": "A",
-        "valid_until": H
+        "valid_until": H,
+        "provenance": ["differential-fixture"],
+    }
+
+    spec_keys = ("question", "envelope", "requirements", "valid_until", "assumptions")
+    input_keys = (
+        "information_status", "model_invalidated", "closures", "closure_audit",
+        "worlds", "disturbances", "actor_information", "trace_library", "actions",
+        "typed_reader", "proposed_action", "applicability_evidence", "dependency_audit",
+        "resource_audit", "hazard_dependency_audit", "provenance",
+    )
+    def digest(keys):
+        obj = {k: s[k] for k in keys if k in s}
+        payload = json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+        return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+    s["verification_contract"] = {
+        "producer": {
+            "id": "producer",
+            "implementation_digest": "producer-impl",
+            "lineage": ["producer-lineage"],
+        },
+        "checker": {
+            "id": "checker",
+            "implementation_digest": "checker-impl",
+            "lineage": ["checker-lineage"],
+        },
+        "spec_digest": digest(spec_keys),
+        "input_digest": digest(input_keys),
+        "certificate": {"kind": "direct-finite-oracle", "witness": f"seed={seed}"},
     }
     return s, expected
 
