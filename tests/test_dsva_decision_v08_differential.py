@@ -98,6 +98,8 @@ def case(seed):
             "independence_groups": [],
         },
         "resource_audit": {"declared_none": True, "resources": {}, "action_use": {}},
+        "boundary_contracts": [],
+        "recovery_contract": {"required": False},
         "hazard_dependency_audit": {
             "components": ["synthetic"],
             "factorized": False,
@@ -126,7 +128,8 @@ def case(seed):
         "information_status", "model_invalidated", "closures", "closure_audit",
         "worlds", "disturbances", "actor_information", "trace_library", "actions",
         "typed_reader", "proposed_action", "applicability_evidence", "dependency_audit",
-        "resource_audit", "hazard_dependency_audit", "provenance",
+        "resource_audit", "hazard_dependency_audit", "adaptive_policy",
+        "boundary_contracts", "recovery_contract", "provenance",
     )
     def digest(keys):
         obj = {k: s[k] for k in keys if k in s}
