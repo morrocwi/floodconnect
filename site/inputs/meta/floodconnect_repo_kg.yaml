@@ -169,11 +169,12 @@ nodes:
 
   DSVA_THEORY:
     kind: ARTIFACT
-    label: "Disaster-System Viability Architecture — Toledo-welded general theory of viable futures under partial observability"
+    label: "Disaster-System Viability Architecture — repository-synthesized Toledo-welded theory of preserving, losing, and recovering viable futures"
     epistemic_class: PROPOSAL
     canonical_artifacts:
       - docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md
       - docs/research/DSVA_TOLEDO_WELD.md
+      - docs/research/DSVA_FLOODCONNECT_CANONICAL_SYNTHESIS.md
     root_objects:
       - toledo_domain_adapter
       - joint_information_state
@@ -187,9 +188,14 @@ nodes:
       - human_service_state
       - institutional_actuation
       - intervention_value_calculus
-    formal_core: "S_n -> q_DSVA -> D_DSVA -> mathbb_B_t -> Pi_H^EB -> A_H^EB -> task reader; CAN-006 weld obligations preserve dynamics/readout/invariants, CAN-007 supplies no-early-collapse and viable-future equivalence classes, and T_V is a projection of the richer viable-future geometry."
-    thailand_instantiation: "Bangkok 2569 + finite Sammakorn witness; BMA/ThaiWater canal and road observations, BMA PumpHistory, BMA monkey-cheek interface, TMD nowcast, RID reservoir data, Navy tide products."
-    summary: "Synthesis-first general disaster-management theory welded to the Toledo formal grammar: manage task-relative viable future classes and adaptive policies rather than a point state; retain physical, epistemic, human/service and institutional objects as distinct but coupled; HOLD claims whose load-bearing adapter/readout weld is absent."
+      - hazard_induced_topology_transition
+      - evidence_validity_and_expiry
+      - forecast_support_breach
+      - recoverability_policy_set
+      - hysteretic_re_escalation
+    formal_core: "S_n -> q_DSVA -> D_DSVA -> mathbb_B_t -> dynamic topology -> existing movement/support/capability layers -> {Pi_H^EB, Pi_H^REC} -> A_H^EB -> Unified Crisis State/task reader; CAN-006 weld obligations preserve dynamics/readout/invariants, CAN-007 supplies no-early-collapse and viable-future equivalence classes, and CAN-009 prevents hindsight rewriting."
+    thailand_instantiation: "Bangkok 2569 + finite Sammakorn witness are the first Toledo-style instantiation; the pre-existing Hat Yai Nov-2025 real-data red-team is the canonical non-Bangkok stress case for conflicting current/forward state, repeated pulses, adaptive freshness, multimodal movement, service-node fragility, outside-calibrated-range and throughput limits."
+    summary: "Repository-first synthesis: DSVA absorbs existing FloodConnect movement, lifeline convergence, resource capability, environmental-clock, recovery and warning semantics, then adds only residual general-theory equations for hazard-driven topology change, validity/expiry, forecast support breach, recoverability after normal viability loss and hysteretic re-escalation."
     key_boundary: "general-theory research claim is canonical for DSVA; operational forecasts/warnings/actions still require reader-specific fresh evidence and validated models. Toledo T-CAN-002/003/006/007/008/009 are cited as existing anchors; every DSVA-T equation is a DSVA proposal until separately registered in Toledo."
 
   TOLEDO_ROOT:
@@ -477,6 +483,7 @@ nodes:
     label: "Locked Prospective / Backtest Experiments"
     epistemic_class: FIELD_EVIDENCE
     canonical_artifacts:
+      - experiments/2025-11-hat-yai-real-data-redteam.md
       - experiments/2026-09-26-sammakorn-7day-backtest.md
       - experiments/2026-09-bangkok-hierarchical-real-run.md
       - experiments/2026-09-bangkok-toledo-real-backtest.md
@@ -520,6 +527,14 @@ edges:
   - {from: DSVA_THEORY, relation: DRAWS_CASE_EVIDENCE_FROM, to: PROSPECTIVE_EXPERIMENTS}
   - {from: DSVA_THEORY, relation: REFERENCES_GOVERNANCE_CONTEXT_FROM, to: GOVERNANCE}
   - {from: DSVA_THEORY, relation: REFERENCES_SOURCE_CONTRACT_FROM, to: SOURCE_REGISTRY}
+  - {from: DSVA_THEORY, relation: ABSORBS_MOVEMENT_CONSTRAINTS_FROM, to: COMMUNITY_DAG}
+  - {from: DSVA_THEORY, relation: ABSORBS_SUPPORT_MODEL_FROM, to: TDLC}
+  - {from: DSVA_THEORY, relation: ABSORBS_CONVERGENCE_FEASIBILITY_FROM, to: LCF}
+  - {from: DSVA_THEORY, relation: ABSORBS_SUPPORT_LAYER_FROM, to: LVCN}
+  - {from: DSVA_THEORY, relation: ABSORBS_RESOURCE_CAPABILITY_FROM, to: ORCG}
+  - {from: DSVA_THEORY, relation: ABSORBS_ENVIRONMENT_HORIZON_FROM, to: ENV_DEGRADATION}
+  - {from: DSVA_THEORY, relation: ABSORBS_SHELTER_RECOVERY_FROM, to: SOCL}
+  - {from: DSVA_THEORY, relation: ABSORBS_WARNING_SEMANTICS_FROM, to: WARNING_TYPOLOGY}
   - {from: FC_ROOT, relation: CONTAINS, to: RIVER_KG}
   - {from: FC_ROOT, relation: CONTAINS, to: BANGKOK_CANAL_KG}
   - {from: FC_ROOT, relation: CONTAINS, to: LIVE_DATA_SYSTEM}
@@ -624,14 +639,20 @@ hard_non_edges:
 question_routes:
   disaster_system_theory_or_dsva:
     start_nodes: [DSVA_THEORY, TOLEDO_ROOT]
-    then: [LIVE_DATA_SYSTEM, SAMMAKORN_HYDRAULIC, WATER_BALANCE, UNIFIED_CRISIS, PROSPECTIVE_EXPERIMENTS]
+    then: [COMMUNITY_DAG, TDLC, LCF, LVCN, ORCG, ENV_DEGRADATION, SOCL, WARNING_TYPOLOGY, LIVE_DATA_SYSTEM, SAMMAKORN_HYDRAULIC, WATER_BALANCE, UNIFIED_CRISIS, PROSPECTIVE_EXPERIMENTS]
     read:
       - docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md
       - docs/research/DSVA_TOLEDO_WELD.md
+      - docs/research/DSVA_FLOODCONNECT_CANONICAL_SYNTHESIS.md
+      - docs/COMMUNITY_SELF_HELP_DAG.md
+      - docs/THAI_DISTRIBUTED_LIFELINE_CONVERGENCE.md
+      - docs/OPERATIONAL_RESOURCE_CAPABILITY_GRAPH.md
+      - docs/ENVIRONMENTAL_DEGRADATION_CLOCKS.md
+      - docs/THAI_FLOOD_WARNING_ACTOR_TYPOLOGY.md
+      - experiments/2025-11-hat-yai-real-data-redteam.md
       - sources/registry.yaml
-      - site/inputs/canals/sammakorn_pond_canal_dag.yaml
       - unified_crisis_state.py
-    rule: "read DSVA v0.3 and its Toledo weld first; preserve the distinction Toledo-existing vs DSVA-proposal; CAN-006/007 bridge/readout obligations are load-bearing; if a required weld fails use HOLD; use Thailand/Sammakorn finite witness as the first empirical instantiation; theory claim != automatic production forecast or operational command"
+    rule: "read DSVA v0.4, Toledo weld, and the repository-first canonical synthesis before proposing a new construct; preserve Toledo-existing vs DSVA-proposal; existing COMMUNITY_DAG/TDLC/LCF/LVCN/ORCG/ENV/SOCL/warning semantics remain canonical; only residual theory equations may extend them; CAN-006/007/009 are load-bearing; if a required weld fails use HOLD; theory claim != automatic production forecast or operational command"
 
   current_water_or_flood_status:
     start_nodes: [LIVE_DATA_SYSTEM, LIVE_WATER]

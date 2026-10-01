@@ -74,19 +74,34 @@ Read first:
 - `docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md`
 - then the RKG route `question_routes.disaster_system_theory_or_dsva`
 
-The manuscript is the canonical **PROPOSAL / THEORY_SYNTHESIS** expression of DSVA. v0.3
-preserves v0.1 as the explicit open-loop anchor and v0.2 as the adaptive-policy anchor, then
-welds the disaster domain to Toledo's existing retained-state/stepper/domain-weld/reader-equivalence
-grammar.
+The manuscript is the canonical **PROPOSAL / THEORY_SYNTHESIS** expression of DSVA. v0.4
+preserves v0.1 as the open-loop anchor, v0.2 as the adaptive-policy anchor and v0.3 as the
+Toledo-welded anchor. It then performs a repository-first synthesis: existing FloodConnect
+movement, support/lifeline, operational-resource, environmental-clock, recovery and warning
+constructs are read as canonical before any residual DSVA equation is proposed.
 
 Read in this order:
 
 - `docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md`
 - `docs/research/DSVA_TOLEDO_WELD.md`
+- `docs/research/DSVA_FLOODCONNECT_CANONICAL_SYNTHESIS.md`
+- then the RKG-listed canonical layers needed by the question.
+
+Do **not** recreate constructs that already exist in:
+- `COMMUNITY_DAG`
+- `TDLC / LCF / LVCN`
+- `ORCG`
+- `ENV_DEGRADATION`
+- `SOCL`
+- `WARNING_TYPOLOGY`
+- `UNIFIED_CRISIS`
+
+The pre-existing `experiments/2025-11-hat-yai-real-data-redteam.md` is a canonical stress-test
+input to v0.4, not a newly discovered DSVA result.
 
 Formal spine:
 
-`S_n -> q_DSVA -> D_DSVA -> mathbb_B_t -> Pi_H^EB -> task-relative reader`
+`S_n -> q_DSVA -> mathbb_B_t -> dynamic topology -> existing movement/support layers -> {Pi_H^EB, Pi_H^REC} -> Unified Crisis State/task reader`
 
 Load-bearing rules:
 - T-CAN-006: dynamics/readout/invariant bridge obligations;
