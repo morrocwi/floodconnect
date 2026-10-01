@@ -169,23 +169,44 @@ nodes:
 
   DSVA_THEORY:
     kind: ARTIFACT
-    label: "Disaster-System Viability Architecture — general theory of viable futures under partial observability"
+    label: "Disaster-System Viability Architecture — Toledo-welded general theory of viable futures under partial observability"
     epistemic_class: PROPOSAL
     canonical_artifacts:
       - docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md
+      - docs/research/DSVA_TOLEDO_WELD.md
     root_objects:
+      - toledo_domain_adapter
       - joint_information_state
       - typed_evidence_assimilation
       - adaptive_viable_policy_set
       - evidence_bounded_current_action_set
+      - task_relative_reader_equivalence
+      - viable_future_geometry
       - viability_horizon
+      - finite_action_reader
       - human_service_state
       - institutional_actuation
       - intervention_value_calculus
-    formal_core: "mathbb_B_t -> Pi_H^EB -> A_H^EB -> T_V, with typed evidence, coupled physical/information/human/institutional dynamics and adaptive policies."
-    thailand_instantiation: "Bangkok 2569 + Sammakorn; BMA/ThaiWater canal and road observations, BMA PumpHistory, BMA monkey-cheek interface, TMD nowcast, RID reservoir data, Navy tide products."
-    summary: "Synthesis-first general disaster-management theory: manage viable future trajectories rather than a point state; retain physical, epistemic, human/service and institutional objects as distinct but coupled; compare physical, information, protective and institutional interventions through viability gain."
-    key_boundary: "general-theory research claim is canonical for DSVA; operational forecasts/warnings/actions still require reader-specific fresh evidence and validated models. Existing v0.1 common-action equations survive as the explicit open-loop special case, not as the general partial-observability form."
+    formal_core: "S_n -> q_DSVA -> D_DSVA -> mathbb_B_t -> Pi_H^EB -> A_H^EB -> task reader; CAN-006 weld obligations preserve dynamics/readout/invariants, CAN-007 supplies no-early-collapse and viable-future equivalence classes, and T_V is a projection of the richer viable-future geometry."
+    thailand_instantiation: "Bangkok 2569 + finite Sammakorn witness; BMA/ThaiWater canal and road observations, BMA PumpHistory, BMA monkey-cheek interface, TMD nowcast, RID reservoir data, Navy tide products."
+    summary: "Synthesis-first general disaster-management theory welded to the Toledo formal grammar: manage task-relative viable future classes and adaptive policies rather than a point state; retain physical, epistemic, human/service and institutional objects as distinct but coupled; HOLD claims whose load-bearing adapter/readout weld is absent."
+    key_boundary: "general-theory research claim is canonical for DSVA; operational forecasts/warnings/actions still require reader-specific fresh evidence and validated models. Toledo T-CAN-002/003/006/007/008/009 are cited as existing anchors; every DSVA-T equation is a DSVA proposal until separately registered in Toledo."
+
+  TOLEDO_ROOT:
+    kind: ARTIFACT
+    label: "Toledo formal dependency bridge for DSVA"
+    epistemic_class: DOCUMENTATION
+    canonical_artifacts:
+      - docs/research/DSVA_TOLEDO_WELD.md
+    existing_anchors:
+      - T-CAN-002
+      - T-CAN-003
+      - T-CAN-006
+      - T-CAN-007
+      - T-CAN-008
+      - T-CAN-009
+    summary: "FloodConnect-side dependency map for the external Toledo retained-state, stepper, domain-weld, reader-equivalence, non-collapse and historical-invariance grammar used by DSVA."
+    key_boundary: "not the authoritative Toledo registry and does not register DSVA equations; actual Toledo registration/source remains external to FloodConnect."
 
   RIVER_KG:
     kind: GRAPH
@@ -491,6 +512,7 @@ edges:
   - {from: REPO_KG, relation: DESCRIBES, to: FC_ROOT}
   - {from: FC_ROOT, relation: EXPOSES_AI_ENTRY_THROUGH, to: REPO_KG}
   - {from: FC_ROOT, relation: CONTAINS_RESEARCH_SYNTHESIS, to: DSVA_THEORY}
+  - {from: DSVA_THEORY, relation: USES_FORMAL_WELD_GRAMMAR_FROM, to: TOLEDO_ROOT}
   - {from: DSVA_THEORY, relation: DRAWS_EVIDENCE_CONTRACT_FROM, to: LIVE_DATA_SYSTEM}
   - {from: DSVA_THEORY, relation: USES_LOCAL_DEMONSTRATOR_FROM, to: SAMMAKORN_HYDRAULIC}
   - {from: DSVA_THEORY, relation: USES_PHYSICAL_MODEL_ANCHOR_FROM, to: WATER_BALANCE}
@@ -591,6 +613,7 @@ hard_non_edges:
   - "derived alert label -/-> independent forecast evidence"
   - "urban drainage signal -/-> exact point flood depth"
   - "missing Toledo inputs -/-> fabricated water-balance result"
+  - "TOLEDO_ROOT documentation -/-> registered DSVA equation or production forecast"
   - "declared east canal chain -/-> complete Bangkok canal topology"
   - "historical S0-S5 backtest state machine -/-> current canonical decision state"
   - "file-level non-conflict -/-> semantic non-conflict"
@@ -600,14 +623,15 @@ hard_non_edges:
 
 question_routes:
   disaster_system_theory_or_dsva:
-    start_nodes: [DSVA_THEORY]
+    start_nodes: [DSVA_THEORY, TOLEDO_ROOT]
     then: [LIVE_DATA_SYSTEM, SAMMAKORN_HYDRAULIC, WATER_BALANCE, UNIFIED_CRISIS, PROSPECTIVE_EXPERIMENTS]
     read:
       - docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md
+      - docs/research/DSVA_TOLEDO_WELD.md
       - sources/registry.yaml
       - site/inputs/canals/sammakorn_pond_canal_dag.yaml
       - unified_crisis_state.py
-    rule: "read the DSVA manuscript first; v0.2 adaptive-policy equations are canonical over v0.1 open-loop equations; use Thailand/Sammakorn as the first empirical instantiation; external theories enter only through declared dialogue mappings; theory claim != automatic production forecast or operational command"
+    rule: "read DSVA v0.3 and its Toledo weld first; preserve the distinction Toledo-existing vs DSVA-proposal; CAN-006/007 bridge/readout obligations are load-bearing; if a required weld fails use HOLD; use Thailand/Sammakorn finite witness as the first empirical instantiation; theory claim != automatic production forecast or operational command"
 
   current_water_or_flood_status:
     start_nodes: [LIVE_DATA_SYSTEM, LIVE_WATER]

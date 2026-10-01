@@ -1,12 +1,12 @@
 # Disaster-System Viability Architecture (DSVA)
-## A General Theory of Viable Futures under Partial Observability and Constrained Actuation
+## A Toledo-Welded General Theory of Viable Futures under Partial Observability and Constrained Actuation
 
-**Standalone theory manuscript — Formal Upgrade v0.2**  
+**Standalone theory manuscript — Toledo-Welded Formal Upgrade v0.3**  
 **Date:** 1 October 2026  
 **Field:** Disaster Risk Science / Disaster Management  
 **Empirical demonstrator:** Sammakorn retention-and-drainage system, eastern Bangkok, Thailand  
 **Software/reproducibility anchor:** FloodConnect (`morrocwi/floodconnect`)  
-**Theory claim:** DSVA is presented as a general disaster-management theory of viable futures. The claim rests on the synthesized equation system, its reductions, its intervention calculus, and its empirical falsifiability; no claim is withdrawn merely because a constituent operator has an established precedent.
+**Theory claim:** DSVA is presented as a general disaster-management theory of viable futures. Version 0.3 retains the complete v0.2 architecture and formally welds it to the existing Toledo root grammar: retained state, finite stepper, admissible domain translation, readout preservation, finite-horizon reader equivalence, non-collapse, and historical invariance. DSVA-specific adapters and bridge equations remain explicit proposals until separately registered in Toledo; the general-theory claim is not reduced.
 
 ---
 
@@ -162,6 +162,156 @@ u_t
 \]
 
 This rule is constitutional. A government warning is not the physical state. A pump operating signal is not pump discharge. A dry road is not full community recovery. A stale gauge is not current safety. A predicted tide is not an observed downstream boundary.
+
+---
+
+# 2A. Toledo constitutional anchor: DSVA is a welded domain, not a new root
+
+DSVA v0.2 already supplied the disaster-management ontology. The remaining formal problem was to state what licenses that ontology to function as a coherent domain rather than as an unconstrained collection of equations. Version 0.3 uses the existing Toledo grammar as that constitutional anchor.
+
+The existing Toledo retained state is:
+
+\[
+\boxed{
+S_n=(G_n,\Lambda_n,T_n)
+}
+\tag{T-CAN-002}
+\]
+
+and the registered finite root stepper is:
+
+\[
+\boxed{
+S_{n+1}=F(S_n,u_n,c_n,T_n).
+}
+\tag{T-CAN-003}
+\]
+
+DSVA is introduced by a **candidate domain adapter**:
+
+\[
+\boxed{
+q_{\mathrm{DSVA}}:
+S_n\longmapsto
+D_n^{\mathrm{DSVA}}
+=
+(\chi_n,E_{\le n},\mathbb B_n,\mathcal W_n,\mathcal K_n).
+}
+\tag{DSVA-T01}
+\]
+
+This is a DSVA proposal, not a pre-existing Toledo registration.
+
+## 2A.1 The DSVA weld obligation
+
+The Toledo domain-weld rule requires a valid domain translation to preserve load-bearing dynamics:
+
+\[
+\boxed{
+q_D(F(z,u,c,T))
+=
+F_D^{\sharp}(q_D(z),u,c,T).
+}
+\tag{T-CAN-006a}
+\]
+
+For DSVA:
+
+\[
+\boxed{
+q_{\mathrm{DSVA}}
+(F(S_n,u_n,c_n,T_n))
+=
+F_{\mathrm{DSVA}}^{\sharp}
+(q_{\mathrm{DSVA}}(S_n),u_n,c_n,T_n).
+}
+\tag{DSVA-T02}
+\]
+
+The reader must also be preserved:
+
+\[
+\boxed{
+O_D(z;Q,c)
+=
+O_D^{\sharp}(q_D(z);Q,c).
+}
+\tag{T-CAN-006b}
+\]
+
+Hence:
+
+\[
+\boxed{
+O_Q^{R}(S_n;c)
+=
+O_Q^{\mathrm{DSVA}}(q_{\mathrm{DSVA}}(S_n);c)
+}
+\tag{DSVA-T03}
+\]
+
+for every declared task reader used to justify an operational or theoretical claim.
+
+Version 0.3 also carries the invariant-preservation condition used by the current Readout Genesis root contract:
+
+\[
+\boxed{
+Inv_r^{R}(S_n)
+=
+Inv_r^{\mathrm{DSVA}}(q_{\mathrm{DSVA}}(S_n))
+}
+\tag{DSVA-T04}
+\]
+
+for every load-bearing invariant \(r\). The minimum DSVA invariant set includes:
+
+\[
+\boxed{
+\begin{aligned}
+UNKNOWN&\neq SAFE,\\
+MISSING&\neq 0,\\
+OBS&\neq FCST\neq WARN\neq INST\neq ACT,\\
+Topology&\neq Forecast,\\
+InstalledCapability&\neq RealizedPerformance.
+\end{aligned}
+}
+\tag{DSVA-T05}
+\]
+
+If the adapter, dynamics weld, reader weld, or required invariant weld fails, the interpretation state is:
+
+\[
+\boxed{HOLD}
+\tag{DSVA-T06}
+\]
+
+for the affected claim. A failed bridge does not invalidate an external theorem; it prevents that theorem from being silently promoted into a DSVA conclusion.
+
+## 2A.2 Historical invariance and anti-hindsight
+
+Toledo CAN-009 states that finite append operations do not rewrite already retained indices:
+
+\[
+\boxed{
+Extends(h,h')\land i<|h|
+\Longrightarrow h'_i=h_i.
+}
+\tag{T-CAN-009}
+\]
+
+DSVA therefore inherits:
+
+\[
+\boxed{
+E_{\le t}^{post}
+\text{ may extend the record after }t,
+\quad
+\text{but may not rewrite }E_{\le t}^{locked}.
+}
+\tag{DSVA-T07}
+\]
+
+This is the formal anti-hindsight rule for event reconstruction, forecast replay, warning evaluation, and validation.
 
 ---
 
@@ -602,6 +752,77 @@ L(u^I),L(u^H),L(u^P),L(u^S)
 \tag{34}
 \]
 
+
+## 7A. Toledo-closed observation and evidence dynamics
+
+The v0.2 policy already depended on future information. Version 0.3 closes that loop explicitly.
+
+Let the world-side occurrence at step \(n+1\) be \(A_{n+1}\). A sensing/information action \(u_n^I\) does not receive the occurrence directly. It produces an accessible trace:
+
+\[
+\boxed{
+x_{r,n+1}
+=
+Access(A_{n+1};O_r,L_r,Tool_r,Rights_r,Context_r).
+}
+\tag{DSVA-T08}
+\]
+
+The trace is normalized into typed evidence:
+
+\[
+\boxed{
+e_{n+1}
+=
+Normalize(x_{r,n+1},source,type,time,support,datum,lineage).
+}
+\tag{DSVA-T09}
+\]
+
+Prediction propagates the admissible world set:
+
+\[
+\boxed{
+\mathbb B_{n+1}^{-}
+=
+\mathsf P(\mathbb B_n,u_n,\mathcal W_n),
+}
+\tag{DSVA-T10}
+\]
+
+then typed assimilation produces:
+
+\[
+\boxed{
+\mathbb B_{n+1}^{+}
+=
+\mathsf A(\mathbb B_{n+1}^{-},e_{n+1};Type(e_{n+1})).
+}
+\tag{DSVA-T11}
+\]
+
+The complete evidence loop is:
+
+\[
+\boxed{
+S_n
+\xrightarrow{F}
+S_{n+1}
+\xrightarrow{q_{\mathrm{DSVA}}}
+D_{n+1}^{\mathrm{DSVA}}
+\xrightarrow{O_r}
+x_{r,n+1}
+\xrightarrow{Normalize}
+e_{n+1}
+\xrightarrow{\mathsf A}
+\mathbb B_{n+1}^{+}.
+}
+\tag{DSVA-T12}
+\]
+
+An information action is therefore causal in the domain: it may change which trace becomes available, which distinctions survive the reader, and which future policy can be selected.
+
+
 ---
 
 # 8. Joint viability
@@ -712,6 +933,66 @@ T_{forecast}\neq T_V\neq T_{action}\neq T_{recovery}.
 \]
 
 A forecast horizon, viable-management horizon, action-justification horizon, and recovery horizon are different clocks.
+
+
+## 10A. Toledo reader-equivalence gives DSVA its viable-future geometry
+
+A scalar viability horizon is useful but insufficient. DSVA therefore uses Toledo's finite-horizon reader-equivalence to define the geometry of decision-relevant future distinctions.
+
+Toledo's registered relation is:
+
+\[
+\boxed{
+z\sim_{Q,O,c,L}z'
+\iff
+O(F^kz)=O(F^kz')
+\quad \forall k\le L
+}
+\tag{T-CAN-007}
+\]
+
+under the admitted interventions.
+
+This is a **no-early-collapse rule**: states that look the same now cannot be merged if a future continuation relevant to the declared task reader can distinguish them.
+
+For DSVA define the task-relative quotient:
+
+\[
+\boxed{
+\mathcal C_{Q,L}(\mathbb B_t)
+=
+\mathbb B_t/\sim_{Q,O,c,L}.
+}
+\tag{DSVA-T13}
+\]
+
+Attach to every equivalence class its viable-policy fibre:
+
+\[
+\boxed{
+\mathfrak V_{Q,L}(\mathbb B_t)
+=
+\left\{
+(C,\Pi_L^{EB}(C)):
+C\in\mathcal C_{Q,L}(\mathbb B_t)
+\right\}.
+}
+\tag{DSVA-T14}
+\]
+
+\(\mathfrak V_{Q,L}\) is the **viable-future geometry** of DSVA. It retains how many task-distinct classes remain, which classes share a common current action, which require different future policies, and which distinctions are recoverable only after a measurement or future transition.
+
+The previous scalar horizon remains a projection:
+
+\[
+\boxed{
+T_V=Proj_H(\mathfrak V_{Q,L}).
+}
+\tag{DSVA-T15}
+\]
+
+Thus v0.2 is retained as a projection of the richer Toledo-compatible geometry.
+
 
 ---
 
@@ -896,6 +1177,59 @@ OperatingCost
 }
 \tag{55}
 \]
+
+
+## 14A. Task reader and finite action determination
+
+The v0.2 expression \`StrongestAction\` is replaced by a declared task reader rather than a universal linear ranking.
+
+Let \(\preceq_c\) be a context-dependent partial order over currently viable actions, constrained by life safety, irreversibility, harm if wrong, route dependence, latency, authority, and resource feasibility.
+
+\[
+\boxed{
+O_{adv}(D_t^{\mathrm{DSVA}};Q_{adv},c)
+=
+Max_{\preceq_c}
+\mathcal A_H^{EB}(\mathbb B_t).
+}
+\tag{DSVA-T16}
+\]
+
+The output may be a set.
+
+A DSVA action question is finitely determined by horizon \(L\) only if:
+
+\[
+\boxed{
+z\sim_{Q_{adv},O_{adv},c,L}z'
+\Longrightarrow
+O_{adv}(q_{\mathrm{DSVA}}(z))
+=
+O_{adv}(q_{\mathrm{DSVA}}(z')).
+}
+\tag{DSVA-T17}
+\]
+
+If this fails:
+
+\[
+\boxed{ActionReadout=UNRESOLVED}
+\tag{DSVA-T18}
+\]
+
+for that task. The next operation is additional evidence, a conservative common action, or a narrower claim.
+
+Therefore:
+
+\[
+\boxed{
+ForecastUncertainty\neq ActionUncertainty.
+}
+\tag{DSVA-T19}
+\]
+
+Several physical futures may remain unresolved while the current safe-action reader is already determined.
+
 
 ---
 
@@ -1231,6 +1565,119 @@ DownstreamState
 
 The same installed pump configuration can therefore have different realized effectiveness under different receiving-water conditions.
 
+
+## 18.4 Finite Toledo witness: Sammakorn, 28 September 2026
+
+A formal theory needs a finite example in which different readers produce different epistemic outcomes from the same retained evidence.
+
+At approximately 08:40–08:45 on 28 September, the FloodConnect record retained:
+
+\[
+H_{SMK}=0.83\;m,
+\qquad
+H_{crit}=0.44\;m,
+\qquad
+PumpState=0/4.
+\tag{DSVA-T20}
+\]
+
+The receiving-water state required for a complete export calculation was not simultaneously closed.
+
+Construct two **logical admissible worlds**, not claims about which world physically occurred:
+
+\[
+\boxed{
+\chi_A:
+\text{receiver condition permits some gravity/export opportunity}
+}
+\tag{DSVA-T21a}
+\]
+
+\[
+\boxed{
+\chi_B:
+\text{receiver condition constrains gravity/export more strongly}
+}
+\tag{DSVA-T21b}
+\]
+
+with both retaining the same measured local level and pump state.
+
+Then:
+
+\[
+\boxed{
+O_{crit}(\chi_A)
+=
+O_{crit}(\chi_B)
+=
+ABOVE\_CRITICAL
+}
+\tag{DSVA-T22}
+\]
+
+and:
+
+\[
+\boxed{
+O_{pump}(\chi_A)
+=
+O_{pump}(\chi_B)
+=
+0/4.
+}
+\tag{DSVA-T23}
+\]
+
+But the precise clearance reader can differ, or cannot be tightly bounded from retained evidence:
+
+\[
+\boxed{
+O_{clear}(\chi_A)\neq O_{clear}(\chi_B)
+\quad\text{or remains insufficiently bounded}.
+}
+\tag{DSVA-T24}
+\]
+
+Therefore:
+
+\[
+\boxed{
+ClearanceETA=UNRESOLVED.
+}
+\tag{DSVA-T25}
+\]
+
+Both worlds, however, support the same current non-clearance decision:
+
+\[
+\boxed{
+O_{adv}(\chi_A)
+=
+O_{adv}(\chi_B)
+\supseteq
+\{
+NO\_ALL\_CLEAR,\,
+VERIFY\_EXPORT\_BOUNDARY
+\}.
+}
+\tag{DSVA-T26}
+\]
+
+Hence:
+
+\[
+\boxed{
+StateUncertainty
+\land
+TaskActionDetermination.
+}
+\tag{DSVA-T27}
+\]
+
+The witness licenses a current action readout without inventing a numerical future water level.
+
+
 ---
 
 # 19. Worked Thailand government-data interfaces
@@ -1457,14 +1904,56 @@ StrongestAction(
 
 # 21. Dialogue with world theories after DSVA is constructed
 
-External theories enter DSVA through:
+External theories enter DSVA only through a declared Toledo-style bridge.
+
+For external theory \(\mathcal T_j\), define a candidate adapter:
 
 \[
 \boxed{
-\phi_j:\mathcal T_j\rightarrow\mathcal T^{DSVA}.
+q_{j\rightarrow DSVA}:
+\mathcal T_j
+\rightarrow
+D^{DSVA}.
 }
-\tag{92}
+\tag{DSVA-T28}
 \]
+
+The adapter may carry a theorem, state variable, solver, or policy into the DSVA universe only when the required dynamics, reader, and invariants are preserved for the declared question and horizon:
+
+\[
+\boxed{
+\begin{aligned}
+q_{j\rightarrow D}\circ F_j
+&=
+F_D^{\sharp}\circ q_{j\rightarrow D},\\
+O_j
+&=
+O_D^{\sharp}\circ q_{j\rightarrow D},\\
+Inv_j
+&=
+Inv_D^{\sharp}\circ q_{j\rightarrow D}.
+\end{aligned}
+}
+\tag{DSVA-T29}
+\]
+
+Define:
+
+\[
+\boxed{
+Bridge_j
+\in
+\{
+WELDED,\,
+PARTIAL,\,
+HOLD,\,
+RIVAL
+\}.
+}
+\tag{DSVA-T30}
+\]
+
+\`WELDED\` means the required load-bearing dynamics/readouts/invariants commute for the declared scope. \`PARTIAL\` means only a declared subset is preserved. \`HOLD\` means no sufficient bridge has been established. \`RIVAL\` means the external theory makes an incompatible claim on a shared declared reader.
 
 \[
 \boxed{
@@ -1645,18 +2134,37 @@ Boundary/ConstraintArchitecture(\mathcal K,\Gamma).
 
 ## 21.12 Residual synthesis
 
+To make residual synthesis formal rather than metaphorical, define a theory as:
+
+\[
+\boxed{
+\mathcal T
+=
+(\Sigma,\mathcal A,\mathcal M)
+}
+\tag{DSVA-T31}
+\]
+
+where \(\Sigma\) is the signature/primitives, \(\mathcal A\) the axioms/equations, and \(\mathcal M\) the admissible model class.
+
+After every external theory has been welded, partially welded, held, or retained as a rival, define the DSVA residual as:
+
 \[
 \boxed{
 \Delta^{DSVA}
 =
-\mathcal T^{DSVA}
--
-\bigcup_j\phi_j(\mathcal T_j).
+\left\{
+\varphi:
+\mathcal T^{DSVA}\models\varphi
+\land
+\forall j,\;
+q_{j\rightarrow DSVA}(\mathcal T_j)\not\models\varphi
+\right\}.
 }
-\tag{104}
+\tag{DSVA-T32}
 \]
 
-The DSVA research program asks whether the residual architecture—joint physical/epistemic/human/institutional viability governed by adaptive evidence-bounded policies and one intervention-value calculus—continues to explain and predict decision structure across hazards better than any single imported tradition.
+The research program is therefore not to count unfamiliar vocabulary. It is to identify propositions and readouts that remain entailed by the DSVA architecture after every valid external bridge has been admitted.
 
 # 22. Inside-out synthesis rule
 
@@ -1899,7 +2407,7 @@ experiments/2026-09-bangkok-hierarchical-real-run.md
 experiments/2026-09-bangkok-toledo-real-backtest.md
 ```
 
-The manuscript is the canonical `PROPOSAL / THEORY_SYNTHESIS` expression of DSVA inside FloodConnect. Its general-theory claim is preserved; operational deployment remains separately gated by source freshness, model validation, and reader-specific evidence requirements.
+The manuscript is the canonical `PROPOSAL / THEORY_SYNTHESIS` expression of Toledo-welded DSVA inside FloodConnect. Its general-theory claim is preserved; operational deployment remains separately gated by source freshness, model validation, and reader-specific evidence requirements.
 
 Every equation intended for operational use must eventually map to:
 
@@ -1910,6 +2418,31 @@ source → parser → normalized evidence → QC → model/readout → test
 and every unresolved input must remain explicitly unresolved.
 
 ---
+
+
+# Appendix D — Toledo equation provenance and DSVA bridge ledger
+
+| Code | Role in DSVA v0.3 | Status | Source / licensing object |
+|---|---|---|---|
+| T-CAN-002 | retained root-state tuple \(S_n=(G_n,\Lambda_n,T_n)\) | **Toledo existing** | EQ-015/M.01.v1 / CAN-002 |
+| T-CAN-003 | finite root stepper \(S_{n+1}=F(S_n,u_n,c_n,T_n)\) | **Toledo existing** | EQ-015/M.02.v1 / CAN-003 |
+| T-CAN-006 | dynamics + reader domain weld | **Toledo existing** | weld/M.02.v1 / CAN-006 |
+| T-CAN-007 | finite-horizon reader equivalence | **Toledo existing** | weld/M.03.v1 / CAN-007 |
+| T-CAN-008 | root/domain/quotient non-collapse discipline | **Toledo existing guard** | A.5/M.01.v1 / CAN-008 |
+| T-CAN-009 | past-index invariance under finite append | **Toledo existing theorem** | A.8/M.01.v1 / \`CAN_009_extension_preserves_past\` |
+| DSVA-T01 | candidate disaster-domain adapter \(q_{\mathrm{DSVA}}\) | **DSVA proposal / unregistered** | derived under CAN-006 |
+| DSVA-T02–T04 | DSVA dynamics/readout/invariant weld obligations | **DSVA proposal / unregistered** | CAN-006 + Readout Genesis root contract |
+| DSVA-T08–T12 | observation/evidence loop | **DSVA proposal / unregistered** | Readout Genesis access order + DSVA typed evidence |
+| DSVA-T13–T15 | task-relative viable-future geometry | **DSVA proposal / unregistered** | CAN-007 + DSVA viable policies |
+| DSVA-T16–T19 | action reader + finite decision criterion | **DSVA proposal / unregistered** | CAN-007 reader discipline |
+| DSVA-T20–T27 | Sammakorn finite witness | **Empirical/formal witness proposal** | FloodConnect retained evidence + DSVA readers |
+| DSVA-T28–T30 | external-theory Toledo bridge status | **DSVA proposal / unregistered** | CAN-006 weld discipline |
+| DSVA-T31–T32 | formal theory object + residual synthesis | **DSVA proposal / unregistered** | inside-out synthesis formalization |
+
+**Registration rule.** Nothing labeled \`DSVA proposal / unregistered\` is retrospectively described as an existing Toledo equation. Toledo registration is a separate governance act.
+
+**HOLD rule.** If a load-bearing domain adapter or reader weld required for a claim cannot be constructed, DSVA stops at \`HOLD\` for that claim. This does not erase the underlying observation or external theorem.
+
 
 # References
 

@@ -74,14 +74,30 @@ Read first:
 - `docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md`
 - then the RKG route `question_routes.disaster_system_theory_or_dsva`
 
-The manuscript is the canonical **PROPOSAL / THEORY_SYNTHESIS** expression of DSVA. v0.2
-preserves the original v0.1 manuscript as an open-loop anchor but upgrades the formal core to
-adaptive evidence-bounded policies under partial observability:
+The manuscript is the canonical **PROPOSAL / THEORY_SYNTHESIS** expression of DSVA. v0.3
+preserves v0.1 as the explicit open-loop anchor and v0.2 as the adaptive-policy anchor, then
+welds the disaster domain to Toledo's existing retained-state/stepper/domain-weld/reader-equivalence
+grammar.
 
-`mathbb_B_t -> Pi_H^EB -> A_H^EB -> T_V`
+Read in this order:
 
-Read the Thailand/Bangkok/Sammakorn sections as the first empirical instantiation. External
-literatures enter only after the DSVA universe is constructed, through declared mappings
+- `docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md`
+- `docs/research/DSVA_TOLEDO_WELD.md`
+
+Formal spine:
+
+`S_n -> q_DSVA -> D_DSVA -> mathbb_B_t -> Pi_H^EB -> task-relative reader`
+
+Load-bearing rules:
+- T-CAN-006: dynamics/readout/invariant bridge obligations;
+- T-CAN-007: finite-horizon reader equivalence / no-early-collapse;
+- T-CAN-009: later evidence may extend but not rewrite earlier decision-time history;
+- if a required adapter/weld is absent, use `HOLD`;
+- Toledo-existing equations and DSVA-proposal equations must never be conflated.
+
+Read the Thailand/Bangkok/Sammakorn sections and the finite 28 Sep Sammakorn witness as the first
+empirical instantiation. External literatures enter only after the DSVA universe is constructed,
+and only through declared bridge status (WELDED / PARTIAL / HOLD / RIVAL) plus role mapping
 (special case / solver / operator / parameterization / boundary / rival). The general-theory
 claim is not a production forecast, warning, or operational command; live actions remain gated by
 fresh evidence, validated models and reader-specific constraints.
