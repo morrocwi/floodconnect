@@ -1,0 +1,28 @@
+claim_id: "20261002-openai-dsva-v010-theory-contracts"
+status: ACTIVE
+writer: "openai"
+branch: "agent/openai/dsva-v010-theory-contracts"
+base_sha: "17815b5ac1146108f491925ec293e5a13c803b21"
+nodes:
+  - DSVA_DECISION_MODEL
+  - DSVA_THEORY
+  - REPO_KG
+artifacts:
+  - dsva_kernel/core.py
+  - dsva_kernel/contracts.py
+  - dsva_kernel/engine.py
+  - dsva_kernel/requirements.py
+  - docs/research/DSVA_DECISION_MODEL.md
+  - docs/research/DSVA_THEORY_CONTRACT_PROJECTION.md
+  - site/inputs/decision/dsva_decision_schema.json
+  - examples/dsva_decision_minimal.json
+  - tests/test_dsva_decision_v010_theory_contracts.py
+  - experiments/2026-10-02-dsva-v010-theory-gap-redteam.md
+  - site/inputs/meta/floodconnect_repo_kg.yaml
+  - docs/AI_ENTRYPOINT.md
+intent: "Bring the executable DSVA projection materially closer to the existing v0.6 theory obligations evidenced by PR #42: bind verification certificates to the actual spec/input snapshot; enforce declared checker independence; execute finite model-invalidation behavior-overlap checks; close evidence-lineage/common-cause independence claims; enforce protected-requirement horizon/provenance/coverage metadata; require future-observation policy totality over admitted outcomes; enforce global resource reservation; reject unlicensed compound-hazard factorization; and distinguish commanded from realized actuation/runtime revalidation. Preserve the existing DSVA/Toledo ontology and IDM exact-finite/quotient acceleration."
+created_at: "2026-10-02T00:57:00+07:00"
+expires_at: null
+reviewers: []
+supersedes: "20261002-openai-dsva-v09-meaning-closure"
+note: "Failure evidence already exists in draft PR #42 / Actions run 36902749040 for the first six theory-gap probes (6 failed, 493 passed, 1 skipped). Additional resource/dependency/execution probes were added before implementation. This upgrade is a finite executable projection of existing DSVA theory; it must not be described as proving world truth or full adaptive-policy completeness."
