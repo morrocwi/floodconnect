@@ -752,6 +752,77 @@ L(u^I),L(u^H),L(u^P),L(u^S)
 \tag{34}
 \]
 
+
+## 7A. Toledo-closed observation and evidence dynamics
+
+The v0.2 policy already depended on future information. Version 0.3 closes that loop explicitly.
+
+Let the world-side occurrence at step \(n+1\) be \(A_{n+1}\). A sensing/information action \(u_n^I\) does not receive the occurrence directly. It produces an accessible trace:
+
+\[
+\boxed{
+x_{r,n+1}
+=
+Access(A_{n+1};O_r,L_r,Tool_r,Rights_r,Context_r).
+}
+\tag{DSVA-T08}
+\]
+
+The trace is normalized into typed evidence:
+
+\[
+\boxed{
+e_{n+1}
+=
+Normalize(x_{r,n+1},source,type,time,support,datum,lineage).
+}
+\tag{DSVA-T09}
+\]
+
+Prediction propagates the admissible world set:
+
+\[
+\boxed{
+\mathbb B_{n+1}^{-}
+=
+\mathsf P(\mathbb B_n,u_n,\mathcal W_n),
+}
+\tag{DSVA-T10}
+\]
+
+then typed assimilation produces:
+
+\[
+\boxed{
+\mathbb B_{n+1}^{+}
+=
+\mathsf A(\mathbb B_{n+1}^{-},e_{n+1};Type(e_{n+1})).
+}
+\tag{DSVA-T11}
+\]
+
+The complete evidence loop is:
+
+\[
+\boxed{
+S_n
+\xrightarrow{F}
+S_{n+1}
+\xrightarrow{q_{\mathrm{DSVA}}}
+D_{n+1}^{\mathrm{DSVA}}
+\xrightarrow{O_r}
+x_{r,n+1}
+\xrightarrow{Normalize}
+e_{n+1}
+\xrightarrow{\mathsf A}
+\mathbb B_{n+1}^{+}.
+}
+\tag{DSVA-T12}
+\]
+
+An information action is therefore causal in the domain: it may change which trace becomes available, which distinctions survive the reader, and which future policy can be selected.
+
+
 ---
 
 # 8. Joint viability
@@ -862,6 +933,66 @@ T_{forecast}\neq T_V\neq T_{action}\neq T_{recovery}.
 \]
 
 A forecast horizon, viable-management horizon, action-justification horizon, and recovery horizon are different clocks.
+
+
+## 10A. Toledo reader-equivalence gives DSVA its viable-future geometry
+
+A scalar viability horizon is useful but insufficient. DSVA therefore uses Toledo's finite-horizon reader-equivalence to define the geometry of decision-relevant future distinctions.
+
+Toledo's registered relation is:
+
+\[
+\boxed{
+z\sim_{Q,O,c,L}z'
+\iff
+O(F^kz)=O(F^kz')
+\quad \forall k\le L
+}
+\tag{T-CAN-007}
+\]
+
+under the admitted interventions.
+
+This is a **no-early-collapse rule**: states that look the same now cannot be merged if a future continuation relevant to the declared task reader can distinguish them.
+
+For DSVA define the task-relative quotient:
+
+\[
+\boxed{
+\mathcal C_{Q,L}(\mathbb B_t)
+=
+\mathbb B_t/\sim_{Q,O,c,L}.
+}
+\tag{DSVA-T13}
+\]
+
+Attach to every equivalence class its viable-policy fibre:
+
+\[
+\boxed{
+\mathfrak V_{Q,L}(\mathbb B_t)
+=
+\left\{
+(C,\Pi_L^{EB}(C)):
+C\in\mathcal C_{Q,L}(\mathbb B_t)
+\right\}.
+}
+\tag{DSVA-T14}
+\]
+
+\(\mathfrak V_{Q,L}\) is the **viable-future geometry** of DSVA. It retains how many task-distinct classes remain, which classes share a common current action, which require different future policies, and which distinctions are recoverable only after a measurement or future transition.
+
+The previous scalar horizon remains a projection:
+
+\[
+\boxed{
+T_V=Proj_H(\mathfrak V_{Q,L}).
+}
+\tag{DSVA-T15}
+\]
+
+Thus v0.2 is retained as a projection of the richer Toledo-compatible geometry.
+
 
 ---
 
@@ -1046,6 +1177,59 @@ OperatingCost
 }
 \tag{55}
 \]
+
+
+## 14A. Task reader and finite action determination
+
+The v0.2 expression \`StrongestAction\` is replaced by a declared task reader rather than a universal linear ranking.
+
+Let \(\preceq_c\) be a context-dependent partial order over currently viable actions, constrained by life safety, irreversibility, harm if wrong, route dependence, latency, authority, and resource feasibility.
+
+\[
+\boxed{
+O_{adv}(D_t^{\mathrm{DSVA}};Q_{adv},c)
+=
+Max_{\preceq_c}
+\mathcal A_H^{EB}(\mathbb B_t).
+}
+\tag{DSVA-T16}
+\]
+
+The output may be a set.
+
+A DSVA action question is finitely determined by horizon \(L\) only if:
+
+\[
+\boxed{
+z\sim_{Q_{adv},O_{adv},c,L}z'
+\Longrightarrow
+O_{adv}(q_{\mathrm{DSVA}}(z))
+=
+O_{adv}(q_{\mathrm{DSVA}}(z')).
+}
+\tag{DSVA-T17}
+\]
+
+If this fails:
+
+\[
+\boxed{ActionReadout=UNRESOLVED}
+\tag{DSVA-T18}
+\]
+
+for that task. The next operation is additional evidence, a conservative common action, or a narrower claim.
+
+Therefore:
+
+\[
+\boxed{
+ForecastUncertainty\neq ActionUncertainty.
+}
+\tag{DSVA-T19}
+\]
+
+Several physical futures may remain unresolved while the current safe-action reader is already determined.
+
 
 ---
 
@@ -1380,6 +1564,119 @@ DownstreamState
 \]
 
 The same installed pump configuration can therefore have different realized effectiveness under different receiving-water conditions.
+
+
+## 18.4 Finite Toledo witness: Sammakorn, 28 September 2026
+
+A formal theory needs a finite example in which different readers produce different epistemic outcomes from the same retained evidence.
+
+At approximately 08:40–08:45 on 28 September, the FloodConnect record retained:
+
+\[
+H_{SMK}=0.83\;m,
+\qquad
+H_{crit}=0.44\;m,
+\qquad
+PumpState=0/4.
+\tag{DSVA-T20}
+\]
+
+The receiving-water state required for a complete export calculation was not simultaneously closed.
+
+Construct two **logical admissible worlds**, not claims about which world physically occurred:
+
+\[
+\boxed{
+\chi_A:
+\text{receiver condition permits some gravity/export opportunity}
+}
+\tag{DSVA-T21a}
+\]
+
+\[
+\boxed{
+\chi_B:
+\text{receiver condition constrains gravity/export more strongly}
+}
+\tag{DSVA-T21b}
+\]
+
+with both retaining the same measured local level and pump state.
+
+Then:
+
+\[
+\boxed{
+O_{crit}(\chi_A)
+=
+O_{crit}(\chi_B)
+=
+ABOVE\_CRITICAL
+}
+\tag{DSVA-T22}
+\]
+
+and:
+
+\[
+\boxed{
+O_{pump}(\chi_A)
+=
+O_{pump}(\chi_B)
+=
+0/4.
+}
+\tag{DSVA-T23}
+\]
+
+But the precise clearance reader can differ, or cannot be tightly bounded from retained evidence:
+
+\[
+\boxed{
+O_{clear}(\chi_A)\neq O_{clear}(\chi_B)
+\quad\text{or remains insufficiently bounded}.
+}
+\tag{DSVA-T24}
+\]
+
+Therefore:
+
+\[
+\boxed{
+ClearanceETA=UNRESOLVED.
+}
+\tag{DSVA-T25}
+\]
+
+Both worlds, however, support the same current non-clearance decision:
+
+\[
+\boxed{
+O_{adv}(\chi_A)
+=
+O_{adv}(\chi_B)
+\supseteq
+\{
+NO\_ALL\_CLEAR,\,
+VERIFY\_EXPORT\_BOUNDARY
+\}.
+}
+\tag{DSVA-T26}
+\]
+
+Hence:
+
+\[
+\boxed{
+StateUncertainty
+\land
+TaskActionDetermination.
+}
+\tag{DSVA-T27}
+\]
+
+The witness licenses a current action readout without inventing a numerical future water level.
+
 
 ---
 
