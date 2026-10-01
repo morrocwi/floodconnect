@@ -1,12 +1,12 @@
 # Disaster-System Viability Architecture (DSVA)
-## A General Theory of Viable Futures under Partial Observability and Constrained Actuation
+## A Toledo-Welded General Theory of Viable Futures under Partial Observability and Constrained Actuation
 
-**Standalone theory manuscript — Formal Upgrade v0.2**  
+**Standalone theory manuscript — Toledo-Welded Formal Upgrade v0.3**  
 **Date:** 1 October 2026  
 **Field:** Disaster Risk Science / Disaster Management  
 **Empirical demonstrator:** Sammakorn retention-and-drainage system, eastern Bangkok, Thailand  
 **Software/reproducibility anchor:** FloodConnect (`morrocwi/floodconnect`)  
-**Theory claim:** DSVA is presented as a general disaster-management theory of viable futures. The claim rests on the synthesized equation system, its reductions, its intervention calculus, and its empirical falsifiability; no claim is withdrawn merely because a constituent operator has an established precedent.
+**Theory claim:** DSVA is presented as a general disaster-management theory of viable futures. Version 0.3 retains the complete v0.2 architecture and formally welds it to the existing Toledo root grammar: retained state, finite stepper, admissible domain translation, readout preservation, finite-horizon reader equivalence, non-collapse, and historical invariance. DSVA-specific adapters and bridge equations remain explicit proposals until separately registered in Toledo; the general-theory claim is not reduced.
 
 ---
 
@@ -162,6 +162,156 @@ u_t
 \]
 
 This rule is constitutional. A government warning is not the physical state. A pump operating signal is not pump discharge. A dry road is not full community recovery. A stale gauge is not current safety. A predicted tide is not an observed downstream boundary.
+
+---
+
+# 2A. Toledo constitutional anchor: DSVA is a welded domain, not a new root
+
+DSVA v0.2 already supplied the disaster-management ontology. The remaining formal problem was to state what licenses that ontology to function as a coherent domain rather than as an unconstrained collection of equations. Version 0.3 uses the existing Toledo grammar as that constitutional anchor.
+
+The existing Toledo retained state is:
+
+\[
+\boxed{
+S_n=(G_n,\Lambda_n,T_n)
+}
+\tag{T-CAN-002}
+\]
+
+and the registered finite root stepper is:
+
+\[
+\boxed{
+S_{n+1}=F(S_n,u_n,c_n,T_n).
+}
+\tag{T-CAN-003}
+\]
+
+DSVA is introduced by a **candidate domain adapter**:
+
+\[
+\boxed{
+q_{\mathrm{DSVA}}:
+S_n\longmapsto
+D_n^{\mathrm{DSVA}}
+=
+(\chi_n,E_{\le n},\mathbb B_n,\mathcal W_n,\mathcal K_n).
+}
+\tag{DSVA-T01}
+\]
+
+This is a DSVA proposal, not a pre-existing Toledo registration.
+
+## 2A.1 The DSVA weld obligation
+
+The Toledo domain-weld rule requires a valid domain translation to preserve load-bearing dynamics:
+
+\[
+\boxed{
+q_D(F(z,u,c,T))
+=
+F_D^{\sharp}(q_D(z),u,c,T).
+}
+\tag{T-CAN-006a}
+\]
+
+For DSVA:
+
+\[
+\boxed{
+q_{\mathrm{DSVA}}
+(F(S_n,u_n,c_n,T_n))
+=
+F_{\mathrm{DSVA}}^{\sharp}
+(q_{\mathrm{DSVA}}(S_n),u_n,c_n,T_n).
+}
+\tag{DSVA-T02}
+\]
+
+The reader must also be preserved:
+
+\[
+\boxed{
+O_D(z;Q,c)
+=
+O_D^{\sharp}(q_D(z);Q,c).
+}
+\tag{T-CAN-006b}
+\]
+
+Hence:
+
+\[
+\boxed{
+O_Q^{R}(S_n;c)
+=
+O_Q^{\mathrm{DSVA}}(q_{\mathrm{DSVA}}(S_n);c)
+}
+\tag{DSVA-T03}
+\]
+
+for every declared task reader used to justify an operational or theoretical claim.
+
+Version 0.3 also carries the invariant-preservation condition used by the current Readout Genesis root contract:
+
+\[
+\boxed{
+Inv_r^{R}(S_n)
+=
+Inv_r^{\mathrm{DSVA}}(q_{\mathrm{DSVA}}(S_n))
+}
+\tag{DSVA-T04}
+\]
+
+for every load-bearing invariant \(r\). The minimum DSVA invariant set includes:
+
+\[
+\boxed{
+\begin{aligned}
+UNKNOWN&\neq SAFE,\\
+MISSING&\neq 0,\\
+OBS&\neq FCST\neq WARN\neq INST\neq ACT,\\
+Topology&\neq Forecast,\\
+InstalledCapability&\neq RealizedPerformance.
+\end{aligned}
+}
+\tag{DSVA-T05}
+\]
+
+If the adapter, dynamics weld, reader weld, or required invariant weld fails, the interpretation state is:
+
+\[
+\boxed{HOLD}
+\tag{DSVA-T06}
+\]
+
+for the affected claim. A failed bridge does not invalidate an external theorem; it prevents that theorem from being silently promoted into a DSVA conclusion.
+
+## 2A.2 Historical invariance and anti-hindsight
+
+Toledo CAN-009 states that finite append operations do not rewrite already retained indices:
+
+\[
+\boxed{
+Extends(h,h')\land i<|h|
+\Longrightarrow h'_i=h_i.
+}
+\tag{T-CAN-009}
+\]
+
+DSVA therefore inherits:
+
+\[
+\boxed{
+E_{\le t}^{post}
+\text{ may extend the record after }t,
+\quad
+\text{but may not rewrite }E_{\le t}^{locked}.
+}
+\tag{DSVA-T07}
+\]
+
+This is the formal anti-hindsight rule for event reconstruction, forecast replay, warning evaluation, and validation.
 
 ---
 
