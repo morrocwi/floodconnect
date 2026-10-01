@@ -1,6 +1,8 @@
-"""DSVA v0.8 finite retained obstruction evaluator."""
+"""DSVA v0.9 finite retained obstruction + audited meaning evaluator."""
 from __future__ import annotations
 
+import hashlib
+import json
 import math
 from fractions import Fraction
 from typing import Any, Dict, Mapping, Sequence
@@ -22,7 +24,7 @@ from .core import (
     as_str_set,
     q,
 )
-from .requirements import requirement_population, state_safe
+from .requirements import requirement_bindings, requirement_population, state_safe
 
 
 def trace_times(
@@ -52,6 +54,47 @@ def trace_times(
     if ts[-1] != horizon:
         return [], f"TRACE_HORIZON_MISMATCH:last={ts[-1]}:H={horizon}"
     return ts, None
+
+
+def closure_audit(
+    s: Mapping[str, Any],
+) -> tuple[str | None, dict | None]:
+    """Check audit-witness completeness for every asserted closure.
+
+    This is an auditability contract, not a proof that an external checker is
+    semantically correct. It prevents a bare caller-written True from being
+    indistinguishable from a traced closure result.
+    """
+    audit = s.get("closure_audit")
+    if not isinstance(audit, Mapping):
+        return "CLOSURE_AUDIT_MISSING", None
+    closures = s.get("closures", {})
+    for layer, names in (("first_order", FIRST_ORDER), ("second_order", SECOND_ORDER)):
+        layer_audit = audit.get(layer)
+        layer_values = closures.get(layer) if isinstance(closures, Mapping) else None
+        if not isinstance(layer_audit, Mapping) or not isinstance(layer_values, Mapping):
+            return f"CLOSURE_AUDIT_LAYER_INVALID:{layer}", None
+        for name in names:
+            if layer_values.get(name) is not True:
+                continue
+            cert = layer_audit.get(name)
+            if not isinstance(cert, Mapping):
+                return f"CLOSURE_AUDIT_CERT_MISSING:{layer}:{name}", None
+            for key in ("spec", "input", "witness", "checker"):
+                if key not in cert or cert.get(key) is None or cert.get(key) == "":
+                    return f"CLOSURE_AUDIT_FIELD_MISSING:{layer}:{name}:{key}", None
+            checker = cert.get("checker")
+            spec = cert.get("spec")
+            if not isinstance(checker, str) or not checker.strip():
+                return f"CLOSURE_AUDIT_CHECKER_INVALID:{layer}:{name}", None
+            if not isinstance(spec, str) or not spec.strip():
+                return f"CLOSURE_AUDIT_SPEC_INVALID:{layer}:{name}", None
+    try:
+        payload = json.dumps(audit, sort_keys=True, separators=(",", ":"), ensure_ascii=False, default=str)
+        digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    except Exception as exc:
+        return f"CLOSURE_AUDIT_DIGEST_ERROR:{type(exc).__name__}", None
+    return None, {"digest": digest, "audit": audit}
 
 
 def preflight(
@@ -124,6 +167,11 @@ def preflight(
             return STATUS_LOCAL, [Obstruction("PROTECTED_REQUIREMENT_OPEN")], ctx
         return STATUS_HOLD, [Obstruction("SECOND_ORDER_OPEN", ",".join(missing_so))], ctx
 
+    audit_error, audit_info = closure_audit(s)
+    if audit_error:
+        return STATUS_HOLD, [Obstruction(audit_error)], ctx
+    ctx["closure_audit_digest"] = audit_info["digest"]
+
     try:
         declared_dist = as_str_set(env.get("disturbance_envelope"), name="disturbance_envelope")
         actual_dist = as_str_set(s.get("disturbances"), name="disturbances")
@@ -171,9 +219,10 @@ def preflight(
             )], ctx
         try:
             covered |= requirement_population(req)
+            requirement_bindings(req)
         except Exception as exc:
             return STATUS_HOLD, [Obstruction(
-                "REQUIREMENT_POPULATION_INVALID", f"{rid}:{exc}"
+                "REQUIREMENT_BINDING_INVALID", f"{rid}:{exc}"
             )], ctx
     if len(set(rids)) != len(rids):
         return STATUS_HOLD, [Obstruction("REQUIREMENT_ID_DUPLICATE")], ctx
@@ -240,6 +289,12 @@ def action_obstruction(
         return Obstruction(
             "LEASE_EXPIRED_BEFORE_EFFECT",
             f"issue={issue},effect={effect},expire={expire}",
+            scope,
+        )
+    if effect < 0:
+        return Obstruction(
+            "EFFECT_BEFORE_DECISION_ORIGIN",
+            f"effect={effect}",
             scope,
         )
     if effect > ctx["H"]:
@@ -343,9 +398,9 @@ def evaluate(scenario: Mapping[str, Any]) -> Dict[str, Any]:
         "provenance": scenario.get("provenance", []) if isinstance(scenario, Mapping) else [],
         "kernel": {
             "name": "DSVA finite retained obstruction kernel",
-            "version": "0.8",
-            "control_warrant": "exact finite / rational time / finite set coverage",
-            "trace_warrant": "finite retained states at declared discrete resolution",
+            "version": "0.9",
+            "control_warrant": "exact finite / rational time / finite set coverage / audited closure witness",
+            "trace_warrant": "type-stable retained states + subject-bound requirements at declared discrete resolution",
         },
     }
     try:
@@ -407,7 +462,21 @@ def evaluate(scenario: Mapping[str, Any]) -> Dict[str, Any]:
                         "cost_ledger": ledger.as_dict(),
                     }
 
-        proposed = scenario.get("proposed_action") or typed_reader.get("selected")
+        explicit_proposed = scenario.get("proposed_action")
+        reader_selected = typed_reader.get("selected")
+        if (
+            explicit_proposed is not None
+            and reader_selected is not None
+            and explicit_proposed != reader_selected
+        ):
+            return {
+                **base, "status": STATUS_HOLD, "selected_action": None,
+                "viable_actions": viable, "rejected_actions": rejected,
+                "obstructions": ["READER_PROPOSAL_CONFLICT"],
+                "closure_audit_digest": ctx["closure_audit_digest"],
+                "cost_ledger": ledger.as_dict(),
+            }
+        proposed = explicit_proposed or reader_selected
         if proposed is not None and not isinstance(proposed, str):
             return {
                 **base, "status": STATUS_HOLD, "selected_action": None,
@@ -426,6 +495,7 @@ def evaluate(scenario: Mapping[str, Any]) -> Dict[str, Any]:
                     "obstructions": [],
                     "reasons": ["NO_FINITE_OBSTRUCTION_FOUND_FOR_PROPOSED_ACTION"],
                     "typed_reader": dict(typed_reader) or None,
+                    "closure_audit_digest": ctx["closure_audit_digest"],
                     "cost_ledger": ledger.as_dict(),
                 }
             return {
@@ -438,6 +508,7 @@ def evaluate(scenario: Mapping[str, Any]) -> Dict[str, Any]:
                     proposed, ["PROPOSED_ACTION_UNKNOWN_OR_NOT_LICENSED"]
                 ),
                 "typed_reader": dict(typed_reader) or None,
+                "closure_audit_digest": ctx["closure_audit_digest"],
                 "cost_ledger": ledger.as_dict(),
             }
 
@@ -450,6 +521,7 @@ def evaluate(scenario: Mapping[str, Any]) -> Dict[str, Any]:
                 "rejected_actions": rejected,
                 "obstructions": [],
                 "reasons": ["UNIQUE_ACTION_WITH_EMPTY_FINITE_OBSTRUCTION_SET"],
+                "closure_audit_digest": ctx["closure_audit_digest"],
                 "cost_ledger": ledger.as_dict(),
             }
         if len(viable) > 1:
@@ -460,6 +532,7 @@ def evaluate(scenario: Mapping[str, Any]) -> Dict[str, Any]:
                 "viable_actions": viable,
                 "rejected_actions": rejected,
                 "obstructions": ["MULTIPLE_VIABLE_ACTIONS_READER_REQUIRED"],
+                "closure_audit_digest": ctx["closure_audit_digest"],
                 "cost_ledger": ledger.as_dict(),
             }
         return {
@@ -469,6 +542,7 @@ def evaluate(scenario: Mapping[str, Any]) -> Dict[str, Any]:
             "viable_actions": [],
             "rejected_actions": rejected,
             "obstructions": ["NO_VIABLE_ACTION_WITHIN_DECLARED_ENVELOPE"],
+            "closure_audit_digest": ctx["closure_audit_digest"],
             "cost_ledger": ledger.as_dict(),
         }
     except Exception as exc:
