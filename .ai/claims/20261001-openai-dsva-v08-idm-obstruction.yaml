@@ -1,5 +1,5 @@
 claim_id: "20261001-openai-dsva-v08-idm-obstruction"
-status: ACTIVE
+status: RELEASED
 writer: "openai"
 branch: "agent/openai/dsva-v08-idm-obstruction-impl"
 base_sha: "0e47a4d0f51a2759ff11d70a025497a375b343f7"
@@ -28,4 +28,4 @@ created_at: "2026-10-01T23:58:00+07:00"
 expires_at: null
 reviewers: []
 supersedes: "20261001-openai-dsva-decision-model-v07"
-note: "Claim-only PR #35 merged first. Implementation branch starts from updated main 0e47a4d. IDM sources consulted: morrocwi/information-discrete-math AI_START_HERE.md, METHOD.md, tools/idm_discipline.py, idm/solve.py and idm/results.py. Reuse is operator-level only: exact finite readout, fail-closed discipline, retained-reader quotienting and cost ledger; no parallel ontology or external runtime dependency is introduced."
+note: "Claim-only PR #35 merged first. Implementation PR #36 merged at 4ab615e8672fb375bdfc128bd64a25503c414939 after GitHub Actions run 36898872621 passed RKG validation, active semantic-claim validation, and full regression (482 passed, 1 skipped in 5.38s). IDM reuse remains operator-level only: exact finite readout, fail-closed discipline, retained-reader quotienting and cost ledger; no parallel ontology or external runtime dependency."
