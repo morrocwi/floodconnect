@@ -1,8 +1,8 @@
-# DSVA v0.7 Executable Disaster Decision Model
+# DSVA v0.8 Executable Disaster Decision Model
 
 **Status:** proposal / executable reference model  
 **Anchor:** DSVA v0.7 standalone, with the FloodConnect v0.6 repository state at `affd07ead02df0fc5d9b8bd8ab6f72ce57b6978c` as constitutional baseline.  
-**Purpose:** turn finite, declared disaster evidence/state scenarios into auditable action-license outputs without replacing hazard models or DSVA theory.
+**Purpose:** turn finite, declared disaster evidence/state scenarios into auditable action-license outputs without replacing hazard models or DSVA theory. v0.8 adds an IDM-informed finite retained obstruction kernel.
 
 ## 1. Research-facing object
 
@@ -53,17 +53,17 @@ LicensedAction.
 
 ## 3. Executable input
 
-A scenario JSON contains:
+A v0.8 scenario JSON contains:
 
-- `question`: reader/task and horizon;
+- `question`: reader/task and horizon;\n- `envelope.trace_semantics = discrete_retained` and a positive exact `trace_resolution`;
 - `envelope`: declared domain, population, model/disturbance/observation/actuation scope;
 - first-order and second-order closure flags;
 - `worlds`: finite admissible worlds for this test;
 - `disturbances`: finite admitted disturbance branches;
-- `requirements`: protected-state predicates;
+- `requirements`: protected-state predicates, each with explicit protected `population`;
 - `actor_information`: information actually available to each executing actor;
 - `actions`: candidate actions, leases, and finite outcome traces;
-- optional `typed_reader` / `proposed_action`.
+- optional `trace_library` + `trace_ref` retained trajectory factoring;\n- optional `typed_reader` / `proposed_action`.
 
 ## 4. Decision rule
 
@@ -116,3 +116,49 @@ Candidate outcome measures include unsafe-action rate, unsupported-action rate, 
 The key research question is:
 
 > Given only the information available at decision time, which disaster-response actions are actually justified within the declared envelope?
+
+
+## 8. v0.8 finite retained obstruction upgrade
+
+The executable now uses the operator-level discipline documented in `docs/research/DSVA_FINITE_OBSTRUCTION_KERNEL.md`.
+
+For a candidate action `a`, define a finite obstruction set:
+
+\[
+\Omega_Q(a)
+=
+\Omega_{scope}
+\cup
+\Omega_{closure}
+\cup
+\Omega_{lease}
+\cup
+\Omega_{actor-info}
+\cup
+\Omega_{coverage}
+\cup
+\Omega_{trace}
+\cup
+\Omega_{requirement}.
+\]
+
+The executable license condition is:
+
+\[
+\boxed{License_Q(a) \iff \Omega_Q(a)=\varnothing}
+\]
+
+after the existing DSVA envelope and epistemic gates pass.
+
+The kernel requires non-empty finite axes before universal checking, so an empty disturbance set can no longer create a vacuous license. Decision time, horizon, lease times, resolution, and valid-until are read as exact rationals.
+
+The retained time grid is declared explicitly:
+
+\[
+T_Q^\lambda=\{0,\lambda,2\lambda,\ldots,H_Q\},
+\qquad H_Q/\lambda\in\mathbb N.
+\]
+
+Repeated protected-state readouts are quotiented by the exact requirement-reader signature, and repeated trajectories may be represented once through `trace_library` / `trace_ref`. The returned `cost_ledger` records branches, unique traces, unique retained states, predicate checks, cache hits, and exact time parses.
+
+This is an exact-finite control/coverage improvement, not a claim of continuous inter-sample safety or universal world truth.
