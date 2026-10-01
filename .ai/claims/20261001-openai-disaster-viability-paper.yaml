@@ -1,5 +1,5 @@
 claim_id: "20261001-openai-disaster-viability-paper"
-status: ACTIVE
+status: RELEASED
 writer: "openai"
 branch: "agent/openai/disaster-viability-paper"
 base_sha: "55131274ad6b13003833afa3dbb15036260c9b1d"
@@ -15,4 +15,4 @@ created_at: "2026-10-01T16:25:00+07:00"
 expires_at: null
 reviewers: []
 supersedes: null
-note: "The manuscript treats existing FloodConnect constructs as empirical/formal anchors and external literatures as later dialogue. Thai government API/source examples are demonstrative adapters, not new production telemetry claims."
+note: "Implementation merged via PR #12 at 7995c73c4d89ecb9567ac20f9d9d5bd264b58d62. The standalone manuscript is connected to the RKG as DSVA_THEORY; Thai government API/source examples remain demonstrative adapters, not new production telemetry claims."
