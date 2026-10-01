@@ -1,8 +1,8 @@
-# DSVA v0.9 Executable Disaster Decision Model
+# DSVA v0.10 Executable Disaster Decision Model
 
 **Status:** proposal / executable reference model  
 **Anchor:** DSVA v0.7 standalone, with the FloodConnect v0.6 repository state at `affd07ead02df0fc5d9b8bd8ab6f72ce57b6978c` as constitutional baseline.  
-**Purpose:** turn finite, declared disaster evidence/state scenarios into auditable action-license outputs without replacing hazard models or DSVA theory. v0.8 adds an IDM-informed finite retained obstruction kernel.
+**Purpose:** turn finite, declared disaster evidence/state scenarios into auditable action-license outputs without replacing hazard models or DSVA theory. v0.10 retains the IDM-informed finite obstruction/quotient kernel and makes additional v0.6 second-order applicability, dependency, realizability, execution, requirement and verification contracts executable.
 
 ## 1. Research-facing object
 
@@ -53,9 +53,10 @@ LicensedAction.
 
 ## 3. Executable input
 
-A v0.8 scenario JSON contains:
+A v0.10 scenario JSON contains:
 
-- `question`: reader/task and horizon;\n- `envelope.trace_semantics = discrete_retained` and a positive exact `trace_resolution`;
+- `question`: reader/task and horizon;
+- `envelope.trace_semantics = discrete_retained` and a positive exact `trace_resolution`;
 - `envelope`: declared domain, population, model/disturbance/observation/actuation scope;
 - first-order and second-order closure flags;
 - `worlds`: finite admissible worlds for this test;
@@ -63,7 +64,14 @@ A v0.8 scenario JSON contains:
 - `requirements`: protected-state predicates, each with explicit protected `population`;
 - `actor_information`: information actually available to each executing actor;
 - `actions`: candidate actions, leases, and finite outcome traces;
-- optional `trace_library` + `trace_ref` retained trajectory factoring;\n- optional `typed_reader` / `proposed_action`.
+- optional `trace_library` + `trace_ref` retained trajectory factoring;
+- optional `typed_reader` / `proposed_action`.
+- `applicability_evidence`: finite model/observed behavior signatures;
+- `dependency_audit`: evidence lineage and declared independence groups;
+- `resource_audit` and `hazard_dependency_audit`;
+- protected requirement ledger fields `function/constraint/threshold/horizon/provenance/coverageStatus`;
+- per-action `execution_contract` and optional `future_observation_contract`;
+- `verification_contract`: independent producer/checker metadata plus SHA-256 bindings to the exact finite spec and input snapshot.
 
 ## 4. Decision rule
 
@@ -73,7 +81,14 @@ An action is admitted into the finite viable action set only if all of the follo
 2. its effect occurs within its action lease;
 3. every declared actor has the information the action branch actually requires;
 4. an outcome trace exists for every admitted world × disturbance branch;
-5. every state on every declared trace satisfies every protected requirement.
+5. every state on every declared trace satisfies every protected requirement;
+6. finite model/observation behavior sets remain compatible;
+7. declared evidence-independence groups have no shared lineage ancestor;
+8. resource use and compound-hazard factorization remain inside declared dependency contracts;
+9. future observation policies are total over admitted outcomes when such a channel is used;
+10. commanded action has VERIFIED/BOUNDED realized-actuation semantics and required runtime revalidation passes;
+11. protected requirement ledger horizon and coverage cover the decision claim;
+12. verification metadata is independently declared and cryptographically bound to the exact spec/input snapshot.
 
 If a typed reader proposes an action, the model licenses it only when the action is in this verified set. Reader confidence is retained as provenance but does not relax a failed gate.
 
@@ -97,7 +112,7 @@ The finite reference implementation currently emits `LICENSED_WITHIN_ENVELOPE`, 
 
 ```bash
 python3 dsva_decision.py examples/dsva_decision_minimal.json
-python3 -m pytest -q tests/test_dsva_decision.py
+python3 -m pytest -q tests/test_dsva_decision.py tests/test_dsva_decision_v010_theory_contracts.py
 ```
 
 The example is synthetic. It is not an operational flood instruction.
@@ -228,3 +243,93 @@ See:
 docs/research/DSVA_AUDITED_MEANING_CLOSURE.md
 tests/test_dsva_decision_v09_redteam.py
 \`\`\`
+
+
+## 10. v0.10 executable theory-contract projection
+
+v0.9 still lagged obligations already present in the v0.6 second-order license theory. The preserved test-only red-team in PR #42 established nine executable gaps before repair.
+
+v0.10 projects those existing theory clauses into the finite decision kernel:
+
+[
+Y_M^f cap Y_O^f = arnothing
+Rightarrow INVALIDATED,
+]
+
+[
+Anc(i)cap Anc(j)
+eqarnothing
+Rightarrow
+	ext{an explicit independence claim fails},
+]
+
+[
+Use(a,r)le Avail(r),
+]
+
+[
+Factorizedland
+eg FactorizationLicensed
+Rightarrow HOLD,
+]
+
+[
+dom(Response_o)=Outcomes(o),
+]
+
+[
+u_{cmd}
+eq u_{real}
+quad	ext{unless realization is VERIFIED or BOUNDED},
+]
+
+and each protected requirement must carry the theory ledger fields:
+
+[
+(id,population/entity,function,constraint,threshold,horizon,provenance,coverageStatus).
+]
+
+For verification, the kernel derives canonical finite projections (Spec_Q^f) and (Input_Q^f), computes:
+
+[
+d_S=SHA256(Canon(Spec_Q^f)),
+qquad
+d_I=SHA256(Canon(Input_Q^f)),
+]
+
+and requires the supplied verification contract to bind to both exact digests. Producer and checker must also have distinct declared identity, implementation digest and failure lineage.
+
+The finite strong condition is therefore extended to:
+
+[
+oxed{
+License_Q^{0.10}(a)
+iff
+Omega_Q^{0.9}(a)=arnothing
+land
+Omega_A
+land
+Omega_D
+land
+Omega_Z
+land
+Omega_X
+land
+Omega_K
+land
+Omega_V
+	ext{ are all closed}
+}
+]
+
+inside the declared DSVA envelope.
+
+See:
+
+```text
+docs/research/DSVA_THEORY_CONTRACT_PROJECTION.md
+dsva_kernel/contracts.py
+tests/test_dsva_decision_v010_theory_contracts.py
+```
+
+The remaining explicit theory/model gap is no longer the nine contracts above. The largest remaining gaps are **full actor-local adaptive-policy execution** and **dedicated persistent-recovery/return-set execution**. Therefore v0.10 remains a finite projection rather than a claim that all of DSVA is executable.

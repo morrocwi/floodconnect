@@ -217,23 +217,26 @@ nodes:
 
   DSVA_DECISION_MODEL:
     kind: MODEL
-    label: "DSVA v0.9 executable disaster decision model — finite retained obstruction + audited meaning closure"
+    label: "DSVA v0.10 executable disaster decision model — finite retained obstruction + theory-contract projection"
     epistemic_class: EXECUTABLE_MODEL
     canonical_artifacts:
       - dsva_decision.py
       - dsva_kernel/core.py
+      - dsva_kernel/contracts.py
       - dsva_kernel/requirements.py
       - dsva_kernel/engine.py
       - docs/research/DSVA_DECISION_MODEL.md
       - docs/research/DSVA_FINITE_OBSTRUCTION_KERNEL.md
       - docs/research/DSVA_AUDITED_MEANING_CLOSURE.md
+      - docs/research/DSVA_THEORY_CONTRACT_PROJECTION.md
       - site/inputs/decision/dsva_decision_schema.json
       - examples/dsva_decision_minimal.json
       - tests/test_dsva_decision.py
       - tests/test_dsva_decision_v08_redteam.py
       - tests/test_dsva_decision_v09_redteam.py
-    summary: "Executable projection of DSVA theory for finite anti-hindsight scenarios. v0.8 introduced the exact-finite retained obstruction kernel; v0.9 adds type-stable retained distinctions, explicit per-subject requirement bindings, closure-audit witness completeness, nonnegative effect-time origin, and proposal-channel consistency while preserving the same cost-ledger and trace/state quotient acceleration."
-    key_boundary: "reference decision model != hazard forecast != universal safety proof; audited closure witness completeness != semantic truth of an external checker; exact finite conformance != continuous inter-sample safety != world truth; typed-reader confidence never overrides hard DSVA constraints."
+      - tests/test_dsva_decision_v010_theory_contracts.py
+    summary: "Executable projection of DSVA theory for finite anti-hindsight scenarios. v0.10 retains the IDM exact-finite obstruction/quotient kernel and v0.9 audited meaning closure, then makes finite applicability behavior overlap, evidence-lineage independence, global resource reservation, compound-hazard factorization licensing, future-observation totality, realized-actuation/runtime contracts, complete protected-requirement ledger metadata, and snapshot-bound independent verification load-bearing."
+    key_boundary: "reference decision model != hazard forecast != universal safety proof; finite behavior compatibility != true model; declared checker independence != proven independent implementation; total future-response map != full adaptive-policy realizability; discrete retained safety != continuous inter-sample safety; typed-reader confidence never overrides hard DSVA constraints."
 
   TOLEDO_ROOT:
     kind: ARTIFACT
@@ -532,6 +535,7 @@ nodes:
       - experiments/2026-10-01-dsva-v04-brutal-redteam.md
       - experiments/2026-10-01-dsva-v05-second-order-redteam.md
       - experiments/2026-10-01-dsva-v06-meta-license-retest.md
+      - experiments/2026-10-02-dsva-v010-theory-gap-redteam.md
     summary: "Timestamped locked tests/audits; failed assumptions remain preserved for anti-hindsight learning."
     key_boundary: "experiment result/audit != production forecast rule; the S0-S5 state machine in the 7-day backtest is historical and superseded by Unified Crisis State"
 
@@ -712,7 +716,7 @@ question_routes:
       - tests/test_dsva_decision.py
       - docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md
       - docs/research/DSVA_SECOND_ORDER_LICENSE.md
-    rule: "decision model is an executable finite projection of DSVA, not a hazard forecaster; v0.9 requires the v0.8 non-vacuous exact-finite obstruction gates plus type-stable retained values, explicit subject-bound requirements, closure-audit witnesses, nonnegative effect time, and proposal consistency; preserve envelope/horizon/provenance and never allow typed-reader confidence to override hard DSVA constraints"
+    rule: "decision model is an executable finite projection of DSVA, not a hazard forecaster; v0.10 requires the v0.9 finite/audited meaning gates plus finite applicability overlap, dependency lineage/resource/hazard contracts, future-observation response totality, realized-actuation/runtime closure, full requirement ledger scope, and verification bound to the exact finite spec/input snapshot; preserve envelope/horizon/provenance and never allow typed-reader confidence to override hard DSVA constraints"
 
   current_water_or_flood_status:
     start_nodes: [LIVE_DATA_SYSTEM, LIVE_WATER]

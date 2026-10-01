@@ -1,4 +1,4 @@
-"""DSVA v0.9 finite retained obstruction + audited meaning evaluator."""
+"""DSVA v0.10 finite retained obstruction + executable theory-contract evaluator."""
 from __future__ import annotations
 
 import hashlib
@@ -23,6 +23,16 @@ from .core import (
     Obstruction,
     as_str_set,
     q,
+)
+from .contracts import (
+    applicability_check,
+    dependency_check,
+    execution_obstruction,
+    future_observation_obstruction,
+    hazard_dependency_check,
+    requirement_ledger_check,
+    resource_obstruction,
+    verification_binding,
 )
 from .requirements import requirement_bindings, requirement_population, state_safe
 
@@ -101,7 +111,7 @@ def preflight(
     s: Mapping[str, Any],
     ledger: CostLedger,
 ) -> tuple[str | None, list[Obstruction], dict]:
-    ctx: dict[str, Any] = {}
+    ctx: dict[str, Any] = {"scenario": s}
     obs: list[Obstruction] = []
     if not isinstance(s, Mapping):
         return STATUS_HOLD, [Obstruction("SCENARIO_NOT_MAPPING")], ctx
@@ -182,6 +192,9 @@ def preflight(
             )], ctx
         ctx["disturbances"] = sorted(actual_dist)
         ctx["actuation"] = as_str_set(env.get("actuation_envelope"), name="actuation_envelope")
+        ctx["observation_envelope"] = as_str_set(
+            env.get("observation_envelope"), name="observation_envelope"
+        )
         ctx["protected_population"] = as_str_set(
             env.get("protected_population"), name="protected_population"
         )
@@ -224,6 +237,9 @@ def preflight(
             return STATUS_HOLD, [Obstruction(
                 "REQUIREMENT_BINDING_INVALID", f"{rid}:{exc}"
             )], ctx
+        ledger_error = requirement_ledger_check(req, H, ledger)
+        if ledger_error:
+            return STATUS_HOLD, [Obstruction(ledger_error)], ctx
     if len(set(rids)) != len(rids):
         return STATUS_HOLD, [Obstruction("REQUIREMENT_ID_DUPLICATE")], ctx
     gap = ctx["protected_population"] - covered
@@ -260,6 +276,29 @@ def preflight(
         if not isinstance(key, str) or not key or not isinstance(value, list) or not value:
             return STATUS_HOLD, [Obstruction("TRACE_LIBRARY_ENTRY_INVALID", str(key))], ctx
     ctx["trace_library"] = trace_library
+
+    applicability_error, applicability_info = applicability_check(s, ledger)
+    if applicability_error == "MODEL_FAMILY_INVALIDATED_BY_BEHAVIOR":
+        return STATUS_INVALIDATED, [Obstruction(applicability_error)], ctx
+    if applicability_error:
+        return STATUS_HOLD, [Obstruction(applicability_error)], ctx
+    ctx["applicability"] = applicability_info
+
+    dependency_error, dependency_info = dependency_check(s, ledger)
+    if dependency_error:
+        return STATUS_HOLD, [Obstruction(dependency_error)], ctx
+    ctx["dependency"] = dependency_info
+
+    hazard_error, hazard_info = hazard_dependency_check(s, ledger)
+    if hazard_error:
+        return STATUS_HOLD, [Obstruction(hazard_error)], ctx
+    ctx["hazard_dependency"] = hazard_info
+
+    verification_error, verification_info = verification_binding(s, ledger)
+    if verification_error:
+        return STATUS_HOLD, [Obstruction(verification_error)], ctx
+    ctx["verification_binding"] = verification_info
+
     return None, [], ctx
 
 
@@ -275,6 +314,20 @@ def action_obstruction(
     scope = f"action:{aid}"
     if aid not in ctx["actuation"]:
         return Obstruction("ACTION_OUTSIDE_ACTUATION_ENVELOPE", aid, scope)
+
+    execution_error = execution_obstruction(action, ledger)
+    if execution_error:
+        return Obstruction(execution_error, scope=scope)
+
+    future_error = future_observation_obstruction(
+        action, ctx["observation_envelope"], ledger
+    )
+    if future_error:
+        return Obstruction(future_error, scope=scope)
+
+    resource_error = resource_obstruction(ctx["scenario"], aid, ledger)
+    if resource_error:
+        return Obstruction(resource_error, scope=scope)
 
     lease = action.get("lease")
     if not isinstance(lease, Mapping):
@@ -398,9 +451,9 @@ def evaluate(scenario: Mapping[str, Any]) -> Dict[str, Any]:
         "provenance": scenario.get("provenance", []) if isinstance(scenario, Mapping) else [],
         "kernel": {
             "name": "DSVA finite retained obstruction kernel",
-            "version": "0.9",
-            "control_warrant": "exact finite / rational time / finite set coverage / audited closure witness",
-            "trace_warrant": "type-stable retained states + subject-bound requirements at declared discrete resolution",
+            "version": "0.10",
+            "control_warrant": "exact finite + bound verification + applicability/dependency/realizability/execution contracts",
+            "trace_warrant": "type-stable retained states + subject-bound requirement ledger at declared discrete resolution",
         },
     }
     try:
@@ -435,6 +488,8 @@ def evaluate(scenario: Mapping[str, Any]) -> Dict[str, Any]:
                 **base, "status": STATUS_HOLD, "selected_action": None,
                 "viable_actions": viable, "rejected_actions": rejected,
                 "obstructions": ["TYPED_READER_INVALID"],
+                "closure_audit_digest": ctx["closure_audit_digest"],
+                "verification_binding": ctx["verification_binding"],
                 "cost_ledger": ledger.as_dict(),
             }
         if typed_reader:
@@ -444,7 +499,9 @@ def evaluate(scenario: Mapping[str, Any]) -> Dict[str, Any]:
                     **base, "status": STATUS_HOLD, "selected_action": None,
                     "viable_actions": viable, "rejected_actions": rejected,
                     "obstructions": ["TYPED_READER_TYPE_INVALID"],
-                    "cost_ledger": ledger.as_dict(),
+                    "closure_audit_digest": ctx["closure_audit_digest"],
+                "verification_binding": ctx["verification_binding"],
+                "cost_ledger": ledger.as_dict(),
                 }
             conf = typed_reader.get("confidence")
             if conf is not None:
@@ -459,7 +516,9 @@ def evaluate(scenario: Mapping[str, Any]) -> Dict[str, Any]:
                         **base, "status": STATUS_HOLD, "selected_action": None,
                         "viable_actions": viable, "rejected_actions": rejected,
                         "obstructions": ["TYPED_READER_CONFIDENCE_INVALID"],
-                        "cost_ledger": ledger.as_dict(),
+                        "closure_audit_digest": ctx["closure_audit_digest"],
+                "verification_binding": ctx["verification_binding"],
+                "cost_ledger": ledger.as_dict(),
                     }
 
         explicit_proposed = scenario.get("proposed_action")
@@ -474,6 +533,7 @@ def evaluate(scenario: Mapping[str, Any]) -> Dict[str, Any]:
                 "viable_actions": viable, "rejected_actions": rejected,
                 "obstructions": ["READER_PROPOSAL_CONFLICT"],
                 "closure_audit_digest": ctx["closure_audit_digest"],
+                    "verification_binding": ctx["verification_binding"],
                 "cost_ledger": ledger.as_dict(),
             }
         proposed = explicit_proposed or reader_selected
@@ -482,6 +542,8 @@ def evaluate(scenario: Mapping[str, Any]) -> Dict[str, Any]:
                 **base, "status": STATUS_HOLD, "selected_action": None,
                 "viable_actions": viable, "rejected_actions": rejected,
                 "obstructions": ["PROPOSED_ACTION_INVALID"],
+                "closure_audit_digest": ctx["closure_audit_digest"],
+                "verification_binding": ctx["verification_binding"],
                 "cost_ledger": ledger.as_dict(),
             }
         if proposed:
@@ -496,6 +558,7 @@ def evaluate(scenario: Mapping[str, Any]) -> Dict[str, Any]:
                     "reasons": ["NO_FINITE_OBSTRUCTION_FOUND_FOR_PROPOSED_ACTION"],
                     "typed_reader": dict(typed_reader) or None,
                     "closure_audit_digest": ctx["closure_audit_digest"],
+                    "verification_binding": ctx["verification_binding"],
                     "cost_ledger": ledger.as_dict(),
                 }
             return {
@@ -509,6 +572,7 @@ def evaluate(scenario: Mapping[str, Any]) -> Dict[str, Any]:
                 ),
                 "typed_reader": dict(typed_reader) or None,
                 "closure_audit_digest": ctx["closure_audit_digest"],
+                    "verification_binding": ctx["verification_binding"],
                 "cost_ledger": ledger.as_dict(),
             }
 
@@ -522,6 +586,7 @@ def evaluate(scenario: Mapping[str, Any]) -> Dict[str, Any]:
                 "obstructions": [],
                 "reasons": ["UNIQUE_ACTION_WITH_EMPTY_FINITE_OBSTRUCTION_SET"],
                 "closure_audit_digest": ctx["closure_audit_digest"],
+                    "verification_binding": ctx["verification_binding"],
                 "cost_ledger": ledger.as_dict(),
             }
         if len(viable) > 1:
@@ -533,6 +598,7 @@ def evaluate(scenario: Mapping[str, Any]) -> Dict[str, Any]:
                 "rejected_actions": rejected,
                 "obstructions": ["MULTIPLE_VIABLE_ACTIONS_READER_REQUIRED"],
                 "closure_audit_digest": ctx["closure_audit_digest"],
+                    "verification_binding": ctx["verification_binding"],
                 "cost_ledger": ledger.as_dict(),
             }
         return {
@@ -543,6 +609,7 @@ def evaluate(scenario: Mapping[str, Any]) -> Dict[str, Any]:
             "rejected_actions": rejected,
             "obstructions": ["NO_VIABLE_ACTION_WITHIN_DECLARED_ENVELOPE"],
             "closure_audit_digest": ctx["closure_audit_digest"],
+                    "verification_binding": ctx["verification_binding"],
             "cost_ledger": ledger.as_dict(),
         }
     except Exception as exc:

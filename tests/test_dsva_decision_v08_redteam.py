@@ -9,6 +9,8 @@ import copy
 import json
 from pathlib import Path
 
+from tests.dsva_v010_helpers import execution, rebind, req
+
 from dsva_decision import STATUS_LICENSED, STATUS_HOLD, evaluate
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,6 +25,11 @@ def demo():
 
 
 def assert_not_licensed(s):
+    try:
+        rebind(s)
+    except (TypeError, ValueError):
+        # Malformed/non-finite snapshots must still fail closed in the kernel.
+        pass
     r = evaluate(s)
     assert r["status"] != STATUS_LICENSED, r
     assert r["selected_action"] is None, r
@@ -180,13 +187,15 @@ def test_trace_ref_quotient_checks_all_branches_but_one_trace_class():
     s["envelope"]["disturbance_envelope"] = dists
     s["envelope"]["actuation_envelope"] = ["PREPARE"]
     s["requirements"] = [
-        {
-            "id": f"R{i}",
-            "population": ["community"],
-            "field": f"r{i}",
-            "op": "eq",
-            "value": 1,
-        }
+        req(
+            rid=f"R{i}",
+            population=["community"],
+            bindings={"community": f"r{i}"},
+            field=f"r{i}",
+            op="eq",
+            value=1,
+            horizon=H,
+        )
         for i in range(reqs)
     ]
     state = {f"r{i}": 1 for i in range(reqs)}
@@ -204,11 +213,12 @@ def test_trace_ref_quotient_checks_all_branches_but_one_trace_class():
                 w: {d: {"trace_ref": "safe"} for d in dists}
                 for w in worlds
             },
+            "execution_contract": execution("PREPARE"),
         }
     ]
     s["typed_reader"]["selected"] = "PREPARE"
 
-    r = evaluate(s)
+    r = evaluate(rebind(s))
     assert r["status"] == STATUS_LICENSED
     ledger = r["cost_ledger"]
     assert ledger["branches_checked"] == 128 * 8

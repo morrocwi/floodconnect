@@ -1,4 +1,4 @@
-"""Exact-finite primitives for the DSVA v0.9 obstruction kernel.
+"""Exact-finite primitives for the DSVA v0.10 obstruction kernel.
 
 The module borrows three *operator-level* disciplines from the sibling
 information-discrete-math project: exact retained arithmetic where possible,
@@ -46,6 +46,9 @@ class CostLedger:
     traces_checked: int = 0
     trace_cache_hits: int = 0
     exact_time_parses: int = 0
+    contract_checks: int = 0
+    digest_checks: int = 0
+    lineage_checks: int = 0
 
     def as_dict(self) -> Dict[str, int]:
         return {
@@ -57,6 +60,9 @@ class CostLedger:
             "traces_checked": self.traces_checked,
             "trace_cache_hits": self.trace_cache_hits,
             "exact_time_parses": self.exact_time_parses,
+            "contract_checks": self.contract_checks,
+            "digest_checks": self.digest_checks,
+            "lineage_checks": self.lineage_checks,
         }
 
 

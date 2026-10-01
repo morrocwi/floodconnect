@@ -3,6 +3,8 @@ import copy
 import json
 from pathlib import Path
 
+from tests.dsva_v010_helpers import rebind
+
 from dsva_decision import STATUS_HOLD, evaluate
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,17 +32,19 @@ def expand_refs(s):
 
 
 def test_trace_ref_and_inline_are_decision_equivalent():
-    assert projection(evaluate(demo())) == projection(evaluate(expand_refs(demo())))
+    a = demo()
+    b = expand_refs(demo())
+    assert projection(evaluate(rebind(a))) == projection(evaluate(rebind(b)))
 
 
 def test_world_requirement_action_permutation_preserves_selected_readout():
     s = demo()
-    base = evaluate(s)
+    base = evaluate(rebind(s))
     p = copy.deepcopy(s)
     p["worlds"].reverse()
     p["requirements"].reverse()
     p["actions"].reverse()
-    out = evaluate(p)
+    out = evaluate(rebind(p))
     assert out["status"] == base["status"]
     assert out["selected_action"] == base["selected_action"]
     assert set(out["viable_actions"]) == set(base["viable_actions"])
@@ -48,16 +52,16 @@ def test_world_requirement_action_permutation_preserves_selected_readout():
 
 def test_irrelevant_state_fields_do_not_change_requirement_readout():
     s = demo()
-    base = projection(evaluate(s))
+    base = projection(evaluate(rebind(s)))
     for i, st in enumerate(s["trace_library"]["safe"]):
         st["irrelevant"] = {"nonce": i}
-    assert projection(evaluate(s)) == base
+    assert projection(evaluate(rebind(s))) == base
 
 
 def test_relevant_field_change_blocks():
     s = demo()
     s["trace_library"]["safe"][1]["life_safe"] = False
-    out = evaluate(s)
+    out = evaluate(rebind(s))
     assert out["status"] == STATUS_HOLD
     assert out["selected_action"] is None
 
@@ -67,7 +71,7 @@ def test_reader_confidence_never_overrides_hard_gate():
         s = demo()
         s["typed_reader"]["confidence"] = confidence
         s["actions"][0]["requires_info"].append("missing")
-        out = evaluate(s)
+        out = evaluate(rebind(s))
         assert out["status"] == STATUS_HOLD
 
 
@@ -90,7 +94,7 @@ def test_decimal_and_fraction_time_encodings_agree():
     for action in b["actions"]:
         action["lease"]["expire"] = "3/2"
 
-    assert projection(evaluate(a)) == projection(evaluate(b))
+    assert projection(evaluate(rebind(a))) == projection(evaluate(rebind(b)))
 
 
 def test_determinism_1000_repeats():
