@@ -1,0 +1,18 @@
+claim_id: "20261001-openai-disaster-viability-paper"
+status: ACTIVE
+writer: "openai"
+branch: "agent/openai/disaster-viability-paper"
+base_sha: "55131274ad6b13003833afa3dbb15036260c9b1d"
+nodes:
+  - REPO_KG
+  - FC_ROOT
+artifacts:
+  - docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md
+  - site/inputs/meta/floodconnect_repo_kg.yaml
+  - docs/AI_ENTRYPOINT.md
+intent: "Add a standalone synthesis-first disaster-management theory manuscript to FloodConnect and connect it to the repository knowledge graph without changing existing hydraulic, source, or crisis-state semantics."
+created_at: "2026-10-01T16:25:00+07:00"
+expires_at: null
+reviewers: []
+supersedes: null
+note: "The manuscript treats existing FloodConnect constructs as empirical/formal anchors and external literatures as later dialogue. Thai government API/source examples are demonstrative adapters, not new production telemetry claims."
