@@ -1,0 +1,22 @@
+claim_id: "20261001-openai-dsva-repo-synthesis-v04"
+status: ACTIVE
+writer: "openai"
+branch: "agent/openai/dsva-repo-synthesis-v04"
+base_sha: "68bc994c0bbe8a409e2d13ea33c18f48e407a395"
+nodes:
+  - DSVA_THEORY
+  - TOLEDO_ROOT
+  - REPO_KG
+  - PROSPECTIVE_EXPERIMENTS
+artifacts:
+  - docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md
+  - docs/research/DSVA_TOLEDO_WELD.md
+  - docs/research/DSVA_FLOODCONNECT_CANONICAL_SYNTHESIS.md
+  - site/inputs/meta/floodconnect_repo_kg.yaml
+  - docs/AI_ENTRYPOINT.md
+intent: "Extract and absorb existing FloodConnect canonical constructs into DSVA before adding new equations. Preserve COMMUNITY_DAG, TDLC/LCF/LVCN, ORCG, environmental clocks, Unified Crisis State, shelter recovery, warning semantics and the existing Hat Yai red-team as anchors. Add only residual theory equations that are not already canonical: hazard-induced topology transition, evidence validity/expiry, forecast support breach, recoverability after viability loss, and hysteretic re-escalation."
+created_at: "2026-10-01T18:30:00+07:00"
+expires_at: null
+reviewers: []
+supersedes: "20261001-openai-dsva-toledo-weld"
+note: "No existing canonical construct is duplicated or renamed. New DSVA equations remain proposals until separately registered in Toledo."
