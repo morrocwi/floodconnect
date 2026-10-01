@@ -1,0 +1,19 @@
+claim_id: "20261001-openai-dsva-toledo-weld"
+status: ACTIVE
+writer: "openai"
+branch: "agent/openai/dsva-toledo-weld"
+base_sha: "7761b3d89552da684b498e2e45a40b8047efe534"
+nodes:
+  - DSVA_THEORY
+  - REPO_KG
+artifacts:
+  - docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md
+  - docs/research/DSVA_TOLEDO_WELD.md
+  - site/inputs/meta/floodconnect_repo_kg.yaml
+  - docs/AI_ENTRYPOINT.md
+intent: "Resolve the remaining DSVA formal blockers by welding the disaster domain to the existing Toledo root: root stepper, admissible domain translation, dynamics/readout/invariant preservation, finite-horizon reader equivalence, no-early-collapse, finite witness discipline, and equation provenance."
+created_at: "2026-10-01T18:00:00+07:00"
+expires_at: null
+reviewers: []
+supersedes: "20261001-openai-dsva-world-upgrade"
+note: "This is an upgrade, not a claim reduction. DSVA v0.2 remains the anchor. Toledo existing equations are cited as existing; all DSVA-specific adapters/weld obligations/readers are marked proposal until separately registered in Toledo."
