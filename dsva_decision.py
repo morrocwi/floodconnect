@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CLI/public facade for the DSVA v0.8 finite obstruction kernel."""
+"""CLI/public facade for the DSVA v0.9 finite obstruction + audited meaning kernel."""
 from __future__ import annotations
 
 import argparse
@@ -14,7 +14,7 @@ from dsva_kernel import evaluate
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Evaluate a finite DSVA v0.8 decision snapshot"
+        description="Evaluate a finite DSVA v0.9 decision snapshot"
     )
     parser.add_argument("scenario", type=Path)
     parser.add_argument("--compact", action="store_true")
