@@ -2,6 +2,8 @@ import copy
 import json
 from pathlib import Path
 
+from tests.dsva_v010_helpers import rebind
+
 from dsva_decision import (
     STATUS_CONTRADICTION,
     STATUS_HOLD,
@@ -56,7 +58,7 @@ def test_actor_local_information_blocks_centralized_shortcut():
     s = demo()
     s["actions"][0]["requires_info"] = ["current_state", "remote_signal"]
     s["typed_reader"]["selected"] = "PREPARE"
-    r = evaluate(s)
+    r = evaluate(rebind(s))
     assert r["status"] == STATUS_HOLD
     assert any(
         "ACTOR_LOCAL_INFO_MISSING" in x
@@ -68,7 +70,7 @@ def test_trace_requirement_breach_is_rejected():
     s = demo()
     s["trace_library"]["safe"][-1]["life_safe"] = False
     s["typed_reader"]["selected"] = "PREPARE"
-    r = evaluate(s)
+    r = evaluate(rebind(s))
     assert r["status"] == STATUS_HOLD
     assert any(
         "REQUIREMENT_FAIL" in x
@@ -80,7 +82,7 @@ def test_multiple_viable_actions_without_reader_is_unresolved():
     s = demo()
     s.pop("typed_reader")
     s["trace_library"]["unsafe_late"][-1]["life_safe"] = True
-    r = evaluate(s)
+    r = evaluate(rebind(s))
     assert r["status"] == STATUS_UNRESOLVED
     assert set(r["viable_actions"]) == {"PREPARE", "WAIT"}
 
@@ -114,5 +116,5 @@ def test_exact_fractional_resolution_is_supported():
                 {"life_safe": True},
                 {"life_safe": True},
             ]
-    r = evaluate(s)
+    r = evaluate(rebind(s))
     assert r["status"] == STATUS_LICENSED
