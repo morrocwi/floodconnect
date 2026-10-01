@@ -1,8 +1,8 @@
 claim_id: "20261002-openai-dsva-v09-meaning-closure"
 status: ACTIVE
 writer: "openai"
-branch: "agent/openai/dsva-v09-meaning-closure"
-base_sha: "2a6d8a58620d33403cca3b9c1f97fbe6d97ef1fd"
+branch: "agent/openai/dsva-v09-meaning-closure-impl"
+base_sha: "0042369e4fe297e283f3adb6aa5562a7de44bdce"
 nodes:
   - DSVA_DECISION_MODEL
   - DSVA_THEORY
@@ -25,4 +25,4 @@ created_at: "2026-10-02T00:30:00+07:00"
 expires_at: null
 reviewers: []
 supersedes: "20261001-openai-dsva-v08-idm-obstruction"
-note: "Prior failure evidence is PR #38 / Actions run 36899519561: 5 failed, 482 passed, 1 skipped. v0.9 closes executable meaning-preservation gaps; closure-audit witness completeness remains an auditability contract, not proof that an external checker is semantically correct."
+note: "Claim-only PR #39 merged first. Implementation branch starts from updated main 0042369. Prior failure evidence is PR #38 / Actions run 36899519561: 5 failed, 482 passed, 1 skipped. v0.9 closes executable meaning-preservation gaps; closure-audit witness completeness remains an auditability contract, not proof that an external checker is semantically correct."
