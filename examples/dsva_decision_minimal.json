@@ -68,7 +68,15 @@
       "value": true,
       "bindings": {
         "community": "life_safe"
-      }
+      },
+      "function": "preserve life safety",
+      "constraint": "life_safe == true",
+      "threshold": true,
+      "horizon": 2,
+      "provenance": [
+        "synthetic protected-requirement ledger"
+      ],
+      "coverageStatus": "COVERED"
     }
   ],
   "actor_information": {
@@ -131,6 +139,13 @@
             "trace_ref": "safe"
           }
         }
+      },
+      "execution_contract": {
+        "commanded": "PREPARE",
+        "realized_status": "BOUNDED",
+        "bound": "all admitted realized-actuation outcomes are represented by the declared finite branch traces",
+        "runtime_revalidation_required": false,
+        "runtime_revalidation_status": "NOT_REQUIRED"
       }
     },
     {
@@ -161,6 +176,13 @@
             "trace_ref": "unsafe_late"
           }
         }
+      },
+      "execution_contract": {
+        "commanded": "WAIT",
+        "realized_status": "BOUNDED",
+        "bound": "all admitted realized-actuation outcomes are represented by the declared finite branch traces",
+        "runtime_revalidation_required": false,
+        "runtime_revalidation_status": "NOT_REQUIRED"
       }
     }
   ],
@@ -175,7 +197,7 @@
   ],
   "valid_until": 2,
   "provenance": [
-    "DSVA v0.9 audited meaning closure demonstration"
+    "DSVA v0.10 executable theory-contract demonstration"
   ],
   "closure_audit": {
     "first_order": {
@@ -259,6 +281,57 @@
         "witness": "fixture witness for verification",
         "checker": "fixture-independent-checker"
       }
+    }
+  },
+  "applicability_evidence": {
+    "model_behavior_signatures": [
+      "demo-compatible"
+    ],
+    "observed_behavior_signatures": [
+      "demo-compatible"
+    ],
+    "reader": "Q-DEMO-001"
+  },
+  "dependency_audit": {
+    "lineage": {
+      "current_state_sensor": [
+        "synthetic-source-A"
+      ]
+    },
+    "independence_groups": []
+  },
+  "resource_audit": {
+    "declared_none": true,
+    "resources": {},
+    "action_use": {}
+  },
+  "hazard_dependency_audit": {
+    "components": [
+      "synthetic-disturbance"
+    ],
+    "factorized": false,
+    "factorization_licensed": false
+  },
+  "verification_contract": {
+    "producer": {
+      "id": "dsva-finite-kernel",
+      "implementation_digest": "dsva-kernel-v0.10-producer",
+      "lineage": [
+        "floodconnect-producer-lineage"
+      ]
+    },
+    "checker": {
+      "id": "dsva-demo-independent-checker",
+      "implementation_digest": "dsva-demo-checker-v1",
+      "lineage": [
+        "synthetic-independent-checker-lineage"
+      ]
+    },
+    "spec_digest": "PENDING",
+    "input_digest": "PENDING",
+    "certificate": {
+      "kind": "finite-constraint-recheck",
+      "witness": "synthetic fixture rechecks the bound spec/input snapshot"
     }
   }
 }
