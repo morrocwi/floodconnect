@@ -1,8 +1,8 @@
 claim_id: "20261002-openai-dsva-v010-theory-contracts"
 status: ACTIVE
 writer: "openai"
-branch: "agent/openai/dsva-v010-theory-contracts"
-base_sha: "17815b5ac1146108f491925ec293e5a13c803b21"
+branch: "agent/openai/dsva-v010-theory-contracts-impl"
+base_sha: "806b01982e3f055bc408962b46dadbede3070d6c"
 nodes:
   - DSVA_DECISION_MODEL
   - DSVA_THEORY
@@ -17,6 +17,12 @@ artifacts:
   - site/inputs/decision/dsva_decision_schema.json
   - examples/dsva_decision_minimal.json
   - tests/test_dsva_decision_v010_theory_contracts.py
+  - tests/test_dsva_decision_v09_redteam.py
+  - tests/test_dsva_decision_v08_differential.py
+  - tests/test_dsva_decision_v08_metamorphic.py
+  - tests/test_dsva_decision_v08_redteam.py
+  - tests/test_dsva_decision.py
+  - tests/dsva_v010_helpers.py
   - experiments/2026-10-02-dsva-v010-theory-gap-redteam.md
   - site/inputs/meta/floodconnect_repo_kg.yaml
   - docs/AI_ENTRYPOINT.md
@@ -25,4 +31,4 @@ created_at: "2026-10-02T00:57:00+07:00"
 expires_at: null
 reviewers: []
 supersedes: "20261002-openai-dsva-v09-meaning-closure"
-note: "Failure evidence already exists in draft PR #42 / Actions run 36902749040 for the first six theory-gap probes (6 failed, 493 passed, 1 skipped). Additional resource/dependency/execution probes were added before implementation. This upgrade is a finite executable projection of existing DSVA theory; it must not be described as proving world truth or full adaptive-policy completeness."
+note: "Claim-only PR #43 merged first. Implementation branch starts from updated main 806b019. Failure evidence exists in draft PR #42 / Actions run 36902749040 for the first six theory-gap probes (6 failed, 493 passed, 1 skipped); three additional resource/compound-hazard/execution probes were added before implementation. This upgrade is a finite executable projection of existing DSVA theory; it must not be described as proving world truth or full adaptive-policy completeness."
