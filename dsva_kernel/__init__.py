@@ -1,4 +1,4 @@
-"""DSVA v0.9 exact-finite obstruction + audited meaning kernel."""
+"""DSVA v0.10 exact-finite obstruction + audited meaning kernel."""
 from .core import (
     STATUS_LICENSED,
     STATUS_CONDITIONAL,
