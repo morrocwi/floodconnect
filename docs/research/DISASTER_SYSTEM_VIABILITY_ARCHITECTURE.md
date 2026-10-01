@@ -1904,14 +1904,56 @@ StrongestAction(
 
 # 21. Dialogue with world theories after DSVA is constructed
 
-External theories enter DSVA through:
+External theories enter DSVA only through a declared Toledo-style bridge.
+
+For external theory \(\mathcal T_j\), define a candidate adapter:
 
 \[
 \boxed{
-\phi_j:\mathcal T_j\rightarrow\mathcal T^{DSVA}.
+q_{j\rightarrow DSVA}:
+\mathcal T_j
+\rightarrow
+D^{DSVA}.
 }
-\tag{92}
+\tag{DSVA-T28}
 \]
+
+The adapter may carry a theorem, state variable, solver, or policy into the DSVA universe only when the required dynamics, reader, and invariants are preserved for the declared question and horizon:
+
+\[
+\boxed{
+\begin{aligned}
+q_{j\rightarrow D}\circ F_j
+&=
+F_D^{\sharp}\circ q_{j\rightarrow D},\\
+O_j
+&=
+O_D^{\sharp}\circ q_{j\rightarrow D},\\
+Inv_j
+&=
+Inv_D^{\sharp}\circ q_{j\rightarrow D}.
+\end{aligned}
+}
+\tag{DSVA-T29}
+\]
+
+Define:
+
+\[
+\boxed{
+Bridge_j
+\in
+\{
+WELDED,\,
+PARTIAL,\,
+HOLD,\,
+RIVAL
+\}.
+}
+\tag{DSVA-T30}
+\]
+
+\`WELDED\` means the required load-bearing dynamics/readouts/invariants commute for the declared scope. \`PARTIAL\` means only a declared subset is preserved. \`HOLD\` means no sufficient bridge has been established. \`RIVAL\` means the external theory makes an incompatible claim on a shared declared reader.
 
 \[
 \boxed{
@@ -2092,18 +2134,37 @@ Boundary/ConstraintArchitecture(\mathcal K,\Gamma).
 
 ## 21.12 Residual synthesis
 
+To make residual synthesis formal rather than metaphorical, define a theory as:
+
+\[
+\boxed{
+\mathcal T
+=
+(\Sigma,\mathcal A,\mathcal M)
+}
+\tag{DSVA-T31}
+\]
+
+where \(\Sigma\) is the signature/primitives, \(\mathcal A\) the axioms/equations, and \(\mathcal M\) the admissible model class.
+
+After every external theory has been welded, partially welded, held, or retained as a rival, define the DSVA residual as:
+
 \[
 \boxed{
 \Delta^{DSVA}
 =
-\mathcal T^{DSVA}
--
-\bigcup_j\phi_j(\mathcal T_j).
+\left\{
+\varphi:
+\mathcal T^{DSVA}\models\varphi
+\land
+\forall j,\;
+q_{j\rightarrow DSVA}(\mathcal T_j)\not\models\varphi
+\right\}.
 }
-\tag{104}
+\tag{DSVA-T32}
 \]
 
-The DSVA research program asks whether the residual architecture—joint physical/epistemic/human/institutional viability governed by adaptive evidence-bounded policies and one intervention-value calculus—continues to explain and predict decision structure across hazards better than any single imported tradition.
+The research program is therefore not to count unfamiliar vocabulary. It is to identify propositions and readouts that remain entailed by the DSVA architecture after every valid external bridge has been admitted.
 
 # 22. Inside-out synthesis rule
 
@@ -2346,7 +2407,7 @@ experiments/2026-09-bangkok-hierarchical-real-run.md
 experiments/2026-09-bangkok-toledo-real-backtest.md
 ```
 
-The manuscript is the canonical `PROPOSAL / THEORY_SYNTHESIS` expression of DSVA inside FloodConnect. Its general-theory claim is preserved; operational deployment remains separately gated by source freshness, model validation, and reader-specific evidence requirements.
+The manuscript is the canonical `PROPOSAL / THEORY_SYNTHESIS` expression of Toledo-welded DSVA inside FloodConnect. Its general-theory claim is preserved; operational deployment remains separately gated by source freshness, model validation, and reader-specific evidence requirements.
 
 Every equation intended for operational use must eventually map to:
 
@@ -2357,6 +2418,31 @@ source → parser → normalized evidence → QC → model/readout → test
 and every unresolved input must remain explicitly unresolved.
 
 ---
+
+
+# Appendix D — Toledo equation provenance and DSVA bridge ledger
+
+| Code | Role in DSVA v0.3 | Status | Source / licensing object |
+|---|---|---|---|
+| T-CAN-002 | retained root-state tuple \(S_n=(G_n,\Lambda_n,T_n)\) | **Toledo existing** | EQ-015/M.01.v1 / CAN-002 |
+| T-CAN-003 | finite root stepper \(S_{n+1}=F(S_n,u_n,c_n,T_n)\) | **Toledo existing** | EQ-015/M.02.v1 / CAN-003 |
+| T-CAN-006 | dynamics + reader domain weld | **Toledo existing** | weld/M.02.v1 / CAN-006 |
+| T-CAN-007 | finite-horizon reader equivalence | **Toledo existing** | weld/M.03.v1 / CAN-007 |
+| T-CAN-008 | root/domain/quotient non-collapse discipline | **Toledo existing guard** | A.5/M.01.v1 / CAN-008 |
+| T-CAN-009 | past-index invariance under finite append | **Toledo existing theorem** | A.8/M.01.v1 / \`CAN_009_extension_preserves_past\` |
+| DSVA-T01 | candidate disaster-domain adapter \(q_{\mathrm{DSVA}}\) | **DSVA proposal / unregistered** | derived under CAN-006 |
+| DSVA-T02–T04 | DSVA dynamics/readout/invariant weld obligations | **DSVA proposal / unregistered** | CAN-006 + Readout Genesis root contract |
+| DSVA-T08–T12 | observation/evidence loop | **DSVA proposal / unregistered** | Readout Genesis access order + DSVA typed evidence |
+| DSVA-T13–T15 | task-relative viable-future geometry | **DSVA proposal / unregistered** | CAN-007 + DSVA viable policies |
+| DSVA-T16–T19 | action reader + finite decision criterion | **DSVA proposal / unregistered** | CAN-007 reader discipline |
+| DSVA-T20–T27 | Sammakorn finite witness | **Empirical/formal witness proposal** | FloodConnect retained evidence + DSVA readers |
+| DSVA-T28–T30 | external-theory Toledo bridge status | **DSVA proposal / unregistered** | CAN-006 weld discipline |
+| DSVA-T31–T32 | formal theory object + residual synthesis | **DSVA proposal / unregistered** | inside-out synthesis formalization |
+
+**Registration rule.** Nothing labeled \`DSVA proposal / unregistered\` is retrospectively described as an existing Toledo equation. Toledo registration is a separate governance act.
+
+**HOLD rule.** If a load-bearing domain adapter or reader weld required for a claim cannot be constructed, DSVA stops at \`HOLD\` for that claim. This does not erase the underlying observation or external theorem.
+
 
 # References
 
