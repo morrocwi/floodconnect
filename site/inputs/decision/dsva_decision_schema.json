@@ -219,7 +219,6 @@
         "required": [
           "id",
           "population",
-          "field",
           "op"
         ],
         "properties": {
