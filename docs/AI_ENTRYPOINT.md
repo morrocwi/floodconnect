@@ -74,13 +74,15 @@ Read first:
 - `docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md`
 - then the RKG route `question_routes.disaster_system_theory_or_dsva`
 
-The manuscript is the canonical **PROPOSAL / THEORY_SYNTHESIS** expression of DSVA. v0.5
+The manuscript is the canonical **PROPOSAL / THEORY_SYNTHESIS** expression of DSVA. v0.6
 preserves v0.1 as the open-loop anchor, v0.2 as the adaptive-policy anchor, v0.3 as the
-Toledo-welded anchor, and v0.4 as the repository-first synthesis. It then closes the brutal-redteam
-leaks through one information-contract bridge. Existing FloodConnect movement, support/lifeline,
-operational-resource, environmental-clock, recovery and warning constructs remain canonical;
-external theories may enter only as declared leak-closing operators, solvers, contract semantics
-or special cases inside DSVA/Toledo.
+Toledo-welded anchor, v0.4 as repository-first synthesis, and v0.5 as the first-order
+information-contract bridge. A second-order red-team then showed that all first-order closures can
+PASS while an action is still wrong. v0.6 therefore adds a declared applicability envelope plus
+applicability/model-invalidation, dependency, realizability, execution-time, protected-requirement,
+persistent-recovery and independent-verification obligations. Existing FloodConnect canonical
+subsystems remain authoritative; external theories enter only as narrow operators/solvers/contracts
+inside DSVA/Toledo.
 
 Read in this order:
 
@@ -88,6 +90,8 @@ Read in this order:
 - `docs/research/DSVA_TOLEDO_WELD.md`
 - `docs/research/DSVA_FLOODCONNECT_CANONICAL_SYNTHESIS.md`
 - `docs/research/DSVA_INFORMATION_CONTRACT_BRIDGE.md`
+- `experiments/2026-10-01-dsva-v05-second-order-redteam.md`
+- `docs/research/DSVA_SECOND_ORDER_LICENSE.md`
 - then the RKG-listed canonical layers needed by the question.
 
 Do **not** recreate constructs that already exist in:
@@ -104,13 +108,15 @@ input to v0.4, not a newly discovered DSVA result.
 
 Formal spine:
 
-`S_n -> q_DSVA -> evidence contract -> {information status, nonempty mathbb_B_t} -> reader-sufficient augmented state -> hybrid topology -> boundary/shared-capacity closure -> {Pi_H^EB, Pi_H^REC} -> task reader`
+`S_n -> q_DSVA -> first-order contracts -> information state -> possible futures -> second-order applicability/dependency/realizability/execution/requirement/verification license -> {Pi_H^EB, Pi_H^REC} -> verified scope-preserving readout -> leased action/runtime feedback`
 
 Load-bearing rules:
 - T-CAN-006: dynamics/readout/invariant bridge obligations;
 - T-CAN-007: finite-horizon reader equivalence / no-early-collapse;
 - T-CAN-009: later evidence may extend but not rewrite earlier decision-time history;
-- if a required adapter/weld or information/evidence/state/transition/boundary/capacity/recovery closure is absent, use `UNKNOWN/HOLD/LOCAL-PARTIAL` as appropriate;
+- if a required first-order closure or second-order applicability/dependency/realizability/execution/requirement/verification obligation is absent, use `CONDITIONAL/UNKNOWN/HOLD/LOCAL-PARTIAL` as appropriate;
+- `not invalidated != true model`; every strong action claim is relative to a declared applicability envelope;
+- a readout is not execution-licensed if its action lease expires before effect or if the executable result is unverified;
 - Toledo-existing equations and DSVA-proposal equations must never be conflated.
 
 Read the Thailand/Bangkok/Sammakorn sections and the finite 28 Sep Sammakorn witness as the first
