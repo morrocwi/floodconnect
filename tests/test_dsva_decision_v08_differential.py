@@ -1,7 +1,23 @@
-"""Random differential test: optimized v0.8 kernel vs a direct finite oracle."""
+"""Random differential test: optimized DSVA kernel vs a direct finite oracle."""
 import random
 
 from dsva_decision import STATUS_HOLD, STATUS_LICENSED, evaluate
+
+
+def closure_audit():
+    first = ["information", "evidence", "state", "transition", "boundary", "capacity", "recovery"]
+    second = ["applicability", "dependency", "realizability", "execution", "requirement", "verification"]
+    def cert(name):
+        return {
+            "spec": f"test:{name}",
+            "input": "locked differential fixture",
+            "witness": f"witness:{name}",
+            "checker": "direct-test-oracle",
+        }
+    return {
+        "first_order": {name: cert(name) for name in first},
+        "second_order": {name: cert(name) for name in second},
+    }
 
 
 def case(seed):
@@ -10,7 +26,7 @@ def case(seed):
     worlds = [f"w{i}" for i in range(W)]
     dists = [f"d{i}" for i in range(D)]
     reqs = [
-        {"id": f"R{i}", "population": ["P"], "field": f"r{i}", "op": "eq", "value": 1}
+        {"id": f"R{i}", "population": ["P"], "field": f"r{i}", "bindings": {"P": f"r{i}"}, "op": "eq", "value": 1}
         for i in range(R)
     ]
     good = {f"r{i}": 1 for i in range(R)}
@@ -51,6 +67,7 @@ def case(seed):
                 "execution": True, "requirement": True, "verification": True
             }
         },
+        "closure_audit": closure_audit(),
         "worlds": [{"id": w} for w in worlds],
         "disturbances": dists,
         "requirements": reqs,
@@ -76,7 +93,8 @@ def direct_oracle(s):
                 return False
             for state in trace:
                 for req in s["requirements"]:
-                    if state[req["field"]] != req["value"]:
+                    field = req["bindings"]["P"]
+                    if state[field] != req["value"]:
                         return False
     return True
 
