@@ -1,8 +1,8 @@
 claim_id: "20261001-openai-dsva-decision-model-v07"
 status: ACTIVE
 writer: "openai"
-branch: "agent/openai/dsva-decision-model-v07"
-base_sha: "affd07ead02df0fc5d9b8bd8ab6f72ce57b6978c"
+branch: "agent/openai/dsva-decision-model-v07-impl"
+base_sha: "f63e621ca35890354d035cab5897d907ff831cec"
 nodes:
   - DSVA_THEORY
   - REPO_KG
@@ -20,4 +20,4 @@ created_at: "2026-10-01T23:30:00+07:00"
 expires_at: null
 reviewers: []
 supersedes: "20261001-openai-dsva-v06-meta-closure"
-note: "This claim treats DSVA v0.6/main at affd07e as the repository anchor and the supplied v0.7 standalone as the successor specification. The decision model is an executable projection of DSVA, not a new ontology or a replacement for hazard forecasting."
+note: "Claim-only PR #31 merged first. Implementation branch starts from updated main f63e621. DSVA v0.6/main at affd07e remains the constitutional repository anchor; the supplied v0.7 standalone is the successor specification. The decision model is an executable finite projection of DSVA, not a new ontology or a replacement for hazard forecasting."

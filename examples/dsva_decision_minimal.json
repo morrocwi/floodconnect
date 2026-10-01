@@ -1,0 +1,89 @@
+{
+  "question": {
+    "id": "Q-DEMO-001",
+    "task": "Choose a response action that preserves the declared protected requirement across all admitted worlds.",
+    "horizon": 2
+  },
+  "envelope": {
+    "domain": "synthetic demonstration",
+    "protected_population": ["community"],
+    "model_family": "finite-enumerated-trajectories",
+    "disturbance_envelope": ["base", "degraded"],
+    "observation_envelope": ["current_state"],
+    "actuation_envelope": ["PREPARE", "WAIT"]
+  },
+  "information_status": "SUPPORTED",
+  "model_invalidated": false,
+  "closures": {
+    "first_order": {
+      "information": true,
+      "evidence": true,
+      "state": true,
+      "transition": true,
+      "boundary": true,
+      "capacity": true,
+      "recovery": true
+    },
+    "second_order": {
+      "applicability": true,
+      "dependency": true,
+      "realizability": true,
+      "execution": true,
+      "requirement": true,
+      "verification": true
+    }
+  },
+  "worlds": [{"id": "normal"}, {"id": "fragile"}],
+  "disturbances": ["base", "degraded"],
+  "requirements": [
+    {"id": "R-LIFE", "field": "life_safe", "op": "eq", "value": true}
+  ],
+  "actor_information": {
+    "incident_lead": {"known": ["current_state"]}
+  },
+  "actions": [
+    {
+      "id": "PREPARE",
+      "actor": "incident_lead",
+      "requires_info": ["current_state"],
+      "lease": {"issue": 0, "expire": 2},
+      "effect_time": 0,
+      "outcomes": {
+        "normal": {
+          "base": {"trace": [{"life_safe": true}, {"life_safe": true}]},
+          "degraded": {"trace": [{"life_safe": true}, {"life_safe": true}]}
+        },
+        "fragile": {
+          "base": {"trace": [{"life_safe": true}, {"life_safe": true}]},
+          "degraded": {"trace": [{"life_safe": true}, {"life_safe": true}]}
+        }
+      }
+    },
+    {
+      "id": "WAIT",
+      "actor": "incident_lead",
+      "requires_info": ["current_state"],
+      "lease": {"issue": 0, "expire": 2},
+      "effect_time": 0,
+      "outcomes": {
+        "normal": {
+          "base": {"trace": [{"life_safe": true}, {"life_safe": true}]},
+          "degraded": {"trace": [{"life_safe": true}, {"life_safe": true}]}
+        },
+        "fragile": {
+          "base": {"trace": [{"life_safe": true}, {"life_safe": true}]},
+          "degraded": {"trace": [{"life_safe": true}, {"life_safe": false}]}
+        }
+      }
+    }
+  ],
+  "typed_reader": {
+    "type": "Choice",
+    "selected": "PREPARE",
+    "confidence": 0.83,
+    "note": "A typed reader may propose an action, but confidence never overrides DSVA hard constraints."
+  },
+  "assumptions": ["Synthetic finite witness; not an operational disaster recommendation."],
+  "valid_until": "end-of-step-2",
+  "provenance": ["DSVA v0.7 standalone decision-model demonstration"]
+}
