@@ -577,3 +577,82 @@ After repository extraction, DSVA should be read as:
 Existing FloodConnect constructs remain canonical at their own layer.
 
 New DSVA v0.4 theory is therefore **residual synthesis**, not ontology duplication.
+
+
+# 5. v0.5 external-theory absorption after the brutal red-team
+
+The v0.4 repository audit established what FloodConnect already owned. The subsequent brutal red-team identified closure defects. v0.5 therefore performs a second, narrower synthesis step: external theories are admitted only where they close one of those defects.
+
+The canonical bridge is:
+
+\[
+\boxed{
+\mathfrak C_t^Q
+=
+(C_E^Q,C_S^Q,C_T^Q,C_B^Q,C_N^Q,C_R^Q)
+}
+\]
+
+with the full derivation in:
+
+docs/research/DSVA_INFORMATION_CONTRACT_BRIDGE.md
+
+Mapping:
+
+| Leak | External dialogue absorbed | DSVA role |
+|---|---|---|
+| empty-set vacuity / contradiction | Belnap-bilattice information status | readout-status operator |
+| fresh but invalid evidence / datum incompatibility | JCGM/VIM metrology + set-membership consistency | evidence contract / estimator |
+| hidden damage breaks state closure | sufficient-state principle + hybrid systems | state/transition closure |
+| undefined forecast support | set-valued prediction + optional conformal support builder | forecast-support operator |
+| local safety exports harm downstream | assume-guarantee contracts | boundary composition |
+| individually feasible deliveries overload shared edge | multicommodity/time-expanded flow | TDLC/LCF allocation solver |
+| emergency state survives but may never return to normal | viability capture basin / reach-avoid | recovery special case / solver |
+
+The ordering remains inside-out:
+
+\[
+FloodConnect/DSVA
+\rightarrow
+RedTeamLeak
+\rightarrow
+ExternalOperator
+\rightarrow
+DSVATranslation
+\rightarrow
+ToledoWeld
+\]
+
+not:
+
+\[
+ExternalTheory
+\rightarrow
+NewRootOntology.
+\]
+
+## 5.1 Closure rule
+
+A strong DSVA claim now requires the closures relevant to its task reader:
+
+\[
+\boxed{
+InformationClosure
+\land
+EvidenceClosure
+\land
+StateClosure
+\land
+TransitionClosure
+\land
+BoundaryClosure
+\land
+CapacityClosure
+\land
+RecoveryClosure
+}
+\]
+
+where a closure that is irrelevant to the reader may be marked NOT_REQUIRED, but a required closure that is missing remains UNKNOWN/HOLD.
+
+This is the single-bridge answer to the v0.4 red-team. It does not replace the canonical FloodConnect subsystems.

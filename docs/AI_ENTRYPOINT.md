@@ -74,17 +74,20 @@ Read first:
 - `docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md`
 - then the RKG route `question_routes.disaster_system_theory_or_dsva`
 
-The manuscript is the canonical **PROPOSAL / THEORY_SYNTHESIS** expression of DSVA. v0.4
-preserves v0.1 as the open-loop anchor, v0.2 as the adaptive-policy anchor and v0.3 as the
-Toledo-welded anchor. It then performs a repository-first synthesis: existing FloodConnect
-movement, support/lifeline, operational-resource, environmental-clock, recovery and warning
-constructs are read as canonical before any residual DSVA equation is proposed.
+The manuscript is the canonical **PROPOSAL / THEORY_SYNTHESIS** expression of DSVA. v0.5
+preserves v0.1 as the open-loop anchor, v0.2 as the adaptive-policy anchor, v0.3 as the
+Toledo-welded anchor, and v0.4 as the repository-first synthesis. It then closes the brutal-redteam
+leaks through one information-contract bridge. Existing FloodConnect movement, support/lifeline,
+operational-resource, environmental-clock, recovery and warning constructs remain canonical;
+external theories may enter only as declared leak-closing operators, solvers, contract semantics
+or special cases inside DSVA/Toledo.
 
 Read in this order:
 
 - `docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md`
 - `docs/research/DSVA_TOLEDO_WELD.md`
 - `docs/research/DSVA_FLOODCONNECT_CANONICAL_SYNTHESIS.md`
+- `docs/research/DSVA_INFORMATION_CONTRACT_BRIDGE.md`
 - then the RKG-listed canonical layers needed by the question.
 
 Do **not** recreate constructs that already exist in:
@@ -101,13 +104,13 @@ input to v0.4, not a newly discovered DSVA result.
 
 Formal spine:
 
-`S_n -> q_DSVA -> mathbb_B_t -> dynamic topology -> existing movement/support layers -> {Pi_H^EB, Pi_H^REC} -> Unified Crisis State/task reader`
+`S_n -> q_DSVA -> evidence contract -> {information status, nonempty mathbb_B_t} -> reader-sufficient augmented state -> hybrid topology -> boundary/shared-capacity closure -> {Pi_H^EB, Pi_H^REC} -> task reader`
 
 Load-bearing rules:
 - T-CAN-006: dynamics/readout/invariant bridge obligations;
 - T-CAN-007: finite-horizon reader equivalence / no-early-collapse;
 - T-CAN-009: later evidence may extend but not rewrite earlier decision-time history;
-- if a required adapter/weld is absent, use `HOLD`;
+- if a required adapter/weld or information/evidence/state/transition/boundary/capacity/recovery closure is absent, use `UNKNOWN/HOLD/LOCAL-PARTIAL` as appropriate;
 - Toledo-existing equations and DSVA-proposal equations must never be conflated.
 
 Read the Thailand/Bangkok/Sammakorn sections and the finite 28 Sep Sammakorn witness as the first
