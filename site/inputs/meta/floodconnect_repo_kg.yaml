@@ -167,6 +167,15 @@ nodes:
     canonical_artifacts: [README.md]
     summary: "Thailand-first flood context, community sustainment, movement, shelter, resource and governance system."
 
+  DSVA_THEORY:
+    kind: ARTIFACT
+    label: "Disaster-System Viability Architecture — standalone synthesis-first theory manuscript"
+    epistemic_class: PROPOSAL
+    canonical_artifacts:
+      - docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md
+    summary: "Synthesis-first disaster-management theory: latent physical state, typed evidence, admissible-world set, joint human/service viability, evidence-bounded safe action, constrained actuation, bottlenecks and recovery."
+    key_boundary: "research proposal/theory synthesis; individual components may have established precedents; not a production forecast, warning or operational command."
+
   RIVER_KG:
     kind: GRAPH
     label: "Thailand River Flow-Propagation Knowledge Graph"
@@ -470,6 +479,14 @@ edges:
   - {from: CI, relation: ENFORCES, to: AGENT_COORDINATION}
   - {from: REPO_KG, relation: DESCRIBES, to: FC_ROOT}
   - {from: FC_ROOT, relation: EXPOSES_AI_ENTRY_THROUGH, to: REPO_KG}
+  - {from: FC_ROOT, relation: CONTAINS_RESEARCH_SYNTHESIS, to: DSVA_THEORY}
+  - {from: DSVA_THEORY, relation: DRAWS_EVIDENCE_CONTRACT_FROM, to: LIVE_DATA_SYSTEM}
+  - {from: DSVA_THEORY, relation: USES_LOCAL_DEMONSTRATOR_FROM, to: SAMMAKORN_HYDRAULIC}
+  - {from: DSVA_THEORY, relation: USES_PHYSICAL_MODEL_ANCHOR_FROM, to: WATER_BALANCE}
+  - {from: DSVA_THEORY, relation: USES_HUMAN_STATE_ANCHOR_FROM, to: UNIFIED_CRISIS}
+  - {from: DSVA_THEORY, relation: DRAWS_CASE_EVIDENCE_FROM, to: PROSPECTIVE_EXPERIMENTS}
+  - {from: DSVA_THEORY, relation: REFERENCES_GOVERNANCE_CONTEXT_FROM, to: GOVERNANCE}
+  - {from: DSVA_THEORY, relation: REFERENCES_SOURCE_CONTRACT_FROM, to: SOURCE_REGISTRY}
   - {from: FC_ROOT, relation: CONTAINS, to: RIVER_KG}
   - {from: FC_ROOT, relation: CONTAINS, to: BANGKOK_CANAL_KG}
   - {from: FC_ROOT, relation: CONTAINS, to: LIVE_DATA_SYSTEM}
@@ -571,6 +588,16 @@ hard_non_edges:
   - "expired claim -/-> silent ownership transfer"
 
 question_routes:
+  disaster_system_theory_or_dsva:
+    start_nodes: [DSVA_THEORY]
+    then: [LIVE_DATA_SYSTEM, SAMMAKORN_HYDRAULIC, WATER_BALANCE, UNIFIED_CRISIS, PROSPECTIVE_EXPERIMENTS]
+    read:
+      - docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md
+      - sources/registry.yaml
+      - site/inputs/canals/sammakorn_pond_canal_dag.yaml
+      - unified_crisis_state.py
+    rule: "read the synthesis manuscript first; external theories are dialogue/mappings; proposal theory != production forecast or operational command"
+
   current_water_or_flood_status:
     start_nodes: [LIVE_DATA_SYSTEM, LIVE_WATER]
     then: [SAMMAKORN_HYDRAULIC, UNIFIED_CRISIS]

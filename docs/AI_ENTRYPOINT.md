@@ -67,6 +67,18 @@ Do **not** create a second TMD actor object inside another typology.
 
 ## 3. Fast routing by question
 
+### “What is the disaster-system theory / DSVA / synthesis-first architecture?”
+
+Read first:
+
+- `docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md`
+- then the RKG route `question_routes.disaster_system_theory_or_dsva`
+
+The manuscript is a **PROPOSAL / THEORY_SYNTHESIS**. It treats FloodConnect constructs as
+formal/empirical anchors and introduces external literatures only as later dialogue
+(special case / solver / operator / parameterization / boundary / rival). It is not a
+production forecast, warning, or operational command.
+
 ### “What is happening now?”
 
 Read:
