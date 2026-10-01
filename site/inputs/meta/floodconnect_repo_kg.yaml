@@ -217,7 +217,7 @@ nodes:
 
   DSVA_DECISION_MODEL:
     kind: MODEL
-    label: "DSVA v0.8 executable disaster decision model — finite retained obstruction reference kernel"
+    label: "DSVA v0.9 executable disaster decision model — finite retained obstruction + audited meaning closure"
     epistemic_class: EXECUTABLE_MODEL
     canonical_artifacts:
       - dsva_decision.py
@@ -226,12 +226,14 @@ nodes:
       - dsva_kernel/engine.py
       - docs/research/DSVA_DECISION_MODEL.md
       - docs/research/DSVA_FINITE_OBSTRUCTION_KERNEL.md
+      - docs/research/DSVA_AUDITED_MEANING_CLOSURE.md
       - site/inputs/decision/dsva_decision_schema.json
       - examples/dsva_decision_minimal.json
       - tests/test_dsva_decision.py
       - tests/test_dsva_decision_v08_redteam.py
-    summary: "Executable projection of DSVA theory for finite anti-hindsight scenarios. v0.8 adds non-vacuous finite-axis checks, exact rational decision time/resolution, fail-closed malformed-input handling, explicit protected-population coverage, finite retained obstruction certificates, requirement-reader state quotienting and reusable retained trace classes with a cost ledger."
-    key_boundary: "reference decision model != hazard forecast != universal safety proof; exact finite conformance != continuous inter-sample safety != world truth; finite admitted worlds/traces inherit caller envelope limits; typed-reader confidence never overrides hard DSVA constraints."
+      - tests/test_dsva_decision_v09_redteam.py
+    summary: "Executable projection of DSVA theory for finite anti-hindsight scenarios. v0.8 introduced the exact-finite retained obstruction kernel; v0.9 adds type-stable retained distinctions, explicit per-subject requirement bindings, closure-audit witness completeness, nonnegative effect-time origin, and proposal-channel consistency while preserving the same cost-ledger and trace/state quotient acceleration."
+    key_boundary: "reference decision model != hazard forecast != universal safety proof; audited closure witness completeness != semantic truth of an external checker; exact finite conformance != continuous inter-sample safety != world truth; typed-reader confidence never overrides hard DSVA constraints."
 
   TOLEDO_ROOT:
     kind: ARTIFACT
@@ -710,7 +712,7 @@ question_routes:
       - tests/test_dsva_decision.py
       - docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md
       - docs/research/DSVA_SECOND_ORDER_LICENSE.md
-    rule: "decision model is an executable finite projection of DSVA, not a hazard forecaster; v0.8 requires non-empty finite axes, exact rational horizon/lease/resolution, explicit protected-population coverage, fail-closed malformed input and retained trace coverage; use only decision-time evidence, preserve envelope/horizon/provenance, and never allow typed-reader confidence to override hard DSVA constraints"
+    rule: "decision model is an executable finite projection of DSVA, not a hazard forecaster; v0.9 requires the v0.8 non-vacuous exact-finite obstruction gates plus type-stable retained values, explicit subject-bound requirements, closure-audit witnesses, nonnegative effect time, and proposal consistency; preserve envelope/horizon/provenance and never allow typed-reader confidence to override hard DSVA constraints"
 
   current_water_or_flood_status:
     start_nodes: [LIVE_DATA_SYSTEM, LIVE_WATER]
