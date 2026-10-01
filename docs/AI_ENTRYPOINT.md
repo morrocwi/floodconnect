@@ -135,6 +135,7 @@ Read:
 - `docs/research/DSVA_FINITE_OBSTRUCTION_KERNEL.md`
 - `docs/research/DSVA_AUDITED_MEANING_CLOSURE.md`
 - `docs/research/DSVA_THEORY_CONTRACT_PROJECTION.md`
+- `docs/research/DSVA_FINITE_REALIZABILITY_PROJECTION.md`
 - `dsva_decision.py`
 - `site/inputs/decision/dsva_decision_schema.json`
 - `examples/dsva_decision_minimal.json`
@@ -142,15 +143,16 @@ Read:
 - `tests/test_dsva_decision_v08_redteam.py`
 - `tests/test_dsva_decision_v09_redteam.py`
 - `tests/test_dsva_decision_v010_theory_contracts.py`
+- `tests/test_dsva_decision_v011_realizability.py`
 
 Run:
 
 ```bash
 python3 dsva_decision.py examples/dsva_decision_minimal.json
-python3 -m pytest -q tests/test_dsva_decision.py tests/test_dsva_decision_v08_redteam.py tests/test_dsva_decision_v09_redteam.py tests/test_dsva_decision_v010_theory_contracts.py
+python3 -m pytest -q tests/test_dsva_decision.py tests/test_dsva_decision_v08_redteam.py tests/test_dsva_decision_v09_redteam.py tests/test_dsva_decision_v010_theory_contracts.py tests/test_dsva_decision_v011_realizability.py
 ```
 
-This is an executable finite projection of DSVA v0.10, not a hazard forecaster. v0.10 additionally projects finite applicability behavior overlap, dependency lineage/resource/compound-hazard checks, future-observation response totality, realized-actuation/runtime contracts, complete protected-requirement ledger scope, and verification bound cryptographically to the exact finite spec/input snapshot. It still does not implement the full adaptive policy space or a dedicated persistent-recovery return-set solver. It consumes declared worlds/disturbances/traces and returns a scoped DSVA action-license status. v0.9 additionally requires type-stable retained values, explicit per-subject requirement bindings for multi-subject claims, complete closure-audit witness records, nonnegative action-effect time, and consistency between explicit and typed-reader proposal channels. v0.8 uses an IDM-informed finite retained obstruction kernel: non-empty finite axes, exact rational horizon/lease/resolution checks, fail-closed malformed input, protected-population coverage, retained-state reader quotients, reusable trace classes, and a cost ledger. A Jev/LLM/rule/human typed reader may propose an action, but confidence never overrides failed closure, actor-local information, protected requirement, trace-safety, verification, or lease gates.
+This is an executable finite projection of DSVA v0.11, not a hazard forecaster. v0.10 additionally projects finite applicability behavior overlap, dependency lineage/resource/compound-hazard checks, future-observation response totality, realized-actuation/runtime contracts, complete protected-requirement ledger scope, and verification bound cryptographically to the exact finite spec/input snapshot. v0.11 now checks a supplied finite actor-local adaptive-policy DAG and persistent recovery over the retained grid. It still does not synthesize an optimal/unbounded policy, prove continuous inter-sample recovery, or establish that upstream world/lineage/checker declarations are complete in reality. It consumes declared worlds/disturbances/traces and returns a scoped DSVA action-license status. v0.9 additionally requires type-stable retained values, explicit per-subject requirement bindings for multi-subject claims, complete closure-audit witness records, nonnegative action-effect time, and consistency between explicit and typed-reader proposal channels. v0.8 uses an IDM-informed finite retained obstruction kernel: non-empty finite axes, exact rational horizon/lease/resolution checks, fail-closed malformed input, protected-population coverage, retained-state reader quotients, reusable trace classes, and a cost ledger. A Jev/LLM/rule/human typed reader may propose an action, but confidence never overrides failed closure, actor-local information, protected requirement, trace-safety, verification, or lease gates.
 
 ### “What is happening now?”
 
