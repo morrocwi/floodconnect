@@ -1671,7 +1671,7 @@ then require existing theories to declare what they become
 inside the equation system.
 }
 }
-\tag{72}
+\tag{105}
 \]
 
 External familiarity cannot become an internal premise.
@@ -1840,7 +1840,7 @@ Z_t
 \rightarrow
 Action.
 }
-\tag{73}
+\tag{106}
 \]
 
 The central operational thesis is:
@@ -1854,7 +1854,7 @@ protective action, and structural change under partial observability
 and constrained actuation.
 }
 }
-\tag{74}
+\tag{107}
 \]
 
 And the central practical implication is:
@@ -1866,7 +1866,7 @@ The limiting resource in disaster management is not always physical capacity;
 sometimes it is the ability to know which action remains safe.
 }
 }
-\tag{75}
+\tag{108}
 \]
 
 Sammakorn provides a compact empirical world in which this claim can be progressively closed with real public data. FloodConnect provides the executable environment in which the distinctions can be preserved, tested, falsified, and extended.
