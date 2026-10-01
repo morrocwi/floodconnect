@@ -176,6 +176,7 @@ nodes:
       - docs/research/DSVA_TOLEDO_WELD.md
       - docs/research/DSVA_FLOODCONNECT_CANONICAL_SYNTHESIS.md
       - docs/research/DSVA_INFORMATION_CONTRACT_BRIDGE.md
+      - docs/research/DSVA_SECOND_ORDER_LICENSE.md
     root_objects:
       - toledo_domain_adapter
       - joint_information_state
@@ -200,9 +201,18 @@ nodes:
       - assume_guarantee_boundary_contract
       - shared_capacity_network_contract
       - capture_basin_recoverability_bridge
-    formal_core: "S_n -> q_DSVA -> typed evidence contract -> {information status, nonempty mathbb_B_t} -> reader-sufficient augmented state -> hybrid damage/topology transition -> boundary + shared-capacity closure -> {Pi_H^EB, Pi_H^REC} -> task reader; CAN-006 weld obligations preserve dynamics/readout/invariants, CAN-007 supplies no-early-collapse and viable-future equivalence classes, and CAN-009 prevents hindsight rewriting."
+      - applicability_envelope
+      - model_invalidation_gate
+      - dependency_closure
+      - contract_policy_realizability
+      - action_license_lease
+      - protected_requirement_coverage
+      - persistent_recovery_return_set
+      - independent_result_verification
+      - scope_preserving_readout
+    formal_core: "S_n -> q_DSVA -> first-order information contract -> {information status, nonempty mathbb_B_t} -> reader-sufficient augmented state -> possible futures -> second-order applicability/dependency/realizability/execution/requirement/verification meta-license -> {Pi_H^EB, Pi_H^REC} -> verified scope-preserving reader -> leased action/runtime feedback; CAN-006/007/009 remain load-bearing."
     thailand_instantiation: "Bangkok 2569 + finite Sammakorn witness are the first Toledo-style instantiation; the pre-existing Hat Yai Nov-2025 real-data red-team is the canonical non-Bangkok stress case for conflicting current/forward state, repeated pulses, adaptive freshness, multimodal movement, service-node fragility, outside-calibrated-range and throughput limits."
-    summary: "Inside-out synthesis through one information-contract bridge: DSVA keeps FloodConnect/Toledo as the anchor, absorbs existing movement/lifeline/resource/environment/recovery/warning semantics, and admits external bilattice, metrology, set-membership, hybrid-system, assume-guarantee, network-flow and capture-basin ideas only as leak-closing operators/solvers/contracts inside the DSVA reader chain."
+    summary: "Inside-out synthesis through one bridge: v0.5 closes first-order information/state/boundary/capacity/recovery semantics; v0.6 adds a second-order license envelope after adversarial tests showed all first-order closures can pass while action is still wrong. Model invalidation, hidden-dependency handling, contract realizability, runtime assurance, requirements traceability, persistent return sets and independent certificates enter only as leak-closing operators inside DSVA/Toledo."
     key_boundary: "general-theory research claim is canonical for DSVA; operational forecasts/warnings/actions still require reader-specific fresh evidence and validated models. Toledo T-CAN-002/003/006/007/008/009 are cited as existing anchors; every DSVA-T equation is a DSVA proposal until separately registered in Toledo."
 
   TOLEDO_ROOT:
@@ -499,6 +509,9 @@ nodes:
       - experiments/2026-09-27-samutsakhon-prospective-audit.md
       - experiments/2026-09-27-tha008-clean-prospective.md
       - experiments/2026-09-27-tha008-threshold-audit.md
+      - experiments/2026-10-01-dsva-v04-brutal-redteam.md
+      - experiments/2026-10-01-dsva-v05-second-order-redteam.md
+      - experiments/2026-10-01-dsva-v06-meta-license-retest.md
     summary: "Timestamped locked tests/audits; failed assumptions remain preserved for anti-hindsight learning."
     key_boundary: "experiment result/audit != production forecast rule; the S0-S5 state machine in the 7-day backtest is historical and superseded by Unified Crisis State"
 
@@ -652,6 +665,8 @@ question_routes:
       - docs/research/DSVA_TOLEDO_WELD.md
       - docs/research/DSVA_FLOODCONNECT_CANONICAL_SYNTHESIS.md
       - docs/research/DSVA_INFORMATION_CONTRACT_BRIDGE.md
+      - docs/research/DSVA_SECOND_ORDER_LICENSE.md
+      - experiments/2026-10-01-dsva-v05-second-order-redteam.md
       - docs/COMMUNITY_SELF_HELP_DAG.md
       - docs/THAI_DISTRIBUTED_LIFELINE_CONVERGENCE.md
       - docs/OPERATIONAL_RESOURCE_CAPABILITY_GRAPH.md
@@ -660,7 +675,7 @@ question_routes:
       - experiments/2025-11-hat-yai-real-data-redteam.md
       - sources/registry.yaml
       - unified_crisis_state.py
-    rule: "read DSVA v0.5, Toledo weld, repository-first canonical synthesis, and the information-contract bridge before proposing a new construct; preserve Toledo-existing vs DSVA-proposal; existing COMMUNITY_DAG/TDLC/LCF/LVCN/ORCG/ENV/SOCL/warning semantics remain canonical; external theories enter only as declared operators/solvers/contracts/special cases; required information/evidence/state/transition/boundary/capacity/recovery closures must pass or the reader returns UNKNOWN/HOLD/LOCAL-PARTIAL; CAN-006/007/009 are load-bearing; theory claim != automatic production forecast or operational command"
+    rule: "read DSVA v0.6, Toledo weld, repository-first synthesis, v0.5 information-contract bridge, second-order red-team, and DSVA_SECOND_ORDER_LICENSE before proposing a construct; preserve Toledo-existing vs DSVA-proposal; existing FloodConnect canonical subsystems remain authoritative; a strong reader requires first-order closures plus applicability/dependency/realizability/execution/requirement/verification meta-license; robustness is only within a declared applicability envelope; missing obligations yield CONDITIONAL/UNKNOWN/HOLD/LOCAL-PARTIAL; CAN-006/007/009 are load-bearing; theory claim != production forecast or operational command"
 
   current_water_or_flood_status:
     start_nodes: [LIVE_DATA_SYSTEM, LIVE_WATER]

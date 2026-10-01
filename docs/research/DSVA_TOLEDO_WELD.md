@@ -268,6 +268,49 @@ so universal quantification over an empty admissible set may never create vacuou
 External theories used by v0.5—bilattice semantics, metrology, set-membership estimation, hybrid systems, assume-guarantee contracts, multicommodity flow, optional conformal support construction, and capture-basin/reach-avoid theory—remain DSVA dialogue operators. Their external theorems are not automatically Toledo-welded merely because they are cited.
 
 
+## v0.6 second-order license weld discipline
+
+The second-order red-team is preserved in:
+
+experiments/2026-10-01-dsva-v05-second-order-redteam.md
+
+and the repair is:
+
+docs/research/DSVA_SECOND_ORDER_LICENSE.md
+
+This layer does not add a Toledo root. It constrains when a DSVA reader may promote an internally closed result into a decision license.
+
+For task \(Q\), define the first-order closure \(FOC_t^Q\) from the v0.5 bridge and the second-order meta-contract:
+
+\[
+\mathfrak M_t^Q
+=
+(M_A^Q,M_D^Q,M_Z^Q,M_X^Q,M_K^Q,M_V^Q).
+\]
+
+A decision license is a DSVA proposal:
+
+\[
+License_t^Q(a)
+=
+FOC_t^Q
+\land
+\bigwedge\mathfrak M_t^Q
+\land
+a\in\mathcal A_H^{EB}(\mathbb B_t).
+\]
+
+Toledo constraints remain load-bearing:
+
+- CAN-006: any applicability/dependency/execution operator that changes the DSVA state or reader must preserve the declared domain weld;
+- CAN-007: decision resolution, state sufficiency and rendered scope must preserve distinctions that matter through the declared horizon;
+- CAN-009: model invalidation, runtime revalidation and post-event evidence may extend the record but never rewrite what was available at the earlier decision time.
+
+A model that is not invalidated is not thereby proven true. A solver result that is not independently checked is not thereby licensed. A local result whose horizon/scope is erased by serialization is not reader-preserving.
+
+External v0.6 source families—model invalidation, unknown-correlation fusion, contract realizability, runtime assurance, requirements traceability, terminal controlled-invariance and proof/certificate checking—remain DSVA dialogue operators. Their theorems are WELDED/PARTIAL/HOLD/RIVAL only after a reader-specific bridge is shown.
+
+
 ## Governance
 
 DSVA-specific bridge equations remain proposals until separately reviewed/registered in Toledo. FloodConnect may execute, falsify, and refine them as proposal theory without promoting them to registered Toledo mathematics.
