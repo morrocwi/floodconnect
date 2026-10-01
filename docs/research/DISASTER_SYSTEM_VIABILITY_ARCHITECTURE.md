@@ -54,7 +54,7 @@ DSVA also introduces one intervention calculus for four classes of limiting reso
 
 Thailand is used as a demanding empirical stress environment rather than a decorative case. The Bangkok 2026 flood exposed exactly the separations DSVA requires: extreme rainfall and limited retention, rising upstream discharge, tidal and receiving-water constraints, added pumps whose installed/support capacity could not be equated with realized net export, official warnings and action reports that were not observations, stale and contradictory public measurements, and uneven recovery in which roads improved before some communities recovered. The Sammakorn retention-and-drainage system is then used as a compact empirical instantiation. Thai government data interfaces are mapped explicitly into the theory: BMA/ThaiWater canal observations, BMA PumpHistory, road-flood observations, Bangkok monkey-cheek retention data, TMD nowcasts, RID reservoir data, and Royal Thai Navy tide products. Each source is typed so that observation, forecast, warning, instruction, action report, infrastructure capacity, and realized hydraulic performance cannot silently substitute for one another.
 
-Existing traditions—including viability theory, controlled invariance, POMDP/belief-state decision making, set-membership estimation, real-time and model-predictive control, robust decision making, value-of-information analysis, formal warning decision theory, digital twins, disaster resilience, IWRM, and the Sendai Framework—enter only after DSVA is constructed. They are mapped as special cases, solvers, operators, parameterizations, boundaries, or rivals inside the DSVA equation system. The resulting theory is designed to be executable in FloodConnect, reducible to established theories under declared limiting conditions, and falsifiable across independent hazards and events.
+Existing traditions—including viability theory, controlled invariance, POMDP/belief-state decision making, set-membership estimation, metrology, hybrid systems, assume-guarantee contracts, network-flow optimization, real-time and model-predictive control, robust decision making, value-of-information analysis, formal warning decision theory, conformal prediction, digital twins, disaster resilience, IWRM, and the Sendai Framework—enter only after DSVA is constructed. They are mapped as special cases, solvers, operators, parameterizations, boundaries, or rivals inside the DSVA equation system. The resulting theory is designed to be executable in FloodConnect, reducible to established theories under declared limiting conditions, and falsifiable across independent hazards and events.
 
 **Keywords:** disaster management; disaster risk; viability; partial observability; evidence; emergency decision making; flood management; real-time control; governance; resilience; digital twin; FloodConnect; Bangkok
 
@@ -195,7 +195,7 @@ q_{\mathrm{DSVA}}:
 S_n\longmapsto
 D_n^{\mathrm{DSVA}}
 =
-(\chi_n,E_{\le n},\mathbb B_n,\mathcal W_n,\mathcal K_n).
+(\bar\chi_n,E_{\le n},\mathbb B_n,\mathcal W_n,\mathcal K_n).
 }
 \tag{DSVA-T01}
 \]
@@ -850,7 +850,7 @@ B_t=Proj_X(\mathbb B_t).
 \tag{23}
 \]
 
-This is an upgrade, not a retraction: the original \(B_t\) remains the physical component of a richer disaster information state.
+This is an upgrade, not a retraction: the original \(B_t\) remains the physical component of a richer disaster information state. For backward readability, subsequent \(\chi\) symbols denote the augmented \(\bar\chi\) state unless a reduction explicitly proves \(D\) redundant.
 
 ## 6.1 Semantic assimilation is typed
 
@@ -1367,7 +1367,7 @@ Toledo historical invariance applies: the original forecast is retained as issue
 
 ### 10B.4 Recoverability after normal viability is lost
 
-FloodConnect already has operational `RECOVERY_RETURN`; DSVA v0.5 lifts it into a general policy object.
+FloodConnect already has operational `RECOVERY_RETURN`; v0.4 lifted it into a general policy object and v0.5 connects that object formally to capture-basin/reach-avoid semantics.
 
 Let normal joint viability be \(\mathcal K\). Define a wider emergency floor:
 
@@ -3041,7 +3041,7 @@ experiments/2026-09-bangkok-hierarchical-real-run.md
 experiments/2026-09-bangkok-toledo-real-backtest.md
 ```
 
-The manuscript is the canonical `PROPOSAL / THEORY_SYNTHESIS` expression of repository-synthesized, Toledo-welded DSVA inside FloodConnect. Existing COMMUNITY_DAG, TDLC/LCF/LVCN, ORCG, environmental clocks, Unified Crisis State and Hat Yai red-team remain canonical inputs rather than duplicated theory objects. Its general-theory claim is preserved; operational deployment remains separately gated by source freshness, model validation, and reader-specific evidence requirements.
+The manuscript is the canonical `PROPOSAL / THEORY_SYNTHESIS` expression of repository-synthesized, Toledo-welded DSVA inside FloodConnect. Existing COMMUNITY_DAG, TDLC/LCF/LVCN, ORCG, environmental clocks, Unified Crisis State and Hat Yai red-team remain canonical inputs rather than duplicated theory objects. The v0.5 leak-closing bridge is `docs/research/DSVA_INFORMATION_CONTRACT_BRIDGE.md`; it maps external theories only as operators/solvers/contracts and does not supersede the FloodConnect canonical layers. Its general-theory claim is preserved; operational deployment remains separately gated by source freshness, model validation, and reader-specific evidence requirements.
 
 Every equation intended for operational use must eventually map to:
 
