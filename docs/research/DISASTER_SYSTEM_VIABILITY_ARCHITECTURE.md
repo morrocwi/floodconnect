@@ -1,12 +1,12 @@
 # Disaster-System Viability Architecture (DSVA)
-## A Toledo-Welded General Theory of Viable Futures under Partial Observability and Constrained Actuation
+## A Toledo-Welded General Theory of Preserving, Losing, and Recovering Viable Futures under Partial Observability and Constrained Actuation
 
-**Standalone theory manuscript — Toledo-Welded Formal Upgrade v0.3**  
+**Standalone theory manuscript — Repository-Synthesized Toledo Upgrade v0.4**  
 **Date:** 1 October 2026  
 **Field:** Disaster Risk Science / Disaster Management  
 **Empirical demonstrator:** Sammakorn retention-and-drainage system, eastern Bangkok, Thailand  
 **Software/reproducibility anchor:** FloodConnect (`morrocwi/floodconnect`)  
-**Theory claim:** DSVA is presented as a general disaster-management theory of viable futures. Version 0.3 retains the complete v0.2 architecture and formally welds it to the existing Toledo root grammar: retained state, finite stepper, admissible domain translation, readout preservation, finite-horizon reader equivalence, non-collapse, and historical invariance. DSVA-specific adapters and bridge equations remain explicit proposals until separately registered in Toledo; the general-theory claim is not reduced.
+**Theory claim:** DSVA is presented as a general disaster-management theory of preserving, losing, and recovering viable futures. Version 0.4 retains the complete v0.3 Toledo-welded architecture, explicitly absorbs pre-existing FloodConnect constructs before introducing any new equations, and adds only residual theory objects not already canonical: hazard-induced topology transition, evidence validity/expiry, forecast support breach, recoverability after viability loss, and hysteretic re-escalation. DSVA-specific equations remain proposals until separately registered in Toledo; the general-theory claim is not reduced.
 
 ---
 
@@ -312,6 +312,216 @@ E_{\le t}^{post}
 \]
 
 This is the formal anti-hindsight rule for event reconstruction, forecast replay, warning evaluation, and validation.
+
+---
+
+
+## 2B. Repository-first synthesis: canonical FloodConnect constructs already inside DSVA
+
+Version 0.4 begins by extracting the existing repository rather than treating every red-team finding as new theory. The detailed provenance map is `docs/research/DSVA_FLOODCONNECT_CANONICAL_SYNTHESIS.md`.
+
+### 2B.1 Movement was already a time-indexed fail-closed graph
+
+FloodConnect already defines the resident-movement network
+
+\[
+G_{move}=(V,E_{move})
+\]
+
+and an edge-feasibility predicate
+
+\[
+\phi(e;g,m,t)=1
+\]
+
+only when field verification, freshness, status, safety, travel mode, capacity and destination constraints pass. The current feasible movement graph is therefore
+
+\[
+\boxed{
+G_{move,t}^{*}=(V_t^{*},E_t^{*})
+}
+\tag{FC-CAN-01}
+\]
+
+rather than the complete road graph.
+
+The existing lexicographic route readout
+
+\[
+J(P)=(A,D,C,U_c,-B,U_d,L,H)
+\tag{FC-CAN-02}
+\]
+
+orders only routes that have already passed hard safety/feasibility constraints. DSVA therefore does not introduce a duplicate evacuation graph.
+
+### 2B.2 Lifeline/support convergence was already separate from movement
+
+FloodConnect already distinguishes
+
+\[
+G_{support}=(V,E_{support})
+\tag{FC-CAN-03}
+\]
+
+from \(G_{move}\). Support edges may carry food, water, medicine, power, communications, health support, boats, volunteers or other capabilities inward or laterally.
+
+The canonical Lifeline Convergence Feasibility layer defines the local gap
+
+\[
+G_{g,e}(t,H)
+=
+\max(0,D_{g,e}(H)-X_{g,e}(t))
+\tag{FC-CAN-04}
+\]
+
+and deliverable quantity
+
+\[
+Q_{p,g,e}(t,H)
+=
+\min(S_{p,e}(t,H),B_{P(p,g),e}(t,H)).
+\tag{FC-CAN-05}
+\]
+
+A convergence path is feasible only when a verified interface exists, the path is current and mode-feasible, enough quantity can be delivered, and arrival precedes essential-function failure:
+
+\[
+\boxed{
+q\in Reach_{community}(t)\cap Reach_{provider}(t)
+\land
+VerifiedFresh(q,P)
+\land
+Q_{p,g,e}\ge G_{g,e}
+\land
+T^{arrive}_{p\to g,e}<T^{fail}_{g,e}.
+}
+\tag{FC-CAN-06}
+\]
+
+The existing three-valued state \(C_{g,e}\in\{1,0,\bot\}\) is retained.
+
+### 2B.3 Human viability already had an essential-specific margin
+
+The Thai Lifeline Margin already exists as
+
+\[
+\boxed{
+M_e(v,g,t,H)
+=
+X_{v,e}(t)
++
+\sum_p y_{p\to g,e}(t,H)
+-
+D_{g,e}(H).
+}
+\tag{FC-CAN-07}
+\]
+
+and the response slack is
+
+\[
+\boxed{
+\Lambda_{g,e}
+=
+T^{fail}_{g,e}
+-
+\min_p T^{arrive}_{p\to g,e}.
+}
+\tag{FC-CAN-08}
+\]
+
+These values remain per essential function; DSVA does not collapse them into one resilience score.
+
+### 2B.4 Resource capability was already dynamic
+
+FloodConnect's Operational Resource Capability Graph already defines
+
+\[
+\boxed{
+K_v^{eff}(t)
+=
+K_v^{base}(t)
+\cup
+\bigcup_{r\in R_v(t)}
+\kappa_{node}(r)
+}
+\tag{FC-CAN-09}
+\]
+
+and
+
+\[
+\boxed{
+M_e^{eff}(t)
+=
+M_e^{base}(t)
+\cup
+\bigcup_{r\in R_e(t)}
+\kappa_{edge}(r).
+}
+\tag{FC-CAN-10}
+\]
+
+It already encodes the reverse dependency
+
+\[
+ToolLoss
+\rightarrow
+CapabilityLoss
+\rightarrow
+NodeDowngrade/EdgeLoss
+\rightarrow
+LVCN\ Escalation.
+\tag{FC-CAN-11}
+\]
+
+Thus high-clearance vehicles, boats, generators and other resources are capability modifiers, not automatic safety proofs.
+
+### 2B.5 Recovery and environmental clocks already existed operationally
+
+The Unified Crisis State already contains
+
+\[
+Z_i(t,T)=(O,F,M,S,E,H,A,P)
+\tag{FC-CAN-12}
+\]
+
+with \(P\in\{PREPARE,RESPONSE,SHELTER,RECOVERY,UNKNOWN\}\), and the existing response patterns include `RECOVERY_RETURN`.
+
+Environmental degradation already uses the effective horizon
+
+\[
+\boxed{
+T_{effective,i}
+=
+\min(
+T_{resource,i},
+T_{environment,i},
+T_{access,i},
+T_{forward\ hazard,i}
+).
+}
+\tag{FC-CAN-13}
+\]
+
+The finite temporal ledger further requires bounded declared windows, explicit left-boundary state, finite verified events, and refuses exact accumulation when the temporal record is incomplete.
+
+### 2B.6 Hat Yai had already red-teamed the architecture
+
+The repository already contained `experiments/2025-11-hat-yai-real-data-redteam.md`. Before v0.4 it had already identified:
+
+- separation of current local state from forward hazard;
+- repeated-pulse re-escalation/hysteresis;
+- time/rate-aware freshness;
+- catchment-scale upstream propagation;
+- time-varying route mode;
+- safe-node power/water/comms/service verification;
+- OUTSIDE_CALIBRATED_RANGE semantics;
+- throughput/capacity constraints;
+- anti-hindsight replay.
+
+These are therefore treated as prior FloodConnect requirements, not rediscovered as new DSVA constructs.
+
 
 ---
 
@@ -996,6 +1206,303 @@ Thus v0.2 is retained as a projection of the richer Toledo-compatible geometry.
 
 ---
 
+
+## 10B. Residual theory after the FloodConnect repository audit
+
+After canonical extraction, only the following formal gaps remain at the general DSVA level.
+
+### 10B.1 Hazard-induced topology transition
+
+Existing Community DAG logic can exclude a blocked/stale edge, but the general theory must also represent the hazard process that makes an edge or node fail.
+
+Let \(D_t\) denote damage/failure state and \(w_t^G\) hazard loading on topology:
+
+\[
+\boxed{
+D_{t+1}
+\in
+\mathcal D(
+D_t,G_t,X_t,w_t^G,u_t^S
+)
+}
+\tag{DSVA-R01}
+\]
+
+and:
+
+\[
+\boxed{
+G_{t+1}
+=
+\mathcal T_G(
+G_t,D_{t+1},u_t^S
+).
+}
+\tag{DSVA-R02}
+\]
+
+A bridge closure, washed-out road, failed generator, inaccessible hospital entrance, pump loss or communications failure can therefore change topology/capability because of the hazard itself, not only because a manager intentionally changes the network.
+
+The existing FloodConnect movement layer remains the operational projection:
+
+\[
+\boxed{
+G_{move,t}^{*}
+=
+\Phi_{move}
+(
+G_t,E_t,M_t^{eff}
+).
+}
+\tag{DSVA-R03}
+\]
+
+No duplicate routing ontology is introduced.
+
+### 10B.2 Evidence validity, expiry and dynamic freshness
+
+Freshness and validity are distinct.
+
+For evidence product \(E_j\), define its declared valid interval:
+
+\[
+\boxed{
+I_j^{valid}
+=
+[t_j^{from},t_j^{to}]
+}
+\tag{DSVA-R04}
+\]
+
+and:
+
+\[
+\boxed{
+Active_j(t)
+=
+\mathbf 1[
+t\in I_j^{valid}
+].
+}
+\tag{DSVA-R05}
+\]
+
+Freshness is:
+
+\[
+\boxed{
+Fresh_j(t)
+=
+\mathbf 1[
+t-t_j^{obs}\le\tau_j(t)
+].
+}
+\tag{DSVA-R06}
+\]
+
+The function \(\tau_j(t)\) may depend on observed rate of change, forward hazard, edge type or travel mode only when such a rule is declared and calibrated. Otherwise a fixed source rule remains authoritative or freshness is unresolved.
+
+Operational admission requires:
+
+\[
+\boxed{
+Admit_j(t)
+=
+SemanticOK_j
+\land
+ProvenanceOK_j
+\land
+Active_j(t)
+\land
+Fresh_j(t).
+}
+\tag{DSVA-R07}
+\]
+
+This upgrades the Hat Yai warning problem: a warning may be historically true, yet expired for the current decision.
+
+### 10B.3 Forecast support breach / outside calibrated range
+
+A forecast product defines a declared support/set \(\mathcal S^{fcst}_{j,t}\) for its target variable. When the later observation arrives:
+
+\[
+\boxed{
+SupportBreach_{j,t}
+=
+\mathbf 1[
+Y_t^{obs}
+\notin
+\mathcal S^{fcst}_{j,t}
+].
+}
+\tag{DSVA-R08}
+\]
+
+A breached support yields:
+
+\[
+\boxed{
+ForecastStatus
+=
+OUTSIDE\_CALIBRATED\_RANGE
+}
+\tag{DSVA-R09}
+\]
+
+for quantitative readers that relied on that support.
+
+Toledo historical invariance applies: the original forecast is retained as issued; the later observation extends the record rather than rewriting it. A model-dependent reader must re-estimate a licensed uncertainty set or return `HOLD/UNRESOLVED`. No automatic extrapolation is permitted.
+
+### 10B.4 Recoverability after normal viability is lost
+
+FloodConnect already has operational `RECOVERY_RETURN`; DSVA v0.4 lifts it into a general policy object.
+
+Let normal joint viability be \(\mathcal K\). Define a wider emergency floor:
+
+\[
+\boxed{
+\mathcal K^{life}
+\supseteq
+\mathcal K
+}
+\tag{DSVA-R10}
+\]
+
+that retains declared life-critical and irreversibility constraints during rescue and emergency response.
+
+When normal viability has been breached:
+
+\[
+\boxed{
+\Pi_H^{REC}(\mathbb B_t)
+=
+\left\{
+\pi:
+\forall \chi_t\in\mathbb B_t,
+\forall w\in\mathcal W_H,
+\exists \tau\le H:
+\begin{array}{l}
+\chi_s^\pi\in\mathcal K^{life}
+\quad\forall s\in[t,t+\tau],\\
+\chi_{t+\tau}^\pi\in\mathcal K
+\end{array}
+\right\}.
+}
+\tag{DSVA-R11}
+\]
+
+The worst-case re-entry time is:
+
+\[
+\boxed{
+T_R^{*}
+=
+\inf_{\pi\in\Pi^{REC}}
+\sup_{\chi,w}
+\inf\{
+\tau:
+\chi_{t+\tau}^{\pi}\in\mathcal K
+\}.
+}
+\tag{DSVA-R12}
+\]
+
+Existing LVCN, TDLC, LCF, shelter recovery and environmental clocks supply the operational constraints inside \(\mathcal K^{life}\) and \(\mathcal K\).
+
+DSVA therefore covers:
+
+\[
+\boxed{
+VIABILITY\ PRESERVATION
+\rightarrow
+VIABILITY\ LOSS
+\rightarrow
+LIFE\text{-}CRITICAL\ RESPONSE
+\rightarrow
+RECOVERABILITY
+\rightarrow
+RETURN.
+}
+\]
+
+### 10B.5 Hysteretic re-escalation
+
+The existing Unified Crisis State already separates current condition from forward hazard. v0.4 adds the general phase transition.
+
+Define re-escalation guard:
+
+\[
+\boxed{
+R_t^{+}=1
+}
+\]
+
+if any declared re-escalation condition holds, including:
+
+\[
+H_t\in\{HIGH,CRITICAL,ACTIVE\},
+\quad
+NewUpstreamPulse_t,
+\quad
+TopologyLoss_t.
+\tag{DSVA-R13}
+\]
+
+De-escalation requires a separate guard \(R_t^{-}=1\): required current-state readers acceptable, forward hazard NONE/LOW, required evidence valid/fresh, and closure conditions sustained through a declared hold interval \(\Delta_h\).
+
+Then:
+
+\[
+\boxed{
+P_{t+1}
+=
+\begin{cases}
+Escalate(P_t),&R_t^{+}=1,\\
+DeEscalate(P_t),&R_t^{-}=1,\\
+P_t,&\text{otherwise}.
+\end{cases}
+}
+\tag{DSVA-R14}
+\]
+
+No universal numerical \(\Delta_h\) is asserted. It is hazard/context specific.
+
+### 10B.6 The resulting theory is a synthesis, not a parallel ontology
+
+The complete DSVA path is now:
+
+\[
+\boxed{
+\text{Toledo root}
+\rightarrow
+\text{typed evidence}
+\rightarrow
+\mathbb B_t
+\rightarrow
+\text{dynamic topology}
+\rightarrow
+\begin{matrix}
+G_{move,t}^{*}\\
+G_{support,t}
+\end{matrix}
+\rightarrow
+\begin{matrix}
+\Pi_H^{EB}\\
+\Pi_H^{REC}
+\end{matrix}
+\rightarrow
+Z_t
+\rightarrow
+Action/Recovery.
+}
+\tag{DSVA-R15}
+\]
+
+Every existing FloodConnect construct remains canonical at its own layer.
+
+
+---
+
 # 11. Feasible actuation and governance
 
 \[
@@ -1386,6 +1893,8 @@ DSVA is challenged when, after measurement and model error are controlled:
 ---
 
 # 17. Thailand as a full-system empirical stress environment
+
+Version 0.4 uses two distinct empirical roles inside the repository. Bangkok/Sammakorn remains the first finite Toledo/DSVA instantiation, while the pre-existing Hat Yai 2025 red-team supplies a deliberately different catchment-scale stress case. The latter already demonstrated conflicting current-vs-forward state, repeated pulses, adaptive freshness requirements, multimodal routes, service-node fragility, extreme-load support breach and throughput limits. These are absorbed here as prior FloodConnect findings, not claimed as newly discovered by DSVA v0.4.
 
 Thailand is not introduced merely as a local case. It provides a demanding empirical environment for a general disaster-management theory because the operational problem is distributed across physical networks, multiple public institutions, heterogeneous data products, different update cadences, and different semantic classes of public information.
 
@@ -2407,7 +2916,7 @@ experiments/2026-09-bangkok-hierarchical-real-run.md
 experiments/2026-09-bangkok-toledo-real-backtest.md
 ```
 
-The manuscript is the canonical `PROPOSAL / THEORY_SYNTHESIS` expression of Toledo-welded DSVA inside FloodConnect. Its general-theory claim is preserved; operational deployment remains separately gated by source freshness, model validation, and reader-specific evidence requirements.
+The manuscript is the canonical `PROPOSAL / THEORY_SYNTHESIS` expression of repository-synthesized, Toledo-welded DSVA inside FloodConnect. Existing COMMUNITY_DAG, TDLC/LCF/LVCN, ORCG, environmental clocks, Unified Crisis State and Hat Yai red-team remain canonical inputs rather than duplicated theory objects. Its general-theory claim is preserved; operational deployment remains separately gated by source freshness, model validation, and reader-specific evidence requirements.
 
 Every equation intended for operational use must eventually map to:
 
