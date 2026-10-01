@@ -107,3 +107,33 @@ def test_tg06_future_observation_policy_must_be_total_over_admitted_failures():
         }
     }
     assert_not_licensed(s)
+
+
+def test_tg07_global_resource_overbooking_must_block_action():
+    s = demo()
+    s["resource_audit"] = {
+        "resources": {"pump_crew": {"available": 1}},
+        "action_use": {"PREPARE": {"pump_crew": 2}}
+    }
+    assert_not_licensed(s)
+
+
+def test_tg08_compound_hazard_factorization_requires_license():
+    s = demo()
+    s["hazard_dependency_audit"] = {
+        "components": ["rain", "tide"],
+        "factorized": True,
+        "factorization_licensed": False
+    }
+    assert_not_licensed(s)
+
+
+def test_tg09_commanded_action_cannot_equal_realized_action_without_verification():
+    s = demo()
+    s["actions"][0]["execution_contract"] = {
+        "commanded": "PREPARE",
+        "realized_status": "UNVERIFIED",
+        "runtime_revalidation_required": True,
+        "runtime_revalidation_status": "MISSING"
+    }
+    assert_not_licensed(s)
