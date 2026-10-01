@@ -24,7 +24,7 @@ The authoritative Toledo registry/source is outside FloodConnect. This file is a
 q_{\mathrm{DSVA}}:
 S_n
 \mapsto
-(\chi_n,E_{\le n},\mathbb B_n,\mathcal W_n,\mathcal K_n).
+(\bar\chi_n,E_{\le n},\mathbb B_n,\mathcal W_n,\mathcal K_n).
 \]
 
 Required dynamics weld:
@@ -228,6 +228,44 @@ service verification, outside-calibrated-range semantics and throughput constrai
 
 CAN-009 requires those historical findings to remain prior evidence. v0.4 may absorb them but must
 not rewrite their chronology or claim them as newly discovered by the later theory revision.
+
+
+## v0.5 information-contract bridge weld discipline
+
+The leak-closing bridge is:
+
+docs/research/DSVA_INFORMATION_CONTRACT_BRIDGE.md
+
+It is not a new Toledo root. It is a set of DSVA domain obligations that must themselves remain welded to the same Toledo reader/dynamics invariants.
+
+The six task-relative contracts are:
+
+\[
+\mathfrak C_t^Q
+=
+(C_E^Q,C_S^Q,C_T^Q,C_B^Q,C_N^Q,C_R^Q).
+\]
+
+Their Toledo interpretation is:
+
+- \(C_E^Q\): the reader may consume only evidence that passes semantic/provenance/QC/compatibility obligations;
+- \(C_S^Q\): the DSVA state must retain every distinction needed to preserve the declared future reader;
+- \(C_T^Q\): hybrid damage/topology jumps must commute with the DSVA domain stepper;
+- \(C_B^Q\): local subsystem guarantees may be promoted only when boundary assumptions are discharged;
+- \(C_N^Q\): candidate-level feasibility may not be promoted to joint allocation if shared capacities are violated;
+- \(C_R^Q\): recoverability is licensed only when the common policy can keep the system inside the emergency floor and re-enter normal viability.
+
+The contradiction-safe definedness gate is load-bearing:
+
+\[
+\mathbb B_t=\varnothing
+\Rightarrow
+REFUSED(CONTRADICTION),
+\]
+
+so universal quantification over an empty admissible set may never create vacuous viability.
+
+External theories used by v0.5—bilattice semantics, metrology, set-membership estimation, hybrid systems, assume-guarantee contracts, multicommodity flow, optional conformal support construction, and capture-basin/reach-avoid theory—remain DSVA dialogue operators. Their external theorems are not automatically Toledo-welded merely because they are cited.
 
 
 ## Governance
