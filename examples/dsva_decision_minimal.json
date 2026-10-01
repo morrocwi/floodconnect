@@ -327,8 +327,8 @@
         "synthetic-independent-checker-lineage"
       ]
     },
-    "spec_digest": "PENDING",
-    "input_digest": "PENDING",
+    "spec_digest": "ffbe44bd2c06af1123b13e4da60a1683a521d48e30e0379781488b7120468ee9",
+    "input_digest": "c5941c42d118f3396e5d7f16bd398a7d8d0ee626c6ae6d0afc6985189fd33630",
     "certificate": {
       "kind": "finite-constraint-recheck",
       "witness": "synthetic fixture rechecks the bound spec/input snapshot"
