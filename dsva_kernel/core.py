@@ -1,4 +1,4 @@
-"""Exact-finite primitives for the DSVA v0.8 obstruction kernel.
+"""Exact-finite primitives for the DSVA v0.9 obstruction kernel.
 
 The module borrows three *operator-level* disciplines from the sibling
 information-discrete-math project: exact retained arithmetic where possible,
@@ -76,20 +76,51 @@ class Obstruction:
 
 
 def freeze(v: Any) -> Any:
-    """Deterministic finite readout key; never relies on process-random hash."""
+    """Type-stable deterministic retained key.
+
+    Python makes True == 1. A decision quotient must not inherit that
+    coercion: Boolean and numeric retained states are different distinctions.
+    Ordinary finite numeric encodings (int/float/Fraction) are canonicalized
+    to the same exact rational class; non-numeric types remain explicitly
+    tagged.
+    """
     if isinstance(v, Mapping):
-        return tuple(sorted((str(k), freeze(x)) for k, x in v.items()))
-    if isinstance(v, (list, tuple)):
-        return tuple(freeze(x) for x in v)
+        return ("map", tuple(sorted((str(k), freeze(x)) for k, x in v.items())))
+    if isinstance(v, list):
+        return ("list", tuple(freeze(x) for x in v))
+    if isinstance(v, tuple):
+        return ("tuple", tuple(freeze(x) for x in v))
     if isinstance(v, set):
-        return tuple(sorted(freeze(x) for x in v))
+        return ("set", tuple(sorted((repr(freeze(x)), freeze(x)) for x in v)))
+    if isinstance(v, bool):
+        return ("bool", v)
+    if isinstance(v, Fraction):
+        return ("num", v.numerator, v.denominator)
+    if isinstance(v, int):
+        return ("num", v, 1)
     if isinstance(v, float):
         if not math.isfinite(v):
-            return ("nonfinite", repr(v))
-        return ("q", str(Fraction(str(v))))
-    if isinstance(v, (int, str, bool, type(None), Fraction)):
-        return v
-    return ("repr", repr(v))
+            return ("nonfinite-float", repr(v))
+        z = Fraction(str(v))
+        return ("num", z.numerator, z.denominator)
+    if isinstance(v, str):
+        return ("str", v)
+    if v is None:
+        return ("none",)
+    return ("repr", type(v).__name__, repr(v))
+
+
+def typed_equal(a: Any, b: Any) -> bool:
+    """Equality in retained-information language, not Python coercive equality."""
+    if isinstance(a, bool) or isinstance(b, bool):
+        return isinstance(a, bool) and isinstance(b, bool) and a is b
+    numeric = (int, float, Fraction)
+    if isinstance(a, numeric) and isinstance(b, numeric):
+        try:
+            return q(a) == q(b)
+        except Exception:
+            return False
+    return type(a) is type(b) and a == b
 
 
 def q(v: Any, *, ledger: CostLedger | None = None) -> Fraction:

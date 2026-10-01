@@ -1,9 +1,9 @@
-"""Protected-requirement compilation and retained-state quotient."""
+"""Subject-bound protected-requirement compilation and retained-state quotient."""
 from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
 
-from .core import CostLedger, SUPPORTED_REQ_OPS, dig, freeze, q
+from .core import CostLedger, SUPPORTED_REQ_OPS, dig, freeze, q, typed_equal
 
 
 def requirement_population(req: Mapping[str, Any]) -> set[str]:
@@ -17,69 +17,126 @@ def requirement_population(req: Mapping[str, Any]) -> set[str]:
     raise ValueError("requirement population must be a non-empty string/list")
 
 
-def requirement_holds(
+def requirement_bindings(req: Mapping[str, Any]) -> dict[str, str]:
+    """Compile an executable per-subject binding.
+
+    v0.9 strong semantics:
+    - a one-subject legacy requirement may use field directly;
+    - multi-subject requirements MUST bind every subject to a distinct field;
+    - binding keys must equal the declared population exactly.
+
+    Aggregate/group semantics are intentionally not inferred here. They require
+    a separate adapter/certificate rather than silently treating one field as
+    evidence for multiple protected subjects.
+    """
+    pop = requirement_population(req)
+    bindings = req.get("bindings")
+    if bindings is None:
+        field = req.get("field")
+        if len(pop) == 1 and isinstance(field, str) and field:
+            return {next(iter(pop)): field}
+        raise ValueError(
+            "multi-subject requirement requires explicit per-subject bindings"
+        )
+    if not isinstance(bindings, Mapping) or not bindings:
+        raise ValueError("requirement bindings must be a non-empty mapping")
+    out: dict[str, str] = {}
+    for subject, field in bindings.items():
+        if not isinstance(subject, str) or not subject:
+            raise ValueError("requirement binding subject must be a non-empty string")
+        if not isinstance(field, str) or not field:
+            raise ValueError("requirement binding field must be a non-empty string")
+        out[subject] = field
+    if set(out) != pop:
+        raise ValueError(
+            f"requirement bindings must exactly cover population: "
+            f"population={sorted(pop)},bindings={sorted(out)}"
+        )
+    if len(set(out.values())) != len(out):
+        raise ValueError(
+            "per-subject bindings must use distinct fields; aggregate semantics "
+            "need a separate certified adapter"
+        )
+    return out
+
+
+def _typed_membership(actual: Any, expected: Any) -> bool:
+    if not isinstance(expected, (list, tuple, set)):
+        raise ValueError("membership expected value must be a finite collection")
+    return any(typed_equal(actual, x) for x in expected)
+
+
+def _atomic_holds(
     state: Mapping[str, Any],
-    req: Mapping[str, Any],
+    field: str,
+    op: str,
+    expected: Any,
 ) -> tuple[bool, str | None]:
-    rid = str(req.get("id", req.get("field", "?")))
-    field = req.get("field")
-    op = req.get("op", "eq")
-    if not isinstance(field, str) or not field:
-        return False, f"REQUIREMENT_FIELD_INVALID:{rid}"
-    if op not in SUPPORTED_REQ_OPS:
-        return False, f"REQUIREMENT_OPERATOR_UNSUPPORTED:{rid}:{op}"
     try:
         actual = dig(state, field)
     except Exception:
-        return False, f"REQUIREMENT_FIELD_MISSING:{rid}:{field}"
-    expected = req.get("value")
+        return False, f"REQUIREMENT_FIELD_MISSING:{field}"
     try:
         if op == "eq":
-            ok = actual == expected
+            ok = typed_equal(actual, expected)
         elif op == "ne":
-            ok = actual != expected
+            ok = not typed_equal(actual, expected)
         elif op in {"ge", "gt", "le", "lt"}:
             a, b = q(actual), q(expected)
             ok = {"ge": a >= b, "gt": a > b, "le": a <= b, "lt": a < b}[op]
         elif op == "in":
-            if not isinstance(expected, (list, tuple, set)):
-                return False, f"REQUIREMENT_VALUE_INVALID:{rid}:in"
-            ok = actual in expected
+            ok = _typed_membership(actual, expected)
         elif op == "not_in":
-            if not isinstance(expected, (list, tuple, set)):
-                return False, f"REQUIREMENT_VALUE_INVALID:{rid}:not_in"
-            ok = actual not in expected
+            ok = not _typed_membership(actual, expected)
         elif op == "truthy":
-            ok = bool(actual)
+            ok = isinstance(actual, bool) and actual is True
         elif op == "falsy":
-            ok = not bool(actual)
+            ok = isinstance(actual, bool) and actual is False
         else:
-            return False, f"REQUIREMENT_OPERATOR_UNSUPPORTED:{rid}:{op}"
+            return False, f"REQUIREMENT_OPERATOR_UNSUPPORTED:{op}"
     except Exception as exc:
-        return False, f"REQUIREMENT_EVAL_ERROR:{rid}:{type(exc).__name__}"
-    return (True, None) if ok else (False, f"REQUIREMENT_FAIL:{rid}")
+        return False, f"REQUIREMENT_EVAL_ERROR:{type(exc).__name__}"
+    return (True, None) if ok else (False, "REQUIREMENT_ATOM_FAIL")
+
+
+def requirement_holds(
+    state: Mapping[str, Any],
+    req: Mapping[str, Any],
+) -> tuple[bool, str | None]:
+    rid = str(req.get("id", "?"))
+    op = req.get("op", "eq")
+    if op not in SUPPORTED_REQ_OPS:
+        return False, f"REQUIREMENT_OPERATOR_UNSUPPORTED:{rid}:{op}"
+    try:
+        bindings = requirement_bindings(req)
+    except Exception as exc:
+        return False, f"REQUIREMENT_BINDING_INVALID:{rid}:{exc}"
+    expected = req.get("value")
+    for subject, field in bindings.items():
+        ok, why = _atomic_holds(state, field, op, expected)
+        if not ok:
+            return False, f"REQUIREMENT_FAIL:{rid}:subject={subject}:{why}"
+    return True, None
 
 
 def state_signature(
     state: Mapping[str, Any],
     reqs: Sequence[Mapping[str, Any]],
 ) -> tuple:
-    """Reader-equivalence signature over only fields the requirements can read.
-
-    If two states have the same signature, the compiled requirement reader must
-    return the same result.  This is the finite quotient used for cache-safe
-    acceleration; irrelevant state fields are intentionally discarded.
-    """
+    """Type-stable reader-equivalence signature over bound requirement fields."""
     vals = []
     for req in reqs:
-        field = req.get("field")
-        if not isinstance(field, str) or not field:
-            vals.append(("bad-field", str(field)))
-            continue
+        rid = str(req.get("id", "?"))
         try:
-            vals.append(freeze(dig(state, field)))
-        except Exception:
-            vals.append(("missing", field))
+            bindings = requirement_bindings(req)
+        except Exception as exc:
+            vals.append(("bad-binding", rid, str(exc)))
+            continue
+        for subject, field in sorted(bindings.items()):
+            try:
+                vals.append((rid, subject, field, freeze(dig(state, field))))
+            except Exception:
+                vals.append((rid, subject, field, ("missing",)))
     return tuple(vals)
 
 

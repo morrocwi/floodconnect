@@ -1,4 +1,4 @@
-# DSVA v0.8 Executable Disaster Decision Model
+# DSVA v0.9 Executable Disaster Decision Model
 
 **Status:** proposal / executable reference model  
 **Anchor:** DSVA v0.7 standalone, with the FloodConnect v0.6 repository state at `affd07ead02df0fc5d9b8bd8ab6f72ce57b6978c` as constitutional baseline.  
@@ -162,3 +162,69 @@ T_Q^\lambda=\{0,\lambda,2\lambda,\ldots,H_Q\},
 Repeated protected-state readouts are quotiented by the exact requirement-reader signature, and repeated trajectories may be represented once through `trace_library` / `trace_ref`. The returned `cost_ledger` records branches, unique traces, unique retained states, predicate checks, cache hits, and exact time parses.
 
 This is an exact-finite control/coverage improvement, not a claim of continuous inter-sample safety or universal world truth.
+
+
+## 9. v0.9 audited meaning closure
+
+The v0.8 finite obstruction kernel closed envelope, horizon, vacuity, malformed-input, and finite-coverage gaps. A higher-order red-team then found five additional executable meaning-preservation failures.
+
+v0.9 adds:
+
+\[
+\tau(v)=(typeclass(v),exactvalue(v))
+\]
+
+for type-stable retained distinctions, so Boolean and numeric values cannot alias in the reader quotient;
+
+\[
+b_r:Population(r)\rightarrow Fields
+\]
+
+for explicit per-subject requirement binding, with total and injective bindings on the strong executable path;
+
+\[
+C_c=\langle spec,input,witness,checker\rangle
+\]
+
+for every asserted first- and second-order closure, so a bare Boolean closure flag is not enough for a strong license;
+
+\[
+0\le t_{effect}\le H_Q
+\]
+
+for decision-origin consistency; and
+
+\[
+Proposal_{explicit}=Proposal_{reader}
+\]
+
+whenever both proposal channels are present.
+
+The strong executable path is therefore refined to:
+
+\[
+\boxed{
+License_Q^{v0.9}(a)
+\iff
+\Omega_Q(a)=\varnothing
+\land
+AuditComplete_Q
+\land
+SubjectBindingComplete_Q
+\land
+ProposalConsistent_Q
+\land
+t_{effect}\ge0
+}
+\]
+
+inside the existing DSVA applicability envelope.
+
+The closure audit is an auditability contract, not a proof that an external checker is semantically correct. The finite retained kernel also still does not prove continuous inter-sample safety or world truth.
+
+See:
+
+\`\`\`text
+docs/research/DSVA_AUDITED_MEANING_CLOSURE.md
+tests/test_dsva_decision_v09_redteam.py
+\`\`\`

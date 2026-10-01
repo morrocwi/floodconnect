@@ -6,11 +6,21 @@
   },
   "envelope": {
     "domain": "synthetic demonstration",
-    "protected_population": ["community"],
+    "protected_population": [
+      "community"
+    ],
     "model_family": "finite-enumerated-trajectories",
-    "disturbance_envelope": ["base", "degraded"],
-    "observation_envelope": ["current_state"],
-    "actuation_envelope": ["PREPARE", "WAIT"],
+    "disturbance_envelope": [
+      "base",
+      "degraded"
+    ],
+    "observation_envelope": [
+      "current_state"
+    ],
+    "actuation_envelope": [
+      "PREPARE",
+      "WAIT"
+    ],
     "trace_semantics": "discrete_retained",
     "trace_resolution": 1
   },
@@ -35,64 +45,121 @@
       "verification": true
     }
   },
-  "worlds": [{"id": "normal"}, {"id": "fragile"}],
-  "disturbances": ["base", "degraded"],
+  "worlds": [
+    {
+      "id": "normal"
+    },
+    {
+      "id": "fragile"
+    }
+  ],
+  "disturbances": [
+    "base",
+    "degraded"
+  ],
   "requirements": [
     {
       "id": "R-LIFE",
-      "population": ["community"],
+      "population": [
+        "community"
+      ],
       "field": "life_safe",
       "op": "eq",
-      "value": true
+      "value": true,
+      "bindings": {
+        "community": "life_safe"
+      }
     }
   ],
   "actor_information": {
-    "incident_lead": {"known": ["current_state"]}
+    "incident_lead": {
+      "known": [
+        "current_state"
+      ]
+    }
   },
   "trace_library": {
     "safe": [
-      {"life_safe": true},
-      {"life_safe": true},
-      {"life_safe": true}
+      {
+        "life_safe": true
+      },
+      {
+        "life_safe": true
+      },
+      {
+        "life_safe": true
+      }
     ],
     "unsafe_late": [
-      {"life_safe": true},
-      {"life_safe": true},
-      {"life_safe": false}
+      {
+        "life_safe": true
+      },
+      {
+        "life_safe": true
+      },
+      {
+        "life_safe": false
+      }
     ]
   },
   "actions": [
     {
       "id": "PREPARE",
       "actor": "incident_lead",
-      "requires_info": ["current_state"],
-      "lease": {"issue": 0, "expire": 2},
+      "requires_info": [
+        "current_state"
+      ],
+      "lease": {
+        "issue": 0,
+        "expire": 2
+      },
       "effect_time": 0,
       "outcomes": {
         "normal": {
-          "base": {"trace_ref": "safe"},
-          "degraded": {"trace_ref": "safe"}
+          "base": {
+            "trace_ref": "safe"
+          },
+          "degraded": {
+            "trace_ref": "safe"
+          }
         },
         "fragile": {
-          "base": {"trace_ref": "safe"},
-          "degraded": {"trace_ref": "safe"}
+          "base": {
+            "trace_ref": "safe"
+          },
+          "degraded": {
+            "trace_ref": "safe"
+          }
         }
       }
     },
     {
       "id": "WAIT",
       "actor": "incident_lead",
-      "requires_info": ["current_state"],
-      "lease": {"issue": 0, "expire": 2},
+      "requires_info": [
+        "current_state"
+      ],
+      "lease": {
+        "issue": 0,
+        "expire": 2
+      },
       "effect_time": 0,
       "outcomes": {
         "normal": {
-          "base": {"trace_ref": "safe"},
-          "degraded": {"trace_ref": "safe"}
+          "base": {
+            "trace_ref": "safe"
+          },
+          "degraded": {
+            "trace_ref": "safe"
+          }
         },
         "fragile": {
-          "base": {"trace_ref": "safe"},
-          "degraded": {"trace_ref": "unsafe_late"}
+          "base": {
+            "trace_ref": "safe"
+          },
+          "degraded": {
+            "trace_ref": "unsafe_late"
+          }
         }
       }
     }
@@ -108,6 +175,90 @@
   ],
   "valid_until": 2,
   "provenance": [
-    "DSVA v0.8 finite retained obstruction demonstration"
-  ]
+    "DSVA v0.9 audited meaning closure demonstration"
+  ],
+  "closure_audit": {
+    "first_order": {
+      "information": {
+        "spec": "DSVA-v0.9:first_order:information",
+        "input": "Q-DEMO-001 locked synthetic snapshot",
+        "witness": "fixture witness for information",
+        "checker": "fixture-independent-checker"
+      },
+      "evidence": {
+        "spec": "DSVA-v0.9:first_order:evidence",
+        "input": "Q-DEMO-001 locked synthetic snapshot",
+        "witness": "fixture witness for evidence",
+        "checker": "fixture-independent-checker"
+      },
+      "state": {
+        "spec": "DSVA-v0.9:first_order:state",
+        "input": "Q-DEMO-001 locked synthetic snapshot",
+        "witness": "fixture witness for state",
+        "checker": "fixture-independent-checker"
+      },
+      "transition": {
+        "spec": "DSVA-v0.9:first_order:transition",
+        "input": "Q-DEMO-001 locked synthetic snapshot",
+        "witness": "fixture witness for transition",
+        "checker": "fixture-independent-checker"
+      },
+      "boundary": {
+        "spec": "DSVA-v0.9:first_order:boundary",
+        "input": "Q-DEMO-001 locked synthetic snapshot",
+        "witness": "fixture witness for boundary",
+        "checker": "fixture-independent-checker"
+      },
+      "capacity": {
+        "spec": "DSVA-v0.9:first_order:capacity",
+        "input": "Q-DEMO-001 locked synthetic snapshot",
+        "witness": "fixture witness for capacity",
+        "checker": "fixture-independent-checker"
+      },
+      "recovery": {
+        "spec": "DSVA-v0.9:first_order:recovery",
+        "input": "Q-DEMO-001 locked synthetic snapshot",
+        "witness": "fixture witness for recovery",
+        "checker": "fixture-independent-checker"
+      }
+    },
+    "second_order": {
+      "applicability": {
+        "spec": "DSVA-v0.9:second_order:applicability",
+        "input": "Q-DEMO-001 locked synthetic snapshot",
+        "witness": "fixture witness for applicability",
+        "checker": "fixture-independent-checker"
+      },
+      "dependency": {
+        "spec": "DSVA-v0.9:second_order:dependency",
+        "input": "Q-DEMO-001 locked synthetic snapshot",
+        "witness": "fixture witness for dependency",
+        "checker": "fixture-independent-checker"
+      },
+      "realizability": {
+        "spec": "DSVA-v0.9:second_order:realizability",
+        "input": "Q-DEMO-001 locked synthetic snapshot",
+        "witness": "fixture witness for realizability",
+        "checker": "fixture-independent-checker"
+      },
+      "execution": {
+        "spec": "DSVA-v0.9:second_order:execution",
+        "input": "Q-DEMO-001 locked synthetic snapshot",
+        "witness": "fixture witness for execution",
+        "checker": "fixture-independent-checker"
+      },
+      "requirement": {
+        "spec": "DSVA-v0.9:second_order:requirement",
+        "input": "Q-DEMO-001 locked synthetic snapshot",
+        "witness": "fixture witness for requirement",
+        "checker": "fixture-independent-checker"
+      },
+      "verification": {
+        "spec": "DSVA-v0.9:second_order:verification",
+        "input": "Q-DEMO-001 locked synthetic snapshot",
+        "witness": "fixture witness for verification",
+        "checker": "fixture-independent-checker"
+      }
+    }
+  }
 }
