@@ -1,0 +1,21 @@
+claim_id: "20261001-openai-dsva-information-contract-bridge"
+status: ACTIVE
+writer: "openai"
+branch: "agent/openai/dsva-information-contract-bridge"
+base_sha: "835c839ebf4d36b864c6597c3a96fa2641efebc1"
+nodes:
+  - DSVA_THEORY
+  - TOLEDO_ROOT
+  - REPO_KG
+artifacts:
+  - docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md
+  - docs/research/DSVA_INFORMATION_CONTRACT_BRIDGE.md
+  - docs/research/DSVA_FLOODCONNECT_CANONICAL_SYNTHESIS.md
+  - site/inputs/meta/floodconnect_repo_kg.yaml
+  - docs/AI_ENTRYPOINT.md
+intent: "Absorb external theories only as leak-closing operators inside the existing DSVA/Toledo universe, expressed in one information-contract bridge: contradiction-safe information status, metrological/readout compatibility, state sufficiency, hybrid damage/topology closure, three-valued forecast support, compositional assume-guarantee boundary closure, shared-capacity network-flow closure, and capture-basin recoverability. No external theory becomes a new root ontology."
+created_at: "2026-10-01T18:52:00+07:00"
+expires_at: null
+reviewers: []
+supersedes: "20261001-openai-dsva-repo-synthesis-v04"
+note: "Red-team PR #23 is prior evidence. Existing FloodConnect constructs remain canonical. External theory is mapped as operator/solver/contract semantics only; DSVA and Toledo remain the anchor."
