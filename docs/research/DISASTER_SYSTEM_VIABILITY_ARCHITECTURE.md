@@ -1,12 +1,12 @@
 # Disaster-System Viability Architecture (DSVA)
 ## A Toledo-Welded General Theory of Preserving, Losing, and Recovering Viable Futures under Partial Observability and Constrained Actuation
 
-**Standalone theory manuscript — Information-Contract Bridge Upgrade v0.5**  
+**Standalone theory manuscript — Second-Order License Upgrade v0.6**  
 **Date:** 1 October 2026  
 **Field:** Disaster Risk Science / Disaster Management  
 **Empirical demonstrator:** Sammakorn retention-and-drainage system, eastern Bangkok, Thailand  
 **Software/reproducibility anchor:** FloodConnect (`morrocwi/floodconnect`)  
-**Theory claim:** DSVA is presented as a general disaster-management theory of preserving, losing, and recovering viable futures. Version 0.5 retains v0.4 as the repository-synthesized anchor, then closes the brutal-redteam leaks through one information-contract bridge: contradiction-safe definedness, metrological/readout compatibility, reader-sufficient state closure, hybrid damage/topology closure, three-valued forecast support, assume-guarantee boundary closure, shared-capacity network allocation, and capture-basin recoverability. External theories enter only as operators, solvers, contract semantics, or special cases inside DSVA/Toledo; the general-theory claim is not reduced.
+**Theory claim:** DSVA is presented as a general disaster-management theory of preserving, losing, and recovering viable futures. Version 0.6 retains the v0.5 information-contract bridge and adds a second-order license envelope after a red-team showed that all first-order closures can pass while an action is still wrong. The v0.6 layer therefore makes every strong decision claim conditional on a declared applicability envelope and adds model-invalidation/applicability, hidden-dependency, contract/policy realizability, execution-time lease, protected-requirement, persistent-recovery, and independent verification obligations. External theories still enter only as operators, solvers, contract semantics, or special cases inside DSVA/Toledo; the general-theory claim is not reduced.
 
 ---
 
@@ -54,7 +54,7 @@ DSVA also introduces one intervention calculus for four classes of limiting reso
 
 Thailand is used as a demanding empirical stress environment rather than a decorative case. The Bangkok 2026 flood exposed exactly the separations DSVA requires: extreme rainfall and limited retention, rising upstream discharge, tidal and receiving-water constraints, added pumps whose installed/support capacity could not be equated with realized net export, official warnings and action reports that were not observations, stale and contradictory public measurements, and uneven recovery in which roads improved before some communities recovered. The Sammakorn retention-and-drainage system is then used as a compact empirical instantiation. Thai government data interfaces are mapped explicitly into the theory: BMA/ThaiWater canal observations, BMA PumpHistory, road-flood observations, Bangkok monkey-cheek retention data, TMD nowcasts, RID reservoir data, and Royal Thai Navy tide products. Each source is typed so that observation, forecast, warning, instruction, action report, infrastructure capacity, and realized hydraulic performance cannot silently substitute for one another.
 
-Existing traditions—including viability theory, controlled invariance, POMDP/belief-state decision making, set-membership estimation, metrology, hybrid systems, assume-guarantee contracts, network-flow optimization, real-time and model-predictive control, robust decision making, value-of-information analysis, formal warning decision theory, conformal prediction, digital twins, disaster resilience, IWRM, and the Sendai Framework—enter only after DSVA is constructed. They are mapped as special cases, solvers, operators, parameterizations, boundaries, or rivals inside the DSVA equation system. The resulting theory is designed to be executable in FloodConnect, reducible to established theories under declared limiting conditions, and falsifiable across independent hazards and events.
+Existing traditions—including viability theory, controlled invariance, POMDP/belief-state decision making, set-membership estimation, metrology, hybrid systems, assume-guarantee contracts, network-flow optimization, real-time and model-predictive control, robust decision making, value-of-information analysis, formal warning decision theory, conformal prediction, digital twins, disaster resilience, IWRM, and the Sendai Framework—enter only after DSVA is constructed. They are mapped as special cases, solvers, operators, parameterizations, boundaries, or rivals inside the DSVA equation system. The resulting theory is designed to be executable in FloodConnect, reducible to established theories under declared limiting conditions, and falsifiable across independent hazards and events. Version 0.6 further distinguishes internal closure from decision licensing: a result can be computable and internally consistent yet remain unlicensed if the model family is invalidated, hidden dependencies are unresolved, a contract is unrealizable, the action lease expires before effect, protected requirements are incomplete, recovery is only transient, or the executable result fails independent verification.
 
 **Keywords:** disaster management; disaster risk; viability; partial observability; evidence; emergency decision making; flood management; real-time control; governance; resilience; digital twin; FloodConnect; Bangkok
 
@@ -1628,6 +1628,370 @@ bilattice semantics for contradiction status; metrology and set-membership for e
 
 ---
 
+
+## 10D. Second-order license: closure claims must themselves be closed
+
+The v0.5 first-order bridge was attacked by forcing every first-order closure to PASS and then constructing finite counterexamples in which the action was still wrong. The complete red-team is preserved in \`experiments/2026-10-01-dsva-v05-second-order-redteam.md\`.
+
+The central finding is:
+
+\[
+\boxed{
+InternalClosure
+\not\Rightarrow
+WorldAdequacy.
+}
+\tag{DSVA-SOL-01}
+\]
+
+Therefore every task reader \(Q\) carries a declared applicability envelope:
+
+\[
+\boxed{
+\mathcal E_t^Q
+=
+(
+D_Q,P_Q,H_Q,\mathcal M_Q,\mathcal W_Q,
+\mathcal O_Q,\mathcal U_Q,\mathcal B_Q,\mathcal R_Q
+).
+}
+\tag{DSVA-SOL-02}
+\]
+
+The envelope records the domain, protected population/entities, horizon, model family, disturbance set, observation channels, actuation/resources, boundary contracts and protected requirements.
+
+The first-order closure is:
+
+\[
+\boxed{
+FOC_t^Q
+=
+\bigwedge
+\{
+InformationClosure,
+EvidenceClosure,
+StateClosure,
+TransitionClosure,
+BoundaryClosure,
+CapacityClosure,
+RecoveryClosure
+\}.
+}
+\tag{DSVA-SOL-03}
+\]
+
+The second-order meta-contract is:
+
+\[
+\boxed{
+\mathfrak M_t^Q
+=
+(
+M_A^Q,
+M_D^Q,
+M_Z^Q,
+M_X^Q,
+M_K^Q,
+M_V^Q
+),
+}
+\tag{DSVA-SOL-04}
+\]
+
+where the components are applicability, dependency, realizability, execution-time, protected-requirement and verification/scope closure.
+
+The action license is:
+
+\[
+\boxed{
+License_t^Q(a)
+=
+FOC_t^Q
+\land
+\bigwedge\mathfrak M_t^Q
+\land
+a\in\mathcal A_H^{EB}(\mathbb B_t).
+}
+\tag{DSVA-SOL-05}
+\]
+
+This is an **envelope-relative** license:
+
+\[
+\boxed{
+LicensedWithin(\mathcal E_t^Q)
+\neq
+TrueForAllPossibleWorlds.
+}
+\tag{DSVA-SOL-06}
+\]
+
+### 10D.1 Applicability / model invalidation
+
+For declared model behavior set \(\mathcal Y_{Q,L}^{model}\) and retained compatible observed behavior set \(\mathcal Y_{Q,L}^{obs}\):
+
+\[
+\boxed{
+Invalidated_Q
+=
+1
+\iff
+\mathcal Y_{Q,L}^{model}
+\cap
+\mathcal Y_{Q,L}^{obs}
+=
+\varnothing.
+}
+\tag{DSVA-SOL-07}
+\]
+
+If the model family is invalidated, model-dependent readers return HOLD.
+
+But:
+
+\[
+\boxed{
+NotInvalidated
+\not\Rightarrow
+TrueModel.
+}
+\tag{DSVA-SOL-08}
+\]
+
+Hence the strongest licensed wording is robustness **within the declared envelope**.
+
+### 10D.2 Hidden dependency closure
+
+Evidence may share a calibration ancestor:
+
+\[
+\boxed{
+Y_j=h_j(X,\beta_{\rho(j)})+\nu_j,
+}
+\tag{DSVA-SOL-09}
+\]
+
+so source count is not independent-evidence count.
+
+Resources may also be shared across semantically distinct graphs:
+
+\[
+\boxed{
+\sum_{k\in Uses(r)}z_{r,k}(t)
+\le
+Avail_r(t).
+}
+\tag{DSVA-SOL-10}
+\]
+
+Compound hazards are not factorized unless separability is licensed for the reader.
+
+### 10D.3 Contract and observation-policy realizability
+
+A load-bearing assume-guarantee contract cannot rely on a vacuous implication. If contract \(i\) is used to support \(Q\), its assumption and guarantee must both be satisfiable on a reachable admissible execution when invoked:
+
+\[
+\boxed{
+Trace^\pi
+\models
+A_i\land G_i
+\quad
+\forall i\in Used_Q.
+}
+\tag{DSVA-SOL-11}
+\]
+
+Future observation availability is itself uncertain:
+
+\[
+\eta_k^O\in\mathcal W_k^O,
+\]
+
+and the adaptive policy must define a response for admitted MISSING, STALE, CHANNEL_DOWN and CONTRADICTION branches:
+
+\[
+\boxed{
+\pi_k:
+\mathcal I_k^{admitted}
+\rightarrow
+\mathcal U_k^{feasible}.
+}
+\tag{DSVA-SOL-12}
+\]
+
+Therefore:
+
+\[
+\boxed{
+FutureMeasurementExpected
+\neq
+FutureMeasurementGuaranteed.
+}
+\tag{DSVA-SOL-13}
+\]
+
+### 10D.4 Persistent recovery
+
+Recovery requires more than touching \(\mathcal K\). Define:
+
+\[
+\boxed{
+\mathcal K_{H_R}^{return}
+=
+\left\{
+\chi\in\mathcal K:
+\exists\pi\;\forall w\in\mathcal W_{H_R},
+\chi_s^\pi\in\mathcal K
+\;\forall s\in[t,t+H_R]
+\right\}.
+}
+\tag{DSVA-SOL-14}
+\]
+
+A recovery completion reader requires:
+
+\[
+\boxed{
+\mathbb B_\tau
+\subseteq
+\mathcal K_{H_R}^{return}.
+}
+\tag{DSVA-SOL-15}
+\]
+
+Thus:
+
+\[
+\boxed{
+Touch(\mathcal K)
+\neq
+Recovered.
+}
+\tag{DSVA-SOL-16}
+\]
+
+### 10D.5 Execution-time lease
+
+For action \(a\):
+
+\[
+\boxed{
+I_{Q,a}^{license}
+=
+[t_{issue},t_{expire}],
+}
+\tag{DSVA-SOL-17}
+\]
+
+where expiry is bounded by the earliest load-bearing evidence, route, resource, boundary and reader-horizon expiry.
+
+With:
+
+\[
+t_{effect}=t_{issue}+L(a),
+\]
+
+execution is licensed only when:
+
+\[
+\boxed{
+t_{effect}\in I_{Q,a}^{license}.
+}
+\tag{DSVA-SOL-18}
+\]
+
+Otherwise the action must be revalidated or held.
+
+Also:
+
+\[
+\boxed{
+u^{cmd}\neq u^{real}
+}
+\tag{DSVA-SOL-19}
+\]
+
+until actuation is verified or bounded by the transition model.
+
+### 10D.6 Protected requirements
+
+The viability set is traceable to a protected-requirement ledger:
+
+\[
+\boxed{
+\mathcal K_Q
+=
+\bigcap_{r\in\mathcal R_Q}\mathcal K_r.
+}
+\tag{DSVA-SOL-20}
+\]
+
+For declared protected population/entities \(P_Q^{decl}\):
+
+\[
+\boxed{
+CoverageGap_Q
+=
+P_Q^{decl}
+\setminus
+\bigcup_{r\in\mathcal R_Q}Population(r).
+}
+\tag{DSVA-SOL-21}
+\]
+
+If the coverage gap is nonempty or UNKNOWN, a complete human-safety claim is not licensed.
+
+### 10D.7 Independent verification and scope preservation
+
+A solver/readout result \(r\) must pass an independent checker when the reader depends on executable optimization:
+
+\[
+\boxed{
+Verify_Q(Spec_Q,InputSnapshot,r,certificate)
+\in
+\{PASS,FAIL,UNRESOLVED\}.
+}
+\tag{DSVA-SOL-22}
+\]
+
+A categorical reader is determined only when all admissible worlds agree:
+
+\[
+\boxed{
+\{O_Q(\chi):\chi\in\mathbb B_t\}
+=
+\{c\}.
+}
+\tag{DSVA-SOL-23}
+\]
+
+The rendered artifact must retain its task, horizon, applicability envelope, assumptions and expiry:
+
+\[
+\boxed{
+R_Q^{out}
+=
+(value,Q,H,\mathcal E_t^Q,assumptions,validUntil,status,provenance).
+}
+\tag{DSVA-SOL-24}
+\]
+
+Hence:
+
+\[
+\boxed{
+SafeFor6Hours
+\not\Rightarrow
+SAFE.
+}
+\tag{DSVA-SOL-25}
+\]
+
+The full second-order formalization and external-theory mapping is in \`docs/research/DSVA_SECOND_ORDER_LICENSE.md\`.
+
+
+---
+
 # 11. Feasible actuation and governance
 
 \[
@@ -3001,6 +3365,10 @@ Fifth, the human state \(Z_t\) requires ethical and empirical validation; it mus
 
 Sixth, cross-hazard generalization is a hypothesis. A theory developed from urban flooding must be tested against hazards with different temporal scales, spatial structures, and action regimes.
 
+Seventh, no finite disaster model can prove that all physically possible worlds have been enumerated. DSVA v0.6 therefore licenses actions only within a declared applicability envelope and treats model non-invalidation as weaker than truth.
+
+Eighth, formal closure does not guarantee correct execution. Hidden common causes, circular contracts, observation-channel loss, action latency, omitted protected requirements, transient recovery, and software/solver errors require the second-order license obligations in Section 10D.
+
 ---
 
 # 26. Conclusion
@@ -3013,23 +3381,25 @@ The core architecture is:
 
 \[
 \boxed{
-E_{\le t}
+Occurrence
 \rightarrow
-C_E^Q
+Evidence
+\rightarrow
+\mathfrak C_t^Q
 \rightarrow
 (\sigma_Q,\mathbb B_t)
 \rightarrow
-(C_S^Q,C_T^Q)
-\rightarrow
 \mathcal R_H
 \rightarrow
-(C_B^Q,C_N^Q)
+\mathfrak M_t^Q
 \rightarrow
 \{\Pi_H^{EB},\Pi_H^{REC}\}
 \rightarrow
-O_Q
+VerifiedReadout
 \rightarrow
-Action/Recovery.
+LeasedAction
+\rightarrow
+RuntimeFeedback.
 }
 \tag{106}
 \]
@@ -3060,6 +3430,21 @@ sometimes it is the ability to know which action remains safe.
 \tag{108}
 \]
 
+Version 0.6 adds the further constitutional distinction:
+
+\[
+\boxed{
+Computable
+\neq
+InternallyClosed
+\neq
+DecisionLicensed
+\neq
+TrueInAllPossibleWorlds.
+}
+\tag{109}
+\]
+
 Sammakorn provides a compact empirical world in which this claim can be progressively closed with real public data. FloodConnect provides the executable environment in which the distinctions can be preserved, tested, falsified, and extended.
 
 ---
@@ -3088,9 +3473,11 @@ site/inputs/areas/sammakorn.balance.yaml
 experiments/2026-09-26-sammakorn-7day-backtest.md
 experiments/2026-09-bangkok-hierarchical-real-run.md
 experiments/2026-09-bangkok-toledo-real-backtest.md
+experiments/2026-10-01-dsva-v05-second-order-redteam.md
+docs/research/DSVA_SECOND_ORDER_LICENSE.md
 ```
 
-The manuscript is the canonical `PROPOSAL / THEORY_SYNTHESIS` expression of repository-synthesized, Toledo-welded DSVA inside FloodConnect. Existing COMMUNITY_DAG, TDLC/LCF/LVCN, ORCG, environmental clocks, Unified Crisis State and Hat Yai red-team remain canonical inputs rather than duplicated theory objects. The v0.5 leak-closing bridge is `docs/research/DSVA_INFORMATION_CONTRACT_BRIDGE.md`; it maps external theories only as operators/solvers/contracts and does not supersede the FloodConnect canonical layers. Its general-theory claim is preserved; operational deployment remains separately gated by source freshness, model validation, and reader-specific evidence requirements.
+The manuscript is the canonical `PROPOSAL / THEORY_SYNTHESIS` expression of repository-synthesized, Toledo-welded DSVA inside FloodConnect. Existing COMMUNITY_DAG, TDLC/LCF/LVCN, ORCG, environmental clocks, Unified Crisis State and Hat Yai red-team remain canonical inputs rather than duplicated theory objects. The v0.5 leak-closing bridge is `docs/research/DSVA_INFORMATION_CONTRACT_BRIDGE.md`; v0.6 adds `docs/research/DSVA_SECOND_ORDER_LICENSE.md` after the second-order red-team. External theories remain operators/solvers/contracts/special cases and do not supersede FloodConnect canonical layers. Its general-theory claim is preserved; operational deployment remains separately gated by source freshness, model validation, and reader-specific evidence requirements.
 
 Every equation intended for operational use must eventually map to:
 
@@ -3105,7 +3492,7 @@ and every unresolved input must remain explicitly unresolved.
 
 # Appendix D — Toledo equation provenance and DSVA bridge ledger
 
-| Code | Role in DSVA v0.5 | Status | Source / licensing object |
+| Code | Role in DSVA v0.6 | Status | Source / licensing object |
 |---|---|---|---|
 | T-CAN-002 | retained root-state tuple \(S_n=(G_n,\Lambda_n,T_n)\) | **Toledo existing** | EQ-015/M.01.v1 / CAN-002 |
 | T-CAN-003 | finite root stepper \(S_{n+1}=F(S_n,u_n,c_n,T_n)\) | **Toledo existing** | EQ-015/M.02.v1 / CAN-003 |
@@ -3122,6 +3509,7 @@ and every unresolved input must remain explicitly unresolved.
 | DSVA-T28–T30 | external-theory Toledo bridge status | **DSVA proposal / unregistered** | CAN-006 weld discipline |
 | DSVA-T31–T32 | formal theory object + residual synthesis | **DSVA proposal / unregistered** | inside-out synthesis formalization |
 | DSVA-ICB / ICB | information/evidence/state/transition/boundary/capacity/recovery closure bridge | **DSVA proposal / unregistered** | brutal red-team + mapped external operator families |
+| DSVA-SOL / SOL | applicability/dependency/realizability/execution/requirement/verification second-order license | **DSVA proposal / unregistered** | second-order red-team PR #27 + mapped model-invalidation/runtime-assurance/realizability/traceability/certification families |
 
 **Registration rule.** Nothing labeled \`DSVA proposal / unregistered\` is retrospectively described as an existing Toledo equation. Toledo registration is a separate governance act.
 
@@ -3197,6 +3585,20 @@ and every unresolved input must remain explicitly unresolved.
 32. Saoud, A., Girard, A., & Fribourg, L. (2021). Assume-guarantee contracts for continuous-time systems. *Automatica, 134*, 109910. https://doi.org/10.1016/j.automatica.2021.109910
 
 33. Zou, X., & Liu, W. (2024). Coverage-Guaranteed Prediction Sets for Out-of-Distribution Data. arXiv:2403.19950.
+
+
+
+34. Harirchi, F., & Ozay, N. (2018). Guaranteed model-based fault detection in cyber–physical systems: A model invalidation approach. *Automatica, 93*, 476–488. https://doi.org/10.1016/j.automatica.2018.03.040
+
+35. Julier, S. J., & Uhlmann, J. K. (1997). A non-divergent estimation algorithm in the presence of unknown correlations. *Proceedings of the American Control Conference*. https://doi.org/10.1109/ACC.1997.609105
+
+36. Gacek, A., Katis, A., Whalen, M. W., Backes, J., & Cofer, D. (2015). Towards realizability checking of contracts using theories. *NASA Formal Methods*.
+
+37. Mehmood, U., Sheikhi, S., Bak, S., Smolka, S. A., & Stoller, S. D. (2021). The Black-Box Simplex Architecture for Runtime Assurance of Autonomous CPS.
+
+38. Ramesh, B., & Jarke, M. (2001). Toward reference models for requirements traceability. *IEEE Transactions on Software Engineering, 27*(1), 58–93. https://doi.org/10.1109/32.895989
+
+39. Necula, G. C. (1997). Proof-carrying code. *Proceedings of POPL '97*, 106–119. https://doi.org/10.1145/263699.263712
 
 
 ---
