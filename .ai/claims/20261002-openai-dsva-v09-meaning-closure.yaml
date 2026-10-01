@@ -1,0 +1,28 @@
+claim_id: "20261002-openai-dsva-v09-meaning-closure"
+status: ACTIVE
+writer: "openai"
+branch: "agent/openai/dsva-v09-meaning-closure"
+base_sha: "2a6d8a58620d33403cca3b9c1f97fbe6d97ef1fd"
+nodes:
+  - DSVA_DECISION_MODEL
+  - DSVA_THEORY
+  - REPO_KG
+artifacts:
+  - dsva_kernel/core.py
+  - dsva_kernel/requirements.py
+  - dsva_kernel/engine.py
+  - docs/research/DSVA_DECISION_MODEL.md
+  - docs/research/DSVA_FINITE_OBSTRUCTION_KERNEL.md
+  - docs/research/DSVA_AUDITED_MEANING_CLOSURE.md
+  - site/inputs/decision/dsva_decision_schema.json
+  - examples/dsva_decision_minimal.json
+  - tests/test_dsva_decision_v09_redteam.py
+  - experiments/2026-10-02-dsva-v09-higherorder-redteam.md
+  - site/inputs/meta/floodconnect_repo_kg.yaml
+  - docs/AI_ENTRYPOINT.md
+intent: "Repair the five higher-order v0.8 adversarial failures without weakening the finite obstruction kernel: type-stable retained equality/quotients, nonnegative effect-time origin, reader/proposal consistency, subject-bound protected requirements, and closure-audit witness completeness. Preserve the DSVA/Toledo/FloodConnect ontology and the IDM exact-finite/cost-ledger acceleration."
+created_at: "2026-10-02T00:30:00+07:00"
+expires_at: null
+reviewers: []
+supersedes: "20261001-openai-dsva-v08-idm-obstruction"
+note: "Prior failure evidence is PR #38 / Actions run 36899519561: 5 failed, 482 passed, 1 skipped. v0.9 closes executable meaning-preservation gaps; closure-audit witness completeness remains an auditability contract, not proof that an external checker is semantically correct."
