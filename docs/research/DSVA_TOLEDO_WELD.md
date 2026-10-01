@@ -170,6 +170,66 @@ but may not rewrite the evidence available at an earlier decision time
 
 This is mandatory for FloodConnect backtests and prospective-style replays.
 
+## Repository-first v0.4 weld discipline
+
+DSVA v0.4 does not promote every useful FloodConnect construct into a new Toledo equation.
+
+The following remain canonical FloodConnect domain sub-readers/operators and are **absorbed**, not
+redefined:
+
+```text
+COMMUNITY_DAG
+TDLC / LCF / LVCN
+ORCG
+ENV_DEGRADATION / finite temporal ledger
+SOCL shelter/recovery
+WARNING_TYPOLOGY
+UNIFIED_CRISIS
+```
+
+The extraction/provenance note is:
+
+`docs/research/DSVA_FLOODCONNECT_CANONICAL_SYNTHESIS.md`
+
+Only the residual v0.4 theory equations are new DSVA proposals:
+
+```text
+DSVA-R01..R03  hazard-induced topology transition / operational projection
+DSVA-R04..R07  evidence validity, expiry and freshness admission
+DSVA-R08..R09  forecast support breach / OUTSIDE_CALIBRATED_RANGE
+DSVA-R10..R12  life-critical floor + recoverability policy + re-entry time
+DSVA-R13..R14  hysteretic re-escalation / de-escalation
+DSVA-R15       synthesized theory path
+```
+
+All remain **Toledo-unregistered proposals**.
+
+### Weld obligation for dynamic topology and recoverability
+
+When a DSVA claim depends on hazard-driven topology evolution or recoverability, the application
+must still satisfy the Toledo domain/readout obligations:
+
+[
+q_{DSVA}circ F
+=
+F_{DSVA}^{sharp}circ q_{DSVA}
+]
+
+and the declared task reader must remain preserved through the horizon.
+
+Operational Community DAG/TDLC results can therefore be used as domain readouts without claiming
+that Toledo has registered their equations.
+
+### Historical Hat Yai red-team
+
+`experiments/2025-11-hat-yai-real-data-redteam.md` predates v0.4 and already identified repeated
+pulses, current-vs-forward-state separation, adaptive freshness, multimodal movement, safe-node
+service verification, outside-calibrated-range semantics and throughput constraints.
+
+CAN-009 requires those historical findings to remain prior evidence. v0.4 may absorb them but must
+not rewrite their chronology or claim them as newly discovered by the later theory revision.
+
+
 ## Governance
 
 DSVA-specific bridge equations remain proposals until separately reviewed/registered in Toledo. FloodConnect may execute, falsify, and refine them as proposal theory without promoting them to registered Toledo mathematics.
