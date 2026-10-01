@@ -1998,3 +1998,17 @@ root_objects: [...]
 mapping_into_dsva:
   - external_object: "..."
     dsva_object: "..."
+role:
+  one_of:
+    - SPECIAL_CASE
+    - SOLVER
+    - OPERATOR
+    - PARAMETERIZATION
+    - BOUNDARY
+    - RIVAL
+reduction_test: "..."
+unexplained_residual: "..."
+decision: FOLD|EXTEND|KEEP_AS_RIVAL
+```
+
+This prevents literature vocabulary from silently becoming new ontology.
