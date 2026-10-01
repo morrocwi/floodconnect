@@ -535,6 +535,107 @@ A strong DSVA safety/viability claim is licensed only under the closures relevan
 
 # 14. Status
 
-This bridge repairs formal language and theory placement. It does not claim that every FloodConnect source is metrologically traceable, every forecast has calibrated support, every topology-failure mode is enumerated, shared-flow allocation is already implemented in LCF, every local DSVA guarantee composes globally, or the DSVA-specific bridge equations are registered Toledo equations.
+The v0.5 bridge repairs first-order formal language and theory placement. v0.6 adds a second-order license envelope in `docs/research/DSVA_SECOND_ORDER_LICENSE.md` after adversarial tests showed first-order closure alone is insufficient. It does not claim that every FloodConnect source is metrologically traceable, every forecast has calibrated support, every topology-failure mode is enumerated, shared-flow allocation is already implemented in LCF, every local DSVA guarantee composes globally, or the DSVA-specific bridge equations are registered Toledo equations.
 
 Where an obligation is absent, the correct state remains UNKNOWN, UNRESOLVED, LOCAL/PARTIAL, or HOLD.
+
+
+# 15. v0.6 second-order continuation: closure claims need a license envelope
+
+The v0.5 bridge closes first-order semantic gaps, but the second-order red-team showed that all seven closures can pass while the action is still wrong.
+
+The bridge is therefore extended, not replaced.
+
+First-order closure:
+
+\[
+FOC_t^Q
+=
+\bigwedge\mathfrak C_t^Q.
+\]
+
+Second-order meta-contract:
+
+\[
+\boxed{
+\mathfrak M_t^Q
+=
+(
+M_A^Q,
+M_D^Q,
+M_Z^Q,
+M_X^Q,
+M_K^Q,
+M_V^Q
+).
+}
+\]
+
+The strong envelope-relative license is:
+
+\[
+\boxed{
+License_t^Q(a)
+=
+FOC_t^Q
+\land
+\bigwedge\mathfrak M_t^Q
+\land
+a\in\mathcal A_H^{EB}(\mathbb B_t).
+}
+\]
+
+The detailed formalization is:
+
+docs/research/DSVA_SECOND_ORDER_LICENSE.md
+
+The six meta-contracts are:
+
+1. **Applicability** — the current context lies inside the declared applicability envelope and the load-bearing model family has not been invalidated by retained compatible behavior.
+2. **Dependency** — common calibration ancestry, cross-graph shared resources and compound-hazard interactions are represented or remain unresolved.
+3. **Realizability** — load-bearing contracts are dynamically realizable, adaptive policies remain defined under admitted observation-channel failures, and recovery reaches a persistent return set rather than touching normal viability for one instant.
+4. **Execution** — action latency fits inside a declared action lease and commanded action is not equated with realized actuation without verification.
+5. **Requirement** — the protected population/entities and load-bearing human/service requirements are represented in the viability set at the claimed scope.
+6. **Verification** — executable solver/readout results pass an independent checker, decision uncertainty does not straddle the categorical output, and horizon/scope/assumptions survive rendering.
+
+The resulting bridge is:
+
+\[
+\boxed{
+Occurrence
+\rightarrow
+Evidence
+\rightarrow
+\mathfrak C_t^Q
+\rightarrow
+InformationState
+\rightarrow
+PossibleFutures
+\rightarrow
+\mathfrak M_t^Q
+\rightarrow
+Viable/RecoverablePolicy
+\rightarrow
+VerifiedReadout
+\rightarrow
+LeasedAction
+\rightarrow
+RuntimeFeedback.
+}
+\]
+
+The constitutional distinction is:
+
+\[
+\boxed{
+Computable
+\neq
+InternallyClosed
+\neq
+DecisionLicensed
+\neq
+TrueInAllPossibleWorlds.
+}
+\]
+
+Model-invalidation, covariance-intersection/unknown-correlation fusion, contract realizability, runtime assurance, requirements traceability, controlled-invariant return sets and proof/certificate checking enter only as narrow operators inside this continuation of the same DSVA/Toledo bridge.
