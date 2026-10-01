@@ -74,10 +74,17 @@ Read first:
 - `docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md`
 - then the RKG route `question_routes.disaster_system_theory_or_dsva`
 
-The manuscript is a **PROPOSAL / THEORY_SYNTHESIS**. It treats FloodConnect constructs as
-formal/empirical anchors and introduces external literatures only as later dialogue
-(special case / solver / operator / parameterization / boundary / rival). It is not a
-production forecast, warning, or operational command.
+The manuscript is the canonical **PROPOSAL / THEORY_SYNTHESIS** expression of DSVA. v0.2
+preserves the original v0.1 manuscript as an open-loop anchor but upgrades the formal core to
+adaptive evidence-bounded policies under partial observability:
+
+`mathbb_B_t -> Pi_H^EB -> A_H^EB -> T_V`
+
+Read the Thailand/Bangkok/Sammakorn sections as the first empirical instantiation. External
+literatures enter only after the DSVA universe is constructed, through declared mappings
+(special case / solver / operator / parameterization / boundary / rival). The general-theory
+claim is not a production forecast, warning, or operational command; live actions remain gated by
+fresh evidence, validated models and reader-specific constraints.
 
 ### “What is happening now?”
 
