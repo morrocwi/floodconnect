@@ -126,6 +126,26 @@ and only through declared bridge status (WELDED / PARTIAL / HOLD / RIVAL) plus r
 claim is not a production forecast, warning, or operational command; live actions remain gated by
 fresh evidence, validated models and reader-specific constraints.
 
+
+### “How do I run the DSVA disaster decision model?”
+
+Read:
+
+- `docs/research/DSVA_DECISION_MODEL.md`
+- `dsva_decision.py`
+- `site/inputs/decision/dsva_decision_schema.json`
+- `examples/dsva_decision_minimal.json`
+- `tests/test_dsva_decision.py`
+
+Run:
+
+```bash
+python3 dsva_decision.py examples/dsva_decision_minimal.json
+python3 -m pytest -q tests/test_dsva_decision.py
+```
+
+This is an executable finite projection of DSVA v0.7, not a hazard forecaster. It consumes declared worlds/disturbances/traces and returns a scoped DSVA action-license status. A Jev/LLM/rule/human typed reader may propose an action, but confidence never overrides failed closure, actor-local information, protected requirement, trace-safety, verification, or lease gates.
+
 ### “What is happening now?”
 
 Read:
