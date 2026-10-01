@@ -9,6 +9,9 @@ nodes:
   - REPO_KG
 artifacts:
   - dsva_decision.py
+  - dsva_kernel/core.py
+  - dsva_kernel/requirements.py
+  - dsva_kernel/engine.py
   - docs/research/DSVA_DECISION_MODEL.md
   - docs/research/DSVA_FINITE_OBSTRUCTION_KERNEL.md
   - site/inputs/decision/dsva_decision_schema.json
