@@ -215,6 +215,19 @@ nodes:
     summary: "Inside-out synthesis through one bridge: v0.5 closes first-order information/state/boundary/capacity/recovery semantics; v0.6 adds a second-order license envelope after adversarial tests showed all first-order closures can pass while action is still wrong. Model invalidation, hidden-dependency handling, contract realizability, runtime assurance, requirements traceability, persistent return sets and independent certificates enter only as leak-closing operators inside DSVA/Toledo."
     key_boundary: "general-theory research claim is canonical for DSVA; operational forecasts/warnings/actions still require reader-specific fresh evidence and validated models. Toledo T-CAN-002/003/006/007/008/009 are cited as existing anchors; every DSVA-T equation is a DSVA proposal until separately registered in Toledo."
 
+  DSVA_DECISION_MODEL:
+    kind: MODEL
+    label: "DSVA v0.7 executable disaster decision model — finite action-license reference implementation"
+    epistemic_class: EXECUTABLE_MODEL
+    canonical_artifacts:
+      - dsva_decision.py
+      - docs/research/DSVA_DECISION_MODEL.md
+      - site/inputs/decision/dsva_decision_schema.json
+      - examples/dsva_decision_minimal.json
+      - tests/test_dsva_decision.py
+    summary: "Executable projection of DSVA theory for finite anti-hindsight scenarios: checks first/second-order closures, protected requirements over declared traces, actor-local information, action leases and optional typed-reader proposals; returns only scoped DSVA statuses."
+    key_boundary: "reference decision model != hazard forecast != universal safety proof; finite enumerated worlds/traces inherit caller envelope limits; typed-reader confidence never overrides hard DSVA constraints."
+
   TOLEDO_ROOT:
     kind: ARTIFACT
     label: "Toledo formal dependency bridge for DSVA"
@@ -539,6 +552,9 @@ edges:
   - {from: REPO_KG, relation: DESCRIBES, to: FC_ROOT}
   - {from: FC_ROOT, relation: EXPOSES_AI_ENTRY_THROUGH, to: REPO_KG}
   - {from: FC_ROOT, relation: CONTAINS_RESEARCH_SYNTHESIS, to: DSVA_THEORY}
+  - {from: FC_ROOT, relation: CONTAINS, to: DSVA_DECISION_MODEL}
+  - {from: DSVA_DECISION_MODEL, relation: EXECUTES_PROJECTION_OF, to: DSVA_THEORY}
+  - {from: LIVE_DATA_SYSTEM, relation: MAY_PROVIDE_TYPED_EVIDENCE_TO, to: DSVA_DECISION_MODEL}
   - {from: DSVA_THEORY, relation: USES_FORMAL_WELD_GRAMMAR_FROM, to: TOLEDO_ROOT}
   - {from: DSVA_THEORY, relation: DRAWS_EVIDENCE_CONTRACT_FROM, to: LIVE_DATA_SYSTEM}
   - {from: DSVA_THEORY, relation: USES_LOCAL_DEMONSTRATOR_FROM, to: SAMMAKORN_HYDRAULIC}
@@ -659,7 +675,7 @@ hard_non_edges:
 question_routes:
   disaster_system_theory_or_dsva:
     start_nodes: [DSVA_THEORY, TOLEDO_ROOT]
-    then: [COMMUNITY_DAG, TDLC, LCF, LVCN, ORCG, ENV_DEGRADATION, SOCL, WARNING_TYPOLOGY, LIVE_DATA_SYSTEM, SAMMAKORN_HYDRAULIC, WATER_BALANCE, UNIFIED_CRISIS, PROSPECTIVE_EXPERIMENTS]
+    then: [DSVA_DECISION_MODEL, COMMUNITY_DAG, TDLC, LCF, LVCN, ORCG, ENV_DEGRADATION, SOCL, WARNING_TYPOLOGY, LIVE_DATA_SYSTEM, SAMMAKORN_HYDRAULIC, WATER_BALANCE, UNIFIED_CRISIS, PROSPECTIVE_EXPERIMENTS]
     read:
       - docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md
       - docs/research/DSVA_TOLEDO_WELD.md
@@ -676,6 +692,19 @@ question_routes:
       - sources/registry.yaml
       - unified_crisis_state.py
     rule: "read DSVA v0.6, Toledo weld, repository-first synthesis, v0.5 information-contract bridge, second-order red-team, and DSVA_SECOND_ORDER_LICENSE before proposing a construct; preserve Toledo-existing vs DSVA-proposal; existing FloodConnect canonical subsystems remain authoritative; a strong reader requires first-order closures plus applicability/dependency/realizability/execution/requirement/verification meta-license; robustness is only within a declared applicability envelope; missing obligations yield CONDITIONAL/UNKNOWN/HOLD/LOCAL-PARTIAL; CAN-006/007/009 are load-bearing; theory claim != production forecast or operational command"
+
+  disaster_decision_model_or_action_license:
+    start_nodes: [DSVA_DECISION_MODEL, DSVA_THEORY]
+    then: [LIVE_DATA_SYSTEM, UNIFIED_CRISIS, COMMUNITY_DAG, LCF, ORCG]
+    read:
+      - docs/research/DSVA_DECISION_MODEL.md
+      - dsva_decision.py
+      - site/inputs/decision/dsva_decision_schema.json
+      - examples/dsva_decision_minimal.json
+      - tests/test_dsva_decision.py
+      - docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md
+      - docs/research/DSVA_SECOND_ORDER_LICENSE.md
+    rule: "decision model is an executable finite projection of DSVA, not a hazard forecaster; use only decision-time evidence, preserve declared envelope/horizon/provenance, require actor-local realizability and trace safety, and never allow a typed-reader confidence score to override hard DSVA constraints"
 
   current_water_or_flood_status:
     start_nodes: [LIVE_DATA_SYSTEM, LIVE_WATER]
