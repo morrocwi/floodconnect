@@ -2529,12 +2529,17 @@ does not imply all-clear.
 \boxed{
 Advice_t
 =
-StrongestAction(
-\mathcal A_H^{EB}(\mathbb B_t)
-).
+O_{adv}
+\left(
+\mathbb B_t,
+\mathcal A_H^{EB},
+\mathfrak C_t^{Q_{adv}}
+\right),
 }
 \tag{91}
 \]
+
+where the task reader may return a maximal admissible action set, \`UNRESOLVED\`, \`LOCAL/PARTIAL\`, or \`HOLD\`; no universal linear notion of “strongest action” is assumed.
 
 # 21. Dialogue with world theories after DSVA is constructed
 
@@ -2766,6 +2771,48 @@ Boundary/ConstraintArchitecture(\mathcal K,\Gamma).
 \tag{103}
 \]
 
+## 21.11A Information-contract bridge: external theories as leak-closing operators
+
+The v0.5 bridge does not add an external-theory stack above DSVA. It assigns each external result a narrow role inside the existing equation universe.
+
+**Bilattice / four-valued information semantics.** Belnap-style four-valued semantics separates positive support, negative support, contradiction and absence of information. DSVA uses this only to type reader status:
+
+\[
+\sigma_Q(p)\in
+\{
+UNRESOLVED,\,
+SUPPORTED,\,
+REFUTED,\,
+CONTRADICTION
+\}.
+\tag{DSVA-ICB-09}
+\]
+
+It does not replace the admissible-world set.
+
+**Metrology.** JCGM/VIM traceability, comparability and compatibility sharpen the evidence contract. Official provenance or calibration alone is not enough; suitability remains reader-specific. In DSVA this becomes \(Compatible_j(Q,t)\) inside Eq. (DSVA-R07).
+
+**Set-membership estimation.** Bounded-error set-membership methods enter as consistency operators for constructing \(\mathbb B_t\) and identifying model-evidence inconsistency rather than forcing a point estimate.
+
+**Hybrid systems.** Continuous flow plus discrete jump/mode logic enters as a transition operator that makes hazard-induced damage/topology changes state-closed. The earlier Eq. (32) is the no-damage reduction.
+
+**Conformal / set-valued prediction.** Prediction-set methods may parameterize a forecast support \(\mathcal S^{fcst}\) when their calibration assumptions are licensed. They are optional solvers; distribution shift or absent calibration returns \`UNRESOLVED\`, not a fabricated interval.
+
+**Assume-guarantee contracts.** Component contracts \(C_{B,i}^Q=(A_i^Q,G_i^Q)\) close the local-to-global gap. A local viability guarantee becomes a system claim only after neighboring assumptions are discharged.
+
+**Multicommodity / time-expanded network flow.** Shared-capacity optimization is a solver under TDLC/LCF:
+
+\[
+\sum_k f_{k,e}(t)\le C_e^{eff}(t).
+\tag{DSVA-ICB-10}
+\]
+
+This closes simultaneous allocation without replacing the existing support ontology.
+
+**Capture-basin / reach-avoid theory.** Classical capture-basin reasoning enters as the known-state special case of evidence-bounded recoverability. The DSVA object remains a common policy over the information state.
+
+The full mapping is recorded in \`docs/research/DSVA_INFORMATION_CONTRACT_BRIDGE.md\`.
+
 ## 21.12 Residual synthesis
 
 To make residual synthesis formal rather than metaphorical, define a theory as:
@@ -2966,21 +3013,23 @@ The core architecture is:
 
 \[
 \boxed{
-\chi_t
+E_{\le t}
 \rightarrow
-E_t
+C_E^Q
 \rightarrow
-\mathbb B_t
+(\sigma_Q,\mathbb B_t)
 \rightarrow
-\Pi_H^{EB}
+(C_S^Q,C_T^Q)
 \rightarrow
-\mathcal A_H^{EB}
+\mathcal R_H
 \rightarrow
-T_V
+(C_B^Q,C_N^Q)
 \rightarrow
-Z_t
+\{\Pi_H^{EB},\Pi_H^{REC}\}
 \rightarrow
-Action.
+O_Q
+\rightarrow
+Action/Recovery.
 }
 \tag{106}
 \]
@@ -3056,7 +3105,7 @@ and every unresolved input must remain explicitly unresolved.
 
 # Appendix D — Toledo equation provenance and DSVA bridge ledger
 
-| Code | Role in DSVA v0.3 | Status | Source / licensing object |
+| Code | Role in DSVA v0.5 | Status | Source / licensing object |
 |---|---|---|---|
 | T-CAN-002 | retained root-state tuple \(S_n=(G_n,\Lambda_n,T_n)\) | **Toledo existing** | EQ-015/M.01.v1 / CAN-002 |
 | T-CAN-003 | finite root stepper \(S_{n+1}=F(S_n,u_n,c_n,T_n)\) | **Toledo existing** | EQ-015/M.02.v1 / CAN-003 |
@@ -3072,6 +3121,7 @@ and every unresolved input must remain explicitly unresolved.
 | DSVA-T20–T27 | Sammakorn finite witness | **Empirical/formal witness proposal** | FloodConnect retained evidence + DSVA readers |
 | DSVA-T28–T30 | external-theory Toledo bridge status | **DSVA proposal / unregistered** | CAN-006 weld discipline |
 | DSVA-T31–T32 | formal theory object + residual synthesis | **DSVA proposal / unregistered** | inside-out synthesis formalization |
+| DSVA-ICB / ICB | information/evidence/state/transition/boundary/capacity/recovery closure bridge | **DSVA proposal / unregistered** | brutal red-team + mapped external operator families |
 
 **Registration rule.** Nothing labeled \`DSVA proposal / unregistered\` is retrospectively described as an existing Toledo equation. Toledo registration is a separate governance act.
 
@@ -3132,6 +3182,22 @@ and every unresolved input must remain explicitly unresolved.
 25. FloodConnect. (2026). *World-Tier Event Reconstruction Matrix — Bangkok Flood 2569, audited 2026-10-01*. Project research artifact.
 
 26. FloodConnect. (2026). *Bangkok Flood 2569 Introduction / Event Reconstruction — audited 2026-10-01*. Project research artifact.
+
+
+27. Fitting, M. (1991). Bilattices and the semantics of logic programming. *The Journal of Logic Programming, 11*(2), 91–116. https://doi.org/10.1016/0743-1066(91)90014-G
+
+28. Jakl, T. (2026). Four Imprints of Belnap's Useful Four-Valued Logic in Computer Science. *Studia Logica*. https://doi.org/10.1007/s11225-026-10230-3
+
+29. Joint Committee for Guides in Metrology (JCGM). *International Vocabulary of Metrology (VIM)*, entries 2.41, 2.46 and 2.47: metrological traceability, comparability and compatibility. https://jcgm.bipm.org/vim/en/index.html
+
+30. Tornil-Sin, S., Ocampo-Martinez, C., Puig, V., & Escobet, T. (2012). Robust fault detection of non-linear systems using set-membership state estimation based on constraint satisfaction. *Engineering Applications of Artificial Intelligence, 25*(1), 1–10. https://doi.org/10.1016/j.engappai.2011.07.007
+
+31. Goebel, R., Sanfelice, R. G., & Teel, A. R. (2009). Hybrid dynamical systems. *IEEE Control Systems Magazine, 29*(2), 28–93. https://doi.org/10.1109/MCS.2008.931718
+
+32. Saoud, A., Girard, A., & Fribourg, L. (2021). Assume-guarantee contracts for continuous-time systems. *Automatica, 134*, 109910. https://doi.org/10.1016/j.automatica.2021.109910
+
+33. Zou, X., & Liu, W. (2024). Coverage-Guaranteed Prediction Sets for Out-of-Distribution Data. arXiv:2403.19950.
+
 
 ---
 
