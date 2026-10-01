@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://floodconnect.local/schema/dsva-decision-v0.7.json",
+  "title": "DSVA v0.7 finite disaster decision scenario",
+  "type": "object",
+  "required": ["question", "envelope", "closures", "worlds", "requirements", "actions"],
+  "properties": {
+    "question": {
+      "type": "object",
+      "required": ["id", "task", "horizon"],
+      "properties": {
+        "id": {"type": "string"},
+        "task": {"type": "string"},
+        "horizon": {"type": ["number", "integer", "string"]}
+      }
+    },
+    "information_status": {"enum": ["SUPPORTED", "UNRESOLVED", "CONTRADICTION"]},
+    "model_invalidated": {"type": "boolean"},
+    "closures": {
+      "type": "object",
+      "required": ["first_order", "second_order"]
+    },
+    "worlds": {"type": "array", "minItems": 1},
+    "disturbances": {"type": "array", "minItems": 1},
+    "requirements": {"type": "array", "minItems": 1},
+    "actions": {"type": "array", "minItems": 1},
+    "proposed_action": {"type": "string"},
+    "typed_reader": {
+      "type": "object",
+      "properties": {
+        "type": {"enum": ["Choice", "Score", "Noul", "deterministic"]},
+        "selected": {"type": "string"},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    }
+  }
+}
