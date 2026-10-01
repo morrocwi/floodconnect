@@ -1,5 +1,5 @@
 claim_id: "20261001-openai-dsva-v06-meta-closure"
-status: ACTIVE
+status: RELEASED
 writer: "openai"
 branch: "agent/openai/dsva-v06-meta-closure"
 base_sha: "7f634dda33343a0dea6c7eaf95d550f9030ba7ae"
@@ -19,4 +19,4 @@ created_at: "2026-10-01T20:24:00+07:00"
 expires_at: null
 reviewers: []
 supersedes: "20261001-openai-dsva-information-contract-bridge"
-note: "Second-order red-team PR #27 is prior evidence. External theories may enter only as operators/solvers/contracts/special cases under the existing DSVA/Toledo bridge."
+note: "Second-order red-team PR #27 is prior evidence. External theories may enter only as operators/solvers/contracts/special cases under the existing DSVA/Toledo bridge. Implementation merged in PR #29 after RKG validation, semantic-claim validation, and full regression passed."
