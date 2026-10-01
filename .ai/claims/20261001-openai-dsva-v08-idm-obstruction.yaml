@@ -1,0 +1,26 @@
+claim_id: "20261001-openai-dsva-v08-idm-obstruction"
+status: ACTIVE
+writer: "openai"
+branch: "agent/openai/dsva-v08-idm-obstruction"
+base_sha: "dabaf3cf25a6aa0752335a80973d8dc65e94effc"
+nodes:
+  - DSVA_DECISION_MODEL
+  - DSVA_THEORY
+  - REPO_KG
+artifacts:
+  - dsva_decision.py
+  - docs/research/DSVA_DECISION_MODEL.md
+  - docs/research/DSVA_FINITE_OBSTRUCTION_KERNEL.md
+  - site/inputs/decision/dsva_decision_schema.json
+  - examples/dsva_decision_minimal.json
+  - tests/test_dsva_decision.py
+  - tests/test_dsva_decision_v08_redteam.py
+  - experiments/2026-10-01-dsva-v08-idm-heavy-redteam.md
+  - site/inputs/meta/floodconnect_repo_kg.yaml
+  - docs/AI_ENTRYPOINT.md
+intent: "Upgrade the executable DSVA decision model using Information Discrete Mathematics reuse-first principles: finite retained obstruction semantics, exact rational scope/lease checks, fail-closed typed verdicts, explicit finite coverage certificates, and a cost ledger. Close the 12 v0.7 heavy-redteam failures without weakening the existing DSVA theory, while keeping the model a finite action-license checker rather than a hazard forecaster."
+created_at: "2026-10-01T23:58:00+07:00"
+expires_at: null
+reviewers: []
+supersedes: "20261001-openai-dsva-decision-model-v07"
+note: "IDM source consulted: morrocwi/information-discrete-math AI_START_HERE.md, METHOD.md, tools/idm_discipline.py, idm/solve.py and idm/results.py. Reuse is conceptual/operator-level only: exact finite readout, ACCEPT/HOLD/BLOCK fail-closed discipline, and cost ledger; no parallel ontology or external runtime dependency is introduced."
