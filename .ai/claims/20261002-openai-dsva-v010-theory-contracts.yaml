@@ -1,5 +1,5 @@
 claim_id: "20261002-openai-dsva-v010-theory-contracts"
-status: ACTIVE
+status: RELEASED
 writer: "openai"
 branch: "agent/openai/dsva-v010-theory-contracts-impl"
 base_sha: "806b01982e3f055bc408962b46dadbede3070d6c"
@@ -31,4 +31,4 @@ created_at: "2026-10-02T00:57:00+07:00"
 expires_at: null
 reviewers: []
 supersedes: "20261002-openai-dsva-v09-meaning-closure"
-note: "Claim-only PR #43 merged first. Implementation branch starts from updated main 806b019. Failure evidence exists in draft PR #42 / Actions run 36902749040 for the first six theory-gap probes (6 failed, 493 passed, 1 skipped); three additional resource/compound-hazard/execution probes were added before implementation. This upgrade is a finite executable projection of existing DSVA theory; it must not be described as proving world truth or full adaptive-policy completeness."
+note: "Claim-only PR #43 merged first. Implementation PR #44 merged at d2808dd69e27c94a7717fe9bd5973cf6a2a7503d after GitHub Actions run 36904722334 passed RKG validation, active semantic-claim validation, and full regression (507 passed, 1 skipped in 13.95s). Preserved failure evidence remains draft PR #42 / run 36902928503 (9 failed, 493 passed, 1 skipped). v0.10 remains a finite executable projection: declared checker independence is not proven external independence, and full adaptive-policy plus persistent-recovery execution remain open."
