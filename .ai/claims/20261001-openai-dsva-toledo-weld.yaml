@@ -1,5 +1,5 @@
 claim_id: "20261001-openai-dsva-toledo-weld"
-status: ACTIVE
+status: RELEASED
 writer: "openai"
 branch: "agent/openai/dsva-toledo-weld"
 base_sha: "7761b3d89552da684b498e2e45a40b8047efe534"
@@ -16,4 +16,4 @@ created_at: "2026-10-01T18:00:00+07:00"
 expires_at: null
 reviewers: []
 supersedes: "20261001-openai-dsva-world-upgrade"
-note: "This is an upgrade, not a claim reduction. DSVA v0.2 remains the anchor. Toledo existing equations are cited as existing; all DSVA-specific adapters/weld obligations/readers are marked proposal until separately registered in Toledo."
+note: "Implementation merged via PR #18 at 43536a01d8790657aa971ab25913ef1b6c3414d2 after RKG validation, active-claim validation and full regression passed. DSVA v0.3 is Toledo-welded through explicit retained-state/domain-adapter/dynamics-reader-invariant obligations, CAN-007 viable-future reader equivalence, CAN-009 anti-hindsight, task-relative action determination, a finite Sammakorn witness, and a Toledo-vs-DSVA provenance ledger. No theory claim was reduced; DSVA-specific bridge equations remain proposals until separately registered in Toledo."
