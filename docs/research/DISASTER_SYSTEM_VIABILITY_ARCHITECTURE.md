@@ -998,3 +998,1003 @@ If ST.SPS.01 is confirmed as the terminal export path, net export is bounded by 
 Q_{export}(t)
 \le
 C_{terminal}^{feasible}(t).
+}
+\tag{46}
+\]
+
+Internal pumps may redistribute water among local storages:
+
+\[
+Q_{internal}>0
+\]
+
+without implying:
+
+\[
+Q_{export}>0.
+\]
+
+Thus:
+
+\[
+\boxed{
+InternalRedistribution
+\neq
+NetExport.
+}
+\tag{47}
+\]
+
+## 17.4 Export window
+
+Let:
+
+\[
+\Delta H_{out}(t)
+=
+H_{SMK}(t)-H_{receiver}(t).
+\tag{48}
+\]
+
+Then:
+
+\[
+C_{out}^{feasible}(t)
+=
+\Phi
+\left(
+\Delta H_{out},
+PumpState,
+GateState,
+DownstreamState
+\right).
+\tag{49}
+\]
+
+The same installed pump system can therefore have different effective export performance under different receiving-water states.
+
+---
+
+# 18. Worked example: connecting DSVA to Thai government data
+
+This section is intentionally concrete. The objective is to show how a theory manuscript can connect to operational public evidence without pretending that every government webpage is a real-time machine API.
+
+## 18.1 Canonical government evidence contract
+
+Every source is normalized into:
+
+```yaml
+evidence:
+  source_id: ...
+  agency: ...
+  product_type: OBSERVATION|FORECAST|WARNING|INSTRUCTION|ACTION|REFERENCE
+  variable: ...
+  value: ...
+  unit: ...
+  spatial_support: ...
+  datum: ...
+  observed_at: ...
+  published_at: ...
+  fetched_at: ...
+  freshness: ...
+  uncertainty: ...
+  quality: ...
+  provenance: ...
+```
+
+The adapter does not change the semantic type.
+
+---
+
+## 18.2 BMA / HII canal-water API
+
+FloodConnect uses the public ThaiWater endpoint:
+
+```text
+https://api-v3.thaiwater.net/api/v1/thaiwater30/public/canal_waterlevel
+```
+
+for Bangkok canal stations republished through HII/ThaiWater.
+
+Variables currently mapped by FloodConnect include:
+
+```text
+canal_water_level_m
+warning_level_m
+critical_level_m
+bank_level_m
+canal_out_m      # gate stations only
+```
+
+Adapter:
+
+\[
+H_i^{obs}(t)
+\leftarrow
+G[
+product=OBSERVATION,\,
+variable=canal\_water\_level\_m
+].
+\tag{50}
+\]
+
+If inside and outside levels share a compatible datum:
+
+\[
+\Delta H_i
+=
+H_{inside}-H_{outside}.
+\tag{51}
+\]
+
+The reader may infer direction when the difference exceeds combined measurement resolution, but it may not infer discharge without a hydraulic bridge.
+
+---
+
+## 18.3 BMA PumpHistory
+
+FloodConnect also reads the Bangkok Department of Drainage and Sewerage PumpHistory public page:
+
+```text
+https://weather.bangkok.go.th/Station/PumpHistory
+```
+
+The current parser extracts, where present:
+
+```text
+level_m
+pumps_on
+pumps_total
+gate_open_m
+station_status_th
+```
+
+These become control-state evidence:
+
+\[
+u_p^{obs}
+\leftarrow
+(pumps\_on,pumps\_total,status).
+\tag{52}
+\]
+
+But:
+
+\[
+\boxed{
+pumps\_on
+\neq
+actual\_pump\_discharge.
+}
+\tag{53}
+\]
+
+A pump-flow equation requires a pump curve or measured discharge:
+
+\[
+Q_p
+=
+u_p
+\eta_p
+\Gamma_p(\Delta H_p).
+\tag{54}
+\]
+
+If \(\Gamma_p\) and \(\eta_p\) are missing:
+
+```text
+PumpState = KNOWN
+PumpDischarge = UNRESOLVED
+```
+
+This distinction is essential in a public-data-driven disaster system.
+
+---
+
+## 18.4 BMA road-flood observation
+
+FloodConnect uses:
+
+```text
+https://api-v3.thaiwater.net/api/v1/thaiwater30/public/flood_road
+```
+
+for fixed road-flood points.
+
+A direct road-depth reading maps to:
+
+\[
+d_{road}^{obs}(x,t).
+\tag{55}
+\]
+
+This observation contributes to the human/mobility state \(Z_t\), not merely to the hydraulic state.
+
+---
+
+## 18.5 BMA monkey-cheek / retention endpoint
+
+The Bangkok public retention/monkey-cheek system is available at:
+
+```text
+https://monkeycheek.bangkok.go.th/listmongkeycheeks
+```
+
+The page publicly lists 37 facilities with fields including:
+
+```text
+code
+facility name
+owner
+district
+responsible unit
+current water-level percentage
+data timestamp
+```
+
+The page includes:
+
+```text
+027 — บึงรับน้ำหมู่บ้านสัมมากร — เขตสะพานสูง
+```
+
+and, on the public page checked for this draft, the displayed value was:
+
+```text
+current water-level percentage = 51.00
+data timestamp = 16 July 2026 10:03:01
+```
+
+This source demonstrates three DSVA rules simultaneously.
+
+First, it is a government-owned public endpoint, but a dedicated JSON/REST endpoint has not yet been independently verified. Therefore the present interface is treated as a public government data page rather than silently labelled a machine API.
+
+Second, the percentage is not automatically a storage fraction:
+
+\[
+\boxed{
+51\%
+\not\Rightarrow
+S=0.51S^{max}
+}
+\tag{56}
+\]
+
+until the denominator and transformation are documented.
+
+Third, the timestamp matters. Relative to an October 2026 operational decision, a July value is stale:
+
+\[
+Fresh=0.
+\tag{57}
+\]
+
+Therefore DSVA may retain it as historical/reference evidence while refusing to use it as current storage state.
+
+This is precisely why provenance and freshness are part of the theory rather than implementation metadata.
+
+---
+
+## 18.6 Thai Meteorological Department nowcasting
+
+The TMD SATDA public service states that Bangkok and metropolitan rainfall nowcasting is provided up to 180 minutes ahead and updated every 15 minutes.
+
+This is mapped as:
+
+\[
+P^{fcst}_{0:180}(x,t)
+\tag{58}
+\]
+
+with:
+
+```text
+product_type = FORECAST
+```
+
+not `OBSERVATION`.
+
+The forecast contracts the forcing set:
+
+\[
+\mathcal W_t
+\rightarrow
+\mathcal W_t^{TMD}
+\tag{59}
+\]
+
+but does not become realized rainfall until observed.
+
+---
+
+## 18.7 Royal Irrigation Department reservoir API
+
+RID publishes a documented public API:
+
+```text
+https://app.rid.go.th/reservoir/api/dam/public
+```
+
+and dated historical access such as:
+
+```text
+https://app.rid.go.th/reservoir/api/dam/public/YYYY-MM-DD
+```
+
+Documented fields include:
+
+```text
+capacity
+storage
+active_storage
+dead_storage
+volume
+percent_storage
+inflow
+outflow
+```
+
+These can map to an upstream/boundary state:
+
+\[
+R_d(t)
+=
+\left(
+V_d,I_d,O_d,S_d
+\right).
+\tag{60}
+\]
+
+For Bangkok flood management, reservoir information is an upstream forcing/boundary input. It does not directly determine local Sammakorn flooding without routing and downstream-system relations.
+
+---
+
+## 18.8 Royal Thai Navy Hydrographic Department tide products
+
+The Hydrographic Department publishes 2026 predicted water-level tables for multiple stations, including Bangkok Bar, Phra Chulachomklao Fort, Bangkok Port, Royal Thai Navy Headquarters, and Pak Nam Bang Pakong.
+
+These map to:
+
+\[
+H_{tide}^{pred}(t)
+\tag{61}
+\]
+
+with:
+
+```text
+product_type = FORECAST
+```
+
+Predicted tide must remain distinct from observed receiving-water level:
+
+\[
+\boxed{
+H_{tide}^{pred}
+\neq
+H_{receiver}^{obs}.
+}
+\tag{62}
+\]
+
+The difference matters because local export depends on the realized downstream head, not solely on astronomical prediction.
+
+---
+
+# 19. End-to-end Thai government evidence stack
+
+For the Sammakorn demonstrator:
+
+\[
+\boxed{
+\begin{aligned}
+E_t
+=
+\{&
+H^{BMA/ThaiWater},
+d_{road}^{BMA},
+U_{pump}^{BMA},
+S_{monkeycheek}^{BMA?},
+P^{TMD}_{fcst},
+R^{RID},
+H^{Navy}_{tide,pred}
+\}.
+\end{aligned}
+}
+\tag{63}
+\]
+
+The question mark on \(S_{monkeycheek}^{BMA?}\) is deliberate: the public percentage cannot become storage volume until its measurement semantics are closed.
+
+The operational pipeline is:
+
+```text
+Government/public source
+        ↓
+typed evidence atom
+        ↓
+freshness / datum / sensor / contradiction QC
+        ↓
+admissible-world set B_t
+        ↓
+physical + human viability constraints
+        ↓
+evidence-bounded safe action set
+        ↓
+DETERMINATE / INTERVAL / UNRESOLVED / REFUSED
+        ↓
+protective or operational action
+```
+
+This is the executable bridge between theory and FloodConnect.
+
+---
+
+# 20. Advice before precise prediction
+
+A major implication is that useful disaster advice can become available before a quantitative local-depth forecast.
+
+Suppose:
+
+\[
+H>H^{crit},
+\qquad
+Trend=RISING,
+\qquad
+Route=UNKNOWN.
+\tag{64}
+\]
+
+The architecture cannot infer:
+
+```text
+EVACUATE
+```
+
+because route feasibility is unresolved.
+
+It can support:
+
+```text
+PREPARE + VERIFY_ROUTE
+```
+
+or, for a vulnerable household with unsafe occupancy and no safe independent route:
+
+```text
+REQUEST_ASSISTED_EVACUATION
+```
+
+Likewise, if:
+
+\[
+Trend=FALLING
+\]
+
+but:
+
+\[
+H>H^{crit},
+\]
+
+the system must not issue an all-clear.
+
+The disaster-management objective is not to maximize apparent certainty. It is to select the strongest action licensed by the current viable-action intersection.
+
+---
+
+# 21. Dialogue with existing theories
+
+This section is intentionally downstream of the architecture.
+
+The rule is:
+
+\[
+\boxed{
+\phi_j:
+\mathcal T_j
+\rightarrow
+\mathcal T^\star
+}
+\tag{65}
+\]
+
+where \(\mathcal T^\star\) is DSVA and external theory \(j\) must enter with a declared role:
+
+\[
+\boxed{
+Role(\mathcal T_j)
+\in
+\{
+SPECIAL\ CASE,\,
+SOLVER,\,
+OPERATOR,\,
+PARAMETERIZATION,\,
+BOUNDARY,\,
+RIVAL
+\}.
+}
+\tag{66}
+\]
+
+The literature does not automatically redefine the root ontology.
+
+## 21.1 Viability theory
+
+Classical viability theory studies whether trajectories can remain within viability constraints under admissible controls. In DSVA, it enters as a special case when the physical state is known exactly and human/institutional extensions are removed.
+
+If:
+
+\[
+B_t=\{x_t\},
+\qquad
+Z=\varnothing,
+\qquad
+\Gamma=\top,
+\tag{67}
+\]
+
+then the evidence-bounded safe action set collapses toward a classical state-based viability problem.
+
+Thus:
+
+\[
+ClassicalViability
+=
+SpecialCase(DSVA).
+\tag{68}
+\]
+
+DSVA does not claim ownership of viability theory. It uses viability as an internal mathematical conversation partner.
+
+## 21.2 Real-time control and model predictive control
+
+RTC and MPC contribute solvers and operating policies for \(u^H\). Urban drainage research has treated drainage networks as large-scale dynamic systems and developed multiple control strategies. Reviews of MPC in urban drainage and water-resource systems show mature literatures involving receding horizons, internal models, forecasts, optimization, uncertainty, and multiobjective operation.
+
+In DSVA:
+
+\[
+\phi_{MPC}
+:
+MPC
+\mapsto
+Solver
+\left(
+\mathcal U_H^{safe}
+\right).
+\tag{69}
+\]
+
+MPC can optimize a DSVA action problem, but DSVA separately specifies whether the evidence and action semantics license the optimization inputs.
+
+## 21.3 Robust decision making
+
+Robust adaptive decision approaches address deep uncertainty by seeking strategies that perform acceptably across multiple plausible futures.
+
+In DSVA they map naturally to the handling of:
+
+\[
+B_t\times\mathcal W_t
+\]
+
+and to policy selection across uncertain trajectories.
+
+They therefore function as solver/decision traditions inside the viable-futures problem.
+
+## 21.4 Digital twins
+
+Digital-twin research in disaster risk management emphasizes real-time representation, monitoring, scenario testing, decision support, and interconnected physical/social systems.
+
+In DSVA:
+
+\[
+\phi_{DT}
+:
+DigitalTwin
+\mapsto
+Implementation
+\left(
+E
+\rightarrow
+B
+\rightarrow
+F
+\rightarrow
+Reader
+\right).
+\tag{70}
+\]
+
+A digital twin is therefore an implementation architecture capable of supporting DSVA, not the definition of disaster viability itself.
+
+## 21.5 Disaster resilience
+
+Resilience research contributes concepts of resistance, functional loss, recovery, and cross-system dependencies.
+
+In DSVA, resilience enters through:
+
+\[
+\mathcal K,\quad
+T_V,\quad
+T_R,\quad
+Z_t.
+\tag{71}
+\]
+
+DSVA's additional discipline is that recovery of a physical variable cannot silently stand for recovery of human function.
+
+## 21.6 Sendai Framework
+
+The Sendai Framework identifies understanding disaster risk, strengthening disaster-risk governance, investing in resilience, and enhancing preparedness for effective response and recovery as its four priorities.
+
+DSVA maps these priorities into formal objects:
+
+```text
+Understanding risk        → E_t, B_t
+Governance                → Γ_t
+Investment/resilience     → u^S, K
+Preparedness/response     → u^P, Z_t, U_H^EB
+```
+
+The Sendai Framework therefore provides a global policy boundary and evaluative dialogue rather than a competing state-transition model.
+
+## 21.7 Integrated water resources management
+
+IWRM emphasizes coordinated management of water, land, related resources, social welfare, equity, and ecosystem sustainability.
+
+In DSVA, IWRM contributes to the construction of:
+
+\[
+\mathcal K
+\]
+
+and:
+
+\[
+\Gamma.
+\]
+
+The architecture allows ecological, social, and economic constraints to coexist with hazard constraints without reducing them to one risk score.
+
+---
+
+# 22. Inside-out synthesis rule
+
+DSVA adopts the following methodological rule:
+
+\[
+\boxed{
+\textbf{
+We do not assemble the theory from existing theories.
+We construct the theory from the disaster phenomenon,
+then require existing theories to declare what they become
+inside the equation system.
+}
+}
+\tag{72}
+\]
+
+External familiarity cannot become an internal premise.
+
+An external construct enters only after one of three tests:
+
+1. **Reduction:** Is it already a special case of DSVA?
+2. **Extension:** Does it explain an observable phenomenon not representable by DSVA?
+3. **Rivalry:** Does it make incompatible predictions about the same phenomenon?
+
+This prevents vocabulary accumulation from being mistaken for theory building.
+
+---
+
+# 23. Research design and validation program
+
+A theory of disaster management should be tested at multiple layers.
+
+## 23.1 Structural validation
+
+Ask whether the topology, state variables, evidence classes, control objects, and human states correspond to the actual system.
+
+## 23.2 Equation validation
+
+For flood applications, test:
+
+- mass-balance residual;
+- stage-storage relation;
+- edge-direction consistency;
+- pump-flow relation;
+- downstream-boundary sensitivity;
+- storage/export bottleneck.
+
+## 23.3 Forecast validation
+
+Separate:
+
+\[
+F_0=\text{current-state nowcast}
+\]
+
+\[
+F_1=\text{directional forecast}
+\]
+
+\[
+F_2=\text{threshold/clearance interval}
+\]
+
+\[
+F_3=\text{quantitative local hydraulic forecast}.
+\]
+
+Do not claim a higher level merely because a lower level is operationally useful.
+
+## 23.4 Advice validation
+
+Measure:
+
+- preparation lead time;
+- local-action lead time;
+- false-action burden;
+- verified-route validity;
+- support coverage;
+- missed vulnerable households;
+- emergency escalation;
+- time to recovery of critical service.
+
+## 23.5 Multi-event validation
+
+A single flood can demonstrate coherence but cannot establish general predictive performance.
+
+The next stage requires prospective or anti-hindsight replay across independent events, followed by cross-hazard testing.
+
+---
+
+# 24. Implications for disaster management
+
+DSVA changes several practical questions.
+
+Instead of:
+
+> What is the water level?
+
+ask:
+
+> What states are still possible, and do they require different actions?
+
+Instead of:
+
+> How many pumps are running?
+
+ask:
+
+> What is the feasible system export under current receiving boundaries?
+
+Instead of:
+
+> Do we need more sensors?
+
+ask:
+
+> Which missing observation would most change viable action?
+
+Instead of:
+
+> Has the road dried?
+
+ask:
+
+> Has joint physical-human viability been restored?
+
+Instead of:
+
+> Which model is most accurate?
+
+ask:
+
+> Is the model accurate enough for the decision reader currently being asked to emit?
+
+This is a shift from **state prediction** toward **decision-licensed viability management**.
+
+---
+
+# 25. Limitations
+
+This manuscript has several explicit limits.
+
+First, DSVA is an architecture, not a claim that all components are individually new.
+
+Second, the Sammakorn example remains partially observed. Internal hydraulic geometry, stage-storage relations, realized pump discharge, and some receiving-water boundaries remain incomplete.
+
+Third, robust set-based formulations may become computationally expensive in large systems. Practical implementations may require interval, ensemble, probabilistic, reduced-order, or optimization approximations.
+
+Fourth, institutional variables are difficult to quantify. Equation (31) should not create false numerical precision where authority or organizational capacity is only qualitatively known.
+
+Fifth, the human state \(Z_t\) requires ethical and empirical validation; it must not become a covert social-risk score.
+
+Sixth, cross-hazard generalization is a hypothesis. A theory developed from urban flooding must be tested against hazards with different temporal scales, spatial structures, and action regimes.
+
+---
+
+# 26. Conclusion
+
+This paper proposes a synthesis-first architecture for disaster management.
+
+Its root claim is not that disasters can be reduced to one model. It is the opposite: physically different, epistemically different, institutionally different, and humanly different objects must remain distinct long enough to be connected correctly.
+
+The core architecture is:
+
+\[
+\boxed{
+X_t
+\rightarrow
+E_t
+\rightarrow
+B_t
+\rightarrow
+\mathcal U_H^{EB}
+\rightarrow
+T_V
+\rightarrow
+Z_t
+\rightarrow
+Action.
+}
+\tag{73}
+\]
+
+The central operational thesis is:
+
+\[
+\boxed{
+\textbf{
+Disaster management is the preservation and recovery of viable futures
+through coordinated physical control, information acquisition,
+protective action, and structural change under partial observability
+and constrained actuation.
+}
+}
+\tag{74}
+\]
+
+And the central practical implication is:
+
+\[
+\boxed{
+\textbf{
+The limiting resource in disaster management is not always physical capacity;
+sometimes it is the ability to know which action remains safe.
+}
+}
+\tag{75}
+\]
+
+Sammakorn provides a compact empirical world in which this claim can be progressively closed with real public data. FloodConnect provides the executable environment in which the distinctions can be preserved, tested, falsified, and extended.
+
+---
+
+# 27. Reproducibility and FloodConnect integration
+
+This manuscript is designed to live with the executable repository rather than as an isolated conceptual paper.
+
+Relevant FloodConnect artifacts include:
+
+```text
+sources/registry.yaml
+collect.py
+parsers.py
+store.py
+readout.py
+live_water_level.py
+water_balance.py
+canal_graph.py
+burden_ledger.py
+hierarchical_flood_zoom.py
+raw_stage_forecast.py
+unified_crisis_state.py
+site/inputs/canals/sammakorn_pond_canal_dag.yaml
+site/inputs/areas/sammakorn.balance.yaml
+experiments/2026-09-26-sammakorn-7day-backtest.md
+experiments/2026-09-bangkok-hierarchical-real-run.md
+experiments/2026-09-bangkok-toledo-real-backtest.md
+```
+
+The manuscript should be treated as `PROPOSAL / THEORY_SYNTHESIS`, not production truth.
+
+Every equation intended for operational use must eventually map to:
+
+```text
+source → parser → normalized evidence → QC → model/readout → test
+```
+
+and every unresolved input must remain explicitly unresolved.
+
+---
+
+# References
+
+1. United Nations Office for Disaster Risk Reduction (UNDRR). (2015). *Sendai Framework for Disaster Risk Reduction 2015–2030*. United Nations.
+
+2. Aubin, J.-P., Bayen, A. M., & Saint-Pierre, P. (2011). *Viability Theory: New Directions*. Springer. https://doi.org/10.1007/978-3-642-16684-6
+
+3. García, L., Barreiro-Gomez, J., Escobar, E., Téllez, D., Quijano, N., & Ocampo-Martínez, C. (2015). Modeling and real-time control of urban drainage systems: A review. *Advances in Water Resources, 85*, 120–132. https://doi.org/10.1016/j.advwatres.2015.08.007
+
+4. Lund, N. S. V., Falk, A. K. V., Borup, M., Madsen, H., & Mikkelsen, P. S. (2018). Model predictive control of urban drainage systems: A review and perspective towards smart real-time water management. *Critical Reviews in Environmental Science and Technology, 48*(3), 279–339. https://doi.org/10.1080/10643389.2018.1455484
+
+5. Castelletti, A., Ficchì, A., Cominola, A., Segovia, P., Giuliani, M., Wu, W., Lucia, S., Ocampo-Martinez, C., De Schutter, B., & Maestre, J. M. (2023). Model Predictive Control of water resources systems: A review and research agenda. *Annual Reviews in Control, 55*, 442–465. https://doi.org/10.1016/j.arcontrol.2023.03.013
+
+6. Oh, J., & Bartos, M. (2023). Model predictive control of stormwater basins coupled with real-time data assimilation enhances flood and pollution control under uncertainty. *Water Research, 235*, 119825. https://doi.org/10.1016/j.watres.2023.119825
+
+7. Chen, Y., Wang, C., Yang, Q., Lei, X., Wang, H., Jiang, S., & Wang, Z. (2024). Model predictive control and rainfall uncertainties: Performance and risk analysis for drainage systems. *Journal of Hydrology, 630*, 130779. https://doi.org/10.1016/j.jhydrol.2024.130779
+
+8. Lempert, R. J., & Groves, D. G. (2010). Identifying and evaluating robust adaptive policy responses to climate change for water management agencies in the American west. *Technological Forecasting and Social Change, 77*(6), 960–974. https://doi.org/10.1016/j.techfore.2010.04.007
+
+9. Macatulad, E., & Biljecki, F. (2024). Continuing from the Sendai Framework midterm: Opportunities for urban digital twins in disaster risk management. *International Journal of Disaster Risk Reduction, 102*, 104310. https://doi.org/10.1016/j.ijdrr.2024.104310
+
+10. Lagap, U., & Ghaffarian, S. (2024). Digital post-disaster risk management twinning: A review and improved conceptual framework. *International Journal of Disaster Risk Reduction, 110*, 104629. https://doi.org/10.1016/j.ijdrr.2024.104629
+
+11. Global Water Partnership. *Integrated Water Resources Management* definition and principles.
+
+12. Food and Agriculture Organization of the United Nations (FAO). *Integrated Water Resources Management*.
+
+13. Bangkok Metropolitan Administration, Department of Drainage and Sewerage. Public canal, pump, road-flood, flood-report, and monkey-cheek data products used by FloodConnect.
+
+14. Hydro-Informatics Institute / ThaiWater. Public canal-water, road-flood, and rainfall data services used by FloodConnect.
+
+15. Thai Meteorological Department. SATDA rainfall-radar and Bangkok/metropolitan 180-minute nowcasting public products.
+
+16. Royal Irrigation Department. Public reservoir API documentation: storage, inflow, outflow, and related reservoir variables.
+
+17. Royal Thai Navy Hydrographic Department. *Tide Tables in Thai Waters 2026*, including Bangkok and Pak Nam Bang Pakong stations.
+
+---
+
+## Appendix A — Minimal executable DSVA reader
+
+```python
+def reader(question, admissible_states):
+    if admissible_states is None:
+        return ("REFUSED", "state set cannot be licensed")
+    if len(admissible_states) == 0:
+        return ("REFUSED", "model-evidence contradiction")
+
+    answers = {question(x) for x in admissible_states}
+
+    if len(answers) == 1:
+        return ("DETERMINATE", next(iter(answers)))
+
+    bound = admissible_bound(answers)
+    if bound is not None:
+        return ("INTERVAL", bound)
+
+    return ("UNRESOLVED", None)
+```
+
+---
+
+## Appendix B — Minimal evidence-bounded action pseudocode
+
+```python
+def evidence_bounded_safe_actions(B, Z, Gamma, horizon):
+    common = None
+
+    for x in B:
+        safe = safe_actions(x, Z, Gamma, horizon)
+        common = safe if common is None else common.intersection(safe)
+
+        if not common:
+            return set()
+
+    return common
+```
+
+---
+
+## Appendix C — Theory-dialogue mapping template
+
+For every external theory or framework:
+
+```yaml
+external_theory: "..."
+root_objects: [...]
+mapping_into_dsva:
+  - external_object: "..."
+    dsva_object: "..."
