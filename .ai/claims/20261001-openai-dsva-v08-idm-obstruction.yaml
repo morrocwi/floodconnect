@@ -18,6 +18,8 @@ artifacts:
   - examples/dsva_decision_minimal.json
   - tests/test_dsva_decision.py
   - tests/test_dsva_decision_v08_redteam.py
+  - tests/test_dsva_decision_v08_metamorphic.py
+  - tests/test_dsva_decision_v08_differential.py
   - experiments/2026-10-01-dsva-v08-idm-heavy-redteam.md
   - site/inputs/meta/floodconnect_repo_kg.yaml
   - docs/AI_ENTRYPOINT.md
