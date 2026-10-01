@@ -1,0 +1,18 @@
+claim_id: "20261001-openai-dsva-world-upgrade"
+status: ACTIVE
+writer: "openai"
+branch: "agent/openai/dsva-world-upgrade"
+base_sha: "83410f1e660116a281db76b1edb6bceffe8e554f"
+nodes:
+  - DSVA_THEORY
+  - REPO_KG
+artifacts:
+  - docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md
+  - site/inputs/meta/floodconnect_repo_kg.yaml
+  - docs/AI_ENTRYPOINT.md
+intent: "Upgrade the existing DSVA standalone theory without retracting its scope: replace the open-loop core with evidence-bounded adaptive policy viability, add typed evidence assimilation, intervention-value bottleneck calculus, formal theorems, and a stronger Thailand empirical narrative while preserving the existing manuscript as the anchor."
+created_at: "2026-10-01T17:00:00+07:00"
+expires_at: null
+reviewers: []
+supersedes: "20261001-openai-disaster-viability-paper"
+note: "No claim is reduced. Existing DSVA equations remain historical anchors where superseded by explicit stronger equations. Production source/hydraulic semantics are referenced, not silently changed."
