@@ -1,0 +1,26 @@
+claim_id: "20261002-openai-dsva-v011-realizability"
+status: ACTIVE
+writer: "openai"
+branch: "agent/openai/dsva-v011-realizability"
+base_sha: "53759b9e5b8589f7198e3d8c0184c893fd14d401"
+nodes:
+  - DSVA_DECISION_MODEL
+  - DSVA_THEORY
+  - REPO_KG
+artifacts:
+  - dsva_kernel/contracts.py
+  - dsva_kernel/engine.py
+  - docs/research/DSVA_DECISION_MODEL.md
+  - docs/research/DSVA_FINITE_REALIZABILITY_PROJECTION.md
+  - site/inputs/decision/dsva_decision_schema.json
+  - examples/dsva_decision_minimal.json
+  - tests/test_dsva_decision_v011_realizability.py
+  - experiments/2026-10-02-dsva-v011-realizability-redteam.md
+  - site/inputs/meta/floodconnect_repo_kg.yaml
+  - docs/AI_ENTRYPOINT.md
+intent: "Close the remaining finite projection gaps in DSVA SOL-20..28 demonstrated by draft PR #46: bind future observation responses to an explicit finite adaptive policy DAG; enforce actuation-envelope, actor-local delivery and anti-hindsight timing on future policy nodes; check finite load-bearing assume-guarantee realizability over every admitted world/disturbance branch; and execute persistent recovery over a declared return time and persistence horizon. Preserve the existing DSVA/Toledo ontology and v0.8-v0.10 IDM exact-finite/quotient acceleration."
+created_at: "2026-10-02T01:15:00+07:00"
+expires_at: null
+reviewers: []
+supersedes: "20261002-openai-dsva-v010-theory-contracts"
+note: "Failure evidence: draft PR #46 / Actions run 36905308893 = 7 failed, 507 passed, 1 skipped in 13.77s. v0.11 is a finite realizability projection of existing SOL-20..28; it must not be described as a complete infinite/open-world POMDP or universal recovery proof."
