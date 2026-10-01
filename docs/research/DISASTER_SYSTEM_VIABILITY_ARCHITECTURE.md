@@ -1,44 +1,60 @@
-# Disaster-System Viability Architecture
-## A Synthesis-First Theory of Evidence-Bounded Action under Partial Observability
+# Disaster-System Viability Architecture (DSVA)
+## A General Theory of Viable Futures under Partial Observability and Constrained Actuation
 
-**Standalone theory manuscript — Draft v0.1**  
+**Standalone theory manuscript — Formal Upgrade v0.2**  
 **Date:** 1 October 2026  
 **Field:** Disaster Risk Science / Disaster Management  
 **Empirical demonstrator:** Sammakorn retention-and-drainage system, eastern Bangkok, Thailand  
 **Software/reproducibility anchor:** FloodConnect (`morrocwi/floodconnect`)  
-**Priority claim:** None required. The article treats architecture and synthesis as the unit of contribution; individual components are allowed to have established precedents.
+**Theory claim:** DSVA is presented as a general disaster-management theory of viable futures. The claim rests on the synthesized equation system, its reductions, its intervention calculus, and its empirical falsifiability; no claim is withdrawn merely because a constituent operator has an established precedent.
 
 ---
 
 ## Abstract
 
-Disaster management is commonly partitioned into hazard modelling, observation, forecasting, infrastructure control, warning, emergency decision making, governance, response, and recovery. The resulting analytical landscape is rich but fragmented: physical models often assume a sufficiently known state; control models commonly optimize within a declared system; warning systems focus on information products; disaster-management frameworks emphasize institutions and human outcomes; and resilience approaches examine loss and recovery at different scales. This article presents the **Disaster-System Viability Architecture (DSVA)** as a synthesis-first formal theory in which these activities become operators inside one equation system rather than separate frameworks that must later be combined.
+Disaster management is commonly partitioned into hazard modelling, observation, forecasting, infrastructure control, early warning, emergency decision making, governance, response, and recovery. DSVA treats that partition not as a list of separate frameworks to be assembled, but as projections of one disaster-system equation universe. The theory begins from the phenomenon itself and asks a single general question: **which future trajectories remain viable, which actions can still preserve them, and what information or institutional change is required when the true state is only partially knowable?**
 
-DSVA begins from the disaster phenomenon rather than from a literature taxonomy. At time \(t\), the architecture distinguishes the latent physical state \(X_t\), retained evidence \(E_{\le t}\), the set \(B_t\) of physical states still admissible under evidence and physical constraints, a human-and-service state \(Z_t\), institutional and actuation constraints \(\Gamma_t\), and the set of feasible actions. Disaster management is defined as the preservation and recovery of **viable futures** rather than as the optimization of a single hazard variable. The central operational construct is the **evidence-bounded safe action set**,
+At time \(t\), DSVA distinguishes the latent world state, typed evidence, a joint information state \(\mathbb B_t\) containing every system state still admissible under evidence and physical constraints, human-and-service viability \(Z_t\), institutional actuation constraints \(\Gamma_t\), future disturbance sets \(\mathcal W\), and an adaptive policy space. The central object is the **evidence-bounded viable policy set**
 
 \[
-\mathcal U_H^{EB}(B_t,Z_t,\Gamma_t)
+\Pi_H^{EB}(\mathbb B_t)
 =
-\bigcap_{x\in B_t}
-\mathcal U_H^{safe}(x,Z_t,\Gamma_t),
+\left\{
+\pi:
+\forall \chi_t\in\mathbb B_t,\;
+\forall w_{t:t+H}\in\mathcal W_H,\;
+\chi_\tau^\pi\in\mathcal K
+\;\forall\tau\le t+H
+\right\},
 \]
 
-which contains actions that remain admissible across all currently possible states for a planning horizon \(H\). The corresponding **viability horizon**
+where \(\pi\) may condition future actions on future evidence. The associated **current evidence-bounded action set**
 
 \[
-T_V
+\mathcal A_H^{EB}(\mathbb B_t)
 =
-\sup\left\{
-H:
-\mathcal U_H^{EB}\neq\varnothing
+\left\{
+\pi_t(\mathcal I_t):\pi\in\Pi_H^{EB}(\mathbb B_t)
 \right\}
 \]
 
-measures how far into the future the system can still be managed within declared safety and continuity constraints under present evidence. This produces a common language for physical, epistemic, institutional, and human bottlenecks.
+contains actions that are justified now while preserving future adaptation. The **viability horizon**
 
-The theory is demonstrated with the Sammakorn urban flood system in Bangkok. The example maps Thai government data products into the architecture, including Bangkok Metropolitan Administration canal levels, pump states, road-flood reports and monkey-cheek retention data; Thai Meteorological Department rainfall nowcasting; Royal Irrigation Department reservoir APIs; and Royal Thai Navy tide predictions. The demonstration shows why observation, forecast, warning, action report, infrastructure capacity, and realized hydraulic performance cannot be collapsed into one state. It also shows how useful disaster advice can be licensed before a point-accurate hydraulic forecast is possible.
+\[
+T_V(\mathbb B_t)
+=
+\sup\left\{
+H:\Pi_H^{EB}(\mathbb B_t)\neq\varnothing
+\right\}
+\]
 
-Existing traditions—including viability theory, real-time and model-predictive control, robust decision making, digital twins, disaster resilience, integrated water resources management, and the Sendai Framework—are introduced only after the architecture is constructed. They are treated as special cases, solvers, operators, parameterizations, boundaries, or rivals inside the DSVA equation system. The resulting paper offers a falsifiable research program for multi-hazard disaster management and an executable path through FloodConnect.
+measures how far into the future the disaster system can still be kept inside declared physical, human, service, and institutional viability constraints.
+
+DSVA also introduces one intervention calculus for four classes of limiting resources: physical capacity, information, protective capability, and institutional actuation. Information is operationally valuable when it expands the viable policy/action set or extends \(T_V\); infrastructure is valuable when it changes dynamics or expands controllable capacity; governance is operationally represented through the actions that can actually be authorized and executed in time. This makes physical, epistemic, human, and institutional bottlenecks commensurable without collapsing them into a single risk score.
+
+Thailand is used as a demanding empirical stress environment rather than a decorative case. The Bangkok 2026 flood exposed exactly the separations DSVA requires: extreme rainfall and limited retention, rising upstream discharge, tidal and receiving-water constraints, added pumps whose installed/support capacity could not be equated with realized net export, official warnings and action reports that were not observations, stale and contradictory public measurements, and uneven recovery in which roads improved before some communities recovered. The Sammakorn retention-and-drainage system is then used as a compact empirical instantiation. Thai government data interfaces are mapped explicitly into the theory: BMA/ThaiWater canal observations, BMA PumpHistory, road-flood observations, Bangkok monkey-cheek retention data, TMD nowcasts, RID reservoir data, and Royal Thai Navy tide products. Each source is typed so that observation, forecast, warning, instruction, action report, infrastructure capacity, and realized hydraulic performance cannot silently substitute for one another.
+
+Existing traditions—including viability theory, controlled invariance, POMDP/belief-state decision making, set-membership estimation, real-time and model-predictive control, robust decision making, value-of-information analysis, formal warning decision theory, digital twins, disaster resilience, IWRM, and the Sendai Framework—enter only after DSVA is constructed. They are mapped as special cases, solvers, operators, parameterizations, boundaries, or rivals inside the DSVA equation system. The resulting theory is designed to be executable in FloodConnect, reducible to established theories under declared limiting conditions, and falsifiable across independent hazards and events.
 
 **Keywords:** disaster management; disaster risk; viability; partial observability; evidence; emergency decision making; flood management; real-time control; governance; resilience; digital twin; FloodConnect; Bangkok
 
@@ -439,227 +455,267 @@ This rule is important for multi-agency disaster systems in which independent of
 
 ---
 
-# 6. The admissible-world set
+# 6. Joint information state and typed evidence assimilation
 
-The central epistemic object is not a point estimate but the set of physical states that remain possible.
+The v0.1 manuscript used \(B_t\subseteq\mathcal X\) as a set of admissible physical states. That object remains an anchor, but the general theory requires a larger information state because disasters can be uncertain not only physically but also topologically, socially, parametrically, and institutionally.
+
+Define the latent joint disaster state:
 
 \[
 \boxed{
-B_t
-=
-\left\{
-x:
-x\models\mathcal C_{physical}
-\land
-x\models E_{\le t}^{licensed}
-\land
-x\models\mathcal C_{epistemic}
-\right\}
+\chi_t=(G_t,X_t,Z_t,\Theta_t,\Gamma_t)
 }
 \tag{21}
 \]
 
-Here:
-
-- \(\mathcal C_{physical}\) contains conservation, topology, geometry, boundary, and control constraints;
-- \(E_{\le t}^{licensed}\) contains evidence that passes the declared reader requirements;
-- \(\mathcal C_{epistemic}\) contains freshness, datum, provenance, uncertainty, and contradiction rules.
-
-Prediction propagates a set:
+and the **joint admissible information state**
 
 \[
 \boxed{
-B_{t+\Delta t}^{-}
-=
-\mathcal F
-\left(
-B_t,\,
-\mathcal U_t,\,
-\mathcal W_t,\,
-\Theta
-\right)
+\mathbb B_t
+\subseteq
+\mathcal G\times\mathcal X\times\mathcal Z\times\Theta\times\Gamma .
 }
 \tag{22}
 \]
 
-and new evidence updates it:
+The earlier physical set is retained as a projection:
 
 \[
 \boxed{
-B_{t+\Delta t}
-=
-B_{t+\Delta t}^{-}
-\cap
-C(E_{t+\Delta t}).
+B_t=Proj_X(\mathbb B_t).
 }
 \tag{23}
 \]
 
-If the intersection becomes empty, DSVA emits a model-evidence contradiction. It does not fabricate a reconciled physical state.
+This is an upgrade, not a retraction: the original \(B_t\) remains the physical component of a richer disaster information state.
+
+## 6.1 Semantic assimilation is typed
+
+\[
+Type(E_j)\in\{OBS,FCST,WARN,INST,ACT,REF,FIELD\}.
+\tag{24}
+\]
+
+Each type has a different legal target:
+
+\[
+\boxed{
+\begin{aligned}
+OBS &\rightarrow C_X \text{ or } C_Z,\\
+FCST &\rightarrow C_{\mathcal W},\\
+WARN &\rightarrow C_{\Gamma,P}\text{ and public-information state},\\
+INST &\rightarrow C_{\Gamma,\mathcal U},\\
+ACT &\rightarrow C_U\text{ or }C_G,\\
+REF &\rightarrow \Theta,G,\Gamma,\\
+FIELD &\rightarrow C_X\text{ or }C_Z\text{ with declared provenance.}
+\end{aligned}
+}
+\tag{25}
+\]
+
+Therefore a forecast constrains future forcing; it does not become an observation. A warning changes the decision/information environment; it does not become the measured hazard. An action report constrains what an agency reports doing; it does not prove realized hydraulic performance.
+
+\[
+\boxed{
+\mathbb B_t^{+}
+=
+\mathsf A(\mathbb B_t^{-},E_t;Type(E_t)).
+}
+\tag{26}
+\]
+
+If typed evidence is mutually incompatible with the current model, the output is:
+
+\[
+\boxed{MODEL\_EVIDENCE\_CONTRADICTION}
+\tag{27}
+\]
+
+rather than an invented reconciled world.
 
 ---
 
-# 7. Viability
+# 7. Coupled disaster-system dynamics
 
-## 7.1 Joint physical-human viability set
+DSVA distinguishes four intervention families:
 
-Let:
+\[
+\boxed{
+u_t=(u_t^H,u_t^I,u_t^P,u_t^S)
+}
+\tag{28}
+\]
+
+where \(H\)=physical/hydraulic, \(I\)=information, \(P\)=protective, and \(S\)=structural.
+
+\[
+\boxed{
+X_{t+1}
+\in
+F_X(X_t,G_t,u_t^H,u_t^S,w_t;\Theta_t)\oplus\Xi_t^X
+}
+\tag{29}
+\]
+
+\[
+\boxed{
+E_{t+1}
+=
+F_E(E_{\le t},X_{t+1},Z_{t+1},u_t^I,\nu_{t+1})
+}
+\tag{30}
+\]
+
+\[
+\boxed{
+Z_{t+1}
+\in
+F_Z(Z_t,X_{t+1},u_t^P,u_t^S,\omega_t)
+}
+\tag{31}
+\]
+
+\[
+\boxed{
+G_{t+1}=F_G(G_t,u_t^S)
+}
+\tag{32}
+\]
+
+\[
+\boxed{
+\Gamma_{t+1}
+=
+F_\Gamma(\Gamma_t,u_t,\omega_t^\Gamma).
+}
+\tag{33}
+\]
+
+The operators need not share a time scale:
+
+\[
+\boxed{
+L(u^I),L(u^H),L(u^P),L(u^S)
+\text{ are explicitly represented rather than assumed equal.}
+}
+\tag{34}
+\]
+
+---
+
+# 8. Joint viability
 
 \[
 \boxed{
 \mathcal K
 =
 \left\{
-(x,z):
-g_j(x,z)\le0
-\quad
-\forall j
-\right\}
-}
-\tag{24}
-\]
-
-denote the declared viability set.
-
-Constraints may include:
-
-- flood-depth limits;
-- minimum reservoir storage;
-- maximum contaminant concentration;
-- minimum environmental flow;
-- safe occupancy;
-- accessible medical support;
-- functioning electricity or water supply;
-- feasible evacuation or logistics routes.
-
-The same mathematical object can therefore describe flood, drought, heat, wildfire, water-quality, infrastructure, and multi-hazard constraints.
-
-## 7.2 Safe actions under a known state
-
-For a known state \(x\), human/service state \(z\), and horizon \(H\), define:
-
-\[
-\mathcal U_H^{safe}(x,z,\Gamma_t)
-=
-\left\{
-u_{t:t+H}:
-(X_\tau,Z_\tau)\in\mathcal K
-\quad
-\forall \tau\in[t,t+H]
+\chi:
+g_j(\chi)\le0\quad\forall j
 \right\}.
-\tag{25}
+}
+\tag{35}
 \]
 
-This is the action set that keeps the system viable under that state and the actions permitted by \(\Gamma_t\).
+Constraints may encode physical hazard limits, minimum storage or water supply, contamination bounds, safe occupancy, route viability, essential-service continuity, support accessibility, environmental requirements, and institutional hard constraints. Success is therefore not minimization of one physical variable.
 
 ---
 
-# 8. Evidence-bounded safe action
+# 9. Evidence-bounded adaptive policy viability
 
-The true state is usually not known exactly. Therefore DSVA defines:
+The v0.1 common-action intersection is retained as an open-loop anchor. The general theory strengthens it to adaptive policy viability.
+
+\[
+\mathcal I_k=(E_{\le k},A_{<k},\mathbb B_k).
+\tag{36}
+\]
+
+An adaptive policy is:
 
 \[
 \boxed{
-\mathcal U_H^{EB}(B_t,Z_t,\Gamma_t)
+\pi_k:\mathcal I_k\rightarrow\mathcal U_k^{feasible}.
+}
+\tag{37}
+\]
+
+The **Evidence-Bounded Viable Policy Set** is:
+
+\[
+\boxed{
+\Pi_H^{EB}(\mathbb B_t)
+=
+\left\{
+\pi:
+\forall \chi_t\in\mathbb B_t,\;
+\forall w_{t:t+H}\in\mathcal W_H,\;
+\chi_\tau^\pi\in\mathcal K
+\;\forall\tau\in[t,t+H]
+\right\}.
+}
+\tag{38}
+\]
+
+This is the formal core of DSVA: a policy is disaster-viable only if it keeps every currently admissible world inside declared viability constraints across the declared disturbance set, while allowing later actions to respond to later evidence.
+
+The actions justified **now** are the first-action projection:
+
+\[
+\boxed{
+\mathcal A_H^{EB}(\mathbb B_t)
+=
+\left\{
+\pi_t(\mathcal I_t):
+\pi\in\Pi_H^{EB}(\mathbb B_t)
+\right\}.
+}
+\tag{39}
+\]
+
+The original v0.1 equation remains as the open-loop special case:
+
+\[
+\boxed{
+\mathcal U_H^{EB}
 =
 \bigcap_{x\in B_t}
-\mathcal U_H^{safe}(x,Z_t,\Gamma_t)
+\mathcal U_H^{safe}(x)
+\quad
+\text{when future evidence cannot change policy.}
 }
-\tag{26}
+\tag{40}
 \]
-
-This is the **Evidence-Bounded Safe Action Set**.
-
-Its interpretation is direct:
-
-> Which actions remain viable across every physical state that current evidence still permits?
-
-If:
-
-\[
-\mathcal U_H^{EB}\neq\varnothing,
-\tag{27}
-\]
-
-at least one common action remains supportable without resolving the exact state.
-
-If:
-
-\[
-\mathcal U_H^{EB}=\varnothing,
-\tag{28}
-\]
-
-either the physical system has no common safe control, or uncertainty is so large that no action can be guaranteed across all admissible states.
-
-This gives a formal reason why **information itself can become an operational resource**.
 
 ---
 
-# 9. Viability horizon
-
-Define:
+# 10. Viability horizon and decision clocks
 
 \[
 \boxed{
-T_V(B_t,Z_t,\Gamma_t)
+T_V(\mathbb B_t)
 =
-\sup
-\left\{
-H:
-\mathcal U_H^{EB}(B_t,Z_t,\Gamma_t)
-\neq\varnothing
+\sup\left\{
+H:\Pi_H^{EB}(\mathbb B_t)\neq\varnothing
 \right\}.
 }
-\tag{29}
+\tag{41}
 \]
 
-\(T_V\) is the **viability horizon**: the farthest horizon over which at least one evidence-bounded viable action remains.
-
-This is different from a forecast horizon.
-
-- A forecast horizon asks: how far into the future do environmental predictions extend?
-- A viability horizon asks: how far into the future can the system still be managed within declared constraints?
-- An action horizon asks: when does a specific action become justified?
-
-The three clocks need not coincide.
-
----
-
-# 10. Action universe
-
-Actions are divided into four families:
+DSVA distinguishes:
 
 \[
 \boxed{
-u_t
-=
-\left(
-u_t^{H},
-u_t^{I},
-u_t^{P},
-u_t^{S}
-\right)
+T_{forecast}\neq T_V\neq T_{action}\neq T_{recovery}.
 }
-\tag{30}
+\tag{42}
 \]
 
-where:
-
-- \(u^H\): physical/hydraulic action—pump, gate, valve, diversion, release;
-- \(u^I\): information action—measure, inspect, verify, request, survey;
-- \(u^P\): protective action—warn, close route, shelter, evacuate, deliver support;
-- \(u^S\): structural action—construct, retrofit, add storage, alter land or network structure.
-
-The architecture therefore permits a measurement to compete with a pump as a legitimate disaster-management action if the measurement materially expands safe decision space.
+A forecast horizon, viable-management horizon, action-justification horizon, and recovery horizon are different clocks.
 
 ---
 
-# 11. Institutional actuation
-
-An action is not feasible merely because it is physically imaginable.
-
-Define:
+# 11. Feasible actuation and governance
 
 \[
 \boxed{
@@ -667,306 +723,447 @@ Define:
 =
 \left\{
 u:
-Authority(u,\Gamma_t)=1,\,
-Resource(u,t)=1,\,
-Latency(u)\le H,\,
+Authority(u,\Gamma_t)=1,\;
+Resource(u,t)=1,\;
+Latency(u)\le H,\;
 OperationalCondition(u)=1
 \right\}.
 }
-\tag{31}
+\tag{43}
 \]
 
-Thus fragmented authority, unavailable staff, incompatible procedures, inaccessible equipment, or delayed authorization shrink the feasible action set.
-
-Governance becomes part of the formal state of actionability rather than a qualitative afterthought.
-
----
-
-# 12. Physical, epistemic, and institutional bottlenecks
-
-## 12.1 Physical bottleneck
-
-For a flow/export network:
+Hence:
 
 \[
 \boxed{
-b_P^\ast(t)
-=
-\arg\min_{e\in Cut}
-C_e^{feasible}(t).
-}
-\tag{32}
-\]
-
-The installed capacities of all components do not define system throughput when the network contains serial restrictions, downstream head constraints, storage, or unavailable controls.
-
-## 12.2 Epistemic bottleneck
-
-For a candidate measurement or information action \(m\), define the viability value of information:
-
-\[
-\boxed{
-VOI_m
-=
-T_V(B_t^{+m},Z_t,\Gamma_t)
--
-T_V(B_t,Z_t,\Gamma_t).
-}
-\tag{33}
-\]
-
-Then:
-
-\[
-\boxed{
-b_E^\ast
-=
-\arg\max_m VOI_m.
-}
-\tag{34}
-\]
-
-The most valuable sensor is not necessarily the one producing the most data; it is the one that most changes viable action.
-
-## 12.3 Institutional bottleneck
-
-For institutional constraint component \(\gamma\):
-
-\[
-\boxed{
-VOA_\gamma
-=
-T_V(B_t,Z_t,\Gamma_t^{-\gamma})
--
-T_V(B_t,Z_t,\Gamma_t),
-}
-\tag{35}
-\]
-
-where \(\Gamma_t^{-\gamma}\) represents removal or resolution of that constraint.
-
-The binding bottleneck may therefore be physical, epistemic, or institutional.
-
----
-
-# 13. Human and service state
-
-A disaster is not over when one physical variable crosses a threshold.
-
-Let the human-operational state be:
-
-\[
-\boxed{
-Z_i(t,T)
-=
-(O,F,M,S,E,H,A,P)
-}
-\tag{36}
-\]
-
-with:
-
-- \(O\): occupancy safety;
-- \(F\): essential-function state;
-- \(M\): movement state;
-- \(S\): support/sustainment state;
-- \(E\): environmental degradation;
-- \(H\): forward hazard;
-- \(A\): human-animal household topology where relevant;
-- \(P\): operational phase.
-
-The non-collapse principle is:
-
-\[
-\boxed{
-PhysicalRecovery
+InstalledCapability
 \neq
-HumanRecovery.
+ExecutableCapability
+\neq
+RealizedPerformance.
 }
-\tag{37}
+\tag{44}
 \]
 
-For example:
+Governance enters through the action set, latency, information access, coordination structure, legal authority, and resource availability.
+
+---
+
+# 12. Unified intervention-value and bottleneck calculus
+
+A bottleneck is not defined by the smallest component alone; it is the intervention whose feasible relaxation most expands viable future space.
 
 \[
-RoadDry
-\not\Rightarrow
-CommunityRecovered.
-\tag{38}
+\boxed{
+\mathcal V_q(\delta_q)
+=
+T_V(\mathcal M\oplus\delta_q)-T_V(\mathcal M).
+}
+\tag{45}
 \]
 
-## 13.1 Recovery time
+\[
+\boxed{
+\mathcal V_q^{net}
+=
+\frac{
+T_V(\mathcal M\oplus\delta_q)-T_V(\mathcal M)
+}{
+Cost(\delta_q)+\epsilon
+}.
+}
+\tag{46}
+\]
 
-For joint physical-human viability:
+Parallel bottleneck classes follow:
+
+\[
+\boxed{
+b_H^\ast=\arg\max_{\delta_H}\mathcal V_H^{net},
+\quad
+b_I^\ast=\arg\max_{\delta_I}\mathcal V_I^{net},
+\quad
+b_P^\ast=\arg\max_{\delta_P}\mathcal V_P^{net},
+\quad
+b_\Gamma^\ast=\arg\max_{\delta_\Gamma}\mathcal V_\Gamma^{net}.
+}
+\tag{47}
+\]
+
+The binding limitation may therefore be physical, epistemic, protective, or institutional.
+
+## 12.1 Ex-ante value of information
+
+Probabilistic form:
+
+\[
+\boxed{
+VOI(m)
+=
+\mathbb E_{y\sim p(y|\mathbb B_t)}
+[T_V(\mathbb B_t^y)]
+-
+T_V(\mathbb B_t)
+-
+Cost(m).
+}
+\tag{48}
+\]
+
+Set-based worst-case form:
+
+\[
+\boxed{
+VOI^{wc}(m)
+=
+\inf_{y\in Y_m(\mathbb B_t)}
+T_V(\mathbb B_t^y)
+-
+T_V(\mathbb B_t)
+-
+Cost(m).
+}
+\tag{49}
+\]
+
+Information is valuable when it changes viable policy/action space, not merely when it produces more data.
+
+---
+
+# 13. Human, service, and recovery state
+
+FloodConnect's human-operational vector remains a core DSVA anchor:
+
+\[
+\boxed{
+Z_i(t,T)=(O,F,M,S,E,H,A,P).
+}
+\tag{50}
+\]
+
+\[
+\boxed{
+PhysicalRecovery\neq HumanRecovery
+}
+\tag{51}
+\]
+
+\[
+\boxed{
+RoadClear\not\Rightarrow CommunityRecovered.
+}
+\tag{52}
+\]
 
 \[
 \boxed{
 T_R
 =
-\inf
-\left\{
-\tau>0:
-(X_{t+\tau},Z_{t+\tau})\in\mathcal K
-\right\}.
+\inf\{\tau>0:\chi_{t+\tau}\in\mathcal K\}.
 }
-\tag{39}
+\tag{53}
 \]
-
-Recovery is therefore a return to the declared joint viability set, not merely a return of one sensor to normal.
 
 ---
 
-# 14. Decision rule without a magic risk score
-
-DSVA does not require a single weighted composite score.
-
-A simple form is:
+# 14. Decision rule without a universal risk score
 
 \[
 \boxed{
-u_t^\ast
+a_t^\ast
 \in
-\arg\max_{u\in\mathcal U_t^{feasible}}
-T_V
-\left(
-B_t^{+u},
-Z_t^{+u},
-\Gamma_t^{+u}
-\right)
+\arg\max_{a\in\mathcal A_H^{EB}(\mathbb B_t)}
+T_V(\mathbb B_t^{+a})
 }
-\tag{40}
+\tag{54}
 \]
 
-subject to hard constraints such as life safety and route validity.
+subject to declared hard constraints.
 
-Where objectives conflict, a lexicographic rule can be used:
+Where objectives conflict:
 
 \[
 \boxed{
 \operatorname{lexmin}
-\left(
-LifeSafetyLoss,\,
-RouteFailure,\,
-CriticalServiceLoss,\,
-ViabilityLoss,\,
-RecoveryTime,\,
+(
+LifeSafetyLoss,
+RouteFailure,
+CriticalServiceLoss,
+ViabilityLoss,
+RecoveryTime,
 OperatingCost
-\right).
+).
 }
-\tag{41}
+\tag{55}
 \]
-
-The point is not that every system must use this exact ordering; the ordering must be declared rather than hidden inside arbitrary weights.
 
 ---
 
-# 15. Formal propositions
+# 15. Axioms, reductions, and theorems
 
-The following propositions form the initial research program.
+DSVA separates constitutional rules, definitions, mathematical consequences, and empirical hypotheses.
 
-### P1 — Feasible-futures proposition
-
-Disaster management acts on a set of feasible future trajectories rather than on a single estimated state.
-
-### P2 — Capacity non-additivity proposition
-
-System capacity is topology-, state-, boundary-, and control-dependent and generally cannot be obtained by summing installed component capacities.
-
-### P3 — Common-action proposition
-
-Incomplete observability is operationally harmless over horizon \(H\) if and only if a sufficiently safe common action exists across the admissible state set:
+## Axiom A1 — Semantic non-collapse
 
 \[
-\mathcal U_H^{EB}\neq\varnothing.
+OBS\neq FCST\neq WARN\neq INST\neq ACT.
+\tag{56}
 \]
 
-### P4 — Operational value-of-information proposition
-
-Information has disaster-management value to the extent that it changes viable action or viable future space.
-
-### P5 — Multiple-bottleneck proposition
-
-The binding limitation on disaster management may be physical, epistemic, or institutional.
-
-### P6 — Human non-collapse proposition
-
-Physical recovery of infrastructure or hazard variables is neither necessary nor sufficient for complete human/service recovery.
-
-### P7 — Action-cost proposition
-
-Low-cost reversible actions can be justified under broader uncertainty than high-cost, irreversible, or movement-disruptive actions.
-
-### P8 — Semantic evidence proposition
-
-Observation, forecast, warning, instruction, and action report cannot be substituted for one another without an explicit transformation.
-
----
-
-# 16. Falsifiability
-
-DSVA is intended as a theory that can fail.
-
-Examples of empirical or formal challenges include:
-
-1. **P2 failure:** verified system export repeatedly exceeds a verified binding cut without an undeclared path or storage explanation.
-2. **P3 failure:** two indistinguishable admissible states require different actions, yet a deterministic action can be proved safe for both.
-3. **P4 failure:** additional information consistently increases \(T_V\) under the formal model but worsens correctly measured operational outcomes because the information action itself was misrepresented or delayed.
-4. **P5 failure:** across well-instrumented systems, physical capacity alone fully determines viable action and neither knowledge nor institutional constraints change the feasible action set.
-5. **P6 failure:** across independent disaster cases, hydraulic or physical recovery always coincides with recovery of movement, occupancy, critical services, and support.
-6. **Evidence-model failure:** retained licensed evidence yields an empty admissible-world set under the declared model; the system must then identify a model/evidence contradiction rather than silently repair it.
-
----
-
-# 17. Sammakorn as a minimal complete demonstrator
-
-## 17.1 Why Sammakorn
-
-Sammakorn, in eastern Bangkok, is useful not because it represents every disaster system, but because it contains a compact form of nearly every DSVA object:
+## Axiom A2 — Unknown is not safe
 
 \[
-Rain
-\rightarrow
-Retention
-\leftrightarrow
-Internal\ transfer
-\rightarrow
-Terminal\ export
-\rightarrow
-Receiving\ water.
-\tag{42}
+UNKNOWN\not\Rightarrow SAFE.
+\tag{57}
 \]
 
-It also contains:
+## Axiom A3 — Missing is not zero
 
 \[
-Observation
-\rightarrow
-Evidence
-\rightarrow
-Admissible\ states
-\rightarrow
-Action
-\tag{43}
+MISSING\not\Rightarrow 0.
+\tag{58}
+\]
+
+## Theorem T1 — Evidence refinement monotonicity
+
+Assume a valid evidence update excludes no true state and has zero harmful latency/cost. If:
+
+\[
+\mathbb B'_t\subseteq\mathbb B_t,
+\tag{59}
+\]
+
+then:
+
+\[
+\boxed{
+\Pi_H^{EB}(\mathbb B'_t)
+\supseteq
+\Pi_H^{EB}(\mathbb B_t)
+}
+\tag{60}
 \]
 
 and:
 
 \[
-Physical\ state
-\rightarrow
-Road/household/service\ consequence.
-\tag{44}
+\boxed{
+T_V(\mathbb B'_t)\ge T_V(\mathbb B_t).
+}
+\tag{61}
 \]
 
-FloodConnect currently models the historical large-pond system as interconnected at system level while refusing to claim that every pair of ponds has a known direct hydraulic connection. The working topology identifies four pump stations (ST.SPS.01–04) and treats ST.SPS.01 as a strong working hypothesis for the main terminal outlet toward the Khlong Saen Saep side; exact internal geometry and several pump directions remain unverified pending BOQ/as-built material.
+**Proof sketch.** Every policy viable for every state in the larger admissible set is viable for every state in its subset. Any cost or latency of obtaining the information is represented separately in the coupled dynamics.
 
-This makes the case suitable for a theory whose core rule is to preserve what is known, what is hypothesized, and what remains unresolved.
+## Theorem T2 — Feasible-action expansion monotonicity
 
-## 17.2 Local water balance
-
-For the Sammakorn storage system:
+If:
 
 \[
+\mathcal U_t^{feasible}\subseteq{\mathcal U'}_t^{feasible}
+\tag{62}
+\]
+
+without worsening dynamics or constraints, then:
+
+\[
+\boxed{
+T'_V\ge T_V.
+}
+\tag{63}
+\]
+
+## Theorem T3 — Known-state reduction
+
+If:
+
+\[
+\mathbb B_t=\{\chi_t\}
+\tag{64}
+\]
+
+and future observations add no decision-relevant information, DSVA reduces to a robust controlled-viability/invariance problem:
+
+\[
+\Pi_H^{EB}
+=
+\left\{
+\pi:
+\forall w\in\mathcal W_H,\;
+\chi_\tau^\pi\in\mathcal K
+\right\}.
+\tag{65}
+\]
+
+## Theorem T4 — Open-loop reduction
+
+If policy cannot depend on future evidence:
+
+\[
+\pi_k(\mathcal I_k)=u_k\quad\forall k,
+\tag{66}
+\]
+
+then Eq. (38) reduces to the original common safe action-sequence intersection of DSVA v0.1. The previous manuscript is therefore retained as an explicit subtheory.
+
+---
+
+# 16. Empirical propositions and falsifiers
+
+### P1 — Feasible-futures proposition
+Disaster management is better represented by viable future trajectories and policies than by a single point-state estimate.
+
+### P2 — Capacity non-additivity proposition
+Installed component capacities do not generally equal realized system capacity under network, storage, boundary, and control constraints.
+
+### P3 — Adaptive common-policy proposition
+Partial observability is operationally tolerable while at least one evidence-bounded viable adaptive policy remains:
+
+\[
+\Pi_H^{EB}(\mathbb B_t)\neq\varnothing.
+\]
+
+### P4 — Operational information-value proposition
+Decision-relevant information increases management capability when it expands \(\Pi_H^{EB}\), expands \(\mathcal A_H^{EB}\), or increases \(T_V\) after accounting for cost and latency.
+
+### P5 — Multi-bottleneck proposition
+The intervention with greatest viability gain may be physical, epistemic, protective, or institutional.
+
+### P6 — Human non-collapse proposition
+Physical or infrastructure recovery is not sufficient to establish human/service recovery.
+
+### P7 — Reversibility proposition
+When irreversible-action losses are high, reversible preparation and information actions can become justified under a broader admissible-state set than irreversible movement or shutdown actions.
+
+### P8 — Semantic evidence proposition
+Observation, forecast, warning, instruction, action report, and realized outcome are not mutually substitutable without an explicit typed transformation.
+
+## Falsification program
+
+DSVA is challenged when, after measurement and model error are controlled:
+
+1. system throughput is consistently predicted by simple installed-capacity addition despite network/boundary/control structure;
+2. information refinement systematically fails to change or preserve viable policy space in cases where state-dependent actions differ;
+3. institutional actuation never changes feasible policy space across independent emergencies;
+4. physical recovery consistently coincides with full mobility, service, occupancy, and support recovery;
+5. typed evidence separation provides no measurable reduction in false inference or action error;
+6. cross-hazard instantiations cannot be represented without abandoning the root objects \((\mathbb B,\mathcal K,\Pi^{EB},T_V,Z,\Gamma)\).
+
+---
+
+# 17. Thailand as a full-system empirical stress environment
+
+Thailand is not introduced merely as a local case. It provides a demanding empirical environment for a general disaster-management theory because the operational problem is distributed across physical networks, multiple public institutions, heterogeneous data products, different update cadences, and different semantic classes of public information.
+
+For Bangkok flooding, the relevant evidence ecology includes:
+
+- **Thai Meteorological Department (TMD):** meteorological observation, radar, forecast and nowcast;
+- **Royal Irrigation Department (RID):** upstream river/reservoir conditions and operational water management;
+- **Bangkok Metropolitan Administration, Department of Drainage and Sewerage (BMA DDS):** urban canals, pump stations, gates, road flooding, drainage operations and retention/monkey-cheek facilities;
+- **Hydro-Informatics Institute / ThaiWater:** public water-data integration and APIs used by FloodConnect;
+- **Royal Thai Navy Hydrographic Department:** astronomical tide predictions and hydrographic reference;
+- **ONWR/DDPM and local authorities:** warning/governance/emergency-management context;
+- **community and field evidence:** local effects, route conditions, service loss, support needs and lived recovery.
+
+These sources do not describe the same object. DSVA therefore treats Thailand's public-data environment as a real test of typed evidence rather than as a single fused "government data" stream.
+
+## 17.1 Bangkok 2026 event as a theory stress test
+
+FloodConnect's audited reconstruction of the September–October 2026 Bangkok flood records a combination of factors that cannot be represented adequately by a single-variable flood narrative:
+
+- eastern retention need was reported around **13 million m³** against about **7.64 million m³** available in the cited baseline;
+- a point rainfall total reached **230.5 mm/day**;
+- upstream discharge at C.2 was reported around **1,795 m³/s on 25 September** and **2,565 m³/s on 30 September**;
+- high-tide conditions were warned for the late-September/early-October period;
+- additional pumps were deployed, including a reported **221 support pumps / ~97 million m³/day** support-capacity snapshot, without that number being equivalent to realized Bangkok net export;
+- **109 road-flood points across 30 districts** were reported at one event stage;
+- road recession and community recovery were uneven: major roads could improve while low-lying communities remained flooded.
+
+The event therefore instantiates:
+
+\[
+\boxed{
+Rainfall
+\neq Storage
+\neq UpstreamBoundary
+\neq ReceivingBoundary
+\neq InstalledPumpCapacity
+\neq RealizedExport
+\neq RoadState
+\neq CommunityRecovery.
+}
+\tag{67}
+\]
+
+## 17.2 Thailand's multi-agency evidence ecology
+
+\[
+\boxed{
+E_t^{TH}
+=
+E_t^{TMD}
+\cup
+E_t^{RID}
+\cup
+E_t^{BMA}
+\cup
+E_t^{HII}
+\cup
+E_t^{NAVY}
+\cup
+E_t^{GOV}
+\cup
+E_t^{FIELD}.
+}
+\tag{68}
+\]
+
+The union is not an arithmetic merge. Each element enters through the typed assimilation rules of Eq. (25).
+
+---
+
+# 18. Sammakorn as a compact empirical instantiation
+
+Sammakorn in eastern Bangkok is the first compact empirical world for DSVA because it contains storage, internal transfer, terminal export, receiving-water dependence, public observations, pump/control uncertainty, road/community consequences, and institutional boundaries in one tractable system.
+
+\[
+\boxed{
+Rain
+\rightarrow
+Retention
+\leftrightarrow
+InternalTransfer
+\rightarrow
+TerminalExport
+\rightarrow
+ReceivingWater.
+}
+\tag{69}
+\]
+
+\[
+\boxed{
+Observation
+\rightarrow
+TypedEvidence
+\rightarrow
+\mathbb B_t
+\rightarrow
+\Pi_H^{EB}
+\rightarrow
+\mathcal A_H^{EB}
+\rightarrow
+Action.
+}
+\tag{70}
+\]
+
+FloodConnect preserves local hydraulic topology as partially verified. Four pump stations ST.SPS.01–04 are represented, while exact internal geometry, several flow directions, stage-storage functions, realized pump discharge, and some receiving-water boundaries remain open. That incompleteness is the condition DSVA is designed to manage.
+
+## 18.1 Local water balance
+
+\[
+\boxed{
 S_{t+\Delta t}
 =
 S_t
@@ -984,679 +1181,482 @@ V^{gravity}
 V^{pump}
 -
 V^{other}.
-\tag{45}
+}
+\tag{71}
 \]
 
-The equation is exact as bookkeeping only when every term is declared. It is not a quantitative forecast if catchment area, runoff coefficient, stage-storage relation, realized pump discharge, or receiving-water state are absent.
+Every undeclared term remains unresolved rather than being replaced by zero.
 
-## 17.3 Terminal bottleneck
+## 18.2 Stage-storage and export
 
-If ST.SPS.01 is confirmed as the terminal export path, net export is bounded by the feasible capacity of the terminal cut:
+\[
+H_i=\psi_i(S_i;\theta_i)
+\tag{72}
+\]
+
+\[
+Q_e\in\Phi_e(\Delta H_e,U_e,\theta_e).
+\tag{73}
+\]
 
 \[
 \boxed{
-Q_{export}(t)
-\le
-C_{terminal}^{feasible}(t).
+WaterLevelDifference\neq KnownDischarge.
 }
-\tag{46}
+\tag{74}
 \]
 
-Internal pumps may redistribute water among local storages:
-
-\[
-Q_{internal}>0
-\]
-
-without implying:
-
-\[
-Q_{export}>0.
-\]
-
-Thus:
+## 18.3 Export window
 
 \[
 \boxed{
-InternalRedistribution
-\neq
-NetExport.
+\Delta H_{out}=H_{SMK}-H_{receiver}.
 }
-\tag{47}
+\tag{75}
 \]
 
-## 17.4 Export window
-
-Let:
-
 \[
-\Delta H_{out}(t)
+\boxed{
+C_{out}^{feasible}
 =
-H_{SMK}(t)-H_{receiver}(t).
-\tag{48}
-\]
-
-Then:
-
-\[
-C_{out}^{feasible}(t)
-=
-\Phi
-\left(
+\Phi(
 \Delta H_{out},
 PumpState,
 GateState,
 DownstreamState
-\right).
-\tag{49}
+).
+}
+\tag{76}
 \]
 
-The same installed pump system can therefore have different effective export performance under different receiving-water states.
+The same installed pump configuration can therefore have different realized effectiveness under different receiving-water conditions.
 
 ---
 
-# 18. Worked example: connecting DSVA to Thai government data
+# 19. Worked Thailand government-data interfaces
 
-This section is intentionally concrete. The objective is to show how a theory manuscript can connect to operational public evidence without pretending that every government webpage is a real-time machine API.
+The purpose is not merely reproducibility. It demonstrates how a national/local public-data ecology is translated into a general disaster information state.
 
-## 18.1 Canonical government evidence contract
+## 19.1 BMA / ThaiWater canal observations
 
-Every source is normalized into:
+Public endpoint:
 
-```yaml
-evidence:
-  source_id: ...
-  agency: ...
-  product_type: OBSERVATION|FORECAST|WARNING|INSTRUCTION|ACTION|REFERENCE
-  variable: ...
-  value: ...
-  unit: ...
-  spatial_support: ...
-  datum: ...
-  observed_at: ...
-  published_at: ...
-  fetched_at: ...
-  freshness: ...
-  uncertainty: ...
-  quality: ...
-  provenance: ...
-```
+    https://api-v3.thaiwater.net/api/v1/thaiwater30/public/canal_waterlevel
 
-The adapter does not change the semantic type.
-
----
-
-## 18.2 BMA / HII canal-water API
-
-FloodConnect uses the public ThaiWater endpoint:
-
-```text
-https://api-v3.thaiwater.net/api/v1/thaiwater30/public/canal_waterlevel
-```
-
-for Bangkok canal stations republished through HII/ThaiWater.
-
-Variables currently mapped by FloodConnect include:
-
-```text
-canal_water_level_m
-warning_level_m
-critical_level_m
-bank_level_m
-canal_out_m      # gate stations only
-```
-
-Adapter:
-
-\[
-H_i^{obs}(t)
-\leftarrow
-G[
-product=OBSERVATION,\,
-variable=canal\_water\_level\_m
-].
-\tag{50}
-\]
-
-If inside and outside levels share a compatible datum:
-
-\[
-\Delta H_i
-=
-H_{inside}-H_{outside}.
-\tag{51}
-\]
-
-The reader may infer direction when the difference exceeds combined measurement resolution, but it may not infer discharge without a hydraulic bridge.
-
----
-
-## 18.3 BMA PumpHistory
-
-FloodConnect also reads the Bangkok Department of Drainage and Sewerage PumpHistory public page:
-
-```text
-https://weather.bangkok.go.th/Station/PumpHistory
-```
-
-The current parser extracts, where present:
-
-```text
-level_m
-pumps_on
-pumps_total
-gate_open_m
-station_status_th
-```
-
-These become control-state evidence:
-
-\[
-u_p^{obs}
-\leftarrow
-(pumps\_on,pumps\_total,status).
-\tag{52}
-\]
-
-But:
+Mapped variables include canal water level, warning level, critical level, bank level, and gate-side/outside level where exposed.
 
 \[
 \boxed{
-pumps\_on
-\neq
-actual\_pump\_discharge.
+E^{canal}\rightarrow OBS\rightarrow C_X.
 }
-\tag{53}
+\tag{77}
 \]
 
-A pump-flow equation requires a pump curve or measured discharge:
+Compatible inside/outside levels can support:
 
 \[
-Q_p
-=
-u_p
-\eta_p
-\Gamma_p(\Delta H_p).
-\tag{54}
+\Delta H=H_{inside}-H_{outside},
+\tag{78}
 \]
 
-If \(\Gamma_p\) and \(\eta_p\) are missing:
+but not an uncalibrated discharge claim.
 
-```text
-PumpState = KNOWN
-PumpDischarge = UNRESOLVED
-```
+## 19.2 BMA PumpHistory
 
-This distinction is essential in a public-data-driven disaster system.
+Public interface:
 
----
+    https://weather.bangkok.go.th/Station/PumpHistory
 
-## 18.4 BMA road-flood observation
-
-FloodConnect uses:
-
-```text
-https://api-v3.thaiwater.net/api/v1/thaiwater30/public/flood_road
-```
-
-for fixed road-flood points.
-
-A direct road-depth reading maps to:
-
-\[
-d_{road}^{obs}(x,t).
-\tag{55}
-\]
-
-This observation contributes to the human/mobility state \(Z_t\), not merely to the hydraulic state.
-
----
-
-## 18.5 BMA monkey-cheek / retention endpoint
-
-The Bangkok public retention/monkey-cheek system is available at:
-
-```text
-https://monkeycheek.bangkok.go.th/listmongkeycheeks
-```
-
-The page publicly lists 37 facilities with fields including:
-
-```text
-code
-facility name
-owner
-district
-responsible unit
-current water-level percentage
-data timestamp
-```
-
-The page includes:
-
-```text
-027 — บึงรับน้ำหมู่บ้านสัมมากร — เขตสะพานสูง
-```
-
-and, on the public page checked for this draft, the displayed value was:
-
-```text
-current water-level percentage = 51.00
-data timestamp = 16 July 2026 10:03:01
-```
-
-This source demonstrates three DSVA rules simultaneously.
-
-First, it is a government-owned public endpoint, but a dedicated JSON/REST endpoint has not yet been independently verified. Therefore the present interface is treated as a public government data page rather than silently labelled a machine API.
-
-Second, the percentage is not automatically a storage fraction:
+FloodConnect extracts, where present, level, pumps on/total, gate opening and station status.
 
 \[
 \boxed{
-51\%
-\not\Rightarrow
-S=0.51S^{max}
+E^{pump}\rightarrow OBS/ACT\rightarrow C_U.
 }
-\tag{56}
+\tag{79}
 \]
 
-until the denominator and transformation are documented.
-
-Third, the timestamp matters. Relative to an October 2026 operational decision, a July value is stale:
-
 \[
-Fresh=0.
-\tag{57}
+\boxed{
+pumps\_on\neq actual\_pump\_discharge.
+}
+\tag{80}
 \]
 
-Therefore DSVA may retain it as historical/reference evidence while refusing to use it as current storage state.
-
-This is precisely why provenance and freshness are part of the theory rather than implementation metadata.
-
----
-
-## 18.6 Thai Meteorological Department nowcasting
-
-The TMD SATDA public service states that Bangkok and metropolitan rainfall nowcasting is provided up to 180 minutes ahead and updated every 15 minutes.
-
-This is mapped as:
-
 \[
-P^{fcst}_{0:180}(x,t)
-\tag{58}
+Q_p=u_p\eta_p\Gamma_p(\Delta H_p).
+\tag{81}
 \]
 
-with:
+## 19.3 BMA / ThaiWater road flooding
 
-```text
-product_type = FORECAST
-```
+Public endpoint:
 
-not `OBSERVATION`.
-
-The forecast contracts the forcing set:
+    https://api-v3.thaiwater.net/api/v1/thaiwater30/public/flood_road
 
 \[
-\mathcal W_t
+\boxed{
+E^{road}\rightarrow(C_X,C_Z).
+}
+\tag{82}
+\]
+
+A road observation is therefore simultaneously local physical evidence and a mobility consequence.
+
+## 19.4 Bangkok monkey-cheek retention system
+
+Public BMA interface:
+
+    https://monkeycheek.bangkok.go.th/listmongkeycheeks
+
+The public page lists **37 retention/monkey-cheek facilities** and includes:
+
+    027 — บึงรับน้ำหมู่บ้านสัมมากร — เขตสะพานสูง
+
+At the checked snapshot the page displayed:
+
+    current water-level percentage = 51.00
+    data timestamp = 16 July 2026 10:03:01
+
+DSVA derives two refusal rules:
+
+\[
+\boxed{
+51\%\not\Rightarrow S=0.51S^{max}
+}
+\tag{83}
+\]
+
+until the denominator/measurement transformation is documented, and:
+
+\[
+\boxed{
+GovernmentSource\not\Rightarrow FreshOperationalObservation.
+}
+\tag{84}
+\]
+
+## 19.5 TMD nowcasting
+
+TMD SATDA provides Bangkok/metropolitan short-range rainfall nowcasting, including a 180-minute horizon with frequent updates.
+
+\[
+\boxed{
+P^{TMD}_{fcst}\rightarrow FCST\rightarrow C_{\mathcal W}.
+}
+\tag{85}
+\]
+
+It contracts the future forcing set; it does not become observed rain.
+
+## 19.6 RID reservoir/public API
+
+Example documented endpoint:
+
+    https://app.rid.go.th/reservoir/api/dam/public
+
+\[
+\boxed{
+R_d(t)=(V_d,I_d,O_d,S_d)
 \rightarrow
-\mathcal W_t^{TMD}
-\tag{59}
+OBS/REF
+\rightarrow
+C_X,C_{\mathcal W}.
+}
+\tag{86}
 \]
 
-but does not become realized rainfall until observed.
+For Sammakorn, reservoir data inform upstream context only through an explicit routing/propagation relation.
 
----
-
-## 18.7 Royal Irrigation Department reservoir API
-
-RID publishes a documented public API:
-
-```text
-https://app.rid.go.th/reservoir/api/dam/public
-```
-
-and dated historical access such as:
-
-```text
-https://app.rid.go.th/reservoir/api/dam/public/YYYY-MM-DD
-```
-
-Documented fields include:
-
-```text
-capacity
-storage
-active_storage
-dead_storage
-volume
-percent_storage
-inflow
-outflow
-```
-
-These can map to an upstream/boundary state:
-
-\[
-R_d(t)
-=
-\left(
-V_d,I_d,O_d,S_d
-\right).
-\tag{60}
-\]
-
-For Bangkok flood management, reservoir information is an upstream forcing/boundary input. It does not directly determine local Sammakorn flooding without routing and downstream-system relations.
-
----
-
-## 18.8 Royal Thai Navy Hydrographic Department tide products
-
-The Hydrographic Department publishes 2026 predicted water-level tables for multiple stations, including Bangkok Bar, Phra Chulachomklao Fort, Bangkok Port, Royal Thai Navy Headquarters, and Pak Nam Bang Pakong.
-
-These map to:
-
-\[
-H_{tide}^{pred}(t)
-\tag{61}
-\]
-
-with:
-
-```text
-product_type = FORECAST
-```
-
-Predicted tide must remain distinct from observed receiving-water level:
+## 19.7 Royal Thai Navy Hydrographic tide products
 
 \[
 \boxed{
 H_{tide}^{pred}
-\neq
-H_{receiver}^{obs}.
+\rightarrow
+FCST
+\rightarrow
+C_{\mathcal W}.
 }
-\tag{62}
+\tag{87}
 \]
-
-The difference matters because local export depends on the realized downstream head, not solely on astronomical prediction.
-
----
-
-# 19. End-to-end Thai government evidence stack
-
-For the Sammakorn demonstrator:
 
 \[
 \boxed{
-\begin{aligned}
-E_t
-=
-\{&
-H^{BMA/ThaiWater},
-d_{road}^{BMA},
-U_{pump}^{BMA},
-S_{monkeycheek}^{BMA?},
-P^{TMD}_{fcst},
-R^{RID},
-H^{Navy}_{tide,pred}
-\}.
-\end{aligned}
+H_{tide}^{pred}\neq H_{receiver}^{obs}.
 }
-\tag{63}
+\tag{88}
 \]
 
-The question mark on \(S_{monkeycheek}^{BMA?}\) is deliberate: the public percentage cannot become storage volume until its measurement semantics are closed.
+## 19.8 Thailand evidence-to-action stack
 
-The operational pipeline is:
+    TMD forecast / nowcast
+            +
+    RID upstream / reservoir evidence
+            +
+    BMA/ThaiWater canal + road observations
+            +
+    BMA pump/gate state
+            +
+    BMA monkey-cheek retention reference/observation
+            +
+    Navy tide prediction
+            +
+    field/community evidence
+                     ↓
+           typed evidence contract
+                     ↓
+     freshness / datum / sensor / contradiction QC
+                     ↓
+             joint information state 𝔅_t
+                     ↓
+          adaptive viable policy set Π_H^EB
+                     ↓
+          current justified actions 𝒜_H^EB
+                     ↓
+     hydraulic + human + institutional response
 
-```text
-Government/public source
-        ↓
-typed evidence atom
-        ↓
-freshness / datum / sensor / contradiction QC
-        ↓
-admissible-world set B_t
-        ↓
-physical + human viability constraints
-        ↓
-evidence-bounded safe action set
-        ↓
-DETERMINATE / INTERVAL / UNRESOLVED / REFUSED
-        ↓
-protective or operational action
-```
-
-This is the executable bridge between theory and FloodConnect.
+This is the explicit Thailand-to-general-theory bridge.
 
 ---
 
 # 20. Advice before precise prediction
 
-A major implication is that useful disaster advice can become available before a quantitative local-depth forecast.
+DSVA makes a strong claim: a disaster system can produce justified action before it can produce a precise local hazard trajectory.
 
 Suppose:
 
 \[
 H>H^{crit},
-\qquad
-Trend=RISING,
-\qquad
-Route=UNKNOWN.
-\tag{64}
+\quad Trend=RISING,
+\quad Route=UNKNOWN.
+\tag{89}
 \]
 
-The architecture cannot infer:
+A route-dependent evacuation recommendation is not licensed because route safety is unresolved. But preparation, route verification, support mobilization, or assisted-evacuation requests for households already failing occupancy constraints may be licensed.
 
-```text
-EVACUATE
-```
-
-because route feasibility is unresolved.
-
-It can support:
-
-```text
-PREPARE + VERIFY_ROUTE
-```
-
-or, for a vulnerable household with unsafe occupancy and no safe independent route:
-
-```text
-REQUEST_ASSISTED_EVACUATION
-```
-
-Likewise, if:
+Likewise:
 
 \[
-Trend=FALLING
+Trend=FALLING\land H>H^{crit}
+\tag{90}
 \]
 
-but:
-
-\[
-H>H^{crit},
-\]
-
-the system must not issue an all-clear.
-
-The disaster-management objective is not to maximize apparent certainty. It is to select the strongest action licensed by the current viable-action intersection.
-
----
-
-# 21. Dialogue with existing theories
-
-This section is intentionally downstream of the architecture.
-
-The rule is:
+does not imply all-clear.
 
 \[
 \boxed{
-\phi_j:
-\mathcal T_j
-\rightarrow
-\mathcal T^\star
+Advice_t
+=
+StrongestAction(
+\mathcal A_H^{EB}(\mathbb B_t)
+).
 }
-\tag{65}
+\tag{91}
 \]
 
-where \(\mathcal T^\star\) is DSVA and external theory \(j\) must enter with a declared role:
+# 21. Dialogue with world theories after DSVA is constructed
+
+External theories enter DSVA through:
+
+\[
+\boxed{
+\phi_j:\mathcal T_j\rightarrow\mathcal T^{DSVA}.
+}
+\tag{92}
+\]
 
 \[
 \boxed{
 Role(\mathcal T_j)
 \in
 \{
-SPECIAL\ CASE,\,
-SOLVER,\,
-OPERATOR,\,
-PARAMETERIZATION,\,
-BOUNDARY,\,
+SPECIAL\ CASE,
+SOLVER,
+OPERATOR,
+PARAMETERIZATION,
+BOUNDARY,
 RIVAL
 \}.
 }
-\tag{66}
+\tag{93}
 \]
 
-The literature does not automatically redefine the root ontology.
+The dialogue is equation-to-equation rather than vocabulary-to-vocabulary.
 
-## 21.1 Viability theory
+## 21.1 Viability theory and controlled invariance
 
-Classical viability theory studies whether trajectories can remain within viability constraints under admissible controls. In DSVA, it enters as a special case when the physical state is known exactly and human/institutional extensions are removed.
-
-If:
+Classical viability theory (Aubin, Bayen, & Saint-Pierre, 2011) enters as a **SPECIAL CASE** through Theorem T3:
 
 \[
-B_t=\{x_t\},
-\qquad
-Z=\varnothing,
-\qquad
-\Gamma=\top,
-\tag{67}
+\mathbb B_t=\{\chi_t\}
+\Rightarrow
+DSVA\rightarrow KnownStateViability.
+\tag{94}
 \]
 
-then the evidence-bounded safe action set collapses toward a classical state-based viability problem.
+DSVA keeps typed evidence, evolving information state, adaptive information actions, human/service state, and constrained institutional actuation explicit.
 
-Thus:
+## 21.2 POMDP and belief-state decision making
 
-\[
-ClassicalViability
-=
-SpecialCase(DSVA).
-\tag{68}
-\]
-
-DSVA does not claim ownership of viability theory. It uses viability as an internal mathematical conversation partner.
-
-## 21.2 Real-time control and model predictive control
-
-RTC and MPC contribute solvers and operating policies for \(u^H\). Urban drainage research has treated drainage networks as large-scale dynamic systems and developed multiple control strategies. Reviews of MPC in urban drainage and water-resource systems show mature literatures involving receding horizons, internal models, forecasts, optimization, uncertainty, and multiobjective operation.
-
-In DSVA:
+POMDP theory formalizes decisions when the state is hidden and actions depend on observation history (Kaelbling, Littman, & Cassandra, 1998; Chadès et al., 2021).
 
 \[
-\phi_{MPC}
-:
-MPC
+\boxed{
+POMDP
 \mapsto
-Solver
-\left(
-\mathcal U_H^{safe}
-\right).
-\tag{69}
+SOLVER/PARAMETERIZATION
+}
+\tag{95}
 \]
 
-MPC can optimize a DSVA action problem, but DSVA separately specifies whether the evidence and action semantics license the optimization inputs.
+when the set-valued information state \(\mathbb B_t\) is represented probabilistically as a belief \(b_t(\chi)\). DSVA also permits non-probabilistic set-valued states when defensible probabilities are unavailable.
 
-## 21.3 Robust decision making
-
-Robust adaptive decision approaches address deep uncertainty by seeking strategies that perform acceptably across multiple plausible futures.
-
-In DSVA they map naturally to the handling of:
+## 21.3 Set-membership estimation
 
 \[
-B_t\times\mathcal W_t
+\boxed{
+SetMembership
+\mapsto
+Estimator/UpdateOperator(\mathbb B_t).
+}
+\tag{96}
 \]
 
-and to policy selection across uncertain trajectories.
+This supplies a computational family for evidence-bounded state construction without determining human or institutional viability semantics.
 
-They therefore function as solver/decision traditions inside the viable-futures problem.
+## 21.4 Real-time control and model predictive control
 
-## 21.4 Digital twins
-
-Digital-twin research in disaster risk management emphasizes real-time representation, monitoring, scenario testing, decision support, and interconnected physical/social systems.
-
-In DSVA:
+Urban drainage RTC and MPC are mature traditions for controlling large dynamic drainage systems (García et al., 2015; Lund et al., 2018; Castelletti et al., 2023).
 
 \[
-\phi_{DT}
-:
+\boxed{
+MPC/RTC
+\mapsto
+Solver(
+\Pi_H^{EB}\mid F_X,\mathcal K,\mathcal W
+).
+}
+\tag{97}
+\]
+
+They solve an internal control problem after DSVA has determined what evidence, constraints, and actuation semantics are admissible.
+
+## 21.5 Robust decision making
+
+\[
+\boxed{
+RobustDecision
+\mapsto
+Solver(
+\mathbb B_t\times\mathcal W_H
+).
+}
+\tag{98}
+\]
+
+This directly converses with the universal quantifiers in Eq. (38).
+
+## 21.6 Value of information
+
+Value-of-information analysis in engineering evaluates whether monitoring/inspection changes expected decision value; sequential formulations use MDP/POMDP structures (Zhang et al., 2021).
+
+\[
+\boxed{
+VOI
+\mapsto
+InformationInterventionValue.
+}
+\tag{99}
+\]
+
+DSVA values information by its effect on viable future/action space.
+
+## 21.7 Formal natural-hazard warning decision theory
+
+Bayesian decision theory has been applied directly to natural-hazard warnings, mapping predictive information and loss functions into warning actions (Economou et al., 2016).
+
+\[
+\boxed{
+WarningDecisionTheory
+\mapsto
+Solver(
+FCST,Loss,u^P
+).
+}
+\tag{100}
+\]
+
+DSVA retains:
+
+\[
+WARNING\neq OBSERVATION\neq PROTECTIVE\_OUTCOME.
+\]
+
+## 21.8 Digital twins
+
+\[
+\boxed{
 DigitalTwin
 \mapsto
-Implementation
-\left(
-E
-\rightarrow
-B
-\rightarrow
-F
-\rightarrow
-Reader
-\right).
-\tag{70}
+Implementation(
+E\rightarrow\mathbb B\rightarrow F\rightarrow Reader
+).
+}
+\tag{101}
 \]
 
-A digital twin is therefore an implementation architecture capable of supporting DSVA, not the definition of disaster viability itself.
+A twin can instantiate DSVA but does not replace its semantic and viability constraints.
 
-## 21.5 Disaster resilience
-
-Resilience research contributes concepts of resistance, functional loss, recovery, and cross-system dependencies.
-
-In DSVA, resilience enters through:
+## 21.9 Disaster resilience
 
 \[
-\mathcal K,\quad
-T_V,\quad
-T_R,\quad
-Z_t.
-\tag{71}
+\boxed{
+Resilience
+\mapsto
+(\mathcal K,T_V,T_R,Z).
+}
+\tag{102}
 \]
 
-DSVA's additional discipline is that recovery of a physical variable cannot silently stand for recovery of human function.
+DSVA insists that physical and human/service recovery remain typed and separately measurable.
 
-## 21.6 Sendai Framework
+## 21.10 Sendai Framework
 
-The Sendai Framework identifies understanding disaster risk, strengthening disaster-risk governance, investing in resilience, and enhancing preparedness for effective response and recovery as its four priorities.
+The Sendai priorities map naturally:
 
-DSVA maps these priorities into formal objects:
+    Understand disaster risk       → E, 𝔅
+    Strengthen risk governance     → Γ
+    Invest in resilience           → u^S, K
+    Enhance preparedness/response  → u^P, Z, Π_H^EB
 
-```text
-Understanding risk        → E_t, B_t
-Governance                → Γ_t
-Investment/resilience     → u^S, K
-Preparedness/response     → u^P, Z_t, U_H^EB
-```
+Sendai is therefore a **BOUNDARY / policy architecture** for the DSVA decision universe, not a competing state-transition equation (UNDRR, 2015; 2023).
 
-The Sendai Framework therefore provides a global policy boundary and evaluative dialogue rather than a competing state-transition model.
-
-## 21.7 Integrated water resources management
-
-IWRM emphasizes coordinated management of water, land, related resources, social welfare, equity, and ecosystem sustainability.
-
-In DSVA, IWRM contributes to the construction of:
+## 21.11 Integrated water resources management
 
 \[
-\mathcal K
+\boxed{
+IWRM
+\mapsto
+Boundary/ConstraintArchitecture(\mathcal K,\Gamma).
+}
+\tag{103}
 \]
 
-and:
+## 21.12 Residual synthesis
 
 \[
-\Gamma.
+\boxed{
+\Delta^{DSVA}
+=
+\mathcal T^{DSVA}
+-
+\bigcup_j\phi_j(\mathcal T_j).
+}
+\tag{104}
 \]
 
-The architecture allows ecological, social, and economic constraints to coexist with hazard constraints without reducing them to one risk score.
-
----
+The DSVA research program asks whether the residual architecture—joint physical/epistemic/human/institutional viability governed by adaptive evidence-bounded policies and one intervention-value calculus—continues to explain and predict decision structure across hazards better than any single imported tradition.
 
 # 22. Inside-out synthesis rule
 
@@ -1800,7 +1800,7 @@ This is a shift from **state prediction** toward **decision-licensed viability m
 
 This manuscript has several explicit limits.
 
-First, DSVA is an architecture, not a claim that all components are individually new.
+First, DSVA makes a general-theory claim at the level of architecture, equation ordering, reductions, and joint intervention calculus; it does not require every constituent mathematical operator to be individually unprecedented.
 
 Second, the Sammakorn example remains partially observed. Internal hydraulic geometry, stage-storage relations, realized pump discharge, and some receiving-water boundaries remain incomplete.
 
@@ -1824,13 +1824,15 @@ The core architecture is:
 
 \[
 \boxed{
-X_t
+\chi_t
 \rightarrow
 E_t
 \rightarrow
-B_t
+\mathbb B_t
 \rightarrow
-\mathcal U_H^{EB}
+\Pi_H^{EB}
+\rightarrow
+\mathcal A_H^{EB}
 \rightarrow
 T_V
 \rightarrow
@@ -1897,7 +1899,7 @@ experiments/2026-09-bangkok-hierarchical-real-run.md
 experiments/2026-09-bangkok-toledo-real-backtest.md
 ```
 
-The manuscript should be treated as `PROPOSAL / THEORY_SYNTHESIS`, not production truth.
+The manuscript is the canonical `PROPOSAL / THEORY_SYNTHESIS` expression of DSVA inside FloodConnect. Its general-theory claim is preserved; operational deployment remains separately gated by source freshness, model validation, and reader-specific evidence requirements.
 
 Every equation intended for operational use must eventually map to:
 
@@ -1944,6 +1946,25 @@ and every unresolved input must remain explicitly unresolved.
 16. Royal Irrigation Department. Public reservoir API documentation: storage, inflow, outflow, and related reservoir variables.
 
 17. Royal Thai Navy Hydrographic Department. *Tide Tables in Thai Waters 2026*, including Bangkok and Pak Nam Bang Pakong stations.
+
+
+18. Kaelbling, L. P., Littman, M. L., & Cassandra, A. R. (1998). Planning and acting in partially observable stochastic domains. *Artificial Intelligence, 101*, 99–134. https://doi.org/10.1016/S0004-3702(98)00023-X
+
+19. Chadès, I., Chapron, G., Cros, M.-J., Garcia, F., & Sabbadin, R. (2021). A primer on partially observable Markov decision processes (POMDPs). *Methods in Ecology and Evolution*. https://doi.org/10.1111/2041-210X.13692
+
+20. Zhang, W.-H., Lu, D.-G., Qin, J., Faber, M. H., & Thöns, S. (2021). Value of information analysis in civil and infrastructure engineering: a review. *Journal of Infrastructure Preservation and Resilience, 2*, 16. https://doi.org/10.1186/s43065-021-00027-0
+
+21. Papakonstantinou, K. G., & Shinozuka, M. (2014). Planning structural inspection and maintenance policies via dynamic programming and Markov processes. Part II: POMDP implementation. *Reliability Engineering & System Safety, 130*, 214–224. https://doi.org/10.1016/j.ress.2014.04.006
+
+22. Memarzadeh, M., & Pozzi, M. (2016). Value of information in sequential decision making: Component inspection, permanent monitoring and system-level scheduling. *Reliability Engineering & System Safety, 154*, 137–151.
+
+23. Economou, T., Stephenson, D. B., Rougier, J. C., Neal, R. A., & Mylne, K. R. (2016). On the use of Bayesian decision theory for issuing natural hazard warnings. *Proceedings of the Royal Society A, 472*(2194), 20160295. https://doi.org/10.1098/rspa.2016.0295
+
+24. UNDRR. (2023). *Midterm Review of the Implementation of the Sendai Framework for Disaster Risk Reduction 2015–2030*. United Nations Office for Disaster Risk Reduction.
+
+25. FloodConnect. (2026). *World-Tier Event Reconstruction Matrix — Bangkok Flood 2569, audited 2026-10-01*. Project research artifact.
+
+26. FloodConnect. (2026). *Bangkok Flood 2569 Introduction / Event Reconstruction — audited 2026-10-01*. Project research artifact.
 
 ---
 
