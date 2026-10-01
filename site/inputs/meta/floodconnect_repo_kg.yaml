@@ -169,12 +169,23 @@ nodes:
 
   DSVA_THEORY:
     kind: ARTIFACT
-    label: "Disaster-System Viability Architecture — standalone synthesis-first theory manuscript"
+    label: "Disaster-System Viability Architecture — general theory of viable futures under partial observability"
     epistemic_class: PROPOSAL
     canonical_artifacts:
       - docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md
-    summary: "Synthesis-first disaster-management theory: latent physical state, typed evidence, admissible-world set, joint human/service viability, evidence-bounded safe action, constrained actuation, bottlenecks and recovery."
-    key_boundary: "research proposal/theory synthesis; individual components may have established precedents; not a production forecast, warning or operational command."
+    root_objects:
+      - joint_information_state
+      - typed_evidence_assimilation
+      - adaptive_viable_policy_set
+      - evidence_bounded_current_action_set
+      - viability_horizon
+      - human_service_state
+      - institutional_actuation
+      - intervention_value_calculus
+    formal_core: "mathbb_B_t -> Pi_H^EB -> A_H^EB -> T_V, with typed evidence, coupled physical/information/human/institutional dynamics and adaptive policies."
+    thailand_instantiation: "Bangkok 2569 + Sammakorn; BMA/ThaiWater canal and road observations, BMA PumpHistory, BMA monkey-cheek interface, TMD nowcast, RID reservoir data, Navy tide products."
+    summary: "Synthesis-first general disaster-management theory: manage viable future trajectories rather than a point state; retain physical, epistemic, human/service and institutional objects as distinct but coupled; compare physical, information, protective and institutional interventions through viability gain."
+    key_boundary: "general-theory research claim is canonical for DSVA; operational forecasts/warnings/actions still require reader-specific fresh evidence and validated models. Existing v0.1 common-action equations survive as the explicit open-loop special case, not as the general partial-observability form."
 
   RIVER_KG:
     kind: GRAPH
@@ -596,7 +607,7 @@ question_routes:
       - sources/registry.yaml
       - site/inputs/canals/sammakorn_pond_canal_dag.yaml
       - unified_crisis_state.py
-    rule: "read the synthesis manuscript first; external theories are dialogue/mappings; proposal theory != production forecast or operational command"
+    rule: "read the DSVA manuscript first; v0.2 adaptive-policy equations are canonical over v0.1 open-loop equations; use Thailand/Sammakorn as the first empirical instantiation; external theories enter only through declared dialogue mappings; theory claim != automatic production forecast or operational command"
 
   current_water_or_flood_status:
     start_nodes: [LIVE_DATA_SYSTEM, LIVE_WATER]
