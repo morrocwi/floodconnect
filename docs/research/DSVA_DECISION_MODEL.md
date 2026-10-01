@@ -1,8 +1,8 @@
-# DSVA v0.10 Executable Disaster Decision Model
+# DSVA v0.11 Executable Disaster Decision Model
 
 **Status:** proposal / executable reference model  
 **Anchor:** DSVA v0.7 standalone, with the FloodConnect v0.6 repository state at `affd07ead02df0fc5d9b8bd8ab6f72ce57b6978c` as constitutional baseline.  
-**Purpose:** turn finite, declared disaster evidence/state scenarios into auditable action-license outputs without replacing hazard models or DSVA theory. v0.10 retains the IDM-informed finite obstruction/quotient kernel and makes additional v0.6 second-order applicability, dependency, realizability, execution, requirement and verification contracts executable.
+**Purpose:** turn finite, declared disaster evidence/state scenarios into auditable action-license outputs without replacing hazard models or DSVA theory. v0.11 retains the IDM-informed finite obstruction/quotient kernel and v0.10 theory contracts, then executes a finite projection of SOL-20..28 realizability: actor-local adaptive-policy structure, load-bearing assume-guarantee branch witnesses, and persistent recovery.
 
 ## 1. Research-facing object
 
@@ -53,7 +53,7 @@ LicensedAction.
 
 ## 3. Executable input
 
-A v0.10 scenario JSON contains:
+A v0.11 scenario JSON contains:
 
 - `question`: reader/task and horizon;
 - `envelope.trace_semantics = discrete_retained` and a positive exact `trace_resolution`;
@@ -72,6 +72,9 @@ A v0.10 scenario JSON contains:
 - protected requirement ledger fields `function/constraint/threshold/horizon/provenance/coverageStatus`;
 - per-action `execution_contract` and optional `future_observation_contract`;
 - `verification_contract`: independent producer/checker metadata plus SHA-256 bindings to the exact finite spec and input snapshot.
+- optional `adaptive_policy`: a finite actor-local policy DAG when future observation branching is load-bearing;
+- `boundary_contracts`: explicit finite load-bearing assume-guarantee branch witnesses (may be empty);
+- `recovery_contract`: explicit declaration of whether persistent recovery is required and, when required, its retained return reader/time/horizon.
 
 ## 4. Decision rule
 
@@ -333,3 +336,88 @@ tests/test_dsva_decision_v010_theory_contracts.py
 ```
 
 The remaining explicit theory/model gap is no longer the nine contracts above. The largest remaining gaps are **full actor-local adaptive-policy execution** and **dedicated persistent-recovery/return-set execution**. Therefore v0.10 remains a finite projection rather than a claim that all of DSVA is executable.
+
+
+## 11. v0.11 finite realizability projection
+
+The v0.10 executable closed the finite applicability/dependency/execution/requirement/verification gaps but still treated a total future response map as sufficient evidence of adaptive-policy realizability. The v0.10 realizability red-team in draft PR #46 showed seven failures, including nonexistent future nodes, future actions outside the actuation envelope, actor-local delivery violations, hindsight timing, unrealizable boundary assumptions, transient recovery, and cyclic policy structure.
+
+v0.11 projects DSVA SOL-20..28 more directly.
+
+For finite policy witness
+
+[
+P=(N,E,n_0),
+]
+
+every reachable node must satisfy:
+
+[
+action_ninmathcal U^{feasible},
+]
+
+[
+ReqInfo_n
+subseteq
+InfoAvailable(actor_n,t_n,path_n),
+]
+
+and for observation at (t_o) leading to child (n'):
+
+[
+t_o>t_n,
+qquad
+t_{n'}ge t_o.
+]
+
+Every admitted observation outcome maps to a real child node, and the root future-observation response map must equal the policy transition map.
+
+Load-bearing assume-guarantee contracts used by candidate action (a) require a branch witness:
+
+[
+A_c(w,d)=true
+land
+G_c(w,d)=true
+]
+
+for every admitted finite world × disturbance pair.
+
+Persistent recovery is executed on the retained grid. For declared return time (t_R) and persistence horizon (H_R>0):
+
+[
+read_R(chi_t)=target
+quad
+orall tin[t_R,t_R+H_R]cap T_Q^lambda.
+]
+
+Thus:
+
+[
+Touch(mathcal K^{return})
+
+eq
+PersistentRecovery.
+]
+
+The finite strong path is now:
+
+[
+oxed{
+License_Q^{0.11}(a)
+iff
+License_Q^{0.10}(a)
+land
+M_{Z,f}^{Q}(a)
+}
+]
+
+where the finite (M_Z) witness contains adaptive policy, load-bearing contract realizability, and persistent recovery.
+
+See:
+
+```text
+docs/research/DSVA_FINITE_REALIZABILITY_PROJECTION.md
+tests/test_dsva_decision_v011_realizability.py
+```
+
+The finite projections now materially cover all six second-order meta-contract categories. Remaining gaps are chiefly witness/world-construction soundness, externally proven verifier independence, continuous inter-sample certificates, aggregate/group requirement semantics, and policy synthesis beyond a supplied finite witness.
