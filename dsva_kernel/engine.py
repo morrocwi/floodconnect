@@ -1,4 +1,4 @@
-"""DSVA v0.10 finite retained obstruction + executable theory-contract evaluator."""
+"""DSVA v0.11 finite retained obstruction + finite realizability evaluator."""
 from __future__ import annotations
 
 import hashlib
@@ -25,11 +25,14 @@ from .core import (
     q,
 )
 from .contracts import (
+    adaptive_policy_obstruction,
     applicability_check,
+    boundary_contract_obstruction,
     dependency_check,
     execution_obstruction,
     future_observation_obstruction,
     hazard_dependency_check,
+    recovery_trace_obstruction,
     requirement_ledger_check,
     resource_obstruction,
     verification_binding,
@@ -315,6 +318,29 @@ def action_obstruction(
     if aid not in ctx["actuation"]:
         return Obstruction("ACTION_OUTSIDE_ACTUATION_ENVELOPE", aid, scope)
 
+    policy_error = adaptive_policy_obstruction(
+        ctx["scenario"],
+        action,
+        ctx["observation_envelope"],
+        ctx["actuation"],
+        ctx["actor_information"],
+        ctx["H"],
+        ledger,
+    )
+    if policy_error:
+        return Obstruction(policy_error, scope=scope)
+
+    boundary_error = boundary_contract_obstruction(
+        ctx["scenario"],
+        aid,
+        ctx["worlds"],
+        ctx["disturbances"],
+        ctx["H"],
+        ledger,
+    )
+    if boundary_error:
+        return Obstruction(boundary_error, scope=scope)
+
     execution_error = execution_obstruction(action, ledger)
     if execution_error:
         return Obstruction(execution_error, scope=scope)
@@ -419,11 +445,24 @@ def action_obstruction(
                     trace_cache[trace_key] = why
                 return Obstruction(why, f"{world}/{dist}", scope)
 
-            _, why = trace_times(trace, ctx["H"], ctx["trace_resolution"], ledger)
+            times, why = trace_times(trace, ctx["H"], ctx["trace_resolution"], ledger)
             if why:
                 if trace_key is not None:
                     trace_cache[trace_key] = why
                 return Obstruction(why, f"{world}/{dist}", scope)
+
+            recovery_error = recovery_trace_obstruction(
+                ctx["scenario"],
+                trace,
+                times,
+                ctx["H"],
+                ctx["trace_resolution"],
+                ledger,
+            )
+            if recovery_error:
+                if trace_key is not None:
+                    trace_cache[trace_key] = recovery_error
+                return Obstruction(recovery_error, f"{world}/{dist}", scope)
 
             for i, state in enumerate(trace):
                 ok, why = state_safe(state, ctx["requirements"], state_cache, ledger)
@@ -451,9 +490,9 @@ def evaluate(scenario: Mapping[str, Any]) -> Dict[str, Any]:
         "provenance": scenario.get("provenance", []) if isinstance(scenario, Mapping) else [],
         "kernel": {
             "name": "DSVA finite retained obstruction kernel",
-            "version": "0.10",
-            "control_warrant": "exact finite + bound verification + applicability/dependency/realizability/execution contracts",
-            "trace_warrant": "type-stable retained states + subject-bound requirement ledger at declared discrete resolution",
+            "version": "0.11",
+            "control_warrant": "exact finite + theory contracts + finite adaptive-policy/contract/recovery realizability",
+            "trace_warrant": "type-stable retained states + persistent recovery at declared discrete resolution",
         },
     }
     try:
