@@ -1,12 +1,12 @@
 # Disaster-System Viability Architecture (DSVA)
 ## A Toledo-Welded General Theory of Preserving, Losing, and Recovering Viable Futures under Partial Observability and Constrained Actuation
 
-**Standalone theory manuscript — Repository-Synthesized Toledo Upgrade v0.4**  
+**Standalone theory manuscript — Information-Contract Bridge Upgrade v0.5**  
 **Date:** 1 October 2026  
 **Field:** Disaster Risk Science / Disaster Management  
 **Empirical demonstrator:** Sammakorn retention-and-drainage system, eastern Bangkok, Thailand  
 **Software/reproducibility anchor:** FloodConnect (`morrocwi/floodconnect`)  
-**Theory claim:** DSVA is presented as a general disaster-management theory of preserving, losing, and recovering viable futures. Version 0.4 retains the complete v0.3 Toledo-welded architecture, explicitly absorbs pre-existing FloodConnect constructs before introducing any new equations, and adds only residual theory objects not already canonical: hazard-induced topology transition, evidence validity/expiry, forecast support breach, recoverability after viability loss, and hysteretic re-escalation. DSVA-specific equations remain proposals until separately registered in Toledo; the general-theory claim is not reduced.
+**Theory claim:** DSVA is presented as a general disaster-management theory of preserving, losing, and recovering viable futures. Version 0.5 retains v0.4 as the repository-synthesized anchor, then closes the brutal-redteam leaks through one information-contract bridge: contradiction-safe definedness, metrological/readout compatibility, reader-sufficient state closure, hybrid damage/topology closure, three-valued forecast support, assume-guarantee boundary closure, shared-capacity network allocation, and capture-basin recoverability. External theories enter only as operators, solvers, contract semantics, or special cases inside DSVA/Toledo; the general-theory claim is not reduced.
 
 ---
 
@@ -661,10 +661,12 @@ support,\,
 datum,\,
 t_{obs},\,
 t_{pub},\,
+I^{valid},\,
 uncertainty,\,
 freshness,\,
 quality,\,
-lineage
+lineage,\,
+calibration
 \right\rangle
 }
 \tag{9}
@@ -823,7 +825,7 @@ Define the latent joint disaster state:
 
 \[
 \boxed{
-\chi_t=(G_t,X_t,Z_t,\Theta_t,\Gamma_t)
+\bar\chi_t=(G_t,X_t,Z_t,\Theta_t,\Gamma_t,D_t)
 }
 \tag{21}
 \]
@@ -834,7 +836,7 @@ and the **joint admissible information state**
 \boxed{
 \mathbb B_t
 \subseteq
-\mathcal G\times\mathcal X\times\mathcal Z\times\Theta\times\Gamma .
+\mathcal G\times\mathcal X\times\mathcal Z\times\Theta\times\Gamma\times\mathcal D .
 }
 \tag{22}
 \]
@@ -939,6 +941,7 @@ F_Z(Z_t,X_{t+1},u_t^P,u_t^S,\omega_t)
 \[
 \boxed{
 G_{t+1}=F_G(G_t,u_t^S)
+\quad\text{only under the no-damage reduction }D_{t+1}=D_t
 }
 \tag{32}
 \]
@@ -1088,7 +1091,7 @@ The **Evidence-Bounded Viable Policy Set** is:
 \tag{38}
 \]
 
-This is the formal core of DSVA: a policy is disaster-viable only if it keeps every currently admissible world inside declared viability constraints across the declared disturbance set, while allowing later actions to respond to later evidence.
+This is the formal core of DSVA: a policy is disaster-viable only if it keeps every currently admissible world inside declared viability constraints across the declared disturbance set, while allowing later actions to respond to later evidence. The operator is defined only for a consistent nonempty information state. If \(\mathbb B_t=\varnothing\), the result is \(REFUSED(CONTRADICTION)\), never vacuous viability.
 
 The actions justified **now** are the first-action projection:
 
@@ -1128,7 +1131,9 @@ T_V(\mathbb B_t)
 =
 \sup\left\{
 H:\Pi_H^{EB}(\mathbb B_t)\neq\varnothing
-\right\}.
+\right\},
+\quad
+\mathbb B_t\neq\varnothing.
 }
 \tag{41}
 \]
@@ -1306,7 +1311,7 @@ Operational admission requires:
 
 \[
 \boxed{
-Admit_j(t)
+Admit_j^Q(t)
 =
 SemanticOK_j
 \land
@@ -1314,12 +1319,16 @@ ProvenanceOK_j
 \land
 Active_j(t)
 \land
-Fresh_j(t).
+Fresh_j(t)
+\land
+QualityOK_j(t)
+\land
+Compatible_j(Q,t).
 }
 \tag{DSVA-R07}
 \]
 
-This upgrades the Hat Yai warning problem: a warning may be historically true, yet expired for the current decision.
+where \(Compatible_j(Q,t)\) requires the unit, datum/reference, spatial support, temporal support and measurement model to be adequate for the declared reader \(Q\). This upgrades the Hat Yai warning problem while also preserving the older FloodConnect rule \(FRESH\not\Rightarrow VALID\): a warning may be historically true yet expired, and a fresh sensor may still be unusable for a particular calculation.
 
 ### 10B.3 Forecast support breach / outside calibrated range
 
@@ -1327,18 +1336,21 @@ A forecast product defines a declared support/set \(\mathcal S^{fcst}_{j,t}\) fo
 
 \[
 \boxed{
-SupportBreach_{j,t}
+SupportStatus_{j,t}
 =
-\mathbf 1[
-Y_t^{obs}
-\notin
-\mathcal S^{fcst}_{j,t}
-].
+\begin{cases}
+UNRESOLVED,
+&\mathcal S^{fcst}_{j,t}\text{ unavailable or incompatible},\\
+WITHIN\_SUPPORT,
+&Y_t^{obs}\in\mathcal S^{fcst}_{j,t},\\
+SUPPORT\_BREACH,
+&Y_t^{obs}\notin\mathcal S^{fcst}_{j,t}.
+\end{cases}
 }
 \tag{DSVA-R08}
 \]
 
-A breached support yields:
+A declared \(SUPPORT\_BREACH\) yields:
 
 \[
 \boxed{
@@ -1355,7 +1367,7 @@ Toledo historical invariance applies: the original forecast is retained as issue
 
 ### 10B.4 Recoverability after normal viability is lost
 
-FloodConnect already has operational `RECOVERY_RETURN`; DSVA v0.4 lifts it into a general policy object.
+FloodConnect already has operational `RECOVERY_RETURN`; DSVA v0.5 lifts it into a general policy object.
 
 Let normal joint viability be \(\mathcal K\). Define a wider emergency floor:
 
@@ -1427,7 +1439,7 @@ RETURN.
 
 ### 10B.5 Hysteretic re-escalation
 
-The existing Unified Crisis State already separates current condition from forward hazard. v0.4 adds the general phase transition.
+The existing Unified Crisis State already separates current condition from forward hazard. v0.4 introduced the general phase transition; v0.5 retains it under the information-contract bridge.
 
 Define re-escalation guard:
 
@@ -1499,6 +1511,119 @@ Action/Recovery.
 \]
 
 Every existing FloodConnect construct remains canonical at its own layer.
+
+
+---
+
+
+## 10C. Information-contract bridge: one formal bridge across the red-team leaks
+
+The full bridge is specified in \`docs/research/DSVA_INFORMATION_CONTRACT_BRIDGE.md\`. It does not add a parallel ontology. It closes existing DSVA objects with six task-relative contracts:
+
+\[
+\boxed{
+\mathfrak C_t^Q
+=
+(C_E^Q,C_S^Q,C_T^Q,C_B^Q,C_N^Q,C_R^Q).
+}
+\tag{DSVA-ICB-01}
+\]
+
+The bridge is:
+
+\[
+\boxed{
+E_{\le t}
+\xrightarrow{C_E^Q}
+(\sigma_Q,\mathbb B_t)
+\xrightarrow{C_S^Q,C_T^Q}
+\mathcal R_H
+\xrightarrow{C_B^Q,C_N^Q}
+\{\Pi_H^{EB},\Pi_H^{REC}\}
+\xrightarrow{O_Q}
+Action/Recovery.
+}
+\tag{DSVA-ICB-02}
+\]
+
+Its closure obligations are:
+
+\[
+\boxed{
+\begin{aligned}
+InformationClosure &: \mathbb B_t\neq\varnothing\text{ or REFUSE},\\
+EvidenceClosure &: Admit_Q\text{ includes QC + reader compatibility},\\
+StateClosure &: \bar\chi_t\text{ is reader-sufficient},\\
+TransitionClosure &: \text{hazard damage/topology jumps are in the stepper},\\
+BoundaryClosure &: \text{material externalities are modeled or contracted},\\
+CapacityClosure &: \text{simultaneous flows obey shared capacities},\\
+RecoveryClosure &: \text{re-entry into }\mathcal K\text{ is reachable under }\mathcal K^{life}.
+\end{aligned}
+}
+\tag{DSVA-ICB-03}
+\]
+
+For a proposition \(p\), contradiction and ignorance are kept distinct through:
+
+\[
+\boxed{
+\sigma_Q(p)
+=
+(s_Q^+(p),s_Q^-(p))
+\in\{0,1\}^2
+}
+\tag{DSVA-ICB-04}
+\]
+
+with \((0,0)=UNRESOLVED\), \((1,0)=SUPPORTED\), \((0,1)=REFUTED\), and \((1,1)=CONTRADICTION\).
+
+A local subsystem may claim a global/system guarantee only through an explicit boundary contract:
+
+\[
+\boxed{
+C_{B,i}^Q=(A_i^Q,G_i^Q),
+\qquad
+Env_i\models A_i^Q\Rightarrow Sys_i\models G_i^Q.
+}
+\tag{DSVA-ICB-05}
+\]
+
+If material consequences leave the modeled domain without a verified neighboring contract:
+
+\[
+\boxed{
+ClaimScope=LOCAL/PARTIAL.
+}
+\tag{DSVA-ICB-06}
+\]
+
+Candidate-level TDLC/LCF feasibility remains separate from simultaneous network allocation. When several deliveries or movements share an edge:
+
+\[
+\boxed{
+\sum_k f_{k,e}(t)\le C_e^{eff}(t)
+\quad\forall e.
+}
+\tag{DSVA-ICB-07}
+\]
+
+A multicommodity or time-expanded network-flow solver may implement this constraint under TDLC/LCF; it does not replace their support semantics.
+
+Finally, DSVA recoverability is the information-state analogue of a capture-basin/reach-avoid problem:
+
+\[
+\boxed{
+\mathbb B_t\in\mathfrak C_H^{REC}
+\iff
+\Pi_H^{REC}(\mathbb B_t)\neq\varnothing.
+}
+\tag{DSVA-ICB-08}
+\]
+
+When \(\mathbb B_t=\{\bar\chi_t\}\), the object reduces to the known-state robust capture-basin case.
+
+External theories therefore enter as leak-closing operators inside one DSVA bridge:
+bilattice semantics for contradiction status; metrology and set-membership for evidence consistency; hybrid systems for flow/jump closure; assume-guarantee contracts for subsystem boundaries; multicommodity flow for shared capacity; and capture-basin/reach-avoid theory for recoverability.
 
 
 ---
@@ -1770,7 +1895,7 @@ MISSING\not\Rightarrow 0.
 Assume a valid evidence update excludes no true state and has zero harmful latency/cost. If:
 
 \[
-\mathbb B'_t\subseteq\mathbb B_t,
+\varnothing\neq\mathbb B'_t\subseteq\mathbb B_t,
 \tag{59}
 \]
 
@@ -1794,7 +1919,7 @@ T_V(\mathbb B'_t)\ge T_V(\mathbb B_t).
 \tag{61}
 \]
 
-**Proof sketch.** Every policy viable for every state in the larger admissible set is viable for every state in its subset. Any cost or latency of obtaining the information is represented separately in the coupled dynamics.
+**Proof sketch.** Every policy viable for every state in the larger admissible set is viable for every state in its nonempty consistent subset. Contradictory updates that yield an empty information state are refused before the theorem applies. Any cost or latency of obtaining the information is represented separately in the coupled dynamics.
 
 ## Theorem T2 — Feasible-action expansion monotonicity
 
@@ -1894,7 +2019,7 @@ DSVA is challenged when, after measurement and model error are controlled:
 
 # 17. Thailand as a full-system empirical stress environment
 
-Version 0.4 uses two distinct empirical roles inside the repository. Bangkok/Sammakorn remains the first finite Toledo/DSVA instantiation, while the pre-existing Hat Yai 2025 red-team supplies a deliberately different catchment-scale stress case. The latter already demonstrated conflicting current-vs-forward state, repeated pulses, adaptive freshness requirements, multimodal routes, service-node fragility, extreme-load support breach and throughput limits. These are absorbed here as prior FloodConnect findings, not claimed as newly discovered by DSVA v0.4.
+Version 0.4 uses two distinct empirical roles inside the repository. Bangkok/Sammakorn remains the first finite Toledo/DSVA instantiation, while the pre-existing Hat Yai 2025 red-team supplies a deliberately different catchment-scale stress case. The latter already demonstrated conflicting current-vs-forward state, repeated pulses, adaptive freshness requirements, multimodal routes, service-node fragility, extreme-load support breach and throughput limits. These are absorbed here as prior FloodConnect findings, not claimed as newly discovered by DSVA v0.5.
 
 Thailand is not introduced merely as a local case. It provides a demanding empirical environment for a general disaster-management theory because the operational problem is distributed across physical networks, multiple public institutions, heterogeneous data products, different update cadences, and different semantic classes of public information.
 
