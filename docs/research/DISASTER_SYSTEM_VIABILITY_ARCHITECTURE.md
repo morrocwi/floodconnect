@@ -3295,9 +3295,9 @@ Measure:
 
 ## 23.5 Multi-event validation
 
-A single flood can demonstrate coherence but cannot establish general predictive performance.
+A single flood can demonstrate coherence but cannot establish general predictive performance. The v0.5 second-order adversarial suite and v0.6 meta-license retest are finite theory falsification tests, not empirical accuracy estimates.
 
-The next stage requires prospective or anti-hindsight replay across independent events, followed by cross-hazard testing.
+The next stage requires prospective or anti-hindsight replay across independent events, followed by cross-hazard testing and a third-order search for cases in which both first- and second-order license obligations pass yet the action is still wrong.
 
 ---
 
@@ -3474,6 +3474,7 @@ experiments/2026-09-26-sammakorn-7day-backtest.md
 experiments/2026-09-bangkok-hierarchical-real-run.md
 experiments/2026-09-bangkok-toledo-real-backtest.md
 experiments/2026-10-01-dsva-v05-second-order-redteam.md
+experiments/2026-10-01-dsva-v06-meta-license-retest.md
 docs/research/DSVA_SECOND_ORDER_LICENSE.md
 ```
 
