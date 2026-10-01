@@ -14,7 +14,8 @@ INPUT_KEYS = (
     "information_status", "model_invalidated", "closures", "closure_audit",
     "worlds", "disturbances", "actor_information", "trace_library", "actions",
     "typed_reader", "proposed_action", "applicability_evidence", "dependency_audit",
-    "resource_audit", "hazard_dependency_audit", "provenance",
+    "resource_audit", "hazard_dependency_audit", "adaptive_policy",
+    "boundary_contracts", "recovery_contract", "provenance",
 )
 
 
