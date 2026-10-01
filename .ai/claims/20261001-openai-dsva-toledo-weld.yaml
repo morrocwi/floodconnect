@@ -6,7 +6,6 @@ base_sha: "7761b3d89552da684b498e2e45a40b8047efe534"
 nodes:
   - DSVA_THEORY
   - REPO_KG
-  - TOLEDO_ROOT
 artifacts:
   - docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md
   - docs/research/DSVA_TOLEDO_WELD.md
