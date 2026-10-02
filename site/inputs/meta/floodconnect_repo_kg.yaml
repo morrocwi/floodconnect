@@ -217,7 +217,7 @@ nodes:
 
   DSVA_DECISION_MODEL:
     kind: MODEL
-    label: "DSVA v0.10 executable disaster decision model — finite retained obstruction + theory-contract projection"
+    label: "DSVA v0.11 executable disaster decision model — finite retained obstruction + finite realizability projection"
     epistemic_class: EXECUTABLE_MODEL
     canonical_artifacts:
       - dsva_decision.py
@@ -229,14 +229,16 @@ nodes:
       - docs/research/DSVA_FINITE_OBSTRUCTION_KERNEL.md
       - docs/research/DSVA_AUDITED_MEANING_CLOSURE.md
       - docs/research/DSVA_THEORY_CONTRACT_PROJECTION.md
+      - docs/research/DSVA_FINITE_REALIZABILITY_PROJECTION.md
       - site/inputs/decision/dsva_decision_schema.json
       - examples/dsva_decision_minimal.json
       - tests/test_dsva_decision.py
       - tests/test_dsva_decision_v08_redteam.py
       - tests/test_dsva_decision_v09_redteam.py
       - tests/test_dsva_decision_v010_theory_contracts.py
-    summary: "Executable projection of DSVA theory for finite anti-hindsight scenarios. v0.10 retains the IDM exact-finite obstruction/quotient kernel and v0.9 audited meaning closure, then makes finite applicability behavior overlap, evidence-lineage independence, global resource reservation, compound-hazard factorization licensing, future-observation totality, realized-actuation/runtime contracts, complete protected-requirement ledger metadata, and snapshot-bound independent verification load-bearing."
-    key_boundary: "reference decision model != hazard forecast != universal safety proof; finite behavior compatibility != true model; declared checker independence != proven independent implementation; total future-response map != full adaptive-policy realizability; discrete retained safety != continuous inter-sample safety; typed-reader confidence never overrides hard DSVA constraints."
+      - tests/test_dsva_decision_v011_realizability.py
+    summary: "Executable projection of DSVA theory for finite anti-hindsight scenarios. v0.11 preserves the IDM exact-finite retained obstruction/quotient kernel and v0.9-v0.10 meaning/theory contracts, then projects DSVA SOL-20..28 with an actor-local finite adaptive-policy DAG, finite load-bearing assume-guarantee branch witnesses, and persistent recovery over the declared retained grid."
+    key_boundary: "reference decision model != hazard forecast != universal safety proof; finite policy witness != optimal/universal policy; finite assume-guarantee witness != physical reachability proof; retained persistent recovery != continuous inter-sample recovery; declared checker independence != proven independent implementation; typed-reader confidence never overrides hard DSVA constraints."
 
   TOLEDO_ROOT:
     kind: ARTIFACT
@@ -710,13 +712,14 @@ question_routes:
     read:
       - docs/research/DSVA_DECISION_MODEL.md
       - docs/research/DSVA_FINITE_OBSTRUCTION_KERNEL.md
+      - docs/research/DSVA_FINITE_REALIZABILITY_PROJECTION.md
       - dsva_decision.py
       - site/inputs/decision/dsva_decision_schema.json
       - examples/dsva_decision_minimal.json
       - tests/test_dsva_decision.py
       - docs/research/DISASTER_SYSTEM_VIABILITY_ARCHITECTURE.md
       - docs/research/DSVA_SECOND_ORDER_LICENSE.md
-    rule: "decision model is an executable finite projection of DSVA, not a hazard forecaster; v0.10 requires the v0.9 finite/audited meaning gates plus finite applicability overlap, dependency lineage/resource/hazard contracts, future-observation response totality, realized-actuation/runtime closure, full requirement ledger scope, and verification bound to the exact finite spec/input snapshot; preserve envelope/horizon/provenance and never allow typed-reader confidence to override hard DSVA constraints"
+    rule: "decision model is an executable finite projection of DSVA, not a hazard forecaster; v0.11 requires all v0.10 theory contracts plus executable finite adaptive-policy node binding, actor-local future-information delivery, anti-hindsight policy timing, load-bearing assume-guarantee branch realizability, and persistent recovery over the declared retained grid; preserve envelope/horizon/provenance and never allow typed-reader confidence to override hard DSVA constraints"
 
   current_water_or_flood_status:
     start_nodes: [LIVE_DATA_SYSTEM, LIVE_WATER]

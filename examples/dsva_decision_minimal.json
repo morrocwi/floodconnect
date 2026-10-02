@@ -197,7 +197,7 @@
   ],
   "valid_until": 2,
   "provenance": [
-    "DSVA v0.10 executable theory-contract demonstration"
+    "DSVA v0.11 finite realizability demonstration"
   ],
   "closure_audit": {
     "first_order": {
@@ -328,10 +328,14 @@
       ]
     },
     "spec_digest": "ffbe44bd2c06af1123b13e4da60a1683a521d48e30e0379781488b7120468ee9",
-    "input_digest": "c5941c42d118f3396e5d7f16bd398a7d8d0ee626c6ae6d0afc6985189fd33630",
+    "input_digest": "7727a0f324860630a5f00ea87f7a26278efd53784e369bc7d4b6b7595a500d17",
     "certificate": {
       "kind": "finite-constraint-recheck",
       "witness": "synthetic fixture rechecks the bound spec/input snapshot"
     }
+  },
+  "boundary_contracts": [],
+  "recovery_contract": {
+    "required": false
   }
 }

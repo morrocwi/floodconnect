@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://floodconnect.local/schema/dsva-decision-v0.10.json",
-  "title": "DSVA v0.10 finite retained theory-contract disaster decision snapshot",
+  "$id": "https://floodconnect.local/schema/dsva-decision-v0.11.json",
+  "title": "DSVA v0.11 finite adaptive-policy and persistent-recovery disaster decision snapshot",
   "type": "object",
   "required": [
     "question",
@@ -20,7 +20,9 @@
     "dependency_audit",
     "resource_audit",
     "hazard_dependency_audit",
-    "verification_contract"
+    "verification_contract",
+    "boundary_contracts",
+    "recovery_contract"
   ],
   "properties": {
     "question": {
@@ -989,6 +991,174 @@
               "minLength": 1
             },
             "witness": {}
+          }
+        }
+      }
+    },
+    "boundary_contracts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "used_by",
+          "invoke_time",
+          "branches"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "used_by": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "invoke_time": {
+            "type": [
+              "number",
+              "integer",
+              "string"
+            ]
+          },
+          "branches": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "recovery_contract": {
+      "type": "object",
+      "required": [
+        "required"
+      ],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "field": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {},
+        "return_time": {
+          "type": [
+            "number",
+            "integer",
+            "string"
+          ]
+        },
+        "persistence_horizon": {
+          "type": [
+            "number",
+            "integer",
+            "string"
+          ]
+        }
+      }
+    },
+    "adaptive_policy": {
+      "type": "object",
+      "required": [
+        "root",
+        "nodes"
+      ],
+      "properties": {
+        "root": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nodes": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "time",
+              "actor",
+              "action"
+            ],
+            "properties": {
+              "time": {
+                "type": [
+                  "number",
+                  "integer",
+                  "string"
+                ]
+              },
+              "actor": {
+                "type": "string",
+                "minLength": 1
+              },
+              "action": {
+                "type": "string",
+                "minLength": 1
+              },
+              "requires_info": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "terminal": {
+                "type": "boolean"
+              },
+              "observe": {
+                "type": "object",
+                "required": [
+                  "channel",
+                  "time",
+                  "delivered_to",
+                  "admitted_outcomes",
+                  "outcomes"
+                ],
+                "properties": {
+                  "channel": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "time": {
+                    "type": [
+                      "number",
+                      "integer",
+                      "string"
+                    ]
+                  },
+                  "delivered_to": {
+                    "type": "array",
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "admitted_outcomes": {
+                    "type": "array",
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "outcomes": {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }

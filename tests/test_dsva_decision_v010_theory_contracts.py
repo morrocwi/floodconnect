@@ -136,14 +136,37 @@ def test_valid_bound_verification_metadata_is_returned():
 def test_complete_future_observation_policy_can_license():
     s = demo()
     s["envelope"]["observation_envelope"].append("future_sensor")
+    outcomes = ["VALUE", "CHANNEL_DOWN", "STALE", "CONTRADICTION"]
+    responses = {
+        "VALUE": "n1",
+        "CHANNEL_DOWN": "n2",
+        "STALE": "n3",
+        "CONTRADICTION": "n4",
+    }
     s["actions"][0]["future_observation_contract"] = {
         "channel": "future_sensor",
-        "admitted_outcomes": ["VALUE", "CHANNEL_DOWN", "STALE", "CONTRADICTION"],
-        "responses": {
-            "VALUE": "CONTINUE",
-            "CHANNEL_DOWN": "HOLD",
-            "STALE": "HOLD",
-            "CONTRADICTION": "HOLD",
+        "admitted_outcomes": outcomes,
+        "responses": responses,
+    }
+    s["adaptive_policy"] = {
+        "root": "n0",
+        "nodes": {
+            "n0": {
+                "time": 0,
+                "actor": "incident_lead",
+                "action": "PREPARE",
+                "observe": {
+                    "channel": "future_sensor",
+                    "time": 1,
+                    "delivered_to": ["incident_lead"],
+                    "admitted_outcomes": outcomes,
+                    "outcomes": responses,
+                },
+            },
+            "n1": {"time": 1, "actor": "incident_lead", "action": "PREPARE", "requires_info": ["future_sensor"], "terminal": True},
+            "n2": {"time": 1, "actor": "incident_lead", "action": "WAIT", "terminal": True},
+            "n3": {"time": 1, "actor": "incident_lead", "action": "WAIT", "terminal": True},
+            "n4": {"time": 1, "actor": "incident_lead", "action": "WAIT", "terminal": True},
         },
     }
     out = evaluate(rebind(s))

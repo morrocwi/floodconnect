@@ -1,8 +1,8 @@
 claim_id: "20261002-openai-dsva-v011-realizability"
 status: ACTIVE
 writer: "openai"
-branch: "agent/openai/dsva-v011-realizability"
-base_sha: "53759b9e5b8589f7198e3d8c0184c893fd14d401"
+branch: "agent/openai/dsva-v011-realizability-impl"
+base_sha: "cbe0614a6c79d00c2dbbd4e6aed944180b8b6abe"
 nodes:
   - DSVA_DECISION_MODEL
   - DSVA_THEORY
@@ -15,6 +15,8 @@ artifacts:
   - site/inputs/decision/dsva_decision_schema.json
   - examples/dsva_decision_minimal.json
   - tests/test_dsva_decision_v011_realizability.py
+  - tests/test_dsva_decision_v08_differential.py
+  - tests/dsva_v010_helpers.py
   - experiments/2026-10-02-dsva-v011-realizability-redteam.md
   - site/inputs/meta/floodconnect_repo_kg.yaml
   - docs/AI_ENTRYPOINT.md
@@ -23,4 +25,4 @@ created_at: "2026-10-02T01:15:00+07:00"
 expires_at: null
 reviewers: []
 supersedes: "20261002-openai-dsva-v010-theory-contracts"
-note: "Failure evidence: draft PR #46 / Actions run 36905308893 = 7 failed, 507 passed, 1 skipped in 13.77s. v0.11 is a finite realizability projection of existing SOL-20..28; it must not be described as a complete infinite/open-world POMDP or universal recovery proof."
+note: "Claim-only PR #47 merged first. Implementation branch starts from updated main cbe0614. Failure evidence: draft PR #46 / Actions run 36905308893 = 7 failed, 507 passed, 1 skipped in 13.77s. v0.11 is a finite realizability projection of existing SOL-20..28; it must not be described as a complete infinite/open-world POMDP or universal recovery proof."
