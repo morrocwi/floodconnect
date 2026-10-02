@@ -1,5 +1,5 @@
 claim_id: "20261002-openai-dsva-v011-realizability"
-status: ACTIVE
+status: RELEASED
 writer: "openai"
 branch: "agent/openai/dsva-v011-realizability-impl"
 base_sha: "cbe0614a6c79d00c2dbbd4e6aed944180b8b6abe"
@@ -25,4 +25,4 @@ created_at: "2026-10-02T01:15:00+07:00"
 expires_at: null
 reviewers: []
 supersedes: "20261002-openai-dsva-v010-theory-contracts"
-note: "Claim-only PR #47 merged first. Implementation branch starts from updated main cbe0614. Failure evidence: draft PR #46 / Actions run 36905308893 = 7 failed, 507 passed, 1 skipped in 13.77s. v0.11 is a finite realizability projection of existing SOL-20..28; it must not be described as a complete infinite/open-world POMDP or universal recovery proof."
+note: "Claim-only PR #47 merged first. Implementation PR #48 merged at bfee668db50ac7a0b0b16b82a416e3cd3dbdae13 after GitHub Actions run 36906718687 passed the full repository gates. Preserved failure evidence remains draft PR #46 / run 36905308893 (7 failed, 507 passed, 1 skipped). v0.11 is a finite realizability projection of existing SOL-20..28, not an unbounded POMDP or universal physical recovery proof."
