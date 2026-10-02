@@ -1,0 +1,27 @@
+claim_id: "20261002-openai-dsva-v10-theory-parity"
+status: ACTIVE
+writer: "openai"
+branch: "agent/openai/dsva-v10-theory-parity"
+base_sha: "cbe0614a6c79d00c2dbbd4e6aed944180b8b6abe"
+nodes:
+  - DSVA_DECISION_MODEL
+  - DSVA_THEORY
+  - REPO_KG
+artifacts:
+  - dsva_kernel/core.py
+  - dsva_kernel/engine.py
+  - dsva_kernel/requirements.py
+  - docs/research/DSVA_DECISION_MODEL.md
+  - docs/research/DSVA_THEORY_PARITY_KERNEL.md
+  - site/inputs/decision/dsva_decision_schema.json
+  - examples/dsva_decision_minimal.json
+  - tests/test_dsva_decision_v10_theory_parity.py
+  - experiments/2026-10-02-dsva-v10-theory-parity-redteam.md
+  - site/inputs/meta/floodconnect_repo_kg.yaml
+  - docs/AI_ENTRYPOINT.md
+intent: "Make the executable DSVA decision model catch up with already-canonical DSVA theory obligations exposed by PR #42: bind verification to actual spec/input and checker independence, executable model-invalidation behavior intersection, evidence-lineage dependency closure, protected-requirement horizon/coverage metadata, and total future-observation policy over admitted outcomes. Preserve the existing DSVA/Toledo ontology and v0.8/v0.9 exact-finite retained acceleration."
+created_at: "2026-10-02T12:45:00+07:00"
+expires_at: null
+reviewers: []
+supersedes: "20261002-openai-dsva-v09-meaning-closure"
+note: "Failure evidence is PR #42 / Actions run 36902749040: 6 failed, 493 passed, 1 skipped. These are not new theory inventions; each obligation already exists in canonical DSVA second-order theory and is being made load-bearing in the executable projection."
