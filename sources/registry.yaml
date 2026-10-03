@@ -138,6 +138,53 @@ sources:
       stations parsed with real lat/lon from the page's own datapump metadata array."}
     variables: [level_m, pumps_on, pumps_total, gate_open_m, station_status_th]
 
+  - id: bma_monkeycheek
+    agency:
+      th: "สำนักการระบายน้ำ กรุงเทพมหานคร"
+      en: "Department of Drainage and Sewerage, Bangkok Metropolitan Administration"
+    url: "https://monkeycheek.bangkok.go.th/listmongkeycheeks"
+    method: "GET (public server-rendered government data page). The site exposes stable
+      list/detail routes (for example /listmongkeycheeks and /mngkdetail/<id>), but a
+      dedicated JSON/REST endpoint has NOT yet been independently verified. Register this
+      as an official government data endpoint/API candidate without inventing a hidden API."
+    cadence: "unknown -- the public page includes per-facility data timestamps, but no
+      refresh interval is published"
+    format: html
+    auth: none
+    licence_status:
+      text: "RELAYED -- public BMA/DDS web application; no formal open-data/API licence
+        text was independently confirmed during the 2026-10-01 check."
+      unresolved: true
+    trust_tier: official_report
+    interface_status:
+      government_owned: true
+      public_endpoint_confirmed: true
+      dedicated_json_api_confirmed: false
+      note: "User-provided endpoint is on bangkok.go.th and the public page identifies
+        DDS/BMA monkey-cheek retention data. Treat as an official government web/API
+        source, but do not claim a JSON API until its machine endpoint is observed."
+    host_rule:
+      max_requests_per_run: 1
+      notes: "monkeycheek.bangkok.go.th is a BMA government host. Apply the same
+        conservative one-request-per-URL/no-retry posture used for other BMA sources;
+        stop on 403/reset."
+    last_status:
+      date: "2026-10-01"
+      http: 200
+      note: "Public list page verified: 37 monkey-cheek/retention facilities. Fields
+        shown include code, facility name, owner, district, responsible unit, current
+        water-level percentage, and data timestamp. Example: code 027 บึงรับน้ำหมู่บ้าน
+        สัมมากร, เขตสะพานสูง, with a displayed current-level percentage and timestamp.
+        The page is official and public; a dedicated JSON endpoint remains OPEN."
+    variables:
+      - monkeycheek_code
+      - monkeycheek_name
+      - owner
+      - district
+      - responsible_unit
+      - current_water_level_pct
+      - data_as_of_local
+
   - id: dds_daily_pdf
     agency:
       th: "สำนักการระบายน้ำ กรุงเทพมหานคร (ศูนย์ควบคุมระบบป้องกันน้ำท่วม)"
