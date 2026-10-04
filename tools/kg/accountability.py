@@ -615,12 +615,66 @@ def build_result(at: str, radius_km: float = DEFAULT_RADIUS_KM) -> dict:
     }
 
 
+def _kb_accountability_fallback(at: str, refused_text: "str | None") -> "dict | None":
+    """FIX B item 3 (2026-10-04): reuses `kb.py`'s own `_accountability_fallback`
+    verbatim -- never a second, divergent fallback implementation -- so this CLI gives
+    the SAME answer `kb.py answer --at sammakorn`/`--at ram53` already gives on a fresh
+    install, instead of a bare REFUSED this CLI alone used to print. `kb.py` already
+    scopes this to the two MVP areas and to the two real refusal shapes it addresses
+    (no graph file yet, or a graph with zero geolocated asset nodes nearby) -- see that
+    function's own docstring; this wrapper adds no new scoping of its own, it is a thin
+    lazy-import call to avoid a circular import at module load time (`kb.py` itself only
+    imports this module lazily, inside `_answer_accountability`, never at its own module
+    top level)."""
+    try:
+        import sys as _sys
+        from pathlib import Path as _Path
+        root = _Path(__file__).resolve().parent.parent.parent
+        if str(root) not in _sys.path:
+            _sys.path.insert(0, str(root))
+        import kb as _kb_mod
+    except Exception:  # pragma: no cover - defensive, kb.py must not be required to import
+        return None
+    try:
+        return _kb_mod._accountability_fallback(at, refused_text, verbose=True)
+    except Exception:  # pragma: no cover - defensive, a fallback bug must not crash the CLI
+        return None
+
+
+def _print_fallback(at: str, fallback: dict, as_json: bool) -> None:
+    payload = {"at": at, "fallback": fallback}
+    if as_json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return
+    lines = [f"# accountability card -- ที่: {at}",
+              f"[{fallback.get('tag', 'INSTINCT')}] {fallback.get('note', '')}"]
+    for agency in fallback.get("owner_agencies", []):
+        lines.append(f"  owner: {agency}")
+    print("\n".join(lines))
+
+
 def run(at: str, radius_km: float = DEFAULT_RADIUS_KM, as_json: bool = False) -> int:
     result = build_result(at, radius_km)
+    # Three distinct refusal shapes, same as `kb.py::_answer_accountability`'s own
+    # comment describes (checked in the same order, for the same reason -- the Thai-
+    # keyed Q1 refusal must not slip through unchecked, see that function's comment):
+    # (1) top-level `result["refused"]` (no graph file at all yet), (2) the bare early
+    # key `result["Q1"]["refused"]` (point resolution itself failed), (3) the Thai-named
+    # key `result["Q1_ใครรับผิดชอบที่นี่"]["refused"]` (point resolved, but no asset node
+    # within radius -- the real, everywhere-nationwide gap `_kb_accountability_fallback`
+    # exists for).
+    refused_text = None
     if "refused" in result:
-        _print(result, as_json)
-        return 1
-    if "refused" in result.get("Q1", {}):
+        refused_text = result["refused"]
+    elif "refused" in result.get("Q1", {}):
+        refused_text = result["Q1"]["refused"]
+    elif "refused" in result.get("Q1_ใครรับผิดชอบที่นี่", {}):
+        refused_text = result["Q1_ใครรับผิดชอบที่นี่"]["refused"]
+    if refused_text is not None:
+        fallback = _kb_accountability_fallback(at, refused_text)
+        if fallback is not None:
+            _print_fallback(at, fallback, as_json)
+            return 0
         _print(result, as_json)
         return 1
     _print(result, as_json)

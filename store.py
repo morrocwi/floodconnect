@@ -180,8 +180,29 @@ CREATE UNIQUE INDEX IF NOT EXISTS ux_method_evaluation_identity
 
 def connect(db_path: Path = DEFAULT_DB_PATH) -> sqlite3.Connection:
     Path(db_path).parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(db_path, timeout=30.0)
     conn.row_factory = sqlite3.Row
+    # `collect.run(parallel=True)` opens one of these
+    # connections per worker THREAD, all against the SAME db file -- SQLite's default
+    # rollback-journal mode allows only one writer at a time and, with Python's own
+    # default `sqlite3.connect(timeout=5.0)`, a second writer that doesn't get the lock
+    # inside that window raises `OperationalError: database is locked` outright rather
+    # than queueing (MEASURED: a 13-source parallel refresh against the un-patched
+    # connect() hit this on most sources, serialising nothing and just failing).
+    # WAL mode lets readers proceed without blocking the one writer, and the explicit
+    # `timeout=30.0` above (vs the 5s default) gives a second writer a real queueing
+    # window instead of an instant failure -- together these make concurrent
+    # `collect.run(parallel=True)` writers queue for the lock (briefly) instead of
+    # erroring. This has no effect on the existing sequential (non-parallel) callers
+    # beyond a one-time `PRAGMA journal_mode=WAL` file-format change, which is backward-
+    # and forward-compatible with the plain `sqlite3` stdlib module already in use
+    # everywhere else in this repo.
+    # busy_timeout first: a concurrent writer that would otherwise hit SQLite's default
+    # ~0ms busy wait on the very next statement (the journal_mode change below) should
+    # queue for the lock, not fail instantly -- so this PRAGMA is set before any
+    # statement that could contend for the write lock, not after.
+    conn.execute("PRAGMA busy_timeout=30000")
+    conn.execute("PRAGMA journal_mode=WAL")
     conn.executescript(SCHEMA)
     # `CREATE TABLE IF NOT EXISTS` above does not add columns to an already-existing table
     # -- an sqlite file created before this fix has a `contradictions` table with no

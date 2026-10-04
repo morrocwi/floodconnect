@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FloodConnect — flood readout layer for your home AI</title>
+<meta name="description" content="FloodConnect: a flood/canal/pump knowledge graph plus a small compute layer that your own AI assistant can read. Self-install, nothing hosted, no scheduled jobs. Free.">
+<style>
+  :root{
+    --bg:#F5F7F8; --surface:#FFFFFF; --text:#10202B; --muted:#3F5564;
+    --accent:#0B3C5D; --accent-ink:#FFFFFF; --alert:#C0392B; --ok:#2E7D32;
+    --line:#D7E0E5; --pill-bg:#E7EEF1; --link:#0B3C5D;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0A161D; --surface:#101F28; --text:#E9F1F3; --muted:#AFC3CC;
+      --accent:#5AA9D6; --accent-ink:#06141C; --alert:#FF7A68; --ok:#74CE82;
+      --line:#223642; --pill-bg:#152732; --link:#8FC6E8;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0A161D; --surface:#101F28; --text:#E9F1F3; --muted:#AFC3CC;
+    --accent:#5AA9D6; --accent-ink:#06141C; --alert:#FF7A68; --ok:#74CE82;
+    --line:#223642; --pill-bg:#152732; --link:#8FC6E8;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans Thai","Noto Sans",Arial,sans-serif;
+    font-size:18px; line-height:1.6;
+  }
+  .wrap{max-width:860px; margin:0 auto; padding:0 16px 48px}
+  header.hero{
+    background:var(--accent); color:var(--accent-ink); padding:28px 16px 24px;
+  }
+  header.hero .wrap{padding:0 0}
+  header.hero h1{margin:0 0 6px; font-size:1.9rem; line-height:1.25; font-weight:800}
+  header.hero p.tag{margin:0; font-size:1.05rem; opacity:.95}
+  header.hero p.tag-th{margin:.3rem 0 0; font-size:1.0rem; opacity:.92}
+  .badge-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
+  .badge{
+    display:inline-block; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.4);
+    color:inherit; border-radius:999px; padding:6px 12px; font-size:.95rem;
+  }
+  nav.skip{position:absolute; left:-9999px}
+  nav.skip:focus{left:16px; top:8px; z-index:10; background:var(--surface); color:var(--text); padding:8px 12px; border-radius:6px}
+
+  section{padding:22px 0; border-bottom:1px solid var(--line)}
+  section:last-of-type{border-bottom:none}
+  h2{font-size:1.3rem; margin:0 0 10px; font-weight:700}
+  h3{font-size:1.08rem; margin:18px 0 8px; font-weight:700}
+  p{margin:0 0 .9em}
+  ul, ol{margin:.2em 0 .9em; padding-left:1.4em}
+  li{margin:.35em 0}
+  .muted{color:var(--muted)}
+  .lang-th{font-size:.98rem}
+
+  figure{margin:0 0 10px}
+  figure img{display:block; width:100%; height:auto; border-radius:12px; border:1px solid var(--line)}
+  figcaption{font-size:.92rem; color:var(--muted); margin-top:8px}
+
+  .pitch-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:16px 18px; margin-bottom:14px;
+  }
+
+  .grid{
+    display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:10px 0 4px;
+  }
+  @media (max-width:420px){ .grid{grid-template-columns:1fr} }
+  .tile{
+    background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    padding:12px 14px;
+  }
+  .tile .num{font-size:1.5rem; font-weight:800; color:var(--accent)}
+  .tile .label{font-size:.92rem; color:var(--muted)}
+  .tile .delta{display:block; margin-top:4px; font-size:.82rem; color:var(--alert)}
+
+  .pillset{display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 14px}
+  .pill{background:var(--pill-bg); border-radius:999px; padding:6px 12px; font-size:.92rem}
+
+  table{width:100%; border-collapse:collapse; margin:10px 0}
+  caption{text-align:left; font-size:.9rem; color:var(--muted); margin-bottom:6px}
+  th,td{text-align:left; padding:8px 6px; border-bottom:1px solid var(--line); vertical-align:top; font-size:.95rem}
+  th{color:var(--muted); font-weight:600}
+  @media (max-width:520px){
+    table, thead, tbody, th, td, tr{display:block}
+    thead{display:none}
+    tr{border:1px solid var(--line); border-radius:10px; margin-bottom:10px; padding:8px 10px; background:var(--surface)}
+    td{border:none; padding:4px 0}
+    td::before{content:attr(data-label); display:block; font-size:.8rem; color:var(--muted); font-weight:600}
+  }
+
+  .cta{
+    display:inline-block; min-height:48px; line-height:48px; padding:0 18px;
+    background:var(--accent); color:var(--accent-ink); border-radius:10px;
+    text-decoration:none; font-weight:700; margin:4px 8px 4px 0;
+  }
+  .cta.secondary{
+    background:transparent; color:var(--link); border:1px solid var(--accent);
+    line-height:46px;
+  }
+  a{color:var(--link)}
+  code, pre{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.92rem;
+  }
+  pre{
+    background:var(--pill-bg); border-radius:10px; padding:12px 14px; overflow-x:auto;
+    border:1px solid var(--line);
+  }
+  .hotline-table td:first-child, .hotline-table th:first-child{white-space:nowrap; font-weight:700}
+
+  .disclaimer{
+    background:var(--pill-bg); border-left:4px solid var(--alert); border-radius:8px;
+    padding:12px 14px; font-size:.95rem;
+  }
+  .measured-note{font-size:.88rem; color:var(--muted); margin-top:6px}
+
+  footer{padding:20px 0 0; font-size:.88rem; color:var(--muted)}
+  footer a{color:var(--link)}
+
+  .lane{border:1px solid var(--line); border-radius:10px; padding:12px 14px; background:var(--surface); margin-bottom:10px}
+  .lane h4{margin:0 0 4px; font-size:1rem}
+  .lane p{margin:0; font-size:.95rem}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content / ข้ามไปเนื้อหา</a>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>FloodConnect</h1>
+    <p class="tag">A flood/canal/pump readout layer your home AI can use — free, self-installed, nothing hosted.</p>
+    <p class="tag-th">เครื่องมือที่ทำให้ AI ของคุณเข้าใจสถานการณ์น้ำในประเทศไทยได้ทันที — ฟรี ติดตั้งเองบนเครื่องของคุณ ไม่มีข้อมูลโฮสต์ไว้</p>
+    <div class="badge-row">
+      <span class="badge">MVP v0.1.0 (pre-release)</span>
+      <span class="badge">Sammakorn + Ram 53, Bangkok</span>
+      <span class="badge">No hosted data</span>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+<section>
+  <h3>This page does not show current flood readings.</h3>
+  <p class="muted">It explains what FloodConnect is and how to install it. Live readings are computed on your own machine when you run it — see "How your home AI uses it" below.</p>
+  <p class="muted lang-th">หน้านี้ไม่แสดงสถานการณ์น้ำปัจจุบัน หน้านี้อธิบายว่า FloodConnect คืออะไรและติดตั้งอย่างไร ค่าที่เป็นปัจจุบันจะถูกคำนวณบนเครื่องของคุณเองตอนที่คุณรันโปรแกรม ดูหัวข้อ "AI ในบ้านคุณใช้งานอย่างไร" ด้านล่าง</p>
+</section>
+
+<section>
+  <figure>
+    <img src="floodconnect-infographic.jpg" width="1080" height="1350"
+      alt="FloodConnect infographic: title and a QR code linking to the GitHub repository (github.com/morrocwi/floodconnect) top right; eight stat tiles (river nodes, flow paths, basin groups, BMA canal junctions, canal segments, canal network groups, floodgate/pump stations, data sources); a row of questions FloodConnect lets an AI ask about the canal network; a row of connected data types; a closing line saying it works with ChatGPT, Claude and other AIs without building a new AI, with the logos of Center for AI Civic Knowledge and ARAYA Nikah Social Enterprise.">
+    <figcaption>
+      Original project infographic (image, numbers fixed at time of design;
+      the QR code was updated 2026-10-04 to point to the public repository —
+      this page shows no live readings, see "AI ในบ้านคุณใช้งานอย่างไร" below).
+      The stat tiles below this image are re-measured from the released repository —
+      see "measured on 2026-10-04" notes where a number differs from the image.
+      <br><span class="lang-th">อินโฟกราฟิกต้นฉบับของโครงการ (ตัวเลขในภาพคงที่ตามวันที่ออกแบบ คิวอาร์โค้ดอัปเดต 2026-10-04 ให้ชี้ไปที่ repo สาธารณะ — หน้านี้ไม่แสดงค่าปัจจุบัน) ตัวเลขในตารางด้านล่างวัดใหม่จาก repo ที่เผยแพร่จริง</span>
+    </figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>The pitch / แนวคิดโดยสรุป</h2>
+  <div class="pitch-card">
+    <p><strong>EN —</strong> FloodConnect brings together Thailand's scattered government open flood data, designed around our own Water-Debt decision model (v0.2+; v0.1.x answers from fixed, tested station-level rules), to answer one question honestly: <em>at this point, right now, what should happen next?</em> It reads the flood/canal/pump situation and hands your own AI assistant a typed, source-tagged answer — never a flood-depth prediction, never a safety certification.</p>
+    <p class="lang-th"><strong>TH —</strong> FloodConnect รวม open data ของรัฐไทยที่กระจัดกระจายอยู่ ออกแบบรอบโมเดลหนี้น้ำ (Water-Debt) ของเราเอง (v0.2+; v0.1.x ตอบด้วยกฎระดับสถานีที่ตายตัวและผ่านการทดสอบแล้ว) เพื่อตอบคำถามเดียวอย่างซื่อตรง: "ที่จุดนี้ ตอนนี้ ควรทำอะไรต่อ" ระบบอ่านสถานการณ์น้ำ/คลอง/ปั๊ม แล้วส่งคำตอบที่มีโครงสร้างชัดเจนพร้อมป้ายแหล่งที่มาให้ผู้ช่วย AI ของคุณ — ไม่ใช่การพยากรณ์ความลึกน้ำท่วม และไม่ใช่การยืนยันความปลอดภัย</p>
+  </div>
+</section>
+
+<section>
+  <h2>What it is / what it is not</h2>
+  <h3>It is</h3>
+  <ul>
+    <li>A typed knowledge graph of Bangkok's river and canal network, authority/ownership, resources and a community self-help path, for two pilot areas (Sammakorn, Ram 53).</li>
+    <li>A small compute layer (CLI + MCP) that turns that graph plus fresh public readings into one source-tagged, age-tagged answer.</li>
+    <li>Self-installed and self-run: you clone it, you run it, it computes on your machine using your own network and keys.</li>
+    <li>Free and open source.</li>
+  </ul>
+  <h3>It is not</h3>
+  <ul>
+    <li>Not a hosted service — there is no server anywhere answering requests for you; nothing is live on this web page.</li>
+    <li>Not an official warning system — official agency notices always take precedence.</li>
+    <li>Not a flood-depth or water-level forecast at your address. It forecasts rain per model (relayed, not averaged); a water-debt-based outlook is planned (v0.2+) and not shipped yet.</li>
+    <li>Not a safety certification — "UNKNOWN" is never the same as "safe".</li>
+    <li>Not nationwide yet — detailed coverage today is Sammakorn and Ram 53, Bangkok only; other points get rain forecast and nearby cameras only, and their current state is usually UNKNOWN. Nationwide coverage is planned (v0.2+).</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Install</h2>
+  <pre>git clone https://github.com/morrocwi/floodconnect
+cd floodconnect
+python3 -m venv .venv &amp;&amp; . .venv/bin/activate
+pip install -e '.[mcp]'
+floodconnect answer --at sammakorn</pre>
+  <p class="muted">Full install, CLI reference, and MCP client config are in the repository README.
+  <span class="lang-th">คำสั่งติดตั้งแบบเต็ม การใช้ CLI และการตั้งค่า MCP อยู่ใน README ของ repository</span></p>
+  <p>
+    <a class="cta" href="https://github.com/morrocwi/floodconnect">View the GitHub repository</a>
+    <a class="cta secondary" href="https://github.com/morrocwi/floodconnect/releases/tag/v0.1.0">v0.1.0 release notes</a>
+  </p>
+</section>
+
+<section>
+  <h2>How your home AI uses it</h2>
+  <p>FloodConnect's north star is the AI that already sits in your home — your own Claude, ChatGPT, or other assistant — reading the situation in one cheap call and telling you directly, in whatever language you speak.</p>
+  <p class="lang-th">เป้าหมายหลักของ FloodConnect คือ AI ที่อยู่ในบ้านคุณอยู่แล้ว ไม่ว่าจะเป็น Claude, ChatGPT หรือตัวอื่น อ่านสถานการณ์ด้วยการเรียกครั้งเดียวที่ราคาถูก แล้วบอกคุณตรงๆ ด้วยภาษาที่คุณใช้</p>
+  <ol>
+    <li>You (or your AI, on your machine) run <code>floodconnect answer --at sammakorn</code>, or connect the bundled MCP server to a desktop AI client (Claude Desktop/Code and others that support MCP).</li>
+    <li>FloodConnect returns one structured answer: current state, forward hazard, who is accountable, 1–3 next actions — each value carrying its source and age.</li>
+    <li>Your AI reads that structured answer and explains it to you in plain language — FloodConnect does not pre-translate or lock the wording; that is the AI's job.</li>
+    <li>If data is missing or stale, the answer says <strong>UNKNOWN</strong> and tells you to refresh — it never guesses "safe" from silence.</li>
+  </ol>
+  <p class="muted">Works with ChatGPT, Claude and other AI assistants without building a new AI — it is a tool an existing AI calls, via its own MCP client or the command line.
+  <span class="lang-th">ใช้ได้กับ ChatGPT, Claude และ AI อื่นๆ โดยไม่ต้องสร้าง AI ใหม่ เป็นเครื่องมือที่ AI ที่มีอยู่แล้วเรียกใช้ ผ่าน MCP client ของมันเองหรือ command line</span></p>
+</section>
+
+<section>
+  <h2>What's inside, measured from the released repository</h2>
+  <p class="measured-note">Measured on 2026-10-04 directly from the committed tree on the v0.1.0 release tag (graph files under <code>output/</code>, the source census under <code>sources/</code>, the repo knowledge graph under <code>site/inputs/meta/</code>). Two tiles differ from the original infographic image — noted below each.</p>
+  <div class="grid">
+    <div class="tile"><span class="num">2,250</span><span class="label">river nodes / โหนดแม่น้ำหลัก</span></div>
+    <div class="tile"><span class="num">2,236</span><span class="label">flow paths / เส้นทางการไหล</span></div>
+    <div class="tile"><span class="num">13</span><span class="label">basin groups / กลุ่มลุ่มน้ำ</span></div>
+    <div class="tile"><span class="num">8,672</span><span class="label">BMA canal junctions / จุดเชื่อมคลอง กทม.</span></div>
+    <div class="tile">
+      <span class="num">10,006</span><span class="label">canal segments / ช่วงคลอง</span>
+      <span class="delta">the infographic image shows 6,155 (earlier figure)</span>
+    </div>
+    <div class="tile"><span class="num">2,595</span><span class="label">canal network groups / กลุ่มโครงข่ายคลอง</span></div>
+    <div class="tile"><span class="num">237</span><span class="label">floodgate / pump-station points / จุดประตูน้ำ-สถานีสูบน้ำ</span></div>
+    <div class="tile">
+      <span class="num">50</span><span class="label">connected data sources (of 163 catalogued) / แหล่งข้อมูลที่เชื่อมแล้ว</span>
+      <span class="delta">the infographic image shows 15 (earlier figure)</span>
+    </div>
+  </div>
+  <p class="muted">Re-run the measurement yourself: <code>python3 -c "import networkx as nx; g=nx.read_graphml('output/bangkok_canals.graphml'); print(g.number_of_nodes(), g.number_of_edges())"</code> from a clone.</p>
+</section>
+
+<section>
+  <h2>FloodConnect lets your AI ask</h2>
+  <div class="pillset">
+    <span class="pill">which canal a point connects to / น้ำเชื่อมกับคลองไหน</span>
+    <span class="pill">which way it flows / ไหลไปทางไหน</span>
+    <span class="pill">which pump or gate it passes through / ผ่านปั๊มหรือประตูน้ำอะไร</span>
+    <span class="pill">where a bottleneck might be / จุดไหนอาจเป็นคอขวด</span>
+  </div>
+  <h3>Connected data types / ข้อมูลที่เชื่อมไว้</h3>
+  <div class="pillset">
+    <span class="pill">water level / ระดับน้ำ</span>
+    <span class="pill">rain / ฝน</span>
+    <span class="pill">road flooding reports / ถนนน้ำท่วม</span>
+    <span class="pill">pumps / ปั๊ม</span>
+    <span class="pill">tide / น้ำทะเล</span>
+    <span class="pill">radar / เรดาร์</span>
+    <span class="pill">satellite (NASA POWER) / ดาวเทียม</span>
+    <span class="pill">rain forecast models / พยากรณ์ฝน</span>
+    <span class="pill">community reports / ข้อมูลชุมชน</span>
+    <span class="pill">CCTV (up to 3 nearest, visual check only) / กล้องวงจรปิด</span>
+  </div>
+</section>
+
+<section>
+  <h2>Roadmap, briefly</h2>
+  <p>v0.1.0 ships the knowledge graph, the readout layer and the self-install CLI/MCP for Sammakorn and Ram 53. Planned next (v0.2 and later, not yet shipped): a water-debt model as the decision core, a typed one-decision output with confidence, four-driver readings, nationwide points, and formal registration of the underlying equations. Full detail: see <a href="https://github.com/morrocwi/floodconnect/blob/main/ROADMAP.md">ROADMAP.md</a> and <a href="https://github.com/morrocwi/floodconnect/blob/main/docs/handoff/NEXT_AI_HANDOFF.md">the AI handoff doc</a> in the repository.</p>
+  <p class="lang-th">v0.1.0 มีกราฟความรู้ ชั้นอ่านค่า และ CLI/MCP สำหรับติดตั้งเอง ครอบคลุมสัมมากรและซอยรามคำแหง 53 แผนถัดไป (v0.2 เป็นต้นไป ยังไม่เปิดใช้งาน) ได้แก่ โมเดลหนี้น้ำเป็นแกนการตัดสินใจ คำตอบแบบ one-decision พร้อมค่าความมั่นใจ ข้อมูล 4 ปัจจัยหลัก จุดครอบคลุมทั่วประเทศ และการลงทะเบียนสมการอย่างเป็นทางการ</p>
+</section>
+
+<section>
+  <h2 id="disclaimer">Disclaimer &amp; emergency numbers</h2>
+  <div class="disclaimer">
+    <strong>Not an official warning system — official agency notices always take precedence.</strong>
+    <span class="lang-th">ไม่ใช่ระบบเตือนภัยทางการ ประกาศของหน่วยงานรัฐสำคัญกว่าเสมอ</span>
+  </div>
+  <table class="hotline-table">
+    <caption>Emergency numbers — call these for anything real, not this page. / เบอร์ฉุกเฉิน โทรก่อนเสมอเมื่อสถานการณ์จริง</caption>
+    <thead><tr><th>Number</th><th>Use for</th></tr></thead>
+    <tbody>
+      <tr><td data-label="Number">1784</td><td data-label="Use for">DDPM — disaster / กรมป้องกันและบรรเทาสาธารณภัย</td></tr>
+      <tr><td data-label="Number">1460</td><td data-label="Use for">Royal Irrigation Department / กรมชลประทาน</td></tr>
+      <tr><td data-label="Number">1669</td><td data-label="Use for">Medical emergency / เหตุฉุกเฉินทางการแพทย์</td></tr>
+      <tr><td data-label="Number">1555</td><td data-label="Use for">BMA flood hotline / สายด่วนน้ำท่วม กทม.</td></tr>
+      <tr><td data-label="Number">1130</td><td data-label="Use for">MEA — electrical hazard / ไฟฟ้าขัดข้อง-อันตรายจากไฟฟ้าในน้ำ</td></tr>
+      <tr><td data-label="Number">Traffy Fondue</td><td data-label="Use for">Official BMA street-flooding report channel / ช่องทางแจ้งน้ำท่วมถนนของ กทม.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<footer>
+  <p>FloodConnect is a volunteer, open-source project. Source, licence and full documentation:
+  <a href="https://github.com/morrocwi/floodconnect">github.com/morrocwi/floodconnect</a> ·
+  <a href="https://github.com/morrocwi/floodconnect/releases/tag/v0.1.0">v0.1.0 release</a>.</p>
+  <p>Stat tiles above were re-measured on 2026-10-04 from the v0.1.0 release tree; see each tile for notes where the original infographic image shows an earlier figure. The infographic image itself is not updated — it is shown as originally designed.</p>
+</footer>
+
+</main>
+</body>
+</html>

@@ -109,8 +109,11 @@ workflow นี้ทำแค่ validate + test + build หน้าเว็�
 private cron/systemd timer ของ repo นี้โดยเฉพาะ. runner สดใหม่ไม่มี `data/`/`raw/` (gitignored)
 ดังนั้นหน้าเว็บที่ build ได้จะอยู่ในสถานะ no-current-data/staleness จนกว่าจะมีคน refresh ฝั่งผู้เรียก
 (caller-side) เอง -- รันบนเครื่อง/network/key ของผู้ใช้เอง ไม่ใช่บน runner ของเรา. ส่วน
-`site/dist/api/v1/**` เป็น tracked snapshot ที่ build นี้**ไม่ได้สร้างใหม่** -- แค่ upload ติดไปกับ
-หน้าเว็บเฉย ๆ โดยไม่แก้ไข.
+`site/dist/api/v1/**` **ไม่ถูก track ในคลังนี้เลย** (gitignored) -- เป็น local export ที่ต้องรัน
+`site/build_data.py` แล้ว `tools/api/export_api.py` เองก่อนจึงจะมีไฟล์ (ruling 2026-10-04:
+no-hosted-access; ก่อนหน้านี้เอกสารรุ่นนี้เคยเขียนว่าเป็น "tracked snapshot ที่ build นี้ upload
+ติดไปกับหน้าเว็บ" -- ถ้อยคำนั้นเก่าแล้วและผิดตั้งแต่ snapshot ถูกถอดออกจาก main; ไม่มี snapshot
+สำเร็จรูปในคลังนี้อีกต่อไป).
 
 ## เสียงจากอินเทอร์เน็ต (social listening)
 

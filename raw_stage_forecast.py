@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""
+"""LEGACY/STANDALONE EXPERIMENT -- not called by `floodconnect forecast`
+(`kb.py::cmd_forecast`), `floodconnect answer` (`kb.py::cmd_answer`/`build_answer`), or
+any MCP tool. The real forecast path FloodConnect ships is `kb.py::cmd_forecast`
+(rain-per-model, relayed from Open-Meteo/MET Norway). Do not judge FloodConnect's
+forecasting skill from this file alone -- see docs/EVIDENCE.md (where present) and
+`kb.py::cmd_forecast` for what is actually wired and answered.
+
 raw_stage_forecast.py -- transparent stage-only prospective helper.
 
 This module deliberately excludes all derived alert fields such as:

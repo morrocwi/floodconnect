@@ -2,11 +2,21 @@
 # Canonical meta-layer for AI/human orientation.
 # This graph describes repository concepts, source-of-truth artifacts, dependencies,
 # epistemic boundaries, and recommended read paths. It contains NO live flood claim.
-version: "1.5"
+version: "1.6"
 status: "canonical_repo_meta_graph"
-updated_at: "2026-10-03"
+updated_at: "2026-10-04"
 
 lineage:
+  - version: "1.6"
+    date: "2026-10-04"
+    reason: >-
+      v0.1.1 docs run: added ARCHITECTURE.md, ROADMAP.md and
+      docs/handoff/NEXT_AI_HANDOFF.md as canonical_artifacts of the existing
+      REPO_KG node (they are meta/orientation documents for AI/human
+      continuation, the same role AI_ENTRYPOINT.md already plays, not a new
+      construct) -- per founder ruling 2026-10-04 that any difference from
+      the previous architecture must be written into a doc any other AI can
+      continue from. No new node added; artifact-pointer only.
   - version: "1.5"
     date: "2026-10-03"
     reason: >-
@@ -204,6 +214,9 @@ nodes:
       - docs/FLOODCONNECT_REPO_KG.md
       - repo_knowledge_graph.py
       - tests/test_repo_knowledge_graph.py
+      - ARCHITECTURE.md
+      - ROADMAP.md
+      - docs/handoff/NEXT_AI_HANDOFF.md
     summary: "Meta-graph that routes AI/humans to canonical constructs and prevents parallel ontology drift."
     key_boundary: "describes repository architecture; contains no live flood-state claim"
 

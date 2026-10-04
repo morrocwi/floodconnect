@@ -147,7 +147,7 @@ def test_refresh_total_failure_falls_back_to_stale_stored_rows_unknown(conn, mon
     db_path = Path(conn.execute("PRAGMA database_list").fetchone()[2])
     monkeypatch.setattr(kb, "DB_PATH", db_path)
 
-    def _all_sources_fail(area_id=None, verbose=False, all_sources=False):
+    def _all_sources_fail(area_id=None, verbose=False, all_sources=False, lat=None, lon=None):
         return [{"id": "thaiwater_canal_waterlevel", "ok": False, "skipped": False,
                   "note": "simulated: no network this test"}]
 

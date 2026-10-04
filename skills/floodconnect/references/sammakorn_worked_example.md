@@ -8,8 +8,10 @@ An external AI assistant tried a Sammakorn readout at 19:25 and reported:
 
 This was wrong. FloodConnect had fresh `WL.BMA.02` / `WL.SSB.*` readings at
 that moment — the assistant simply had no channel into the data. This is the
-failure `floodconnect_get_station` / `GET /api/v1/areas/sammakorn.json`
-exists to close.
+failure `floodconnect_get_station` (MCP) / the local export file you build
+yourself (`site/dist/api/v1/areas/sammakorn.json`, after running
+`site/build_data.py` + `tools/api/export_api.py` on your own machine — there is
+no hosted endpoint) exists to close.
 
 ## Snapshot 1 — station is fresh
 

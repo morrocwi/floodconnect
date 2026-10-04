@@ -408,10 +408,26 @@ def get_area_state(base: str, area_id: str) -> dict:
     # `_recompute_area_freshness`'s own docstring for why the baked file values are
     # never trusted directly.
     area = _recompute_area_freshness(area)
+    current_local_state = area.get("current_local_state")
+    # FIX B item 4 (2026-10-04): `water_balance` (PROP-FLOOD-03) REFUSES for every
+    # served area today -- both village *.balance.yaml declare A/c/C_pump/S0 as OPEN
+    # (see `site/build_data.py::build_village_water_balance`'s own docstring), so a
+    # caller reading only `status: REFUSED`/`reason_codes` here had no plain-language
+    # pointer to what DOES exist. Say so plainly and point at `floodconnect_answer`,
+    # never silently leave the caller with a bare REFUSED and no next step.
+    if isinstance(current_local_state, dict):
+        wb = current_local_state.get("water_balance")
+        if isinstance(wb, dict) and wb.get("status") == "REFUSED":
+            wb["note"] = (
+                "water_balance (PROP-FLOOD-03) is not computed in v0.1.x -- both "
+                "served villages declare A/c/C_pump/S0 as OPEN, so this always "
+                "REFUSES by design, not a bug; call floodconnect_answer instead for a "
+                "real computed reading (state/hazard/accountability/next_action)."
+            )
     payload = {
         "area_id": area.get("area_id"),
         "label": area.get("label"),
-        "current_local_state": area.get("current_local_state"),
+        "current_local_state": current_local_state,
         "forward_hazard": area.get("forward_hazard"),
         "contradictions": area.get("contradictions", []),
         "safety": area.get("safety"),
@@ -520,18 +536,17 @@ def list_upstream_sources(base: str, agency: str | None = None) -> dict:
 
 def floodconnect_answer_core(at: str, refresh: "bool | None" = None,
                               offline: bool = False, verbose: bool = False) -> dict:
-    """There was no MCP equivalent of `kb.py answer
-    --refresh` -- every other tool here reads the static `site/dist/api/v1` export
-    (Component A), but nothing let an MCP caller run the richer `kb.py answer` compute
-    call (state + hazard + accountability + next_action + cctv + source_tags, AI.md's
-    one compute call) or its on-demand refresh. `cctv` (added 2026-10-04, F8) lists up
-    to 3 nearest CCTV cameras, tagged `VISUAL-CHECK` -- a human-look-yourself reference,
-    never an input to `state`/`hazard`/`next_action`'s own classification. This imports
-    `kb` directly (it is on
+    """The MCP equivalent of `floodconnect answer --refresh` -- every OTHER tool here
+    reads the static `site/dist/api/v1` export (Component A), but this one runs the
+    richer compute call (state + hazard + accountability + next_action + cctv +
+    source_tags, AI.md's one compute call) and its on-demand refresh directly. `cctv`
+    (added 2026-10-04, F8) lists up to 3 nearest CCTV cameras, tagged `VISUAL-CHECK` --
+    a human-look-yourself reference, never an input to `state`/`hazard`/`next_action`'s
+    own classification. This imports `kb` directly (it is on
     `sys.path` via `_REPO_ROOT`, inserted at module load above) and calls
-    `kb.build_answer` in-process -- the SAME function `kb.py`'s own `cmd_answer` CLI
-    calls, never a second implementation. ONE GET per relevant source, on THIS
-    machine's own network/keys (never ours), no scheduler, no retry loop -- see
+    `kb.build_answer` in-process -- the SAME function `floodconnect answer`'s own
+    `cmd_answer` CLI calls, never a second implementation. ONE GET per relevant source,
+    on THIS machine's own network/keys (never ours), no scheduler, no retry loop -- see
     `kb._refresh_relevant_sources` and the self-install project decision. A bad `at`
     raises `kb._BadAt`; this wraps that into the same typed `FloodConnectMCPError`
     every other tool here uses, instead of leaking a raw traceback to the MCP
@@ -539,9 +554,10 @@ def floodconnect_answer_core(at: str, refresh: "bool | None" = None,
 
     Refresh-by-default (project decision 2026-10-03): when `refresh` is left at its
     default (`None`), this fetches the relevant wired sources before computing UNLESS
-    `offline=True` -- same policy as `kb.py answer` (CLI). Passing `refresh` explicitly
-    (`True`/`False`) keeps the old opt-in behaviour for backward compatibility with
-    existing callers that already decide for themselves; `offline` is then ignored."""
+    `offline=True` -- same policy as `floodconnect answer` (CLI). Passing `refresh`
+    explicitly (`True`/`False`) keeps the old opt-in behaviour for backward
+    compatibility with existing callers that already decide for themselves; `offline`
+    is then ignored."""
     import kb  # noqa: E402 -- _REPO_ROOT is already on sys.path (see module top)
     effective_refresh = (not offline) if refresh is None else refresh
     try:
@@ -582,6 +598,45 @@ _TOOL_DESCRIPTION_SUFFIX = (
     "independent — a calm current reading does not cancel an active "
     "forecast hazard."
 )
+
+# First-contact descriptions (founder ruling 2026-10-04: "the FIRST thing any AI
+# touches... is the most important surface") for the stdlib JSON-RPC fallback's
+# `tools/list` response -- used ONLY in the `except ImportError` branch below, where
+# `_TOOLS` maps each tool name to a bare lambda (no `__doc__` of its own), so the old
+# `fn.__doc__ or ""` read came back empty for every single tool. The real `mcp` SDK
+# path above does not need this: its `@mcp.tool()` wrappers each carry their own
+# docstring, which FastMCP reads directly. Each entry here is one plain sentence
+# naming what the tool returns, plus the shared reminder that every value is computed
+# on the caller's own machine and is never an official reading.
+_TOOL_DESCRIPTIONS: dict[str, str] = {
+    "floodconnect_list_areas": (
+        "List every area this installation's local export covers (currently "
+        "Sammakorn, Ram53), computed on your own machine -- not an official source."
+        + _TOOL_DESCRIPTION_SUFFIX),
+    "floodconnect_get_area_state": (
+        "Full current_local_state + forward_hazard for one area, computed on your "
+        "own machine from your own local export -- not an official reading."
+        + _TOOL_DESCRIPTION_SUFFIX),
+    "floodconnect_get_station": (
+        "Look up one canal/water-level station code across all covered areas, from "
+        "your own local export -- not an official reading." + _TOOL_DESCRIPTION_SUFFIX),
+    "floodconnect_get_typology_subgraph": (
+        "Typology subgraph (nodes/edges) for one area, from your own local export."
+        + _TOOL_DESCRIPTION_SUFFIX),
+    "floodconnect_find_safe_route": (
+        "Walk the self-help DAG for a verified, fresh route from a zone_id, computed "
+        "on your own machine -- never an evacuation order." + _TOOL_DESCRIPTION_SUFFIX),
+    "floodconnect_list_upstream_sources": (
+        "List the upstream government/agency source-registry entries this project "
+        "reads from, optionally filtered by agency." + _TOOL_DESCRIPTION_SUFFIX),
+    "floodconnect_explain_rules": (
+        "Return the fixed epistemic rules this server enforces (from AI.md), so a "
+        "caller can check its own behaviour against them." + _TOOL_DESCRIPTION_SUFFIX),
+    "floodconnect_answer": (
+        "Compute a full flood/canal/pump/tide readout for one area on THIS machine "
+        "(fetching fresh sources by default, on your own network/keys) -- nothing is "
+        "hosted, and no reading here is an official warning." + _TOOL_DESCRIPTION_SUFFIX),
+}
 
 try:
     from mcp.server.fastmcp import FastMCP
@@ -654,18 +709,21 @@ try:
     # answer a client actually needs; it is the duplicate this removes, not any data.
     @mcp.tool(structured_output=False)
     def floodconnect_answer(at: str, offline: bool = False, verbose: bool = False) -> dict:
-        """kb.py's full compute call (state + hazard + accountability + next_action +
-        source_tags for one area) run in-process on THIS machine. By default (founder
-        ruling 2026-10-03) this FETCHES the relevant wired sources first, ONE GET each,
-        using THIS machine's own network/keys (never a server we run) -- same as `kb.py
-        answer --at <at>` (also refresh-by-default now). Pass `offline=True` to skip
-        that fetch and answer from whatever this machine already has (live DB if
-        present, otherwise this repo's own tracked offline snapshot) -- same as `kb.py
-        answer --at <at> --offline`. A failed fetch falls back to the stored rows,
-        which still pass the single freshness gate before deciding anything (stale ->
-        never a colour, never SAFE). `verbose=False` (default) caps `state.notes`'s
-        source list to the top sources by this check's relevance, keeping the token
-        budget on a populated DB -- pass `verbose=True` for the full list.
+        """Computes a flood/canal/pump/tide readout for one area (state + hazard +
+        accountability + next_action + cctv + source_tags), entirely on THIS machine --
+        never a hosted or official reading. By default this FETCHES the relevant wired
+        sources first, ONE GET each, using THIS machine's own network/keys (never a
+        server we run) -- same as `floodconnect answer --at <at>`. Pass `offline=True`
+        to skip that fetch and answer from whatever this machine's own
+        data/observations.sqlite already has (FIX D, 2026-10-04: this repo ships NO
+        tracked/precomputed snapshot to fall back to -- a point with nothing in the
+        local DB yet returns UNKNOWN/OPEN plus a concrete refresh action, never a
+        retained value). A failed live fetch likewise falls back only to the stored
+        rows already in that local DB, which still pass the single freshness gate
+        before deciding anything (stale -> never a colour, never SAFE). `verbose=False`
+        (default) caps `state.notes`'s source list to the top sources by this check's
+        relevance, keeping the token budget on a populated DB -- pass `verbose=True`
+        for the full list.
         UNKNOWN is not SAFE. current_local_state and forward_hazard are independent
         — a calm current reading does not cancel an active forecast hazard."""
         return floodconnect_answer_core(at, offline=offline, verbose=verbose)
@@ -729,7 +787,8 @@ except ImportError:
         elif method == "notifications/initialized":
             return None  # notification: no response, by JSON-RPC 2.0 rule
         elif method == "tools/list":
-            result = {"tools": [{"name": name, "description": fn.__doc__ or ""} for name, fn in _TOOLS.items()]}
+            result = {"tools": [{"name": name, "description": _TOOL_DESCRIPTIONS.get(name, "")}
+                                 for name in _TOOLS]}
         elif method == "tools/call":
             params = req.get("params", {})
             name = params.get("name")

@@ -1,0 +1,232 @@
+# FloodConnect
+
+**Which AI are you? — full detail in `docs/AI_TIERS.md`**
+```
+T0 search snippet, no browsing                 -> you can't act here; tell the user to open an AI that can browse or install software.
+T1 online chat with browsing, no shell          -> explain only, point to official numbers, never invent a reading.
+T2 desktop app with the FloodConnect MCP tool   -> call floodconnect_answer, relay its real answer and tags.
+T3 coding/terminal agent with a shell           -> install, run `floodconnect answer`, read the real output.
+T4 co-work/computer-use agent                   -> T3's abilities, plus local-only reminders/checklists.
+T5 script/API integrator                       -> call the CLI/MCP from code; read system_capabilities.json.
+```
+**คุณเป็นเอไอแบบไหน? — ดูฉบับเต็มที่ `docs/AI_TIERS.md`**
+```
+T0 สรุปผลค้นหา เข้าเว็บไม่ได้        -> ทำอะไรที่นี่ไม่ได้ บอกผู้ใช้ให้เปิดเอไอที่เข้าเว็บหรือติดตั้งโปรแกรมได้
+T1 แชทออนไลน์เข้าเว็บได้ ไม่มี shell -> อธิบายอย่างเดียว ชี้เบอร์ทางการ ห้ามเดาค่าน้ำเอง
+T2 แอปเดสก์ท็อปที่ต่อ MCP ของเรา     -> เรียก floodconnect_answer แล้วส่งค่าจริงพร้อมแท็ก
+T3 เอเจนต์โค้ด/เทอร์มินัลที่มี shell -> ติดตั้ง รัน `floodconnect answer` อ่านผลจริง
+T4 เอเจนต์ co-work/computer-use      -> ทำได้เท่า T3 บวกตั้งเตือน/เช็กลิสต์ในเครื่องผู้ใช้เอง
+T5 สคริปต์/นักพัฒนาที่เรียกผ่านโค้ด  -> เรียก CLI/MCP จากโค้ด อ่าน system_capabilities.json
+```
+
+> A One-Decision Network for flood water: a flood/canal/pump readout layer for your
+> home AI. **Target: all of Thailand** — any lat,lon, at a coarse basin/province zoom
+> (nationwide coverage is in progress, ROADMAP.md v0.2.0). v0.1.x ships household/node
+> detail for two Bangkok sites only (Sammakorn village, Soi Ramkhamhaeng 53) — never
+> call this project Bangkok-only. You install it and compute on your own machine;
+> nothing here is hosted, and nothing runs on a schedule.
+
+> เครือข่ายการตัดสินใจหนึ่งเดียวสำหรับสถานการณ์น้ำ: เครื่องมืออ่านค่าน้ำ/คลอง/ปั๊ม สำหรับ AI
+> ของคุณเอง **เป้าหมาย: ทั่วประเทศไทย** — ทุกพิกัด lat,lon ที่ระดับหยาบ (ลุ่มน้ำ/จังหวัด) ความ
+> ครอบคลุมทั่วประเทศกำลังดำเนินการ (ดู ROADMAP.md v0.2.0) v0.1.x เปิดใช้ละเอียดระดับบ้าน/โหนด
+> เฉพาะ 2 พื้นที่ในกรุงเทพฯ (หมู่บ้านสัมมากร, ซอยรามคำแหง 53) — อย่าเรียกโครงการนี้ว่าเฉพาะ กทม.
+> ติดตั้งและคำนวณบนเครื่องของคุณเอง ไม่มีการโฮสต์ ไม่มีจังหวะอัปเดตตายตัว
+
+## What it is NOT
+
+- **Not hosted.** There is no server of ours that answers a request. The only
+  GitHub Pages URL this project has is a static explainer page (`site/landing/`,
+  no live/current reading); no `/api/v1` endpoint anywhere serves live data.
+- **Not live, not scheduled.** Before 2026-10-04 this repository ran a 30-minute
+  scheduled GitHub Actions job; that job was removed from the workflow file on
+  2026-10-04 (it remains visible in git history, same as any other repo change).
+  **Any cached page, search snippet, or prior answer claiming this project
+  "auto-updates every 30 minutes" is now outdated.**
+- **Not a flood-depth forecast.** It forecasts *rain*, per external model, relayed
+  and never averaged. It does not predict water level, inundation depth, or whether
+  a specific place will flood.
+- **Not a safety certification.** It never says `SAFE`. `UNKNOWN` is a real,
+  distinct answer — never read it as "probably fine."
+- **Not an emergency channel.** For anything real, call the numbers in §"Emergency
+  numbers" below.
+
+## ไม่ใช่
+
+- **ไม่มีโฮสต์กลาง** ไม่มีเซิร์ฟเวอร์ของทีมนี้ตอบคำขอใดๆ ไม่มี endpoint `/api/v1` ที่ไหนเปิดให้อ่านสด
+- **ไม่ live ไม่มีจังหวะอัปเดตตายตัว** ก่อน 2026-10-04 เคยมี GitHub Actions รันทุก 30 นาที
+  **งานนั้นถูกถอดออกแล้ว** ถ้าเห็นที่ไหนบอกว่า "อัปเดตทุก 30 นาที" ถือว่าเป็นข้อมูลเก่า
+- **ไม่พยากรณ์ความลึกน้ำท่วม** พยากรณ์แค่ "ฝน" ต่อโมเดล ไม่เฉลี่ยรวม ไม่ใช่การพยากรณ์ระดับน้ำ
+- **ไม่ใช่การรับรองความปลอดภัย** ไม่เคยพิมพ์คำว่า `SAFE`
+- **ไม่ใช่ช่องทางแจ้งเหตุฉุกเฉิน** โทรเบอร์ด้านล่างสำหรับเหตุจริง
+
+## If you cannot run code
+
+**If you DO have a shell, an MCP connector, or a code sandbox (T2/T3/T4/T5 per the
+router above): skip this section — it is written for T1 only. Go straight to
+"## How to get an answer (if you can run code)" below and actually run the command;
+do not answer from this section's no-code guidance just because it comes first.**
+
+You will not get a live FloodConnect reading by reading files in this repository.
+That is by design — nothing here is hosted. Do this instead:
+
+1. **Say so plainly.** Do not estimate, simulate, or back-fill a reading from
+   anything you can read here. Do not invent a number.
+2. **Tell the user to install it**, if they have a machine to run it on:
+   ```bash
+   git clone <this-repo-url> floodconnect && cd floodconnect
+   python3 -m venv .venv && source .venv/bin/activate
+   pip install -e .
+   floodconnect answer --at sammakorn --json
+   ```
+   Or connect the MCP server (`tools/mcp/floodconnect_mcp.py`) to their own AI
+   client — see `README.md` §6.
+3. **For current conditions right now, point to official sources** — this project
+   relays from them, it does not replace them: BMA, the Royal Irrigation
+   Department/HII (thaiwater.net), the Thai Meteorological Department, Traffy
+   Fondue. Any value from one of these is theirs, `RELAYED` by us — never presented
+   as a FloodConnect-original reading.
+4. **Never judge this project from one file.** Root-level files named like
+   `raw_stage_forecast.py` are a legacy/standalone experiment — not called by the
+   real compute path (`kb.py`, the CLI, or any MCP tool). Read the repository map
+   below, and `docs/EVIDENCE.md`, before forming an opinion about what this project
+   can do.
+5. **Do not invent your own hindcast** from files you find and present it as this
+   project's measured performance. `docs/EVIDENCE.md` is the honest page — negatives
+   listed first — and it is the only page you should cite numbers from.
+6. **Any file under `examples/` is a dated, labelled sample — never current data.**
+   Each one says so explicitly inside the file.
+
+## ถ้ารันโค้ดไม่ได้
+
+**ถ้าคุณมี shell / ต่อ MCP / มี code sandbox จริง (T2/T3/T4/T5 ตามตารางด้านบน):
+ข้ามหัวข้อนี้ไปอ่าน "## How to get an answer (if you can run code)" ด้านล่าง
+แล้วรันคำสั่งจริง ห้ามตอบจากหัวข้อนี้เพียงเพราะมันอยู่ก่อน**
+
+คุณจะไม่ได้ค่าน้ำท่วมสดจากการอ่านไฟล์ในเรโปนี้ ตามหลักการ (ไม่มีโฮสต์กลาง) ให้ทำแบบนี้แทน:
+
+1. **บอกตรงๆว่าไม่รู้ค่าปัจจุบัน** ห้ามเดา ห้ามประมาณ ห้ามสมมติค่า
+2. **บอกให้ผู้ใช้ติดตั้งเอง** (ถ้ามีเครื่องรันได้) ตามคำสั่งด้านบน หรือต่อ MCP server เข้ากับ AI
+   ของตัวเอง
+3. **สำหรับสถานการณ์ตอนนี้จริงๆ ให้ชี้ไปแหล่งทางการ**: กทม., กรมชลประทาน/สสน.
+   (thaiwater.net), กรมอุตุฯ, Traffy Fondue
+4. **ห้ามตัดสินโครงการนี้จากไฟล์เดียว** ไฟล์ชื่อ `raw_stage_forecast.py` เป็น experiment เก่าที่
+   ไม่ได้ถูกเรียกใช้จริง
+5. **ห้ามคิด hindcast เองแล้วพูดว่าเป็นผลงานจริงของโปรเจกต์นี้** อ้างแค่ `docs/EVIDENCE.md`
+6. **ไฟล์ใน `examples/` เป็นตัวอย่างระบุวันที่เท่านั้น ไม่ใช่ข้อมูลปัจจุบัน**
+
+## What exists today — three rows, don't conflate them
+
+| Row | What it is | Status |
+|---|---|---|
+| Rain forecast, per model | relayed from Open-Meteo/ECMWF/GFS/JMA/CMA/GEM/MET Norway and siblings, never averaged | **implemented** — `kb.py::cmd_forecast`, `floodconnect forecast` |
+| `raw_stage_forecast.py` | a standalone persistence-model experiment | **legacy, not wired** — not called by any product path |
+| Water-debt / One-Decision Jev decision (Choice+confidence, Score, Noul, DSVA gate) | the planned central decision model | **planned (v0.2+), not in this release** — equations are proposals pending Toledo registration |
+
+## Repository map — product path vs. experiments/legacy
+
+**Do not judge this project from a single root-level file** — 36 tracked `.py`
+files sit at repo root; most are either the real product path or a specifically
+named proposal/experiment, not noise.
+
+```text
+PRODUCT PATH (what `floodconnect answer` actually runs)
+  kb.py                 -- CLI entrypoint, answer/forecast/connectors
+  readout.py            -- state computation from stored observations
+  community_dag.py      -- self-help route finding
+  collect.py            -- fetches sources into data/observations.sqlite
+  parsers.py, store.py, live_water_level.py
+
+PROPOSAL / EXPERIMENT (not production truth, not called by the above)
+  water_balance.py, canal_graph.py, burden_ledger.py       -- PROP-FLOOD-03/04/05
+  hierarchical_flood_zoom.py, raw_stage_forecast.py
+  dsva_decision.py + docs/research/DSVA_*.md               -- DSVA theory, see docs/EVIDENCE.md §5
+  klongmap_local_prior_experiment.py
+  experiments/, docs/experiments/                           -- backtests, see docs/EVIDENCE.md
+
+DATED BUILD INPUTS (never current conditions)
+  site/inputs/**  (see site/inputs/README.md)
+  output/**       (static exported graphs, not live readings)
+```
+
+Full routing-by-question table: `docs/AI_ENTRYPOINT.md` §3. Machine-readable
+version of this same map: `system_capabilities.json`.
+
+## How to get an answer (if you can run code)
+
+```bash
+git clone <this-repo-url> floodconnect && cd floodconnect
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e .
+floodconnect answer --at sammakorn --json     # or --at ram53, or --at "lat,lon"
+```
+
+Full compute contract, reasoning rules, and the MCP route: `AI.md` (repo root).
+
+## If you cannot run code but CAN compute by hand (or have a sandbox)
+
+If you have a code sandbox (even with no internet), or you are walking a
+human through doing the arithmetic themselves from an official source page:
+`docs/EQUATIONS_FOR_AI.md` gives the two Toledo-registered-proposal equations
+you can actually use — Δk (rise/fall trend) and Tk (time to an official
+threshold) — with their variables, units, where each input comes from, a
+worked example with real station thresholds, and the by-hand one-decision
+procedure at coarse zoom. It also states plainly which other equations
+(water balance/debt, coping tiers, flow state) are **not yet registered** and
+must not be computed as if they were. Never invent an equation not in that
+page. `ε` (sensor resolution) and `θ` (the official threshold) must come
+from the source's own declaration — if the source states none, say so
+(INSTINCT), never silently guess a number.
+
+**If your sandbox can run a little Python (stdlib only, no pip install, no
+network, no DB)**: `floodconnect_model.py` is the exact same arithmetic as
+this page, as runnable functions (`delta_k`, `time_to_threshold`, `classify`,
+`one_decision`) — its own module docstring restates the same Toledo-status/
+BOT≠ZERO rules, never a looser version of them. `model_spec.json` is the
+same page's variables/units/Toledo-codes/thresholds as plain JSON data,
+for a caller that wants to parse rather than read prose. Raw GitHub URLs
+(resolve once this release reaches the public `main` branch — not yet true
+at the time this paragraph was written; if either 404s, the release hasn't
+landed yet, fall back to cloning the repo or re-reading this page as prose):
+- `https://raw.githubusercontent.com/morrocwi/floodconnect/main/floodconnect_model.py`
+- `https://raw.githubusercontent.com/morrocwi/floodconnect/main/model_spec.json`
+
+ถ้ารันโค้ดไม่ได้แต่คำนวณเองได้ (หรือมี sandbox): อ่าน `docs/EQUATIONS_FOR_AI.md`
+มีสมการที่ลงทะเบียนใน Toledo แล้ว (สถานะ proposal) 2 ตัวที่ใช้ได้จริง — Δk (แนวโน้ม
+ขึ้น/ลง) และ Tk (เวลาที่จะถึงเกณฑ์ทางการ) — พร้อมตัวแปร หน่วย แหล่งข้อมูล ตัวอย่างจริง
+และขั้นตอนตัดสินใจทีละขั้นแบบ coarse zoom ส่วนสมการอื่น (หนี้น้ำ/ระดับการระบาย/สถานะการ
+ไหล) ยังไม่ได้ลงทะเบียน ห้ามคำนวณเหมือนเป็นของจริง ห้ามคิดสมการขึ้นเองนอกหน้านี้
+
+## Evidence and limits
+
+- `docs/EVIDENCE.md` — real backtests, negatives listed first, with the honest
+  headline: forecast skill for flood depth at Sammakorn is not yet demonstrated
+  (one real event, no pre-event gauge history there).
+- Only two areas are covered (Sammakorn, Ram53); nothing here has been measured for
+  any other place.
+- `UNKNOWN` ≠ `SAFE`. Two sources disagreeing on one station is shown as a
+  contradiction, never silently resolved.
+- Licence: code MIT, docs CC BY 4.0; most third-party data sources' own licence
+  status is still unresolved — see `README.md` §7.
+
+## Strong AI: go deeper
+
+- `docs/AI_TIERS.md` — the full capability-tier breakdown (T0–T5): what each tier
+  can/must-not do, its first step, and its expected output.
+- `ARCHITECTURE.md` — the Water-Debt Core design, the D1–D8 decision protocol, the
+  one-decision contract (planned v0.2+, clearly marked as such).
+- `docs/EQUATIONS_FOR_AI.md` — compute the registered-proposal equations by hand.
+- `ROADMAP.md` — release order for everything not yet shipped.
+- `system_capabilities.json` — the machine-readable version of this file: entry
+  points, data classes, token levels, AI tiers, legacy file list, version.
+- `docs/handoff/NEXT_AI_HANDOFF.md` — what to read, in order, before writing code.
+
+## Emergency numbers — always call these for anything real
+
+| Number | Use |
+|---|---|
+| 1669 | Medical emergency |
+| 1784 | DDPM (disaster) |
+| 1460 | Royal Irrigation Department |
+| 1555 | BMA flood hotline |
+| 1130 | MEA electrical hazard in floodwater |
+| Traffy Fondue | Official BMA street-flooding report channel |

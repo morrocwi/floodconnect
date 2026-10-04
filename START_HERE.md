@@ -34,10 +34,13 @@ site/build_page.py        # ประกอบหน้าเว็บจาก 
 tools/api/export_api.py   # ส่งออก site/dist/api/v1/** จากไฟล์ build ข้างบน
 ```
 
-**ไม่มีโฮสต์กลาง (project decision 2026-10-04):** GitHub Pages ถูก unpublish แล้วและต้อง
-ไม่เปิดอีก — repo สาธารณะนี้ไม่ส่งข้อมูลน้ำท่วมที่คำนวณไว้แล้วให้ใครอ่านได้ — ไฟล์ `site/dist/**`
-(รวม `site/dist/api/v1/**`) เป็น build artifact ที่ gitignore ไว้ ผู้ติดตั้งต้องรัน pipeline
-ข้างบนบนเครื่อง/network ของตัวเองเสมอ จึงจะมีข้อมูลให้ตอบ
+**ไม่มีข้อมูลโฮสต์กลาง (project decision 2026-10-04, ปรับปรุง 2026-10-04):** GitHub Pages
+เปิดใช้งาน**เฉพาะ** `site/landing/` — หน้าอธิบายโครงการแบบ static ไม่มีค่าน้ำท่วมปัจจุบัน
+ผ่าน `.github/workflows/pages-landing.yml` (deploy เมื่อ push หรือสั่งมือเท่านั้น ไม่มี cron) —
+ต้องไม่ใช้ Pages serve `site/dist` หรือ `api/v1` เด็ดขาด. repo สาธารณะนี้ไม่ส่งข้อมูลน้ำท่วมที่
+คำนวณไว้แล้วให้ใครอ่านได้เลย — ไฟล์ `site/dist/**` (รวม `site/dist/api/v1/**`) เป็น build
+artifact ที่ gitignore ไว้ ไม่อยู่ใน Pages deploy ผู้ติดตั้งต้องรัน pipeline ข้างบนบนเครื่อง/
+network ของตัวเองเสมอ จึงจะมีข้อมูลให้ตอบ
 
 - **Collection cadence**: `collect.py --all` เป็นงานฝั่งผู้เรียก (caller-side) เสมอ — รันบน
   เครื่อง/network/key ของผู้ใช้เอง ไม่มีจังหวะเวลาตายตัว GitHub Actions
@@ -52,7 +55,7 @@ tools/api/export_api.py   # ส่งออก site/dist/api/v1/** จากไ�
 
 | คำถาม | เปิดที่ |
 |---|---|
-| ตอนนี้น้ำเป็นไง | `floodconnect answer --refresh` บนเครื่องตัวเอง (ไม่มีหน้าเว็บโฮสต์กลางแล้ว — local dashboard: ดู `LOCAL_DASHBOARD_LINK.md`, ไม่ port ไปสาธารณะ) หรือ `site/dist/data.json` ที่สร้างเองจาก `--refresh` |
+| ตอนนี้น้ำเป็นไง | `floodconnect answer` (refresh เป็น default อยู่แล้ว) บนเครื่องตัวเอง (ไม่มีหน้าเว็บโฮสต์กลางแล้ว — local dashboard: ดู `LOCAL_DASHBOARD_LINK.md`, ไม่ port ไปสาธารณะ) หรือ `site/dist/data.json` ที่สร้างเองจากการรัน (refresh เป็น default อยู่แล้ว) |
 | แนวโน้ม / ประตูน้ำใครรับภาระ | `readout_history.py --history` |
 | ความสามารถระบายน้ำของ กทม. | `docs/CAPACITY.md` + `capacity_records` ใน `site/dist/data.json` |
 | ใครมีอำนาจ / ต้องถามใคร | `docs/knowledge/POWER_RESOURCE_MAP.md` |

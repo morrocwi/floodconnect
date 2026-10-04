@@ -1,0 +1,56 @@
+name: Landing page (GitHub Pages)
+
+# Publishes ONLY site/landing/ -- the static public explainer page. No flood
+# data lives here: no api/v1, no site/dist, no scheduled job. This is a
+# separate, minimal workflow from floodconnect.yml (which validates/tests/
+# builds the repo and deploys nothing) so that the data pipeline and the
+# Pages deploy never share a job or a permission scope.
+#
+# No hosted data (project decision 2026-10-04): this page is a static
+# explainer only -- an infographic image plus hand-written HTML text. It
+# carries no live flood reading and is not refreshed on a schedule.
+#
+# On-demand only (project decision 2026-10-02): triggers are push-to-main
+# (so a merged landing-page change goes live) and workflow_dispatch (manual
+# re-run) -- no cron, no schedule trigger anywhere in this file.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/landing/**"
+      - ".github/workflows/pages-landing.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-landing
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload landing page only
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/landing
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

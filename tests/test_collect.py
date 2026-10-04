@@ -37,11 +37,18 @@ def test_dry_run_all_sources_makes_no_network_call(monkeypatch, tmp_path):
     # succeeded"/"tried and failed" apart -- see `collect.CollectResult`.
     candidate_ids = {sid for sid, s in reg.items() if s.get("kind") == "candidate_unregistered"}
     no_fetcher_ids = collect.NO_FETCHER
+    # `bma_pumphistory` is unconditionally skipped too (its own endpoint returned HTTP
+    # 404, MEASURED 2026-10-04 -- see collect.DORMANT_PERMANENT_404's own comment), same
+    # unconditional-of-dry_run shape as NO_FETCHER above, so it needs the same carve-out
+    # here rather than failing the catch-all "every other source ok, not skipped" branch.
+    dormant_404_ids = collect.DORMANT_PERMANENT_404
     for r in results:
         if r.source_id in candidate_ids:
             assert r.ok is False and r.skipped and r.note == "skipped -- no collector implemented", r
         elif r.source_id in no_fetcher_ids:
             assert r.ok is False and r.skipped and r.note.startswith("skipped -- no fetcher by design"), r
+        elif r.source_id in dormant_404_ids:
+            assert r.ok is False and r.skipped and "HTTP 404" in r.note, r
         else:
             assert r.ok and not r.skipped, r
 
@@ -279,7 +286,7 @@ def test_refresh_relevant_sources_default_is_narrowed_to_answer_sources(monkeypa
 
     captured = {}
 
-    def _fake_run(source_ids, dry_run=False, points_by_source=None):
+    def _fake_run(source_ids, dry_run=False, points_by_source=None, **_kw):
         captured["source_ids"] = list(source_ids)
         return []
 
@@ -296,6 +303,85 @@ def test_refresh_relevant_sources_default_is_narrowed_to_answer_sources(monkeypa
         "allowlisted set, not the near-full registry")
 
 
+_CHIANG_MAI_LAT, _CHIANG_MAI_LON = 18.7883, 98.9853  # real Chiang Mai city centre
+
+
+def test_refresh_relevant_sources_excludes_bangkok_dds_for_a_non_bangkok_point(monkeypatch):
+    """v0.1.1 fix: a bare `--at lat,lon` far outside Bangkok (Chiang Mai, real
+    coordinates) must never fetch the BMA/dds.bangkok.go.th sources
+    (`collect.SOURCE_BBOX`) -- those endpoints only ever cover the Bangkok metro area.
+    Before this fix, `_refresh_relevant_sources` only narrowed by `collect.
+    AREA_RELEVANT_SOURCES`, which is keyed on a NAMED area_id -- an unnamed point
+    (every `area_id` this repo does not declare) skipped that narrowing entirely and
+    still fetched every BMA DDS source regardless of location."""
+    import kb
+
+    captured = {}
+
+    def _fake_run(source_ids, dry_run=False, points_by_source=None, **_kw):
+        captured["source_ids"] = list(source_ids)
+        return []
+
+    monkeypatch.setattr(collect, "run", _fake_run)
+    # area_id=None (the real shape `build_answer` passes for an unnamed point: `area_id
+    # or at` falls back to the raw "lat,lon" string, which matches no declared area_id
+    # anywhere) -- lat/lon are the only signal this fix can act on.
+    kb._refresh_relevant_sources(f"{_CHIANG_MAI_LAT},{_CHIANG_MAI_LON}", verbose=False,
+                                  lat=_CHIANG_MAI_LAT, lon=_CHIANG_MAI_LON)
+    fetched = set(captured["source_ids"])
+    for bkk_only in collect.SOURCE_BBOX:
+        assert bkk_only not in fetched, (
+            f"{bkk_only} (Bangkok-only BMA source) was fetched for a Chiang Mai point")
+
+
+def test_refresh_relevant_sources_keeps_bangkok_dds_for_a_bangkok_point(monkeypatch):
+    """The other side of the same fix: a real Bangkok-area point (Sammakorn's own
+    coordinates, passed as a bare lat,lon rather than the named area) must still
+    fetch the BMA DDS sources -- the bbox filter narrows by location, not by whether
+    the point happens to be one of this repo's named areas."""
+    import kb
+
+    captured = {}
+
+    def _fake_run(source_ids, dry_run=False, points_by_source=None, **_kw):
+        captured["source_ids"] = list(source_ids)
+        return []
+
+    monkeypatch.setattr(collect, "run", _fake_run)
+    sammakorn = kb._ANSWER_AREAS["sammakorn"]
+    kb._refresh_relevant_sources(f"{sammakorn['lat']},{sammakorn['lon']}", verbose=False,
+                                  lat=sammakorn["lat"], lon=sammakorn["lon"])
+    fetched = set(captured["source_ids"])
+    for bkk_source in collect.SOURCE_BBOX:
+        if bkk_source in collect.DORMANT_NOT_IN_ALL or bkk_source in collect.CATALOG_ONLY_NOT_IN_REFRESH:
+            continue
+        if bkk_source not in collect.ANSWER_SOURCES:
+            continue
+        assert bkk_source in fetched, (
+            f"{bkk_source} wrongly excluded for a real Bangkok point")
+
+
+def test_refresh_relevant_sources_bbox_filter_is_a_noop_with_no_coordinate(monkeypatch):
+    """Existing direct callers (this test module, `kb.py`'s other internal uses before
+    this fix) that pass no `lat`/`lon` at all must see unchanged behaviour -- the bbox
+    filter is additive, never a silent new default narrowing for a caller that never
+    opted into it."""
+    import kb
+
+    captured = {}
+
+    def _fake_run(source_ids, dry_run=False, points_by_source=None, **_kw):
+        captured["source_ids"] = list(source_ids)
+        return []
+
+    monkeypatch.setattr(collect, "run", _fake_run)
+    kb._refresh_relevant_sources("sammakorn", verbose=False)
+    fetched = set(captured["source_ids"])
+    for bkk_source in collect.SOURCE_BBOX:
+        if bkk_source in collect.ANSWER_SOURCES:
+            assert bkk_source in fetched
+
+
 def test_refresh_relevant_sources_all_flag_restores_full_sweep(monkeypatch):
     """`all_sources=True` (wired to `kb.py answer --all`) must restore the pre-fix full
     wired-source sweep (minus DORMANT/CATALOG_ONLY/AREA_RELEVANT_SOURCES/key-gating,
@@ -304,7 +390,7 @@ def test_refresh_relevant_sources_all_flag_restores_full_sweep(monkeypatch):
 
     captured = {}
 
-    def _fake_run(source_ids, dry_run=False, points_by_source=None):
+    def _fake_run(source_ids, dry_run=False, points_by_source=None, **_kw):
         captured["source_ids"] = list(source_ids)
         return []
 
@@ -346,7 +432,7 @@ def test_refresh_relevant_sources_excludes_catalog_and_quiets_missing_key(monkey
 
     captured = {}
 
-    def _fake_run(source_ids, dry_run=False, points_by_source=None):
+    def _fake_run(source_ids, dry_run=False, points_by_source=None, **_kw):
         captured["source_ids"] = list(source_ids)
         return []
 
@@ -375,3 +461,78 @@ def test_refresh_relevant_sources_excludes_catalog_and_quiets_missing_key(monkey
     kb._refresh_relevant_sources("sammakorn", verbose=True, all_sources=False)
     verbose_only_ids = captured["source_ids"]
     assert "gistda_flood_extent_api" not in verbose_only_ids
+
+
+def test_cache_key_scopes_point_filterable_sources_by_point():
+    """FIX B item 1 regression: openmeteo_forecast16d/metno_locationforecast are
+    scoped to ONE area's point per call -- the TTL cache key must differ across two
+    different points for the same sid, or area A's cache entry would falsely cache-
+    hit area B's later call for a different point."""
+    sid = "openmeteo_forecast16d"
+    points_a = {sid: {"sammakorn": (13.75, 100.65)}}
+    points_b = {sid: {"ram53": (13.76, 100.62)}}
+    key_a = collect._cache_key(sid, points_a)
+    key_b = collect._cache_key(sid, points_b)
+    assert key_a != key_b
+    # A non-point-filterable source's key is unaffected by points_by_source at all.
+    assert collect._cache_key("dds_daily_pdf", points_a) == "dds_daily_pdf"
+    assert collect._cache_key("dds_daily_pdf", None) == "dds_daily_pdf"
+
+
+def test_parallel_cache_does_not_leak_across_different_points(monkeypatch, tmp_path):
+    """End-to-end: `run(parallel=True, ttl_s=...)` for area A's point must NOT be
+    treated as a cache hit for area B's different point within the same TTL window."""
+    monkeypatch.setattr(collect, "FETCH_CACHE_PATH", tmp_path / ".fetch_cache.json")
+    sid = "openmeteo_forecast16d"
+    call_count = {"n": 0}
+
+    def _fake_collector(conn, dry_run=False, points=None):
+        call_count["n"] += 1
+        return collect.CollectResult(sid, True, note=f"fetched for {points}")
+
+    monkeypatch.setitem(collect.COLLECTORS, sid, _fake_collector)
+    db_path = tmp_path / "t.sqlite"
+    points_a = {sid: {"sammakorn": (13.75, 100.65)}}
+    points_b = {sid: {"ram53": (13.76, 100.62)}}
+
+    results_a = collect.run([sid], dry_run=False, db_path=db_path, points_by_source=points_a,
+                             parallel=True, ttl_s=600, max_workers=2)
+    assert call_count["n"] == 1
+    assert results_a[0].ok
+
+    # Different area/point, same sid, well within the TTL window -- must still fetch.
+    results_b = collect.run([sid], dry_run=False, db_path=db_path, points_by_source=points_b,
+                             parallel=True, ttl_s=600, max_workers=2)
+    assert call_count["n"] == 2, "area B's distinct point must not be served from area A's cache entry"
+    assert results_b[0].ok
+
+    # Same area/point again, within TTL -- THIS should be a real cache hit.
+    results_a2 = collect.run([sid], dry_run=False, db_path=db_path, points_by_source=points_a,
+                              parallel=True, ttl_s=600, max_workers=2)
+    assert call_count["n"] == 2, "the SAME point within the TTL window should be a cache hit"
+    assert "cache hit" in results_a2[0].note
+
+
+def test_parallel_worker_db_lock_reported_as_lock_error_not_timeout(monkeypatch, tmp_path):
+    """A `store.connect()` failure inside `run(parallel=True)`'s worker thread (e.g. a
+    writer that could not get the lock within `busy_timeout`) must come back as its own
+    "database locked" `CollectResult`, not propagate unhandled out of the worker -- an
+    unhandled exception there would leave `result_holder` without an entry for that
+    source, which the join-deadline loop would then misreport as "timed out" even
+    though the real cause was a DB lock, not a slow fetch."""
+    monkeypatch.setattr(collect, "FETCH_CACHE_PATH", tmp_path / ".fetch_cache.json")
+    sid = "openmeteo_forecast16d"
+
+    def _raise_locked(*_args, **_kwargs):
+        raise __import__("sqlite3").OperationalError("database is locked")
+
+    monkeypatch.setattr(collect.store, "connect", _raise_locked)
+    monkeypatch.setitem(collect.COLLECTORS, sid,
+                         lambda conn, dry_run=False, points=None: collect.CollectResult(sid, True))
+
+    results = collect.run([sid], dry_run=False, db_path=tmp_path / "t.sqlite",
+                           parallel=True, ttl_s=0, max_workers=2, per_source_timeout_s=20)
+    assert len(results) == 1
+    assert results[0].ok is False
+    assert "database locked" in results[0].note
+    assert "timed out" not in results[0].note

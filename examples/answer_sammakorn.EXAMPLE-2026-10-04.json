@@ -1,0 +1,181 @@
+{
+  "example": true,
+  "not_current": true,
+  "banner": "EXAMPLE OUTPUT -- computed on a maintainer machine on 2026-10-04T09:48:16.492553+00:00 (v0.1.1 code, WATCH=YELLOW classification). NOT live. NOT the current flood situation. Install this repo and run floodconnect answer --at sammakorn --json yourself to get a current reading. Never quote the answer block below as current conditions.",
+  "computed_locally_on": "2026-10-04T09:48:16.492553+00:00",
+  "command": "floodconnect answer --at sammakorn --json",
+  "install_steps": [
+    "git clone <this-repo-url> floodconnect && cd floodconnect",
+    "python3 -m venv .venv && source .venv/bin/activate",
+    "pip install -e .",
+    "floodconnect answer --at sammakorn --json"
+  ],
+  "shape_notes": "Real output has exactly these top-level keys: generated_at, at, refresh, state, hazard, accountability, next_action, source_tags, cctv (cctv only when a camera exists). Each of state/hazard/accountability/next_action carries its own epistemic tag (VERIFIED/MEASURED/RELAYED/INSTINCT/OPEN). This example happens to show a YELLOW/WATCH station-level reading (a bare WATCH reading classifies as YELLOW, never RED -- RED is reserved for an agency-declared critical/overflow reading) with an open contradiction and a forecast hazard -- your own run will show whatever is true on your machine at your run time, which will differ.",
+  "answer": {
+    "generated_at": "2026-10-04T09:48:16.492553+00:00",
+    "at": "sammakorn",
+    "refresh": {
+      "total": 13,
+      "ok": 10,
+      "skipped": 2,
+      "failed_ids": [
+        "bma_pumphistory"
+      ]
+    },
+    "state": {
+      "tag": "INSTINCT",
+      "notes": [
+        "ใช้ข้อมูลจาก 10 แหล่งในรอบนี้ (top 3 relevant): dds_daily_pdf, dds_tide_pdf, thaiwater_canal_waterlevel (+7 more; see --verbose)."
+      ],
+      "contradiction_count": 1,
+      "missing_count": 5,
+      "status_counts": {
+        "WATCH": 1
+      },
+      "status_counts_all": {
+        "WATCH": 1,
+        "NO_THRESHOLD": 1,
+        "ระดับน้ำปกติ": 7,
+        "ระดับน้ำวิกฤติ": 3
+      },
+      "status_counts_stale": {
+        "NO_THRESHOLD": 1
+      },
+      "evidence": [
+        {
+          "station": "ค.แสนแสบ-เสรีไทย 24",
+          "status": "WATCH",
+          "age_h": 4.9,
+          "used_for_decision": true,
+          "stale": false
+        }
+      ],
+      "evidence_total_count": 12,
+      "stale_count": 1,
+      "refresh_suggested": false
+    },
+    "hazard": {
+      "tag": "RELAYED",
+      "point_id": "sammakorn",
+      "issued_at": "2026-10-04T09:27:14.408086+00:00",
+      "stale": false,
+      "per_model": [
+        {
+          "model": "CMA",
+          "tomorrow_mm": 0.0,
+          "7day_total_mm": 29.4,
+          "total_days": 4
+        },
+        {
+          "model": "JMA",
+          "tomorrow_mm": 7.3,
+          "7day_total_mm": 44.0,
+          "total_days": 7
+        },
+        {
+          "model": "GEM",
+          "tomorrow_mm": 27.5,
+          "7day_total_mm": 82.0,
+          "total_days": 7
+        },
+        {
+          "model": "MET Norway",
+          "tomorrow_mm": 11.6,
+          "7day_total_mm": 90.5,
+          "total_days": 7
+        }
+      ],
+      "per_model_note": "min/median/max by tomorrow_mm of 10 models shown (+6 more -- see --verbose for every model)"
+    },
+    "accountability": {
+      "tag": "INSTINCT",
+      "basis": "governance_dag_fallback",
+      "owner_agencies": [
+        "ผอ.เขตสะพานสูง (ผู้ช่วยผู้อำนวยการ กทม.)",
+        "สนน. สำนักการระบายน้ำ + ศูนย์ควบคุมระบบป้องกันน้ำท่วม"
+      ],
+      "self_help_actions": [],
+      "note": "INSTINCT fallback (เขต/สำนักตามทะเบียน, ไม่ใช่ graph lookup) -- see --verbose"
+    },
+    "next_action": {
+      "found": false,
+      "path": [],
+      "target": null,
+      "score": null,
+      "reason": "no feasible field-verified route to a fresh verified external refuge with sufficient capacity/services",
+      "tag": "OPEN",
+      "start_node": "sammakorn_household_template",
+      "dual_state": {
+        "current_local_state": "YELLOW",
+        "forward_hazard": "ACTIVE"
+      },
+      "actions": [
+        {
+          "action": "สถานีน้ำใกล้จุดนี้อยู่ระดับเฝ้าระวัง (WATCH, ระดับสถานีเท่านั้น) -- ติดตามต่อเนื่อง / ทำตามประกาศทางการ",
+          "tag": "MEASURED"
+        },
+        {
+          "action": "มีฝนคาดการณ์ล่วงหน้าจากโมเดลภายนอก (RELAYED) -- เตรียมเส้นทางสำรองไว้ก่อน สถานะปัจจุบันระดับเฝ้าระวัง/ไม่ชัดเจน",
+          "tag": "RELAYED"
+        },
+        {
+          "action": "ระบบนี้ยังไม่มีข้อมูลเส้นทาง/จุดหมายภายนอกที่ตรวจสอบแล้ว (ทุกจุดยังเป็น UNKNOWN) -- ตัดสินใจตามประกาศหน่วยงานทางการ หรือโทร 1784 / 1555",
+          "tag": "OPEN"
+        }
+      ],
+      "who_to_call": {
+        "hotlines": [
+          "1669 เหตุฉุกเฉินทางการแพทย์ (สพฉ.)",
+          "1784 ภัยพิบัติ เกินกำลังพื้นที่ (ปภ.)",
+          "1555 สายด่วน กทม.",
+          "1130 ไฟฟ้าช็อตจากน้ำท่วม (กฟน./MEA)"
+        ]
+      },
+      "notes": [
+        "1 contradiction(s) between sources for this point -- see state.contradiction_count / readout contradictions (not resolved)."
+      ]
+    },
+    "source_tags": [
+      {
+        "field": "state",
+        "epistemic_class": "LIVE_OBSERVATION"
+      },
+      {
+        "field": "hazard",
+        "epistemic_class": null
+      },
+      {
+        "field": "accountability",
+        "epistemic_class": null
+      },
+      {
+        "field": "next_action",
+        "epistemic_class": "POLICY_SCHEMA"
+      }
+    ],
+    "cctv": {
+      "kind": "VISUAL-CHECK",
+      "radius_km": 3.0,
+      "cameras": [
+        {
+          "name": "ปากคลองลัดโพธิ์",
+          "distance_km": 17.84,
+          "url": null,
+          "within_radius": false
+        },
+        {
+          "name": "สามเสน",
+          "distance_km": 18.28,
+          "url": null,
+          "within_radius": false
+        },
+        {
+          "name": "ศาลากลางสมุทรปราการ",
+          "distance_km": 19.8,
+          "url": "http://samutprakan-cpy.dyndns.org:5001/axis-cgi/jpg/image.cgi?resolution=CiF",
+          "within_radius": false
+        }
+      ]
+    }
+  }
+}

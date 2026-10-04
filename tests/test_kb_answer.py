@@ -2,12 +2,12 @@
 
 None of this subcommand had a test calling `cmd_answer`/`_resolve_area`/`_answer_*` or
 `tools.kg.accountability.build_result` directly before this file (an earlier check defect
-M5). Every forecast value used below is REAL data, copied verbatim from a `git -C
-thailand_flood_kg` collection run recorded in the main repo's `data/observations.sqlite`
-on 2026-09-27/28 (Sammakorn point, source_id `openmeteo_forecast16d`), never simulated
--- per this workspace's floodconnect memory rule "real data only in tests, never
-simulated". The CMA 2026-09-26T17:00Z=91.5mm row is the exact value was measured
-when it found defect H1 (a 5-day-stale row served as "tomorrow").
+M5). Every forecast value used below is REAL data, copied verbatim from a collection
+run recorded in the main working repository's `data/observations.sqlite` on
+2026-09-27/28 (Sammakorn point, source_id `openmeteo_forecast16d`), never simulated
+-- per this project's rule "real data only in tests, never simulated". The CMA
+2026-09-26T17:00Z=91.5mm row is the exact value was measured when it found defect H1
+(a 5-day-stale row served as "tomorrow").
 
 Run only this file while iterating (AGENTS.md "no repeated full-arc audits"):
     python3 -m pytest tests/test_kb_answer.py -q
@@ -251,7 +251,7 @@ def test_trim_evidence_shows_flood_like_decision_row_not_an_earlier_normal_one(m
     `readout`/`build_data` directly) so this test does not depend on either module's
     real registered status words staying the same."""
     monkeypatch.setattr(
-        kb, "_flood_like_normal_like_status_words", lambda: ({"CRITICAL"}, {"NORMAL"}))
+        kb, "_flood_like_normal_like_status_words", lambda: ({"CRITICAL"}, {"NORMAL"}, {"CRITICAL"}))
     evidence = [
         {"station": "A_normal", "status": "NORMAL", "age_h": 1.0, "used_for_decision": True},
         {"station": "B_critical", "status": "CRITICAL", "age_h": 1.0, "used_for_decision": True},
@@ -270,7 +270,7 @@ def test_trim_evidence_preserves_stale_flag_distinct_from_used_for_decision(monk
     from a row that is actually `stale=True`. Raises `_TOP_N_EVIDENCE_STALE_IN_SUMMARY`
     (default 0) so the not-used sample is not trimmed away entirely for this check."""
     monkeypatch.setattr(
-        kb, "_flood_like_normal_like_status_words", lambda: (set(), {"NORMAL"}))
+        kb, "_flood_like_normal_like_status_words", lambda: (set(), {"NORMAL"}, set()))
     monkeypatch.setattr(kb, "_TOP_N_EVIDENCE_STALE_IN_SUMMARY", 1)
     evidence = [
         {"station": "A_normal", "status": "NORMAL", "age_h": 1.0,
@@ -298,7 +298,7 @@ def test_trim_evidence_falls_back_to_first_deciding_row_when_none_are_flood_like
     first one (stable sort, no reordering among equally-ranked rows), same as before
     this fix."""
     monkeypatch.setattr(
-        kb, "_flood_like_normal_like_status_words", lambda: (set(), {"NORMAL"}))
+        kb, "_flood_like_normal_like_status_words", lambda: (set(), {"NORMAL"}, set()))
     evidence = [
         {"station": "A_normal", "status": "NORMAL", "age_h": 1.0, "used_for_decision": True},
         {"station": "B_normal2", "status": "NORMAL", "age_h": 2.0, "used_for_decision": True},
@@ -544,6 +544,35 @@ REAL_WL_SSB_08_NORMAL_ROW = dict(
     trust_tier="official_telemetry",
 )
 
+# DERIVED (not a raw captured reading): same real station/thresholds as the two rows
+# above (warning=0.35, critical=0.45, bank=1.91), value edited down into WATCH's own
+# band [warning, critical) -- used by the WATCH-is-YELLOW-not-RED regression below
+# (founder ruling 2026-10-04, verbatim: "WATCH = YELLOW (แนะนำ)"). A real WATCH row at
+# this same station exists (see examples/answer_sammakorn.EXAMPLE-2026-10-04.json); this
+# row is a synthetic edit of the station's real thresholds/identity, not that capture.
+DERIVED_WL_SSB_08_WATCH_ROW = dict(
+    source_id="thaiwater_canal_waterlevel", station_code="WL.SSB.08",
+    station_name="ค.แสนแสบ-เสรีไทย 24", lat=13.7805, lon=100.67387,
+    variable="canal_water_level_m", value=0.38, unit="m",
+    observed_at_utc="2026-09-28T05:10:00+00:00",
+    fetched_at_utc="2026-09-28T05:19:16.710627+00:00",
+    warning=0.35, critical=0.45, bank=1.91, status="WATCH",
+    trust_tier="official_telemetry",
+)
+
+# DERIVED (not a raw captured reading): same station again, value edited up past
+# `bank` (1.91 m) -- the canal has topped its bank. OVERBANK stays RED under the same
+# ruling (agency critical/overflow).
+DERIVED_WL_SSB_08_OVERBANK_ROW = dict(
+    source_id="thaiwater_canal_waterlevel", station_code="WL.SSB.08",
+    station_name="ค.แสนแสบ-เสรีไทย 24", lat=13.7805, lon=100.67387,
+    variable="canal_water_level_m", value=2.1, unit="m",
+    observed_at_utc="2026-09-28T06:40:00+00:00",
+    fetched_at_utc="2026-09-28T06:49:16.710627+00:00",
+    warning=0.35, critical=0.45, bank=1.91, status="OVERBANK",
+    trust_tier="official_telemetry",
+)
+
 
 @pytest.fixture
 def fresh_state_db(tmp_path, monkeypatch):
@@ -588,6 +617,87 @@ def test_dual_state_critical_row_classifies_red_and_emits_neutral_action_without
     # appear as a RED next-action; the gap is reported via `notes`, not hidden.
     assert not any(a["source"].startswith("docs/knowledge/") for a in out["actions"])
     assert any("ACTION_LIBRARY" in n for n in out.get("notes", []))
+
+
+def test_watch_alone_classifies_yellow_not_red(fresh_state_db):
+    """Founder ruling 2026-10-04 (verbatim: "WATCH = YELLOW (แนะนำ)"): a station-only
+    WATCH/เฝ้าระวัง reading on its own must classify as YELLOW, never RED. RED is
+    reserved for an agency-declared critical/overflow reading (วิกฤต/ล้นตลิ่ง =
+    CRITICAL/OVERBANK)."""
+    store.insert_observation(fresh_state_db, **DERIVED_WL_SSB_08_WATCH_ROW)
+    state = kb._answer_state(SAMMAKORN_LAT, SAMMAKORN_LON, as_of_date="2026-09-28")
+    assert state["status_counts"] == {"WATCH": 1}
+    assert kb._classify_current_local_state(state) == "YELLOW"
+
+
+def test_watch_alone_build_answer_emits_yellow_watch_action(fresh_state_db):
+    """`_answer_next_action`-level regression for the same founder ruling (WATCH =
+    YELLOW): a station-only WATCH reading must reach `_answer_next_action`'s `dual_state` as
+    YELLOW (never RED), and the actions list must say so explicitly -- post-release
+    defect: YELLOW's only wording before this fix was the generic "current state
+    unclear" clause, and only when a forecast hazard was ACTIVE; a WATCH reading with
+    no active forecast produced no WATCH-specific action at all."""
+    store.insert_observation(fresh_state_db, **DERIVED_WL_SSB_08_WATCH_ROW)
+    state = kb._answer_state(SAMMAKORN_LAT, SAMMAKORN_LON, as_of_date="2026-09-28")
+    out = kb._answer_next_action("sammakorn", state_answer=state)
+    assert out["dual_state"]["current_local_state"] == "YELLOW"
+    assert any("WATCH" in a["action"] and a["tag"] == "MEASURED" for a in out["actions"]), \
+        "a WATCH reading must produce an explicit MEASURED watch-level action"
+    for banned in ("ปลอดภัย", "ไม่ต้อง", "ห้าม", "ไม่ควร", "ผ่อนคลาย"):
+        assert all(banned not in a["action"] for a in out["actions"])
+
+
+def test_overbank_alone_still_classifies_red(fresh_state_db):
+    """The other side of the same ruling: OVERBANK (ล้นตลิ่ง, the canal has topped its
+    bank) is an agency-declared critical/overflow reading and must still classify as
+    RED, exactly like CRITICAL does -- only bare WATCH was downgraded to YELLOW."""
+    store.insert_observation(fresh_state_db, **DERIVED_WL_SSB_08_OVERBANK_ROW)
+    state = kb._answer_state(SAMMAKORN_LAT, SAMMAKORN_LON, as_of_date="2026-09-28")
+    assert state["status_counts"] == {"OVERBANK": 1}
+    assert kb._classify_current_local_state(state) == "RED"
+
+
+# A real dds_daily_pdf rain row -- factor 1 (ฝน), not factor 4 (การระบาย/drainage).
+# Used below to put a row in `data/observations.sqlite` (so `sources_used` is
+# non-empty and `_answer_state` does NOT take the early "0 sources" OPEN branch)
+# while leaving zero drainage/water-level rows of any kind in the store.
+REAL_DDS_RAIN_ONLY_ROW = dict(
+    source_id="dds_daily_pdf", station_name="กรมอุตุนิยมวิทยา บางนา",
+    variable="rain_24h_mm", value=12.4, unit="mm",
+    observed_at_utc="2026-09-28T00:00:00+00:00", fetched_at_utc="2026-09-28T04:00:00+00:00",
+    trust_tier="official_report",
+    provenance={"header_date_recognized": True},
+)
+
+
+def test_refresh_suggested_when_no_drainage_rows_in_radius_at_all(fresh_state_db):
+    """FIX (v0.1.1): the store has a row for ANOTHER factor (rain), so
+    `_answer_state` does not take the early "0 sources" OPEN branch -- but it has
+    ZERO drainage/water-level rows of any kind (fresh or stale) within this point's
+    radius. Before this fix, `refresh_suggested` only fired when stale rows existed
+    AND were all gated out (`stale_count > 0 and not status_counts`); a point with no
+    drainage rows in radius at all (`stale_count == 0`, `status_counts == {}`) fell
+    through with `refresh_suggested` left False, wrongly implying nothing more could
+    be learned by running `--refresh`."""
+    store.insert_observation(fresh_state_db, **REAL_DDS_RAIN_ONLY_ROW)
+    state = kb._answer_state(SAMMAKORN_LAT, SAMMAKORN_LON, as_of_date="2026-09-28")
+    assert state["status_counts"] == {}
+    assert state["stale_count"] == 0
+    assert state["evidence_total_count"] == 0
+    assert state["refresh_suggested"] is True
+    assert kb._classify_current_local_state(state) == "UNKNOWN"
+
+
+def test_watch_plus_normal_still_classifies_yellow(fresh_state_db):
+    """A mix of one WATCH row and one NORMAL row at different stations must stay
+    YELLOW (mixed/unclear) -- WATCH no longer escalates it to RED, and the presence of
+    a non-normal status still stops it from being silently folded into GREEN."""
+    watch_other_station = dict(DERIVED_WL_SSB_08_WATCH_ROW, station_code="WL.SSB.09")
+    store.insert_observation(fresh_state_db, **watch_other_station)
+    store.insert_observation(fresh_state_db, **REAL_WL_SSB_08_NORMAL_ROW)
+    state = kb._answer_state(SAMMAKORN_LAT, SAMMAKORN_LON, as_of_date="2026-09-28")
+    assert state["status_counts"] == {"WATCH": 1, "NORMAL": 1}
+    assert kb._classify_current_local_state(state) == "YELLOW"
 
 
 def test_dual_state_red_with_real_l5_tier_emits_the_actual_survival_card_headline(

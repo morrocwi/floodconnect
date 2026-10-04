@@ -184,13 +184,16 @@ flowchart TB
   exposure×vulnerability
 
 **L5 — การเผยแพร่**
-- **VERIFIED (ปัจจุบัน, 2026-10-04)**: ไม่มี GitHub Pages หรือโฮสต์กลางใดๆ — project decision
-  "เคลียร์ช่องทางเข้าถึงออกซิ" ปิด Pages และถอด `site/dist/api/v1/**` ที่ tracked ออกจากคลัง
-  ทั้งหมด ผู้ติดตั้งต้อง clone + รัน `collect.py --all` + `site/build_data.py` +
-  `tools/api/export_api.py` (หรือ `floodconnect answer --refresh`) บนเครื่องตัวเองเสมอ ไม่มี
-  ทางลัดอ่านค่าที่คำนวณไว้แล้วจากที่ใด *(historical note: ก่อน 2026-10-02 เคยเป็น cron 30
-  นาที; ก่อน 2026-10-03 workflow เคยรัน `collect.py --all` บน runner ของเราด้วย — เอาออกแล้ว ตอน
-  นี้ collect เป็น caller-side เท่านั้น, และก่อน 2026-10-04 ยังมี GitHub Pages อยู่)*, วางไว้บนกลุ่ม
+- **VERIFIED (ปัจจุบัน, 2026-10-04)**: GitHub Pages เปิดใช้งาน **เฉพาะ** `site/landing/`
+  (หน้าอธิบายโครงการแบบ static ไม่มีข้อมูลน้ำท่วม) ผ่าน `.github/workflows/pages-landing.yml`
+  — ไม่มีการ serve `site/dist`/`api/v1` ผ่าน Pages หรือโฮสต์กลางอื่นใด — project decision
+  "เคลียร์ช่องทางเข้าถึงออกซิ" ถอด `site/dist/api/v1/**` ที่ tracked ออกจากคลังทั้งหมด
+  ผู้ติดตั้งต้อง clone + รัน `collect.py --all` + `site/build_data.py` +
+  `tools/api/export_api.py` (หรือ `floodconnect answer` โดยไม่ใส่ `--offline` — refresh เป็น
+  default) บนเครื่องตัวเองเสมอ ไม่มีทางลัดอ่านค่าที่คำนวณไว้แล้วจากที่ใด *(historical note:
+  ก่อน 2026-10-02 เคยเป็น cron 30 นาที; ก่อน 2026-10-03 workflow เคยรัน `collect.py --all` บน
+  runner ของเราด้วย — เอาออกแล้ว ตอนนี้ collect เป็น caller-side เท่านั้น, และก่อน 2026-10-04
+  Pages เคยเปิดกว้างกว่านี้ ตอนนี้เหลือแค่หน้า landing static)*, วางไว้บนกลุ่ม
   Facebook ด้วยมือ (manual paste), มีคำเตือน
   บังคับในหน้าเว็บ/README (ไม่ใช่การพยากรณ์/ยืนยันความปลอดภัย)
 - ขาด: ช่องทางสื่อสารสองทาง (ไม่มีการยืนยันกลับว่าคนได้รับ/เข้าใจ), ไม่มี fallback วิทยุ/SMS เมื่อ

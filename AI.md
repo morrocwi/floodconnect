@@ -85,7 +85,7 @@ config, and `skills/floodconnect/SKILL.md`'s relationship to these two routes:
 ## Upstream direct-fetch recipes
 
 Only needed if you are an external AI that wants to fetch a government/third-party
-source yourself rather than running `kb.py answer --refresh` in this repo. The full
+source yourself rather than running `kb.py answer` (refresh is the default) in this repo. The full
 recipe table (moved out of this always-loaded file, read only on demand, to stay
 inside this file's own token budget — see the token-budget test) now lives in
 `skills/floodconnect/references/upstream_recipes.md`. Same rule either way: **one GET

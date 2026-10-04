@@ -352,8 +352,8 @@ def cmd_ask(args) -> int:
         for e in matches:
             print(f"  - {e.get('path')}  [{e.get('status')}]  {e.get('title')}")
     else:
-        print(f"(no docs in INDEX.yaml list {qid} under `answers` -- run `kb.py reindex`, "
-              f"or trust the bank's own status column above)")
+        print(f"(no docs in INDEX.yaml list {qid} under `answers` -- run "
+              f"`floodconnect reindex`, or trust the bank's own status column above)")
     return 0
 
 
@@ -447,8 +447,9 @@ def cmd_sources(_args) -> int:
         return 1
     have_db = DB_PATH.exists()
     if not have_db:
-        print("(no local data/observations.sqlite -- run collect.py to populate; "
-              "showing registry only, no last-seen timestamps)")
+        print("(no local data/observations.sqlite -- run `floodconnect answer --at <area>` "
+              "without `--offline` (refresh is the default) to populate it; showing "
+              "registry only, no last-seen timestamps)")
         print()
     for r in records:
         line = f"[{r['section']}] {r['id']}  trust_tier={r.get('trust_tier')}"
@@ -469,9 +470,23 @@ def cmd_connectors(args) -> int:
     """Connectors health: dry mode (default) lists every wired source
     (collect.COLLECTORS) plus whether tests/contract/fixtures/ has a recorded real
     capture for it -- no network call, no caller cost. --live additionally makes
-    ONE request per wired source (via collect.run, same one-GET/no-retry/host-circuit-
-    breaker discipline as --refresh) and prints ok/fail per source; this also runs
-    on the CALLER's own network, never ours."""
+    ONE request per wired source (via collect.run, same one-GET/no-retry discipline as
+    --refresh -- but see the FIX B item 2 note below for the one discipline it does NOT
+    share with the sequential --refresh path) and prints ok/fail per source; this also
+    runs on the CALLER's own network, never ours.
+
+    FIX B item 2 (2026-10-04, SPEED + visibility): --live used to call `collect.run`
+    SEQUENTIALLY with no timeout of its own beyond urllib's internal per-socket-
+    operation timeout (collect.REQUEST_TIMEOUT_S=30s/collect.PDF_TIMEOUT_S=300s) and no
+    progress output at all until the ENTIRE sweep (every wired collector, 60+ sources)
+    finished -- a caller watching this command had no idea whether it was still
+    running or stuck. Now wired `parallel=True` (one 20s-bounded thread-pool batch
+    instead of 60+ sequential requests -- see collect.run's own docstring for why this
+    does NOT carry the sequential path's per-run host circuit breaker) with a streaming
+    `on_result` printer, so each source's line appears the moment that source's result
+    is ready, not only after the whole batch completes. No TTL cache here (`ttl_s=0`,
+    unchanged) -- --live is a human explicitly asking for a real connectivity check of
+    every connector, not an answer-path refresh that should ever quietly skip one."""
     sys.path.insert(0, str(HERE))
     import collect as collect_mod
     fixtures_dir = HERE / "tests" / "contract" / "fixtures"
@@ -479,8 +494,20 @@ def cmd_connectors(args) -> int:
     live_results = {}
     if getattr(args, "live", False):
         source_ids = [sid for sid in wired if sid not in collect_mod.DORMANT_NOT_IN_ALL]
-        for r in collect_mod.run(source_ids, dry_run=False):
+
+        def _progress(res):
+            status = "skipped" if res.skipped else ("ok" if res.ok else "FAIL")
+            note = f" ({res.note})" if res.note else ""
+            print(f"  ...live: {res.source_id:32s} {status}{note}")
+
+        print(f"# connectors --live: fetching {len(source_ids)} source(s) in parallel "
+              "(20s per-source budget) -- progress as each one completes:")
+        for r in collect_mod.run(source_ids, dry_run=False, parallel=True,
+                                  per_source_timeout_s=20,
+                                  max_workers=max(8, len(source_ids)),
+                                  on_result=_progress):
             live_results[r.source_id] = r
+        print()
     n_fixture = 0
     print(f"# connectors health ({'live, one GET each' if args.live else 'dry, no network'})")
     for sid in wired:
@@ -653,7 +680,7 @@ def _forecast_rows_by_model(
     if now_utc is None:
         now_utc = datetime.datetime.now(datetime.timezone.utc)
     if not DB_PATH.exists():
-        return {}, None, None, "data/observations.sqlite missing -- run collect.py --all first", {}
+        return {}, None, None, ("data/observations.sqlite missing -- " + RUN_REFRESH_ACTION), {}
     try:
         import readout as readout_mod
         import live_water_level as lwl_mod
@@ -794,8 +821,12 @@ def cmd_forecast(args) -> int:
     else:
         print(f"ลุ่มน้ำย่อย: ยังไม่ทราบ ({unit.get('reason')}) [{unit.get('tag', 'OPEN')}]")
 
-    if not DB_PATH.exists():
-        print("ยังไม่มี data/observations.sqlite ในระบบนี้ -- รัน collect.py --all ก่อน")
+    if not DB_PATH.exists() and getattr(args, "offline", False):
+        # Refresh is the default (see below); this message only shows for a fresh
+        # clone that explicitly opted OUT of it with --offline, so the fix is to drop
+        # that flag, not to run the internal `collect.py` script by hand.
+        print("ยังไม่มี data/observations.sqlite ในระบบนี้ -- ลองรันใหม่โดยไม่ใส่ `--offline` "
+              f"(`floodconnect forecast --at {at}`)")
         return 0
     by_model, issued_at, stale, err, _issued_at_by_model = _forecast_rows_by_model(point_id)
     if err:
@@ -804,7 +835,8 @@ def cmd_forecast(args) -> int:
     if not by_model:
         print(f"ยังไม่มีข้อมูลพยากรณ์ 'ในอนาคต' สำหรับจุดนี้ ({point_id}) -- ไม่เคยเก็บเลย "
               "หรือทุกแถวที่มีเป็นวันที่ผ่านไปแล้ว (เทียบเวลาท้องถิ่น กทม.) -- "
-              "รัน collect.py --all ก่อน (ต้องมี point นี้ใน collect.FORECAST7D_POINTS)")
+              "ลองรันใหม่โดยไม่ใส่ `--offline` (ต้องมี point นี้ใน collect.FORECAST7D_POINTS "
+              "หรือพิกัดของคุณเอง)")
         return 0
     if issued_at:
         stale_note = "  [ข้อมูลค้างนาน/stale]" if stale else ""
@@ -908,9 +940,9 @@ def _resolve_area(at: str) -> tuple[str | None, float, float]:
 
 
 RUN_REFRESH_ACTION = (
-    "run 'floodconnect answer --refresh' (or 'kb.py answer --refresh') on your "
-    "own machine -- this repo ships no hosted/precomputed reading; every number "
-    "is computed locally, on your own network, from your own refresh."
+    "run 'floodconnect answer --at <area>' (refresh is the default; do not pass "
+    "'--offline') -- every number is computed locally, on your own network, from "
+    "your own refresh."
 )
 
 
@@ -954,7 +986,7 @@ def _trim_evidence(evidence: list[dict]) -> list[dict]:
     free) -- `_answer_state`'s own `stale_count` (uncapped, computed before this
     function ever runs) already reports it, and `cmd_answer`'s text printer reads that
     same field for its one-line count, never a second copy kept here."""
-    flood_like, _normal_like = _flood_like_normal_like_status_words()
+    flood_like, _normal_like, _critical_like = _flood_like_normal_like_status_words()
     deciding_all = [e for e in evidence if e.get("used_for_decision")]
     deciding_sorted = sorted(
         deciding_all, key=lambda e: 0 if e.get("status") in flood_like else 1)
@@ -1183,16 +1215,27 @@ def _answer_state(lat: float, lon: float, radius_km: float = 3.0,
         # used to carry are now the structured fields below instead.
         relevance = _source_relevance_counts(full)
         notes = [_sources_summary_note(sources_used, relevance)]
-    # `refresh_suggested`: this check's DB is populated and reachable, but every
-    # drainage row within range aged past STALE_HOURS before any fresh one could decide
-    # `status_counts` (stale_count>0 and status_counts empty) -- the exact "data has
-    # gone old" case `_classify_current_local_state` turns into UNKNOWN. A structured
-    # flag (never a notes-text search -- see `_answer_next_action`'s own fix) so a
-    # caller/the entrypoint can surface "run --refresh" without re-deriving this
-    # reasoning from prose. Unrelated to the fault-only-sensor UNKNOWN case (fresh rows
-    # exist, they are just all faults) -- that one is not a staleness problem, so it is
-    # deliberately NOT flagged here.
-    refresh_suggested = stale_count > 0 and not status_counts
+    # `refresh_suggested`: this check's DB is reachable, but no row currently decides
+    # `status_counts` for this point. Two distinct causes both set this, since both are
+    # fixed the same way (run --refresh / collect):
+    #   (a) stale_count > 0 and status_counts empty -- every drainage row within range
+    #       aged past STALE_HOURS before any fresh one could decide it (the exact
+    #       "data has gone old" case `_classify_current_local_state` turns into
+    #       UNKNOWN);
+    #   (b) `evidence` itself is empty -- no drainage/water-level row at all exists
+    #       within radius (fresh or stale), e.g. a point nothing has ever been
+    #       collected for. v0.1.0 only checked (a); a point with ZERO rows in radius
+    #       (stale_count==0, status_counts=={}) fell through with refresh_suggested
+    #       left False, silently telling the caller nothing more could be done, when a
+    #       refresh run could still fetch a station that covers this point.
+    # A structured flag (never a notes-text search -- see `_answer_next_action`'s own
+    # fix) so a caller/the entrypoint can surface "run --refresh" without re-deriving
+    # this reasoning from prose. Unrelated to the fault-only-sensor UNKNOWN case (fresh
+    # rows exist, they are just all faults): `status_counts` here still counts a
+    # fault-row's own status word (e.g. "ขัดข้อง") as decided, so it is non-empty and
+    # this condition stays False -- the fault-vs-UNKNOWN exclusion happens downstream
+    # in `_classify_current_local_state`, not here.
+    refresh_suggested = not status_counts and (stale_count > 0 or not evidence)
     return {
         "tag": overall.get("tag", "INSTINCT"),
         "notes": notes,
@@ -1618,23 +1661,32 @@ def _l5_survival_steps_plain(build_page_mod) -> list[str]:
     return [_L5_HTML_TAG_RE.sub("", item).strip() for item in items]
 
 
-def _flood_like_normal_like_status_words() -> "tuple[set, set]":
+def _flood_like_normal_like_status_words() -> "tuple[set, set, set]":
     """Shared by `_classify_current_local_state` and `_trim_evidence` -- the ONE place
-    that builds the closed flood-like/normal-like status-word sets, so a capped evidence
-    summary can prioritise the SAME statuses the actual GREEN/YELLOW/RED classification
-    reads, never a second, possibly-divergent copy of this set.
+    that builds the closed flood-like/normal-like/critical-like status-word sets, so a
+    capped evidence summary can prioritise the SAME statuses the actual
+    GREEN/YELLOW/RED classification reads, never a second, possibly-divergent copy of
+    this set.
 
-    Reuses readout.py's own `FLOOD_LIKE_STATUS`/`NORMAL_LIKE_STATUS` (English
-    station-status words) plus the two exact BMA DDS Thai keys ("ระดับน้ำวิกฤติ"/
-    "ระดับน้ำปกติ") already registered in `site/build_data.py`'s `_DDS_STATUS_TH` mapping
-    -- never a new standalone status word. Returns `(set(), set())` (never raises) if
-    either module is unavailable; callers must treat that as "nothing recognised as
-    flood-like/normal-like this check", the same fail-open-to-neutral behaviour
-    `_classify_current_local_state` already had before this helper was factored out."""
+    Reuses readout.py's own `FLOOD_LIKE_STATUS`/`NORMAL_LIKE_STATUS`/
+    `CRITICAL_LIKE_STATUS` (English station-status words) plus the two exact BMA DDS
+    Thai keys ("ระดับน้ำวิกฤติ"/"ระดับน้ำปกติ") already registered in
+    `site/build_data.py`'s `_DDS_STATUS_TH` mapping -- never a new standalone status
+    word. Returns `(set(), set(), set())` (never raises) if either module is
+    unavailable; callers must treat that as "nothing recognised as
+    flood-like/normal-like/critical-like this check", the same fail-open-to-neutral
+    behaviour `_classify_current_local_state` already had before this helper was
+    factored out.
+
+    `critical_like` is the agency-declared critical/overflow subset (founder ruling
+    2026-10-04, verbatim: "WATCH = YELLOW (แนะนำ)") -- it drives RED on its own;
+    `flood_like` (the wider set, unchanged) still drives the `_trim_evidence`
+    prioritisation and the community-report "agreement" check in readout.py, which
+    this ruling does not touch."""
     try:
         import readout as readout_mod
     except Exception:  # pragma: no cover - defensive
-        return set(), set()
+        return set(), set(), set()
     dds_status_map: dict = {}
     try:
         if str(HERE / "site") not in sys.path:
@@ -1649,29 +1701,40 @@ def _flood_like_normal_like_status_words() -> "tuple[set, set]":
     thai_normal_keys = {"ระดับน้ำปกติ"} & set(dds_status_map)
     flood_like = set(readout_mod.FLOOD_LIKE_STATUS) | thai_flood_keys
     normal_like = set(readout_mod.NORMAL_LIKE_STATUS) | thai_normal_keys
-    return flood_like, normal_like
+    # The Thai BMA DDS critical key ("ระดับน้ำวิกฤติ") is itself an agency-declared
+    # critical reading, so it belongs in critical_like too -- there is no separate Thai
+    # "overbank" key published by that source today.
+    critical_like = set(getattr(readout_mod, "CRITICAL_LIKE_STATUS", set())) | thai_flood_keys
+    return flood_like, normal_like, critical_like
 
 
 def _classify_current_local_state(state_answer: dict | None) -> str:
     """Map `_answer_state`'s `status_counts` onto community_dag.py's own closed
     CURRENT_LOCAL_STATE vocabulary (GREEN/YELLOW/RED/UNKNOWN -- see community_dag.py's
     "Dual-state rule" block). Reuses readout.py's existing FLOOD_LIKE_STATUS /
-    NORMAL_LIKE_STATUS sets (each agency's own published status word) -- no new status
-    word and no numeric cutoff is introduced here.
+    NORMAL_LIKE_STATUS / CRITICAL_LIKE_STATUS sets (each agency's own published status
+    word) -- no new status word and no numeric cutoff is introduced here.
 
     Also:
       - BMA DDS canal bulletins publish the raw Thai words "ระดับน้ำวิกฤติ"/
         "ระดับน้ำปกติ" (critical/normal), which are NEITHER in FLOOD_LIKE_STATUS nor
         NORMAL_LIKE_STATUS (both are English station-status words from a different
-        source). These two exact keys are folded into the flood-like/normal-like sets
-        before classifying (via `_flood_like_normal_like_status_words`, the ONE place
-        this set is built -- never re-typed as a second copy here), so a real DDS
-        critical reading is never silently lost into YELLOW.
+        source). These two exact keys are folded into the flood-like/normal-like/
+        critical-like sets before classifying (via `_flood_like_normal_like_status_words`,
+        the ONE place this set is built -- never re-typed as a second copy here), so a
+        real DDS critical reading is never silently lost into YELLOW.
       - `ขัดข้อง` (sensor/equipment fault, `live_water_level.SENSOR_FAULT_STATUS_TH`)
         is EXCLUDED before classifying -- a faulted sensor has no trustworthy reading
         (`level_m` is already None per that module), so counting it as a status word
         would invent evidence. If every fresh row this check is a fault, the state is
-        UNKNOWN (no real reading at all), never YELLOW."""
+        UNKNOWN (no real reading at all), never YELLOW.
+      - Founder ruling 2026-10-04 (verbatim: "WATCH = YELLOW (แนะนำ)"): a bare WATCH/
+        เฝ้าระวัง station reading alone is no longer enough to drive RED -- RED is now
+        reserved for an agency-declared critical/overflow reading (วิกฤต/ล้นตลิ่ง,
+        readout.CRITICAL_LIKE_STATUS = {"CRITICAL", "OVERBANK"}, or the DDS Thai
+        "ระดับน้ำวิกฤติ" key). WATCH (and any other non-critical, non-normal status word
+        the upstream agency publishes) now falls through to YELLOW, same as before for
+        the genuinely-mixed/unclear case."""
     counts = (state_answer or {}).get("status_counts") or {}
     if not counts:
         return "UNKNOWN"
@@ -1687,14 +1750,15 @@ def _classify_current_local_state(state_answer: dict | None) -> str:
         # reading exists, which is UNKNOWN, never a fabricated YELLOW/GREEN.
         return "UNKNOWN"
 
-    flood_like, normal_like = _flood_like_normal_like_status_words()
+    _flood_like, normal_like, critical_like = _flood_like_normal_like_status_words()
 
-    if any(st in flood_like for st in effective):
+    if any(st in critical_like for st in effective):
         return "RED"
     if all(st in normal_like for st in effective):
         return "GREEN"
-    # a real, common case: statuses the upstream agency publishes that are neither list
-    # -- reported as YELLOW (mixed/unclear), never silently folded into GREEN.
+    # Everything else (WATCH/เฝ้าระวัง, plus any other upstream status word that is
+    # neither agency-critical nor agency-normal) is YELLOW -- mixed/unclear/watch, never
+    # silently folded into GREEN, and never escalated to RED on a non-critical word alone.
     return "YELLOW"
 
 
@@ -1911,6 +1975,7 @@ def _answer_next_action(
     now_utc: "datetime.datetime | None" = None,
     verbose: bool = True,
     refresh_ran: bool = True,
+    raw_at: str | None = None,
 ) -> dict:
     """Next action / self-help route -- calls community_dag.find_safe_route, the single
     merged route function (design H6: the MCP server's route tool must call this same
@@ -2014,7 +2079,12 @@ def _answer_next_action(
             # remaining slots must never crowd this one out, since it is the one
             # action that actually explains WHY the answer is UNKNOWN and what a
             # caller can do about it).
-            area_label = area_id or "<area>"
+            # fix (post-release review 2026-10-04): a bare lat,lon call (area_id is
+            # None) used to print the literal placeholder "<area>" in this command
+            # hint instead of the caller's own `--at` value -- `raw_at` (the CLI's
+            # own `args.at`, passed through by `build_answer`) carries the real
+            # value through so the printed command is copy-pasteable as-is.
+            area_label = area_id or raw_at or "<area|lat,lon>"
             # FIX (2026-10-03): refresh is now the DEFAULT (this action
             # fires AFTER a refresh attempt already ran, unless the caller passed
             # `--offline`) -- the old wording told a caller to run `--refresh`/pass
@@ -2028,11 +2098,11 @@ def _answer_next_action(
             # a refresh actually happened this run.
             if refresh_ran:
                 action_text = (
-                    f"ลองรันใหม่ในอีกสักพัก (`kb.py answer --at {area_label}`) -- "
+                    f"ลองรันใหม่ในอีกสักพัก (`floodconnect answer --at {area_label}`) -- "
                     "refresh เป็น default แล้วและรันไปแล้วรอบนี้ แต่ไม่พบข้อมูลสดเลย")
             else:
                 action_text = (
-                    f"ลองรันใหม่โดยไม่ใส่ `--offline` (`kb.py answer --at "
+                    f"ลองรันใหม่โดยไม่ใส่ `--offline` (`floodconnect answer --at "
                     f"{area_label}` / MCP offline=false) -- รอบนี้ไม่ได้ refresh เลย "
                     "(ใส่ --offline ไว้)")
             actions.append({
@@ -2091,8 +2161,10 @@ def _answer_next_action(
                                   "faults (ขัดข้อง), not evidence of zero pumps running")
             actions.append({
                 "action": STATION_RED_NEUTRAL_ACTION_TH,
-                "source": "readout.FLOOD_LIKE_STATUS / build_data._DDS_STATUS_TH "
-                          "(station-level status, not a PROP-FLOOD-06 tier)",
+                "source": "readout.CRITICAL_LIKE_STATUS / build_data._DDS_STATUS_TH "
+                          "(station-level agency-critical status, not a PROP-FLOOD-06 "
+                          "tier -- WATCH alone no longer reaches this branch, per "
+                          "founder ruling 2026-10-04 'WATCH = YELLOW')",
                 "why": ("station-level status, not the L5 tier -- PROP-FLOOD-06's real "
                         "tier engine did not report L5 for this point this check "
                         "(either no L5 unit exists for this area, or it reported a "
@@ -2115,6 +2187,27 @@ def _answer_next_action(
                        "never cancels an active forecast hazard on top of it",
                 "tag": "RELAYED",
             })
+    elif current == "YELLOW" and "WATCH" in ((state_answer or {}).get("status_counts") or {}):
+        # Founder ruling 2026-10-04 ("WATCH = YELLOW (แนะนำ)") moved a bare WATCH
+        # station reading off RED and onto YELLOW (see `_classify_current_local_state`
+        # above), but left YELLOW's only wording ("สถานะปัจจุบันยังไม่ชัดเจน" -- "current
+        # state unclear", added below only when `forward == "ACTIVE"`) saying nothing
+        # about WATCH specifically, and said nothing at all when forward is not
+        # ACTIVE -- a fresh WATCH reading on a forecast-quiet day would reach the
+        # resident as silence, which understates a real agency-published watch-level
+        # status. This is a MEASURED action straight off `status_counts` (the same
+        # field `_classify_current_local_state` already classified on), not a new
+        # status word or threshold.
+        actions.append({
+            "action": "สถานีน้ำใกล้จุดนี้อยู่ระดับเฝ้าระวัง (WATCH, ระดับสถานีเท่านั้น) -- "
+                      "ติดตามต่อเนื่อง / ทำตามประกาศทางการ",
+            "source": "state.status_counts (WATCH) / readout.py station-status words -- "
+                      "the same field `_classify_current_local_state` reads",
+            "why": "status_counts contains WATCH, which `_classify_current_local_state` "
+                   "maps to current_local_state=YELLOW (founder ruling 2026-10-04) -- a "
+                   "station-level watch reading, never a PROP-FLOOD-06 L5 tier claim",
+            "tag": "MEASURED",
+        })
 
     # Reserve a slot for the forward-hazard reminder BEFORE the self-help/route items
     # whenever it is ACTIVE -- except when current state is
@@ -2147,10 +2240,12 @@ def _answer_next_action(
                         "forecast hazard either")
         else:  # YELLOW
             action_text = ("มีฝนคาดการณ์ล่วงหน้าจากโมเดลภายนอก (RELAYED) -- เตรียมเส้นทางสำรองไว้ก่อน "
-                           "สถานะปัจจุบันยังไม่ชัดเจน")
+                           "สถานะปัจจุบันระดับเฝ้าระวัง/ไม่ชัดเจน")
             why_text = ("forward_hazard=ACTIVE from a cached forecast model while "
-                        "current_local_state=YELLOW (mixed/unclear station status) -- an "
-                        "unclear current reading never cancels an active forecast hazard")
+                        "current_local_state=YELLOW (a WATCH/เฝ้าระวัง station-level "
+                        "reading, or another mixed/unclear station status) -- a "
+                        "watch-level or unclear current reading never cancels an "
+                        "active forecast hazard")
         actions.append({
             "action": action_text,
             "source": "floodconnect-agent skill rule 1 (dual-state, always) / "
@@ -2432,7 +2527,9 @@ def _compact_hazard_for_display(hazard_answer: dict, cap: int = 3) -> dict:
 
 
 def _refresh_relevant_sources(area_id: str | None = None, verbose: bool = False,
-                               all_sources: bool = False) -> list[dict]:
+                               all_sources: bool = False,
+                               lat: float | None = None,
+                               lon: float | None = None) -> list[dict]:
     """On-demand refresh: fetch ONLY the wired collectors, one GET per source, on the
     CALLER's own network/compute/keys -- never a server we run. No scheduler calls
     this. FIX (2026-10-03): this docstring used to say "only runs when a
@@ -2453,6 +2550,19 @@ def _refresh_relevant_sources(area_id: str | None = None, verbose: bool = False,
     from THOSE fields is unaffected), but `_answer_cctv`'s nearest-camera list (VISUAL-
     CHECK, never a decision input) needs this catalog refreshed per area now, so it is
     re-added after the `CATALOG_ONLY_NOT_IN_REFRESH`/`ANSWER_SOURCES` filtering above.
+
+    Added for v0.1.1 (independent post-release review finding: "no Bangkok DDS sources for
+    Chiang Mai"): `lat`/`lon`, if given, additionally narrow the fetch set against
+    `collect.SOURCE_BBOX` -- a bbox-scoped source (today: the 5 BMA/dds.bangkok.go.th
+    sources) is skipped when the point falls outside its declared bounding box. Unlike
+    `AREA_RELEVANT_SOURCES` below (narrows only for a point that resolves to one of
+    this repo's NAMED areas), this check runs off the raw coordinate itself, so it also
+    catches a bare `--at lat,lon` that resolves to no named area at all -- the case
+    `AREA_RELEVANT_SOURCES` alone cannot reach (see `_resolve_area`: an unnamed point's
+    `area_id` is `None`, which skipped the `AREA_RELEVANT_SOURCES` block entirely
+    before this fix). `lat`/`lon` left `None` (the default; existing direct callers/
+    tests that only ever passed named areas) leaves this new check a no-op, unchanged
+    behaviour.
 
     A key-gated source
     whose key is absent from THIS machine's environment is also excluded when
@@ -2519,11 +2629,49 @@ def _refresh_relevant_sources(area_id: str | None = None, verbose: bool = False,
         source_ids = [sid for sid in source_ids
                       if sid not in collect_mod.AREA_RELEVANT_SOURCES
                       or area_id in collect_mod.AREA_RELEVANT_SOURCES[sid]]
+    # Bbox filter (v0.1.1 fix, see this function's own docstring): only applied when a
+    # real coordinate is given -- skips a bbox-scoped source whose declared box does
+    # not contain (lat, lon). A source absent from `collect.SOURCE_BBOX` is unaffected.
+    if lat is not None and lon is not None:
+        source_bbox = getattr(collect_mod, "SOURCE_BBOX", {})
+
+        def _in_bbox(sid: str) -> bool:
+            box = source_bbox.get(sid)
+            if box is None:
+                return True
+            return (box["lat_min"] <= lat <= box["lat_max"]
+                    and box["lon_min"] <= lon <= box["lon_max"])
+
+        source_ids = [sid for sid in source_ids if _in_bbox(sid)]
     points_by_source = None
     if area_id in collect_mod.FORECAST7D_POINTS:
         one_point = {area_id: collect_mod.FORECAST7D_POINTS[area_id]}
         points_by_source = {sid: one_point for sid in collect_mod.POINT_FILTERABLE_SOURCES}
-    results = collect_mod.run(source_ids, dry_run=False, points_by_source=points_by_source)
+    # FIX B item 1 (2026-10-04, SPEED): `parallel=True` fetches every one of these
+    # sources concurrently via `collect.run`'s own thread pool (one request each, no
+    # retry, bounded to a 20s per-source wall-clock budget -- see `collect.run`'s own
+    # docstring for why a single `wait()` call, not a per-future loop, is what actually
+    # keeps the whole batch bounded rather than serialising N*timeout in the worst
+    # case). `ttl_s=collect.DEFAULT_TTL_S` (10 min, `FLOODCONNECT_REFRESH_TTL_S` env
+    # override) skips the real network call entirely for a source fetched within that
+    # window, reusing the already-stored observation -- this is the ONLY place `ttl_s`
+    # is wired to a non-zero value; `collect.py --all`/`--source` (a human explicitly
+    # asking for a fetch) and every direct test call of `collect.run` default to
+    # `ttl_s=0` (cache off) unless they opt in themselves. `--offline`
+    # (`refresh=False` in `build_answer`) never reaches this function at all, so it is
+    # unaffected.
+    # `max_workers` covers every candidate source_id at once (never fewer than the
+    # default 8) -- with FEWER worker threads than sources, the thread pool queues the
+    # excess and they only start once an earlier one finishes, which can silently push
+    # the real wall-clock well past `per_source_timeout_s` (MEASURED: 13 sources against
+    # the old default of 8 workers took ~52s, not the ~20s a single wait() call alone
+    # would suggest, because 5 sources never even started running until deep into the
+    # window). One worker per source removes that queueing tax entirely -- every
+    # candidate starts running the moment `run()` submits it.
+    results = collect_mod.run(source_ids, dry_run=False, points_by_source=points_by_source,
+                               parallel=True, ttl_s=collect_mod.DEFAULT_TTL_S,
+                               per_source_timeout_s=20,
+                               max_workers=max(8, len(source_ids)))
     return [{"id": r.source_id, "ok": r.ok, "skipped": r.skipped, "note": r.note}
             for r in results]
 
@@ -2616,7 +2764,8 @@ def build_answer(at: str, refresh: bool = False, on_refresh_progress=None,
     refresh_report = None
     if refresh:
         refresh_report = _refresh_relevant_sources(area_id or at, verbose=verbose,
-                                                     all_sources=all_sources)
+                                                     all_sources=all_sources,
+                                                     lat=lat, lon=lon)
         if on_refresh_progress is not None:
             on_refresh_progress(refresh_report)
     state_answer = _answer_state(lat, lon, verbose=verbose)
@@ -2630,7 +2779,7 @@ def build_answer(at: str, refresh: bool = False, on_refresh_progress=None,
     next_action_answer = _answer_next_action(
         area_id, state_answer=state_answer, hazard_answer=hazard_answer,
         accountability_answer=accountability_answer, verbose=verbose,
-        refresh_ran=refresh)
+        refresh_ran=refresh, raw_at=at)
     # Finding: the "state" source_tag's epistemic_class
     # (LIVE_DATA_SYSTEM -> "LIVE_OBSERVATION" in the RKG) describes what KIND of system
     # this field structurally comes from, not whether THIS run's own data was actually
@@ -2727,7 +2876,7 @@ def cmd_answer(args) -> int:
         import json as _json
         print(_json.dumps(payload, ensure_ascii=False, indent=2))
         return 0
-    print(f"# kb.py answer -- {args.at} ({payload['generated_at']})")
+    print(f"# floodconnect answer -- {args.at} ({payload['generated_at']})")
     print(f"สถานะปัจจุบัน [{payload['state'].get('tag')}]:")
     for n in payload["state"].get("notes", []):
         print(f"  - {n}")

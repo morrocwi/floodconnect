@@ -1,0 +1,98 @@
+{
+  "_purpose": "Machine-readable companion to docs/EQUATIONS_FOR_AI.md and floodconnect_model.py -- for a sandbox AI that wants the equations, variables, units, Toledo status and thresholds as data rather than prose. Toledo-first: re-check status at the toledo repository before citing, a proposal can be revised or merged after this file was written.",
+  "generated_from": "toledo repository, branches proposals/flood-readout-trend (merged, PR #59), proposals/flood-water-balance (PR #60 OPEN), proposals/flood-outlet-coping (PR #63 OPEN)",
+  "equations": [
+    {
+      "id": "PROP-FLOOD-01",
+      "name": "Lag-k retained difference with resolution-sign readout (Δk, rise/fall trend)",
+      "toledo_code": "weld/M.??.v1",
+      "toledo_tier": "Dr",
+      "toledo_status": "registered Toledo proposal (unverified), not yet promoted to CANONICAL.json -- usable as a proposal-tier readout, never cited as a settled Toledo theorem",
+      "formula_ascii": "delta_k(t) := h(t) - h(t-k)",
+      "classification": {
+        "RISING": "delta_k(t) > epsilon",
+        "FALLING": "delta_k(t) < -epsilon",
+        "FLAT": "otherwise (|delta_k(t)| <= epsilon)",
+        "NO_READOUT": "t < k, or h(t-k) was not sampled -- a real distinct outcome, never silently FLAT"
+      },
+      "variables": [
+        {"symbol": "h(t)", "meaning": "water-level reading at tick t", "unit": "m", "source": "official gauge page (e.g. thaiwater.net, a BMA canal-level page) or the caller's own reading at the same station"},
+        {"symbol": "h(t-k)", "meaning": "reading k ticks earlier, same station", "unit": "m", "source": "same source, earlier timestamp"},
+        {"symbol": "k", "meaning": "a predeclared lag", "unit": "ticks (caller states what one tick is, e.g. 1 reading or 1 hour)", "source": "declared BEFORE computing, never chosen after seeing the result"},
+        {"symbol": "epsilon", "meaning": "the station's own declared sensor resolution", "unit": "m", "source": "the source's own stated resolution; if the source states none, epsilon is INSTINCT (a judgment call), never MEASURED"}
+      ],
+      "python_function": "floodconnect_model.delta_k(h_t, h_t_minus_k, epsilon)",
+      "implementation": "floodconnect_model.py",
+      "worked_example": {
+        "station": "WL.SSB.08 (c.แสนแสบ-เสรีไทย 24)",
+        "inputs": {"h_t": 0.38, "h_t_minus_k": 0.30, "k": 1, "epsilon": 0.01},
+        "result": {"value": 0.08, "trend": "RISING"},
+        "note": "a readout of the difference between two already-observed readings -- not a prediction that the water will keep rising at this rate"
+      }
+    },
+    {
+      "id": "PROP-FLOOD-02",
+      "name": "Time-to-threshold by linear extension of the last retained difference, with refusal (Tk)",
+      "toledo_code": "weld/M.??.v1",
+      "toledo_tier": "Dr",
+      "toledo_status": "same unverified-proposal status as PROP-FLOOD-01, shares its Toledo PR (#59, merged proposal)",
+      "formula_ascii": "T_k := (theta - h(t)) * k / delta_k(t)  [ticks], defined only when delta_k(t) > epsilon and h(t) < theta",
+      "refusal": {
+        "REFUSED/UNRESOLVED": "|delta_k(t)| <= epsilon (can't tell if it's really moving)",
+        "REFUSED/NOT_APPLICABLE": "delta_k(t) < -epsilon, or h(t) >= theta, or delta_k(t) was NO_READOUT"
+      },
+      "variables": [
+        {"symbol": "theta", "meaning": "an official agency threshold (e.g. BMA's critical level for that station)", "unit": "m", "source": "the station's own declared warning/critical/bank value -- never a number the caller picks themselves"}
+      ],
+      "python_function": "floodconnect_model.time_to_threshold(h_t, delta, theta, k, epsilon)",
+      "implementation": "floodconnect_model.py",
+      "worked_example": {
+        "inputs": {"h_t": 0.38, "theta": 0.45, "k": 1, "delta_k_value": 0.08},
+        "result": {"value": 0.875, "unit": "ticks (~53 minutes at k=1h)"},
+        "note": "report as an interval across at least two lags (e.g. k=1h and k=3h), never as one single point number; REFUSED is a non-value, not a number -- never print 0, infinity, or blank"
+      }
+    },
+    {
+      "id": "PROP-FLOOD-03",
+      "name": "Water balance / water debt",
+      "toledo_pr": "https://github.com/morrocwi/toledo/pull/60",
+      "toledo_status": "OPEN pull request, NOT merged -- strictly earlier stage than PROP-FLOOD-01/02's registered proposal; do not compute with this as if it were usable",
+      "formula_ascii": "S(k+1) = S(k) + rain_in - outflow  (for a declared basin)",
+      "refusal": "explicit REFUSED (never a silent zero or clamp) whenever a required input is missing, stale, or the result would be a bookkeeping-impossible negative storage",
+      "implemented_in_this_release": false,
+      "note": "water_balance.py in this repository returns REFUSED today for every area -- see docs/EQUATIONS_FOR_AI.md section 3 and AI_TIERS.md"
+    },
+    {
+      "id": "PROP-FLOOD-06",
+      "name": "Outlet-coping tier (L0-L5)",
+      "toledo_pr": "https://github.com/morrocwi/toledo/pull/63",
+      "toledo_status": "OPEN pull request, NOT merged",
+      "formula_ascii": "ratio of forecast inflow to the smaller of outlet headroom or pump drainage capacity, banded into a 5-level tier (L0-L5)",
+      "refusal": "REFUSED when the unit/tuple isn't fully declared",
+      "implemented_in_this_release": false
+    },
+    {
+      "id": "PROP-FLOOD-07",
+      "name": "Flow-state classifier (F1-F6)",
+      "toledo_pr": "https://github.com/morrocwi/toledo/pull/63",
+      "toledo_status": "OPEN pull request, NOT merged",
+      "formula_ascii": "companion classification of flow direction/state built on the same inputs as PROP-FLOOD-03",
+      "implemented_in_this_release": false
+    }
+  ],
+  "classify_station_status": {
+    "_purpose": "the non-numeric companion classifier -- maps an agency-declared station-status word onto the closed GREEN/YELLOW/RED/UNKNOWN vocabulary this repository's kb.py actually uses in production (community_dag.py's CURRENT_LOCAL_STATE); copied from readout.py's CRITICAL_LIKE_STATUS/FLOOD_LIKE_STATUS/NORMAL_LIKE_STATUS, not a Toledo-registered equation itself (no number is computed, it is a status-word lookup)",
+    "RED": ["CRITICAL", "OVERBANK"],
+    "YELLOW": ["WATCH"],
+    "GREEN": ["NORMAL", "NO_THRESHOLD"],
+    "UNKNOWN": "no reading, an unrecognised word, or (in kb.py's fuller version, not reproduced in floodconnect_model.py) a sensor-fault word",
+    "python_function": "floodconnect_model.classify(status_word) / floodconnect_model.classify_counts(status_counts)",
+    "founder_ruling": "2026-10-04, verbatim 'WATCH = YELLOW (แนะนำ)' -- a bare WATCH reading alone no longer drives RED; RED is reserved for an agency-declared critical/overflow reading"
+  },
+  "one_decision": {
+    "_purpose": "the six-step by-hand procedure from docs/EQUATIONS_FOR_AI.md section 5, steps 3-6, as a function",
+    "python_function": "floodconnect_model.one_decision(inputs)",
+    "vocabulary": "Jev-style decision terms (see ARCHITECTURE.md §5): decision, confidence (HIGH/MEDIUM/LOW/NONE), level (RED/YELLOW/GREEN/UNKNOWN), checks (list of str), gate (LICENSED_WITHIN_ENVELOPE/REFUSED), why",
+    "BOT_not_zero": "a missing h_t, a missing epsilon, or a stale reading produces gate=REFUSED and confidence=NONE, never a silent 0/GREEN"
+  }
+}
