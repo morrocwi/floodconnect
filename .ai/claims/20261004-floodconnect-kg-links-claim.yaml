@@ -10,52 +10,63 @@ nodes:
   - REPO_KG
 artifacts:
   - tools/harvest/hii_station_geocode.py
-  - tools/harvest/dwr_admin.py
   - sources/hii_station_geocode.yaml
-  - sources/admin_units.yaml
   - sources/province_agency_crosswalk.yaml
-  - build_river_kg.py
   - tools/kg/build_kg.py
-  - tools/kg/accountability.py
-  - kb.py
   - docs/KG_QUERY.md
   - llms.txt
   - README.md
-  - docs/AI_TIERS.md
   - AGENTS.md
-  - .gitignore
+  - docs/knowledge/INDEX.yaml
   - tests/test_kg_build.py
-  - tests/test_kg_query.py
   - output/thailand_water_kg.graphml
   - output/thailand_water_kg.jsonld
-  - output/thailand_river_network.graphml
-  - site/inputs/meta/floodconnect_repo_kg.yaml
 intent: >
   Close 4 KG gaps found testing Pathum Thani against the shipped
-  thailand_water_kg (25,883 nodes / 56,603 edges): (1) river reaches have
-  no edges to gauges/gates/dams so upstream/downstream walks from a
-  station are impossible; (2) admin-area nodes exist only for the 50
-  Bangkok districts, no province/amphoe nodes elsewhere; (3) the
-  governance DAG (provincial governor/RID/PAO, basin committees) is
-  disconnected from assets/areas so accountability for a non-Bangkok
-  point returns only AG_HII; (4) reaches carry no explicit main-stem tag.
-  Fix: raise the river layer to Strahler>=4 in a new
-  output/thailand_river_network.graphml (build_river_kg.py, existing
-  thailand_river_flow.graphml untouched since build_bangkok_canals.py and
-  klongmap_local_prior_experiment.py read it); add ON_REACH edges
-  (asset->reach, nearest-line within 1km, RELAYED) and IN_SUBBASIN/
-  IN_BASIN edges; add province/amphoe nodes nationwide from HII geocode
-  fields (VERIFIED) and DWR Province_2556/Amphoe_2556 boundaries
-  (VERIFIED-from-DWR-service) or OSM admin_level RELAYED fallback per
-  founder gate; add province_agency_crosswalk.yaml linking the 9
-  provincial governance triples + basin committees to province/basin
-  nodes via RESPONSIBLE_FOR (role_template flag for the generic-template
-  edges that cover the other provinces); tag main_stem from HydroRIVERS
-  ORD_CLAS==1 and a documented basin_main_stem walk. No invented
-  equations, no new DAG office nodes, no change to DSVA/Toledo objects.
-  Sammakorn MVP path (Q0/Q1, kb.py answer) stays byte-identical.
+  thailand_water_kg: (1) river reaches have no edges to gauges/gates/dams
+  so upstream/downstream walks from a station are impossible; (2)
+  admin-area nodes exist only for the 50 Bangkok districts, no
+  province/amphoe nodes elsewhere; (3) the governance DAG (provincial
+  governor/RID/PAO, basin committees) is disconnected from assets/areas
+  so accountability for a non-Bangkok point returns only AG_HII; (4)
+  reaches carry no explicit main-stem tag.
+
+  ACTUAL build (build 7, post-review revision -- differs from this
+  claim's original plan, corrected here rather than left to mislead a
+  reader): existing output/thailand_river_flow.graphml is used AS-IS, no
+  Strahler-order reclassification and no new
+  output/thailand_river_network.graphml -- that file is never created.
+  ON_REACH edges (asset->nearest river_reach) use a snap tolerance equal
+  to THAT REACH'S OWN length_km (already in the HydroRIVERS data), never
+  a fixed/invented distance like "1km". Province/amphoe nodes come
+  ONLY from sources/hii_station_geocode.yaml's own already-harvested
+  province_code/amphoe_code fields (VERIFIED, HII thaiwater geocode) --
+  no DWR Province_2556/Amphoe_2556 polygons, no OSM admin_level fallback,
+  and no new sources/admin_units.yaml or tools/harvest/dwr_admin.py (not
+  built; a real polygon-boundary admin layer is a separate, larger task
+  this build does not attempt). province_agency_crosswalk.yaml's 9
+  provincial governance triples + 2 basin committees get RESPONSIBLE_FOR
+  edges to their named province:*/basin:onwr:* node (tag VERIFIED); every
+  other province/basin gets the generic AG_PROV_GOV/RID/PAO/AG_BASIN_CMT
+  role node instead (tag RELAYED-GENERAL, role_template) --
+  basin:onwr:88 ("นอกประเทศไทย", a sentinel, not a real ONWR basin) is
+  excluded from the generic basin-committee edge. main_stem is tagged by
+  a deterministic upstream walk from each HydroRIVERS main_river_id
+  group's own outlet reach, branching at a confluence onto the inflow
+  with the greatest discharge_avg_cms (both fields already in
+  thailand_river_flow.graphml) -- not HydroRIVERS ORD_CLAS (not present
+  in this repo's extract) and not a fixed Strahler cutoff. No new
+  equation, no new DAG office node, no change to DSVA/Toledo objects.
+  Sammakorn MVP path (Q0/Q1, kb.py answer) untouched by this build.
 created_at: "2026-10-04T21:30:00+07:00"
 expires_at: null
 reviewers: []
 supersedes: null
-note: null
+note: >
+  Revised 2026-10-04 after an independent review (verdict FAIL) found the
+  first version of this claim listed artifacts that did not exist and
+  described a different, untested approach (Strahler>=4 reclassification,
+  a fixed 1km snap, DWR admin polygons, ORD_CLAS==1 main-stem). This
+  revision replaces that plan text with what build 7 actually built and
+  shipped -- see `intent` above and the rebuilt output/thailand_water_kg.*
+  for the real result.

@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 import yaml
@@ -46,6 +47,34 @@ OUT_PATH = HERE / "sources" / "hii_station_geocode.yaml"
 
 TAG = "VERIFIED"
 SOURCE_NOTE = "HII thaiwater geocode block (api-v3.thaiwater.net, cached under raw/live/)"
+LICENCE_NOTE = (
+    "OPEN -- no licence/terms-of-use page was found for api-v3.thaiwater.net at harvest "
+    "time (same unresolved status already recorded for a sibling HII endpoint in "
+    "docs/knowledge/card_api_2026-09-27_hii_waterchart_basin.md: 'ไม่พบลิงก์ licence/terms "
+    "บนหน้า ... ระหว่างโหลด'). Not fabricated as permissive or restrictive -- a future "
+    "harvest that finds an explicit terms page should update this field, never assume."
+)
+
+# review finding LOW-6 (agent/ai-worker/floodconnect-kg-links, 2026-10-04): a bare
+# leading-zero code like amphoe_code "08" is read back as the string "08" by PyYAML
+# (YAML 1.1 -- "08" is not valid octal, so it falls back to string) but as the
+# INTEGER 8 by a YAML 1.2-compliant parser, silently dropping the leading zero for
+# any consumer that isn't PyYAML. Force double-quoted style on every bare numeric
+# code string on write, so the value is unambiguous regardless of which YAML spec
+# version reads it back.
+_NUMERIC_CODE_RE = re.compile(r"^\d+$")
+
+
+class _QuotedCodeDumper(yaml.SafeDumper):
+    pass
+
+
+def _represent_str(dumper: yaml.SafeDumper, data: str):
+    style = '"' if _NUMERIC_CODE_RE.match(data) else None
+    return dumper.represent_scalar("tag:yaml.org,2002:str", data, style=style)
+
+
+_QuotedCodeDumper.add_representer(str, _represent_str)
 
 
 def _th(d: dict | None, key: str) -> str | None:
@@ -220,6 +249,7 @@ def main() -> None:
         "generated_from": "raw/live/{thaiwater_waterlevel,thaiwater_rain_24h,hii_watergate,hii_dam}",
         "tag": TAG,
         "source": SOURCE_NOTE,
+        "licence": LICENCE_NOTE,
         "known_limitation": (
             "hii_watergate rows are keyed `hii_watergate:station:<id>` (station.id) and "
             "hii_dam rows `hii_dam:dam:<id>` (dam.id) -- not the final gate/weir/"
@@ -243,7 +273,8 @@ def main() -> None:
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w", encoding="utf-8") as fh:
-        yaml.safe_dump(doc, fh, allow_unicode=True, sort_keys=False, default_flow_style=False)
+        yaml.dump(doc, fh, Dumper=_QuotedCodeDumper, allow_unicode=True, sort_keys=False,
+                  default_flow_style=False)
     print(f"wrote {args.out} ({len(by_id)} rows, {len(contradictions)} contradictions)")
 
 

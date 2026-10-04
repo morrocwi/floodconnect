@@ -15,8 +15,10 @@
 #                             the documented legal basis (LAW_DISASTER2550 names the
 #                             provincial governor as ผอ.จังหวัด in every province; the
 #                             Water Resources Act 2561 names a lum-nam committee for
-#                             every one of the 36 basins). No new AG_ node is invented
-#                             here for the provinces/basins without one.
+#                             every one of the 22 ONWR river basins -- read from the
+#                             live KG's own `basin:onwr:*` nodes, see the correction
+#                             note below, not the commonly-misquoted "36"). No new AG_
+#                             node is invented here for the provinces/basins without one.
 #   tag: VERIFIED (role_template: false rows -- the DAG label names this province/
 #        basin by name, read directly, not inferred) | RELAYED-GENERAL (role_template:
 #        true rows -- the role is legally general, the specific office is not yet its
@@ -30,13 +32,24 @@
 # ปทุมธานี (PTT), สิงห์บุรี (SBR), สระบุรี (SRB) -- province codes are the standard DOPA
 # 2-digit codes (same codes already observed in sources/hii_station_geocode.yaml's
 # geocode rows, e.g. Pathum Thani=13, Chai Nat=18 -- cross-checked, not reinvented).
-# The other 68 provinces and every basin without its own committee node use the
-# role_template rows below, kept small and explicit rather than invented per-province.
+# Bangkok (province:10) is handled separately by its own per-province node
+# (bangkok_rows below, AG_BMA_GOV), so 77 provinces − 9 named − 1 Bangkok = the other
+# 67 provinces, which use the role_template rows below, kept small and explicit
+# rather than invented per-province.
+#
+# Basin-count correction (2026-10-04, post-review): this file originally said "36
+# basins" for the Water Resources Act 2561 committee -- that number was unsourced and
+# contradicted the KG's own data. The live KG (tools/kg/build_kg.py output) carries 23
+# distinct `basin:onwr:*` ids: 22 numbered ONWR river basins (1-22) plus
+# `basin:onwr:88`, which is "นอกประเทศไทย" (outside Thailand) -- a sentinel the HII/
+# ONWR source itself uses for cross-border readings, not a 23rd Thai basin with its
+# own committee. The role_template basin row below is applied to all 22 numbered
+# basins not already covered by basin_rows; `basin:onwr:88` is explicitly excluded by
+# the KG builder (no Thai lum-nam committee governs "outside Thailand").
 #
 # A KG builder consumes this file to add RESPONSIBLE_FOR edges
-# (agency -RESPONSIBLE_FOR-> area, {role_template, tag}); this file itself adds no node
-# or edge to any graph -- not yet wired into tools/kg/build_kg.py (OPEN, Phase 3 of the
-# 2026-10-04 KG-links design).
+# (agency -RESPONSIBLE_FOR-> area, {role_template, tag}) -- wired into
+# tools/kg/build_kg.py's build_responsible_for_edges() (build 7, 2026-10-04).
 
 province_rows:
   - province_code: "15"
@@ -140,15 +153,18 @@ role_template_rows:
       generic AG_PROV_RID/AG_PROV_PAO role nodes exist in the DAG with the same
       template labels ("โครงการชลประทานจังหวัด / สำนักงานชลประทานที่ N",
       "อบจ. (องค์การบริหารส่วนจังหวัด)") for every province, but the DAG has not (yet)
-      been given a per-province AG_ node for the other 68 provinces. This row lets a
+      been given a per-province AG_ node for the other 67 provinces (77 total − 9
+      named − 1 Bangkok, which has its own bangkok_rows entry). This row lets a
       consumer answer "who is accountable here" with the correct ROLE and an explicit
       role_template flag, without this file inventing a new per-province DAG node.
-  - applies_to: "every basin:onwr:N not listed in basin_rows above"
+  - applies_to: "every basin:onwr:N not listed in basin_rows above (excluding basin:onwr:88, the HII/ONWR 'outside Thailand' sentinel, never a real basin committee target)"
     cmt: AG_BASIN_CMT
     role_template: true
     tag: RELAYED-GENERAL
     evidence: >
       Water Resources Act 2561 establishes a คณะกรรมการลุ่มน้ำ (basin committee) for
-      every one of the 36 declared basins; the DAG's generic AG_BASIN_CMT role node
-      carries this template label, but only 2 of the 36 basins (Chao Phraya, Pasak)
-      have their own named AG_BASIN_* node today.
+      every one of the 22 numbered ONWR river basins (read from the live KG's own
+      `basin:onwr:*` nodes -- see the basin-count correction note above, not the
+      commonly-misquoted "36"); the DAG's generic AG_BASIN_CMT role node carries this
+      template label, but only 2 of the 22 basins (Chao Phraya=onwr:10,
+      Pasak=onwr:12) have their own named AG_BASIN_* node today.
