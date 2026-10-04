@@ -141,7 +141,7 @@ note: >
   group as the Chao Phraya reach itself) -- both docs rewritten to say the same,
   correct thing; both docs also claimed canal-sited stations never get an ON_REACH
   edge -- false, measured 250 of 785 ON_REACH edges are from a คลอง-named asset,
-  snapping up to 15.71 km away (median 1.71 km) -- both docs now give the real numbers
+  snapping up to 15.71 km away (median 1.58 km) -- both docs now give the real numbers
   and say such an edge is unreliable for an upstream/downstream walk; this claim's own
   `artifacts` list was missing `output/thailand_river_flow.graphml`/`.jsonld` (both
   changed by the main_stem restart fix) and its `intent` text still said kb.py was

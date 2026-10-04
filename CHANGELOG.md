@@ -27,8 +27,10 @@ kggraph นี้") — milestone M2a of the founder-approved "แบ่ง M2a/
   untagged). This is the HydroRIVERS-system sense, not the Thai administrative
   "สายหลัก" per-ONWR-basin sense — see `docs/KG_QUERY.md` section on `main_stem` and
   "Known gaps" below. `output/thailand_river_flow.graphml` (+ `.jsonld`) was
-  regenerated to add `main_stem`/`main_stem_basis`; its older GISTDA flood-snapshot
-  fields (`flood_source_node`, `eta_from_flood_hr`) are no longer included.
+  regenerated without a GISTDA flood snapshot: `flood_status` is now `unknown` on
+  all 2,250 reaches and `flood_source_node` / `eta_from_flood_hr` are `"null"`
+  everywhere (the keys remain). `main_stem` is not in this file; it is only in
+  `output/thailand_water_kg.*`.
 - `docs/KG_QUERY.md` — the recipe page every AI session reads first for anything
   basin/province/amphoe/river/station/gate/agency-shaped, with measured (not
   aspirational) coverage numbers and runnable Python snippets against the shipped
