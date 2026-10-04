@@ -40,6 +40,21 @@ Bangkok-only. **เป้าหมาย: ทั่วประเทศไท�
 ใน กทม. ส่วนความครอบคลุมทั่วประเทศแบบหยาบ (ระดับลุ่มน้ำ/จังหวัด) กำลังดำเนินการ — อย่าเรียก
 โครงการนี้ว่าเฉพาะ กทม.
 
+**The flood indicators — see `docs/INDICATORS.md` for the full dictionary, every name,
+colour, source, threshold and worked example.** The closed set: `current_local_state`,
+`forward_hazard`, `rise_rate_dk`, `time_to_threshold_tk`, `rain_24h_mm`,
+`rain_7day_per_model_mm`, `distance_to_bank_m`, `bank_fill_percent`, `one_decision` (+
+`confidence`), `water_debt` (planned v0.2+). RED = agency critical/overflow, YELLOW =
+WATCH/warning or rising toward a threshold, GREEN = normal **with a fresh basis**,
+UNKNOWN = no fresh basis — **UNKNOWN is never SAFE.**
+
+**ตัวชี้วัดน้ำท่วม — อ่านรายละเอียดเต็มที่ `docs/INDICATORS.md`** ชุดตัวชี้วัดปิดตายตัว:
+`current_local_state`, `forward_hazard`, `rise_rate_dk`, `time_to_threshold_tk`,
+`rain_24h_mm`, `rain_7day_per_model_mm`, `distance_to_bank_m`, `bank_fill_percent`,
+`one_decision` (+ `confidence`), `water_debt` (วางแผน v0.2+) สีแดง=หน่วยงานประกาศวิกฤต/ล้นตลิ่ง
+สีเหลือง=เฝ้าระวังหรือกำลังขึ้นเข้าใกล้ค่าที่ตั้งไว้ สีเขียว=ปกติ **ต้องมีค่าสดรองรับ**
+ไม่ทราบ=ไม่มีค่าสดพอฟันธง **ไม่ทราบ ไม่เท่ากับ ปลอดภัย**
+
 Start here → **[START_HERE.md](START_HERE.md)** (human-facing, 5-minute read, Thai) ·
 **[AGENTS.md](AGENTS.md)** (AI-facing rules, bilingual) · **[AI.md](AI.md)** (the single
 AI compute entrypoint).

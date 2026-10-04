@@ -23,6 +23,12 @@ not a live data endpoint and must never be treated as one.
 | **T4** | Co-work / computer-use agent with files and apps (e.g. Cowork-style agents) | shell + files/apps, no server of its own | Everything T3 can, plus prepare household checklists/files and set the **user's own local** reminders — never a shared/server-side schedule. |
 | **T5** | Developer / API integrator — an agent framework or script calling this programmatically | code, no chat UI | Call the CLI/MCP from code, read `system_capabilities.json`, respect the token budget. |
 
+**The flood indicators every tier reasons over — full dictionary in
+`docs/INDICATORS.md`.** Closed set: `current_local_state`, `forward_hazard`,
+`rise_rate_dk`, `time_to_threshold_tk`, `rain_24h_mm`, `rain_7day_per_model_mm`,
+`distance_to_bank_m`, `bank_fill_percent`, `one_decision` (+ `confidence`),
+`water_debt` (planned v0.2+). RED/YELLOW/GREEN/UNKNOWN only — UNKNOWN is never SAFE.
+
 ## T0 — search snippet, no browsing
 
 - **CAN:** nothing active.

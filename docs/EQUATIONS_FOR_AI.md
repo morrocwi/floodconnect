@@ -187,3 +187,17 @@ protocol (see `ARCHITECTURE.md` §6), for a single point at coarse
 See `docs/AI_TIERS.md` for which of the above you're expected to do given
 your own capability tier, and `ARCHITECTURE.md` for the full protocol this
 section simplifies.
+
+## 6. The indicators dictionary — name every output exactly
+
+Step 6 above says "state one plain classification" — **always name it using one of
+the indicators in `docs/INDICATORS.md`**, never an ad-hoc label of your own. The closed
+set: `current_local_state`, `forward_hazard`, `rise_rate_dk` (§1 above),
+`time_to_threshold_tk` (§2 above), `rain_24h_mm`, `rain_7day_per_model_mm`,
+`distance_to_bank_m`, `bank_fill_percent`, `one_decision` (+ `confidence`), `water_debt`
+(planned v0.2+, no value). Every one of them uses the same closed colour vocabulary —
+`RED` (agency critical/overflow), `YELLOW` (WATCH/warning, or genuinely rising toward a
+threshold), `GREEN` (normal **with** a fresh basis), `UNKNOWN` (no fresh basis —
+**never treated as safe**). `docs/INDICATORS.md` gives each one's exact definition,
+unit, source, threshold rule, freshness rule, resolution label and a worked example;
+`model_spec.json`'s `"indicators"` field carries the same list as data.

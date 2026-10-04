@@ -185,9 +185,26 @@
     "docs": "CC BY 4.0",
     "third_party_data": "each source keeps its own licence; many are status unresolved -- see README.md section 7 and sources/registry.yaml"
   },
+  "indicators": {
+    "_purpose": "Closed dictionary of every flood indicator this repository (or its by-hand companion floodconnect_model.py) names -- full prose, worked examples and the bilingual (EN+Thai) one-line meanings live in docs/INDICATORS.md; this array is the same names/levels/status as data, mirrored verbatim into system_capabilities.json's own 'indicators' field (tests/test_floodconnect_model.py checks the two match). Founder ruling 2026-10-04, verbatim: 'ที่สำคัญคือให้ ตัวชี้วัดนี้น้ำน้ำท่วมต้องชัด' -- the flood indicators must be crystal clear.",
+    "doc": "docs/INDICATORS.md",
+    "levels": ["RED", "YELLOW", "GREEN", "UNKNOWN"],
+    "names": [
+      {"name": "current_local_state", "unit": "categorical", "status": "implemented", "resolution": "station", "doc_section": "1"},
+      {"name": "forward_hazard", "unit": "categorical", "status": "implemented", "resolution": "coordinate", "doc_section": "2"},
+      {"name": "rise_rate_dk", "unit": "m per k ticks", "status": "implemented", "resolution": "station", "toledo_id": "PROP-FLOOD-01", "doc_section": "3"},
+      {"name": "time_to_threshold_tk", "unit": "ticks", "status": "implemented", "resolution": "station", "toledo_id": "PROP-FLOOD-02", "doc_section": "4"},
+      {"name": "rain_24h_mm", "unit": "mm", "status": "implemented", "resolution": "area/bulletin", "doc_section": "5"},
+      {"name": "rain_7day_per_model_mm", "unit": "mm per model", "status": "implemented", "resolution": "coordinate", "doc_section": "6"},
+      {"name": "distance_to_bank_m", "unit": "m", "status": "NOT_YET_WIRED -- source field exists in the nationwide feed, not yet carried into observations.bank/collect.ANSWER_SOURCES", "resolution": "station (where wired)", "doc_section": "7"},
+      {"name": "bank_fill_percent", "unit": "%", "status": "NOT_YET_WIRED -- same gap as distance_to_bank_m", "resolution": "station (where wired)", "doc_section": "8"},
+      {"name": "one_decision", "unit": "categorical (decision text) + confidence", "status": "implemented_in_by_hand_module_only -- kb.py's own answer has no separate confidence field yet", "resolution": "station", "doc_section": "9"},
+      {"name": "water_debt", "unit": "none", "status": "planned (v0.2+)", "resolution": "n/a", "toledo_ids": ["PROP-FLOOD-03", "PROP-FLOOD-06", "PROP-FLOOD-07"], "doc_section": "10"}
+    ]
+  },
   "primary_sources_for_this_file": [
     "README.md", "AI.md", "AGENTS.md", "docs/AI_ENTRYPOINT.md", "docs/EVIDENCE.md",
-    "docs/AI_TIERS.md", "docs/EQUATIONS_FOR_AI.md",
-    "pyproject.toml", "sources/registry.yaml", "tests/test_token_budget.py"
+    "docs/AI_TIERS.md", "docs/EQUATIONS_FOR_AI.md", "docs/INDICATORS.md",
+    "pyproject.toml", "sources/registry.yaml", "tests/test_token_budget.py", "model_spec.json"
   ]
 }

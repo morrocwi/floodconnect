@@ -183,3 +183,57 @@ def test_one_decision_flat_without_status_or_theta_is_unknown():
     assert r["level"] == "UNKNOWN"
     assert r["level"] != "GREEN"
     assert "FLAT" in r["decision"]
+
+
+# ---------------------------------------------------------------------------
+# Indicators dictionary (docs/INDICATORS.md, founder ruling 2026-10-04:
+# "ที่สำคัญคือให้ ตัวชี้วัดนี้น้ำน้ำท่วมต้องชัด" -- the flood indicators must be clear)
+# ---------------------------------------------------------------------------
+import json
+import pathlib
+
+_HERE = pathlib.Path(__file__).resolve().parent.parent
+
+INDICATOR_NAMES = [
+    "current_local_state", "forward_hazard", "rise_rate_dk", "time_to_threshold_tk",
+    "rain_24h_mm", "rain_7day_per_model_mm", "distance_to_bank_m", "bank_fill_percent",
+    "one_decision", "water_debt",
+]
+
+
+def _load_json(name: str) -> dict:
+    return json.loads((_HERE / name).read_text(encoding="utf-8"))
+
+
+def test_indicators_block_has_every_closed_name():
+    spec = _load_json("model_spec.json")
+    names = {row["name"] for row in spec["indicators"]["names"]}
+    assert names == set(INDICATOR_NAMES)
+
+
+def test_indicators_levels_are_the_closed_vocabulary():
+    spec = _load_json("model_spec.json")
+    assert spec["indicators"]["levels"] == ["RED", "YELLOW", "GREEN", "UNKNOWN"]
+
+
+def test_model_spec_and_system_capabilities_indicators_match():
+    spec = _load_json("model_spec.json")
+    caps = _load_json("system_capabilities.json")
+    assert spec["indicators"] == caps["indicators"]
+
+
+def test_indicators_doc_exists_and_names_every_indicator():
+    doc = (_HERE / "docs" / "INDICATORS.md").read_text(encoding="utf-8")
+    for name in INDICATOR_NAMES:
+        assert f"`{name}`" in doc, f"{name} missing from docs/INDICATORS.md"
+
+
+def test_readme_llms_tiers_equations_link_and_name_indicators():
+    """Every one of the four first-contact docs must link docs/INDICATORS.md AND name
+    every indicator, so an AI reading any single one of them still gets the closed
+    dictionary -- never just the equations doc or just the README."""
+    for path in ("README.md", "llms.txt", "docs/AI_TIERS.md", "docs/EQUATIONS_FOR_AI.md"):
+        text = (_HERE / path).read_text(encoding="utf-8")
+        assert "docs/INDICATORS.md" in text, f"{path} does not link docs/INDICATORS.md"
+        for name in INDICATOR_NAMES:
+            assert name in text, f"{name} missing from {path}"
