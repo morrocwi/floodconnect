@@ -60,10 +60,12 @@ front of you.**
    about your point's level (this is why FloodConnect's own `_answer_state` scopes by
    a radius AND, where known, a canal/zone id — never distance alone).
 3. Nationwide radii (FloodConnect's own design choice, `docs/INDICATORS.md` §11 —
-   NOT an agency threshold): the **nearest** station within **10 km** (any water
-   body — this is NOT checked against a shared river/canal name) decides at
-   "station" resolution; only when nothing fresh is that close, a station sharing
-   that nearest station's own `sub_basin_id` within **50 km** decides at "basin"
+   NOT an agency threshold): **check every fresh station within 10 km** (any water
+   body — this is NOT checked against a shared river/canal name), **worst colour
+   wins**, at "station" resolution — do not just pick the single nearest one, since
+   the nearest station could be GREEN while a slightly farther one within the same
+   10 km is RED; only when nothing fresh is that close, a station sharing the
+   nearest station's own `sub_basin_id` within **50 km** decides at "basin"
    resolution (a stand-in for "same basin", not a shared-named-river check), and a
    basin-resolution reading can **never** be reported GREEN on its own (far +
    "normal" is not a clearance) — it can still back a YELLOW/RED. The two Bangkok

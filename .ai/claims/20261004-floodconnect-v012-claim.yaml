@@ -85,8 +85,9 @@ intent: >
   removing the previous duplicate copies) -- `NO_THRESHOLD` moved OUT of the
   normal-like/GREEN set into UNKNOWN (a real pre-existing bug this pass also fixed,
   the station carried no agency basis for GREEN at all). `readout.build_readout`
-  gained one nationwide factor-4 block: nearest fresh station within 10 km decides at
-  "station" resolution; failing that, a same-`sub_basin_id` station within 50 km
+  gained one nationwide factor-4 block: every fresh station within 10 km decides,
+  worst colour wins, at "station" resolution; failing that, a same-`sub_basin_id`
+  station within 50 km
   decides at "basin" resolution, which can never produce GREEN on its own. Forecast
   (`_resolve_forecast_point`/`_refresh_relevant_sources`) now fetches and reads at the
   exact queried coordinate for ANY lat,lon, not only the 11 hardcoded points.
@@ -147,7 +148,8 @@ intent: >
   that point's own canonical coordinate, not the caller's literal decimal digits.
   Docs (`CHANGELOG.md`, `docs/INDICATORS.md` section 11, `ROADMAP.md`, `llms.txt`,
   `docs/NEAREST_STATION_RECIPE.md`) are reworded: nationwide station resolution is
-  "nearest station within 10 km, any water body" (never checked against `river_name`,
+  "every fresh station within 10 km decides, worst colour wins" (never checked
+  against `river_name`,
   despite the third pass's wording above), and basin resolution is "a station sharing
   the NEAREST station's own `sub_basin_id`" (a stand-in for "same basin", not a
   shared-named-river check). `dual_state` now carries `resolution`/`dist_km` for the

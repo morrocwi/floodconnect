@@ -331,14 +331,17 @@ and is never silently re-expressed as RED/YELLOW/GREEN/UNKNOWN.**
   treat a MISSING `confidence` key as `NONE` — exactly the same way it already must
   for a missing `resolution`.**
 - **Rule:**
-  - `HIGH` — at least one deciding row is a fresh agency status word read at
+  - `HIGH` — at least one deciding row with a colour-bearing agency word at
     **station resolution** (a nationwide `thaiwater_waterlevel` row within
-    `NATIONWIDE_RIVER_RADIUS_KM` = 10 km, §11) or a **local** reading (the two MVP
-    areas' own already-radius-filtered Bangkok canal/pump/DDS source, which carries
-    no `resolution` field at all — as close as a reading gets).
-  - `LOW` — every deciding row is nationwide **basin resolution** only (§11: same
-    `sub_basin_id`, 10–50 km, a different water body) — no station-resolution or
-    local reading decided.
+    `NATIONWIDE_RIVER_RADIUS_KM` = 10 km, §11) or **local** (the two MVP areas' own
+    already-radius-filtered Bangkok canal/pump/DDS source, which carries no
+    `resolution` field at all — as close as a reading gets), whose colour equals the
+    decided colour. A sensor/equipment fault word (e.g. "ขัดข้อง") or a no-threshold
+    word (e.g. `NO_THRESHOLD`) carries no colour at all and never counts here, even
+    at station/local resolution.
+  - `LOW` — only a **basin resolution** row (§11: same `sub_basin_id`, 10–50 km, a
+    different water body) carries the decided colour — no station-resolution or
+    local reading whose colour matches does.
   - `NONE` (key absent) — `current_local_state == UNKNOWN` (forced, regardless of
     what the evidence says) — covers both "nothing decided" and the fault-only-
     sensor exclusion case (§1), where a deciding row can technically exist yet the
