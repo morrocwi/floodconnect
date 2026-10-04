@@ -1,5 +1,5 @@
 claim_id: "20261004-floodconnect-v011-claim"
-status: ACTIVE
+status: RELEASED
 writer: "ai-worker"
 branch: "agent/ai-worker/floodconnect-v0.1.1"
 base_sha: "df9fe2c49830a779400b077bdcd7f2e76f8e2d68"
