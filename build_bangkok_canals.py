@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Bangkok canal (khlong) graph -- companion/extension to build_kg.py's major-river graph.
+Bangkok canal (khlong) graph -- companion/extension to build_river_kg.py's major-river graph.
 
-Fills the gap identified in conversation: build_kg.py only covers major rivers
+Fills the gap identified in conversation: build_river_kg.py only covers major rivers
 (Strahler order >= 6), which sit ~10-20km from most inner-Bangkok districts (e.g.
 เขตสะพานสูง / Saphan Sung) and are useless for assessing local flood risk there.
 Local flood risk in Bangkok is driven by the KHLONG (canal) network, not the major rivers.
@@ -15,12 +15,12 @@ Source data (all free, no API key):
       * floodgate.csv -- floodgate/pump-station point locations (lat/long), 237 rows.
       * water_level_outer_daily.csv / water_level_inner_daily.csv -- 2026 daily max canal
         water level by station NAME (no lat/lon on these two files).
-  - The existing build_kg.py major-river graph output (thailand_river_flow.jsonld) --
+  - The existing build_river_kg.py major-river graph output (thailand_river_flow.jsonld) --
     used as candidate "sink" points where a canal could plausibly discharge into a major river.
 
 ## What this is NOT -- read this before trusting any edge direction
 
-Unlike build_kg.py's major-river graph (direction = HydroRIVERS' own NEXT_DOWN field,
+Unlike build_river_kg.py's major-river graph (direction = HydroRIVERS' own NEXT_DOWN field,
 `finite_diagnostic` tier), THIS graph's edge directions are a `Dr`-tier (INSTINCT) heuristic:
 for each connected component of the canal network that has a major-river node within
 SINK_SNAP_KM of one of its junctions, this script orients that component's edges as a
@@ -29,9 +29,9 @@ root -- i.e. assumes canals drain toward the nearest known major-river connectio
 This is NOT verified against any actual flow-direction data (no DEM routing was used, no
 gate-operation schedule, no elevation data). Components with no nearby major-river sink are
 left with `direction="unknown"` on every edge -- most of inner Bangkok's canal network will
-fall in this bucket, because build_kg.py's major-river graph itself is sparse near central
+fall in this bucket, because build_river_kg.py's major-river graph itself is sparse near central
 Bangkok (nearest major-river nodes are people ~14-20km from central districts). Do not
-present any edge's direction from this script as equivalent in reliability to build_kg.py's.
+present any edge's direction from this script as equivalent in reliability to build_river_kg.py's.
 
 Usage:
     python3 build_bangkok_canals.py
@@ -449,7 +449,7 @@ def match_canal_to_osm(canal_name: str, anchor_latlons: list, gdf: gpd.GeoDataFr
     """
     Fuzzy-match a BMA river_name onto an OSM `name`/`name:th` value, with a mandatory spatial
     cross-check (a name match whose geometry sits nowhere near this canal's own known-latlon
-    anchors is rejected, per the task brief). Returns (osm_name, ratio, dist_km) or
+    anchors is rejected, per the founder's instructions). Returns (osm_name, ratio, dist_km) or
     (None, ratio, dist_km) if rejected.
     """
     stripped_target = _strip_canal_prefix(canal_name)
@@ -909,7 +909,7 @@ def _bearing_from_pixel_deg(A: np.ndarray, deg: float, mean_lat: float) -> float
     """
     Convert a KlongMap arrow's schematic rotation angle to a real-world compass bearing, using
     the LOCAL triangle's affine linear part A (not just reusing the raw pixel degree value, per
-    the task brief). `_arrow_pixel_vector(deg)` gives the arrow's unit direction in schematic
+    the founder's instructions). `_arrow_pixel_vector(deg)` gives the arrow's unit direction in schematic
     pixel space (x right, y down, per the confirmed CSS rotate() convention). A maps a
     schematic DELTA to a real (dlon, dlat) delta (A is the same for the whole triangle,
     translation-independent). Converts that to a compass bearing (degrees clockwise from true

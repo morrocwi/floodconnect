@@ -1,0 +1,231 @@
+# typology/edges/part_of.yaml -- NEW edge kind, added to the closed vocabulary 2026-09-28
+# per founder ask ("สกัดไปเข้า typology node การเมืองด้วย" -- fold the Joint KPI agency list
+# into the power/การเมือง layer too). Allowed pairs: agency -> ministry, ministry ->
+# government (tools/typology/validate.py::ALLOWED_PAIRS["part_of"] enforces this).
+#
+# Every row here is either (a) explicitly stated by the Lanner FB post's own Joint-KPI
+# ministry grouping (the 29-body list), or (b) the fixed ministry->government root edge.
+# No `operates`/`decides` edges are added anywhere from this source -- the post states
+# general MANDATE/role text (captured as `role_th` node attributes in agencies.yaml /
+# agencies_joint_kpi_2026-09-28.yaml), never a specific "agency X decides structure Y"
+# claim, so none is invented here.
+schema_version: 1
+doc_kind: typology_edge_registry
+edge_kind: part_of
+status_th: >
+  โครงสร้างกระทรวง/หมวดหมู่ตาม Joint KPI กพร. FY2569-2570 (ผ่าน Lanner, RELAYED, OPEN จนกว่าจะ
+  อ่านเอกสาร กพร. ตัวจริง) -- ทุกแถวคือ agency -> ministry (หรือ ministry -> government).
+rows:
+  # สำนักนายกรัฐมนตรี (host agency)
+  - from: AG_ONWR
+    to: MINISTRY.PMO
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  # กษ. (6)
+  - from: AG_MOAC_PERM_SEC
+    to: MINISTRY.AGRI
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  - from: AG_ROYAL_RAINMAKING
+    to: MINISTRY.AGRI
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  - from: AG_RID
+    to: MINISTRY.AGRI
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  - from: AG_LAND_DEV
+    to: MINISTRY.AGRI
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  - from: AG_ALRO
+    to: MINISTRY.AGRI
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  - from: AG_AGRI_EXT
+    to: MINISTRY.AGRI
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  # คค. (3)
+  - from: AG_DOH
+    to: MINISTRY.TRANSPORT
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  - from: AG_RURAL_ROADS
+    to: MINISTRY.TRANSPORT
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  - from: AG_MARINE
+    to: MINISTRY.TRANSPORT
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  # ทส. (6)
+  - from: AG_FORESTRY
+    to: MINISTRY.NATRES
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  - from: AG_NATIONAL_PARKS
+    to: MINISTRY.NATRES
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  - from: AG_GEOLOGY
+    to: MINISTRY.NATRES
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  - from: AG_POLLUTION_CONTROL
+    to: MINISTRY.NATRES
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  - from: AG_DWR
+    to: MINISTRY.NATRES
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  - from: AG_GROUNDWATER
+    to: MINISTRY.NATRES
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  # ดศ. (1)
+  - from: AG_TMD
+    to: MINISTRY.DIGITAL
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  # มท. (3)
+  - from: AG_DDPM
+    to: MINISTRY.INTERIOR
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  - from: AG_DPT
+    to: MINISTRY.INTERIOR
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  - from: AG_DLA
+    to: MINISTRY.INTERIOR
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  # สธ. (1)
+  - from: AG_ANAMAI
+    to: MINISTRY.HEALTH
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  # อก. (1)
+  - from: AG_FACTORY
+    to: MINISTRY.INDUSTRY
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  # องค์การมหาชน (2)
+  - from: AG_GISTDA
+    to: CATEGORY.PUBLIC_ORG
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  - from: AG_HII
+    to: CATEGORY.PUBLIC_ORG
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  # รัฐวิสาหกิจ (4)
+  - from: AG_MWA
+    to: CATEGORY.STATE_ENTERPRISE
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  - from: AG_PWA
+    to: CATEGORY.STATE_ENTERPRISE
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  - from: AG_WWMA
+    to: CATEGORY.STATE_ENTERPRISE
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  - from: AG_IEAT
+    to: CATEGORY.STATE_ENTERPRISE
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569"
+  # กทม.
+  - from: AG_BMA_GOV
+    to: CATEGORY.LOCAL_GOV
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 -- กทม. listed as its own body, outside the 22 ส่วนราชการ count"
+  # every ministry/category -> government root
+  - from: MINISTRY.PMO
+    to: GOV.TH
+    tag: RELAYED
+    source: "tools/typology/build_graph.py -- fixed root edge"
+  - from: MINISTRY.AGRI
+    to: GOV.TH
+    tag: RELAYED
+    source: "tools/typology/build_graph.py -- fixed root edge"
+  - from: MINISTRY.TRANSPORT
+    to: GOV.TH
+    tag: RELAYED
+    source: "tools/typology/build_graph.py -- fixed root edge"
+  - from: MINISTRY.NATRES
+    to: GOV.TH
+    tag: RELAYED
+    source: "tools/typology/build_graph.py -- fixed root edge"
+  - from: MINISTRY.DIGITAL
+    to: GOV.TH
+    tag: RELAYED
+    source: "tools/typology/build_graph.py -- fixed root edge"
+  - from: MINISTRY.INTERIOR
+    to: GOV.TH
+    tag: RELAYED
+    source: "tools/typology/build_graph.py -- fixed root edge"
+  - from: MINISTRY.HEALTH
+    to: GOV.TH
+    tag: RELAYED
+    source: "tools/typology/build_graph.py -- fixed root edge"
+  - from: MINISTRY.INDUSTRY
+    to: GOV.TH
+    tag: RELAYED
+    source: "tools/typology/build_graph.py -- fixed root edge"
+  - from: CATEGORY.PUBLIC_ORG
+    to: GOV.TH
+    tag: RELAYED
+    source: "tools/typology/build_graph.py -- fixed root edge"
+  - from: CATEGORY.STATE_ENTERPRISE
+    to: GOV.TH
+    tag: RELAYED
+    source: "tools/typology/build_graph.py -- fixed root edge"
+  - from: CATEGORY.LOCAL_GOV
+    to: GOV.TH
+    tag: RELAYED
+    source: "tools/typology/build_graph.py -- fixed root edge"
+  # ศูนย์ความร่วมมือด้านการสื่อสารข้อมูลสภาพภูมิอากาศ (ดีอี), ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569 --
+  # AG_DE ในคำสั่งฟาวน์เดอร์ reuse เป็น MINISTRY.DIGITAL ที่มีอยู่แล้ว (ไม่สร้างซ้ำ)
+  - from: AG_CLIMATE_COMMS_CENTRE
+    to: MINISTRY.DIGITAL
+    tag: RELAYED
+    source: "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569 -- docs/knowledge/card_climate_comms_centre_2026-09-28.md"
+  - from: AG_AFNC
+    to: MINISTRY.DIGITAL
+    tag: RELAYED
+    source: "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569"
+  - from: AG_PRD
+    to: MINISTRY.PMO
+    tag: RELAYED
+    source: "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569 -- พีอาร์ดีสังกัดสำนักนายกรัฐมนตรี"
+  - from: AG_PM_SPOKES
+    to: MINISTRY.PMO
+    tag: RELAYED
+    source: "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569 -- โฆษกประจำสำนักนายกรัฐมนตรี"
+  # เคหะร่มเกล้า rescue-drone case, กระทรวง อว. FB post 28 ก.ย. 2569 -- MINISTRY.MHESI/
+  # MINISTRY.SOCIAL are NEW ministry nodes (this repo never registered them before this
+  # task, even though AG_MHESI/AG_MSDHS already existed as ids in water_system_dag.mmd)
+  - from: AG_MHESI
+    to: MINISTRY.MHESI
+    tag: RELAYED
+    source: "docs/knowledge/card_tool_rescue_drones_romklao_2569.md"
+  - from: AG_KMUTNB
+    to: MINISTRY.MHESI
+    tag: RELAYED
+    source: "docs/knowledge/card_tool_rescue_drones_romklao_2569.md -- มจพ. เป็นมหาวิทยาลัยรัฐสังกัด อว."
+  - from: AG_MSDHS
+    to: MINISTRY.SOCIAL
+    tag: RELAYED
+    source: "docs/knowledge/card_tool_rescue_drones_romklao_2569.md"
+  - from: MINISTRY.MHESI
+    to: GOV.TH
+    tag: RELAYED
+    source: "tools/typology/build_graph.py -- fixed root edge"
+  - from: MINISTRY.SOCIAL
+    to: GOV.TH
+    tag: RELAYED
+    source: "tools/typology/build_graph.py -- fixed root edge"

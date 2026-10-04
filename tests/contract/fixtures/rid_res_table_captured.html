@@ -1,0 +1,126 @@
+<!DOCTYPE html
+	PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=windows-874" />
+	<title>ศูนย์ประมวลวิเคราะห์สถานการณ์น้ำ กรมชลประทาน</title>
+	<meta http-equiv="Content-Language" content="th" />
+	<meta name="keywords" content="อ่างเก็บน้ำขนาดใหญ่, สภาพน้ำท่า, น้ำฝน" />
+	<meta name="description" content="ศูนย์ประมวลวิเคราะห์สถานการณ์น้ำ กรมชลประทาน" />
+	<meta name="distribution" content="global" />
+	<meta name="robots" content="follow, all" />
+	<meta name="language" content="en-th" />
+	<link rel="stylesheet" media="all" type="text/css" href="restable_engine/css/stylesheet.css" />
+	<link rel="stylesheet" media="all" type="text/css" href="restable_engine/css/style-menu.css" />
+	<link rel="stylesheet" media="all" type="text/css" href="restable_engine/css/calendar-win2k-cold-1.css"
+		title="win2k-cold-1" />
+	<script type="text/javascript" src="restable_engine/js/calendar.js"></script>
+	<script type="text/javascript" src="restable_engine/js/calendar-en.js"></script>
+	<script type="text/javascript" src="restable_engine/js/calendar-setup.js"></script>
+	<script type="text/javascript" src="restable_engine/js/highslide.js"></script>
+</head>
+
+<body
+	style="background-color:#85ACC4; background-image: url(restable_engine/images/bg_top.gif); background-repeat: repeat-x; margin:0">
+	<div id="container">
+		<div id="header">
+			<iframe src="restable_engine/header.html" frameborder="0" scrolling="no" height="112" width="100%"
+				marginheight="0" marginwidth="0"></iframe>
+		</div>
+		<div id="navigator">
+			<div id="menu" style="text-align:center;margin-top:2px;">
+				<div
+					style="background:#004040; font:bold 15px/26px tahoma,arial; color:#fff; padding-top:2px; border:1px solid #C0C0C0; height:28px;">
+					เลือกวันที่ต้องการแสดงข้อมูล </div>
+				<form style="display:inline;">
+					<div id="calendar-container" style="text-align:center;margin-top:10px"></div>
+					<script language="JavaScript" type="text/javascript">
+						window.onerror = null;
+						var SPECIAL_DAYS = {
+							0: [13, 24], // special days in January
+							2: [1, 6, 8, 12, 18], // special days in March
+							8: [21, 11] // special days in September
+						};
+
+						function dateIsSpecial(year, month, day) {
+							var m = SPECIAL_DAYS[month];
+							if (!m) return false;
+							for (var i in m)
+								if (m[i] == day) return true;
+							return false;
+						};
+
+						Calendar.setup({
+							inputField: 'cal',
+							flat: "calendar-container", // ID of the parent element
+							flatCallback: dateChanged, // our callback function
+							dateStatusFunc: function (date, y, m, d) {
+								if (dateIsSpecial(y, m, d)) return "special";
+								else return false; // other dates are enabled
+								// return true if you want to disable other dates
+							}
+						});
+
+						function dateChanged(calendar) {
+							var currentDate  = new Date();
+							var image = document.getElementById("img_report");
+
+							if (calendar.dateClicked && calendar.date <= currentDate) {
+								// OK, a date was clicked, redirect to /yyyy/mm/dd/index.php
+								var y = calendar.date.getFullYear();
+								var m = calendar.date.getMonth(); // integer, 0..11
+								var d = calendar.date.getDate(); // integer, 1..31
+								m = m + 1
+								window.onerror = null;
+								if (m <= 9) m = "" + "0" + "" + m + "";
+								if (d <= 9) d = "" + "0" + "" + d + "";
+								var cal = "res_table/res" + d + m + y + ".gif";
+								//window.parent.frames["right"].document.location.href=cal;
+								image.src = cal;
+							}
+						};
+					</script>
+
+					<!-- chart reservoir-->
+					<script type="text/javascript">
+						// remove the registerOverlay call to disable the controlbar
+						hs.registerOverlay({
+							thumbnailId: null,
+							overlayId: 'controlbar',
+							position: 'top right',
+							hideOnMouseOut: true
+						});
+
+						//hs.graphicsDir = 'http://www.cityvariety.com/cvlibs/highslide/highslide/graphics/';
+						hs.outlineType = 'rounded-white';
+						// Tell Highslide to use the thumbnail's title for captions
+						hs.captionEval = 'this.thumb.title';
+					</script>
+
+					<div
+						style="position:relative; margin-top:10px; background:#400080; font:bold 15px/26px tahoma,arial; color:#fff; padding-top:2px; border:1px solid #C0C0C0; height:28px;">
+						กราฟน้ำในอ่างเก็บน้ำ </div>
+
+					<p style="text-align:left;margin:5px 0 10px 20px; color:#800;">ภาคเหนือ</p>
+					<ul style="text-align:left;margin-top:-10px; list-style-type:none;">
+						<li><a href="http://water.rid.go.th/flood/flood/res_table/05052008/p1.JPG"
+								class="highslide">ภูมิพล</a></li>
+						<li><a href="http://water.rid.go.th/flood/flood/res_table/05052008/p2.JPG"
+								class="highslide">สิริกิติ์</a></li>
+						<li><a href="http://water.rid.go.th/flood/flood/res_table/05052008/p3.JPG"
+								class="highslide">แม่งัดสมบูรณ์ชล</a></li>
+						<li><a href="http://water.rid.go.th/flood/flood/res_table/05052008/p4.JPG"
+								class="highslide">แม่กวงอุดมธารา</a></li>
+						<li><a href="http://water.rid.go.th/flood/flood/res_table/05052008/p5.JPG"
+								class="highslide">กิ่วลม</a></li>
+						<li><a href="http://water.rid.go.th/flood/flood/res_table/05052008/p6.JPG"
+								class="highslide">กิ่วคอหมา</a></li>
+						<li><a href="http://water.rid.go.th/flood/flood/res_table/05052008/p7.JPG"
+								class="highslide">แควน้อยบำรุงแดน</a></li>
+						<li><a href="http://water.rid.go.th/flood/flood/res_table/05052008/p34.JPG"
+								class="highslide">แม่มอก</a></li>
+					</ul>
+					<p style="text-align:left;margin:-10px 0 10px 20px;color:#800;">ภาคตะวันออกเฉียงเหนือ</p>
+					<ul style="text-align:left;margin-top:-10px; list-style-type:none">
+						<li><a href="http://water.rid.go.th/flood/flood/res_table/

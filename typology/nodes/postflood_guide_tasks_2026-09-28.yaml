@@ -1,0 +1,211 @@
+# typology/nodes/postflood_guide_tasks_2026-09-28.yaml -- household-level (ปัจเจก)
+# post_event task DAG, extracted from "คู่มือจัดการบ้านหลังน้ำลด" (ASA/ThaiGDA/EIT,
+# พฤศจิกายน 2554) -- see docs/knowledge/card_guide_post_flood_home.md for the
+# bibliographic source, docs/TYPOLOGY_GRAPH.md "Post-flood home recovery task DAG" for
+# the full extraction rationale.
+#
+# Node kind `household_task` -- NEW kind, justified: no existing kind in this typology
+# fits a "do X, in this order" checklist item (`resource` is a physical/logistics asset,
+# `support` is a place/service point, not a procedural step). layer=self_help (same
+# graph bucket as the imported Community Self-Help DAG), self_help_layer=0 (same numeric
+# layer as `household` in community_dag.py's KIND_LAYER -- these are things a SINGLE
+# household does, not an escalation to buddy_cell/zone), phase=post_event (TDRI
+# disaster-cycle vocabulary, added 2026-09-28 TDRI extension -- this whole guide is
+# entirely post-event by its own title).
+#
+# `quoted_numbers_th`: numbers the guide gives (chlorine ratio, wait times, cm/m
+# dimensions) kept as QUOTED TEXT ONLY, page-cited -- never turned into a computed
+# quantity, per founder instruction.
+schema_version: 1
+doc_kind: typology_node_registry
+status_th: >
+  DAG งานระดับปัจเจก (household) หลังน้ำลด จาก คู่มือจัดการบ้านหลังน้ำลด (ASA/ThaiGDA/วสท.,
+  พ.ย. 2554) -- ทุกแถวมี page cite, tag VERIFIED (อ่านต้นฉบับ PDF ตรงในงานนี้).
+rows:
+  - id: HHTASK.PREP
+    kind: household_task
+    layer: self_help
+    self_help_layer: 0
+    phase: post_event
+    label_th: "เตรียมอุปกรณ์ก่อนเข้าบ้านหลังน้ำลด"
+    page_cite: "p.6-7"
+    quoted_text_th: >
+      "อุปกรณที่ตองเตร�ยมไวเมื่อทานจะเดินทางไปที่บานหลังจากน้ำลดนั�น" -- รายการ 20 ชิ้น เช่น
+      รองเท้ายาง, ถุงมือยาง, ไขควงตรวจสอบไฟฟ้ารั่ว, ไฟฉาย, อุปกรณ์ทำความสะอาด, เครื่องสูบน้ำแบบพกพา
+      (p.6-7)
+    hazard_th: >
+      "ใสเพ�อปองกันไมใหไฟฟาที่อาจจะรั�วในบร�เวณพ�นบานมาดูดทานได" (รองเท้ายาง, p.6)
+    tag: VERIFIED
+    source: "docs/knowledge/card_guide_post_flood_home.md (p.6-7)"
+  - id: HHTASK.PHOTO_DAMAGE
+    kind: household_task
+    layer: self_help
+    self_help_layer: 0
+    phase: post_event
+    label_th: "ถ่ายรูปความเสียหายก่อนดำเนินการแก้ไข (เพื่อขอเยียวยา/เคลม)"
+    page_cite: "p.8"
+    quoted_text_th: >
+      "สำหรับท่านที่ยังไม่ได้ถ่ายรูปความเสียหายของบ้านให้ถ่ายรูปก่อนดำเนินการแก้ไข เพื่อใช้เป็น
+      หลักฐานในการร้องขอค่าชดเชยต่างๆ ในภายหลัง ควรถ่ายให้เห็นบ้านเลขที่และหนังสือพิมพ์ท่ีมีวันที่
+      ปัจจุบัน ถ้ามีร่องรอยงัดแงะจากการโจรกรรมให้ถ่ายรูปไว้เป็นหลักฐานด้วย" (p.8)
+    tag: VERIFIED
+    source: "docs/knowledge/card_guide_post_flood_home.md (p.8)"
+  - id: HHTASK.VENTILATE
+    kind: household_task
+    layer: self_help
+    self_help_layer: 0
+    phase: post_event
+    label_th: "เปิดประตูหน้าต่างทุกบานระบายความชื้น"
+    page_cite: "p.8"
+    quoted_text_th: >
+      "ให้ท่านเปิดประตูและหน้าต่างๆทุกบานเท่าที่ทำได้เพื่อให้ความชื้นภายในบ้านระบายออกไปให้เร็ว
+      ที่สุด" (p.8)
+    tag: VERIFIED
+    source: "docs/knowledge/card_guide_post_flood_home.md (p.8)"
+  - id: HHTASK.ELECTRICAL
+    kind: household_task
+    layer: self_help
+    self_help_layer: 0
+    phase: post_event
+    label_th: "จัดการระบบไฟฟ้า (สะพานไฟฟ้าหลัก/เบรกเกอร์กันดูด/สวิทช์-เต้ารับ/ไฟแสงสว่าง)"
+    page_cite: "p.9-12"
+    quoted_text_th: >
+      "เรื่องแรกที่ต้องใช้ความระมัดระวังมากที่สุดและต้องดำเนินการเป็นอย่างแรกคือการตรวจสอบระบบ
+      ไฟฟ้า" (p.8) -- ใส่รองเท้ายาง, ใช้ไขควงตรวจสอบไฟฟ้ารั่วเตะบริเวณโลหะก่อนแตะ, ปิดสะพานไฟฟ้า
+      หลักให้แน่ใจก่อนเสมอ (p.8-10); ค่าความเป็นฉนวนสายไฟฟ้า "ไม่น้อยกว่า 1 เมกกะโอห์ม ที่ 500 โวล์ท
+      (ไฟฟ้ากระแสตรง)" ก่อนจ่ายไฟใหม่ (p.12)
+    hazard_th: >
+      "ไม่ควรเข้าไปในบ้านที่ยังมีน้ำท่วมพื้นบ้านอยู่ ... หากยืนอยู่ในน้ำหรือเท้าเปียกน้ำ ต้องไม่สัมผัส
+      อุปกรณ์ไฟฟ้า เปิดปิดสะพานไฟ หรือเสียบปลั๊ก หรือเปิดปิดสวิทช์ ใดๆทั้งสิ้น" (p.8) -- ไฟดูด/ไฟลัด
+      วงจร/ไฟไหม้ (p.12)
+    contact_note_th: >
+      "แนะนำว่าให้ท่านติดต่อไปที่การไฟฟ้านครหลวงหรือการไฟฟ้าภูมิภาคหรือช่างไฟฟ้าที่มีความสามารถ
+      เข้ามาตรวจสอบระบบ" (p.10, สะพานไฟฟ้าหลักที่น้ำท่วมถึง)
+    tag: VERIFIED
+    source: "docs/knowledge/card_guide_post_flood_home.md (p.8-12)"
+  - id: HHTASK.STRUCTURE
+    kind: household_task
+    layer: self_help
+    self_help_layer: 0
+    phase: post_event
+    label_th: "ตรวจสอบโครงสร้างบ้านและรั้ว"
+    page_cite: "p.13-15"
+    quoted_text_th: >
+      "ถ้าดินทรุดตัวจนมองเห็นเสาเข็ม ถือว่าเป็นเรื่องน่าเป็นห่วงมากควรปรึกษาวิศวกรโครงสร้างเพื่อหา
+      วิธีแก้ไขต่อไป" -- "โดยเฉพาะรอยร้าวบริเวณหัวเสาต่อกับคานของอาคาร ถ้าพบรอยร้าวแบบนี้ให้ปรึกษา
+      วิศวกรโครงสร้าง" -- "มีอาการของเหล็กที่ชื้นจนเป็นสนิม ระเบิดดันจนคอนกรีตแตกออกมา ... ต้องรีบ
+      ปรึกษาวิศวกรโครงสร้างโดยทันที" (p.14-15)
+    hazard_th: "ดินทรุด/เสาเข็มโผล่/รอยร้าวโครงสร้าง/เหล็กเสริมเป็นสนิม/รั้วเอียงจนอาจล้ม (p.14-15)"
+    contact_note_th: >
+      "ถ้าท่านต้องการคำปรึกษาเรื่องโครงสร้างให้ติดต่อ \"วิศวกรอาสา\" วิศวกรรมสถานแห่งประเทศไทยใน
+      พระบรมราชูปถัมภ์ หมายเลขโทรศัพท์ในวันทำงานราชการ เวลา 9:00-17:00 ที่หมายเลขโทรศัพท์
+      080-812-3733 080-812-3743 080-812-2853" (p.15)
+    tag: VERIFIED
+    source: "docs/knowledge/card_guide_post_flood_home.md (p.13-15)"
+  - id: HHTASK.CLEANING
+    kind: household_task
+    layer: self_help
+    self_help_layer: 0
+    phase: post_event
+    label_th: "ทำความสะอาดและฆ่าเชื้อทั้งบ้าน"
+    page_cite: "p.16-18"
+    quoted_text_th: >
+      "ขัดถูพื้นด้วยน้ำยาทำความสะอาดหรือผงซักฟอกให้ทั่วบริเวณแล้วจึงราดด้วยน้ำร้อนเดือดๆถ้าทำได้
+      จากนั้นใช้คลอรีนผสมน้ำในอัตราส่วนร้อยละ 0.1 หรือคลอรีน 1 ซีซีต่อน้ำหนึ่งลิตร หรือใช้น้ำยาฆ่าเชื้อ
+      โรคที่มีขายทั่วไปฉีดพ่นให้ทั่วบริเวณ" (p.18) -- เครื่องใช้ในครัวแช่น้ำยาล้างจานผสมน้ำเดือด
+      "อย่างน้อย 10 นาที" (p.18); เครื่องเงิน/โลหะต้มน้ำเดือด "อย่างน้อย 10 นาที" แล้วแช่น้ำยาฆ่าเชื้อ
+      "อีกหนึ่งชั่วโมง" (p.18)
+    hazard_th: >
+      "ระหว่างทำความสะอาดถ้าต้องรื้อของตามซอกต่างๆ ให้ระวังสัตว์อันตรายที่อาจจะซ่อนตัวในตามลืบ
+      เหล่านั้นพุ่งออกมาทำร้ายเราได้" (p.8) -- "ห้ามใช้โซดาไฟในการทำความสะอาด เพราะเป็นอันตรายต่อ
+      สุขภาพ" (p.18, quoted -- คำเตือนจากต้นฉบับ ไม่ใช่คำแนะนำที่งานนี้เขียนเอง)
+    tag: VERIFIED
+    source: "docs/knowledge/card_guide_post_flood_home.md (p.16-18)"
+  - id: HHTASK.SANITATION
+    kind: household_task
+    layer: self_help
+    self_help_layer: 0
+    phase: post_event
+    label_th: "ระบบสุขาภิบาล (รางระบายน้ำรอบบ้าน/ส้วม/ท่อระบายน้ำในบ้าน/ระบบประปา)"
+    page_cite: "p.19-21"
+    quoted_text_th: >
+      "ให้เริ่มจากทำความสะอาดระบบระบายน้ำภายนอกก่อน" (p.20) -- "อย่าพยายามดันขยะออกทางน้ำ
+      สาธารณะเพราะจะทำให้ท่อระบายน้ำสาธารณะตันและทำให้น้ำไม่มีทางระบาย ก่อปัญหาให้กับสิ่งแวดล้อม
+      และเพื่อนบ้าน" (p.20)
+    tag: VERIFIED
+    source: "docs/knowledge/card_guide_post_flood_home.md (p.19-21)"
+  - id: HHTASK.DOORS_WINDOWS
+    kind: household_task
+    layer: self_help
+    self_help_layer: 0
+    phase: post_event
+    label_th: "ประตู หน้าต่าง"
+    page_cite: "p.22-23"
+    quoted_text_th: "\"บานประตูและหน้าต่างตกและบวมเนื่องจากแช่น้ำเป็นเวลานาน ให้รอจนกว่าความชื้นระเหยออกให้หมด\" (p.23)"
+    tag: VERIFIED
+    source: "docs/knowledge/card_guide_post_flood_home.md (p.22-23)"
+  - id: HHTASK.FLOORS
+    kind: household_task
+    layer: self_help
+    self_help_layer: 0
+    phase: post_event
+    label_th: "พื้น (หินธรรมชาติ/ไม้/กระเบื้อง/พรม)"
+    page_cite: "p.24-27"
+    quoted_text_th: >
+      ยาแนวกระเบื้อง: ทิ้งน้ำยาทำปฏิกิริยากับคราบสกปรก "ประมาณ 5 นาที" (p.26); ทิ้งยาแนวใหม่ไว้
+      "12 ชั่วโมง" ก่อนใช้งานพื้นที่นั้น (p.26-27)
+    tag: VERIFIED
+    source: "docs/knowledge/card_guide_post_flood_home.md (p.24-27)"
+  - id: HHTASK.WALLS
+    kind: household_task
+    layer: self_help
+    self_help_layer: 0
+    phase: post_event
+    label_th: "ผนัง (ก่ออิฐ/เบา/วอลล์เปเปอร์/ฝ้าเพดาน)"
+    page_cite: "p.28-29"
+    quoted_text_th: >
+      ผนังก่ออิฐ: "ทิ้งไว้โดยยังไม่ต้องทาสี เป็นระยะเวลาอย่างน้อยหนึ่งถึงสองเดือน" (p.28, quoted --
+      ต้นฉบับใช้คำว่า "ยังไม่ต้อง" เอง); วอลล์เปเปอร์: "ต้องรอให้ผนังแห้งจริงๆอย่างน้อย 1 อาทิตย์"
+      (p.29)
+    tag: VERIFIED
+    source: "docs/knowledge/card_guide_post_flood_home.md (p.28-29)"
+  - id: HHTASK.APPLIANCES
+    kind: household_task
+    layer: self_help
+    self_help_layer: 0
+    phase: post_event
+    label_th: "เครื่องใช้ไฟฟ้า (มอเตอร์/แผงวงจร/ตู้เย็น/พัดลม/แอร์/ทีวี-วิทยุ)"
+    page_cite: "p.30-33"
+    quoted_text_th: >
+      "เครื่องใช้ไฟฟ้าเหล่านี้ถ้าโดนน้ำท่วมมักเสียหายหนักเนื่องจากเป็นวงจรอิเล็กโทรนิกส์ ไม่ควรเสี่ยง
+      เสียบปลั๊กไฟฟ้าเด็ดขาดให้ส่งศูนย์ซ่อมเท่านั้น" (ทีวี/ดีวีดี/วิทยุ/เครื่องเสียง, p.33, quoted --
+      ต้นฉบับใช้คำว่า "ไม่ควร" เอง)
+    hazard_th: "อันตรายจากไฟฟ้าลัดวงจร (p.30)"
+    tag: VERIFIED
+    source: "docs/knowledge/card_guide_post_flood_home.md (p.30-33)"
+  - id: HHTASK.FURNITURE
+    kind: household_task
+    layer: self_help
+    self_help_layer: 0
+    phase: post_event
+    label_th: "เฟอร์นิเจอร์ (บิลด์อิน/ลอยตัว)"
+    page_cite: "p.34-36"
+    quoted_text_th: >
+      "การทำความสะอาดเฟอร์นิเจอร์บิลด์อินนี้ต้องทำไปพร้อมๆ กับการทำความสะอาดพื้น ผนัง กำแพงภายใน
+      ตัวบ้าน" (p.35) -- "ห้ามนำเฟอร์นิเจอร์ท่ีทำด้วยไม้ไปตากแดดเพราะจะทำให้ไม้บิดงอ" (p.36, quoted
+      -- ต้นฉบับใช้คำว่า "ห้าม" เอง)
+    tag: VERIFIED
+    source: "docs/knowledge/card_guide_post_flood_home.md (p.34-36)"
+  - id: HHTASK.PLANTS
+    kind: household_task
+    layer: self_help
+    self_help_layer: 0
+    phase: post_event
+    label_th: "ต้นไม้/สวน"
+    page_cite: "p.37-38"
+    quoted_text_th: >
+      "แนะนำให้ขุดหลุมขนาดประมาณ 1 คูณ 1 เมตร ลึกอย่างน้อยครึ่งเมตร ที่บริเวณที่ต่ำที่สุดของสวน แล้ว
+      สูบน้ำหรือตักน้ำออกจนกว่าจะหมด" (p.37); "ห้ามให้ปุ๋ยต้นไม้ในช่วงนี้ รอจนกว่าต้นไม้นั้นจะฟื้นตัวได้
+      จริง" (p.38, quoted -- ต้นฉบับใช้คำว่า "ห้าม" เอง)
+    tag: VERIFIED
+    source: "docs/knowledge/card_guide_post_flood_home.md (p.37-38)"

@@ -1,0 +1,126 @@
+# typology/nodes/mhesi_rescue_drones_romklao_2026-09-28.yaml -- กระทรวง อว. (MHESI)
+# Facebook post 28 ก.ย. 2569 (RELAYED, official ministry page): rescue/survey drones at
+# เคหะชุมชนร่มเกล้า (ลาดกระบัง) reaching areas boats could not (access-first case, boat mode
+# blocked by obstacles/fences -> air/drone mode). Network structure only -- agencies/
+# organisations only (company/association/foundation names are organisation names, not
+# personal names), no officials' personal names anywhere. Every number (population, drone
+# counts, lift capacity, sling length, distances) lives ONLY in
+# docs/knowledge/card_tool_rescue_drones_romklao_2569.md.
+#
+# AG_MHESI/AG_MSDHS ids reused verbatim from docs/knowledge/water_system_dag.mmd (both
+# already appear there) -- this is their first REGISTRATION in the typology/*.yaml
+# registry system itself, not a new id, per reuse-first discipline.
+schema_version: 1
+doc_kind: typology_node_registry
+status_th: >
+  node โดรนกู้ภัย/สำรวจ (เครื่องมือทั่วไป + deployment instance) + ครัวกลาง พม. + หน่วยงาน/องค์กร
+  ที่ร่วมปฏิบัติการเคหะร่มเกล้า -- ไม่มีตัวเลข ไม่มีชื่อบุคคล.
+rows:
+  # ---- ministries (new node kind rows for this check) ----
+  - id: MINISTRY.MHESI
+    kind: ministry
+    layer: power
+    label_th: "กระทรวงการอุดมศึกษา วิทยาศาสตร์ วิจัยและนวัตกรรม (อว.)"
+    group_type: ministry
+    tag: RELAYED
+    source: "docs/knowledge/card_tool_rescue_drones_romklao_2569.md -- ministry node ใหม่, ไม่เคยมีมาก่อนงานนี้"
+  - id: MINISTRY.SOCIAL
+    kind: ministry
+    layer: power
+    label_th: "กระทรวงการพัฒนาสังคมและความมั่นคงของมนุษย์ (พม.)"
+    group_type: ministry
+    tag: RELAYED
+    source: "docs/knowledge/card_tool_rescue_drones_romklao_2569.md -- ministry node ใหม่, ไม่เคยมีมาก่อนงานนี้"
+
+  # ---- agencies (AG_MHESI/AG_MSDHS ids reused from water_system_dag.mmd) ----
+  - id: AG_MHESI
+    kind: agency
+    layer: power
+    label_th: "กระทรวงการอุดมศึกษา วิทยาศาสตร์ วิจัยและนวัตกรรม (อว.)"
+    agency_class: state
+    tag: RELAYED
+    source: >
+      docs/knowledge/water_system_dag.mmd (existing AG_MHESI id, reused verbatim -- first
+      registration in typology/*.yaml) + กระทรวง อว. FB post 28 ก.ย. 2569
+  - id: AG_MSDHS
+    kind: agency
+    layer: power
+    label_th: "กระทรวงการพัฒนาสังคมและความมั่นคงของมนุษย์ (พม.)"
+    agency_class: state
+    tag: RELAYED
+    source: >
+      docs/knowledge/water_system_dag.mmd (existing AG_MSDHS id, reused verbatim -- first
+      registration in typology/*.yaml) + กระทรวง อว. FB post 28 ก.ย. 2569
+  - id: AG_KMUTNB
+    kind: agency
+    layer: power
+    label_th: "มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าพระนครเหนือ (มจพ.)"
+    agency_class: state
+    tag: RELAYED
+    source: "กระทรวง อว. FB post 28 ก.ย. 2569"
+  - id: AG_SOP
+    kind: agency
+    layer: civil
+    label_th: "สมาคมอุตสาหกรรมเพื่อการป้องกันประเทศ (สอป.)"
+    agency_class: industry_association
+    tag: RELAYED
+    source: "กระทรวง อว. FB post 28 ก.ย. 2569"
+  - id: AG_SYSTRONICS
+    kind: agency
+    layer: civil
+    label_th: "บริษัท ซิสทรอนิกส์ จำกัด"
+    agency_class: commercial_operator
+    tag: RELAYED
+    source: "กระทรวง อว. FB post 28 ก.ย. 2569 -- ชื่อองค์กร (บริษัท) ไม่ใช่ชื่อบุคคล"
+  - id: AG_RESCUE_ROMSAI
+    kind: agency
+    layer: civil
+    label_th: "มูลนิธิกู้ภัยร่มไทร"
+    agency_class: foundation
+    tag: RELAYED
+    source: "กระทรวง อว. FB post 28 ก.ย. 2569"
+
+  # ---- tool/resource nodes ----
+  - id: RES.TOOL.RESCUE_DRONE
+    kind: resource
+    layer: resource
+    label_th: "โดรนกู้ภัย/สำรวจ (เครื่องมือทั่วไป -- ไม่ผูกกับเหตุการณ์ใดเหตุการณ์เดียว)"
+    resource_type: tool
+    tool_class: rescue_drone
+    drone_subtypes: [isr_survey, heavy_lift_transport]
+    infra_class: soft
+    infra_class_tag: INSTINCT
+    mode: air_drone
+    delivery_only_note_th: >
+      ใช้สำหรับส่งของ/สำรวจเท่านั้น ไม่ใช่โหมดย้ายคน -- ดู community_dag.py EDGE_MODES comment
+    phase: normal
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "docs/knowledge/card_tool_rescue_drones_romklao_2569.md §1"
+  - id: RES.DRONE.ROMKLAO_20260928
+    kind: resource
+    layer: resource
+    label_th: "โดรนกู้ภัย/สำรวจ ปฏิบัติการเคหะร่มเกล้า 28 ก.ย. 2569"
+    resource_type: tool
+    tool_class: rescue_drone
+    generic_tool_ref: RES.TOOL.RESCUE_DRONE
+    mode: air_drone
+    phase: incident
+    phase_tag: INSTINCT
+    access_gap_link_th: >
+      boat mode blocked (สิ่งกีดขวาง/รั้ว) -> air/drone mode -- access-first case, ดูการ์ด §2
+    effectiveness: OPEN
+    tag: RELAYED
+    source: "docs/knowledge/card_tool_rescue_drones_romklao_2569.md §1"
+  - id: RES.KITCHEN.MSDHS_CENTRAL
+    kind: resource
+    layer: resource
+    label_th: "ครัวกลาง พม. (ปฏิบัติการเคหะร่มเกล้า)"
+    resource_type: kitchen
+    owner_agency: AG_MSDHS
+    infra_class: soft
+    infra_class_tag: INSTINCT
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "กระทรวง อว. FB post 28 ก.ย. 2569 -- docs/knowledge/card_tool_rescue_drones_romklao_2569.md §1"

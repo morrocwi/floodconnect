@@ -1,0 +1,13 @@
+{
+ "source_id": "thaiwater_canal_waterlevel",
+ "url": "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/canal_waterlevel",
+ "captured_at": "2026-10-02T07:20:27Z",
+ "sha256": "108ab84a2cf9f3f5a4b83d242445f47c8c0ebd3e98b9a3e64eed8a41cc8e0639",
+ "http_status": 200,
+ "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "e04f21729da4d651fb7889a4c57d98b18ea669fa55b9530767fc50bbc0b556f5",
+ "trimmed_note": "trimmed from 282 to first 60 station records -- same licence family as thaiwater_waterlevel/thaiwater_rain_24h (publish-safety finding) | earlier: trimmed from 282 to first 60 station records -- same licence family as thaiwater_waterlevel/thaiwater_rain_24h (publish-safety finding)",
+ "trimmed_at": "2026-10-03T18:10:36Z"
+}

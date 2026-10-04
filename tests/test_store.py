@@ -135,6 +135,61 @@ def test_query_observations_near_filters_by_radius(conn):
     assert codes == {"near"}
 
 
+def test_readout_log_table_exists(conn):
+    tables = {r["name"] for r in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
+    assert "readout_log" in tables
+
+
+def test_insert_readout_log_returns_true_on_new_row(conn):
+    inserted = store.insert_readout_log(
+        conn, run_at_utc="2026-09-27T05:30:12+00:00", area="citywide", kind="burden",
+        key="ssb10", state="CLOSED", burdened_side="B", value_a=1.0, value_b=1.2,
+        diff_m=0.2, persistence=29, extra={"label_th": "ปตร.แสนแสบ-มีนบุรี"})
+    assert inserted is True
+    row = conn.execute("SELECT * FROM readout_log").fetchone()
+    assert row["area"] == "citywide"
+    assert row["state"] == "CLOSED"
+    assert row["persistence"] == 29
+
+
+def test_insert_readout_log_idempotent_on_same_run_area_kind_key(conn):
+    """INSERT OR IGNORE on (run_at_utc, area, kind, key) -- re-running a build for the
+    same data timestamp must never duplicate a row, even if the payload differs."""
+    kwargs = dict(run_at_utc="2026-09-27T05:30:12+00:00", area="sammakorn", kind="pump",
+                  key="sammakorn_pumps")
+    first = store.insert_readout_log(conn, value_a=2, value_b=9, **kwargs)
+    second = store.insert_readout_log(conn, value_a=999, value_b=999, **kwargs)  # re-run, same identity
+    assert first is True
+    assert second is False
+    rows = conn.execute("SELECT * FROM readout_log").fetchall()
+    assert len(rows) == 1
+    assert rows[0]["value_a"] == 2  # original value preserved, not overwritten
+
+
+def test_insert_readout_log_different_run_at_utc_not_deduped(conn):
+    kwargs = dict(area="sammakorn", kind="pump", key="sammakorn_pumps", value_a=2, value_b=9)
+    store.insert_readout_log(conn, run_at_utc="2026-09-27T05:30:12+00:00", **kwargs)
+    store.insert_readout_log(conn, run_at_utc="2026-09-27T06:30:12+00:00", **kwargs)
+    rows = conn.execute("SELECT * FROM readout_log").fetchall()
+    assert len(rows) == 2
+
+
+def test_query_readout_log_filters_by_area_and_kind(conn):
+    store.insert_readout_log(conn, run_at_utc="2026-09-27T05:00:00+00:00", area="sammakorn",
+                              kind="pump", key="sammakorn_pumps", value_a=1, value_b=2)
+    store.insert_readout_log(conn, run_at_utc="2026-09-27T05:00:00+00:00", area="ram53",
+                              kind="pump", key="ram53_pumps", value_a=3, value_b=4)
+    store.insert_readout_log(conn, run_at_utc="2026-09-27T05:00:00+00:00", area="citywide",
+                              kind="burden", key="ssb10", state="OPEN")
+    rows = store.query_readout_log(conn, area="sammakorn")
+    assert len(rows) == 1
+    assert rows[0]["key"] == "sammakorn_pumps"
+    rows = store.query_readout_log(conn, kind="burden")
+    assert len(rows) == 1
+    assert rows[0]["area"] == "citywide"
+
+
 def test_export_csv_last_24h(conn, tmp_path):
     store.insert_observation(conn, source_id="A", variable="v", station_code="s",
                               observed_at_utc="2026-09-26T00:00:00+00:00",

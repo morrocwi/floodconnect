@@ -1,0 +1,32 @@
+# typology/nodes/postflood_guide_agencies_2026-09-28.yaml -- 2 agencies named explicitly
+# in "คู่มือจัดการบ้านหลังน้ำลด" (ASA/ThaiGDA/EIT, พฤศจิกายน 2554) that had no node in this
+# typology or in docs/knowledge/water_system_dag.mmd before now -- see docs/knowledge/
+# card_guide_post_flood_home.md for the bibliographic source. Tag VERIFIED: this check read
+# the primary PDF directly (pdftotext -layout), not a relay.
+schema_version: 1
+doc_kind: typology_node_registry
+status_th: >
+  2 agency ใหม่ที่คู่มือหลังน้ำลดระบุชื่อตรง (วสท./PEA) -- ไม่มี node เดิมในคลังนี้หรือใน
+  water_system_dag.mmd มาก่อน.
+rows:
+  - id: AG_EIT
+    kind: agency
+    layer: power
+    label_th: "วสท. วิศวกรรมสถานแห่งประเทศไทย ในพระบรมราชูปถัมภ์"
+    agency_class: state
+    contact_th: >
+      "วิศวกรอาสา" วิศวกรรมสถานแห่งประเทศไทยในพระบรมราชูปถัมภ์ หมายเลขโทรศัพท์ในวันทำงานราชการ
+      เวลา 9:00-17:00 ที่หมายเลขโทรศัพท์ 080-812-3733 080-812-3743 080-812-2853 (quoted, p.15
+      ของคู่มือจัดการบ้านหลังน้ำลด, พฤศจิกายน 2554)
+    tag: VERIFIED
+    source: "docs/knowledge/card_guide_post_flood_home.md (คู่มือจัดการบ้านหลังน้ำลด p.15, read directly)"
+  - id: AG_PEA
+    kind: agency
+    layer: power
+    label_th: "กฟภ. การไฟฟ้าส่วนภูมิภาค"
+    agency_class: state
+    tag: VERIFIED
+    source: >
+      docs/knowledge/card_guide_post_flood_home.md (คู่มือจัดการบ้านหลังน้ำลด p.10: "แนะนำว่าให้
+      ท่านติดต่อไปที่การไฟฟ้านครหลวงหรือการไฟฟ้าภูมิภาคหรือช่างไฟฟ้าที่มีความสามารถเข้ามาตรวจสอบ
+      ระบบ" -- ไม่มีเบอร์โทรระบุในไฟล์)

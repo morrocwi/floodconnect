@@ -1,0 +1,15 @@
+{
+ "source_id": "egat_water_crisis",
+ "url": "http://water.egat.co.th/water_crisis.php",
+ "captured_at": "2026-10-02T11:32:24Z",
+ "sha256": "3af0480d1054bcdb85d5527bdfdde93f1ee9895f48d9f08cf83ff29cbea81c77",
+ "http_status": 200,
+ "content_type": "text/html",
+ "fixture_ext": "html",
+ "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "16a2dc59535b7eb1a2ff2d76eff7bdd670065ccc7a5e118f4d1c379eb243e225",
+ "trimmed_note": "Further trimmed 2026-10-03 (release pass, publish-safety finding: 300KB total budget for tests/contract/fixtures/ in the public tree) to a minimal real excerpt (header + few real rows, or a real byte-prefix for HTML) -- see the corresponding contract test's own comment for the exact row-count change.",
+ "trimmed_at": "2026-10-03T18:10:36Z"
+}

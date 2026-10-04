@@ -1,0 +1,80 @@
+# node_attributes.yaml -- de_facto_authority observations per DAG node, from the 2026-09-27
+# case-study sweep (FOUNDER_TASKS item 12). water_system_dag.mmd's mermaid syntax only
+# supports classDef/class STYLE groups (see `classDef gap`/`classDef water` + `class ... gap`
+# near the end of that file) -- it has no per-node key/value attribute mechanism that would
+# survive tools/kg/build_kg.py's parser without risking a break, so this data lives here
+# instead, per this check's instruction not to edit build_river_kg.py. A future KG-build task can
+# read this file and attach the attribute to each node's record -- see tools/kg/README.md
+# "Pending inputs for a future build" for the pointer.
+#
+# de_facto_authority: weak | contested | strong -- MEASURED-on-graph/RELAYED/INSTINCT per
+# node, never VERIFIED (this is a judgment call synthesized from case-card evidence, not a
+# primary-source fact) -- always paired with evidence[] pointing to the case card(s)/URL(s)
+# that support the call.
+
+nodes:
+  - node_id: "AG_KNCH"
+    de_facto_authority: "weak"
+    evidence:
+      - source: "docs/knowledge/case_2554_chaophraya_bangkok.md"
+        tag: "RELAYED"
+      - source: "https://waterknowledgehub.org/case-study/thailand-2011-floods-lower-chao-phraya-river-basin-bangkok-metropolis"
+        tag: "RELAYED"
+    note: "แหล่งวิชาการนานาชาติระบุตรงว่า NWRC (กนช.) 'was less prepared for flood management' ระหว่างวิกฤต 2554 — กลไกที่มีอยู่ก่อนแล้วไม่ทำงานอย่างมีประสิทธิภาพเมื่อเกิดวิกฤตจริง"
+
+  - node_id: "AG_GONCH"
+    de_facto_authority: "contested"
+    evidence:
+      - source: "docs/knowledge/edge_problems.yaml#AG_KNCH->AG_GONCH (CASE_LESSON row)"
+        tag: "RELAYED"
+    note: "กลไกรวมศูนย์ยุคหลัง (คู่กับ กบอ./SCWRM ในบริบท 2554) — แหล่งวิชาการชี้ว่ากลไกแบบนี้ 'duplicated roles and responsibilities rather than solving coordination problems' — INSTINCT: การผูก AG_GONCH กับ SCWRM/กบอ. ในอดีตเป็นการเทียบเคียงของทีมนี้ ไม่ใช่ความเท่ากันทางกฎหมาย (AG_GONCH คือ กอนช. ตามกฎหมายปัจจุบัน ซึ่งเป็นคนละหน่วยงานจาก กบอ. ปี 2554 — ทั้งสองเป็น 'ศูนย์บัญชาการรวมศูนย์เฉพาะกิจ' คนละยุค)"
+
+  - node_id: "AG_BASIN_CHAOPHRAYA"
+    de_facto_authority: "weak"
+    evidence:
+      - source: "docs/knowledge/case_nan_2567.md"
+        tag: "RELAYED"
+      - source: "docs/knowledge/case_chiangmai_2567.md"
+        tag: "RELAYED"
+      - source: "docs/knowledge/case_bkk_2569.md"
+        tag: "RELAYED"
+    note: "ไม่ถูกกล่าวถึงเลยในแหล่งข่าวของ 3 เหตุการณ์ล่าสุด (2567–2569) — บันทึกเป็น 'weak' เพราะ absence-of-visibility ในทุกแหล่งที่ค้น ไม่ใช่เพราะพบหลักฐานว่าถูกใช้อำนาจแล้วล้มเหลว (แยกสองเรื่องนี้ให้ชัด — ดู open_questions ในแถว edge_problems ที่เกี่ยวข้อง)"
+
+  - node_id: "AG_BASIN_PASAK"
+    de_facto_authority: "weak"
+    evidence:
+      - source: "docs/knowledge/case_nan_2567.md"
+        tag: "RELAYED"
+    note: "เช่นเดียวกับ AG_BASIN_CHAOPHRAYA — ไม่พบการอ้างถึงในแหล่งข่าวที่อ่านรอบนี้"
+
+  - node_id: "AG_BMA_GOV"
+    de_facto_authority: "contested"
+    evidence:
+      - source: "docs/knowledge/case_2554_chaophraya_bangkok.md"
+        tag: "RELAYED"
+      - source: "docs/knowledge/case_bkk_2569.md"
+        tag: "RELAYED"
+    note: "มีอำนาจทางการเต็ม (ผอ.กทม.) แต่ทั้ง 2554 และ 2569 มีแหล่งอิสระระบุว่าการประสานงานข้ามคลอง/หน่วยงานจริงอ่อนแอ (2554: กทม.ลังเลระบายน้ำเพราะท่อไม่พร้อม; 2569: ผู้เชี่ยวชาญระบุ 'ไม่มีคนมอนิเตอร์' จราจรน้ำ)"
+
+  - node_id: "AG_PROV_MUNI"
+    de_facto_authority: "weak"
+    evidence:
+      - source: "docs/knowledge/case_hatyai_2553_2565.md"
+        tag: "RELAYED"
+    note: "เทศบาลควบคุมเฉพาะคลองเล็ก ต้องขออนุมัติจังหวัดก่อนเข้าถึงข้อมูล/แจ้งเตือน (หาดใหญ่) — เป็นผู้รับผิดชอบต่อสาธารณะแต่ไม่ใช่ผู้ถืออำนาจ/ข้อมูลหลัก"
+
+  - node_id: "AG_PROV_GOV"
+    de_facto_authority: "strong"
+    evidence:
+      - source: "docs/knowledge/case_chiangmai_2567.md"
+        tag: "RELAYED"
+      - source: "docs/knowledge/case_nan_2567.md"
+        tag: "RELAYED"
+    note: "ผู้ว่าราชการจังหวัดเป็นจุดรวมข้อมูล/ประกาศมาตรการที่ปรากฏชัดที่สุดในทั้งเชียงใหม่และน่าน — de facto strong เทียบกับเทศบาล/คณะกรรมการลุ่มน้ำในเหตุการณ์เดียวกัน (ไม่ได้แปลว่า 'strong' เทียบกับ RID/สทนช. ในเรื่องข้อมูลทางเทคนิค — เป็นการเทียบเฉพาะบทบาทการสื่อสาร/ประกาศต่อสาธารณะ)"
+
+  - node_id: "AG_RID"
+    de_facto_authority: "strong"
+    evidence:
+      - source: "docs/knowledge/case_interprovincial_gate_politics.md"
+        tag: "RELAYED"
+    note: "เป็นผู้ตัดสินใจเดียวเรื่องสัดส่วน/เวลาผันน้ำเข้าทุ่งรับน้ำ โดยไม่มีหน่วยงาน/ประชาชนใดมีสิทธิ์คัดค้านอย่างเป็นทางการ — strong ในความหมายว่าไม่มีผู้ถ่วงดุล ไม่ใช่ strong ในความหมายว่ามีทรัพยากร/ข้อมูลครบ"

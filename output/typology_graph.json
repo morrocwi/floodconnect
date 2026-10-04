@@ -1,0 +1,4749 @@
+{
+  "directed": true,
+  "multigraph": true,
+  "graph": {},
+  "nodes": [
+    {
+      "kind": "gate",
+      "layer": "water",
+      "label_th": "มีนบุรี ปตร.แสนแสบ-มีนบุรี",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WL.SSB.10"
+    },
+    {
+      "kind": "gate",
+      "layer": "water",
+      "label_th": "บางชัน ปตร.",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WL.SSB.09"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "แสนแสบ-เสรีไทย 24",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WL.SSB.08"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "แสนแสบ-บางกะปิ",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WL.SSB.07"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "แสนแสบ ตอนใน (คลองตัน)",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WL.SSB.04"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "พระโขนง",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WL.PKN.01"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "คลองบ้านม้า",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "east_chain_key_alias": "banma",
+      "alias_reconciliation_tag": "RELAYED-reconciled (same discrepancy as sammakorn_pond)",
+      "id": "WL.BMA.02"
+    },
+    {
+      "kind": "pond",
+      "layer": "water",
+      "label_th": "บึงสัมมากร",
+      "standard_class": "HY_WaterBody (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "green_blue",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "east_chain_key_alias": "sammakorn_pond",
+      "alias_reconciliation_tag": "RELAYED-reconciled (site/build_data.py SAMMAKORN_CHAIN_NODES vs east_chain.yaml's own canal_oldcode:null for this key -- OPEN discrepancy, see docs/UNITS_AND_DATUMS.md)",
+      "id": "WL.SMK.01"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "คลองวังใหญ่บน",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "OPEN",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WATER.wangyai"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "ทับช้างบน",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WL.TPK.03"
+    },
+    {
+      "kind": "gate",
+      "layer": "water",
+      "label_th": "ประเวศ-วัดกระทุ่ม ปตร.",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WL.PWT.03"
+    },
+    {
+      "kind": "gate",
+      "layer": "water",
+      "label_th": "ประเวศ-ลาดกระบัง ปตร.",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WL.PWT.04"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "ลาดกระบัง/สุวรรณภูมิ",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "OPEN",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WATER.ladkrabang"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "ปลายทางใต้ (คลองพระองค์ฯ/ชายทะเล)",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "OPEN",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WATER.south_outlet"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "คลองหัวหมาก",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WL.HMK.01"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "คลองลาดบัวขาว",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WL.LBK.03"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "คลองจั่น",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WL.KJN.01"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "ลำรางลาดพร้าว 112",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "OPEN",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WATER.ram53_canal"
+    },
+    {
+      "kind": "pump",
+      "layer": "water",
+      "label_th": "สถานีสูบ ST.SPS.01",
+      "standard_class": "HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "MEASURED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/build_data.py SAMMAKORN_CHAIN_NODES/SAMMAKORN_CHAIN_EDGES (pond_to_banma2/banma2_to_pond/banma2_to_saensaeb) + site/inputs/canals/east_chain.yaml e_banma_sammakornpond control_structures (\"Private pump ST.SPS.01 sits on this reach\")",
+      "condition": "OPEN",
+      "condition_note_th": "\"บางสถานีสูบน้ำยังมีขยะจำนวนมากขวางทางระบาย\" (Environman FB post 28 ก.ย. 2569, RELAYED) -- ไม่ระบุว่าเป็นสถานีใดใน 4 สถานี, ไม่เดา\n",
+      "id": "ST.SPS.01"
+    },
+    {
+      "kind": "pump",
+      "layer": "water",
+      "label_th": "สถานีสูบ ST.SPS.02",
+      "standard_class": "HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "MEASURED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml e_sammakornpond_wangyai control_structures field (3 pump codes declared on ONE edge -- per-station outlet split is OPEN, the shared wangyai outlet is the only one the source names)",
+      "condition": "OPEN",
+      "condition_note_th": "same Environman post as ST.SPS.01 -- ไม่ระบุสถานีที่แน่ชัด",
+      "id": "ST.SPS.02"
+    },
+    {
+      "kind": "pump",
+      "layer": "water",
+      "label_th": "สถานีสูบ ST.SPS.03",
+      "standard_class": "HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "MEASURED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml e_sammakornpond_wangyai control_structures field (3 pump codes declared on ONE edge -- per-station outlet split is OPEN, the shared wangyai outlet is the only one the source names)",
+      "condition": "OPEN",
+      "condition_note_th": "same Environman post as ST.SPS.01 -- ไม่ระบุสถานีที่แน่ชัด",
+      "id": "ST.SPS.03"
+    },
+    {
+      "kind": "pump",
+      "layer": "water",
+      "label_th": "สถานีสูบ ST.SPS.04",
+      "standard_class": "HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "MEASURED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml e_sammakornpond_wangyai control_structures field (3 pump codes declared on ONE edge -- per-station outlet split is OPEN, the shared wangyai outlet is the only one the source names)",
+      "condition": "OPEN",
+      "condition_note_th": "same Environman post as ST.SPS.01 -- ไม่ระบุสถานีที่แน่ชัด",
+      "id": "ST.SPS.04"
+    },
+    {
+      "kind": "river",
+      "layer": "water",
+      "label_th": "แม่น้ำเจ้าพระยา",
+      "standard_class": "HY_WaterBody (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "source": "FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §5 worked example",
+      "id": "river:chao_phraya"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "สนน. สำนักการระบายน้ำ + ศูนย์ควบคุมระบบป้องกันน้ำท่วม",
+      "agency_class": "state",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_DDS node, reused verbatim)",
+      "id": "AG_DDS"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "ผู้ว่าฯ กทม. = ผู้อำนวยการ กทม.",
+      "agency_class": "state",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_BMA_GOV node, reused verbatim)",
+      "permanence": "permanent",
+      "permanence_level_tag": "INSTINCT",
+      "level": "local",
+      "capability_operational_policy": null,
+      "capability_roles_responsibilities": null,
+      "capability_action_plan": null,
+      "capability_monitoring_loop": null,
+      "capability_logistics": null,
+      "capability_training": null,
+      "capability_source": "TDRI (ดร.นิพนธ์ พัวพงศกร, 9 ธ.ค. 2025) -- same checklist, same OPEN status",
+      "id": "AG_BMA_GOV"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กรมชลประทาน",
+      "agency_class": "state",
+      "role_th": "ระบบชลประทาน เขื่อน อ่างเก็บน้ำ ประตูระบายน้ำในเขตชลประทาน (irrigation systems, dams, reservoirs, gates in irrigated areas -- Lanner FB post ~27 ก.ย. 2569, relaying กพร. Joint KPI FY2569-2570, tag RELAYED, verification_status OPEN จนกว่าจะอ่านเอกสาร กพร. ตัวจริง)\n",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_RID node, reused verbatim)",
+      "permanence": "permanent",
+      "permanence_level_tag": "INSTINCT",
+      "level": "ministry",
+      "id": "AG_RID"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "ปภ. กรมป้องกันและบรรเทาสาธารณภัย (ผู้อำนวยการกลาง)",
+      "agency_class": "state",
+      "role_th": "เมื่อกลายเป็นภัยพิบัติ: เตือนภัย อพยพ บรรเทาทุกข์ ร่วมกับจังหวัด/ท้องถิ่น (when it becomes a disaster: warning, evacuation, relief, with province/local government -- Lanner FB post, tag RELAYED, verification_status OPEN)\n",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_DDPM node, reused verbatim)",
+      "permanence": "permanent",
+      "permanence_level_tag": "INSTINCT",
+      "level": "national",
+      "capability_operational_policy": null,
+      "capability_roles_responsibilities": null,
+      "capability_action_plan": null,
+      "capability_monitoring_loop": null,
+      "capability_logistics": null,
+      "capability_training": null,
+      "capability_source": "TDRI (ดร.นิพนธ์ พัวพงศกร, 9 ธ.ค. 2025) -- same checklist, same OPEN status, no source states these for AG_DDPM",
+      "id": "AG_DDPM"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กรมอุตุนิยมวิทยา",
+      "agency_class": "state",
+      "role_th": "พยากรณ์/เตือนภัยอากาศ (forecasts/warns -- Lanner FB post ~27 ก.ย. 2569, relaying กพร. Joint KPI FY2569-2570, tag RELAYED, verification_status OPEN)\n",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_TMD node, reused verbatim)",
+      "permanence": "permanent",
+      "permanence_level_tag": "INSTINCT",
+      "level": "ministry",
+      "id": "AG_TMD"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กฟน. การไฟฟ้านครหลวง",
+      "agency_class": "state",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_MEA node, reused verbatim -- the proposal doc's own §5/§7c called this a \"first missing node\"; it is NOT missing -- confirmed present in the DAG when this build actually checked. Treat that proposal line as superseded by this registry row.)\n",
+      "permanence": "permanent",
+      "permanence_level_tag": "INSTINCT -- state enterprise (รัฐวิสาหกิจ), level mapped to `local` for its Bangkok metropolitan service area rather than `national`, an approximate mapping onto this typology's 4-value vocabulary, not an exact fit\n",
+      "level": "local",
+      "id": "AG_MEA"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "นิติบุคคลหมู่บ้านจัดสรร / คณะกรรมการหมู่บ้านสัมมากร",
+      "agency_class": "juristic_village",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_ESTATE node, reused verbatim -- the proposal doc's §5 worked example proposed a new id AG_VILLAGE_JURISTIC_SAMMAKORN; this registry reuses the DAG's own existing AG_ESTATE instead, same real-world referent, per the reuse-first rule. Whether AG_ESTATE actually owns/operates ST.SPS.01-04 remains OPEN -- see edges/owned_by.yaml and edges/operates.yaml.)\n",
+      "permanence": "permanent",
+      "permanence_level_tag": "INSTINCT -- AG_ESTATE (นิติบุคคลหมู่บ้านจัดสรร) is a legally-constituted juristic person under land-allocation law, kept `permanent` rather than `ad_hoc` despite having no professional disaster-command staff of its own (a separate, still-OPEN question -- see structural_issues_2026-09-28.yaml ISSUE-DECISION-02)\n",
+      "level": "local",
+      "capability_operational_policy": null,
+      "capability_roles_responsibilities": null,
+      "capability_action_plan": null,
+      "capability_monitoring_loop": null,
+      "capability_logistics": null,
+      "capability_training": null,
+      "capability_source": "TDRI (ดร.นิพนธ์ พัวพงศกร, 9 ธ.ค. 2025) -- same checklist, same OPEN status",
+      "id": "AG_ESTATE"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "สำนักการแพทย์ / ศูนย์เอราวัณ (1669 ใน กทม.)",
+      "agency_class": "state",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_BMA_MED node, reused verbatim)",
+      "id": "AG_BMA_MED"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "สทนช. สำนักงานทรัพยากรน้ำแห่งชาติ",
+      "agency_class": "state",
+      "role_th": "นโยบายและการประสานงานภาพรวม (policy + overall coordination -- Lanner FB post ~27 ก.ย. 2569, relaying กพร. Joint KPI FY2569-2570, tag RELAYED, verification_status OPEN)\n",
+      "joint_kpi_host": true,
+      "joint_kpi_host_note_th": "หน่วยงานเจ้าภาพ (host agency) ของ Joint KPI \"การบริหารจัดการและอนุรักษ์ฟื้นฟูน้ำทั้งระบบ\" กพร. FY2569-2570 (29 หน่วยงาน: 22 ส่วนราชการ + 2 องค์การมหาชน + 4 รัฐวิสาหกิจ + กทม.) -- RELAYED ผ่าน Lanner, OPEN จนกว่าจะอ่านเอกสาร กพร. ตัวจริง\n",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_ONWR node, reused verbatim)",
+      "permanence": "permanent",
+      "permanence_level_tag": "INSTINCT",
+      "level": "national",
+      "capability_operational_policy": null,
+      "capability_roles_responsibilities": null,
+      "capability_action_plan": null,
+      "capability_monitoring_loop": null,
+      "capability_logistics": null,
+      "capability_training": null,
+      "capability_source": "TDRI (ดร.นิพนธ์ พัวพงศกร, 9 ธ.ค. 2025) -- 6-element C3 checklist named in the article; whether AG_ONWR (Joint-KPI host) actually has each element is not stated by any source this check read, kept OPEN (null), never guessed.\n",
+      "id": "AG_ONWR"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "ผู้ดูแลกลุ่ม Facebook/LINE หมู่บ้าน (อาสา)",
+      "agency_class": "online_community_group",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_FB_ADMIN node, reused verbatim)",
+      "id": "AG_FB_ADMIN"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "กลุ่มอาสาขี่มอเตอร์ไซค์ริมคลอง (สัมมากร, ไม่มีองค์กรทางการ)",
+      "agency_class": "volunteer_informal",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md §7a/§7d (S10-adjacent community report; not one of the 6 founder-pasted sources S1-S6 -- carried from the independent structural-issues review, RELAYED, no organisation name known -- new id, no existing DAG node covers this actor)\n",
+      "id": "AG_VOLUNTEER_MOTOSAI_SAMMAKORN"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "เพจร้านค้าในพื้นที่ (ขอของบริจาคให้โรงเรียนสามแยกหลอแหล้)",
+      "agency_class": "local_shop",
+      "tag": "RELAYED",
+      "source": "FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §7a (S8, RELAYED, no shop name)",
+      "id": "AG_LOCAL_SHOP_SAMSAEK_LOR"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "JS100 Radio",
+      "agency_class": "media_radio",
+      "tag": "RELAYED",
+      "source": "FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §7a/§7b (S11, RELAYED)",
+      "id": "AG_JS100"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กรมทางหลวง",
+      "agency_class": "state",
+      "role_th": null,
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_DOH node, reused verbatim -- NOTE: that node's own label conflates \"กรมทางหลวง / กทพ. (ทางด่วน)\"; the Joint-KPI list names only กรมทางหลวง (คค.) as one of the 29 bodies, กทพ. is not in that list -- kept the existing shared node rather than splitting it, flagged as a label mismatch, not silently narrowed)\n",
+      "id": "AG_DOH"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กรมเจ้าท่า",
+      "agency_class": "state",
+      "role_th": null,
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_MARINE node, reused verbatim)",
+      "id": "AG_MARINE"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กรมโยธาธิการและผังเมือง",
+      "agency_class": "state",
+      "role_th": "โครงสร้างป้องกันน้ำท่วมและระบบระบายน้ำเมือง ร่วมกับหน่วยงานท้องถิ่น (flood-defence structures and urban drainage, with local bodies -- Lanner post)\n",
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_DPT node, reused verbatim)",
+      "permanence": "permanent",
+      "permanence_level_tag": "INSTINCT",
+      "level": "ministry",
+      "id": "AG_DPT"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กรมทรัพยากรน้ำ",
+      "agency_class": "state",
+      "role_th": "แหล่งน้ำนอกเขตชลประทาน (Lanner/กพร. Joint KPI framing)",
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_DWR node, reused verbatim -- NOTE: that node's own label already conflates \"น้ำผิวดินนอกเขตชลประทาน+น้ำบาดาล\" (surface AND groundwater); the Joint-KPI list names กรมทรัพยากรน้ำ and กรมทรัพยากรน้ำบาดาล as TWO SEPARATE bodies. This row keeps AG_DWR for the surface-water department and adds a brand-new AG_GROUNDWATER below for the groundwater department, rather than silently merging them -- the pre-existing AG_DWR node's own conflated label is left unchanged (out of scope for this check to edit water_system_dag.mmd itself), flagged here as a known discrepancy.\n",
+      "id": "AG_DWR"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "GISTDA",
+      "agency_class": "state",
+      "role_th": "ข้อมูล/สนับสนุนดาวเทียม (data & satellite support, Lanner post)",
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_GISTDA node, reused verbatim)",
+      "id": "AG_GISTDA"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "สสน. (thaiwater)",
+      "agency_class": "state",
+      "role_th": "ข้อมูล/สนับสนุนดาวเทียม (data & satellite support, Lanner post)",
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_HII node, reused verbatim)",
+      "id": "AG_HII"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "สป.กษ. สำนักงานปลัดกระทรวงเกษตรและสหกรณ์",
+      "agency_class": "state",
+      "role_th": null,
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)",
+      "id": "AG_MOAC_PERM_SEC"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กรมฝนหลวงและการบินเกษตร",
+      "agency_class": "state",
+      "role_th": null,
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)",
+      "id": "AG_ROYAL_RAINMAKING"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กรมพัฒนาที่ดิน",
+      "agency_class": "state",
+      "role_th": null,
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)",
+      "id": "AG_LAND_DEV"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "ส.ป.ก. สำนักงานการปฏิรูปที่ดินเพื่อเกษตรกรรม",
+      "agency_class": "state",
+      "role_th": null,
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)",
+      "id": "AG_ALRO"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กรมส่งเสริมการเกษตร",
+      "agency_class": "state",
+      "role_th": null,
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)",
+      "id": "AG_AGRI_EXT"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กรมทางหลวงชนบท",
+      "agency_class": "state",
+      "role_th": null,
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)",
+      "id": "AG_RURAL_ROADS"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กรมป่าไม้",
+      "agency_class": "state",
+      "role_th": null,
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)",
+      "id": "AG_FORESTRY"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กรมอุทยานแห่งชาติ สัตว์ป่า และพันธุ์พืช",
+      "agency_class": "state",
+      "role_th": null,
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)",
+      "id": "AG_NATIONAL_PARKS"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กรมทรัพยากรธรณี",
+      "agency_class": "state",
+      "role_th": null,
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)",
+      "id": "AG_GEOLOGY"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กรมควบคุมมลพิษ",
+      "agency_class": "state",
+      "role_th": null,
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)",
+      "id": "AG_POLLUTION_CONTROL"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กรมทรัพยากรน้ำบาดาล",
+      "agency_class": "state",
+      "role_th": null,
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570) -- see AG_DWR row above for the label-conflation note this split resolves within this typology registry (water_system_dag.mmd's own AG_DWR node label is left unchanged).\n",
+      "id": "AG_GROUNDWATER"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "สถ. กรมส่งเสริมการปกครองท้องถิ่น",
+      "agency_class": "state",
+      "role_th": null,
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)",
+      "id": "AG_DLA"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กรมอนามัย",
+      "agency_class": "state",
+      "role_th": null,
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)",
+      "id": "AG_ANAMAI"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กรมโรงงานอุตสาหกรรม",
+      "agency_class": "state",
+      "role_th": null,
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)",
+      "id": "AG_FACTORY"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กปน. การประปานครหลวง",
+      "agency_class": "state",
+      "role_th": null,
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)",
+      "id": "AG_MWA"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กปภ. การประปาส่วนภูมิภาค",
+      "agency_class": "state",
+      "role_th": null,
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)",
+      "id": "AG_PWA"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "องค์การจัดการน้ำเสีย",
+      "agency_class": "state",
+      "role_th": null,
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)",
+      "id": "AG_WWMA"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กนอ. การนิคมอุตสาหกรรมแห่งประเทศไทย",
+      "agency_class": "state",
+      "role_th": null,
+      "verification_status": "OPEN",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)",
+      "id": "AG_IEAT"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "กองกลางที่ชุมชนรวมกันเอง (เครื่องมือทั่วไป -- ไม่ผูกกับพื้นที่ใดพื้นที่เดียว)",
+      "resource_type": "tool",
+      "tool_class": "shared_pool",
+      "pool_subtypes": [
+        "money",
+        "medicine",
+        "drinking_water"
+      ],
+      "infra_class": "soft",
+      "infra_class_tag": "INSTINCT",
+      "phase": "normal",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_community_selforg_pattern_2569.md §1-2",
+      "id": "RES.TOOL.SHARED_POOL"
+    },
+    {
+      "kind": "soi_surface",
+      "layer": "civil",
+      "label_th": "แฟลตคลองจั่น (ที่อยู่อาศัยรวม, เขตบางกะปิ)",
+      "self_organized": true,
+      "self_help_dag_ref": "khlongchan_flats_zone",
+      "pattern_ref": "RES.TOOL.SHARED_POOL",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_community_selforg_pattern_2569.md §1",
+      "id": "CIV.ZONE.KHLONGCHAN_FLATS"
+    },
+    {
+      "kind": "soi_surface",
+      "layer": "civil",
+      "label_th": "เคหะชุมชนร่มเกล้า (ลาดกระบัง)",
+      "self_organized": true,
+      "self_help_dag_ref": "romklao_zone",
+      "pattern_ref": "RES.TOOL.SHARED_POOL",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_community_selforg_pattern_2569.md §1 -- self_help_dag_ref ชี้กลับไปยัง romklao_zone ที่มีอยู่แล้ว (typology/nodes/mhesi_rescue_drones_ romklao_2026-09-28.yaml commit) ไม่สร้าง node ซ้ำในความหมายเดียวกัน\n",
+      "id": "CIV.ZONE.ROMKLAO"
+    },
+    {
+      "kind": "tunnel",
+      "layer": "water",
+      "label_th": "อุโมงค์ระบายน้ำจากบึงหนองบอนลงสู่แม่น้ำเจ้าพระยา",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "sources/capacity_ledger.yaml id=tunnel:bma_dds:nongbon (id เดิม, reuse ตรง ไม่สร้างซ้ำ ไม่นำเลขความจุเข้ามา) -- ปิดช่องว่าง WL.NBN.01 orphan โดยต่อกับข้อความที่มีอยู่แล้วใน FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §5 (\"AG_BMA_DDS --operates--> บึงหนองบอน (WL.NBN.01) --controlled--> อุโมงค์ --controlled--> river\")\n",
+      "id": "tunnel:bma_dds:nongbon"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "คลองลาดพร้าว",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "tag": "OPEN",
+      "source": "Environman FB post 28 ก.ย. 2569 -- ไม่มีพิกัด/รหัสสถานีในคลังนี้",
+      "id": "WATER.canal_ladprao"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "จุดบรรจบคลองลาดพร้าว-คลองแสนแสบ ที่บึงพระราม 9",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "position_note_th": "OPEN precision -- วางไว้ระหว่าง WL.SSB.07 (บางกะปิ) กับ WL.SSB.04 (ตอนใน/คลองตัน) โดย อนุมานจากภูมิศาสตร์คร่าว ๆ (บึงพระราม 9/ห้วยขวาง อยู่ระหว่างบางกะปิกับคลองตัน) ไม่ใช่การจับคู่ พิกัดที่สำรวจจริง -- เชื่อมเป็น inflow เพิ่มเข้า WL.SSB.04 โดยไม่แก้/ลบ edge เดิม e_ssb07_ssb04 ที่มีอยู่แล้ว (คงเส้นทางที่ test เดิมตรวจอยู่).\n",
+      "tag": "OPEN",
+      "source": "Environman FB post 28 ก.ย. 2569 (คลองลาดพร้าวบรรจบคลองแสนแสบที่บึงพระราม 9)",
+      "id": "WL.CONFLUENCE.LPR_SSB.01"
+    },
+    {
+      "kind": "tunnel",
+      "layer": "water",
+      "label_th": "อุโมงค์ระบายน้ำคลองแสนแสบและคลองลาดพร้าวลงสู่แม่น้ำเจ้าพระยา",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "alias_th": "\"อุโมงค์แสนเลิศ\" (docs/knowledge/card_official_2026-09-27_bma_saensaeb_tunnel_sideflow.md, match_confidence OPEN) และ \"อุโมงค์พระราม 9\" (candidate alias จาก Environman post นี้, OPEN เช่นกัน -- ทั้งสองชื่อยังไม่ยืนยันด้วยเอกสารทางการที่ระบุคู่กับ id นี้ตรง ๆ)\n",
+      "condition": "OPEN",
+      "condition_note_th": "\"บางสถานีสูบน้ำยังมีขยะจำนวนมากขวางทางระบาย\" (Environman post) -- ไม่ระบุสถานีที่แน่ชัด, ไม่ทราบว่ารวมจุดนี้หรือไม่ -- OPEN, ไม่เดา\n",
+      "tag": "RELAYED",
+      "source": "sources/capacity_ledger.yaml id=tunnel:bma_dds:saensaeb_ladprao (id เดิม, reuse ตรง ไม่สร้างซ้ำ) + Environman FB post 28 ก.ย. 2569 (ยืนยันการทำหน้าที่รับน้ำ 2 คลองลงเจ้าพระยา)\n",
+      "id": "tunnel:bma_dds:saensaeb_ladprao"
+    },
+    {
+      "kind": "pump",
+      "layer": "water",
+      "label_th": "สถานีสูบน้ำพระโขนง",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "condition": "OPEN",
+      "condition_note_th": "\"บางสถานีสูบน้ำยังมีขยะจำนวนมากขวางทางระบาย\" (Environman post) -- ไม่ระบุสถานีที่แน่ชัด",
+      "tag": "MEASURED",
+      "source": "sources/capacity_ledger.yaml id=pump_station:water_station:1 (id เดิม, reuse ตรง)",
+      "id": "pump_station:water_station:1"
+    },
+    {
+      "kind": "pump",
+      "layer": "water",
+      "label_th": "สถานีสูบน้ำอุโมงค์พระโขนง",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "condition": "OPEN",
+      "condition_note_th": "\"บางสถานีสูบน้ำยังมีขยะจำนวนมากขวางทางระบาย\" (Environman post) -- ไม่ระบุสถานีที่แน่ชัด",
+      "tag": "MEASURED",
+      "source": "sources/capacity_ledger.yaml id=pump_station:water_station:2 (id เดิม, reuse ตรง)",
+      "id": "pump_station:water_station:2"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "คลองจิก",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "tag": "OPEN",
+      "source": "Environman FB post 28 ก.ย. 2569 -- ไม่มี node/รหัสสถานีในคลังนี้มาก่อน",
+      "id": "WATER.khlong_jik"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "คลองเปรมประชากร (+ คลองที่เชื่อมต่อ ดอนเมือง/หลักสี่/สายไหม/บางเขน/จตุจักร)",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "scope": "bangkok_north_mvp_stub",
+      "scope_note_th": "นอกขอบเขต MVP สัมมากร (Bangkok-north stub) -- จุดที่โพสต์ระบุว่าน้ำล้นขณะนี้: ดอนเมือง/เสนา/ วังหิน/พหลโยธิน/แจ้งวัฒนะ (ข้อความ ไม่ใช่ node แยกในงานนี้ -- ไม่มีรหัสสถานี/พิกัดให้)\n",
+      "tag": "OPEN",
+      "source": "Environman FB post 28 ก.ย. 2569 -- north-axis chain, stub only",
+      "id": "WATER.canal_prem_prachakon"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "ศูนย์ความร่วมมือด้านการสื่อสารข้อมูลสภาพภูมิอากาศ (ที่ศูนย์พยากรณ์อากาศและเตือนภัย กรมอุตุฯ)",
+      "agency_class": "state",
+      "permanence": "established_by_cabinet_resolution",
+      "level": "national",
+      "tag": "RELAYED",
+      "source": "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569 (outlet not named in the paste)",
+      "id": "AG_CLIMATE_COMMS_CENTRE"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กรมประชาสัมพันธ์ (พีอาร์ดี)",
+      "agency_class": "state",
+      "tag": "RELAYED",
+      "source": "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569",
+      "id": "AG_PRD"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "บมจ. อสมท (MCOT)",
+      "agency_class": "state_enterprise",
+      "tag": "RELAYED",
+      "source": "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569",
+      "note_th": "ไม่อยู่ใน 4 รัฐวิสาหกิจของเอกสาร กพร. Joint KPI ที่คลังนี้บันทึกไว้ก่อนงานนี้ (CATEGORY. STATE_ENTERPRISE) -- จึงไม่ใส่ part_of edge ไปยังหมวดนั้น (จะเกินแหล่งที่มา) ใส่แค่ agency_class เป็น attribute แทน\n",
+      "id": "AG_MCOT"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "โฆษกประจำสำนักนายกรัฐมนตรี",
+      "agency_class": "state",
+      "tag": "RELAYED",
+      "source": "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569",
+      "id": "AG_PM_SPOKES"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "ศูนย์ต่อต้านข่าวปลอม (Anti-Fake News Center, AFNC)",
+      "agency_class": "state",
+      "channel_function": "disinformation_monitoring",
+      "tag": "RELAYED",
+      "source": "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569",
+      "note_th": "บันทึกเป็นช่องทางเฝ้าระวังเท่านั้น -- ไม่มีการตัดสิน/อ้างสิทธิ์ใด ๆ ในคลังนี้ว่าอะไรคือข่าวปลอม (neutral note, ดูการ์ดความรู้ §4)\n",
+      "id": "AG_AFNC"
+    },
+    {
+      "kind": "warning_channel",
+      "layer": "power",
+      "label_th": "ทีวี/วิทยุ ผ่าน พีอาร์ดี + อสมท",
+      "channel_type": "tv_radio",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569",
+      "id": "WCH.TV_RADIO_PRD_MCOT"
+    },
+    {
+      "kind": "warning_channel",
+      "layer": "power",
+      "label_th": "โซเชียลมีเดีย/ช่องทางทำเนียบรัฐบาล",
+      "channel_type": "social_media",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569",
+      "id": "WCH.GOV_SOCIAL"
+    },
+    {
+      "kind": "ministry",
+      "layer": "power",
+      "label_th": "กระทรวงการอุดมศึกษา วิทยาศาสตร์ วิจัยและนวัตกรรม (อว.)",
+      "group_type": "ministry",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_tool_rescue_drones_romklao_2569.md -- ministry node ใหม่, ไม่เคยมีมาก่อนงานนี้",
+      "id": "MINISTRY.MHESI"
+    },
+    {
+      "kind": "ministry",
+      "layer": "power",
+      "label_th": "กระทรวงการพัฒนาสังคมและความมั่นคงของมนุษย์ (พม.)",
+      "group_type": "ministry",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_tool_rescue_drones_romklao_2569.md -- ministry node ใหม่, ไม่เคยมีมาก่อนงานนี้",
+      "id": "MINISTRY.SOCIAL"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กระทรวงการอุดมศึกษา วิทยาศาสตร์ วิจัยและนวัตกรรม (อว.)",
+      "agency_class": "state",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_MHESI id, reused verbatim -- first registration in typology/*.yaml) + กระทรวง อว. FB post 28 ก.ย. 2569\n",
+      "id": "AG_MHESI"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กระทรวงการพัฒนาสังคมและความมั่นคงของมนุษย์ (พม.)",
+      "agency_class": "state",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_MSDHS id, reused verbatim -- first registration in typology/*.yaml) + กระทรวง อว. FB post 28 ก.ย. 2569\n",
+      "id": "AG_MSDHS"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าพระนครเหนือ (มจพ.)",
+      "agency_class": "state",
+      "tag": "RELAYED",
+      "source": "กระทรวง อว. FB post 28 ก.ย. 2569",
+      "id": "AG_KMUTNB"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "สมาคมอุตสาหกรรมเพื่อการป้องกันประเทศ (สอป.)",
+      "agency_class": "industry_association",
+      "tag": "RELAYED",
+      "source": "กระทรวง อว. FB post 28 ก.ย. 2569",
+      "id": "AG_SOP"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "บริษัท ซิสทรอนิกส์ จำกัด",
+      "agency_class": "commercial_operator",
+      "tag": "RELAYED",
+      "source": "กระทรวง อว. FB post 28 ก.ย. 2569 -- ชื่อองค์กร (บริษัท) ไม่ใช่ชื่อบุคคล",
+      "id": "AG_SYSTRONICS"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "มูลนิธิกู้ภัยร่มไทร",
+      "agency_class": "foundation",
+      "tag": "RELAYED",
+      "source": "กระทรวง อว. FB post 28 ก.ย. 2569",
+      "id": "AG_RESCUE_ROMSAI"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "โดรนกู้ภัย/สำรวจ (เครื่องมือทั่วไป -- ไม่ผูกกับเหตุการณ์ใดเหตุการณ์เดียว)",
+      "resource_type": "tool",
+      "tool_class": "rescue_drone",
+      "drone_subtypes": [
+        "isr_survey",
+        "heavy_lift_transport"
+      ],
+      "infra_class": "soft",
+      "infra_class_tag": "INSTINCT",
+      "mode": "air_drone",
+      "delivery_only_note_th": "ใช้สำหรับส่งของ/สำรวจเท่านั้น ไม่ใช่โหมดย้ายคน -- ดู community_dag.py EDGE_MODES comment\n",
+      "phase": "normal",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_tool_rescue_drones_romklao_2569.md §1",
+      "id": "RES.TOOL.RESCUE_DRONE"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "โดรนกู้ภัย/สำรวจ ปฏิบัติการเคหะร่มเกล้า 28 ก.ย. 2569",
+      "resource_type": "tool",
+      "tool_class": "rescue_drone",
+      "generic_tool_ref": "RES.TOOL.RESCUE_DRONE",
+      "mode": "air_drone",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "access_gap_link_th": "boat mode blocked (สิ่งกีดขวาง/รั้ว) -> air/drone mode -- access-first case, ดูการ์ด §2\n",
+      "effectiveness": "OPEN",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_tool_rescue_drones_romklao_2569.md §1",
+      "id": "RES.DRONE.ROMKLAO_20260928"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "ครัวกลาง พม. (ปฏิบัติการเคหะร่มเกล้า)",
+      "resource_type": "kitchen",
+      "owner_agency": "AG_MSDHS",
+      "infra_class": "soft",
+      "infra_class_tag": "INSTINCT",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "กระทรวง อว. FB post 28 ก.ย. 2569 -- docs/knowledge/card_tool_rescue_drones_romklao_2569.md §1",
+      "id": "RES.KITCHEN.MSDHS_CENTRAL"
+    },
+    {
+      "kind": "government",
+      "layer": "power",
+      "label_th": "รัฐบาลไทย (ราชการส่วนกลาง, root node สำหรับ part_of)",
+      "group_type": "government_root",
+      "tag": "RELAYED",
+      "source": "tools/typology/build_graph.py -- root node for part_of chains, no single source document",
+      "id": "GOV.TH"
+    },
+    {
+      "kind": "ministry",
+      "layer": "power",
+      "label_th": "สำนักนายกรัฐมนตรี",
+      "group_type": "office_of_pm",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570) -- สทนช. sits here",
+      "id": "MINISTRY.PMO"
+    },
+    {
+      "kind": "ministry",
+      "layer": "power",
+      "label_th": "กระทรวงเกษตรและสหกรณ์ (กษ.)",
+      "group_type": "ministry",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 -- 6 bodies per the Joint KPI list",
+      "id": "MINISTRY.AGRI"
+    },
+    {
+      "kind": "ministry",
+      "layer": "power",
+      "label_th": "กระทรวงคมนาคม (คค.)",
+      "group_type": "ministry",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 -- 3 bodies per the Joint KPI list",
+      "id": "MINISTRY.TRANSPORT"
+    },
+    {
+      "kind": "ministry",
+      "layer": "power",
+      "label_th": "กระทรวงทรัพยากรธรรมชาติและสิ่งแวดล้อม (ทส.)",
+      "group_type": "ministry",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 -- 6 bodies per the Joint KPI list",
+      "id": "MINISTRY.NATRES"
+    },
+    {
+      "kind": "ministry",
+      "layer": "power",
+      "label_th": "กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม (ดศ.)",
+      "group_type": "ministry",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 -- 1 body (กรมอุตุนิยมวิทยา) per the Joint KPI list",
+      "id": "MINISTRY.DIGITAL"
+    },
+    {
+      "kind": "ministry",
+      "layer": "power",
+      "label_th": "กระทรวงมหาดไทย (มท.)",
+      "group_type": "ministry",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 -- 3 bodies per the Joint KPI list",
+      "id": "MINISTRY.INTERIOR"
+    },
+    {
+      "kind": "ministry",
+      "layer": "power",
+      "label_th": "กระทรวงสาธารณสุข (สธ.)",
+      "group_type": "ministry",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 -- 1 body (กรมอนามัย) per the Joint KPI list",
+      "id": "MINISTRY.HEALTH"
+    },
+    {
+      "kind": "ministry",
+      "layer": "power",
+      "label_th": "กระทรวงอุตสาหกรรม (อก.)",
+      "group_type": "ministry",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 -- 1 body (กรมโรงงานอุตสาหกรรม) per the Joint KPI list",
+      "id": "MINISTRY.INDUSTRY"
+    },
+    {
+      "kind": "ministry",
+      "layer": "power",
+      "label_th": "องค์การมหาชน (หมวดตามเอกสาร กพร. Joint KPI -- ไม่ใช่กระทรวง)",
+      "group_type": "public_organization",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 -- 2 bodies (GISTDA, สสน.) per the Joint KPI list; the post does not name a sponsoring ministry for either, so this category node is their only declared parent (never invented a specific ministry link the post doesn't state)\n",
+      "id": "CATEGORY.PUBLIC_ORG"
+    },
+    {
+      "kind": "ministry",
+      "layer": "power",
+      "label_th": "รัฐวิสาหกิจ (หมวดตามเอกสาร กพร. Joint KPI -- ไม่ใช่กระทรวง)",
+      "group_type": "state_enterprise",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 -- 4 bodies (กปน., กปภ., องค์การจัดการน้ำเสีย, กนอ.) per the Joint KPI list; same no-invented-ministry-link note as CATEGORY.PUBLIC_ORG\n",
+      "id": "CATEGORY.STATE_ENTERPRISE"
+    },
+    {
+      "kind": "ministry",
+      "layer": "power",
+      "label_th": "ราชการส่วนท้องถิ่นรูปแบบพิเศษ (หมวดตามเอกสาร กพร. Joint KPI -- ไม่ใช่กระทรวง)",
+      "group_type": "local_government",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 -- กทม. listed as its own body, outside the 22 ส่วนราชการ count",
+      "id": "CATEGORY.LOCAL_GOV"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "คลองบางตลาด",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "tag": "OPEN",
+      "source": "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md §1",
+      "id": "WATER.canal_bangtalad"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "คลองบางตลาด ช่วงสะพานถนนติวานนท์ (ฝั่งตลาดชลประทาน)",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "condition": "debris_hyacinth",
+      "condition_tag": "RELAYED-field",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md §1 -- ทีมลงพื้นที่รายงานผักตบชวา/ขยะอุดตัน",
+      "id": "WATER.bangtalad_tiwanon_bridge"
+    },
+    {
+      "kind": "pump",
+      "layer": "water",
+      "label_th": "ประตูน้ำ/สถานีสูบ ปากคลองบางตลาด (ปั๊มใหญ่ 4 ตัว)",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "stall_state": "INTAKE_STARVED",
+      "stall_cause_confirmed": "upstream_blockage",
+      "stall_cause_checklist_pending": [
+        "relay_pump_failure",
+        "gate_state",
+        "culvert_constriction"
+      ],
+      "owner_agency": "OPEN",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md §1 -- น้ำมาไม่ถึงจุดสูบน้ำ",
+      "id": "ST.BANGTALAD.01"
+    },
+    {
+      "kind": "pump",
+      "layer": "water",
+      "label_th": "สถานีสูบ relay ('ทอยน้ำ') แนวคลองบางตลาด -- ตำแหน่งยังไม่ยืนยัน",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "tag": "OPEN",
+      "source": "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md §1 -- คำถามเปิดของทีมลงพื้นที่",
+      "id": "ST.BANGTALAD.RELAY.01"
+    },
+    {
+      "kind": "soi_surface",
+      "layer": "civil",
+      "label_th": "ถ.สามัคคี/ประชานิเวศน์ 3/ประชาชื่น",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md §1",
+      "id": "SOI.BANGTALAD.SAMAKKEE"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "ปั๊มเคลื่อนที่ (เครื่องมือทั่วไป)",
+      "resource_type": "tool",
+      "tool_class": "mobile_pump",
+      "infra_class": "soft",
+      "infra_class_tag": "INSTINCT",
+      "mode": "vehicle",
+      "phase": "normal",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md §1",
+      "id": "RES.TOOL.MOBILE_PUMP"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "ปั๊มเคลื่อนที่ใช้แทนปั๊มใหญ่ที่ปากคลองบางตลาด",
+      "resource_type": "tool",
+      "tool_class": "mobile_pump",
+      "generic_tool_ref": "RES.TOOL.MOBILE_PUMP",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md §1",
+      "id": "RES.PUMP.BANGTALAD_MOBILE_01"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "ทีมลงพื้นที่ภาคประชาชน (generic role, ไม่ระบุชื่อบุคคล/กลุ่ม)",
+      "agency_class": "volunteer_informal",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md -- generic observer role, reusable ที่อื่น",
+      "id": "CIV.FIELD_OBSERVER"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "วสท. วิศวกรรมสถานแห่งประเทศไทย ในพระบรมราชูปถัมภ์",
+      "agency_class": "state",
+      "contact_th": "\"วิศวกรอาสา\" วิศวกรรมสถานแห่งประเทศไทยในพระบรมราชูปถัมภ์ หมายเลขโทรศัพท์ในวันทำงานราชการ เวลา 9:00-17:00 ที่หมายเลขโทรศัพท์ 080-812-3733 080-812-3743 080-812-2853 (quoted, p.15 ของคู่มือจัดการบ้านหลังน้ำลด, พฤศจิกายน 2554)\n",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/card_guide_post_flood_home.md (คู่มือจัดการบ้านหลังน้ำลด p.15, read directly)",
+      "id": "AG_EIT"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กฟภ. การไฟฟ้าส่วนภูมิภาค",
+      "agency_class": "state",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/card_guide_post_flood_home.md (คู่มือจัดการบ้านหลังน้ำลด p.10: \"แนะนำว่าให้ ท่านติดต่อไปที่การไฟฟ้านครหลวงหรือการไฟฟ้าภูมิภาคหรือช่างไฟฟ้าที่มีความสามารถเข้ามาตรวจสอบ ระบบ\" -- ไม่มีเบอร์โทรระบุในไฟล์)\n",
+      "id": "AG_PEA"
+    },
+    {
+      "kind": "household_task",
+      "layer": "self_help",
+      "self_help_layer": 0,
+      "phase": "post_event",
+      "label_th": "เตรียมอุปกรณ์ก่อนเข้าบ้านหลังน้ำลด",
+      "page_cite": "p.6-7",
+      "quoted_text_th": "\"อุปกรณที่ตองเตร�ยมไวเมื่อทานจะเดินทางไปที่บานหลังจากน้ำลดนั�น\" -- รายการ 20 ชิ้น เช่น รองเท้ายาง, ถุงมือยาง, ไขควงตรวจสอบไฟฟ้ารั่ว, ไฟฉาย, อุปกรณ์ทำความสะอาด, เครื่องสูบน้ำแบบพกพา (p.6-7)\n",
+      "hazard_th": "\"ใสเพ�อปองกันไมใหไฟฟาที่อาจจะรั�วในบร�เวณพ�นบานมาดูดทานได\" (รองเท้ายาง, p.6)\n",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/card_guide_post_flood_home.md (p.6-7)",
+      "id": "HHTASK.PREP"
+    },
+    {
+      "kind": "household_task",
+      "layer": "self_help",
+      "self_help_layer": 0,
+      "phase": "post_event",
+      "label_th": "ถ่ายรูปความเสียหายก่อนดำเนินการแก้ไข (เพื่อขอเยียวยา/เคลม)",
+      "page_cite": "p.8",
+      "quoted_text_th": "\"สำหรับท่านที่ยังไม่ได้ถ่ายรูปความเสียหายของบ้านให้ถ่ายรูปก่อนดำเนินการแก้ไข เพื่อใช้เป็น หลักฐานในการร้องขอค่าชดเชยต่างๆ ในภายหลัง ควรถ่ายให้เห็นบ้านเลขที่และหนังสือพิมพ์ท่ีมีวันที่ ปัจจุบัน ถ้ามีร่องรอยงัดแงะจากการโจรกรรมให้ถ่ายรูปไว้เป็นหลักฐานด้วย\" (p.8)\n",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/card_guide_post_flood_home.md (p.8)",
+      "id": "HHTASK.PHOTO_DAMAGE"
+    },
+    {
+      "kind": "household_task",
+      "layer": "self_help",
+      "self_help_layer": 0,
+      "phase": "post_event",
+      "label_th": "เปิดประตูหน้าต่างทุกบานระบายความชื้น",
+      "page_cite": "p.8",
+      "quoted_text_th": "\"ให้ท่านเปิดประตูและหน้าต่างๆทุกบานเท่าที่ทำได้เพื่อให้ความชื้นภายในบ้านระบายออกไปให้เร็ว ที่สุด\" (p.8)\n",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/card_guide_post_flood_home.md (p.8)",
+      "id": "HHTASK.VENTILATE"
+    },
+    {
+      "kind": "household_task",
+      "layer": "self_help",
+      "self_help_layer": 0,
+      "phase": "post_event",
+      "label_th": "จัดการระบบไฟฟ้า (สะพานไฟฟ้าหลัก/เบรกเกอร์กันดูด/สวิทช์-เต้ารับ/ไฟแสงสว่าง)",
+      "page_cite": "p.9-12",
+      "quoted_text_th": "\"เรื่องแรกที่ต้องใช้ความระมัดระวังมากที่สุดและต้องดำเนินการเป็นอย่างแรกคือการตรวจสอบระบบ ไฟฟ้า\" (p.8) -- ใส่รองเท้ายาง, ใช้ไขควงตรวจสอบไฟฟ้ารั่วเตะบริเวณโลหะก่อนแตะ, ปิดสะพานไฟฟ้า หลักให้แน่ใจก่อนเสมอ (p.8-10); ค่าความเป็นฉนวนสายไฟฟ้า \"ไม่น้อยกว่า 1 เมกกะโอห์ม ที่ 500 โวล์ท (ไฟฟ้ากระแสตรง)\" ก่อนจ่ายไฟใหม่ (p.12)\n",
+      "hazard_th": "\"ไม่ควรเข้าไปในบ้านที่ยังมีน้ำท่วมพื้นบ้านอยู่ ... หากยืนอยู่ในน้ำหรือเท้าเปียกน้ำ ต้องไม่สัมผัส อุปกรณ์ไฟฟ้า เปิดปิดสะพานไฟ หรือเสียบปลั๊ก หรือเปิดปิดสวิทช์ ใดๆทั้งสิ้น\" (p.8) -- ไฟดูด/ไฟลัด วงจร/ไฟไหม้ (p.12)\n",
+      "contact_note_th": "\"แนะนำว่าให้ท่านติดต่อไปที่การไฟฟ้านครหลวงหรือการไฟฟ้าภูมิภาคหรือช่างไฟฟ้าที่มีความสามารถ เข้ามาตรวจสอบระบบ\" (p.10, สะพานไฟฟ้าหลักที่น้ำท่วมถึง)\n",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/card_guide_post_flood_home.md (p.8-12)",
+      "id": "HHTASK.ELECTRICAL"
+    },
+    {
+      "kind": "household_task",
+      "layer": "self_help",
+      "self_help_layer": 0,
+      "phase": "post_event",
+      "label_th": "ตรวจสอบโครงสร้างบ้านและรั้ว",
+      "page_cite": "p.13-15",
+      "quoted_text_th": "\"ถ้าดินทรุดตัวจนมองเห็นเสาเข็ม ถือว่าเป็นเรื่องน่าเป็นห่วงมากควรปรึกษาวิศวกรโครงสร้างเพื่อหา วิธีแก้ไขต่อไป\" -- \"โดยเฉพาะรอยร้าวบริเวณหัวเสาต่อกับคานของอาคาร ถ้าพบรอยร้าวแบบนี้ให้ปรึกษา วิศวกรโครงสร้าง\" -- \"มีอาการของเหล็กที่ชื้นจนเป็นสนิม ระเบิดดันจนคอนกรีตแตกออกมา ... ต้องรีบ ปรึกษาวิศวกรโครงสร้างโดยทันที\" (p.14-15)\n",
+      "hazard_th": "ดินทรุด/เสาเข็มโผล่/รอยร้าวโครงสร้าง/เหล็กเสริมเป็นสนิม/รั้วเอียงจนอาจล้ม (p.14-15)",
+      "contact_note_th": "\"ถ้าท่านต้องการคำปรึกษาเรื่องโครงสร้างให้ติดต่อ \\\"วิศวกรอาสา\\\" วิศวกรรมสถานแห่งประเทศไทยใน พระบรมราชูปถัมภ์ หมายเลขโทรศัพท์ในวันทำงานราชการ เวลา 9:00-17:00 ที่หมายเลขโทรศัพท์ 080-812-3733 080-812-3743 080-812-2853\" (p.15)\n",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/card_guide_post_flood_home.md (p.13-15)",
+      "id": "HHTASK.STRUCTURE"
+    },
+    {
+      "kind": "household_task",
+      "layer": "self_help",
+      "self_help_layer": 0,
+      "phase": "post_event",
+      "label_th": "ทำความสะอาดและฆ่าเชื้อทั้งบ้าน",
+      "page_cite": "p.16-18",
+      "quoted_text_th": "\"ขัดถูพื้นด้วยน้ำยาทำความสะอาดหรือผงซักฟอกให้ทั่วบริเวณแล้วจึงราดด้วยน้ำร้อนเดือดๆถ้าทำได้ จากนั้นใช้คลอรีนผสมน้ำในอัตราส่วนร้อยละ 0.1 หรือคลอรีน 1 ซีซีต่อน้ำหนึ่งลิตร หรือใช้น้ำยาฆ่าเชื้อ โรคที่มีขายทั่วไปฉีดพ่นให้ทั่วบริเวณ\" (p.18) -- เครื่องใช้ในครัวแช่น้ำยาล้างจานผสมน้ำเดือด \"อย่างน้อย 10 นาที\" (p.18); เครื่องเงิน/โลหะต้มน้ำเดือด \"อย่างน้อย 10 นาที\" แล้วแช่น้ำยาฆ่าเชื้อ \"อีกหนึ่งชั่วโมง\" (p.18)\n",
+      "hazard_th": "\"ระหว่างทำความสะอาดถ้าต้องรื้อของตามซอกต่างๆ ให้ระวังสัตว์อันตรายที่อาจจะซ่อนตัวในตามลืบ เหล่านั้นพุ่งออกมาทำร้ายเราได้\" (p.8) -- \"ห้ามใช้โซดาไฟในการทำความสะอาด เพราะเป็นอันตรายต่อ สุขภาพ\" (p.18, quoted -- คำเตือนจากต้นฉบับ ไม่ใช่คำแนะนำที่งานนี้เขียนเอง)\n",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/card_guide_post_flood_home.md (p.16-18)",
+      "id": "HHTASK.CLEANING"
+    },
+    {
+      "kind": "household_task",
+      "layer": "self_help",
+      "self_help_layer": 0,
+      "phase": "post_event",
+      "label_th": "ระบบสุขาภิบาล (รางระบายน้ำรอบบ้าน/ส้วม/ท่อระบายน้ำในบ้าน/ระบบประปา)",
+      "page_cite": "p.19-21",
+      "quoted_text_th": "\"ให้เริ่มจากทำความสะอาดระบบระบายน้ำภายนอกก่อน\" (p.20) -- \"อย่าพยายามดันขยะออกทางน้ำ สาธารณะเพราะจะทำให้ท่อระบายน้ำสาธารณะตันและทำให้น้ำไม่มีทางระบาย ก่อปัญหาให้กับสิ่งแวดล้อม และเพื่อนบ้าน\" (p.20)\n",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/card_guide_post_flood_home.md (p.19-21)",
+      "id": "HHTASK.SANITATION"
+    },
+    {
+      "kind": "household_task",
+      "layer": "self_help",
+      "self_help_layer": 0,
+      "phase": "post_event",
+      "label_th": "ประตู หน้าต่าง",
+      "page_cite": "p.22-23",
+      "quoted_text_th": "\"บานประตูและหน้าต่างตกและบวมเนื่องจากแช่น้ำเป็นเวลานาน ให้รอจนกว่าความชื้นระเหยออกให้หมด\" (p.23)",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/card_guide_post_flood_home.md (p.22-23)",
+      "id": "HHTASK.DOORS_WINDOWS"
+    },
+    {
+      "kind": "household_task",
+      "layer": "self_help",
+      "self_help_layer": 0,
+      "phase": "post_event",
+      "label_th": "พื้น (หินธรรมชาติ/ไม้/กระเบื้อง/พรม)",
+      "page_cite": "p.24-27",
+      "quoted_text_th": "ยาแนวกระเบื้อง: ทิ้งน้ำยาทำปฏิกิริยากับคราบสกปรก \"ประมาณ 5 นาที\" (p.26); ทิ้งยาแนวใหม่ไว้ \"12 ชั่วโมง\" ก่อนใช้งานพื้นที่นั้น (p.26-27)\n",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/card_guide_post_flood_home.md (p.24-27)",
+      "id": "HHTASK.FLOORS"
+    },
+    {
+      "kind": "household_task",
+      "layer": "self_help",
+      "self_help_layer": 0,
+      "phase": "post_event",
+      "label_th": "ผนัง (ก่ออิฐ/เบา/วอลล์เปเปอร์/ฝ้าเพดาน)",
+      "page_cite": "p.28-29",
+      "quoted_text_th": "ผนังก่ออิฐ: \"ทิ้งไว้โดยยังไม่ต้องทาสี เป็นระยะเวลาอย่างน้อยหนึ่งถึงสองเดือน\" (p.28, quoted -- ต้นฉบับใช้คำว่า \"ยังไม่ต้อง\" เอง); วอลล์เปเปอร์: \"ต้องรอให้ผนังแห้งจริงๆอย่างน้อย 1 อาทิตย์\" (p.29)\n",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/card_guide_post_flood_home.md (p.28-29)",
+      "id": "HHTASK.WALLS"
+    },
+    {
+      "kind": "household_task",
+      "layer": "self_help",
+      "self_help_layer": 0,
+      "phase": "post_event",
+      "label_th": "เครื่องใช้ไฟฟ้า (มอเตอร์/แผงวงจร/ตู้เย็น/พัดลม/แอร์/ทีวี-วิทยุ)",
+      "page_cite": "p.30-33",
+      "quoted_text_th": "\"เครื่องใช้ไฟฟ้าเหล่านี้ถ้าโดนน้ำท่วมมักเสียหายหนักเนื่องจากเป็นวงจรอิเล็กโทรนิกส์ ไม่ควรเสี่ยง เสียบปลั๊กไฟฟ้าเด็ดขาดให้ส่งศูนย์ซ่อมเท่านั้น\" (ทีวี/ดีวีดี/วิทยุ/เครื่องเสียง, p.33, quoted -- ต้นฉบับใช้คำว่า \"ไม่ควร\" เอง)\n",
+      "hazard_th": "อันตรายจากไฟฟ้าลัดวงจร (p.30)",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/card_guide_post_flood_home.md (p.30-33)",
+      "id": "HHTASK.APPLIANCES"
+    },
+    {
+      "kind": "household_task",
+      "layer": "self_help",
+      "self_help_layer": 0,
+      "phase": "post_event",
+      "label_th": "เฟอร์นิเจอร์ (บิลด์อิน/ลอยตัว)",
+      "page_cite": "p.34-36",
+      "quoted_text_th": "\"การทำความสะอาดเฟอร์นิเจอร์บิลด์อินนี้ต้องทำไปพร้อมๆ กับการทำความสะอาดพื้น ผนัง กำแพงภายใน ตัวบ้าน\" (p.35) -- \"ห้ามนำเฟอร์นิเจอร์ท่ีทำด้วยไม้ไปตากแดดเพราะจะทำให้ไม้บิดงอ\" (p.36, quoted -- ต้นฉบับใช้คำว่า \"ห้าม\" เอง)\n",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/card_guide_post_flood_home.md (p.34-36)",
+      "id": "HHTASK.FURNITURE"
+    },
+    {
+      "kind": "household_task",
+      "layer": "self_help",
+      "self_help_layer": 0,
+      "phase": "post_event",
+      "label_th": "ต้นไม้/สวน",
+      "page_cite": "p.37-38",
+      "quoted_text_th": "\"แนะนำให้ขุดหลุมขนาดประมาณ 1 คูณ 1 เมตร ลึกอย่างน้อยครึ่งเมตร ที่บริเวณที่ต่ำที่สุดของสวน แล้ว สูบน้ำหรือตักน้ำออกจนกว่าจะหมด\" (p.37); \"ห้ามให้ปุ๋ยต้นไม้ในช่วงนี้ รอจนกว่าต้นไม้นั้นจะฟื้นตัวได้ จริง\" (p.38, quoted -- ต้นฉบับใช้คำว่า \"ห้าม\" เอง)\n",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/card_guide_post_flood_home.md (p.37-38)",
+      "id": "HHTASK.PLANTS"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "สำนักงานเขตข้างเคียง (บางกะปิ/ประเวศ/ลาดกระบัง)",
+      "agency_class": "state",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_DIST_NEIGH id -- referenced as owner_agency attribute in resources.yaml since an earlier commit, registered as a node here for the first time)",
+      "id": "AG_DIST_NEIGH"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "สจล. (สถานที่รับผู้อพยพลาดกระบัง)",
+      "agency_class": "state",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_KMITL node, reused verbatim, first typology registration)",
+      "id": "AG_KMITL"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "ศูนย์พักพิง สจล.",
+      "resource_type": "shelter",
+      "owner_agency": "AG_KMITL",
+      "infra_class": "soft",
+      "infra_class_tag": "INSTINCT",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AS_SHELTER_KMITL node, reused verbatim, first typology registration)",
+      "id": "AS_SHELTER_KMITL"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "โรงเรียน กทม. เป็นที่พักพิง",
+      "resource_type": "shelter",
+      "infra_class": "soft",
+      "infra_class_tag": "INSTINCT",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AS_SHELTER_SCHOOL node, reused verbatim, first typology registration)",
+      "id": "AS_SHELTER_SCHOOL"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "กระสอบทราย (ขอที่สำนักงานเขต)",
+      "resource_type": "tool",
+      "tool_class": "sandbag",
+      "infra_class": "soft",
+      "infra_class_tag": "INSTINCT",
+      "phase": "normal",
+      "phase_tag": "INSTINCT",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AS_SANDBAGS node, reused verbatim, first typology registration)",
+      "id": "AS_SANDBAGS"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กสทช. (หน่วยงานกำกับดูแลโทรคมนาคม)",
+      "agency_class": "state",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §1",
+      "id": "AG_NBTC"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "AIS",
+      "agency_class": "commercial_operator",
+      "actor_type": "private_sector",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §1",
+      "id": "AG_TELCO_AIS"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "True",
+      "agency_class": "commercial_operator",
+      "actor_type": "private_sector",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §1",
+      "id": "AG_TELCO_TRUE"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "LINE MAN (gig platform)",
+      "agency_class": "commercial_operator",
+      "actor_type": "private_sector",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §2",
+      "id": "AG_LINEMAN"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "Central Pattana",
+      "agency_class": "commercial_operator",
+      "actor_type": "private_sector",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §3",
+      "id": "AG_CENTRALPATTANA"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "Robinson",
+      "agency_class": "commercial_operator",
+      "actor_type": "private_sector",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §3",
+      "id": "AG_ROBINSON"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "ผู้ค้าส่งวัตถุดิบ (generic, ไม่ระบุชื่อร้าน)",
+      "agency_class": "commercial_operator",
+      "actor_type": "private_sector",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §4",
+      "id": "AG_WHOLESALE_SUPPLIER"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "Sansiri",
+      "agency_class": "commercial_operator",
+      "actor_type": "private_sector",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §5",
+      "id": "AG_SANSIRI"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "SENA",
+      "agency_class": "commercial_operator",
+      "actor_type": "private_sector",
+      "case_status_pattern_th": "RED=RESCUE -> YELLOW=RECOVER -> GREEN=RESTORE, ปิดเคสเมื่อผู้อยู่อาศัยกลับสู่ชีวิตปกติ ไม่ใช่เมื่อน้ำลด (ข้อความอ้างอิง, ไม่ใช่ state machine ใหม่ -- ดูการ์ดความรู้ §5)\n",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §5",
+      "id": "AG_SENA"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "เครือข่ายร้านอาหาร (generic, ไม่ระบุชื่อร้าน)",
+      "agency_class": "commercial_operator",
+      "actor_type": "private_sector",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §7",
+      "id": "AG_RESTAURANT_NETWORK"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กองทัพบก (ทบ.)",
+      "agency_class": "state",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §6",
+      "id": "AG_RTA"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "หน่วยกิจการพลเรือน กองทัพอากาศ (กร.ทอ.)",
+      "agency_class": "state",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §7",
+      "id": "AG_RTAF_CIVIL"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "สถานีฐานเคลื่อนที่ (cell-on-wheels)",
+      "resource_type": "tool",
+      "resource_class": "communications",
+      "tool_class": "mobile_base_station",
+      "infra_class": "soft",
+      "infra_class_tag": "INSTINCT",
+      "mode": "vehicle",
+      "power_dependency": true,
+      "phase": "normal",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §1",
+      "id": "RES.TOOL.COW"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "สถานีฐานเคลื่อนที่ ที่ศูนย์พักพิง สจล.",
+      "resource_type": "tool",
+      "resource_class": "communications",
+      "tool_class": "mobile_base_station",
+      "generic_tool_ref": "RES.TOOL.COW",
+      "power_dependency": true,
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §1",
+      "id": "RES.COW.SHELTER_KMITL_01"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "จุดชาร์จมือถือ (เครื่องมือทั่วไป)",
+      "resource_type": "tool",
+      "resource_class": "communications",
+      "tool_class": "charging_point",
+      "infra_class": "soft",
+      "infra_class_tag": "INSTINCT",
+      "phase": "normal",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §1",
+      "id": "RES.TOOL.CHARGING_POINT"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "จุดชาร์จมือถือ ที่ศูนย์พักพิง สจล.",
+      "resource_type": "tool",
+      "resource_class": "communications",
+      "tool_class": "charging_point",
+      "generic_tool_ref": "RES.TOOL.CHARGING_POINT",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §1",
+      "id": "RES.CHARGING.SHELTER_KMITL_01"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "ที่จอดรถพื้นที่สูงเป็นที่หลบภัยยานพาหนะ (เครื่องมือทั่วไป)",
+      "resource_type": "vehicle_refuge_parking",
+      "infra_class": "soft",
+      "infra_class_tag": "INSTINCT",
+      "phase": "normal",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §3",
+      "id": "RES.TOOL.VEHICLE_REFUGE_PARKING"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "ที่จอดรถศูนย์การค้า (ให้ใช้ฟรีเป็นที่หลบภัยยานพาหนะ)",
+      "resource_type": "vehicle_refuge_parking",
+      "generic_tool_ref": "RES.TOOL.VEHICLE_REFUGE_PARKING",
+      "owner_agency": "AG_CENTRALPATTANA",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §3",
+      "id": "RES.PARKING.CENTRALPATTANA_01"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "จุดรับบริจาค ศูนย์การค้า Central Pattana",
+      "resource_type": "donation_intake_point",
+      "owner_agency": "AG_CENTRALPATTANA",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §3",
+      "id": "RES.DONATION_INTAKE.CENTRALPATTANA.01"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "จุดรับบริจาค ห้างโรบินสัน",
+      "resource_type": "donation_intake_point",
+      "owner_agency": "AG_ROBINSON",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §3",
+      "id": "RES.DONATION_INTAKE.ROBINSON.01"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "อาหารปรุงสุกจากเครือข่ายร้านอาหาร ส่งศูนย์พักพิง สจล.",
+      "resource_type": "food",
+      "owner_agency": "AG_RESTAURANT_NETWORK",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §7",
+      "id": "RES.MEAL_BOX.PRIVATE_RESTAURANTS.KMITL.01"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "การส่งของบริจาคเอกชนเข้าชุมชนแฟลตคลองจั่น (คุ้มกันโดยทหาร)",
+      "resource_type": "relief_delivery",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §6",
+      "id": "RES.RELIEF_DELIVERY.PRIVATE_KHLONGCHAN_01"
+    },
+    {
+      "kind": "warning_channel",
+      "layer": "civil",
+      "label_th": "ช่องทางเตือนความเสี่ยงน้ำท่วมรายวันในแอป LINE MAN",
+      "channel_type": "app",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §2",
+      "id": "WCH.LINEMAN_INAPP_RISK"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "รถยกสูง (GMC) เพิ่ม 15 คัน -- ต้องการ ไม่ใช่ยืนยันว่าจัดสรรแล้ว",
+      "resource_type": "vehicle",
+      "quantity": 15,
+      "unit": "คัน",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "owner_agency": "OPEN",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9, แถลง กทม. 28 ก.ย., รองผู้ว่าฯ ฝ่ายสาธารณสุข)",
+      "note_th": "owner_agency = OPEN เพราะแถลงการณ์ S9 ไม่ระบุหน่วยงานย่อยที่ถือครองรถจริง (อาจเป็น สนน. หรือ สำนักงานเขต) -- ห้ามเดา ดู edges/owned_by.yaml แถวคู่กัน (status OPEN เช่นกัน).\n",
+      "id": "RES.TRUCK_GMC.AG_BMA_DDS.01"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "ข้าวกล่อง 20,000 กล่อง/มื้อ (เขตลาดกระบัง)",
+      "resource_type": "food",
+      "quantity": 20000,
+      "unit": "กล่อง/มื้อ",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "owner_agency": "AG_DIST_NEIGH",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9)",
+      "id": "RES.MEAL_BOX.AG_BMA_KHET_LADKRABANG.01"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "ข้าวกล่อง 3,000 กล่อง/มื้อ (เขตบางกะปิ)",
+      "resource_type": "food",
+      "quantity": 3000,
+      "unit": "กล่อง/มื้อ",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "owner_agency": "AG_DIST_NEIGH",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9)",
+      "id": "RES.MEAL_BOX.AG_BMA_KHET_BANGKAPI.01"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "เรือผลักดันน้ำคลองแสนแสบ ใกล้จุดรับน้ำอุโมงค์พระราม 9 (ผลยังไม่วัดอิสระ)",
+      "resource_type": "watercraft",
+      "tool_class": "water_push_boat",
+      "generic_tool_ref": "RES.TOOL.WATER_PUSH_BOAT",
+      "mode": "boat",
+      "infra_class": "soft",
+      "infra_class_tag": "INSTINCT",
+      "quantity": null,
+      "unit": null,
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "owner_agency": "AG_OPERATOR_SAENSAEB_BOAT",
+      "owner_agency_tag": "RELAYED",
+      "effectiveness": "OPEN",
+      "deployment_note_th": "ใกล้จุดรับน้ำอุโมงค์แสนแสบ-ลาดพร้าว (alias candidate \"อุโมงค์พระราม 9\", tunnel:bma_dds:saensaeb_ladprao) -- ระยะทาง/จำนวนเรือ/ชั่วโมงหมุนเวียน ไม่ใส่ตัวเลขในชั้นนี้ ดูตัวเลขทั้งหมดใน docs/knowledge/card_tool_water_push_boats.md\n",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 4.3 (S11, JS100) + The Bangkok Insight 27 ก.ย. 2569 (https://www.thebangkokinsight.com/news/politics-general/general/ 1701479/) + MGR Online 27 ก.ย. 2569 (https://mgronline.com/business/detail/9690000094733) -- reuse-first: ถือเป็น real-world referent เดียวกันกับที่ S11/JS100 รายงานไว้ก่อนหน้า (ดูเหตุผลเต็มใน docs/knowledge/card_tool_water_push_boats.md §5), ไม่สร้าง node ใหม่ซ้ำ\n",
+      "note_th": "effect_measured: OPEN -- ยังไม่มีเกจอิสระของคลังนี้ยืนยันผลกระทบต่อทิศทาง/ระดับน้ำ; คำกล่าวอ้าง ของผู้ประกอบการเรื่องระดับน้ำลดลงเป็นคำให้สัมภาษณ์ ไม่ใช่ค่าวัดอิสระ (การ์ดความรู้ §1)\n",
+      "id": "RES.BOAT_PUSH.AG_UNKNOWN.01"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "จุดรับบริจาค ศาลาว่าการ กทม. (ดินแดง)",
+      "resource_type": "donation_intake_point",
+      "quantity": null,
+      "unit": null,
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "owner_agency": "AG_BMA_GOV",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9)",
+      "id": "RES.DONATION_INTAKE.CITYHALL_DINDAENG.01"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "จุดรับบริจาค ศูนย์ฝึกอาชีพเขตประเวศ",
+      "resource_type": "donation_intake_point",
+      "quantity": null,
+      "unit": null,
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "owner_agency": "AG_DIST_NEIGH",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9)",
+      "id": "RES.DONATION_INTAKE.KHET_PRAWET_VOCTRAIN.01"
+    },
+    {
+      "kind": "sensor",
+      "layer": "water",
+      "label_th": "เซนเซอร์ ปตร.แสนแสบ-มีนบุรี (WL.SSB.10)",
+      "installed_on_node": "WL.SSB.10",
+      "owner_agency": "AG_DDS",
+      "visible_to": [
+        "AG_DDS",
+        "AG_DDPM"
+      ],
+      "sensor_status": "ok",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ISSUE-AGENCY-01 (S1: รศ.ดร.เสรี ศุภราทิตย์, รายการโหนกระแส -- เซนเซอร์แสนแสบเป็นของ กทม. ไม่ใช่ ปภ.) + THAI_WATER_GOVERNANCE_MAP.md §(1) (สนน. เก็บสถานะ SCADA ภายใน)\n",
+      "note_th": "visible_to=[AG_DDS, AG_DDPM] คือ \"ใครเห็นได้\" ตามคำอธิบายของ S1 (ปภ. ไม่รู้ว่าเซนเซอร์เป็นของ ใคร ไม่ใช่ว่าเห็นค่าไม่ได้เลย) -- RELAYED จากความเห็นผู้เชี่ยวชาญคนเดียว ไม่ใช่ตัวบทกฎหมาย.\n",
+      "id": "SENSOR.SSB.10"
+    },
+    {
+      "kind": "sensor",
+      "layer": "water",
+      "label_th": "เซนเซอร์/สถานะสถานีสูบบึงสัมมากร (คลองบ้านม้า), ST.SPS.01",
+      "installed_on_node": "ST.SPS.01",
+      "owner_agency": "AG_DDS",
+      "visible_to": [],
+      "sensor_status": "faulted",
+      "station_status_th": "ขัดข้อง",
+      "machine_count_total": null,
+      "machine_count_tag": "OPEN",
+      "tag": "OPEN",
+      "source": "docs/LAYER0_IN_OUT_CAPACITY.md §7 (station-level MEASURED: ขัดข้อง) + independent review 2026-09-28 fix (per-station machine-count split OPEN, aggregate machine total 11 across ST.SPS.01-04 per BMA PumpHistory, not split per station in this static registry)\n",
+      "basis": "partly measured",
+      "id": "SENSOR.SPS.01"
+    },
+    {
+      "kind": "sensor",
+      "layer": "water",
+      "label_th": "เซนเซอร์/สถานะสถานีสูบบึงรับน้ำสัมมากร 4, ST.SPS.02",
+      "installed_on_node": "ST.SPS.02",
+      "owner_agency": "AG_DDS",
+      "visible_to": [],
+      "sensor_status": "faulted",
+      "station_status_th": "ขัดข้อง",
+      "machine_count_total": null,
+      "machine_count_tag": "OPEN",
+      "tag": "OPEN",
+      "source": "docs/LAYER0_IN_OUT_CAPACITY.md §7 + independent review 2026-09-28 fix (same as SENSOR.SPS.01)",
+      "basis": "partly measured",
+      "id": "SENSOR.SPS.02"
+    },
+    {
+      "kind": "sensor",
+      "layer": "water",
+      "label_th": "เซนเซอร์/สถานะสถานีสูบบึงรับน้ำสัมมากร 2, ST.SPS.03",
+      "installed_on_node": "ST.SPS.03",
+      "owner_agency": "AG_DDS",
+      "visible_to": [],
+      "sensor_status": "faulted",
+      "station_status_th": "ขัดข้อง",
+      "machine_count_total": null,
+      "machine_count_tag": "OPEN",
+      "tag": "OPEN",
+      "source": "docs/LAYER0_IN_OUT_CAPACITY.md §7 + independent review 2026-09-28 fix (same as SENSOR.SPS.01)",
+      "basis": "partly measured",
+      "id": "SENSOR.SPS.03"
+    },
+    {
+      "kind": "sensor",
+      "layer": "water",
+      "label_th": "เซนเซอร์/สถานะสถานีสูบบึงรับน้ำสัมมากร 1, ST.SPS.04",
+      "installed_on_node": "ST.SPS.04",
+      "owner_agency": "AG_DDS",
+      "visible_to": [],
+      "sensor_status": "faulted",
+      "station_status_th": "ขัดข้อง",
+      "machine_count_total": null,
+      "machine_count_tag": "OPEN",
+      "tag": "OPEN",
+      "source": "docs/LAYER0_IN_OUT_CAPACITY.md §7 + independent review 2026-09-28 fix (same as SENSOR.SPS.01)",
+      "basis": "partly measured",
+      "id": "SENSOR.SPS.04"
+    },
+    {
+      "kind": "sensor",
+      "layer": "water",
+      "label_th": "เซนเซอร์ ปตร.ประเวศ-ลาดกระบัง (WL.PWT.04)",
+      "installed_on_node": "WL.PWT.04",
+      "owner_agency": "AG_DDS",
+      "visible_to": [
+        "AG_DDS"
+      ],
+      "sensor_status": "ok",
+      "tag": "RELAYED",
+      "source": "FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §5 (owned_by[NEW] AG_BMA_DDS reused as AG_DDS here)",
+      "id": "SENSOR.PWT.04"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "คณะกรรมการลุ่มน้ำ (36 ลุ่มน้ำ ตาม พ.ร.บ.ทรัพยากรน้ำ 2561)",
+      "agency_class": "state",
+      "permanence": "permanent",
+      "level": "basin",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_BASIN_CMT node, reused verbatim) -- permanence/level per TDRI (ดร.นิพนธ์ พัวพงศกร, tdri.or.th/.../permanent-disaster- management..., 9 ธ.ค. 2025): a STATUTORY basin-tier body (permanent, not ศูนย์เฉพาะกิจ), sitting between ministry and local per that article's structure -- this fills the \"basin-level tier between ministry and local\" gap the TDRI article names.\n",
+      "id": "AG_BASIN_CMT"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "คณะกรรมการอุทกภัยและภัยแล้งระดับภูมิภาค 5 คณะ (คำสั่งสำนักนายกฯ 275/2569)",
+      "agency_class": "state",
+      "permanence": "ad_hoc",
+      "level": "basin",
+      "capability_operational_policy": null,
+      "capability_roles_responsibilities": null,
+      "capability_action_plan": null,
+      "capability_monitoring_loop": null,
+      "capability_logistics": null,
+      "capability_training": null,
+      "capability_source": "TDRI (ดร.นิพนธ์ พัวพงศกร, 9 ธ.ค. 2025) 6-element C3 checklist -- OPEN for this ad-hoc body, no source states these\n",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_REGCOM node, reused verbatim) -- permanence=ad_hoc per TDRI's ศูนย์เฉพาะกิจ distinction (ดร.นิพนธ์ พัวพงศกร, 9 ธ.ค. 2025: \"โครงสร้างบัญชาการถาวร-มืออาชีพ vs. ศูนย์เฉพาะกิจ\" -- a body created by a PM standing order for regional flood/drought coordination is the ad-hoc case this article warns against, kept distinct from AG_BASIN_CMT's statutory permanence above); level=basin is an INSTINCT approximation of \"ระดับภูมิภาค\" (regional) onto this typology's 4-value level vocabulary (national/ministry/basin/local) -- the article's own term is \"ภูมิภาค\", not \"ลุ่มน้ำ\", flagged here as an approximate mapping, not an exact one.\n",
+      "id": "AG_REGCOM"
+    },
+    {
+      "kind": "pond",
+      "layer": "water",
+      "label_th": "บึงหนองบอน",
+      "infra_class": "green_blue",
+      "phase": "normal",
+      "phase_tag": "INSTINCT",
+      "lat": 13.69544,
+      "lon": 100.66001,
+      "standard_class": "HY_WaterBody (OGC HY_Features, RELAYED)",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/bma_plan2569_retention_ponds.yaml capacity_list_appendix_ko seq=1 (VERIFIED, storage_m3=5,000,000, p78/ก-24) -- infra_class=green_blue per TDRI's green-blue/sponge-city framing (\"flooding-after-rain-bangkok-is...\", dated 30 มิ.ย. 2025 on the page but the page's own text references rain 24-26 ก.ย. 2569 -- OPEN date inconsistency, not resolved, both kept). Also referenced in structural_issues_2026-09-28.yaml S14 (pre-lowering ~5 ล้าน ลบ.ม. before the 25 ก.ย. 2569 rain, RELAYED).\n",
+      "id": "WL.NBN.01"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "อุทยาน 100 ปี จุฬาฯ (green-blue infrastructure example, TDRI)",
+      "resource_type": "green_infrastructure",
+      "infra_class": "green_blue",
+      "phase": "normal",
+      "phase_tag": "INSTINCT",
+      "quantity": null,
+      "unit": null,
+      "owner_agency": "OPEN",
+      "tag": "RELAYED",
+      "source": "TDRI \"flooding-after-rain-bangkok-is...\" (dated 30 มิ.ย. 2025 on the page, page text references 24-26 ก.ย. 2569 rain -- OPEN date inconsistency, both kept) -- Bangkok green-blue/porous-surface example named in the article; not linked to any specific water node in this graph (no connectivity data in this check's sources). phase=normal: permanent standing infrastructure, not incident-specific.\n",
+      "id": "GI.CHULA_CENTENARY_PARK"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "สวนป่าเบญจกิติ (green-blue infrastructure example, TDRI)",
+      "resource_type": "green_infrastructure",
+      "infra_class": "green_blue",
+      "phase": "normal",
+      "phase_tag": "INSTINCT",
+      "quantity": null,
+      "unit": null,
+      "owner_agency": "OPEN",
+      "tag": "RELAYED",
+      "source": "TDRI \"flooding-after-rain-bangkok-is...\" (same article/date-inconsistency note as GI.CHULA_CENTENARY_PARK)",
+      "id": "GI.BENJAKITTI_FOREST_PARK"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "ความรู้เท่าทันการเตือนภัย/การสื่อสารชุมชนในภาวะปกติ (soft infrastructure, สัมมากร)",
+      "resource_type": "soft_infrastructure",
+      "infra_class": "soft",
+      "phase": "normal",
+      "phase_tag": "INSTINCT",
+      "quantity": null,
+      "unit": null,
+      "owner_agency": "OPEN",
+      "tag": "OPEN",
+      "source": "TDRI \"flooding-after-rain-bangkok-is...\" (soft-infrastructure framing) -- no instance-level evidence in this repo's sources for Sammakorn specifically (e.g. a documented drill/literacy programme); kept OPEN, not invented.\n",
+      "id": "RES.COMMUNITY_WARNING_LITERACY.SAMMAKORN.01"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "เรือผลักดันน้ำ (เครื่องมือทั่วไป -- ไม่ผูกกับเหตุการณ์ใดเหตุการณ์เดียว)",
+      "resource_type": "tool",
+      "tool_class": "water_push_boat",
+      "infra_class": "soft",
+      "infra_class_tag": "INSTINCT",
+      "mode": "boat",
+      "phase": "normal",
+      "phase_tag": "INSTINCT",
+      "established_technique": true,
+      "established_technique_origin_th": "พระราชดำริรัชกาลที่ 9, พัฒนาโดยกรมชลประทาน -- ปีที่เริ่มขัดแย้งกันระหว่างแหล่ง (พ.ศ. 2528 vs 2538) OPEN, ดูการ์ดความรู้สำหรับรายละเอียด\n",
+      "purpose_th": "เร่งการไหลของน้ำเข้าสู่ประตู/จุดสูบ, พัดพาตะกอน, เร่งการระบายออกสู่ทะเล (RELAYED)",
+      "effectiveness": "OPEN",
+      "effectiveness_note_th": "มีผู้เชี่ยวชาญโต้แย้งเรื่องจุดวัดผลและการใช้ในลำน้ำกว้าง; วิศวกรบางรายเห็นว่าช่วยได้ในคลองแคบ -- ไม่มีการวัดผลอิสระของคลังนี้ -- ดู docs/knowledge/card_tool_water_push_boats.md §3\n",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_tool_water_push_boats.md §2-§3 (bangkokbiznews https://www.bangkokbiznews.com/news/1207987, mgronline https://mgronline.com/onlinesection/detail/9600000108261, mgronline 2554 https://mgronline.com/daily/detail/9540000135295)\n",
+      "id": "RES.TOOL.WATER_PUSH_BOAT"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "เครื่องผลักดันน้ำแบบ axial-flow ติดตั้งจุดตายตัว (fixed point, lift over banks)",
+      "resource_type": "tool",
+      "tool_class": "axial_water_pusher",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "mode": "fixed_point",
+      "phase": "normal",
+      "phase_tag": "INSTINCT",
+      "manual_reference": "OPEN -- ไม่พบคู่มือทางการของกรมชลประทาน (RID) ที่อธิบายเครื่องมือนี้โดยตรง",
+      "tag": "OPEN",
+      "source": "docs/knowledge/card_tool_water_push_boats.md §4 -- ค้นแล้วไม่พบคู่มือ RID ตรง",
+      "note_th": "เครื่องมือคนละประเภทกับเรือผลักดันน้ำ (ไม่เคลื่อนที่, ไม่ใช้เครื่องยนต์เรือ) -- ตั้งใจไม่ใส่ edge ใด ๆ (orphan) เพราะไม่มีเหตุการณ์/หน่วยงาน/สถานที่ใดในคลังนี้ที่ยืนยันการใช้งานจริง; part_of ใช้ไม่ได้ (ALLOWED_PAIRS จำกัดแค่ agency->ministry/ministry->government) จึงเหลือ แค่การจัดหมวดผ่าน tool_class attribute นี้เอง ตามที่ founder อนุญาตไว้ (\"else leave as orphan listed OPEN\").\n",
+      "id": "RES.TOOL.AXIAL_WATER_PUSHER"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "ผู้ประกอบการเรือโดยสารคลองแสนแสบ (ผู้นำเรือมาช่วยผลักดันน้ำ, ไม่ระบุชื่อบุคคล/บริษัท)",
+      "agency_class": "commercial_operator",
+      "tag": "RELAYED",
+      "source": "The Bangkok Insight 27 ก.ย. 2569 (https://www.thebangkokinsight.com/news/politics-general/general/1701479/) + MGR Online 27 ก.ย. 2569 (https://mgronline.com/business/detail/9690000094733)\n",
+      "note_th": "id นี้ใช้แทน founder's ask ตั้งต้น `CIV.OPERATOR.SAENSAEB_BOAT` -- คลังนี้ไม่มี node kind/id prefix CIV.* อยู่จริงที่ไหนเลย (ตรวจแล้ว) มีแต่ kind=agency/layer=civil/agency_class ตาม แบบ AG_ESTATE/AG_FB_ADMIN/AG_JS100 -- ดูเหตุผลเต็มใน docs/knowledge/ card_tool_water_push_boats.md §5\n",
+      "id": "AG_OPERATOR_SAENSAEB_BOAT"
+    },
+    {
+      "kind": "warning_channel",
+      "layer": "power",
+      "label_th": "Traffy Fondue",
+      "channel_type": "app",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14)",
+      "id": "WCH.TRAFFY_FONDUE"
+    },
+    {
+      "kind": "warning_channel",
+      "layer": "power",
+      "label_th": "LINE @Traffyfondue",
+      "channel_type": "line_oa",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14)",
+      "id": "WCH.LINE_TRAFFYFONDUE"
+    },
+    {
+      "kind": "warning_channel",
+      "layer": "power",
+      "label_th": "สายด่วน กทม. 1555",
+      "channel_type": "hotline",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14)",
+      "id": "WCH.HOTLINE_1555"
+    },
+    {
+      "kind": "warning_channel",
+      "layer": "power",
+      "label_th": "สายด่วนการแพทย์ฉุกเฉิน 1669",
+      "channel_type": "hotline",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9)",
+      "id": "WCH.HOTLINE_1669"
+    },
+    {
+      "kind": "warning_channel",
+      "layer": "power",
+      "label_th": "เพจ FB ศูนย์ป้องกันน้ำท่วม กทม.",
+      "channel_type": "facebook_page",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14)",
+      "id": "WCH.FB_FLOODCONTROL_BMA"
+    },
+    {
+      "kind": "warning_channel",
+      "layer": "power",
+      "label_th": "ศูนย์ควบคุมระบบป้องกันน้ำท่วม 0 2248 5115",
+      "channel_type": "hotline",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14)",
+      "id": "WCH.FLOOD_CONTROL_CENTER_HOTLINE"
+    },
+    {
+      "kind": "soi_surface",
+      "layer": "civil",
+      "label_th": "ซอย 17",
+      "standard_class": "HY_Features local_surface (RELAYED, extension)",
+      "tag": "RELAYED",
+      "source": "social_listening.py soi/area convention (FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §4a); this build declares the zone id, it does not re-run the live extractor",
+      "id": "SOI.SAMMAKORN.17"
+    },
+    {
+      "kind": "soi_surface",
+      "layer": "civil",
+      "label_th": "ซอย 18",
+      "standard_class": "HY_Features local_surface (RELAYED, extension)",
+      "tag": "RELAYED",
+      "source": "social_listening.py soi/area convention (FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §4a); this build declares the zone id, it does not re-run the live extractor",
+      "id": "SOI.SAMMAKORN.18"
+    },
+    {
+      "area_id": "sammakorn",
+      "label_th": "ครัวเรือนในหมู่บ้านสัมมากร (template สำหรับสร้าง node จริงรายกลุ่มบ้าน)",
+      "template": true,
+      "status": "UNKNOWN",
+      "fresh": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [],
+      "support_candidates": [
+        "sammakorn_household_template",
+        "sammakorn_buddy_cell",
+        "sammakorn_zone",
+        "sammakorn_internal_safe",
+        "external_safe_bkk_east_01",
+        "external_safe_bkk_east_02"
+      ],
+      "member_need_profile": {
+        "privacy": "aggregate_operational_needs_only",
+        "total_persons": null,
+        "living_arrangement": "UNKNOWN",
+        "child_0_5": null,
+        "child_6_12": null,
+        "adolescent_13_17": null,
+        "adult_18_59": null,
+        "older_adult_60_plus": null,
+        "pregnant_person": null,
+        "postpartum_person": null,
+        "chronic_or_acute_illness": null,
+        "disability_or_functional_limitation": null,
+        "bedbound_or_homebound": null,
+        "needs_continuous_supervision": null,
+        "needs_mobility_assistance": null,
+        "needs_essential_medication": null,
+        "needs_time_critical_medical_followup": null,
+        "needs_power_dependent_medical_device": null,
+        "needs_communication_assistance": null,
+        "needs_special_diet": null,
+        "needs_infant_feeding": null,
+        "single_caregiver_household": null,
+        "dependents_without_co_resident_capable_adult": null,
+        "co_resident_capable_adults": null,
+        "co_resident_caregivers": null,
+        "child_caregiver_link_uncovered": "UNKNOWN",
+        "backup_caregiver_link_uncovered": "UNKNOWN",
+        "older_adult_support_link_uncovered": "UNKNOWN",
+        "pregnancy_support_link_uncovered": "UNKNOWN",
+        "medical_support_link_uncovered": "UNKNOWN",
+        "mobility_support_link_uncovered": "UNKNOWN",
+        "power_dependency_support_link_uncovered": "UNKNOWN",
+        "communication_support_link_uncovered": "UNKNOWN",
+        "living_alone_buddy_link_uncovered": "UNKNOWN"
+      },
+      "sustainment": {
+        "checked_at": null,
+        "fresh": false,
+        "physical_safety": "UNKNOWN",
+        "potable_water_for_horizon": "UNKNOWN",
+        "service_water_for_horizon": "UNKNOWN",
+        "food_for_horizon": "UNKNOWN",
+        "essential_medicine_for_horizon": "UNKNOWN",
+        "critical_power": "UNKNOWN",
+        "sanitation_hygiene": "UNKNOWN",
+        "communications": "UNKNOWN",
+        "vulnerable_support": "UNKNOWN",
+        "official_instruction": "NONE",
+        "resupply": {
+          "supplier_node": null,
+          "route_edges": [],
+          "official_movement_conflict": false
+        },
+        "escalation": {
+          "status": "UNKNOWN",
+          "fresh": false,
+          "verified": false
+        }
+      },
+      "self_help_kind": "household",
+      "self_help_layer": 0,
+      "kind": "self_help_household",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "sammakorn_household_template"
+    },
+    {
+      "area_id": "sammakorn",
+      "label_th": "เครือข่ายเพื่อนบ้าน/บ้านคู่ช่วยเหลือ สัมมากร",
+      "status": "UNKNOWN",
+      "fresh": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [
+        "comms"
+      ],
+      "sustainment": {
+        "checked_at": null,
+        "fresh": false,
+        "physical_safety": "UNKNOWN",
+        "potable_water_for_horizon": "UNKNOWN",
+        "service_water_for_horizon": "UNKNOWN",
+        "food_for_horizon": "UNKNOWN",
+        "essential_medicine_for_horizon": "UNKNOWN",
+        "critical_power": "UNKNOWN",
+        "sanitation_hygiene": "UNKNOWN",
+        "communications": "UNKNOWN",
+        "vulnerable_support": "UNKNOWN",
+        "official_instruction": "NONE",
+        "resupply": {
+          "supplier_node": null,
+          "route_edges": [],
+          "official_movement_conflict": false
+        },
+        "escalation": {
+          "status": "UNKNOWN",
+          "fresh": false,
+          "verified": false
+        }
+      },
+      "self_help_kind": "buddy_cell",
+      "self_help_layer": 1,
+      "kind": "self_help_buddy_cell",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "sammakorn_buddy_cell"
+    },
+    {
+      "area_id": "sammakorn",
+      "label_th": "node พื้นที่หมู่บ้านสัมมากร",
+      "status": "UNKNOWN",
+      "fresh": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [
+        "comms",
+        "coordination"
+      ],
+      "resources": [
+        {
+          "type": "boat",
+          "ref": "RES.TOOL.WATER_PUSH_BOAT",
+          "status": "UNKNOWN",
+          "condition_coordination_with_agency_required": true,
+          "condition_bridge_clearance_check": true,
+          "condition_crew_rotation_check": true,
+          "note_th": "เงื่อนไขก่อนใช้งานจริง (ไม่ใช่การยืนยันว่ามีเรือประจำอยู่ที่ซอมมากรวันนี้) -- ต้องประสานหน่วยงาน (BMA/DDS), ต้องตรวจระยะห่าง/ความสูงใต้สะพานก่อนวางเส้นทางเรือ, ต้องมีการหมุนเวียนลูกเรือหากทำงานต่อเนื่อง\n"
+        }
+      ],
+      "sustainment": {
+        "checked_at": null,
+        "fresh": false,
+        "physical_safety": "UNKNOWN",
+        "potable_water_for_horizon": "UNKNOWN",
+        "service_water_for_horizon": "UNKNOWN",
+        "food_for_horizon": "UNKNOWN",
+        "essential_medicine_for_horizon": "UNKNOWN",
+        "critical_power": "UNKNOWN",
+        "sanitation_hygiene": "UNKNOWN",
+        "communications": "UNKNOWN",
+        "vulnerable_support": "UNKNOWN",
+        "official_instruction": "NONE",
+        "resupply": {
+          "supplier_node": null,
+          "route_edges": [],
+          "official_movement_conflict": false
+        },
+        "escalation": {
+          "status": "UNKNOWN",
+          "fresh": false,
+          "verified": false
+        }
+      },
+      "self_help_kind": "zone",
+      "self_help_layer": 2,
+      "kind": "self_help_zone",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "sammakorn_zone"
+    },
+    {
+      "area_id": "sammakorn",
+      "label_th": "จุดปลอดภัยภายในสัมมากร — ยังต้องสำรวจ/ยืนยัน",
+      "status": "UNKNOWN",
+      "fresh": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [],
+      "sustainment": {
+        "checked_at": null,
+        "fresh": false,
+        "physical_safety": "UNKNOWN",
+        "potable_water_for_horizon": "UNKNOWN",
+        "service_water_for_horizon": "UNKNOWN",
+        "food_for_horizon": "UNKNOWN",
+        "essential_medicine_for_horizon": "UNKNOWN",
+        "critical_power": "UNKNOWN",
+        "sanitation_hygiene": "UNKNOWN",
+        "communications": "UNKNOWN",
+        "vulnerable_support": "UNKNOWN",
+        "official_instruction": "NONE",
+        "resupply": {
+          "supplier_node": null,
+          "route_edges": [],
+          "official_movement_conflict": false
+        },
+        "escalation": {
+          "status": "UNKNOWN",
+          "fresh": false,
+          "verified": false
+        }
+      },
+      "self_help_kind": "internal_safe",
+      "self_help_layer": 3,
+      "kind": "self_help_internal_safe",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "sammakorn_internal_safe"
+    },
+    {
+      "area_id": "sammakorn",
+      "label_th": "ทางออกจากสัมมากร — ต้องกำหนดเป็นจุดจริงและตรวจภาคสนาม",
+      "status": "UNKNOWN",
+      "fresh": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [],
+      "self_help_kind": "egress",
+      "self_help_layer": 4,
+      "kind": "self_help_egress",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "sammakorn_egress"
+    },
+    {
+      "area_id": "ram53",
+      "label_th": "ครัวเรือนในซอยรามคำแหง 53 (template สำหรับสร้าง node จริงรายกลุ่มบ้าน)",
+      "template": true,
+      "status": "UNKNOWN",
+      "fresh": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [],
+      "support_candidates": [
+        "ram53_household_template",
+        "ram53_buddy_cell",
+        "ram53_zone",
+        "ram53_internal_safe",
+        "external_safe_bkk_east_01",
+        "external_safe_bkk_east_02"
+      ],
+      "member_need_profile": {
+        "privacy": "aggregate_operational_needs_only",
+        "total_persons": null,
+        "living_arrangement": "UNKNOWN",
+        "child_0_5": null,
+        "child_6_12": null,
+        "adolescent_13_17": null,
+        "adult_18_59": null,
+        "older_adult_60_plus": null,
+        "pregnant_person": null,
+        "postpartum_person": null,
+        "chronic_or_acute_illness": null,
+        "disability_or_functional_limitation": null,
+        "bedbound_or_homebound": null,
+        "needs_continuous_supervision": null,
+        "needs_mobility_assistance": null,
+        "needs_essential_medication": null,
+        "needs_time_critical_medical_followup": null,
+        "needs_power_dependent_medical_device": null,
+        "needs_communication_assistance": null,
+        "needs_special_diet": null,
+        "needs_infant_feeding": null,
+        "single_caregiver_household": null,
+        "dependents_without_co_resident_capable_adult": null,
+        "co_resident_capable_adults": null,
+        "co_resident_caregivers": null,
+        "child_caregiver_link_uncovered": "UNKNOWN",
+        "backup_caregiver_link_uncovered": "UNKNOWN",
+        "older_adult_support_link_uncovered": "UNKNOWN",
+        "pregnancy_support_link_uncovered": "UNKNOWN",
+        "medical_support_link_uncovered": "UNKNOWN",
+        "mobility_support_link_uncovered": "UNKNOWN",
+        "power_dependency_support_link_uncovered": "UNKNOWN",
+        "communication_support_link_uncovered": "UNKNOWN",
+        "living_alone_buddy_link_uncovered": "UNKNOWN"
+      },
+      "sustainment": {
+        "checked_at": null,
+        "fresh": false,
+        "physical_safety": "UNKNOWN",
+        "potable_water_for_horizon": "UNKNOWN",
+        "service_water_for_horizon": "UNKNOWN",
+        "food_for_horizon": "UNKNOWN",
+        "essential_medicine_for_horizon": "UNKNOWN",
+        "critical_power": "UNKNOWN",
+        "sanitation_hygiene": "UNKNOWN",
+        "communications": "UNKNOWN",
+        "vulnerable_support": "UNKNOWN",
+        "official_instruction": "NONE",
+        "resupply": {
+          "supplier_node": null,
+          "route_edges": [],
+          "official_movement_conflict": false
+        },
+        "escalation": {
+          "status": "UNKNOWN",
+          "fresh": false,
+          "verified": false
+        }
+      },
+      "self_help_kind": "household",
+      "self_help_layer": 0,
+      "kind": "self_help_household",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "ram53_household_template"
+    },
+    {
+      "area_id": "ram53",
+      "label_th": "เครือข่ายเพื่อนบ้าน/บ้านคู่ช่วยเหลือ รามคำแหง 53",
+      "status": "UNKNOWN",
+      "fresh": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [
+        "comms"
+      ],
+      "sustainment": {
+        "checked_at": null,
+        "fresh": false,
+        "physical_safety": "UNKNOWN",
+        "potable_water_for_horizon": "UNKNOWN",
+        "service_water_for_horizon": "UNKNOWN",
+        "food_for_horizon": "UNKNOWN",
+        "essential_medicine_for_horizon": "UNKNOWN",
+        "critical_power": "UNKNOWN",
+        "sanitation_hygiene": "UNKNOWN",
+        "communications": "UNKNOWN",
+        "vulnerable_support": "UNKNOWN",
+        "official_instruction": "NONE",
+        "resupply": {
+          "supplier_node": null,
+          "route_edges": [],
+          "official_movement_conflict": false
+        },
+        "escalation": {
+          "status": "UNKNOWN",
+          "fresh": false,
+          "verified": false
+        }
+      },
+      "self_help_kind": "buddy_cell",
+      "self_help_layer": 1,
+      "kind": "self_help_buddy_cell",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "ram53_buddy_cell"
+    },
+    {
+      "area_id": "ram53",
+      "label_th": "node พื้นที่ซอยรามคำแหง 53",
+      "status": "UNKNOWN",
+      "fresh": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [
+        "comms",
+        "coordination"
+      ],
+      "sustainment": {
+        "checked_at": null,
+        "fresh": false,
+        "physical_safety": "UNKNOWN",
+        "potable_water_for_horizon": "UNKNOWN",
+        "service_water_for_horizon": "UNKNOWN",
+        "food_for_horizon": "UNKNOWN",
+        "essential_medicine_for_horizon": "UNKNOWN",
+        "critical_power": "UNKNOWN",
+        "sanitation_hygiene": "UNKNOWN",
+        "communications": "UNKNOWN",
+        "vulnerable_support": "UNKNOWN",
+        "official_instruction": "NONE",
+        "resupply": {
+          "supplier_node": null,
+          "route_edges": [],
+          "official_movement_conflict": false
+        },
+        "escalation": {
+          "status": "UNKNOWN",
+          "fresh": false,
+          "verified": false
+        }
+      },
+      "self_help_kind": "zone",
+      "self_help_layer": 2,
+      "kind": "self_help_zone",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "ram53_zone"
+    },
+    {
+      "area_id": "ram53",
+      "label_th": "จุดปลอดภัยภายในรามคำแหง 53 — ยังต้องสำรวจ/ยืนยัน",
+      "status": "UNKNOWN",
+      "fresh": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [],
+      "sustainment": {
+        "checked_at": null,
+        "fresh": false,
+        "physical_safety": "UNKNOWN",
+        "potable_water_for_horizon": "UNKNOWN",
+        "service_water_for_horizon": "UNKNOWN",
+        "food_for_horizon": "UNKNOWN",
+        "essential_medicine_for_horizon": "UNKNOWN",
+        "critical_power": "UNKNOWN",
+        "sanitation_hygiene": "UNKNOWN",
+        "communications": "UNKNOWN",
+        "vulnerable_support": "UNKNOWN",
+        "official_instruction": "NONE",
+        "resupply": {
+          "supplier_node": null,
+          "route_edges": [],
+          "official_movement_conflict": false
+        },
+        "escalation": {
+          "status": "UNKNOWN",
+          "fresh": false,
+          "verified": false
+        }
+      },
+      "self_help_kind": "internal_safe",
+      "self_help_layer": 3,
+      "kind": "self_help_internal_safe",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "ram53_internal_safe"
+    },
+    {
+      "area_id": "ram53",
+      "label_th": "ทางออกจากรามคำแหง 53 — ต้องกำหนดเป็นจุดจริงและตรวจภาคสนาม",
+      "status": "UNKNOWN",
+      "fresh": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [],
+      "self_help_kind": "egress",
+      "self_help_layer": 4,
+      "kind": "self_help_egress",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "ram53_egress"
+    },
+    {
+      "area_id": "external",
+      "label_th": "จุดปลอดภัยภายนอก #1 — ยังไม่กำหนดสถานที่จริง",
+      "status": "UNKNOWN",
+      "fresh": false,
+      "verified_safe": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [],
+      "sustainment": {
+        "checked_at": null,
+        "fresh": false,
+        "physical_safety": "UNKNOWN",
+        "potable_water_for_horizon": "UNKNOWN",
+        "service_water_for_horizon": "UNKNOWN",
+        "food_for_horizon": "UNKNOWN",
+        "essential_medicine_for_horizon": "UNKNOWN",
+        "critical_power": "UNKNOWN",
+        "sanitation_hygiene": "UNKNOWN",
+        "communications": "UNKNOWN",
+        "vulnerable_support": "UNKNOWN",
+        "official_instruction": "NONE",
+        "resupply": {
+          "supplier_node": null,
+          "route_edges": [],
+          "official_movement_conflict": false
+        },
+        "escalation": {
+          "status": "UNKNOWN",
+          "fresh": false,
+          "verified": false
+        }
+      },
+      "self_help_kind": "external_safe",
+      "self_help_layer": 5,
+      "kind": "self_help_external_safe",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "external_safe_bkk_east_01"
+    },
+    {
+      "area_id": "external",
+      "label_th": "จุดปลอดภัยภายนอก #2 — สำรองคนละทิศทาง/คนละ failure domain",
+      "status": "UNKNOWN",
+      "fresh": false,
+      "verified_safe": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [],
+      "sustainment": {
+        "checked_at": null,
+        "fresh": false,
+        "physical_safety": "UNKNOWN",
+        "potable_water_for_horizon": "UNKNOWN",
+        "service_water_for_horizon": "UNKNOWN",
+        "food_for_horizon": "UNKNOWN",
+        "essential_medicine_for_horizon": "UNKNOWN",
+        "critical_power": "UNKNOWN",
+        "sanitation_hygiene": "UNKNOWN",
+        "communications": "UNKNOWN",
+        "vulnerable_support": "UNKNOWN",
+        "official_instruction": "NONE",
+        "resupply": {
+          "supplier_node": null,
+          "route_edges": [],
+          "official_movement_conflict": false
+        },
+        "escalation": {
+          "status": "UNKNOWN",
+          "fresh": false,
+          "verified": false
+        }
+      },
+      "self_help_kind": "external_safe",
+      "self_help_layer": 5,
+      "kind": "self_help_external_safe",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "external_safe_bkk_east_02"
+    },
+    {
+      "area_id": "romklao",
+      "label_th": "node พื้นที่เคหะชุมชนร่มเกล้า (ลาดกระบัง)",
+      "status": "UNKNOWN",
+      "fresh": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [
+        "comms",
+        "coordination"
+      ],
+      "resources": [
+        {
+          "type": "drone",
+          "ref": "RES.TOOL.RESCUE_DRONE",
+          "status": "UNKNOWN",
+          "condition_coordination_with_agency_required": true,
+          "condition_line_of_sight_or_comms_link_required": true,
+          "condition_payload_weight_check": true,
+          "note_th": "เงื่อนไขก่อนใช้งานจริง -- ต้องประสานหน่วยงาน (อว./พม./สอป./บริษัทผู้ให้บริการ), ต้องมี สัญญาณควบคุม/แนวสายตาเพียงพอ, ต้องตรวจน้ำหนักของที่จะส่งก่อนบิน -- ใช้สำหรับส่งของ/ สำรวจเท่านั้น ไม่ใช่โหมดย้ายคน (ดู community_dag.py EDGE_MODES)\n"
+        },
+        {
+          "type": "shared_pool",
+          "ref": "RES.TOOL.SHARED_POOL",
+          "status": "UNKNOWN",
+          "pools_active": [
+            "money",
+            "medicine",
+            "drinking_water"
+          ],
+          "note_th": "กองกลางที่ชุมชนรวมกันเอง (เงิน/ยา/น้ำดื่ม) -- ไม่ใช่การจัดสรรจากหน่วยงาน"
+        }
+      ],
+      "roles_active": [
+        "coordinator",
+        "welfare",
+        "route_checker",
+        "resource_keeper",
+        "comms",
+        "procurement_runner"
+      ],
+      "self_help_kind": "zone",
+      "self_help_layer": 2,
+      "kind": "self_help_zone",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "romklao_zone"
+    },
+    {
+      "area_id": "romklao",
+      "label_th": "ศูนย์ปฏิบัติการ + ครัวกลาง ปากซอยรามคำแหง 192 (มีนบุรี)",
+      "status": "UNKNOWN",
+      "fresh": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [
+        "kitchen"
+      ],
+      "self_help_kind": "support",
+      "self_help_layer": 3,
+      "kind": "self_help_support",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "romklao_ops_kitchen_ram192"
+    },
+    {
+      "area_id": "romklao",
+      "label_th": "ฐานหลักปฏิบัติการ ร่มเกล้า 2",
+      "status": "UNKNOWN",
+      "fresh": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [
+        "rescue_staging"
+      ],
+      "self_help_kind": "support",
+      "self_help_layer": 3,
+      "kind": "self_help_support",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "romklao_base_romklao2"
+    },
+    {
+      "area_id": "romklao",
+      "label_th": "แผนย้ายครัวกลางไปวัดปากบึง (แผน -- สถานะดำเนินการยังไม่ยืนยัน)",
+      "status": "UNKNOWN",
+      "fresh": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [
+        "kitchen"
+      ],
+      "planned": true,
+      "self_help_kind": "support",
+      "self_help_layer": 3,
+      "kind": "self_help_support",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "romklao_kitchen_relocation_watpakbueng"
+    },
+    {
+      "area_id": "romklao",
+      "label_th": "จุดจอดรถ 4WD สำรอง",
+      "status": "UNKNOWN",
+      "fresh": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [
+        "rescue_staging"
+      ],
+      "modes": [
+        "high_clearance",
+        "vehicle"
+      ],
+      "self_help_kind": "support",
+      "self_help_layer": 3,
+      "kind": "self_help_support",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "romklao_vehicle_standby_4wd"
+    },
+    {
+      "area_id": "khlongchan_flats",
+      "label_th": "node พื้นที่แฟลตคลองจั่น (บางกะปิ)",
+      "status": "UNKNOWN",
+      "fresh": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [
+        "comms",
+        "coordination"
+      ],
+      "resources": [
+        {
+          "type": "shared_pool",
+          "ref": "RES.TOOL.SHARED_POOL",
+          "status": "UNKNOWN",
+          "pools_active": [
+            "money",
+            "medicine",
+            "drinking_water"
+          ],
+          "note_th": "กองกลางที่ชุมชนรวมกันเอง (เงิน/ยา/น้ำดื่ม) -- ไม่ใช่การจัดสรรจากหน่วยงาน"
+        }
+      ],
+      "roles_active": [
+        "coordinator",
+        "welfare",
+        "route_checker",
+        "resource_keeper",
+        "comms",
+        "procurement_runner"
+      ],
+      "self_help_kind": "zone",
+      "self_help_layer": 2,
+      "kind": "self_help_zone",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "khlongchan_flats_zone"
+    },
+    {
+      "area_id": "khlongchan_flats",
+      "label_th": "ครัวกลางที่ชุมชนตั้งเอง (แฟลตคลองจั่น)",
+      "status": "UNKNOWN",
+      "fresh": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [
+        "kitchen"
+      ],
+      "self_help_kind": "support",
+      "self_help_layer": 3,
+      "kind": "self_help_support",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "khlongchan_flats_kitchen"
+    },
+    {
+      "area_id": "sammakorn",
+      "label_th": "จุดเติมของจำเป็นสัมมากร #1 — ยังไม่กำหนด/ยืนยัน",
+      "status": "UNKNOWN",
+      "fresh": false,
+      "verified_service": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [],
+      "self_help_kind": "supply_point",
+      "self_help_layer": 5,
+      "kind": "self_help_supply_point",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "sammakorn_supply_point_01"
+    },
+    {
+      "area_id": "ram53",
+      "label_th": "จุดเติมของจำเป็นรามคำแหง 53 #1 — ยังไม่กำหนด/ยืนยัน",
+      "status": "UNKNOWN",
+      "fresh": false,
+      "verified_service": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [],
+      "self_help_kind": "supply_point",
+      "self_help_layer": 5,
+      "kind": "self_help_supply_point",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "ram53_supply_point_01"
+    },
+    {
+      "kind": "open_sentinel",
+      "layer": "unknown",
+      "tag": "OPEN",
+      "label_th": "(ยังไม่ยืนยัน / unresolved)",
+      "source": "tools/typology/build_graph.py -- shared sentinel node for every unresolved edge target/source in the registry",
+      "id": "OPEN"
+    }
+  ],
+  "edges": [
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WL.SSB.10",
+      "target": "WL.SSB.09",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "WL.SSB.10",
+      "kind": "owned_by",
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WL.SSB.09",
+      "target": "WL.SSB.08",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WL.SSB.08",
+      "target": "WL.SSB.07",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WL.SSB.07",
+      "target": "WL.SSB.04",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WL.SSB.04",
+      "target": "WL.PKN.01",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "WL.SSB.04",
+      "kind": "flows_to",
+      "target": "tunnel:bma_dds:saensaeb_ladprao",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "MEASURED",
+      "source": "WL.PKN.01",
+      "target": "river:chao_phraya",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "WL.PKN.01",
+      "kind": "flows_to",
+      "target": "pump_station:water_station:1",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "edge_subkind": "backflow-risk",
+      "source": "WL.BMA.02",
+      "target": "WL.SMK.01",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WL.BMA.02",
+      "target": "WL.SSB.08",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WL.SMK.01",
+      "target": "ST.SPS.01",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "OPEN",
+      "source": "WL.SMK.01",
+      "target": "ST.SPS.02",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "OPEN",
+      "source": "WL.SMK.01",
+      "target": "ST.SPS.03",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "OPEN",
+      "source": "WL.SMK.01",
+      "target": "ST.SPS.04",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "OPEN",
+      "source": "WATER.wangyai",
+      "target": "WL.TPK.03",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WL.TPK.03",
+      "target": "WL.PWT.03",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WL.PWT.03",
+      "target": "WL.PWT.04",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WL.PWT.04",
+      "target": "WATER.ladkrabang",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "WL.PWT.04",
+      "kind": "owned_by",
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WATER.ladkrabang",
+      "target": "WATER.south_outlet",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "OPEN",
+      "source": "WATER.south_outlet",
+      "target": "river:chao_phraya",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WL.HMK.01",
+      "target": "WL.SSB.07",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WL.LBK.03",
+      "target": "WL.SSB.07",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WL.KJN.01",
+      "drains_after": "WL.SSB.09",
+      "drains_after_tag": "RELAYED",
+      "drains_after_note_th": "ใช้เวลานานกว่ารามคำแหง/คลองจิก เพราะอยู่ลึกเข้าไปในแผ่นดินกว่า (Environman FB post 28 ก.ย. 2569, RELAYED, ไม่มีตัวเลขเวลากำกับ)",
+      "drains_after_source": "Environman FB post 28 ก.ย. 2569 -- same cross-ref as e_ram53_ssb07",
+      "target": "WL.SSB.07",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WATER.ram53_canal",
+      "drains_after": "WL.SSB.09",
+      "drains_after_tag": "RELAYED",
+      "drains_after_source": "Environman FB post 28 ก.ย. 2569 (citing ubonmet.tmd.go.th/.../1_Month/09.pdf, prd.go.th/.../iid/545141) -- cross-ref tools/flowmap/flow_stall.py RULE-STALL-01 (recession-front persistence check, same idea, not re-computed here)",
+      "target": "WL.SSB.07",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "ST.SPS.01",
+      "target": "WL.BMA.02",
+      "key": 0
+    },
+    {
+      "tag": "VERIFIED",
+      "source": "ST.SPS.01",
+      "kind": "owned_by",
+      "contradicted": true,
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "OPEN",
+      "source": "ST.SPS.02",
+      "target": "WATER.wangyai",
+      "key": 0
+    },
+    {
+      "tag": "VERIFIED",
+      "source": "ST.SPS.02",
+      "kind": "owned_by",
+      "contradicted": true,
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "OPEN",
+      "source": "ST.SPS.03",
+      "target": "WATER.wangyai",
+      "key": 0
+    },
+    {
+      "tag": "VERIFIED",
+      "source": "ST.SPS.03",
+      "kind": "owned_by",
+      "contradicted": true,
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "OPEN",
+      "source": "ST.SPS.04",
+      "target": "WATER.wangyai",
+      "key": 0
+    },
+    {
+      "tag": "VERIFIED",
+      "source": "ST.SPS.04",
+      "kind": "owned_by",
+      "contradicted": true,
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_DDS",
+      "kind": "operates",
+      "target": "WL.SSB.10",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_DDS",
+      "kind": "operates",
+      "target": "WL.PWT.04",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_BMA_GOV",
+      "kind": "decides",
+      "target": "WL.SSB.10",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_BMA_GOV",
+      "kind": "decides",
+      "target": "WL.PWT.04",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_BMA_GOV",
+      "kind": "part_of",
+      "target": "CATEGORY.LOCAL_GOV",
+      "key": 0
+    },
+    {
+      "instruction": "รับแจ้งเหตุ/ส่งต่อประกาศเฝ้าระวังผ่านแอป",
+      "datum": "OPEN",
+      "area": "OPEN",
+      "lead_time": "OPEN",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_BMA_GOV",
+      "kind": "warns",
+      "target": "WCH.TRAFFY_FONDUE",
+      "key": 0
+    },
+    {
+      "instruction": "รับแจ้งเหตุ/ส่งต่อประกาศเฝ้าระวังผ่าน LINE OA",
+      "datum": "OPEN",
+      "area": "OPEN",
+      "lead_time": "OPEN",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_BMA_GOV",
+      "kind": "warns",
+      "target": "WCH.LINE_TRAFFYFONDUE",
+      "key": 0
+    },
+    {
+      "instruction": "รับแจ้งเหตุ/ให้ข้อมูลสถานการณ์ทั่วไปทางโทรศัพท์",
+      "datum": "OPEN",
+      "area": "OPEN",
+      "lead_time": "OPEN",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_BMA_GOV",
+      "kind": "warns",
+      "target": "WCH.HOTLINE_1555",
+      "key": 0
+    },
+    {
+      "instruction": "ประกาศเฝ้าระวัง/สถานะบึงหนองบอนและแผนลดระดับล่วงหน้า",
+      "datum": "OPEN",
+      "area": "OPEN",
+      "lead_time": "OPEN",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_BMA_GOV",
+      "kind": "warns",
+      "target": "WCH.FB_FLOODCONTROL_BMA",
+      "key": 0
+    },
+    {
+      "instruction": "ติดต่อศูนย์ควบคุมระบบป้องกันน้ำท่วมโดยตรง",
+      "datum": "OPEN",
+      "area": "OPEN",
+      "lead_time": "OPEN",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_BMA_GOV",
+      "kind": "warns",
+      "target": "WCH.FLOOD_CONTROL_CENTER_HOTLINE",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_RID",
+      "kind": "decides",
+      "basis": "unverified",
+      "target": "WL.PWT.04",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_RID",
+      "kind": "part_of",
+      "target": "MINISTRY.AGRI",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_DDPM",
+      "kind": "part_of",
+      "target": "MINISTRY.INTERIOR",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_TMD",
+      "kind": "operates",
+      "target": "AG_CLIMATE_COMMS_CENTRE",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_TMD",
+      "kind": "part_of",
+      "target": "MINISTRY.DIGITAL",
+      "key": 0
+    },
+    {
+      "instruction": "OPEN -- ไม่มีช่องทางที่ยืนยันได้ว่า AG_MEA เตือน/ตอบกลับซ.17/18 โดยตรง",
+      "datum": "OPEN",
+      "area": "OPEN",
+      "lead_time": "OPEN",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "OPEN",
+      "source": "AG_MEA",
+      "kind": "warns",
+      "target": "OPEN",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "AG_ESTATE",
+      "kind": "reports_to",
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_ESTATE",
+      "kind": "supplies",
+      "target": "SOI.SAMMAKORN.17",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_ESTATE",
+      "kind": "supplies",
+      "target": "SOI.SAMMAKORN.18",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_ESTATE",
+      "kind": "supplies",
+      "target": "khlongchan_flats_kitchen",
+      "key": 0
+    },
+    {
+      "instruction": "แจ้งเคลื่อนย้ายผู้ป่วยติดเตียง/ผู้สูงอายุ/ผู้พิการฉุกเฉิน",
+      "datum": "OPEN",
+      "area": "OPEN",
+      "lead_time": "OPEN",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_BMA_MED",
+      "kind": "warns",
+      "target": "WCH.HOTLINE_1669",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_ONWR",
+      "kind": "part_of",
+      "target": "MINISTRY.PMO",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_FB_ADMIN",
+      "kind": "reports_to",
+      "target": "AG_BMA_MED",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_VOLUNTEER_MOTOSAI_SAMMAKORN",
+      "kind": "supplies",
+      "target": "SOI.SAMMAKORN.17",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_LOCAL_SHOP_SAMSAEK_LOR",
+      "kind": "reports_to",
+      "target": "OPEN",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_JS100",
+      "kind": "reports_to",
+      "target": "RES.BOAT_PUSH.AG_UNKNOWN.01",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_DOH",
+      "kind": "part_of",
+      "target": "MINISTRY.TRANSPORT",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_MARINE",
+      "kind": "part_of",
+      "target": "MINISTRY.TRANSPORT",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_DPT",
+      "kind": "part_of",
+      "target": "MINISTRY.INTERIOR",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_DWR",
+      "kind": "part_of",
+      "target": "MINISTRY.NATRES",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_GISTDA",
+      "kind": "part_of",
+      "target": "CATEGORY.PUBLIC_ORG",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_HII",
+      "kind": "part_of",
+      "target": "CATEGORY.PUBLIC_ORG",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_MOAC_PERM_SEC",
+      "kind": "part_of",
+      "target": "MINISTRY.AGRI",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_ROYAL_RAINMAKING",
+      "kind": "part_of",
+      "target": "MINISTRY.AGRI",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_LAND_DEV",
+      "kind": "part_of",
+      "target": "MINISTRY.AGRI",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_ALRO",
+      "kind": "part_of",
+      "target": "MINISTRY.AGRI",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_AGRI_EXT",
+      "kind": "part_of",
+      "target": "MINISTRY.AGRI",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_RURAL_ROADS",
+      "kind": "part_of",
+      "target": "MINISTRY.TRANSPORT",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_FORESTRY",
+      "kind": "part_of",
+      "target": "MINISTRY.NATRES",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_NATIONAL_PARKS",
+      "kind": "part_of",
+      "target": "MINISTRY.NATRES",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_GEOLOGY",
+      "kind": "part_of",
+      "target": "MINISTRY.NATRES",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_POLLUTION_CONTROL",
+      "kind": "part_of",
+      "target": "MINISTRY.NATRES",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_GROUNDWATER",
+      "kind": "part_of",
+      "target": "MINISTRY.NATRES",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_DLA",
+      "kind": "part_of",
+      "target": "MINISTRY.INTERIOR",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_ANAMAI",
+      "kind": "part_of",
+      "target": "MINISTRY.HEALTH",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_FACTORY",
+      "kind": "part_of",
+      "target": "MINISTRY.INDUSTRY",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_MWA",
+      "kind": "part_of",
+      "target": "CATEGORY.STATE_ENTERPRISE",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_PWA",
+      "kind": "part_of",
+      "target": "CATEGORY.STATE_ENTERPRISE",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_WWMA",
+      "kind": "part_of",
+      "target": "CATEGORY.STATE_ENTERPRISE",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_IEAT",
+      "kind": "part_of",
+      "target": "CATEGORY.STATE_ENTERPRISE",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "RES.TOOL.SHARED_POOL",
+      "kind": "supplies",
+      "target": "CIV.ZONE.KHLONGCHAN_FLATS",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "RES.TOOL.SHARED_POOL",
+      "kind": "supplies",
+      "target": "CIV.ZONE.ROMKLAO",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "tunnel:bma_dds:nongbon",
+      "kind": "flows_to",
+      "target": "river:chao_phraya",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "WATER.canal_ladprao",
+      "kind": "flows_to",
+      "target": "WL.CONFLUENCE.LPR_SSB.01",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "WL.CONFLUENCE.LPR_SSB.01",
+      "kind": "flows_to",
+      "target": "WL.SSB.04",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "tunnel:bma_dds:saensaeb_ladprao",
+      "kind": "flows_to",
+      "target": "pump_station:water_station:2",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "pump_station:water_station:1",
+      "kind": "flows_to",
+      "target": "river:chao_phraya",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "pump_station:water_station:2",
+      "kind": "flows_to",
+      "target": "river:chao_phraya",
+      "key": 0
+    },
+    {
+      "drains_after": "WL.SSB.09",
+      "drains_after_tag": "RELAYED",
+      "drains_after_source": "Environman FB post 28 ก.ย. 2569 -- คลองจิก (tributary ใหม่, ไม่มี node มาก่อน) pump ออกได้หลังระดับแสนแสบตอนบนลดเท่านั้น (ตรงกับ รามคำแหง/คลองจั่น -- ดู DRAINS_AFTER_OVERRIDES ใน tools/typology/build_graph.py สำหรับ 2 tributary เดิมที่มี node อยู่แล้ว)\n",
+      "tag": "OPEN",
+      "source": "WATER.khlong_jik",
+      "kind": "flows_to",
+      "target": "WL.SSB.07",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "WATER.canal_prem_prachakon",
+      "kind": "flows_to",
+      "target": "river:chao_phraya",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_CLIMATE_COMMS_CENTRE",
+      "kind": "part_of",
+      "target": "MINISTRY.DIGITAL",
+      "key": 0
+    },
+    {
+      "instruction": "OPEN",
+      "datum": "OPEN",
+      "area": "OPEN",
+      "lead_time": "OPEN",
+      "severity_scale": "symbolic+numeric compared to past events (announced policy)",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_CLIMATE_COMMS_CENTRE",
+      "kind": "warns",
+      "target": "WCH.TV_RADIO_PRD_MCOT",
+      "key": 0
+    },
+    {
+      "instruction": "OPEN",
+      "datum": "OPEN",
+      "area": "OPEN",
+      "lead_time": "OPEN",
+      "severity_scale": "symbolic+numeric compared to past events (announced policy)",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_CLIMATE_COMMS_CENTRE",
+      "kind": "warns",
+      "target": "WCH.GOV_SOCIAL",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_PRD",
+      "kind": "part_of",
+      "target": "MINISTRY.PMO",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_PRD",
+      "kind": "reports_to",
+      "target": "AG_CLIMATE_COMMS_CENTRE",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_MCOT",
+      "kind": "reports_to",
+      "target": "AG_CLIMATE_COMMS_CENTRE",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_PM_SPOKES",
+      "kind": "part_of",
+      "target": "MINISTRY.PMO",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_PM_SPOKES",
+      "kind": "reports_to",
+      "target": "AG_CLIMATE_COMMS_CENTRE",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_AFNC",
+      "kind": "part_of",
+      "target": "MINISTRY.DIGITAL",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "MINISTRY.MHESI",
+      "kind": "part_of",
+      "target": "GOV.TH",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "MINISTRY.SOCIAL",
+      "kind": "part_of",
+      "target": "GOV.TH",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_MHESI",
+      "kind": "part_of",
+      "target": "MINISTRY.MHESI",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_MSDHS",
+      "kind": "operates",
+      "target": "RES.KITCHEN.MSDHS_CENTRAL",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_MSDHS",
+      "kind": "part_of",
+      "target": "MINISTRY.SOCIAL",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_KMUTNB",
+      "kind": "part_of",
+      "target": "MINISTRY.MHESI",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_SOP",
+      "kind": "operates",
+      "target": "RES.DRONE.ROMKLAO_20260928",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_SOP",
+      "kind": "reports_to",
+      "target": "AG_MHESI",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_SYSTRONICS",
+      "kind": "operates",
+      "target": "RES.DRONE.ROMKLAO_20260928",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_SYSTRONICS",
+      "kind": "reports_to",
+      "target": "AG_MHESI",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_RESCUE_ROMSAI",
+      "kind": "reports_to",
+      "target": "AG_MSDHS",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "RES.DRONE.ROMKLAO_20260928",
+      "kind": "supplies",
+      "target": "romklao_zone",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "RES.KITCHEN.MSDHS_CENTRAL",
+      "kind": "supplies",
+      "target": "romklao_zone",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "MINISTRY.PMO",
+      "kind": "part_of",
+      "target": "GOV.TH",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "MINISTRY.AGRI",
+      "kind": "part_of",
+      "target": "GOV.TH",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "MINISTRY.TRANSPORT",
+      "kind": "part_of",
+      "target": "GOV.TH",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "MINISTRY.NATRES",
+      "kind": "part_of",
+      "target": "GOV.TH",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "MINISTRY.DIGITAL",
+      "kind": "part_of",
+      "target": "GOV.TH",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "MINISTRY.INTERIOR",
+      "kind": "part_of",
+      "target": "GOV.TH",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "MINISTRY.HEALTH",
+      "kind": "part_of",
+      "target": "GOV.TH",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "MINISTRY.INDUSTRY",
+      "kind": "part_of",
+      "target": "GOV.TH",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "CATEGORY.PUBLIC_ORG",
+      "kind": "part_of",
+      "target": "GOV.TH",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "CATEGORY.STATE_ENTERPRISE",
+      "kind": "part_of",
+      "target": "GOV.TH",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "CATEGORY.LOCAL_GOV",
+      "kind": "part_of",
+      "target": "GOV.TH",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "WATER.canal_bangtalad",
+      "kind": "flows_to",
+      "target": "WATER.bangtalad_tiwanon_bridge",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "WATER.bangtalad_tiwanon_bridge",
+      "kind": "flows_to",
+      "target": "ST.BANGTALAD.01",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "SOI.BANGTALAD.SAMAKKEE",
+      "kind": "flows_to",
+      "target": "WATER.canal_bangtalad",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "RES.PUMP.BANGTALAD_MOBILE_01",
+      "kind": "supplies",
+      "target": "ST.BANGTALAD.01",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "CIV.FIELD_OBSERVER",
+      "kind": "reports_to",
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "precedes_basis": "toc_order",
+      "tag": "VERIFIED",
+      "source": "HHTASK.PREP",
+      "kind": "precedes",
+      "target": "HHTASK.PHOTO_DAMAGE",
+      "key": 0
+    },
+    {
+      "precedes_basis": "explicit",
+      "tag": "VERIFIED",
+      "source": "HHTASK.PHOTO_DAMAGE",
+      "kind": "precedes",
+      "target": "HHTASK.VENTILATE",
+      "key": 0
+    },
+    {
+      "precedes_basis": "explicit",
+      "tag": "VERIFIED",
+      "source": "HHTASK.VENTILATE",
+      "kind": "precedes",
+      "target": "HHTASK.ELECTRICAL",
+      "key": 0
+    },
+    {
+      "precedes_basis": "toc_order",
+      "tag": "VERIFIED",
+      "source": "HHTASK.ELECTRICAL",
+      "kind": "precedes",
+      "target": "HHTASK.STRUCTURE",
+      "key": 0
+    },
+    {
+      "precedes_basis": "explicit",
+      "tag": "VERIFIED",
+      "source": "HHTASK.ELECTRICAL",
+      "kind": "precedes",
+      "target": "HHTASK.CLEANING",
+      "key": 0
+    },
+    {
+      "tag": "VERIFIED",
+      "source": "HHTASK.ELECTRICAL",
+      "kind": "reports_to",
+      "target": "AG_MEA",
+      "key": 0
+    },
+    {
+      "tag": "VERIFIED",
+      "source": "HHTASK.ELECTRICAL",
+      "kind": "reports_to",
+      "target": "AG_PEA",
+      "key": 0
+    },
+    {
+      "precedes_basis": "toc_order",
+      "tag": "VERIFIED",
+      "source": "HHTASK.STRUCTURE",
+      "kind": "precedes",
+      "target": "HHTASK.CLEANING",
+      "key": 0
+    },
+    {
+      "tag": "VERIFIED",
+      "source": "HHTASK.STRUCTURE",
+      "kind": "reports_to",
+      "target": "AG_EIT",
+      "key": 0
+    },
+    {
+      "precedes_basis": "toc_order",
+      "tag": "VERIFIED",
+      "source": "HHTASK.CLEANING",
+      "kind": "precedes",
+      "target": "HHTASK.SANITATION",
+      "key": 0
+    },
+    {
+      "precedes_basis": "toc_order",
+      "tag": "VERIFIED",
+      "source": "HHTASK.SANITATION",
+      "kind": "precedes",
+      "target": "HHTASK.DOORS_WINDOWS",
+      "key": 0
+    },
+    {
+      "precedes_basis": "toc_order",
+      "tag": "VERIFIED",
+      "source": "HHTASK.DOORS_WINDOWS",
+      "kind": "precedes",
+      "target": "HHTASK.FLOORS",
+      "key": 0
+    },
+    {
+      "precedes_basis": "toc_order",
+      "tag": "VERIFIED",
+      "source": "HHTASK.FLOORS",
+      "kind": "precedes",
+      "target": "HHTASK.WALLS",
+      "key": 0
+    },
+    {
+      "precedes_basis": "toc_order",
+      "tag": "VERIFIED",
+      "source": "HHTASK.WALLS",
+      "kind": "precedes",
+      "target": "HHTASK.APPLIANCES",
+      "key": 0
+    },
+    {
+      "precedes_basis": "toc_order",
+      "tag": "VERIFIED",
+      "source": "HHTASK.APPLIANCES",
+      "kind": "precedes",
+      "target": "HHTASK.FURNITURE",
+      "key": 0
+    },
+    {
+      "precedes_basis": "toc_order",
+      "tag": "VERIFIED",
+      "source": "HHTASK.FURNITURE",
+      "kind": "precedes",
+      "target": "HHTASK.PLANTS",
+      "key": 0
+    },
+    {
+      "tag": "VERIFIED",
+      "source": "AS_SHELTER_KMITL",
+      "kind": "owned_by",
+      "target": "AG_KMITL",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_TELCO_AIS",
+      "kind": "operates",
+      "target": "RES.COW.SHELTER_KMITL_01",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_TELCO_AIS",
+      "kind": "reports_to",
+      "target": "AG_NBTC",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_TELCO_TRUE",
+      "kind": "operates",
+      "target": "RES.COW.SHELTER_KMITL_01",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_TELCO_TRUE",
+      "kind": "operates",
+      "target": "RES.CHARGING.SHELTER_KMITL_01",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_TELCO_TRUE",
+      "kind": "reports_to",
+      "target": "AG_NBTC",
+      "key": 0
+    },
+    {
+      "instruction": "OPEN",
+      "datum": "OPEN",
+      "area": "OPEN",
+      "lead_time": "OPEN",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_LINEMAN",
+      "kind": "warns",
+      "target": "WCH.LINEMAN_INAPP_RISK",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_WHOLESALE_SUPPLIER",
+      "kind": "supplies",
+      "target": "AG_ESTATE",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_SANSIRI",
+      "kind": "operates",
+      "target": "AS_SANDBAGS",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_SENA",
+      "kind": "operates",
+      "target": "RES.TOOL.MOBILE_PUMP",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_SENA",
+      "kind": "operates",
+      "target": "AS_SANDBAGS",
+      "key": 0
+    },
+    {
+      "edge_role": "access_escort",
+      "tag": "RELAYED",
+      "source": "AG_RTA",
+      "kind": "operates",
+      "target": "RES.RELIEF_DELIVERY.PRIVATE_KHLONGCHAN_01",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "RES.COW.SHELTER_KMITL_01",
+      "kind": "supplies",
+      "target": "AS_SHELTER_KMITL",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "RES.CHARGING.SHELTER_KMITL_01",
+      "kind": "supplies",
+      "target": "AS_SHELTER_KMITL",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "RES.PARKING.CENTRALPATTANA_01",
+      "kind": "owned_by",
+      "target": "AG_CENTRALPATTANA",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "RES.DONATION_INTAKE.CENTRALPATTANA.01",
+      "kind": "owned_by",
+      "target": "AG_CENTRALPATTANA",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "RES.DONATION_INTAKE.CENTRALPATTANA.01",
+      "kind": "supplies",
+      "target": "OPEN",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "RES.DONATION_INTAKE.CENTRALPATTANA.01",
+      "kind": "supplies",
+      "target": "AG_DIST_NEIGH",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "RES.DONATION_INTAKE.ROBINSON.01",
+      "kind": "owned_by",
+      "target": "AG_ROBINSON",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "RES.DONATION_INTAKE.ROBINSON.01",
+      "kind": "supplies",
+      "target": "AG_RTAF_CIVIL",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "RES.DONATION_INTAKE.ROBINSON.01",
+      "kind": "supplies",
+      "target": "AS_SHELTER_SCHOOL",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "RES.MEAL_BOX.PRIVATE_RESTAURANTS.KMITL.01",
+      "kind": "owned_by",
+      "target": "AG_RESTAURANT_NETWORK",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "RES.MEAL_BOX.PRIVATE_RESTAURANTS.KMITL.01",
+      "kind": "supplies",
+      "target": "AS_SHELTER_KMITL",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "RES.RELIEF_DELIVERY.PRIVATE_KHLONGCHAN_01",
+      "kind": "supplies",
+      "target": "CIV.ZONE.KHLONGCHAN_FLATS",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "RES.TRUCK_GMC.AG_BMA_DDS.01",
+      "kind": "supplies",
+      "target": "OPEN",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "RES.MEAL_BOX.AG_BMA_KHET_LADKRABANG.01",
+      "kind": "supplies",
+      "target": "OPEN",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "RES.MEAL_BOX.AG_BMA_KHET_BANGKAPI.01",
+      "kind": "supplies",
+      "target": "OPEN",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "RES.BOAT_PUSH.AG_UNKNOWN.01",
+      "kind": "supplies",
+      "target": "WL.SSB.10",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "RES.BOAT_PUSH.AG_UNKNOWN.01",
+      "kind": "supplies",
+      "target": "tunnel:bma_dds:saensaeb_ladprao",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "RES.DONATION_INTAKE.CITYHALL_DINDAENG.01",
+      "kind": "supplies",
+      "target": "OPEN",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "RES.DONATION_INTAKE.KHET_PRAWET_VOCTRAIN.01",
+      "kind": "supplies",
+      "target": "OPEN",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "SENSOR.SSB.10",
+      "kind": "owned_by",
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "tag": "VERIFIED",
+      "source": "SENSOR.SPS.01",
+      "kind": "owned_by",
+      "contradicted": true,
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "tag": "VERIFIED",
+      "source": "SENSOR.SPS.02",
+      "kind": "owned_by",
+      "contradicted": true,
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "tag": "VERIFIED",
+      "source": "SENSOR.SPS.03",
+      "kind": "owned_by",
+      "contradicted": true,
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "tag": "VERIFIED",
+      "source": "SENSOR.SPS.04",
+      "kind": "owned_by",
+      "contradicted": true,
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "SENSOR.PWT.04",
+      "kind": "owned_by",
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "WL.NBN.01",
+      "kind": "flows_to",
+      "target": "tunnel:bma_dds:nongbon",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_OPERATOR_SAENSAEB_BOAT",
+      "kind": "operates",
+      "target": "RES.BOAT_PUSH.AG_UNKNOWN.01",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_OPERATOR_SAENSAEB_BOAT",
+      "kind": "reports_to",
+      "target": "AG_BMA_GOV",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "AG_OPERATOR_SAENSAEB_BOAT",
+      "kind": "reports_to",
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "instruction": "เฝ้าระวัง ยกของขึ้นที่สูง",
+      "datum": "OPEN",
+      "area": "SOI.SAMMAKORN.17",
+      "lead_time": "OPEN",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "WCH.FB_FLOODCONTROL_BMA",
+      "note_th": "คำว่า \"เฝ้าระวัง\" เป็นตัวอย่างจริงของปัญหาชั้น 5.1 (ไม่ actionable) แม้จะมี instruction ประกอบ (ยกของขึ้นที่สูง) -- เก็บ instruction ตามคำจริงในแถลงการณ์ ไม่ได้เกลาคำใหม่ datum/ lead_time เป็น OPEN จริง -- แถลงการณ์ไม่ระบุระดับอ้างอิง/เวลานำหน้าเลย (TDRI framing: คำเตือนที่ดีต้องมี datum, area, safe destination/route, lead time)\n",
+      "kind": "warns",
+      "target": "SOI.SAMMAKORN.17",
+      "key": 0
+    },
+    {
+      "instruction": "เฝ้าระวัง ยกของขึ้นที่สูง",
+      "datum": "OPEN",
+      "area": "SOI.SAMMAKORN.18",
+      "lead_time": "OPEN",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "WCH.FB_FLOODCONTROL_BMA",
+      "kind": "warns",
+      "target": "SOI.SAMMAKORN.18",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "OPEN",
+      "source": "SOI.SAMMAKORN.17",
+      "target": "WL.SMK.01",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "SOI.SAMMAKORN.17",
+      "kind": "reports_to",
+      "target": "WL.SMK.01",
+      "key": 1
+    },
+    {
+      "kind": "flows_to",
+      "tag": "OPEN",
+      "source": "SOI.SAMMAKORN.18",
+      "target": "WL.SMK.01",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "SOI.SAMMAKORN.18",
+      "kind": "reports_to",
+      "target": "WL.SMK.01",
+      "key": 1
+    },
+    {
+      "kind": "escalates_to",
+      "tag": "OPEN",
+      "self_help_status": "UNKNOWN",
+      "self_help_safety": "UNKNOWN",
+      "modes": [
+        "walk"
+      ],
+      "fresh": false,
+      "field_verified": false,
+      "source": "sammakorn_household_template",
+      "target": "sammakorn_buddy_cell",
+      "key": 0
+    },
+    {
+      "precedes_basis": "bridge",
+      "tag": "OPEN",
+      "source": "sammakorn_household_template",
+      "kind": "precedes",
+      "target": "HHTASK.PREP",
+      "key": 0
+    },
+    {
+      "kind": "escalates_to",
+      "tag": "OPEN",
+      "self_help_status": "UNKNOWN",
+      "self_help_safety": "UNKNOWN",
+      "modes": [
+        "walk"
+      ],
+      "fresh": false,
+      "field_verified": false,
+      "source": "sammakorn_buddy_cell",
+      "target": "sammakorn_zone",
+      "key": 0
+    },
+    {
+      "kind": "escalates_to",
+      "tag": "OPEN",
+      "self_help_status": "UNKNOWN",
+      "self_help_safety": "UNKNOWN",
+      "modes": [
+        "walk",
+        "vehicle"
+      ],
+      "fresh": false,
+      "field_verified": false,
+      "source": "sammakorn_zone",
+      "target": "sammakorn_internal_safe",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "sammakorn_zone",
+      "kind": "reports_to",
+      "target": "AG_ESTATE",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "sammakorn_zone",
+      "kind": "reports_to",
+      "target": "AG_BMA_GOV",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "sammakorn_zone",
+      "kind": "reports_to",
+      "target": "AG_MEA",
+      "key": 0
+    },
+    {
+      "kind": "escalates_to",
+      "tag": "OPEN",
+      "self_help_status": "UNKNOWN",
+      "self_help_safety": "UNKNOWN",
+      "modes": [
+        "walk",
+        "vehicle"
+      ],
+      "fresh": false,
+      "field_verified": false,
+      "source": "sammakorn_internal_safe",
+      "target": "sammakorn_egress",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "sammakorn_internal_safe",
+      "kind": "supplies",
+      "target": "sammakorn_zone",
+      "key": 0
+    },
+    {
+      "kind": "escalates_to",
+      "tag": "OPEN",
+      "self_help_status": "UNKNOWN",
+      "self_help_safety": "UNKNOWN",
+      "modes": [
+        "walk",
+        "vehicle"
+      ],
+      "fresh": false,
+      "field_verified": false,
+      "source": "sammakorn_egress",
+      "target": "external_safe_bkk_east_01",
+      "key": 0
+    },
+    {
+      "kind": "escalates_to",
+      "tag": "OPEN",
+      "self_help_status": "UNKNOWN",
+      "self_help_safety": "UNKNOWN",
+      "modes": [
+        "walk",
+        "vehicle"
+      ],
+      "fresh": false,
+      "field_verified": false,
+      "source": "sammakorn_egress",
+      "target": "external_safe_bkk_east_02",
+      "key": 0
+    },
+    {
+      "kind": "escalates_to",
+      "tag": "OPEN",
+      "self_help_status": "UNKNOWN",
+      "self_help_safety": "UNKNOWN",
+      "modes": [
+        "walk",
+        "vehicle"
+      ],
+      "fresh": false,
+      "field_verified": false,
+      "source": "sammakorn_egress",
+      "target": "sammakorn_supply_point_01",
+      "key": 0
+    },
+    {
+      "kind": "escalates_to",
+      "tag": "OPEN",
+      "self_help_status": "UNKNOWN",
+      "self_help_safety": "UNKNOWN",
+      "modes": [
+        "walk"
+      ],
+      "fresh": false,
+      "field_verified": false,
+      "source": "ram53_household_template",
+      "target": "ram53_buddy_cell",
+      "key": 0
+    },
+    {
+      "kind": "escalates_to",
+      "tag": "OPEN",
+      "self_help_status": "UNKNOWN",
+      "self_help_safety": "UNKNOWN",
+      "modes": [
+        "walk"
+      ],
+      "fresh": false,
+      "field_verified": false,
+      "source": "ram53_buddy_cell",
+      "target": "ram53_zone",
+      "key": 0
+    },
+    {
+      "kind": "escalates_to",
+      "tag": "OPEN",
+      "self_help_status": "UNKNOWN",
+      "self_help_safety": "UNKNOWN",
+      "modes": [
+        "walk",
+        "vehicle"
+      ],
+      "fresh": false,
+      "field_verified": false,
+      "source": "ram53_zone",
+      "target": "ram53_internal_safe",
+      "key": 0
+    },
+    {
+      "kind": "escalates_to",
+      "tag": "OPEN",
+      "self_help_status": "UNKNOWN",
+      "self_help_safety": "UNKNOWN",
+      "modes": [
+        "walk",
+        "vehicle"
+      ],
+      "fresh": false,
+      "field_verified": false,
+      "source": "ram53_internal_safe",
+      "target": "ram53_egress",
+      "key": 0
+    },
+    {
+      "kind": "escalates_to",
+      "tag": "OPEN",
+      "self_help_status": "UNKNOWN",
+      "self_help_safety": "UNKNOWN",
+      "modes": [
+        "walk",
+        "vehicle"
+      ],
+      "fresh": false,
+      "field_verified": false,
+      "source": "ram53_egress",
+      "target": "external_safe_bkk_east_01",
+      "key": 0
+    },
+    {
+      "kind": "escalates_to",
+      "tag": "OPEN",
+      "self_help_status": "UNKNOWN",
+      "self_help_safety": "UNKNOWN",
+      "modes": [
+        "walk",
+        "vehicle"
+      ],
+      "fresh": false,
+      "field_verified": false,
+      "source": "ram53_egress",
+      "target": "external_safe_bkk_east_02",
+      "key": 0
+    },
+    {
+      "kind": "escalates_to",
+      "tag": "OPEN",
+      "self_help_status": "UNKNOWN",
+      "self_help_safety": "UNKNOWN",
+      "modes": [
+        "walk",
+        "vehicle"
+      ],
+      "fresh": false,
+      "field_verified": false,
+      "source": "ram53_egress",
+      "target": "ram53_supply_point_01",
+      "key": 0
+    },
+    {
+      "kind": "escalates_to",
+      "tag": "OPEN",
+      "self_help_status": "UNKNOWN",
+      "self_help_safety": "UNKNOWN",
+      "modes": [
+        "walk",
+        "vehicle"
+      ],
+      "fresh": false,
+      "field_verified": false,
+      "source": "romklao_zone",
+      "target": "romklao_ops_kitchen_ram192",
+      "key": 0
+    },
+    {
+      "kind": "escalates_to",
+      "tag": "OPEN",
+      "self_help_status": "UNKNOWN",
+      "self_help_safety": "UNKNOWN",
+      "modes": [
+        "walk",
+        "vehicle"
+      ],
+      "fresh": false,
+      "field_verified": false,
+      "source": "romklao_zone",
+      "target": "romklao_base_romklao2",
+      "key": 0
+    },
+    {
+      "kind": "escalates_to",
+      "tag": "OPEN",
+      "self_help_status": "UNKNOWN",
+      "self_help_safety": "UNKNOWN",
+      "modes": [
+        "walk",
+        "vehicle"
+      ],
+      "fresh": false,
+      "field_verified": false,
+      "source": "romklao_zone",
+      "target": "romklao_kitchen_relocation_watpakbueng",
+      "key": 0
+    },
+    {
+      "kind": "escalates_to",
+      "tag": "OPEN",
+      "self_help_status": "UNKNOWN",
+      "self_help_safety": "UNKNOWN",
+      "modes": [
+        "high_clearance",
+        "vehicle"
+      ],
+      "fresh": false,
+      "field_verified": false,
+      "source": "romklao_zone",
+      "target": "romklao_vehicle_standby_4wd",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "OPEN",
+      "kind": "operates",
+      "target": "ST.SPS.01",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "OPEN",
+      "kind": "operates",
+      "target": "ST.SPS.02",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "OPEN",
+      "kind": "operates",
+      "target": "ST.SPS.03",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "OPEN",
+      "kind": "operates",
+      "target": "ST.SPS.04",
+      "key": 0
+    }
+  ]
+}

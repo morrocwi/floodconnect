@@ -1,18 +1,49 @@
 name: FloodConnect
 
-# Multi-agent safety:
-# - pull_request: validate architecture/claims + full regression before merge.
-# - push/schedule/manual: validate first, then collect/build/deploy.
-# - PR jobs never collect live data or deploy Pages.
+# Validates and tests this repo, and (on a non-PR trigger) builds the local page
+# artefact from the committed inputs as a build-health check only -- it is never
+# published anywhere. See site/DATA_README.md for the full source map and
+# site/build_data.py's module docstring for the epistemic discipline this pipeline
+# follows.
+#
+# No hosted access (project decision 2026-10-04): GitHub Pages is unpublished and
+# stays off. This repo ships no pre-computed flood reading for anyone to read
+# without running the pipeline themselves -- there is no deploy job here, and no
+# `pages`/`id-token` permission anywhere in this file. `site/dist/**` (including
+# `site/dist/api/v1/**`) is gitignored build output, built fresh by whoever runs
+# this and never uploaded as an artefact or otherwise shared by this workflow.
+#
+# On-demand only (project decision, 2026-10-02): there is no
+# time-based schedule trigger. The build job runs on every push to main and may be
+# run manually (workflow_dispatch) -- never on a fixed cadence, to avoid spending
+# tokens/compute rebuilding data nobody asked for.
+#
+# No server-side live fetch (project decision, 2026-10-03): this workflow does NOT run
+# `collect.py --all` (or any other upstream fetch) on this workflow's own GitHub-hosted
+# runner. Every live fetch is caller-side only -- a person runs `collect.py` on their
+# own machine with their own network/keys, per the self-install project decision ("every
+# on-demand fetch runs on the CALLER's own network/keys, never ours"). This workflow's
+# job is validate + test + build from TRACKED INPUTS ONLY (site/inputs/**,
+# sources/*.yaml, and the rest of the committed tree) -- never a live upstream call of
+# its own. A fresh runner has no `data/` or `raw/` (both gitignored), so this build
+# produces the no-current-data/staleness state unless a caller has separately run
+# `collect.py` and refreshed those paths on their own machine.
+#
+# Multi-agent safety (adopted from origin/main 17b9c3a):
+# - pull_request: validate architecture/claims + full regression; never collects live
+#   data and never builds/deploys anything.
+# - push / workflow_dispatch: validate must pass before build -- one gating rule
+#   for every non-PR trigger, no special case. The two data-dependent tests in the full
+#   suite skip cleanly (pytest.skip with a reason) when this machine's real data/raw
+#   caches (gitignored, not guaranteed present on a fresh runner) are absent, so a clean
+#   runner's validate run is not blocked by their absence.
 
 on:
   pull_request:
     branches: [main]
+  workflow_dispatch: {}
   push:
     branches: [main]
-  schedule:
-    - cron: "*/30 * * * *"
-  workflow_dispatch: {}
 
 concurrency:
   group: floodconnect-${{ github.workflow }}-${{ github.ref }}
@@ -20,12 +51,12 @@ concurrency:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 jobs:
   validate:
     name: Architecture + full regression
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -48,13 +79,28 @@ jobs:
       - name: Validate active semantic claims
         run: python3 agent_claims.py --validate
 
+      - name: Check internal doc links
+        run: python3 check_doc_links.py
+
       - name: Run full regression suite
+        # Includes tests/contract/* (recorded-response fixtures) -- pytest has no
+        # exclusion config for that directory, so it already runs here; no separate step
+        # needed (verified this check: `python3 -m pytest -q tests/contract/` -> 22 passed).
         run: python3 -m pytest -q
 
   build:
-    name: Build live public site
-    if: github.event_name != 'pull_request'
+    name: Build local page (health check only -- never published)
+    # Every non-PR trigger (push, workflow_dispatch) is gated on a successful validate --
+    # one rule, no special case, matching the header comment above and
+    # site/inputs/meta/floodconnect_repo_kg.yaml. This job builds site/dist/** purely to
+    # catch a broken build; nothing it produces is uploaded, deployed, or otherwise
+    # shared -- see the header comment's "No hosted access" note.
+    if: |
+      github.event_name != 'pull_request' &&
+      needs.validate.result == 'success'
     needs: validate
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -71,35 +117,8 @@ jobs:
       - name: Install pdftotext (poppler-utils)
         run: sudo apt-get update && sudo apt-get install -y poppler-utils
 
-      - name: Collect live snapshots (tolerant of per-source failures)
-        # collect.py isolates one source's failure from the rest.
-        # Some BMA hosts may reject GitHub shared IPs; site generation remains fail-soft
-        # against partial snapshots.
-        run: python3 collect.py --all || echo "collect had failures, continuing"
-
       - name: Build data.json
         run: python3 site/build_data.py
 
       - name: Build page (floodconnect.html + index.html)
         run: python3 site/build_page.py
-
-      - name: Add .nojekyll
-        run: touch site/dist/.nojekyll
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: site/dist
-
-  deploy:
-    name: Deploy Pages
-    if: github.event_name != 'pull_request'
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4

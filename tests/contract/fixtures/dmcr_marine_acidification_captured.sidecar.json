@@ -1,0 +1,15 @@
+{
+ "source_id": "dmcr_marine_acidification",
+ "url": "https://dmcr.gdcatalog.go.th/dataset/69bccfdf-70a9-433c-9d38-c9ce3eb6a899/resource/d88f1886-5bd1-458f-8b0f-2ca1e3869dea/download/untitled.csv",
+ "captured_at": "2026-10-03T09:41:10Z",
+ "sha256": "6e254c8fb61169a5a430fd4677860a67ca009728a715aa943615183aed8bca6a",
+ "http_status": 200,
+ "content_type": "text/csv",
+ "fixture_ext": "txt",
+ "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "2dea57b3c7ee39ebfbe1fee9e1c5ea8bef372dfd943110bf21d4c23522fed23b",
+ "trimmed_note": "Further trimmed 2026-10-03 (release pass, publish-safety finding: 300KB total budget for tests/contract/fixtures/ in the public tree) to a minimal real excerpt (header + few real rows, or a real byte-prefix for HTML) -- see the corresponding contract test's own comment for the exact row-count change.",
+ "trimmed_at": "2026-10-03T18:10:36Z"
+}

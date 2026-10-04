@@ -1,0 +1,23 @@
+# typology/nodes/completeness_pass_2026-09-28.yaml -- founder ask: "run validate.py and
+# fill structural gaps that sources already in the repo can close". Every row here reuses
+# an id ALREADY present in another file this repo has (sources/capacity_ledger.yaml,
+# FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md's own §5 worked example) -- no new
+# data invented, only wiring what already exists into the typology graph. No numeric
+# capacity values imported (same discipline as the Environman commit).
+schema_version: 1
+doc_kind: typology_node_registry
+status_th: >
+  เติม node ที่ปิดช่องว่างจริงด้วยแหล่งที่มีอยู่แล้วในคลังนี้ -- ไม่มีตัวเลขความจุใหม่.
+rows:
+  - id: tunnel:bma_dds:nongbon
+    kind: tunnel
+    layer: water
+    label_th: "อุโมงค์ระบายน้ำจากบึงหนองบอนลงสู่แม่น้ำเจ้าพระยา"
+    infra_class: grey
+    infra_class_tag: INSTINCT
+    tag: RELAYED
+    source: >
+      sources/capacity_ledger.yaml id=tunnel:bma_dds:nongbon (id เดิม, reuse ตรง ไม่สร้างซ้ำ
+      ไม่นำเลขความจุเข้ามา) -- ปิดช่องว่าง WL.NBN.01 orphan โดยต่อกับข้อความที่มีอยู่แล้วใน
+      FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §5 ("AG_BMA_DDS --operates-->
+      บึงหนองบอน (WL.NBN.01) --controlled--> อุโมงค์ --controlled--> river")

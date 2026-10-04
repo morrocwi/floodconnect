@@ -48,12 +48,21 @@ def test_core_constructs_are_present():
 
 
 def test_ai_boot_path_starts_with_single_entrypoint_and_kg():
+    """2026-10-02 fix (defect H4/M2): `AI.md` -- the minimal
+    compute entrypoint `kb.py answer` points callers at -- is registered right after
+    `AGENTS.md` (index 1), not appended as the list's last entry. Before this fix AI.md's
+    own "start here" claim contradicted the boot sequence it was never actually first
+    (or even early) in."""
     doc = rkg.load_kg(KG_PATH)
-    assert doc["ai_boot_sequence"][:3] == [
+    assert doc["ai_boot_sequence"][:4] == [
         "AGENTS.md",
+        "AI.md",
         "docs/AI_ENTRYPOINT.md",
         "site/inputs/meta/floodconnect_repo_kg.yaml",
     ]
+    assert "AI.md" in doc["ai_boot_sequence"]
+    # exactly one occurrence -- never duplicated.
+    assert doc["ai_boot_sequence"].count("AI.md") == 1
 
 
 def test_warning_typology_depends_on_canonical_governance_identity():

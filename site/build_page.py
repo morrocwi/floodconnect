@@ -28,6 +28,15 @@ from fractions import Fraction
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+FLOOD_KG = HERE.parent  # repo root -- same constant name build_data.py uses
+sys.path.insert(0, str(FLOOD_KG))
+# An earlier check removal (2026-09-28, founder verbatim: "เอาเฟสนี้ออกจากหน้าสัมมากร ไม่ต้องใช้
+# แล้ว"): the tools.heromap.sammakorn_map hero-map import/wiring (render_sammakorn_
+# hero_map, layer0_caption_th, the {{HERO_MAP_HTML}} block) is retired -- see the note
+# above build_area_fragments()'s tile-grid section. tools/heromap/sammakorn_map.py's
+# own reusable helpers (classify_tier, worst_tier, etc.) are untouched, just no longer
+# imported here since this file no longer renders that block.
+
 PLACEHOLDER = "{{DATA_JSON}}"
 AREA_START = "<!--AREA_TEMPLATE_START-->"
 AREA_END = "<!--AREA_TEMPLATE_END-->"
@@ -74,15 +83,157 @@ ICON_PATHS = {
     "bolt": '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
 }
 
+# Trend/arrow icon bodies (FloodConnect redesign 2026-09-27, §3a) -- one set of
+# up/down/steady/unknown glyphs, shared by every trend component on the page.
+TREND_PATHS = {
+    "trend-up": '<path d="M12 19V5M5 12l7-7 7 7"/>',
+    "trend-down": '<path d="M12 5v14M19 12l-7 7-7-7"/>',
+    "trend-steady": '<path d="M5 12h14"/><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/>',
+    "trend-unknown": '<path d="M9.1 9a3 3 0 1 1 4.2 2.7c-.8.4-1.3 1.1-1.3 2v.8"/><circle cx="12" cy="18" r="1.2" fill="currentColor"/>',
+}
+
+
+def build_icon_sprite_html():
+    """One <symbol> sprite, emitted once per page, holding every icon body in
+    ICON_PATHS plus the 4 trend glyphs in TREND_PATHS (§3a)."""
+    parts = ['<svg width="0" height="0" style="position:absolute" aria-hidden="true" '
+             'focusable="false"><defs>']
+    for k, v in ICON_PATHS.items():
+        parts.append(f'<symbol id="i-{k}" viewBox="0 0 24 24">{v}</symbol>')
+    for k, v in TREND_PATHS.items():
+        parts.append(f'<symbol id="i-{k}" viewBox="0 0 24 24">{v}</symbol>')
+    parts.append("</defs></svg>")
+    return "".join(parts)
+
 
 def icon(name, size=24, extra_cls=""):
-    """One outline inline-SVG icon, currentColor, from ICON_PATHS. `size` is a
-    CSS px class (ic-16/20/24/40); `extra_cls` adds e.g. a dot-colour class."""
-    body = ICON_PATHS.get(name, ICON_PATHS["doc"])
+    """One outline inline-SVG icon, currentColor, referencing the <symbol>
+    sprite (build_icon_sprite_html) instead of inlining the path body. `size`
+    is a CSS px class (ic-16/20/24/40); `extra_cls` adds e.g. a dot-colour class."""
+    use_name = name if name in ICON_PATHS else "doc"
     cls = f"ic ic-{size}" + (f" {extra_cls}" if extra_cls else "")
     return (f'<svg class="{cls}" viewBox="0 0 24 24" aria-hidden="true" '
             f'fill="none" stroke="currentColor" stroke-width="1.75" '
-            f'stroke-linecap="round" stroke-linejoin="round">{body}</svg>')
+            f'stroke-linecap="round" stroke-linejoin="round">'
+            f'<use href="#i-{use_name}"/></svg>')
+
+
+def trend_html(direction, semantic, word, label=None, delta_text=None, size="md"):
+    """One up/down/steady/unknown trend component (§3b). `direction` in
+    {up,down,steady,unknown}; `semantic` in {worse,better,steady,unknown} --
+    kept separate so the arrow's meaning never rides on colour alone."""
+    parts = [f'<span class="trend trend-{semantic} trend-{size}" data-dir="{direction}">']
+    if label is not None:
+        parts.append(f'<span class="trend-label">{esc(label)}</span>')
+    parts.append(
+        '<svg class="trend-ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" '
+        'stroke="currentColor" stroke-width="2.5" stroke-linecap="round" '
+        f'stroke-linejoin="round"><use href="#i-trend-{direction}"/></svg>'
+    )
+    parts.append(f'<span class="trend-word">{esc(word)}</span>')
+    if delta_text is not None:
+        parts.append(f'<span class="trend-delta">{esc(delta_text)}</span>')
+    parts.append("</span>")
+    return "".join(parts)
+
+
+def _status_word_trend(word):
+    """Maps compute_status()'s status word to (direction, semantic) -- §3e.
+    Never 'steady': 'ยังบอกไม่ได้' is not a claim the level is flat, so an
+    undetermined status always renders as the unknown glyph (over-warn rule)."""
+    if word == "น้ำยังขึ้น":
+        return ("up", "worse")
+    if word == "น้ำเริ่มลด":
+        return ("down", "better")
+    return ("unknown", "unknown")
+
+
+def status_arrow_html(word):
+    """§3c hero status badge: a 56px round arrow badge, colour-only (the word
+    itself sits next to it as text -- see .status-word in the template)."""
+    direction, semantic = _status_word_trend(word)
+    return (f'<span class="status-arrow trend-{semantic}" aria-hidden="true">'
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" '
+            f'stroke-linecap="round" stroke-linejoin="round"><use href="#i-trend-{direction}"/>'
+            '</svg></span>')
+
+
+def rain_trend(forecast):
+    """§3e rain-trend mapping: reads forecast.direction (computed upstream in
+    build_data.py -- never recomputed here) into (direction, semantic, word)."""
+    forecast = forecast or {}
+    if not forecast.get("available") or forecast.get("direction") in (None, "unavailable"):
+        return ("unknown", "unknown", "ยังบอกไม่ได้")
+    d = forecast.get("direction")
+    if d == "rising":
+        return ("up", "worse", "มากขึ้น")
+    if d == "falling":
+        return ("down", "better", "เบาลง")
+    if d == "steady":
+        if forecast.get("next6h_mm") == 0:
+            return ("steady", "steady", "ไม่มีฝน")
+        return ("steady", "steady", "ใกล้เคียงเดิม")
+    return ("unknown", "unknown", "ยังบอกไม่ได้")
+
+
+# Declared sensor-resolution cutoff below which a canal/pump delta is read as "steady"
+# rather than a real rise/fall -- 0.02 m, the SAME value `canal_graph.py`'s
+# `DEFAULT_EPSILON_M` declares for the east_chain.yaml `sensor_resolution_m` gate
+# (Toledo PROP-FLOOD-04). Not a new formula: build_page.py has no import path to that
+# module (stdlib-only, no sys.path juggling for a page render), so the value is copied
+# here as a literal with this comment as its provenance pointer -- never re-derived.
+LEVEL_TREND_STEADY_EPSILON_M = 0.02
+
+# Minimum age gap (hours) build_data.py's previous-reading lookup enforces (>= 60 min,
+# PROP-FLOOD-01 lag-k retained difference) before we trust the comparison at all --
+# guards against a rounding/duplicate-timestamp artefact reading as a real delta. No
+# upper bound: a widely-spaced pair (a real collection gap) is still a valid retained
+# difference, just an older one -- the row's own observed-time label already shows that.
+LEVEL_TREND_MIN_GAP_H = 0.9
+
+
+def level_trend_html(row, cur_key, prev_key, now_dt, no_data=False):
+    """§3e canal/pump delta rule (redesign v2 review fix MUST-FIX #1). Renders an
+    up/down/steady arrow + Thai word + signed delta for every row using
+    `prev_value_m`/`prev_level_m` + `prev_observed_at` now emitted by
+    build_data.py's previous-retained-reading lookup (PROP-FLOOD-01 lag-k retained
+    difference against data/observations.sqlite). Never returns "" -- a row with no
+    usable prior reading (missing, or the sole candidate is younger than the minimum
+    gap) gets the explicit "ยังบอกไม่ได้ (ไม่มีค่าก่อนหน้า)" fallback with the unknown
+    glyph, never a blank cell.
+
+    2026-09-27 targeted fix: a row whose CURRENT reading is itself missing/no-data
+    (caller passes `no_data=True`, using the exact same condition that prints
+    "ไม่มีข้อมูลล่าสุด" in the value cell -- e.g. a pump reported ขัดข้อง/stale by
+    pump_wording(), regardless of whatever `level_m` happens to hold) must NEVER show
+    a delta number ("+0.00 ม." etc) next to a "no data" row -- a fake steady arrow on
+    a row with no real reading is worse than no arrow at all (project decision). This is
+    checked BEFORE the no-previous-reading fallback below, and gets its own distinct
+    wording so "no current value" is never confused with "no previous value"."""
+    NO_VALUE = trend_html("unknown", "unknown", "ยังบอกไม่ได้ (ไม่มีค่าวัด)", size="sm")
+    NO_PREV = trend_html("unknown", "unknown", "ยังบอกไม่ได้ (ไม่มีค่าก่อนหน้า)", size="sm")
+    prev_val = row.get(prev_key)
+    prev_at = row.get("prev_observed_at")
+    cur_val = row.get(cur_key)
+    observed_at = row.get("observed_at")
+    if no_data or cur_val is None or observed_at is None:
+        return NO_VALUE
+    if prev_val is None or prev_at is None:
+        return NO_PREV
+    try:
+        gap_h = abs((to_bkk(observed_at) - to_bkk(prev_at)).total_seconds()) / 3600.0
+    except Exception:
+        gap_h = None
+    if gap_h is None or gap_h < LEVEL_TREND_MIN_GAP_H:
+        return NO_PREV
+    delta = cur_val - prev_val
+    if abs(delta) < LEVEL_TREND_STEADY_EPSILON_M:
+        sign = "+" if delta >= 0 else "−"
+        return trend_html("steady", "steady", "คงที่",
+                           delta_text=f"{sign}{abs(delta):.2f} ม.", size="sm")
+    if delta > 0:
+        return trend_html("up", "worse", "ขึ้น", delta_text=f"+{delta:.2f} ม.", size="sm")
+    return trend_html("down", "better", "ลง", delta_text=f"−{abs(delta):.2f} ม.", size="sm")
 
 
 def sec_label(name, text):
@@ -101,18 +252,25 @@ STATUS_PILL = {
     "NORMAL": ("pill-ok", "ปกติ"), "WATCH": ("pill-warn", "เส้นเตือน"),
     "CRITICAL": ("pill-crit", "เส้นอันตราย"), "OVERBANK": ("pill-over", "ล้นตลิ่ง"),
     "NO_THRESHOLD": ("pill-none", "ไม่มีข้อมูลล่าสุด"),
+    # Founder rule (verbatim, 2026-09-27): "ไม่ปกติ ต้องต่ำกว่าเกณฑ์ปกติหรือเปล่า
+    # แค่นี้ยังไม่เรียกปกติ" -- a level strictly between the normal level and the
+    # warning level is NOT "ปกติ" (light amber, counted separately); a station with no
+    # normal_level on record at all is a separate grey state, NEVER green.
+    "ABOVE_NORMAL": ("pill-abovenormal", "สูงกว่าปกติ"),
+    "NO_NORMAL_BASIS": ("pill-none", "ยังไม่มีเกณฑ์ปกติ"),
 }
 
 AREA_LABELS = {
     "sammakorn": {
         "dropdown": "หมู่บ้านสัมมากร (รามคำแหง 112)",
         "heading": "หมู่บ้านสัมมากร (รามคำแหง 112)",
+        "district": "สะพานสูง",
         "pin": "หมู่บ้านสัมมากร รามคำแหง 112 เขตสะพานสูง",
         "subtitle": "น้ำสัมมากร (ราม 112) วันนี้",
         "exit_place_word": "หมู่บ้าน",
         "zones_heading": "ซอยไหนต้องระวังอะไร",
         "pump_heading": "บึงและปั๊มในหมู่บ้าน",
-        "pump_caption": "ระดับน้ำและปั๊มเดิน/ขัดข้อง 4 สถานีของหมู่บ้าน",
+        "pump_caption": "ระดับน้ำและปั๊มเดิน/ขัดข้อง 4 สถานี (กทม. สนน. กลุ่มงานระบบควบคุมน้ำตะวันออก ควบคุม)",
         "canal_north_label": "ฝั่งเหนือ — คลองแสนแสบ",
         "canal_south_label": "ฝั่งใต้ — คลองทับช้าง / ประเวศ / หัวหมาก",
         "pond_word": "บึงในหมู่บ้าน",
@@ -120,6 +278,7 @@ AREA_LABELS = {
     "ram53": {
         "dropdown": "ซอยรามคำแหง 53",
         "heading": "ซอยรามคำแหง 53",
+        "district": "วังทองหลาง",
         "pin": "ซอยรามคำแหง 53 เขตวังทองหลาง",
         "subtitle": "น้ำรามคำแหง 53 วันนี้",
         "exit_place_word": "ซอย",
@@ -150,6 +309,16 @@ def esc(s):
         return ""
     return (str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
             .replace('"', "&quot;").replace("'", "&#39;"))
+
+
+def _thai_days_phrase(text):
+    """A declared-facts value like '2-3 days' / '1 day' may arrive from the
+    briefing source in English; render it in Thai without changing the number."""
+    if not text:
+        return text
+    s = str(text)
+    s = s.replace("days", "วัน").replace("day", "วัน")
+    return s
 
 
 def to_bkk(iso):
@@ -260,7 +429,7 @@ def pump_wording(p, now_dt):
     ขัดข้อง and ไม่ได้เดิน counts -- callers must count each kind separately."""
     h = hours_ago(p.get("observed_at"), now_dt)
     if p.get("status_th") == "ขัดข้อง":
-        return ("กทม. รายงาน 'ขัดข้อง' (ไม่ทราบสาเหตุ: เครื่อง ไฟ หรือสัญญาณ — ตรวจหน้างานได้)", "fail")
+        return ("ขัดข้อง (กทม. รายงาน สาเหตุไม่ทราบ)", "fail")
     if h is None or h > 2:
         return "ไม่มีข้อมูลล่าสุด", "missing"
     if (p.get("pumps_on") or 0) == 0:
@@ -282,6 +451,16 @@ def pump_counts(pumps, now_dt):
         else:
             ok += 1
     return {"fail": fail, "idle": idle, "missing": missing, "ok": ok, "total": len(pumps)}
+
+
+def pump_machine_counts(pumps):
+    """Sum of individual pump machines running/total across all stations
+    (project decision 2026-09-27: distinct from `pump_counts`, which counts
+    STATIONS by fail/idle/missing/ok -- this counts physical pump MACHINES,
+    e.g. sammakorn 0/11 เครื่อง, ram53 6/15 เครื่อง)."""
+    sum_on = sum((p.get("pumps_on") or 0) for p in pumps)
+    sum_total = sum((p.get("pumps_total") or 0) for p in pumps)
+    return sum_on, sum_total
 
 
 # ---------------- status word + factors ----------------
@@ -317,7 +496,7 @@ def build_watch_line(area, st, pc, now_dt, forecast):
     hw = next_high_water(area)
     candidates = []
     if pc["fail"] > 0:
-        candidates.append((3, f"ปั๊มบึงขัดข้อง {pc['fail']} จุด"))
+        candidates.append((3, f"ปั๊มบึงขัดข้อง {pc['fail']} จุด (กทม. รายงาน สาเหตุไม่ทราบ)"))
     if st["up_crit"] > 0:
         candidates.append((2, f"ต้นน้ำเกินเส้นอันตราย {st['up_crit']} จุด"))
     if st["fresh_crit"] > 0:
@@ -354,96 +533,171 @@ def rain_band_word(mm):
     return "น้อย"
 
 
-DOT_WORD = {"red": "สูง", "amber": "เฝ้าดู", "green": "ปกติ", "grey": "ไม่มีข้อมูลล่าสุด"}
+# An earlier check removal (2026-09-28, coordinator follow-up): DOT_WORD's text
+# ("เฝ้าดู"/"สูง"/"ปกติ") used to render as its own `.tile-status` line under every
+# tile's label -- dropped along with that line (`_tile()`'s own docstring) since the
+# dot's colour + the evidence pill already carry the same signal on one line now.
 
 
-def _tile(icon_name, value_text, label_text, dot, time_text=None, extra_line=None):
-    """One infographic tile (maintainer ruling 2026-09-26): 40px icon, big bold
-    value, short label, colour dot + one status word. No paragraphs -- an
-    icon-grid the eye can scan in one pass. `extra_line` (2026-09-26 red-team
-    fix) adds a second small line -- used for pumps merely idle (not failed),
-    kept separate from the fail count so idle is never mislabelled as a fault."""
-    word = DOT_WORD.get(dot, DOT_WORD["grey"])
-    time_html = f'<span class="tile-time">{esc(time_text)}</span>' if time_text else ""
-    extra_html = f'<div class="tile-extra">{esc(extra_line)}</div>' if extra_line else ""
+def _tile(icon_name, value_text, label_text, dot, pill_html=None, extra_line=None, time_text=None,
+          href=None):
+    """One infographic tile -- an earlier check compactness fix (2026-09-28, coordinator
+    follow-up: status + 4 driver tiles + call row must fit near the first screen,
+    not ~2 screens down). Horizontal layout now: a small 24px icon on the left,
+    value+label (+ at most one short secondary line) on the right. The severity
+    dot moves INLINE next to the value (no separate "เฝ้าดู"/"สูง" status-word line
+    any more -- colour + the evidence pill already carry that signal, so the old
+    `.tile-status` text line is dropped entirely, never duplicating what the dot's
+    own colour and the pill's own wording already say). The evidence pill renders
+    INLINE at the end of the label line (`pill_html`, already-built HTML, never
+    re-escaped) instead of on its own wrapper line. `extra_line` is at most ONE
+    short secondary line (2026-09-26 fix: originally for pumps merely
+    idle, not failed; an earlier check: also folds in `time_text`, so a tile never grows a
+    3rd/4th stacked line). `href` (an earlier check fold: the retired hero4-grid's own
+    `_hero4_tile()` had this): when given, renders an `<a>` instead of a `<div>` --
+    the page's own `initAnchorOpensDetails()` script opens the target `<details>`
+    and scrolls to it, so e.g. the pump tile can jump straight to its own D1 table
+    in one tap."""
+    dot_html = f'<span class="why-dot why-dot-{dot}" aria-hidden="true"></span>'
+    pill = pill_html or ""
+    extra_bits = [b for b in (extra_line, time_text) if b]
+    extra_line_html = (f'<div class="tile-extra">{esc(" · ".join(extra_bits))}</div>'
+                        if extra_bits else "")
+    tag = "a" if href else "div"
+    attrs = f' href="{esc(href)}"' if href else ""
     return (
-        '<div class="tile">'
-        f'{icon(icon_name, 40)}'
-        f'<div class="tile-value num">{esc(value_text)}</div>'
-        f'<div class="tile-label">{esc(label_text)}</div>'
-        f'<div class="tile-status"><span class="why-dot why-dot-{dot}" aria-hidden="true"></span>{word}</div>'
-        f'{extra_html}'
-        f'{time_html}'
+        f'<{tag} class="tile{" tile-link" if href else ""}"{attrs}>'
+        f'{icon(icon_name, 24)}'
+        '<div class="tile-text">'
+        f'<div class="tile-value num">{dot_html}{esc(value_text)}</div>'
+        f'<div class="tile-label">{esc(label_text)}{pill}</div>'
+        f'{extra_line_html}'
         '</div>'
+        f'</{tag}>'
     )
 
 
-def build_indicator_tiles(area, st, pc, now_dt, pond_word):
-    """2-column infographic tile grid replacing the old row list -- one tile
-    per indicator: pump, canal, upstream, rain, tide (maintainer ruling
-    2026-09-26: 'more icons, fewer words')."""
+def build_indicator_tiles(area, st, pc, now_dt, pond_word, pf06=None, area_id=None):
+    """2-column infographic tile grid inside the hero banner ("ทำไมถึงบอกแบบนี้").
+    An earlier check fold (2026-09-28, founder verbatim: "เอาออกทั้ง 4 ช่องด้วย" ... "เอาออกเลย
+    ดีกว่าให้เข้า hero เลย" -- remove the separate above-hero hero4-grid entirely,
+    fold its four flood drivers INTO this existing grid instead) + an earlier check
+    compactness fix (same day, coordinator follow-up: status word + tiles + call row
+    must fit near the first screen, not ~2 screens down): tile order is now
+    ฝน / การระบาย / น้ำเหนือ / น้ำหนุน -- exactly the four folded drivers, no 5th
+    คลองรอบบ้าน tile any more (moved to the existing canal-table detail sections
+    further down the page, never duplicated). Every `_tile()` here is now the
+    compact horizontal shape (`_tile()`'s own docstring) instead of the old tall
+    centered card. `pf06` is `layer0_public.areas.<area_id>.prop_flood_06` (or
+    None) -- surfaces its existing `forecast_72h_worst_text_th`/`_value_mm`/
+    `_model_th` as the ฝน tile's PRIMARY value. `area_id` links the การระบาย tile
+    straight to its own D1 pump table. No new computation anywhere in this
+    function."""
     tiles = []
+    fc72_worst = pf06.get("forecast_72h_worst_text_th") if pf06 else None
+    # `forecast_72h_worst_value_mm` / `forecast_72h_worst_model_th` (site/build_data.py,
+    # same worst-value/model already selected as `forecast_72h_worst_text_th`, just
+    # exposed as separate fields, no new computation) let the tile show a short big
+    # NUMBER instead of that full sentence wrapping the value slot to 2-3 lines.
+    fc72_value_mm = pf06.get("forecast_72h_worst_value_mm") if pf06 else None
+    fc72_model = pf06.get("forecast_72h_worst_model_th") if pf06 else None
 
-    # 1. ปั๊มบึง
+    # 1. ฝน -- worst-case 72h forecast (pf06) as PRIMARY value when available, pill
+    # "แบบจำลอง" (short evidence-subtype label: a numerical model forecast, not a
+    # news/person report -- same tag-relayed CSS class/colour, see `_hero4_tag_pill`'s
+    # own docstring). Falls back to the live rain-now reading as the primary value
+    # when no 72h figure exists (e.g. ram53, which has no PROP-FLOOD-06 tier engine
+    # today) -- never blank while real rain data exists. An earlier check compactness fix
+    # (2026-09-28, coordinator follow-up): the tile used to repeat the SAME number
+    # three ways under the big value -- the full worst-case sentence, the rain-now
+    # reading, AND a 24h breakdown, three extra stacked lines. Now at most ONE short
+    # secondary line ("ตอนนี้ X.X มม./ชม."), never the duplicated full sentence/24h
+    # breakdown (dot/severity colour still comes from the SAME existing mm_24h
+    # thresholds this tile always used -- never a new threshold).
+    rain = area.get("rain")
+    dot = "grey"
+    if rain and rain.get("mm_24h") is not None:
+        mm = rain["mm_24h"]
+        dot = "red" if mm > 90 else ("amber" if mm >= 30 else "green")
+    rain_now_short = f"ตอนนี้ {rain['mm_1h']:.1f} มม./ชม." if (rain and rain.get("mm_1h") is not None) else None
+    if fc72_worst:
+        pill_html = _hero4_tag_pill("RELAYED", "แบบจำลอง", extra_cls="tile-extra-72h")
+        if fc72_value_mm is not None:
+            value_text = f"{fc72_value_mm:.1f} มม."
+            label = f"ฝน 72 ชม. แย่สุด ({fc72_model})" if fc72_model else "ฝน 72 ชม. แย่สุด"
+        else:
+            value_text = fc72_worst
+            label = "ฝน 72 ชม. (แย่สุด)"
+        tiles.append(_tile("rain", value_text, label, dot, pill_html=pill_html,
+                            extra_line=rain_now_short))
+    elif rain_now_short is not None:
+        station = rain.get("station")
+        dist = rain.get("dist_km")
+        value_text = rain_now_short.removeprefix("ตอนนี้ ")
+        label = f"ฝนตอนนี้ ({station} {dist:.1f} กม.)" if station and dist is not None else "ฝนตอนนี้"
+        tiles.append(_tile("rain", value_text, label, dot, pill_html=_hero4_tag_pill("MEASURED")))
+    else:
+        tiles.append(_tile("rain", "ยังไม่มีข้อมูล", "ฝน 72 ชม. (แย่สุด)", "grey",
+                            pill_html=_hero4_tag_pill("OPEN")))
+
+    # 2. การระบาย (project decision 2026-09-27: big value names MACHINES running/total
+    # so "2/4"-style numbers are never misread as "pumps running" -- the STATION
+    # fault count moves to the label line instead, e.g. "ปั๊มน้ำเดิน 0 จาก 11
+    # เครื่อง" / "สถานีขัดข้อง 4 จาก 4 (กทม. รายงาน สาเหตุไม่ทราบ)"). Links straight to
+    # the D1 pump details table (an earlier check fold, from the retired `_hero4_drain_tile`).
     pumps = area.get("pumps") or []
     total_pumps = len(pumps)
+    pump_href = f"#d1-pump-{area_id}" if area_id else None
     if total_pumps == 0:
-        tiles.append(_tile("pump", "–", "ปั๊มบึง", "grey"))
+        tiles.append(_tile("pump", "–", "การระบาย (ปั๊ม)", "grey", href=pump_href))
     else:
+        sum_on, sum_total = pump_machine_counts(pumps)
         dot = "red" if pc["fail"] > 0 else ("amber" if pc["idle"] > 0 else ("grey" if pc["ok"] == 0 else "green"))
-        label = "ขัดข้อง (กทม. รายงาน)" if pc["fail"] > 0 else "ปั๊มบึง"
+        value = f"ปั๊มน้ำเดิน {sum_on} จาก {sum_total} เครื่อง"
+        if pc["fail"] > 0:
+            label = f"สถานีขัดข้อง {pc['fail']} จาก {total_pumps} (กทม. รายงาน สาเหตุไม่ทราบ)"
+        else:
+            label = f"สถานีขัดข้อง {pc['fail']} จาก {total_pumps}"
         newest_pump = max((p.get("observed_at") for p in pumps if p.get("observed_at")), default=None)
         idle_line = f"ไม่ได้เดิน {pc['idle']}" if pc["idle"] > 0 else None
-        tiles.append(_tile("pump", f"{pc['fail']}/{total_pumps}", label, dot, obs_time_label(newest_pump, now_dt),
-                            extra_line=idle_line))
+        # readout-tag pill (an earlier check mobile verifier, advisory A1): hero
+        # numbers need a visible evidence tag too, not only the rain tile.
+        # Pump counts come straight from BMA's own feed -- MEASURED.
+        tiles.append(_tile("pump", value, label, dot, pill_html=_hero4_tag_pill("MEASURED"),
+                            extra_line=idle_line, time_text=obs_time_label(newest_pump, now_dt),
+                            href=pump_href))
 
-    # 2. คลองรอบบ้าน
-    fresh_near = st["fresh_near"]
-    crit = st["fresh_crit"]
-    total = len(fresh_near)
-    if total == 0:
-        tiles.append(_tile("wave", "–", "คลองรอบบ้าน", "grey"))
-    else:
-        newest = max((s.get("observed_at") for s in fresh_near if s.get("observed_at")), default=None)
-        tiles.append(_tile("wave", f"{crit}/{total}", "คลองเกินเส้นอันตราย", "red" if crit > 0 else "green",
-                            obs_time_label(newest, now_dt)))
-
-    # 3. น้ำจากต้นทาง
+    # 3. น้ำเหนือ (upstream stations at/above CRITICAL/OVERBANK out of all fresh
+    # (<=24h) upstream stations -- an earlier check fold, from the retired `_hero4_upstream_tile`).
     fresh_up = st["fresh_up"]
     up_crit_stations = [s for s in fresh_up if s.get("status") in ("CRITICAL", "OVERBANK")]
     up_total = len(fresh_up)
     if up_total == 0:
-        tiles.append(_tile("link", "–", "ต้นน้ำสูง", "grey"))
+        tiles.append(_tile("link", "–", "น้ำเหนือ: ต้นน้ำสูง", "grey"))
     else:
         dot = "red" if up_crit_stations and len(up_crit_stations) >= up_total / 2.0 else \
             ("amber" if up_crit_stations else "green")
-        tiles.append(_tile("link", f"{len(up_crit_stations)}/{up_total}", "ต้นน้ำสูง", dot))
+        tiles.append(_tile("link", f"{len(up_crit_stations)}/{up_total}", "น้ำเหนือ: เกินเกณฑ์", dot,
+                            pill_html=_hero4_tag_pill("MEASURED")))
 
-    # 4. ฝนตอนนี้ (มม./ชม.) + เส้นรอง 24 ชม.
-    rain = area.get("rain")
-    if rain and rain.get("mm_24h") is not None:
-        mm = rain["mm_24h"]
-        mm_1h = rain.get("mm_1h")
-        dot = "red" if mm > 90 else ("amber" if mm >= 30 else "green")
-        station = rain.get("station")
-        dist = rain.get("dist_km")
-        value_text = f"{mm_1h:.1f} มม./ชม." if mm_1h is not None else "–"
-        label = f"ฝนตอนนี้ ({station} {dist:.1f} กม.)" if station and dist is not None else "ฝนตอนนี้"
-        tier = rain.get("tier_word")
-        extra = f"24 ชม. {mm:.0f} มม." + (f" ({tier})" if tier else "")
-        tiles.append(_tile("rain", value_text, label, dot, extra_line=extra))
-    else:
-        tiles.append(_tile("rain", "–", "ฝนตอนนี้", "grey"))
-
-    # 5. น้ำหนุน
+    # 4. น้ำหนุน (an earlier check fold, from the retired `_hero4_tide_tile` -- กรมอุทกศาสตร์
+    # กองทัพเรือ, official_report tier, short pill "ทางการ").
     hw = next_high_water(area)
     if hw:
         hw_dt = to_bkk(hw.get("time"))
         height = hw.get("height_m")
         h_text = f"{height:+.1f} ม." if height is not None else "–"
-        tiles.append(_tile("moon", h_text, f"น้ำหนุน {thai_clock_exact(hw_dt)}", "grey"))
+        tiles.append(_tile("moon", h_text, f"น้ำหนุน {thai_clock_exact(hw_dt)}", "grey",
+                            pill_html=_hero4_tag_pill("official_report")))
     else:
         tiles.append(_tile("moon", "–", "น้ำหนุน", "grey"))
+
+    # An earlier check removal (2026-09-28, coordinator follow-up: "the คลองรอบบ้าน 5th tile
+    # may move to details" -- it already lives, in full per-station detail, in the
+    # existing canal-table sections further down the page (build_canal_rows()); this
+    # summary tile is now dropped from the always-visible grid rather than duplicated
+    # into another section, so the grid holds exactly the four folded drivers and
+    # fits its first-screen role better.
 
     return "".join(tiles)
 
@@ -476,8 +730,13 @@ def build_canal_vs_ground_line(area, area_id, now_dt):
     sign = "+" if diff >= 0 else ""
     verdict = "ไหลลงคลองเองได้" if station["value_m"] < 0.3 else "น้ำยังไหลลงคลองเองไม่ได้"
     wave_ic = icon("wave", 20)
-    return (f"{wave_ic} คลองหลังบ้าน vs พื้น — คลองสูงกว่าพื้น ~{sign}{diff:.1f} ม. "
-            f"(พื้น ชั้นแผนที่ ±0.5 ม., RTSD 2010) → {verdict}")
+    # 2026-09-28 (an earlier check mobile verifier, raw-token cleanup): the map-datum
+    # citation ("RTSD 2010") is dev jargon above the details divider -- keep
+    # the full citation reachable via `title` (a tap-and-hold / hover reveal)
+    # instead of printing it in the always-visible sentence.
+    source_note = esc("ระดับพื้นอ้างอิงชั้นแผนที่ ±0.5 ม. (กรมที่ดิน, สำรวจปี 2010)")
+    return (f'<span title="{source_note}">{wave_ic} คลองหลังบ้าน vs พื้น — '
+            f'คลองสูงกว่าพื้น ~{sign}{diff:.1f} ม. → {verdict}</span>')
 
 
 def build_hours_list(area, st, pc, now_dt, forecast, area_id=None):
@@ -494,23 +753,28 @@ def build_hours_list(area, st, pc, now_dt, forecast, area_id=None):
     # "อีก 3-5 ชั่วโมงข้างหน้า" -- trend_word compares the next-3h sum against the
     # following-3h sum (see build_data.py::_trend_word), read straight from the data
     # rather than re-derived here.
+    rain_direction, rain_semantic, rain_word = rain_trend(forecast)
+    rain_trend_ic = trend_html(rain_direction, rain_semantic, rain_word, size="sm")
     if forecast.get("available"):
         trend_word = forecast.get("trend_word") or "ฝนยังตกต่อ"
-        lines.append(f"{rain_ic} อีก 3–5 ชั่วโมงข้างหน้า: {esc(trend_word)}")
+        lines.append(f"{rain_ic} {rain_trend_ic} อีก 3–5 ชั่วโมงข้างหน้า: {esc(trend_word)}")
     else:
-        lines.append(f"{rain_ic} ยังไม่มีพยากรณ์รายชั่วโมง")
+        lines.append(f"{rain_ic} {rain_trend_ic} ยังไม่มีพยากรณ์รายชั่วโมง")
 
     hw = next_high_water(area)
     if hw:
         hw_dt = to_bkk(hw.get("time"))
         lines.append(f"{moon_ic} น้ำหนุนสูงสุด {thai_clock_exact(hw_dt)}")
 
+    pumps_for_count = area.get("pumps") or []
+    sum_on, sum_total = pump_machine_counts(pumps_for_count)
+    pump_machines = f"ปั๊มน้ำเดิน {sum_on} จาก {sum_total} เครื่อง"
     if pc["fail"] > 0:
-        lines.append(f"{pump_ic} ปั๊มบึงขัดข้อง {pc['fail']} จุด")
+        lines.append(f"{pump_ic} {pump_machines} — สถานีขัดข้อง {pc['fail']} จุด (กทม. รายงาน สาเหตุไม่ทราบ)")
     elif pc["idle"] > 0:
-        lines.append(f"{pump_ic} ปั๊มบึงไม่ได้เดิน {pc['idle']} จุด")
+        lines.append(f"{pump_ic} {pump_machines} — ไม่ได้เดิน {pc['idle']} จุด")
     else:
-        lines.append(f"{pump_ic} ปั๊มบึงเดินปกติ")
+        lines.append(f"{pump_ic} {pump_machines} — เดินปกติ")
 
     if len(st["fresh_near"]) > 0:
         lines.append(f"{wave_ic} คลอง {st['fresh_crit']}/{len(st['fresh_near'])} จุดเกินเส้นอันตราย")
@@ -579,18 +843,35 @@ def build_pump_rows(area, now_dt):
     for p in pumps:
         text, kind = pump_wording(p, now_dt)
         cls = "stat-fail" if kind in ("fail", "idle", "missing") else "stat-ok"
-        if kind in ("fail", "missing"):
-            level = "ไม่มีข้อมูลล่าสุด"
-        elif p.get("level_m") is None:
+        # 2026-09-27: kind in (fail, missing) means BMA's own PumpHistory status/staleness
+        # says this station has no real current reading -- ขัดข้อง (fail, unknown cause per
+        # BMA) or stale >2h (missing). Treat that as no-data for the TREND too, even if
+        # `level_m` itself parsed to a float (including 0.0): a pump reported ขัดข้อง is not
+        # reporting a trustworthy level, so 0.0 there is a placeholder/leftover reading, not
+        # a real measurement, and must never feed a fake "คงที่ +0.00 ม." trend badge.
+        no_level_data = kind in ("fail", "missing") or p.get("level_m") is None
+        if no_level_data:
             level = "ไม่มีข้อมูลล่าสุด"
         else:
             level = f"{p['level_m']:.2f} ม."
+        trend = level_trend_html(p, "level_m", "prev_level_m", now_dt, no_data=no_level_data)
+        trend_block = f"<br>{trend}" if trend else ""
         pond_name = esc(p.get("pond_name") or p.get("name"))
+        # 2026-09-28 (independent verifier, second pass): the BMA station code
+        # (e.g. ST.SPS.02) went into a `title` tooltip in the first pass, on the
+        # theory that it was dev-facing jargon above the details divider -- but a
+        # hover/long-press tooltip is not discoverable on a touch device, and this
+        # whole table has since moved BEHIND a collapsed <details id="d1-pump-...">
+        # (independent verifier finding: D1 must be collapsed, code as a muted
+        # second line INSIDE details, never a tooltip). Once it's not above-the-
+        # fold clutter any more, a plain visible small/muted line is simpler and
+        # more accessible than a tooltip -- restored.
+        code = p.get("code")
+        code_html = f'<br><small class="code">{esc(code)}</small>' if code else ""
         rows.append(
             "<tr>"
-            f'<td data-label="บึง / สถานี"><span class="nw">{pond_name}</span>'
-            f'<small class="code">{esc(p.get("code"))}</small></td>'
-            f'<td class="num" data-label="ระดับน้ำ">{esc(level)}</td>'
+            f'<td data-label="บึง / สถานี"><span class="nw">{pond_name}</span>{code_html}</td>'
+            f'<td class="num" data-label="ระดับน้ำ">{esc(level)}{trend_block}</td>'
             f'<td class="num" data-label="ปั๊มเดิน">{esc(p.get("pumps_on"))}/{esc(p.get("pumps_total"))}</td>'
             f'<td class="{cls}" data-label="สถานะ">{esc(text)}</td>'
             f'<td data-label="เวลา">{fmt_time_full(p.get("observed_at"), now_dt)}</td>'
@@ -625,12 +906,15 @@ def canal_row_html(s, now_dt):
     thresh_short = " · ".join(thresh)
     time_label = obs_time_label(s.get("observed_at"), now_dt)
     meta_line = f"{thresh_short} · {time_label}" if thresh_short else time_label
-    value = "–" if s.get("value_m") is None else f"{s['value_m']:.2f} ม."
+    no_level_data = s.get("value_m") is None
+    value = "–" if no_level_data else f"{s['value_m']:.2f} ม."
+    trend = level_trend_html(s, "value_m", "prev_value_m", now_dt, no_data=no_level_data)
+    trend_block = f"<br>{trend}" if trend else ""
     return (
         "<tr>"
         f'<td data-label="สถานี">{esc(s.get("name"))}<br><span class="small">{esc(s.get("code"))} · ห่าง '
         f'{s.get("dist_km", 0):.1f} กม.</span></td>'
-        f'<td class="num" data-label="ระดับน้ำ">{esc(value)}</td>'
+        f'<td class="num" data-label="ระดับน้ำ">{esc(value)}{trend_block}</td>'
         f'<td data-label="สถานะ">{status_pill_aged_html(s.get("status"), s.get("observed_at"), now_dt)}</td>'
         f'<td data-label="เกณฑ์ / เวลา">{esc(meta_line)}</td>'
         "</tr>"
@@ -679,7 +963,7 @@ def build_forecast_fragments(area, now_dt_local, forecast, rain_forecast_area_no
                 f'<br><span class="small">ระบบ กทม. ออกแบบรับได้ ~'
                 f'{capacity["mm_per_day"]:.0f} มม./วัน — วันนี้ตกแล้ว '
                 f'{capacity["today_mm"]:.0f} มม. ({capacity["today_ratio"]:.1f} เท่า) — '
-                f'{esc(capacity.get("source_th"))}</span>'
+                f'{esc(capacity.get("source_th"))} {_tag_pill(capacity.get("source_tag"))}</span>'
             )
     else:
         rain_text = "ไม่มีข้อมูลล่าสุด"
@@ -740,8 +1024,10 @@ def build_forecast_fragments(area, now_dt_local, forecast, rain_forecast_area_no
             for i, ev in enumerate(events):
                 date_cell = (f'<td rowspan="{len(events)}" data-label="วันที่">{esc(day.get("date"))}</td>'
                              if i == 0 else '<td data-label="วันที่"></td>')
+                ev_html = (trend_html("up", "worse", "น้ำขึ้น", size="sm") if ev.get("kind") == "HW"
+                           else trend_html("down", "better", "น้ำลง", size="sm"))
                 rows.append("<tr>" + date_cell +
-                            f'<td data-label="เหตุการณ์">{"น้ำขึ้น" if ev.get("kind")=="HW" else "น้ำลง"}</td>'
+                            f'<td data-label="เหตุการณ์">{ev_html}</td>'
                             f'<td class="num" data-label="เวลา">{esc(ev.get("t"))} น.</td>'
                             f'<td class="num" data-label="ระดับ (ม.)">{(ev.get("h") or 0):.2f}</td></tr>')
         return "".join(rows)
@@ -790,25 +1076,95 @@ def build_floodroad_rows(area, now_dt):
         '<tr><td colspan="4" class="empty-note">ไม่มีรายงานถนนน้ำท่วมใกล้เคียง (0 ซม. ไม่แสดง)</td></tr>'
 
 
-def build_community_rows(area):
-    rows = [f'<tr><td class="num" data-label="เวลา">{esc(r.get("time"))}</td>'
+_REPORT_TIME_RE = re.compile(r"(\d{1,2}):(\d{2})")
+
+
+def _report_time_key(item):
+    """Start-of-range clock time ('06:00-07:00' -> '06:00') pulled out of a
+    possibly messy raw time string, for newest-first ordering. None when the
+    time carries no parseable clock time at all (e.g. 'X', 'TikTok')."""
+    m = _REPORT_TIME_RE.search(item.get("time") or "")
+    return m.group(0) if m else None
+
+
+def sort_reports_newest_first(items):
+    """Stable newest-first ordering for community/social-listening reports
+    ({time, date?, place, state}). Sorts by (date, start-of-range time)
+    descending; items with no parseable time sort LAST, keeping their
+    original relative order (a genuinely unstamped report, not a dated one)."""
+    dated, undated = [], []
+    for r in items:
+        key_time = _report_time_key(r)
+        if key_time is None:
+            undated.append(r)
+        else:
+            dated.append(((r.get("date") or "", key_time), r))
+    dated.sort(key=lambda pair: pair[0], reverse=True)
+    return [r for _, r in dated] + undated
+
+
+def _community_time_cell(r, now_dt):
+    """Render the 'เวลา' cell: the raw time text, plus '(26 ก.ย.)' appended
+    when the row's date is not today -- same convention as fmt_time_full()."""
+    time_html = esc(r.get("time"))
+    date_iso = r.get("date")
+    if not date_iso or now_dt is None:
+        return time_html
+    try:
+        y, mo, d = (int(x) for x in date_iso.split("-"))
+    except (ValueError, AttributeError):
+        return time_html
+    if (y, mo, d) == (now_dt.year, now_dt.month, now_dt.day):
+        return time_html
+    return f'{time_html} <span class="small">({d} {THAI_MONTHS[mo - 1]})</span>'
+
+
+def _community_row_html(r, now_dt):
+    return (f'<tr><td class="num" data-label="เวลา">{_community_time_cell(r, now_dt)}</td>'
             f'<td data-label="จุด">{esc(clean_soi_name(r.get("place")))}</td>'
-            f'<td data-label="สภาพที่รายงาน">{esc(r.get("state") or "-")}</td></tr>'
-            for r in (area.get("community") or [])]
+            f'<td data-label="สภาพที่รายงาน">{_glossify_inline_tags(esc(r.get("state") or "-"))}</td></tr>')
+
+
+def build_community_rows(area, now_dt=None):
+    rows_data = sort_reports_newest_first(area.get("community") or [])
+    rows = [_community_row_html(r, now_dt) for r in rows_data]
     return "".join(rows) or '<tr><td colspan="3" class="empty-note">ยังไม่มีรายงานในชุดข้อมูลนี้</td></tr>'
 
 
-def build_nearby_community_rows(area):
+COMMUNITY_ROWS_HEAD_N = 6
+
+
+def build_community_rows_split(area, now_dt=None, head_n=COMMUNITY_ROWS_HEAD_N):
+    """Independent verifier finding B4 (2026-09-28): community-details-* opened to
+    ~3733px -- most of that height is simply this table's full row count (append-only,
+    never pruned per this repo's retain-every-run rule -- the DATA never shrinks, only
+    the DEFAULT VIEW does). Splits into the newest `head_n` rows (shown directly, same
+    order/content as build_community_rows()) plus the rest, for a caller to put the
+    rest behind a nested closed-by-default <details class="dsec-evidence">. Never drops
+    a row -- every row from build_community_rows() appears in exactly one of the two
+    returned strings."""
+    rows_data = sort_reports_newest_first(area.get("community") or [])
+    if not rows_data:
+        empty = '<tr><td colspan="3" class="empty-note">ยังไม่มีรายงานในชุดข้อมูลนี้</td></tr>'
+        return empty, "", 0
+    head = "".join(_community_row_html(r, now_dt) for r in rows_data[:head_n])
+    rest_data = rows_data[head_n:]
+    rest = "".join(_community_row_html(r, now_dt) for r in rest_data)
+    return head, rest, len(rest_data)
+
+
+def build_nearby_community_rows(area, now_dt=None):
     """คลองจั่น/บางกะปิ 'nearby area' note (2026-09-26) -- sammakorn only; ram53 already
     folds the full set into its own community rows since คลองจั่น is on its own canal
     chain, so this returns "" (hidden) there."""
     rows = area.get("nearby_community") or []
     if not rows:
         return "", " hidden"
-    html = "".join(f'<tr><td class="num" data-label="เวลา">{esc(r.get("time"))}</td>'
+    rows_data = sort_reports_newest_first(rows)
+    html = "".join(f'<tr><td class="num" data-label="เวลา">{_community_time_cell(r, now_dt)}</td>'
                    f'<td data-label="จุด">{esc(clean_soi_name(r.get("place")))}</td>'
-                   f'<td data-label="สภาพที่รายงาน">{esc(r.get("state") or "-")}</td></tr>'
-                   for r in rows)
+                   f'<td data-label="สภาพที่รายงาน">{_glossify_inline_tags(esc(r.get("state") or "-"))}</td></tr>'
+                   for r in rows_data)
     return html, ""
 
 
@@ -892,9 +1248,16 @@ def build_worsen_better_html(area, st, pc, now_dt, forecast):
 
 # ---------------- optional advice section (5 short suggestions) --------------
 
-# SAFETY_FACT (2026-09-26, maintainer-requested after the คลองจั่น electrocution death):
-# stated as a FACT, never a command -- never "ไม่ต้อง/ห้าม/ไม่ควร".
-SAFETY_FACT = ("⚠ วันนี้มีผู้เสียชีวิตจากไฟฟ้าดูดในน้ำท่วมที่แฟลตคลองจั่น (ข่าว 26 ก.ย.) "
+# SAFETY_FACT (2026-09-26, maintainer-requested after the คลองจั่น electrocution death;
+# reworded 2026-09-27 -- the 27 ก.ย. governor interview states "ยังไม่มีรายงานผู้เสียชีวิต"
+# as of that morning, which conflicts with the 26 ก.ย. news report below. Neither side is
+# deleted; this line is now phrased as an unconfirmed news fact, not a stated death count,
+# so it sits next to the governor's "no deaths reported" line without silently overwriting
+# it -- see bma_briefing.contradiction_th in data.json for the explicit contradiction row):
+# stated as a FACT, never a command -- never "ไม่ต้อง/ห้าม/ไม่ควร". The leading glyph is
+# rendered separately (icon("bolt",20), inline SVG) instead of an emoji -- MUST-FIX 6:
+# emoji render as a colour glyph on Android/LINE, so SAFETY_FACT itself stays plain text.
+SAFETY_FACT = ("มีข่าว 26 ก.ย. เรื่องไฟฟ้าดูดในน้ำท่วมที่แฟลตคลองจั่น (ยังไม่ยืนยันจากทางการ) "
                "— ไฟฟ้ากับน้ำท่วมอันตรายถึงชีวิต")
 
 ADVICE_ITEMS = [
@@ -917,13 +1280,30 @@ def build_advice_html():
 # ---------------- water balance (Toledo PROP-FLOOD-03, proposal, PR #60 pending) --------
 
 _TAG_LABEL_TH = {"VERIFIED": "ยืนยันแล้ว", "MEASURED": "วัดจากไฟล์ข้อมูล", "RELAYED": "ข่าว/บุคคลที่สาม",
-                 "OPEN": "ยังไม่มีคำตอบ", "official_report": "ทางการแถลง"}
+                 "OPEN": "ยังไม่มีคำตอบ", "official_report": "ทางการแถลง",
+                 "INSTINCT": "ประเมินจากประสบการณ์ (ไม่ใช่ค่าวัด)"}
 
 
 def _tag_pill(tag):
     label = _TAG_LABEL_TH.get(tag, tag or "")
     cls = (tag or "").lower()
     return f'<span class="tag-pill tag-{esc(cls)}">{esc(label)}</span>'
+
+
+# an earlier check mobile verifier, raw-token cleanup (2026-09-28): some freeform Thai text
+# in append-only source files (e.g. site/inputs/community/community_reports_*.md --
+# never edited/replaced, per this repo's retain-every-run rule) carries an inline
+# evidence-tier annotation as a bare English word, e.g. "(...INSTINCT)". Editing the
+# source file is off-limits, so this glosses the bare token into the SAME Thai
+# tag-pill markup `_tag_pill()` already renders everywhere else on the page, at
+# render time only -- never touching the retained source text's substance.
+_INLINE_TAG_RE = re.compile(r"(?<![A-Za-z0-9_])(VERIFIED|MEASURED|RELAYED|OPEN|INSTINCT)(?![A-Za-z0-9_-])")
+
+
+def _glossify_inline_tags(escaped_text):
+    if not escaped_text:
+        return escaped_text
+    return _INLINE_TAG_RE.sub(lambda m: _tag_pill(m.group(1)), escaped_text)
 
 
 def build_capacity_mini_table(records):
@@ -974,9 +1354,10 @@ def build_bangkok_east_html(bangkok_east):
             f'{ba["backlog_volume_m3"]:,.0f} ลบ.ม. ÷ ({ba["pumping_capacity_m3s"]:,.0f} ลบ.ม./วิ × 3,600) '
             f'= {ba["outflow_per_hour_m3"]:,.0f} ลบ.ม./ชม. ≈ '
             f'<span class="num">{ba["hours_if_no_new_rain"]:.0f} ชม. (≈{ba["days_if_no_new_rain"]:.1f} วัน)</span> '
-            f'ถ้าฝนหยุดและสูบเต็มกำลัง — ตรงกับที่ กทม. แถลง {esc(ba.get("briefing_stated_days"))} '
+            f'ถ้าฝนหยุดและสูบเต็มกำลัง — ตรงกับที่ กทม. แถลง '
+            f'{esc(_thai_days_phrase(ba.get("briefing_stated_days")))} '
             f'{_tag_pill("official_report")}</p>'
-            f'<p class="small">รวมฝนที่ยังจะตกอีก (Open-Meteo คาด 24 ชม. ข้างหน้า, third-party, upper bound): '
+            f'<p class="small">รวมฝนที่ยังจะตกอีก (Open-Meteo คาด 24 ชม. ข้างหน้า, บุคคลที่สาม, ค่าบนสุดของช่วง): '
             f'ช่วงเวลา {esc(range_text)} วัน — {esc(ba.get("caveat_th"))}</p>'
         )
 
@@ -984,7 +1365,7 @@ def build_bangkok_east_html(bangkok_east):
     c_pump = bangkok_east.get("c_pump_m3s")
     parts.append(
         f'<p class="small">พื้นที่ที่ใช้คำนวณ: {a_km2:,.1f} ตร.กม. {_tag_pill(bangkok_east.get("area_tag"))} '
-        f'(ยังไม่มีตัวเลขพื้นที่รับน้ำเฉพาะโซนตะวันออก จึงใช้พื้นที่กรุงเทพฯ ทั้งหมดแทน — เป็น upper bound '
+        f'(ยังไม่มีตัวเลขพื้นที่รับน้ำเฉพาะโซนตะวันออก จึงใช้พื้นที่กรุงเทพฯ ทั้งหมดแทน — เป็นค่าบนสุด '
         f'ที่กว้างกว่าโซนจริง) · กำลังสูบที่มีแหล่งอ้างอิงรวม {c_pump:,.0f} ลบ.ม./วินาที '
         f'(พระโขนง 155 {_tag_pill("MEASURED")}, อุโมงค์พระโขนง 60 {_tag_pill("MEASURED")}, '
         f'บึงหนองบอน 60 {_tag_pill("RELAYED")}, แสนแสบ-ลาดพร้าว 60 {_tag_pill("RELAYED")}) '
@@ -1002,10 +1383,15 @@ def build_bangkok_east_html(bangkok_east):
             f'{f" — อัตราส่วน {ratio:.1f} เท่า" if ratio is not None else ""}</p>'
         )
     parts.append('<p class="small"><em>สัดส่วนไหลบ่า (c) และน้ำเก็บเริ่มต้น (S0) ยังไม่ได้ประกาศ '
-                 '— นี่คือการเทียบตัวเลขต้นน้ำ/ปลายน้ำ (upper bound) ไม่ใช่ผลลัพธ์สมการสมดุลน้ำที่แท้จริง</em></p>')
+                 '— นี่คือการเทียบตัวเลขต้นน้ำ/ปลายน้ำ (ค่าบนสุด) ไม่ใช่ผลลัพธ์สมการสมดุลน้ำที่แท้จริง</em></p>')
     next_step = bangkok_east.get("next_step_th")
     if next_step:
-        parts.append(f'<p class="small">ขั้นต่อไป: {esc(next_step)}</p>')
+        # Render a clean Thai-only sentence: the upstream field may carry an
+        # English gloss plus internal file-path references after " -- ";
+        # keep only the Thai lead clause for the public page.
+        next_step_th_only = next_step.split(" -- ")[0].strip()
+        parts.append(f'<p class="small">ขั้นต่อไป: คำนวณรายหมู่บ้านเมื่อทราบพื้นที่รับน้ำและกำลังปั๊มของหมู่บ้าน '
+                     f'({esc(next_step_th_only)})</p>')
     parts.append("</div>")
     return "".join(parts)
 
@@ -1027,9 +1413,10 @@ def build_village_waterbalance_html(water_balance, labels):
     def field_word(f):
         return field_th.get(f, f)
 
-    present_html = "".join(f'<li class="ok">✔ {esc(field_word(f))}</li>' for f in present) or "<li>—</li>"
+    check_ic = icon("check", 16)
+    present_html = "".join(f'<li class="ok">{check_ic} {esc(field_word(f))} (มีแล้ว)</li>' for f in present) or "<li>—</li>"
     missing_words = [field_word(f) for f in missing]
-    missing_html = "".join(f'<li class="missing">✘ {esc(field_word(f))}</li>' for f in missing) or "<li>—</li>"
+    missing_html = "".join(f'<li class="missing">{esc(field_word(f))} (ยังขาด)</li>' for f in missing) or "<li>—</li>"
 
     if status == "REFUSED":
         sentence = f'ยังคำนวณไม่ได้ — ระบบปฏิเสธเพราะขาด: {esc(", ".join(missing_words) or "ไม่ทราบ")}'
@@ -1043,12 +1430,13 @@ def build_village_waterbalance_html(water_balance, labels):
         f'<ul class="wb-inputs-missing">{missing_html}</ul></div>'
         f'<p class="wb-refused-sentence"><strong>{esc(sentence)}</strong></p>'
         f'<p class="small">รหัสเหตุผล: {esc(", ".join(reasons) or "—")} '
-        f'(สูตรที่ลงทะเบียน PROP-FLOOD-03, ยังเป็นข้อเสนอ, PR #60 รอตรวจ)</p>'
+        f'(สูตรยังเป็นข้อเสนอ ยังไม่ผ่านการตรวจ)</p>'
         f'</div>'
     )
 
 
-_SCENARIO_COLOR = {"c0": "#1e8f4e", "c50": "#d98c0f", "c100": "#c0392b", "d_jma": "#8e2411"}
+_SCENARIO_COLOR = {"c0": "var(--ok)", "c50": "var(--warning-text)", "c100": "var(--alert)",
+                    "d_jma": "var(--alert-strong)"}
 _SCENARIO_DASH = {"d_jma": "3,2"}
 _HALF_DAY_TH = [(0, 5, "เช้ามืด"), (6, 11, "เช้า"), (12, 16, "บ่าย"), (17, 19, "เย็น"), (20, 23, "คืน")]
 
@@ -1101,8 +1489,8 @@ def _svg_chart_frame(W, H, PAD_L, PAD_R, PAD_T, PAD_B, n, t0, now_dt, tide_windo
     if forecast_coverage_hours is not None and forecast_coverage_hours < n:
         gx = x_of(forecast_coverage_hours)
         parts.append(f'<rect x="{gx:.0f}" y="{PAD_T}" width="{(W - PAD_R - gx):.0f}" '
-                     f'height="{plot_h}" fill="#d9dde2" opacity="0.5"/>')
-        parts.append(f'<text x="{gx + 4:.0f}" y="{PAD_T + 11}" font-size="8" fill="#5b6472">'
+                     f'height="{plot_h}" style="fill:var(--border)" opacity="0.5"/>')
+        parts.append(f'<text x="{gx + 4:.0f}" y="{PAD_T + 11}" font-size="14" style="fill:var(--text-muted)">'
                      f'ไม่มีพยากรณ์ — สมมติฝน 0</text>')
 
     # tide (high-water ±2h) shading
@@ -1114,28 +1502,28 @@ def _svg_chart_frame(W, H, PAD_L, PAD_R, PAD_T, PAD_B, n, t0, now_dt, tide_windo
         h0c, h1c = max(h0, 0), min(h1, n)
         x0, x1 = x_of(h0c), x_of(h1c)
         parts.append(f'<rect x="{x0:.0f}" y="{PAD_T}" width="{max(x1 - x0, 1):.0f}" '
-                     f'height="{plot_h}" fill="#b39ddb" opacity="0.22"/>')
+                     f'height="{plot_h}" fill="var(--tide-shade)" opacity="0.22"/>')
         if i == 0:
-            parts.append(f'<text x="{x0 + 2:.0f}" y="{PAD_T + 22}" font-size="8" '
-                         f'fill="#6a4fa0">น้ำหนุน — สูบออกได้ช้าลง</text>')
+            parts.append(f'<text x="{x0 + 2:.0f}" y="{PAD_T + 22}" font-size="14" '
+                         f'fill="var(--tide-text)">น้ำหนุน — สูบออกได้ช้าลง</text>')
 
     # day gridlines + x labels
     for h in range(0, n + 1, 48):
         x = x_of(h)
         parts.append(f'<line x1="{x:.0f}" y1="{PAD_T}" x2="{x:.0f}" y2="{PAD_T + plot_h}" '
-                     f'stroke="#d8dee6" stroke-width="1" stroke-dasharray="2,2"/>')
+                     f'style="stroke:var(--border)" stroke-width="1" stroke-dasharray="2,2"/>')
         label = f"+{h}ชม."
         if t0:
             dt_h = t0 + datetime.timedelta(hours=h)
             label = f"{_half_day_word(dt_h.hour)} {dt_h.day}/{dt_h.month}"
-        parts.append(f'<text x="{x:.0f}" y="{H - 10}" font-size="8.5" fill="#5b6472" '
+        parts.append(f'<text x="{x:.0f}" y="{H - 10}" font-size="14" style="fill:var(--text-muted)" '
                      f'text-anchor="middle">{esc(label)}</text>')
 
     # "ตอนนี้" (now) marker at h=0
     x_now = x_of(0)
     parts.append(f'<line x1="{x_now:.0f}" y1="{PAD_T}" x2="{x_now:.0f}" y2="{PAD_T + plot_h}" '
-                 f'stroke="#333" stroke-width="1.4"/>')
-    parts.append(f'<text x="{x_now + 3:.0f}" y="{PAD_T + 10}" font-size="8.5" fill="#333">ตอนนี้</text>')
+                 f'style="stroke:var(--text)" stroke-width="1.4"/>')
+    parts.append(f'<text x="{x_now + 3:.0f}" y="{PAD_T + 10}" font-size="14" style="fill:var(--text)">ตอนนี้</text>')
 
     return parts, x_of, plot_w, plot_h
 
@@ -1188,7 +1576,7 @@ def build_drain_timeline_svg(drain_timeline, now_dt, tide_windows=None):
             bx = x_of(h)
             by = PAD_T + plot_h - bh
             parts.append(f'<rect x="{bx:.0f}" y="{by:.0f}" width="{bar_w:.0f}" height="{bh:.0f}" '
-                         f'fill="#8ec9ee" opacity="0.5"/>')
+                         f'fill="var(--accent-2)" opacity="0.5"/>')
 
     parts.extend(frame_parts)
 
@@ -1197,10 +1585,10 @@ def build_drain_timeline_svg(drain_timeline, now_dt, tide_windows=None):
         y = PAD_T + plot_h - frac * plot_h
         val = frac * v_max_m
         parts.append(f'<line x1="{PAD_L}" y1="{y:.0f}" x2="{W - PAD_R}" y2="{y:.0f}" '
-                     f'stroke="#eef1f4" stroke-width="1"/>')
-        parts.append(f'<text x="{PAD_L - 6}" y="{y + 3:.0f}" font-size="9" fill="#5b6472" '
+                     f'style="stroke:var(--border)" stroke-width="1"/>')
+        parts.append(f'<text x="{PAD_L - 6}" y="{y + 3:.0f}" font-size="14" style="fill:var(--text-muted)" '
                      f'text-anchor="end">{val:.0f}</text>')
-    parts.append(f'<text x="12" y="{PAD_T + 8}" font-size="9" fill="#5b6472">ล้าน ลบ.ม.</text>')
+    parts.append(f'<text x="12" y="{PAD_T + 8}" font-size="14" style="fill:var(--text-muted)">ล้าน ลบ.ม.</text>')
 
     # c=0..c=1 uncertainty band (shaded fill between the two extreme scenarios) --
     # sampled every RENDER_STRIDE hours (see rain-bar comment above)
@@ -1211,11 +1599,11 @@ def build_drain_timeline_svg(drain_timeline, now_dt, tide_windows=None):
         bot_pts = [(x_of(h), y_of(c0["values_m3"][h])) for h in idxs]
         path_pts = top_pts + list(reversed(bot_pts))
         path = "M " + " L ".join(f"{x:.0f},{y:.0f}" for x, y in path_pts) + " Z"
-        parts.append(f'<path d="{path}" fill="#c0392b" opacity="0.08"/>')
+        parts.append(f'<path d="{path}" style="fill:var(--alert)" opacity="0.08"/>')
 
     # scenario lines (d_jma drawn thin+dashed per peer review, others solid)
     for key, s in scenarios.items():
-        color = _SCENARIO_COLOR.get(key, "#333")
+        color = _SCENARIO_COLOR.get(key, "var(--text)")
         dash = _SCENARIO_DASH.get(key)
         width = 1.4 if key == "d_jma" else 2.2
         dash_attr = f' stroke-dasharray="{dash}"' if dash else ""
@@ -1230,7 +1618,7 @@ def build_drain_timeline_svg(drain_timeline, now_dt, tide_windows=None):
         s = scenarios.get(key)
         if not s:
             continue
-        color = _SCENARIO_COLOR.get(key, "#333")
+        color = _SCENARIO_COLOR.get(key, "var(--text)")
         legend_rows.append(
             f'<li><span class="legend-swatch" style="background:{color}"></span>'
             f'{esc(label_th)} — {esc(_fmt_end_time_th(s.get("end_time_utc"), now_dt))}</li>'
@@ -1238,7 +1626,7 @@ def build_drain_timeline_svg(drain_timeline, now_dt, tide_windows=None):
 
     return (
         '<div class="drain-timeline">'
-        + "".join(parts)
+        + f'<div class="chart-scroll">{"".join(parts)}</div>'
         + f'<ul class="drain-legend">{"".join(legend_rows)}</ul>'
         + f'<p class="small drain-footnote">{esc(drain_timeline.get("footnote_th"))}</p>'
         + '</div>'
@@ -1250,9 +1638,9 @@ DRAIN_TIMELINE_SCENARIOS_LABELS = [("c0", 0.0, "ฝนหยุด (c=0)"), ("c5
                                     ("d_jma", 0.5, "แบบจำลองที่ฝนมากที่สุด (JMA, c=0.5)")]
 
 _PUMP_SCENARIO_STYLE = {
-    "pump0": {"color": "#c0392b", "dash": ""},
-    "pump2": {"color": "#d98c0f", "dash": "5,3"},
-    "pump2_gravity": {"color": "#1e8f4e", "dash": "2,2"},
+    "pump0": {"color": "var(--alert)", "dash": ""},
+    "pump2": {"color": "var(--warning-text)", "dash": "5,3"},
+    "pump2_gravity": {"color": "var(--ok)", "dash": "2,2"},
 }
 
 
@@ -1304,7 +1692,7 @@ def build_village_panel_svg(sammakorn_rough, now_dt, tide_windows=None):
             bx = x_of(h)
             by = PAD_T + plot_h - bh
             parts.append(f'<rect x="{bx:.0f}" y="{by:.0f}" width="{bar_w:.0f}" height="{bh:.0f}" '
-                         f'fill="#8ec9ee" opacity="0.5"/>')
+                         f'fill="var(--accent-2)" opacity="0.5"/>')
 
     parts.extend(frame_parts)
 
@@ -1312,10 +1700,10 @@ def build_village_panel_svg(sammakorn_rough, now_dt, tide_windows=None):
         y = PAD_T + plot_h - frac * plot_h
         val = frac * v_max
         parts.append(f'<line x1="{PAD_L}" y1="{y:.0f}" x2="{W - PAD_R}" y2="{y:.0f}" '
-                     f'stroke="#eef1f4" stroke-width="1"/>')
-        parts.append(f'<text x="{PAD_L - 6}" y="{y + 3:.0f}" font-size="9" fill="#5b6472" '
+                     f'style="stroke:var(--border)" stroke-width="1"/>')
+        parts.append(f'<text x="{PAD_L - 6}" y="{y + 3:.0f}" font-size="14" style="fill:var(--text-muted)" '
                      f'text-anchor="end">{val:.0f}</text>')
-    parts.append(f'<text x="12" y="{PAD_T + 8}" font-size="9" fill="#5b6472">ซม. (เฉลี่ย)</text>')
+    parts.append(f'<text x="12" y="{PAD_T + 8}" font-size="14" style="fill:var(--text-muted)">ซม. (เฉลี่ย)</text>')
 
     idxs = sorted(set(list(range(0, n + 1, RENDER_STRIDE)) + [n]))
     if band:
@@ -1323,10 +1711,10 @@ def build_village_panel_svg(sammakorn_rough, now_dt, tide_windows=None):
         bot_pts = [(x_of(h), y_of(band["depth_low_cm"][h])) for h in idxs]
         path_pts = top_pts + list(reversed(bot_pts))
         path = "M " + " L ".join(f"{x:.0f},{y:.0f}" for x, y in path_pts) + " Z"
-        parts.append(f'<path d="{path}" fill="#c0392b" opacity="0.12"/>')
+        parts.append(f'<path d="{path}" style="fill:var(--alert)" opacity="0.12"/>')
 
     for key, s in scenarios.items():
-        style = _PUMP_SCENARIO_STYLE.get(key, {"color": "#333", "dash": ""})
+        style = _PUMP_SCENARIO_STYLE.get(key, {"color": "var(--text)", "dash": ""})
         pts = " ".join(f"{x_of(h):.0f},{y_of(s['values_cm'][h]):.0f}" for h in idxs)
         dash_attr = f' stroke-dasharray="{style["dash"]}"' if style["dash"] else ""
         parts.append(f'<polyline points="{pts}" fill="none" stroke="{style["color"]}" '
@@ -1337,7 +1725,7 @@ def build_village_panel_svg(sammakorn_rough, now_dt, tide_windows=None):
     if pump0 and pump0["values_cm"]:
         last_h = len(pump0["values_cm"]) - 1
         ax, ay = x_of(last_h * 0.6), y_of(pump0["values_cm"][int(last_h * 0.6)])
-        parts.append(f'<text x="{ax:.0f}" y="{(ay - 8):.0f}" font-size="9" fill="#c0392b" '
+        parts.append(f'<text x="{ax:.0f}" y="{(ay - 8):.0f}" font-size="14" style="fill:var(--alert)" '
                      f'text-anchor="middle">ไม่ลดเอง — ต้องปั๊ม</text>')
 
     parts.append("</svg>")
@@ -1349,7 +1737,7 @@ def build_village_panel_svg(sammakorn_rough, now_dt, tide_windows=None):
         s = scenarios.get(key)
         if not s:
             continue
-        style = _PUMP_SCENARIO_STYLE.get(key, {"color": "#333"})
+        style = _PUMP_SCENARIO_STYLE.get(key, {"color": "var(--text)"})
         legend_rows.append(f'<li><span class="legend-swatch" style="background:{style["color"]}">'
                            f'</span>{esc(s.get("label_th") or labels_th.get(key, key))}</li>')
 
@@ -1361,7 +1749,7 @@ def build_village_panel_svg(sammakorn_rough, now_dt, tide_windows=None):
 
     return (
         '<div class="village-panel">'
-        + "".join(parts)
+        + f'<div class="chart-scroll">{"".join(parts)}</div>'
         + f'<ul class="drain-legend">{"".join(legend_rows)}</ul>'
         + (f'<p class="small">{esc(range_note)}</p>' if range_note else "")
         + f'<p class="small">{esc(sammakorn_rough.get("caption_th"))}</p>'
@@ -1373,55 +1761,182 @@ def build_village_panel_svg(sammakorn_rough, now_dt, tide_windows=None):
 
 _THAI_MONTH_SHORT = {9: "ก.ย.", 10: "ต.ค."}
 
+_FLAG_MODEL_NAMES = ["ECMWF", "GFS", "ICON", "JMA", "GEM", "Météo-France", "UKMO", "CMA"]
+_FLAG_DATE_RE = re.compile(r"^(\d{4})-(\d{2})-(\d{2}):\s*(.*)$")
+
+
+def _thai_flag_sentence(raw):
+    """MUST-FIX 4: forecast_7day_compare.json's own flag strings (compare.flags) are
+    English prose written for a data file, e.g. '2026-09-27: JMA (81.4mm) far above the
+    rest...' -- never shown raw on a Thai public page. Never re-derives the flag (its
+    truth value stays in build_data.py); only re-phrases the already-computed English
+    sentence into a short Thai one, naming the date and, when detectable, the model.
+    Unmapped shapes fall back to a generic Thai line rather than leaking English text."""
+    m = _FLAG_DATE_RE.match(raw or "")
+    date_label = None
+    rest = raw or ""
+    if m:
+        y, mo, d, rest = m.groups()
+        date_label = f"{int(d)} {_THAI_MONTH_SHORT.get(int(mo), mo)}"
+    models = [name for name in _FLAG_MODEL_NAMES if name in rest]
+    if date_label and models:
+        return (f"แบบจำลอง {'/'.join(dict.fromkeys(models))} คาดฝนต่างจากแบบจำลองอื่นอย่างเห็นได้ชัด "
+                f"ในวันที่ {date_label} (พิจารณาเอง)")
+    if date_label:
+        return f"แบบจำลองบางตัวคาดฝนต่างกันมากในวันที่ {date_label} (พิจารณาเอง)"
+    return "แบบจำลองบางตัวคาดฝนต่างกันมาก (พิจารณาเอง)"
+
+
+_DAILY_MODEL_ORDER = ["ecmwf_ifs025", "gfs_seamless", "icon_seamless", "jma_seamless",
+                       "gem_seamless", "meteofrance_seamless"]
+_DAILY_MODEL_LABEL = {"ecmwf_ifs025": "ECMWF", "gfs_seamless": "GFS", "icon_seamless": "ICON",
+                       "jma_seamless": "JMA", "gem_seamless": "GEM",
+                       "meteofrance_seamless": "Météo-France"}
+
+try:
+    from tools.harvest.forecast7d_draft import spread_disagreement  # noqa: E402 -- reuse the
+    # SAME documented "models disagree" rule as site/build_data.py -- never a second copy
+    # of the threshold (max-min>20mm OR max>3*min when min>0).
+except Exception:  # pragma: no cover - defensive fallback, same posture as elsewhere here
+    def spread_disagreement(max_v, min_v):  # type: ignore[no-redef]
+        if (max_v - min_v) > 20:
+            return True
+        if min_v > 0 and max_v > 3 * min_v:
+            return True
+        return False
+
+
+def _daily_scenario_band(values):
+    """Minimum-width window covering a strict majority (>50%) of `values` -- same
+    algorithm as build_data.py's `_l0_scenario_band()` (COUNT-based, never a mean/median
+    headline). Returns (lo, hi, k, n); (0.0, 0.0, 0, 0) for an empty input."""
+    vals = sorted(values)
+    n = len(vals)
+    if n == 0:
+        return (0.0, 0.0, 0, 0)
+    k = min(n // 2 + 1, n)
+    best_lo, best_hi = vals[0], vals[-1]
+    best_width = best_hi - best_lo
+    for i in range(0, n - k + 1):
+        lo, hi = vals[i], vals[i + k - 1]
+        width = hi - lo
+        if width < best_width:
+            best_width = width
+            best_lo, best_hi = lo, hi
+    return (round(best_lo, 1), round(best_hi, 1), k, n)
+
 
 def build_daily_rain_table_html(compare, briefing=None):
-    """'ฝน 7 วันข้างหน้า (6 แบบจำลอง)' table -- daily median(min-max) mm straight from
-    forecast_7day_compare.json (never recomputed, per FORECAST_SPEC.md item 2), plus the
-    model-disagreement flags and the TMD 24h official text (labelled official_forecast)
-    /ONWR-HII OPEN gap, surfaced plainly rather than hidden. `briefing` (optional) is the
-    build_briefing_summary() dict -- when it carries a `tmd_forecast_note_th` (TMD's own
-    outlook relayed via the 26 ก.ย. 16:15 BMA/PM briefing: rain easing from 27 ก.ย.), that
-    line is shown right next to this table, tagged official_report, never merged into the
-    models' own median/min/max numbers above."""
+    """'ฝน 7 วันข้างหน้า (รายโมเดล)' table -- project decision (verbatim, relayed): never
+    collapse the named models into one averaged/median headline -- name each model, show
+    its own daily number, straight from forecast_7day_compare.json (never recomputed, per
+    FORECAST_SPEC.md item 2). Below the table: SCENARIOS for tomorrow (first date in this
+    window) -- worst case first, best case, and a count-based majority band -- plus the
+    model-disagreement flags (kept, unchanged mechanism) and the TMD 24h official text
+    (labelled official_forecast)/ONWR-HII OPEN gap, surfaced plainly rather than hidden.
+    `briefing` (optional) is the build_briefing_summary() dict -- when it carries a
+    `tmd_forecast_note_th`, that line is shown right next to this table, tagged
+    official_report, never merged into the models' own numbers above."""
     if not compare:
         return ""
     daily = compare.get("daily_open_meteo_mm") or {}
     rows = []
+    header_cells = "".join(f"<th>{esc(_DAILY_MODEL_LABEL[m])}</th>" for m in _DAILY_MODEL_ORDER)
     for date_str, d in sorted(daily.items()):
         y, m, day = date_str.split("-")
         label = f"{int(day)} {_THAI_MONTH_SHORT.get(int(m), m)}"
-        med, lo, hi = d.get("median"), d.get("min"), d.get("max")
-        note = " ← ฝนเบา" if (med is not None and med < 6) else ""
-        rows.append(f'<tr><td>{esc(label)}</td>'
-                    f'<td>{med:.0f} ({lo:.0f}-{hi:.0f}){esc(note)}</td></tr>')
+        cells = []
+        for model in _DAILY_MODEL_ORDER:
+            v = d.get(model)
+            cells.append("<td>—</td>" if v is None else f"<td>{v:.0f}</td>")
+        # "light rain" classification only (never shown as the headline number itself) --
+        # reuses this day's already-computed `median` field from forecast_7day_compare.json
+        # (FORECAST_SPEC.md item 2: do not recompute) purely to flag the row, same threshold
+        # as before this rewrite.
+        day_median = d.get("median")
+        light_note = " ← ฝนเบา" if (day_median is not None and day_median < 6) else ""
+        rows.append(f'<tr><td>{esc(label)}{esc(light_note)}</td>{"".join(cells)}</tr>')
     table_html = ('<div class="tablewrap"><table class="daily-rain-table">'
-                  '<thead><tr><th>วัน</th><th>ฝนคาดการณ์ มม./วัน มัธยฐาน (ต่ำสุด-สูงสุด)</th></tr></thead>'
+                  f'<thead><tr><th>วัน</th>{header_cells}</tr></thead>'
                   f'<tbody>{"".join(rows)}</tbody></table></div>')
+
+    # SCENARIOS -- tomorrow (first date in this window) worst/best/majority-band, never
+    # an average across models.
+    scenario_html = ""
+    sorted_dates = sorted(daily.keys())
+    if sorted_dates:
+        first = daily[sorted_dates[0]]
+        vals_tomorrow = [first[m] for m in _DAILY_MODEL_ORDER if first.get(m) is not None]
+        if vals_tomorrow:
+            worst_model = max((m for m in _DAILY_MODEL_ORDER if first.get(m) is not None),
+                               key=lambda m: first[m])
+            best_model = min((m for m in _DAILY_MODEL_ORDER if first.get(m) is not None),
+                              key=lambda m: first[m])
+            band_lo, band_hi, k, n = _daily_scenario_band(vals_tomorrow)
+            disagree = spread_disagreement(max(vals_tomorrow), min(vals_tomorrow))
+            disagree_html = ' <span class="tag-pill tag-open">โมเดลไม่ตรงกัน</span>' if disagree else ""
+            # 7-day total per model, only for models with a value on every day present
+            totals = {}
+            for model in _DAILY_MODEL_ORDER:
+                day_vals = [daily[dt].get(model) for dt in sorted_dates]
+                if all(v is not None for v in day_vals):
+                    totals[model] = round(sum(day_vals), 1)
+            total_html = ""
+            if totals:
+                worst7 = max(totals, key=lambda m: totals[m])
+                best7 = min(totals, key=lambda m: totals[m])
+                total_html = (f'<li>รวม {len(sorted_dates)} วัน — กรณีแย่สุด: '
+                               f'{esc(_DAILY_MODEL_LABEL[worst7])} {totals[worst7]:.0f} มม. · '
+                               f'กรณีดีสุด: {esc(_DAILY_MODEL_LABEL[best7])} {totals[best7]:.0f} มม.</li>')
+            scenario_html = (
+                '<ul class="daily-rain-scenarios small">'
+                f'<li>พรุ่งนี้ — กรณีแย่สุด: {esc(_DAILY_MODEL_LABEL[worst_model])} '
+                f'{first[worst_model]:.0f} มม. · กรณีดีสุด: {esc(_DAILY_MODEL_LABEL[best_model])} '
+                f'{first[best_model]:.0f} มม.</li>'
+                f'<li>โมเดลส่วนใหญ่ ({k} จาก {n}) อยู่ที่ {band_lo:.0f}–{band_hi:.0f} มม.{disagree_html}</li>'
+                f'{total_html}'
+                '</ul>'
+                '<p class="small">ค่าโมเดล = ฝนต่อพื้นที่ช่องตาราง ~10–25 กม. รอบจุด ไม่ใช่จุดเดียว — '
+                '26 ก.ย. โมเดลให้ 13–53 มม. แต่สถานี สนข.สะพานสูง วัดได้ 203 '
+                '(ตัวเลข 203 ยังไม่ยืนยันแหล่ง/สถานี/ช่วงเวลาให้ตรงกันในระบบนี้)</p>'
+            )
 
     flags = compare.get("flags") or {}
     flag_lines = []
+    flag_ic = icon("doc", 16)
     for f in (flags.get("model_disagreement") or []) + (flags.get("heavy_burst_gt_50mm_after_today") or []):
-        flag_lines.append(f'<p class="small flag-line">⚠ {esc(f)}</p>')
+        flag_lines.append(f'<p class="small flag-line">{flag_ic}<span>{esc(_thai_flag_sentence(f))}</span></p>')
 
     tmd = (compare.get("sources") or {}).get("tmd") or {}
     tmd_html = ""
     if tmd:
-        tmd_html = (f'<p class="small">{_tag_pill("official_report")} กรมอุตุฯ 24 ชม.: '
-                    f'{esc(tmd.get("content"))} — ยังไม่มีพยากรณ์ 7 วันเป็นตัวเลขจากหน่วยงานรัฐที่ดึงได้</p>')
+        tmd_content = (tmd.get("content") or "").strip()
+        if tmd_content:
+            # Restore rendering the ACTUAL fetched TMD text (escaped) -- a prior edit
+            # regressed this to a fixed boilerplate sentence regardless of content
+            # (review MUST-FIX #4). The boilerplate below is now only the fallback for
+            # when TMD content genuinely could not be fetched (tmd_content empty).
+            tmd_html = (f'<p class="small">{_tag_pill("official_report")} กรมอุตุฯ: '
+                        f'{esc(tmd_content)}</p>')
+        else:
+            tmd_html = (f'<p class="small">{_tag_pill("official_report")} กรมอุตุฯ มีเฉพาะพยากรณ์ 24 ชม. '
+                        f'(ฝนหนักถึงหนักมาก แจ้งเตือนน้ำท่วมฉับพลัน/น้ำป่าไหลหลาก) '
+                        f'ยังไม่มีพยากรณ์ 7 วันเป็นตัวเลขจากหน่วยงานรัฐที่ดึงได้</p>')
 
     briefing_tmd_note = (briefing or {}).get("tmd_forecast_note_th")
     briefing_tmd_html = ""
     if briefing_tmd_note:
         briefing_tmd_html = (
             f'<p class="small">{_tag_pill("official_report")} กทม. แถลง 16:15 (อ้างอิงกรมอุตุฯ): '
-            f'{esc(briefing_tmd_note)} — สอดคล้องกับตัวเลขมัธยฐานของแบบจำลองข้างต้นที่ลดลง '
+            f'{esc(briefing_tmd_note)} — สอดคล้องกับตัวเลขของแบบจำลองข้างต้นที่ลดลง '
             f'27-29 ก.ย.</p>'
         )
 
     return (
         '<div class="fcard daily-rain-card">'
-        '<h3>ฝน 7 วันข้างหน้า (6 แบบจำลอง)</h3>'
+        '<h3>ฝน 7 วันข้างหน้า (รายโมเดล)</h3>'
         + table_html
+        + scenario_html
         + "".join(sorted(set(flag_lines)))
         + tmd_html
         + briefing_tmd_html
@@ -1527,7 +2042,86 @@ def build_help_briefing_html(briefing):
     monday = briefing.get("monday_note_th")
     if monday:
         parts.append(f'<p><strong>วันจันทร์ 28 ก.ย.:</strong> {esc(monday)}</p>')
-    parts.append(f'<p class="small">{_tag_pill("official_report")} จากแถลงผู้ว่าฯ 26 ก.ย. 2569 13:00</p>')
+
+    # 27 ก.ย. governor-interview fields (RELAYED via media) -- added 2026-09-27, absent
+    # on the older 26 ก.ย. official_report briefing shape, so each block only renders when
+    # its own field is present. Never rephrased into a command.
+    rain_total = briefing.get("rain_total_note_th")
+    if rain_total:
+        parts.append(f'<p>{_tag_pill("RELAYED")} <strong>ปริมาณฝนสะสม:</strong> {esc(rain_total)}</p>')
+    drain_explanation = briefing.get("drain_explanation_th")
+    if drain_explanation:
+        parts.append(f'<p>{_tag_pill("RELAYED")} <strong>ทำไมคลองยังไม่ลดชัด:</strong> {esc(drain_explanation)}</p>')
+    pump_power = briefing.get("pump_power_note_th")
+    if pump_power:
+        parts.append(f'<p>{_tag_pill("RELAYED")} <strong>ไฟฟ้า/สถานีสูบ:</strong> {esc(pump_power)}</p>')
+    cause_note = briefing.get("cause_of_local_pump_faults_note_th")
+    if cause_note:
+        parts.append(f'<p class="small">{_tag_pill("OPEN")} {esc(cause_note)}</p>')
+
+    timeframe = briefing.get("timeframe") or {}
+    if timeframe.get("main_roads_days") or timeframe.get("communities_dry_weeks"):
+        tf_bits = []
+        if timeframe.get("main_roads_days"):
+            tf_bits.append(f'ถนนหลักดีขึ้นใน {esc(timeframe["main_roads_days"])} วัน')
+        if timeframe.get("communities_dry_weeks"):
+            tf_bits.append(f'ในชุมชนแห้งสนิทอาจใช้ถึง {esc(timeframe["communities_dry_weeks"])} สัปดาห์')
+        parts.append(f'<p>{_tag_pill("RELAYED")} <strong>กรอบเวลา:</strong> {" · ".join(tf_bits)}</p>')
+
+    ops = briefing.get("ops") or {}
+    if ops:
+        ops_bits = []
+        if ops.get("wfh_bkk_28sep"):
+            ops_bits.append("กทม. ให้ WFH 28 ก.ย.")
+        if ops.get("bkk_schools_closed_28sep"):
+            count = ops.get("bkk_schools_closed_28sep_count")
+            ops_bits.append(f'ปิดโรงเรียน กทม. 28 ก.ย.{f" ({count:,} แห่ง)" if count else ""}')
+        if ops.get("tollway_free"):
+            ops_bits.append("ทางด่วนไม่เก็บค่าผ่านทางบางช่วง")
+        if ops_bits:
+            parts.append(f'<p>{_tag_pill("RELAYED")} <strong>มาตรการวันจันทร์ 28 ก.ย.:</strong> {" · ".join(ops_bits)}</p>')
+
+    evac = briefing.get("evacuation") or {}
+    if evac:
+        evac_bits = []
+        if evac.get("area_th") and evac.get("affected_approx"):
+            evac_bits.append(f'{esc(evac["area_th"])} ได้รับผลกระทบประมาณ {evac["affected_approx"]:,} คน')
+        if evac.get("shelter_moved_to_th"):
+            evac_bits.append(f'ย้ายศูนย์พักพิงไปที่ {esc(evac["shelter_moved_to_th"])}')
+        if evac.get("bedridden_moved_low") or evac.get("bedridden_moved_high"):
+            lo, hi = evac.get("bedridden_moved_low"), evac.get("bedridden_moved_high")
+            evac_bits.append(f'ย้ายผู้ป่วยติดเตียงแล้ว {lo}–{hi} ราย')
+        if evac_bits:
+            parts.append(f'<p>{_tag_pill("RELAYED")} <strong>อพยพ/ช่วยเหลือ:</strong> {" · ".join(evac_bits)}</p>')
+        evac_hotlines = evac.get("hotlines") or []
+        if evac_hotlines:
+            hl_text = ", ".join(f'{h.get("number")} ({h.get("purpose_th")})' for h in evac_hotlines if h.get("number"))
+            if hl_text:
+                parts.append(f'<p><strong>สายด่วนเพิ่มเติม:</strong> {esc(hl_text)}</p>')
+
+    deaths_note = briefing.get("deaths_note_th")
+    if deaths_note:
+        parts.append(f'<p>{_tag_pill("RELAYED")} {esc(deaths_note)}</p>')
+    contradiction = briefing.get("contradiction_th")
+    if contradiction:
+        parts.append(f'<p class="small">{_tag_pill("OPEN")} <strong>ข้อมูลขัดแย้งกัน:</strong> {esc(contradiction)}</p>')
+
+    briefing_time = briefing.get("briefing_time_bkk")
+    time_label = None
+    if briefing_time:
+        try:
+            dt = datetime.datetime.fromisoformat(briefing_time)
+            time_label = f'{dt.day} {_THAI_MONTH_SHORT.get(dt.month, dt.month)} {dt.year + 543}'
+            if briefing.get("briefing_time_approximate"):
+                time_label += " (เวลาโดยประมาณ)"
+        except ValueError:
+            time_label = None
+    tier = briefing.get("trust_tier") or "official_report"
+    tier_pill = "RELAYED" if "via-media" in tier else "official_report"
+    source_line = f'{_tag_pill(tier_pill)} '
+    source_line += (f'จากคำให้สัมภาษณ์ผู้ว่าฯ กทม. {esc(time_label)}' if time_label
+                     else 'จากแถลง/สัมภาษณ์ผู้ว่าฯ กทม.')
+    parts.append(f'<p class="small">{source_line}</p>')
     parts.append("</div>")
     return "".join(parts)
 
@@ -1548,8 +2142,10 @@ _CG_NODE_POS = {
     "hmk01": (10, 250), "lbk03": (150, 250), "kjn01": (290, 250), "ram53_canal": (430, 250),
 }
 _CG_STATUS_COLOR = {
-    "NORMAL": "#2E7D32", "WATCH": "#D68910", "CRITICAL": "#C0392B", "OVERBANK": "#8E2A1F",
-    "NO_GAUGE": "#8A9AA0", "NO_DATA": "#8A9AA0", "NO_THRESHOLD": "#8A9AA0",
+    "NORMAL": "var(--ok)", "WATCH": "var(--warning-text)", "CRITICAL": "var(--alert)",
+    "OVERBANK": "var(--alert-strong)",
+    "NO_GAUGE": "var(--neutral-text)", "NO_DATA": "var(--neutral-text)",
+    "NO_THRESHOLD": "var(--neutral-text)",
 }
 _CG_HIGHLIGHT_NODE = "sammakorn_pond"
 
@@ -1617,9 +2213,9 @@ def build_canal_graph_svg(canal_graph):
         f'<svg class="canal-graph-svg" viewBox="0 0 {max_x} {max_y}" '
         f'role="img" aria-label="ผังคลอง น้ำไหลจากไหนไปไหนตอนนี้">',
         '<defs>'
-        '<marker id="cgArrB" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L8,4L0,8Z" fill="#1F7A8C"/></marker>'
-        '<marker id="cgArrO" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L8,4L0,8Z" fill="#D68910"/></marker>'
-        '<marker id="cgArrG" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L8,4L0,8Z" fill="#8A9AA0"/></marker>'
+        '<marker id="cgArrB" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L8,4L0,8Z" style="fill:var(--accent-2)"/></marker>'
+        '<marker id="cgArrO" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L8,4L0,8Z" style="fill:var(--warning)"/></marker>'
+        '<marker id="cgArrG" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L8,4L0,8Z" style="fill:var(--neutral)"/></marker>'
         '</defs>'
     ]
 
@@ -1651,14 +2247,14 @@ def build_canal_graph_svg(canal_graph):
         parts.append(f'<line class="{cls}" x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}"{marker_attr}/>')
         if status == "CONTROLLED":
             mx, my = (x1 + x2) / 2, (y1 + y2) / 2
-            parts.append(f'<text class="cg-lock" x="{mx}" y="{my - 6}" text-anchor="middle">🔒</text>')
+            parts.append(f'<text class="cg-lock" x="{mx}" y="{my - 6}" text-anchor="middle">(คุม)</text>')
 
     # -- node boxes on top --
     for nid, n in nodes.items():
         if nid not in _CG_NODE_POS:
             continue
         x, y = _CG_NODE_POS[nid]
-        color = _CG_STATUS_COLOR.get(n.get("status"), "#8A9AA0")
+        color = _CG_STATUS_COLOR.get(n.get("status"), "var(--neutral-text)")
         label = esc(n.get("label_th") or nid)
         value = n.get("value_m")
         value_txt = f"{value:.2f} ม." if isinstance(value, (int, float)) else "ไม่มีเครื่องวัด"
@@ -1676,6 +2272,44 @@ def build_canal_graph_svg(canal_graph):
     return "".join(parts)
 
 
+def build_canal_normal_level_rows_html(canal_graph):
+    """Per-canal-node "back to normal" readout rows (build 5, 2026-09-27 -- see
+    site/build_data.py's canal_normal_level_readout()/PROP-FLOOD-02). Only nodes that
+    resolved a normal_level_m (basis != OPEN) render a row -- an OPEN station is left
+    out entirely, never shown with a fabricated line."""
+    nodes = (canal_graph or {}).get("nodes") or {}
+    rows = []
+    for nid, n in nodes.items():
+        nl = n.get("normal_level")
+        if not nl or nl.get("status") in (None, "open"):
+            continue
+        label = esc(n.get("label_th") or nid)
+        basis = esc(nl.get("basis_label") or "")
+        readout = esc(nl.get("readout_th") or "")
+        rows.append(
+            f'<li><strong>{label}</strong> <span class="small">({basis})</span> — {readout}</li>'
+        )
+    return "".join(rows)
+
+
+def build_canal_normal_level_section_html(canal_graph):
+    rows_html = build_canal_normal_level_rows_html(canal_graph)
+    if not rows_html:
+        return ""
+    hero = ((canal_graph or {}).get("normal_level_hero") or {}).get("readout_th")
+    hero_html = f'<p class="cg-normal-hero"><strong>{esc(hero)}</strong></p>' if hero else ""
+    return (
+        '<section class="canal-normal-level-wrap" aria-label="คลองกลับสู่ระดับปกติหรือยัง">'
+        + hero_html +
+        '<details id="canal-normal-level-details">'
+        '<summary><span>คลองไหนกลับสู่ระดับปกติแล้วบ้าง</span></summary>'
+        f'<ul class="small">{rows_html}</ul>'
+        '<p class="small">"ปกติ" = ระดับควบคุมที่ กทม. ประกาศไว้ต่อสถานี ถ้าไม่มีค่านี้ใช้ค่ากลาง'
+        'ฤดูแล้งที่วัดได้เองแทน (ดูป้ายในวงเล็บ) — เวลาโดยประมาณจากแนวโน้มล่าสุด ไม่ใช่การพยากรณ์</p>'
+        '</details></section>'
+    )
+
+
 def build_canal_graph_section_html(canal_graph):
     """'ผังคลอง — น้ำไหลจากไหนไปไหน (ตอนนี้)' -- synthesis line always visible, full
     diagram inside a <details> that is collapsed by default (same convention as every
@@ -1691,15 +2325,16 @@ def build_canal_graph_section_html(canal_graph):
         '<span class="cg-legend-item"><span class="cg-swatch cg-swatch-grey"></span>ไม่มีเครื่องวัด/ไม่ยืนยัน</span>'
         '</p>'
     )
+    normal_level_section = build_canal_normal_level_section_html(canal_graph)
     return (
         '<section class="canal-graph-wrap" aria-label="ผังคลองน้ำไหลจากไหนไปไหน">'
         f'<p class="cg-synthesis">{synthesis}</p>'
         '<details id="canal-graph-details">'
         '<summary><span>ผังคลอง — น้ำไหลจากไหนไปไหน (ตอนนี้)</span></summary>'
-        + legend + svg +
+        + legend + f'<div class="chart-scroll">{svg}</div>' +
         '<p class="small">ทิศทางมาจากการเทียบระดับน้ำสองจุดจริง (readout) — เส้นบาง/เทาคือคลองที่ยังไม่มี'
         'เครื่องวัดครบสองฝั่ง แสดงแค่ทิศทางที่ออกแบบไว้ (relay, ไม่ใช่การวัด)</p>'
-        '</details></section>'
+        '</details>' + normal_level_section + '</section>'
     )
 
 
@@ -1731,6 +2366,25 @@ def build_burden_ledger_rows_html(burden_ledger):
     rows = []
     for sid, row in structures.items():
         state_th = _BL_STATE_TH.get(row.get("state"), "ไม่ทราบ" if row.get("state") is None else esc(row["state"]))
+        # state_basis pill (build 6, 2026-09-27): "วัดจริง" (measured bma_watermap gate
+        # reading) vs "อนุมาน" (in/out-level inference) -- was computed in build_data.py's
+        # _burden_declared_state() all along but never surfaced on the page until now.
+        basis = row.get("state_basis")
+        basis_pill = (f'<span class="bl-basis-pill bl-basis-{("measured" if basis == "วัดจริง" else "inferred")}">'
+                      f'{esc(basis)}</span>') if basis else ""
+        state_th = f"{state_th} {basis_pill}" if basis_pill else state_th
+        # When the MEASURED gate reading disagrees with what the level-difference
+        # inference alone would have said, the inferred value stays visible (never
+        # deleted, per this repo's "never silently resolved" rule) as its own line.
+        contradiction_line = ""
+        if row.get("gate_state_contradiction"):
+            inferred_state = row.get("inferred_state_if_no_measurement")
+            inferred_th = _BL_STATE_TH.get(inferred_state, inferred_state or "ไม่ทราบ")
+            contradiction_line = (
+                '<div class="small bl-contradiction">⚠ ค่าอนุมานจากระดับ (ไม่ใช่ค่าวัดจริง) '
+                f'บอกว่า: {esc(inferred_th)} — ไม่ตรงกับค่าวัดจริงข้างบน, เก็บไว้ให้เห็นทั้งคู่ '
+                'ไม่ลบทิ้ง</div>'
+            )
         result = row.get("result")
         if result == "DETERMINATE":
             burdened = esc(_bl_side_label(row, row.get("burdened_side")))
@@ -1754,7 +2408,7 @@ def build_burden_ledger_rows_html(burden_ledger):
         rows.append(
             "<tr>"
             f"<td>{esc(row.get('label_th') or sid)}</td>"
-            f"<td>{esc(state_th)}</td>"
+            f"<td>{state_th}{contradiction_line}</td>"
             f"<td>{burdened}</td>"
             f"<td>{relieved}</td>"
             f"<td>{diff_m}</td>"
@@ -1812,11 +2466,621 @@ def build_burden_ledger_section_html(burden_ledger):
     )
 
 
+# --- Sammakorn head chain (build 6, 2026-09-27, PROP-FLOOD-04 instantiation) -----------
+
+_SC_REASON_TH = {
+    "MISSING_INPUT": "ไม่มีค่าที่อ่านได้",
+    "FAULT_INPUT": "เซนเซอร์ขัดข้อง",
+    "STALE_INPUT": "ค่าเก่าเกินไป",
+    "DT_EXCEEDS_60MIN": "เวลาที่อ่านสองจุดห่างกันเกิน 60 นาที",
+    "UNPARSEABLE_TIMESTAMP": "แปลงเวลาไม่ได้",
+    "DATUM_UNKNOWN": "ไม่ทราบระดับอ้างอิง (datum) ของสองจุดว่าเทียบกันได้",
+    "NO_BANK_THRESHOLD_DECLARED": "ยังไม่มีค่าเกณฑ์ตลิ่ง (bank) ที่ประกาศไว้",
+    "SUSPECT_NEIGHBOUR_MISMATCH": "ค่าเดี่ยวขัดกับเพื่อนบ้าน — ไม่ใช้เป็นตัวแทนคลอง",
+}
+_SC_DIRECTION_TH = {
+    "up_to_down": "ไหลลงปลายทาง", "down_to_up": "ไหลย้อนขึ้นต้นทาง", "flat": "ระดับเท่ากัน",
+    "เสี่ยงย้อน": "เสี่ยงย้อน", "ไม่เสี่ยงย้อน (เท่าที่วัดได้)": "ไม่เสี่ยงย้อน (เท่าที่วัดได้)",
+    "unavailable": "ยังบอกไม่ได้", "unknown": "ยังบอกไม่ได้",
+}
+_SC_GATE_TH = {"open": "เปิด", "closed": "ปิด", "unknown": "ไม่ทราบ"}
+_SC_FLOW_STATUS_TH = {"moving": "กำลังไหล", "stalled": "นิ่ง/ตัน", "unknown": "ยังบอกไม่ได้"}
+
+
+def build_sammakorn_chain_section_html(sammakorn_chain):
+    """'สายการไหลหลัก' -- ซอย → บึง → คลองบ้านม้า 2 → แสนแสบ, with the explicit
+    บ้านม้า 2 → บึง backflow-risk edge alongside it (founder correction, verbatim:
+    "สัมมากรต้องเชื่อมกับน้ำในคลองด้วย เพราะมันเป็นน้ำย้อนจากคลอง ไม่ใช่แค่ปั๊ม"). Renders the
+    THREE independent readouts (gate_state/flow_direction/flow_status) side by side per
+    edge, plus the refusal-reason text and the RELAYED community backflow evidence --
+    never conflates them (repeats the founder's own rule: "สถานะประตู ≠ ทิศทางการไหล ≠
+    น้ำนิ่ง/ตัน")."""
+    if not sammakorn_chain or not sammakorn_chain.get("available"):
+        return ""
+    nodes = sammakorn_chain.get("nodes") or {}
+    edge_rows = []
+    for e in sammakorn_chain.get("edges") or []:
+        kind_label = ('<span class="sc-kind-pill sc-kind-backflow">ย้อน</span>'
+                      if e.get("kind") == "backflow-risk" else "")
+        reason_th = _SC_REASON_TH.get(e.get("refusal_reason"), e.get("refusal_reason") or "")
+        reason_line = (f'<div class="small">อ่านไม่ได้เต็มรูป: {esc(reason_th)}</div>'
+                       if e.get("refusal_reason") else "")
+        h_up = f'{e["h_up"]:.2f}' if e.get("h_up") is not None else "—"
+        h_down = f'{e["h_down"]:.2f}' if e.get("h_down") is not None else "—"
+        gate_v = e.get("gate_state", {}).get("value")
+        gate_th = _SC_GATE_TH.get(gate_v, gate_v or "ไม่ทราบ")
+        dir_v = e.get("flow_direction", {}).get("value")
+        dir_th = _SC_DIRECTION_TH.get(dir_v, dir_v or "ยังบอกไม่ได้")
+        status_v = e.get("flow_status", {}).get("value")
+        status_th = _SC_FLOW_STATUS_TH.get(status_v, status_v or "ยังบอกไม่ได้")
+        backflow_note = ""
+        if e.get("backflow_active") is True:
+            backflow_note = '<div class="small sc-backflow-active">⚠ น้ำย้อนจากคลองเข้าหมู่บ้าน (active)</div>'
+        edge_rows.append(
+            '<li class="sc-edge">'
+            f'<strong>{esc(e.get("label_th") or e.get("edge_id"))}</strong> {kind_label}'
+            f'<div class="small">{esc(h_up)} ม. → {esc(h_down)} ม.'
+            f' ({esc(e.get("observed_at_up") or "-")} / {esc(e.get("observed_at_down") or "-")})</div>'
+            '<div class="sc-readouts small">'
+            f'<span class="sc-readout">ประตู: {esc(gate_th)} ({esc(e.get("gate_state", {}).get("basis") or "-")})</span>'
+            f'<span class="sc-readout">ทิศทาง: {esc(dir_th)}</span>'
+            f'<span class="sc-readout">การไหล: {esc(status_th)}</span>'
+            '</div>'
+            f'{backflow_note}{reason_line}'
+            '</li>'
+        )
+
+    evidence_items = "".join(
+        f'<li>{esc(ev.get("soi"))} ({esc(ev.get("time_th"))}): {esc(ev.get("text_th"))} '
+        f'<span class="small">[{esc(ev.get("tag"))}]</span></li>'
+        for ev in sammakorn_chain.get("community_backflow_evidence") or []
+    )
+    evidence_html = (
+        '<h4 class="sc-evidence-heading">รายงานชุมชนที่สอดคล้องกับน้ำย้อน (ข่าว/บุคคลที่สาม)</h4>'
+        f'<ul class="small">{evidence_items}</ul>'
+    ) if evidence_items else ""
+
+    # Neighbour-consistency suspect flag (founder rule, verbatim, 2026-09-27) -- grey
+    # pill + multi-station band replacement, shown ABOVE the edge list so it's not
+    # missed inside a collapsed edge row.
+    saensaeb = nodes.get("saensaeb") or {}
+    suspect_html = ""
+    if saensaeb.get("suspect"):
+        band = esc(saensaeb.get("neighbour_band_label_th") or "ยังไม่มีคำตอบ")
+        suspect_html = (
+            '<p class="small sc-suspect-note">'
+            f'<span class="tag-pill tag-open">{esc(saensaeb.get("suspect_note_th") or "")}</span> '
+            f'แสนแสบ (WL.SSB.08) — ใช้ค่ากลุ่มสถานีใกล้เคียงแทน: {band}</p>'
+        )
+
+    next_step = esc(sammakorn_chain.get("next_step_th") or "")
+    return (
+        '<section class="sammakorn-chain-wrap" aria-label="สายการไหลหลัก">'
+        '<details id="sammakorn-chain-details">'
+        '<summary><span>สายการไหลหลัก (ซอย → บึง → คลองบ้านม้า 2 → แสนแสบ)</span></summary>'
+        f'{suspect_html}'
+        f'<ul class="sc-edge-list">{"".join(edge_rows)}</ul>'
+        f'{evidence_html}'
+        f'<p class="small">ขั้นต่อไป: {next_step}</p>'
+        '</details></section>'
+    )
+
+
+# --- Cross-source reconciliation (build 4, 2026-09-27) ----------------------------------
+
+def build_reconciliation_section_html(cross_source_reconciliation):
+    """'ตรวจสอบข้อมูลข้ามแหล่ง (bma_watermap เทียบ thaiwater_canal_waterlevel)' -- summary
+    counts + up to 7 disagreeing stations (never all of them -- keeps the page under
+    budget; a station list already this long belongs in readout_log/DECISIONS, not the
+    live page)."""
+    recon = cross_source_reconciliation or {}
+    summary = recon.get("summary")
+    if not summary:
+        return ""
+    stations = recon.get("stations") or {}
+    disagreeing = [(code, s) for code, s in stations.items() if s.get("status") == "DISAGREE"][:7]
+    rows = []
+    for code, s in disagreeing:
+        a, b = s.get("a") or {}, s.get("b") or {}
+        rows.append(
+            "<tr>"
+            f"<td>{esc(code)}</td>"
+            f"<td>{esc(a.get('value'))} ({esc(a.get('observed_at') or '-')})</td>"
+            f"<td>{esc(b.get('value'))} ({esc(b.get('observed_at') or '-')})</td>"
+            f"<td>{esc(s.get('delta_m'))}</td>"
+            "</tr>"
+        )
+    rows_html = (
+        '<div class="tablewrap"><table>'
+        '<thead><tr><th>สถานี</th><th>bma_watermap</th>'
+        '<th>thaiwater_canal_waterlevel</th><th>ต่างกัน (ม.)</th></tr></thead>'
+        f'<tbody>{"".join(rows)}</tbody></table></div>'
+    ) if rows else ""
+    return (
+        '<section class="reconciliation-wrap" aria-label="ตรวจสอบข้อมูลข้ามแหล่ง">'
+        '<details id="reconciliation-details">'
+        '<summary><span>ตรวจสอบข้อมูลข้ามแหล่ง (bma_watermap เทียบ thaiwater_canal_waterlevel)</span></summary>'
+        f'<p class="small">ตรงกัน (วัดจริง ทั้งสองแหล่ง): {summary.get("agree", 0)} · '
+        f'ขัดแย้งกัน: {summary.get("disagree", 0)} · '
+        f'มีแหล่งเดียว: {summary.get("one_sided", 0)} · '
+        f'ไม่มีข้อมูล: {summary.get("no_data", 0)}</p>'
+        f'{rows_html}'
+        '<p class="small">แสดงสถานีที่ขัดแย้งกันสูงสุด 7 สถานี (ถ้ามีมากกว่านั้น ดูรายการเต็มใน '
+        'readout_log) — ไม่มีการเลือกผู้ชนะ ทั้งสองค่าคือค่าวัดจริงจากแต่ละแหล่งเอง</p>'
+        '</details></section>'
+    )
+
+
 # ---------------- one area's full fragment map ----------------
+
+_L0_BADGE_CLASS_BY_IN_VS_CAP_TH = {
+    "เกินความสามารถรับมือ": "l0-bad",
+    "ใกล้ความสามารถรับมือ (≥80%)": "l0-warn",
+}
+
+
+def _l0_item_row_html(item: dict) -> str:
+    spread = item.get("spread_flag_th")
+    spread_html = f' <span class="tag-pill tag-open">{esc(spread)}</span>' if spread else ""
+    scope = item.get("scope_note_th")
+    scope_html = f' <span class="small">({esc(scope)})</span>' if scope else ""
+    return (
+        f'<li><span class="l0-item-label">{esc(item["label_th"])}:</span> '
+        f'<span class="l0-item-value">{esc(item["text_th"])}</span>{spread_html}{scope_html} '
+        f'{_tag_pill_th(item.get("tag_th"))}</li>'
+    )
+
+
+def _tag_pill_th(label_th: str | None) -> str:
+    """Same visual pill as _tag_pill(), but takes an ALREADY-Thai label (LAYER 0's public
+    block never carries a raw VERIFIED/RELAYED/OPEN code past build_data.py -- see
+    build_layer0_public()'s _l0_tag_pill()) -- reuses _TAG_LABEL_TH's reverse lookup only
+    for the CSS class, never re-translates."""
+    label_th = label_th or "ยังไม่มีคำตอบ"
+    cls_by_label = {v: k.lower() for k, v in _TAG_LABEL_TH.items()}
+    cls = cls_by_label.get(label_th, "open")
+    return f'<span class="tag-pill tag-{esc(cls)}">{esc(label_th)}</span>'
+
+
+def build_layer0_top_html(layer0_public, area_id):
+    """LAYER 0 (น้ำเข้า/น้ำออก/รับมือได้) -- the TOP block per area, per founder instruction
+    (2026-09-27, docs/LAYER0_IN_OUT_CAPACITY.md): "เอาแบบง่ายๆ ก่อน น้ำเข้า น้ำออก
+    ความสามารถในการรับมือ". `layer0_public` is data.json's `layer0_public` key
+    (build_data.build_layer0_public()'s own dict, Thai-only, no internal field names or
+    the word "wire" anywhere in it by construction -- see that function's own docstring)
+    or None if tools/layer0 failed to import this build; fails soft to "" per this file's
+    never-crash-the-page discipline, same as every other fragment builder here."""
+    if not layer0_public or not layer0_public.get("areas"):
+        return ""
+    areas = layer0_public["areas"]
+    # bangkok_east is a zone-level unit, not one of the two tab area_ids -- shown once,
+    # on the sammakorn tab, same render-once-for-city-wide-content budget reasoning this
+    # file already uses for the water-balance chart/canal graph/burden ledger above.
+    order = ["bangkok_east", area_id] if area_id == "sammakorn" else [area_id]
+    blocks = []
+    seen = set()
+    for aid in order:
+        if aid in seen or aid not in areas:
+            continue
+        seen.add(aid)
+        a = areas[aid]
+        badge_cls = _L0_BADGE_CLASS_BY_IN_VS_CAP_TH.get(a.get("in_vs_capacity_th"), "l0-ok")
+        in_rows = "".join(_l0_item_row_html(it) for it in a.get("in_items", []))
+        out_rows = "".join(_l0_item_row_html(it) for it in a.get("out_items", []))
+        cap_rows = "".join(_l0_item_row_html(it) for it in a.get("capacity_items", []))
+        cap_note = a.get("capacity_note_th")
+        cap_note_html = f'<p class="small">{esc(cap_note)}</p>' if cap_note else ""
+        forecast_verdict = a.get("forecast_verdict_th")
+        forecast_verdict_html = (
+            f'<p class="l0-verdict l0-verdict-forecast">พยากรณ์: <strong>{esc(forecast_verdict)}</strong></p>'
+            if forecast_verdict else ""
+        )
+        # B4 fix (an earlier check mobile verifier, advisory): the pf06 block used to print
+        # ALL of tier_word/coverage_text_th/time_text_th/pond_capacity_text_th
+        # (several long sentences, one nearly a paragraph of missing-inputs prose)
+        # always-visible -- on its own good for 600+px at 360px, i.e. most of the
+        # ≤~900px first-open budget for this one area alone. Only the single 72h
+        # worst-case rain line is a page headline number (founder rule: rain
+        # headline = 72h worst); the rest is supporting detail, so it moves into
+        # the SAME nested evidence <details> as the in/out/capacity rows below --
+        # never the dev-jargon engine note ("สมการรุ่น ..."), never a model list
+        # (that stays D14-only, see build_layer0_model_list_html()).
+        pf06 = a.get("prop_flood_06")
+        fc72_worst_html = ""
+        pf06_evidence_html = ""
+        if pf06:
+            # Finding: an L0+PARTIAL combination (thin coverage) is
+            # already downgraded away from unqualified "ปกติ"/green at the data layer
+            # (site/build_data.py::_build_sammakorn_prop_flood_06) -- this just renders
+            # whatever tier_word_th/tier_color that function now honestly returns.
+            tier_color = esc(pf06.get("tier_color") or "#757575")
+            tier_word = esc(pf06.get("tier_word_th") or "")
+            fc72_worst = pf06.get("forecast_72h_worst_text_th")
+            fc72_worst_html = f'<p class="small">{esc(fc72_worst)}</p>' if fc72_worst else ""
+            pf06_evidence_html = (
+                '<div class="l0-prop-flood-06">'
+                f'<p class="l0-verdict">ระดับ '
+                f'<strong style="color:{tier_color}">{tier_word}</strong>'
+                f' · {esc(pf06.get("coverage_text_th") or "")}</p>'
+                f'<p class="small">{esc(pf06.get("time_text_th") or "")}</p>'
+                f'<p class="small">{esc(pf06.get("pond_capacity_text_th") or "")}</p>'
+                '</div>'
+            )
+        # B3/B4 fix (an earlier check mobile verifier, 2026-09-28): this used to print in_rows/
+        # out_rows/cap_rows (which, for bangkok_east/sammakorn, embed the same 10-model
+        # rain breakdown as D14) directly inside the FIRST details section a reader
+        # opens -- a "model list" the founder rule bans outside D14, and on its own
+        # enough to blow the ≤~900px first-open height budget (§ B4). The verdict/
+        # headline sentence and the one-line 72h-worst rain figure stay visible; the
+        # per-item in/out/capacity rows PLUS the pf06 supporting detail above (the
+        # evidence -- same underlying data, never re-sorted or recomputed here) move
+        # into a nested, closed-by-default <details>, per the §5 10-second template
+        # ("headline + one visual, evidence behind a nested expand"). One-visual =
+        # the 3-segment in/out/capacity strip below.
+        # Headline stays to the §5 "one sentence, ~60 characters" budget: only the
+        # in_vs_capacity_th verdict. out_vs_in_th/time_to_exceed_th are real fields
+        # too (never dropped) but read as a second clause, not the 10-second
+        # headline, so they move into the evidence toggle with everything else.
+        headline = esc(a.get("in_vs_capacity_th") or "ยังไม่มีคำตอบ")
+        detail_line = (
+            f'<p class="l0-verdict">{esc(a.get("out_vs_in_th") or "")} · '
+            f'{esc(a.get("time_to_exceed_th") or "")}</p>'
+        )
+        visual_html = _l0_mini_visual_html(badge_cls, a)
+        evidence_html = (
+            '<details class="dsec-evidence">'
+            '<summary>ดูรายละเอียดที่มา</summary>'
+            '<div class="tier-body">'
+            f'{detail_line}'
+            f'{forecast_verdict_html}'
+            f'{pf06_evidence_html}'
+            f'<p class="l0-section-label">น้ำเข้า</p><ul class="l0-list">{in_rows}</ul>'
+            f'<p class="l0-section-label">น้ำออก</p><ul class="l0-list">{out_rows}</ul>'
+            f'<p class="l0-section-label">รับมือได้</p><ul class="l0-list">{cap_rows}</ul>'
+            f'{cap_note_html}'
+            '</div></details>'
+        )
+        blocks.append(
+            f'<div class="l0-area {badge_cls}">'
+            f'<h4 class="l0-area-label">{esc(a["label_th"])}</h4>'
+            f'<p class="l0-verdict dsec-headline"><strong>{headline}</strong></p>'
+            f'{visual_html}'
+            f'{fc72_worst_html}'
+            f'{evidence_html}'
+            f'</div>'
+        )
+    if not blocks:
+        return ""
+    return (
+        '<div class="layer0-block">'
+        f'<h3 class="l0-title">{esc(layer0_public.get("title_th") or "สรุปสั้น")}</h3>'
+        + "".join(blocks)
+        + '</div>'
+    )
+
+
+_L0_BADGE_WORD_TH = {"l0-bad": "เกิน", "l0-warn": "ใกล้เกิน", "l0-ok": "ยังไม่เกิน"}
+
+
+def _l0_mini_visual_html(badge_cls: str, a: dict) -> str:
+    """The §5 "one visual" for the D3 headline -- a 3-segment แผนภาพ (icons only, no
+    numbers/model names, pure HTML/CSS, no JS) showing น้ำเข้า/น้ำออก/รับมือได้ at a
+    glance. Colour comes from the SAME badge_cls the verdict text already uses
+    (_L0_BADGE_CLASS_BY_IN_VS_CAP_TH) -- never a new derived judgement."""
+    word = _L0_BADGE_WORD_TH.get(badge_cls, "ยังไม่เกิน")
+    segs = [
+        ("i-rain", "น้ำเข้า", "l0-vis-in"),
+        ("i-wave", "น้ำออก", "l0-vis-out"),
+        ("i-doc", "รับมือได้", f"l0-vis-cap {badge_cls}"),
+    ]
+    cells = "".join(
+        f'<div class="l0-vis-cell {cls}"><svg class="ic ic-20" viewBox="0 0 24 24" '
+        f'aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" '
+        f'stroke-linecap="round" stroke-linejoin="round"><use href="#{icon}"/></svg>'
+        f'<span>{label}</span></div>'
+        for icon, label, cls in segs
+    )
+    return (
+        f'<div class="l0-mini-visual" role="img" '
+        f'aria-label="น้ำเข้า น้ำออก และความสามารถในการรับมือ — สรุป: {esc(word)}ความสามารถรับมือ">'
+        f'{cells}</div>'
+    )
+
+
+def build_layer0_peek_th(layer0_public, area_id):
+    """{{LAYER0_PEEK}} -- the D3 <summary> peek (§5: "peek comes from existing fields").
+    Prefers the sammakorn/bangkok_east 72h worst-case rain line (already the page's one
+    permitted headline number for rain); falls back to the plain in_vs_capacity verdict
+    for an area with no prop_flood_06 (e.g. ram53 today). Never a model list."""
+    if not layer0_public or not layer0_public.get("areas"):
+        return ""
+    areas = layer0_public["areas"]
+    a = areas.get(area_id)
+    if not a:
+        return ""
+    pf06 = a.get("prop_flood_06")
+    if pf06 and pf06.get("forecast_72h_worst_text_th"):
+        return esc(pf06["forecast_72h_worst_text_th"])
+    verdict = a.get("in_vs_capacity_th")
+    return esc(verdict) if verdict else ""
+
+
+_MODEL_ITEM_NUM_RE = re.compile(r"(-?\d+(?:[.,]\d+)?)")
+
+
+def _model_bars_html(items_th: list[str]) -> str:
+    """D14 advisory fix (an earlier check mobile verifier, A1): the per-model list was plain
+    text ("CMA: 100.1 มม."). Render it as small pure-HTML/CSS worst-first bars instead
+    (no JS) -- the width is a DISPLAY-only transform of the already-sorted, already-
+    computed `forecast_72h_items_th` strings (never re-sorted, never recomputed): parse
+    each item's own number back out to size its bar relative to the first (worst) item.
+    A parse failure degrades to a 0-width bar with the text still shown in full, so a
+    format this doesn't recognise never hides a value."""
+    values = []
+    for it in items_th:
+        m = _MODEL_ITEM_NUM_RE.search(it)
+        values.append(float(m.group(1).replace(",", "")) if m else None)
+    worst_val = next((v for v in values if v is not None), None)
+    rows = []
+    for i, (it, val) in enumerate(zip(items_th, values)):
+        pct = 0.0
+        if val is not None and worst_val:
+            pct = max(0.0, min(100.0, (val / worst_val) * 100.0))
+        row_cls = "model-bar-row worst" if i == 0 else "model-bar-row"
+        rows.append(
+            f'<li class="{row_cls}"><div class="model-bar-label">'
+            f'<span class="model-bar-name">{esc(it)}</span></div>'
+            f'<div class="model-bar-track"><div class="model-bar-fill" '
+            f'style="width:{pct:.1f}%"></div></div></li>'
+        )
+    return '<ul class="model-bars">' + "".join(rows) + "</ul>"
+
+
+def build_layer0_model_list_html(layer0_public, area_id):
+    """D14 -- "พยากรณ์ฝนแยกทีละแบบจำลอง" (redesign 2026-09-28, founder direction:
+    "โมเดลไปรวบไว้ข้างล่างก็ได้นะ เน้นข้อมูลน้อยที่สุด ทำเป็นรูปภาพ ส่วนรายละเอียดให้เอาไว้
+    ท้ายๆ" -- the per-model 72h rain breakdown moves out of the top-of-page LAYER 0
+    block entirely and lives ONLY here, as a collapsed details section placed second-to-
+    last (right before the สมดุลน้ำ section). Worst-first order is preserved verbatim
+    from `forecast_72h_items_th` (already sorted worst-first by build_data.py) -- this
+    function only relocates and wraps it, it never re-sorts or re-derives.
+    Only sammakorn carries prop_flood_06 today; ram53 (and any area without it) gets ""."""
+    if not layer0_public or not layer0_public.get("areas"):
+        return ""
+    areas = layer0_public["areas"]
+    a = areas.get(area_id)
+    if not a:
+        return ""
+    pf06 = a.get("prop_flood_06")
+    if not pf06:
+        return ""
+    fc72_worst = pf06.get("forecast_72h_worst_text_th")
+    fc72_items = pf06.get("forecast_72h_items_th") or []
+    if not fc72_items:
+        return ""
+    fc72_list_html = _model_bars_html(fc72_items)
+    peek = esc(fc72_worst) if fc72_worst else ""
+    aid = esc(area_id)
+    return (
+        f'<details id="d14-model-list-{aid}" class="dsec">'
+        '<summary><svg class="ic ic-20" viewBox="0 0 24 24" aria-hidden="true" fill="none" '
+        'stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">'
+        '<use href="#i-rain"/></svg>'
+        '<h2 class="dsec-h" style="display:inline">พยากรณ์ฝนแยกทีละแบบจำลอง</h2>'
+        f'<span class="dsec-peek">{peek} {_tag_pill("RELAYED")}</span></summary>'
+        '<div class="tier-body">'
+        # B4: no longer repeats the peek text verbatim (it is already the line right
+        # above, in the summary) -- just the model count, to keep the section short.
+        f'<p class="dsec-headline">เทียบ {len(fc72_items)} แบบจำลอง</p>'
+        '<p class="small">เรียงจากแย่สุดไปหาน้อยสุด — ไม่ใช่ค่าเฉลี่ยหรือค่ากลาง</p>'
+        f'{fc72_list_html}'
+        '</div></details>'
+    )
+
+
+# An earlier check removal (2026-09-28, founder verbatim: "เอาเฟสนี้ออกจากหน้าสัมมากร ไม่ต้องใช้
+# แล้ว" -- remove the hm2 pond/canal/pump block from the Sammakorn page entirely):
+# `build_hero_map_html()` (the {{HERO_MAP_HTML}} wiring) is retired along with the
+# {{HERO_MAP_HTML}} placeholder and the "hero-map-wrap" section in index.template.html.
+# `tools/heromap/sammakorn_map.py`'s own reusable helpers (`classify_tier`,
+# `worst_tier`, etc.) stay in place -- only this page's render wiring is removed. Its
+# import (`render_sammakorn_hero_map`, `layer0_caption_th`, `_HEROMAP_OK`) is removed
+# with it, since nothing else in this file used them.
+
+# Independent-verifier follow-up (2026-09-28) / an earlier check fold: the full _TAG_LABEL_TH
+# strings ("วัดจากไฟล์ข้อมูล", "ข่าว/บุคคลที่สาม", ...) were the single biggest cause of
+# the (now-retired) separate hero4-grid's bottom row falling past the 360x740 fold --
+# these are the SAME tags, abbreviated to the shorter Thai wording this codebase already
+# uses elsewhere for the same meaning (e.g. "วัดจริง" tags -- an explicit MUST-SURVIVE
+# convention -- already label a MEASURED reading verbatim this way on this same page's
+# C.12/pump-chart legends), never a raw English token and never a different tag. Now
+# used directly by `build_indicator_tiles()`'s folded-in ฝน/การระบาย/น้ำเหนือ/น้ำหนุน
+# tiles (an earlier check fold) -- kept under its original name, no longer hero4-exclusive.
+_HERO4_TAG_LABEL_TH = {"VERIFIED": "ยืนยันแล้ว", "MEASURED": "วัดจริง", "RELAYED": "ข่าว",
+                        "OPEN": "ไม่ทราบ", "official_report": "ทางการ",
+                        "INSTINCT": "ประเมินเอง"}
+
+
+def _hero4_tag_pill(tag, label=None, extra_cls=None):
+    """`label` (coordinator follow-up, 2026-09-28): an evidence-subtype override for
+    this ONE pill's displayed text, keeping the same `tag-{cls}` CSS class (colour/
+    styling) the tag itself carries. Use case: a RELAYED number from a NUMERICAL MODEL
+    (e.g. the 72h rain forecast, a named model's own gridded output via Open-Meteo) is a
+    different evidence subtype from a RELAYED number from a NEWS/PERSON report -- both
+    are genuinely "not independently verified by this page" (same RELAYED tag/colour),
+    but showing "ข่าว" (news) on a model number would misdescribe its source. A
+    genuinely news-sourced RELAYED hero tile keeps the default "ข่าว" label.
+    `extra_cls` (an earlier check compactness fix, 2026-09-28): an extra marker class appended
+    onto the pill span itself -- used only by the ฝน tile's 72h pill so
+    `"tile-extra-72h" in html` keeps working as a presence/absence marker now that the
+    pill sits inline in the label line instead of its own wrapper div."""
+    text = label if label is not None else _HERO4_TAG_LABEL_TH.get(tag, tag or "")
+    cls = (tag or "").lower()
+    cls_attr = f"tag-pill tag-{esc(cls)}" + (f" {esc(extra_cls)}" if extra_cls else "")
+    return f'<span class="{cls_attr}">{esc(text)}</span>'
+
+
+
+
+# ---------------- L5 survival card + community-network block ----------------
+# (founder-approved 2026-09-28: "ได้เลย ขอระดับโลกเท่านั้น" -- life-safety card +
+# community-network block on the public FloodConnect page. Text lines below are the
+# FINAL, independently-reviewed wording; do not silently edit them -- add a new line
+# instead of paraphrasing an existing one, so the reviewed wording stays traceable.)
+
+def _l5_tel(number, label=None):
+    """One tel: link, tap target >=48px (same `min-height:48px` pattern this page
+    already uses for `.sources-list a`, site/index.template.html's own convention --
+    reused here rather than inventing a second tap-target rule)."""
+    return f'<a class="l5-tel" href="tel:{esc(number)}">{esc(label or number)}</a>'
+
+
+# An earlier check layout fix (review of l5_360_vh1.png): the two spaces around
+# the em dash are non-breaking (U+00A0), not plain ASCII spaces -- same words/
+# characters, only the whitespace TYPE changes, so the dash never lands orphaned on
+# its own line at narrow widths (Thai's dictionary-based line breaking otherwise
+# treats the space-dash-space as three separate break opportunities).
+L5_SURVIVAL_HEADLINE_TH = "น้ำเข้าบ้านแล้ว เจ้าหน้าที่ยังไม่มา — ทำตามนี้"
+
+L5_SURVIVAL_SOURCE_LINE_TH = (
+    "อ้างอิง: ready.gov, gov.uk, กรมควบคุมโรค, สพฉ. (1669), ปภ. (1784), กฟน. (1130), กทม. (1555)"
+)
+
+
+def _l5_survival_lines_html():
+    t1130 = _l5_tel("1130")
+    t1669 = _l5_tel("1669")
+    t1784 = _l5_tel("1784")
+    t1555 = _l5_tel("1555")
+    lines_th = [
+        f"ตัวแห้ง-มือแห้งเท่านั้น ปิดเบรกเกอร์ไฟหลักได้ทันที — ถ้าเบรกเกอร์แช่น้ำแล้ว อยู่ห่างไว้ โทร {t1130}",
+        "พาทุกคนและสัตว์เลี้ยงขึ้นชั้นบนสุด/ดาดฟ้า อยู่รวมจุดเดียวกัน",
+        (f"คนป่วย/บาดเจ็บโทร {t1669} · ไฟฟ้าโทร {t1130} · เกินกำลังท้องถิ่นโทร ปภ. {t1784} · "
+         f"ในเขต กทม. โทร {t1555} หรือ Traffy Fondue แจ้งพิกัด"),
+        ("ขึ้นหลังคาเฉพาะจำเป็น โบกผ้าสีสดหรือของสว่างให้เห็นจากมุมสูง — พื้นที่แคบอย่างห้องใต้หลังคา "
+         "ให้มีทางออกหรือเครื่องมือทุบผนัง/หลังคาไว้ก่อนเข้า"),
+        "น้ำไหลแรงลึกแค่ข้อเท้า (~15 ซม.) ก็ล้มได้ — อยู่บนที่สูงรอ",
+        "จิบน้ำสะอาดหรือน้ำต้มสุกทีละน้อยให้พอนาน กินยาประจำตามเวลาเดิม",
+        "สายไฟ-ปลั๊กที่เปียกน้ำ อยู่ห่างไว้เสมอ",
+        "ดูแลผู้สูงอายุ/ผู้ป่วยติดเตียง/เด็กเป็นพิเศษ อยู่ใกล้ตัวตลอด",
+    ]
+    # every line above already has its tel: anchors inline (already-built HTML, never
+    # re-escaped, same pattern as `_tile()`'s own `pill_html` argument) -- the plain
+    # Thai text around them is a literal constant written once by this function, never
+    # user/data-sourced, so it is safe to embed unescaped here too.
+    return "".join(f"<li>{line}</li>" for line in lines_th)
+
+
+def _l5_call_grid_html():
+    """An earlier check fix (review of l5_360_vh1.png): ONE row of big tap-target
+    buttons right under the headline -- [1669 การแพทย์] [1784 ปภ.] [1130 ไฟฟ้า]
+    [1555 กทม.], 2x2, each a real tel: link >=48px tall. This is the fast path for a
+    reader in a hurry; the same 4 numbers still also appear inline (as plain bold
+    text, not a second set of 48px blocks -- see `.l5-list a[href^="tel:"]` in
+    index.template.html) inside the numbered lines below, never removed from there."""
+    buttons = [
+        ("1669", "การแพทย์"), ("1784", "ปภ."), ("1130", "ไฟฟ้า"), ("1555", "กทม."),
+    ]
+    items = "".join(
+        f'<a class="l5-callbtn" href="tel:{num}">{num}<span class="l5-callbtn-sub">{label}</span></a>'
+        for num, label in buttons
+    )
+    return f'<div class="l5-callgrid" role="group" aria-label="โทรด่วน">{items}</div>'
+
+
+def build_l5_survival_card_html(pf06):
+    """L5 SURVIVAL CARD -- renders inside the hero banner, directly under the status
+    word, ABOVE the four driver tiles, ONLY when this area's PROP-FLOOD-06 tier is L5
+    ("เกินระบบแล้ว", tools/backtest/compute_prop_flood_06_sammakorn.py's own tier
+    ladder -- the ONE tier signal this repo already computes, never re-derived here).
+    `pf06` is layer0_public.areas.<area_id>.prop_flood_06 (or None) -- when the tier
+    engine has no reading for this area (e.g. ram53 today has no PROP-FLOOD-06 unit at
+    all) or the tier is anything other than L5, this returns "" and nothing renders,
+    never a fabricated/guessed tier. Collapsed-by-default is NOT acceptable for
+    life-safety content (founder instruction) -- the <details> below always ships
+    `open` when it renders at all, since it only ever renders on a genuine L5 reading."""
+    if not pf06 or pf06.get("tier") != "L5":
+        return ""
+    return (
+        '<div class="l5-card" role="region" aria-label="คำแนะนำเร่งด่วนเมื่อน้ำเข้าบ้าน">'
+        '<details class="l5-details" open>'
+        f'<summary class="l5-summary">{esc(L5_SURVIVAL_HEADLINE_TH)}</summary>'
+        f'{_l5_call_grid_html()}'
+        f'<ol class="l5-list">{_l5_survival_lines_html()}</ol>'
+        f'<p class="l5-source">{esc(L5_SURVIVAL_SOURCE_LINE_TH)}</p>'
+        '</details>'
+        '</div>'
+    )
+
+
+COMMUNITY_NETWORK_TEMPLATE_TH = (
+    "[เวลา] [ซอย/โซน] ต้องการ: … · คนต้องย้าย: … · "
+    "ต้องช่วยเดิน/เคลื่อนย้าย: … · ทางหน้าบ้าน: ผ่านได้/ไม่ได้/ไม่ทราบ"
+)
+
+COMMUNITY_NETWORK_NOTE_TH = (
+    "จุดพักและทางออกในหมู่บ้านยังไม่มีคนตรวจยืนยัน — เช็กกับนิติบุคคลก่อนย้าย"
+)
+
+
+def build_community_network_html(area_id):
+    """COMMUNITY BLOCK "ช่วยกันเป็นเครือข่าย" -- three short groups (ตัวเรา / ซอย-ชุมชน /
+    ส่งต่อถึงรัฐ), the copyable status-report template, and one always-shown caveat
+    line. `area_id` only changes the นิติบุคคล (Sammakorn juristic-person) phone row --
+    that row is genuinely specific to Sammakorn village's own management office and is
+    dropped (not replaced by a guess) for any other area, per founder instruction
+    ("community block generic without the Sammakorn phone")."""
+    t1669 = _l5_tel("1669")
+    t1130 = _l5_tel("1130")
+    t1784 = _l5_tel("1784")
+    t1555 = _l5_tel("1555")
+    niti_row = (
+        '<li>รถรับ-ส่งของนิติบุคคล '
+        '<a class="l5-tel" href="tel:+6623738004">02-373-8004</a> '
+        '<span class="cn-unverified">(นิติบุคคลแจ้ง — ยังไม่ยืนยันจากหน่วยงาน)</span></li>'
+        if area_id == "sammakorn" else ""
+    )
+    self_group = (
+        '<div class="cn-group"><h4 class="cn-h">ตัวเรา</h4>'
+        '<p>เช็ก 6 เรื่องของบ้าน (คนครบ · น้ำใกล้ไฟ · ยา/ของจำเป็น · น้ำดื่ม/อาหาร · มือถือ-แบต · '
+        'ทางออกที่เพิ่งตรวจ) · จับคู่เพื่อนบ้าน 2–3 หลัง ถามกัน: ติดต่อได้ไหม ปลอดภัยไหม ต้องย้ายไหม '
+        'ต้องการคนช่วยกี่คน มีของแบ่งได้ไหม · บ้านที่ยังดูแลตัวเองไม่ครบ แจ้งเพื่อนบ้านเป็นความต้องการก่อน</p>'
+        '</div>'
+    )
+    soi_group = (
+        '<div class="cn-group"><h4 class="cn-h">ซอย/ชุมชน</h4>'
+        '<p>ผู้ประสาน 1 คน + สำรอง 1 คน รวบรวมสถานะ · แบ่งหน้าที่: เช็กบ้านที่ขาดการติดต่อ · ดูเส้นทาง · '
+        'ดูแลของ/รถ/จุดชาร์จ · ส่งข่าวในกลุ่ม · รวมรายชื่อกลุ่มเสี่ยงไว้ที่ผู้ประสาน (ไม่ลงชื่อ/โรคในที่สาธารณะ)</p>'
+        '</div>'
+    )
+    gov_group = (
+        '<div class="cn-group"><h4 class="cn-h">ส่งต่อถึงรัฐ</h4><ul class="cn-list">'
+        f'<li>ผู้ป่วย {t1669} · ไฟดับ/ไฟรั่ว {t1130} · เกินกำลัง {t1784} · '
+        f'น้ำท่วม/อาหาร/ปั๊มหมู่บ้าน {t1555} หรือ Traffy — ผู้ประสานส่งรวมเป็นรายการเดียว</li>'
+        f'{niti_row}'
+        '</ul></div>'
+    )
+    tpl_id = f"cn-template-text-{esc(area_id)}"
+    status_id = f"cn-copy-status-{esc(area_id)}"
+    template_html = (
+        '<div class="cn-template">'
+        f'<pre id="{tpl_id}">{esc(COMMUNITY_NETWORK_TEMPLATE_TH)}</pre>'
+        f'<button type="button" class="cn-copy-btn" data-copy-target="{tpl_id}" '
+        f'data-status-target="{status_id}">คัดลอกข้อความ</button>'
+        f'<p class="cn-copy-status" id="{status_id}" aria-live="polite"></p>'
+        '</div>'
+    )
+    return (
+        '<p class="small">ช่วยกันดูแลกันในซอย/ชุมชน แบ่งเป็น 3 ระดับ ตั้งแต่บ้านตัวเองถึงหน่วยงานรัฐ</p>'
+        f'{self_group}{soi_group}{gov_group}{template_html}'
+        f'<p class="cn-note">{esc(COMMUNITY_NETWORK_NOTE_TH)}</p>'
+    )
+
 
 def build_area_fragments(area_id, area, now_dt, forecast, bangkok_east=None, briefing=None,
                           capacity_records=None, drain_timeline=None, sammakorn_rough=None,
-                          forecast_7day_compare=None, canal_graph=None, burden_ledger=None):
+                          forecast_7day_compare=None, canal_graph=None, burden_ledger=None,
+                          sammakorn_chain=None, cross_source_reconciliation=None, layer0_public=None):
     labels = AREA_LABELS[area_id]
     pumps = area.get("pumps") or []
     pc = pump_counts(pumps, now_dt)
@@ -1824,7 +3088,11 @@ def build_area_fragments(area_id, area, now_dt, forecast, bangkok_east=None, bri
 
     rain_forecast_note = area.get("rain_forecast_area_note")
     watch_line = build_watch_line(area, st, pc, now_dt, forecast)
-    indicator_tiles = build_indicator_tiles(area, st, pc, now_dt, labels["pond_word"])
+    pf06_for_tiles = (((layer0_public or {}).get("areas") or {}).get(area_id) or {}).get("prop_flood_06")
+    l5_survival_card_html = build_l5_survival_card_html(pf06_for_tiles)
+    community_network_html = build_community_network_html(area_id)
+    indicator_tiles = build_indicator_tiles(area, st, pc, now_dt, labels["pond_word"], pf06=pf06_for_tiles,
+                                             area_id=area_id)
     hours_list = build_hours_list(area, st, pc, now_dt, forecast, area_id=area_id)
     wb_html = build_worsen_better_html(area, st, pc, now_dt, forecast)
     advice_html = build_advice_html()
@@ -1835,7 +3103,7 @@ def build_area_fragments(area_id, area, now_dt, forecast, bangkok_east=None, bri
     status_note += " · รวบรวมโดยประชาชน ไม่ใช่ประกาศทางการ"
     now_line = build_now_line(area)
 
-    # Red-team fix MEDIUM-5 (2026-09-26): this used to compute its own "any row older
+    # Fix MEDIUM-5 (2026-09-26): this used to compute its own "any row older
     # than 2h" check, treating a row with NO observed_at at all (a reference-only row
     # such as BKK013/BKK015, which never carries a live timestamp) the same as a row
     # that IS live but stale -- so the banner was pinned on permanently regardless of how
@@ -1843,7 +3111,7 @@ def build_area_fragments(area_id, area, now_dt, forecast, bangkok_east=None, bri
     # already computed (which correctly excludes null-observed_at rows and keys off the
     # newest live official observation), so the page and data.json can never disagree.
     stale_ribbon_hidden = "" if staleness.get("banner") else " hidden"
-    # LOW-6: on total failure (no live official observation at all -- not merely an old
+    # On total failure (no live official observation at all -- not merely an old
     # one), say so plainly instead of the "some data is old" wording, which implies fresh
     # data exists somewhere on the page.
     stale_ribbon_text = ("ไม่มีข้อมูลล่าสุดจากหน่วยงาน — เตรียมพร้อมไว้ก่อน"
@@ -1857,8 +3125,21 @@ def build_area_fragments(area_id, area, now_dt, forecast, bangkok_east=None, bri
         build_forecast_fragments(area, now_dt, forecast, rain_forecast_note)
     exit_rows = build_exit_rows(area)
     floodroad_rows = build_floodroad_rows(area, now_dt)
-    community_rows = build_community_rows(area)
-    nearby_community_rows, nearby_community_hidden = build_nearby_community_rows(area)
+    # Independent verifier finding B4 (2026-09-28, THIRD pass): a `head_n` of 6 still
+    # opened to ~2173px (each mobile-responsive table row here runs ~313px on its own --
+    # a single village's community table can have 30+ rows). head_n=0 means ALL rows
+    # move behind the nested dsec-evidence toggle -- see build_community_rows_split()'s
+    # own docstring: it never drops a row, only changes which of the two returned
+    # strings a row lands in.
+    _community_rows_head_unused, community_rows_more, community_rows_more_n = \
+        build_community_rows_split(area, now_dt, head_n=0)
+    # head_n=0 means the nested toggle below is hidden whenever there is truly nothing
+    # to show (never when there IS data -- see build_community_rows_split()'s own
+    # docstring), so the outer details needs its own short, always-visible fallback line
+    # for that empty case instead of silently showing nothing.
+    community_empty_note = ("" if community_rows_more_n else
+                             '<p class="empty-note">ยังไม่มีรายงานในชุดข้อมูลนี้</p>')
+    nearby_community_rows, nearby_community_hidden = build_nearby_community_rows(area, now_dt)
     hospital_rows = build_hospital_rows(area)
 
     tide_windows = _tide_windows(area)
@@ -1901,16 +3182,34 @@ def build_area_fragments(area_id, area, now_dt, forecast, bangkok_east=None, bri
             'ดูที่แท็บ "หมู่บ้านสัมมากร" ด้านบน</p></section>'
         ) if burden_ledger and burden_ledger.get("available") else ""
 
+    # Sammakorn chain + cross-source reconciliation are village-specific/citywide-once
+    # respectively -- same render-once-on-sammakorn-tab budget reasoning as above.
+    if area_id == "sammakorn":
+        sammakorn_chain_section_html = build_sammakorn_chain_section_html(sammakorn_chain)
+        reconciliation_section_html = build_reconciliation_section_html(cross_source_reconciliation)
+    else:
+        sammakorn_chain_section_html = (
+            '<section class="sammakorn-chain-wrap" aria-label="สายการไหลหลัก">'
+            '<p class="small">สายการไหลหลักของหมู่บ้านสัมมากร — ดูที่แท็บ "หมู่บ้านสัมมากร" ด้านบน</p>'
+            '</section>'
+        ) if sammakorn_chain and sammakorn_chain.get("available") else ""
+        reconciliation_section_html = ""
+
     return {
-        "{{PLACE_PIN}}": icon("pin", 16) + f'<span>{esc(labels["pin"])}</span>',
-        "{{HEADING_LABEL}}": esc(labels["heading"]),
+        "{{HEADING_LABEL}}": esc(f'{labels["heading"]} · {labels["district"]}'),
         "{{STATUS_WORD}}": esc(st["word"]),
+        "{{STATUS_ARROW}}": status_arrow_html(st["word"]),
+        "{{RAIN_TREND}}": trend_html(*rain_trend(forecast), label="ฝน 3 ชม.ข้างหน้า", size="lg"),
         "{{NOW_LINE}}": esc(now_line),
-        "{{SAFETY_FACT}}": esc(SAFETY_FACT),
+        "{{SAFETY_FACT}}": icon("bolt", 20) + f'<span>{esc(SAFETY_FACT)}</span>',
         "{{STATUS_WATCH}}": watch_line,  # already HTML (has <strong> + icon)
+        "{{L5_SURVIVAL_CARD}}": l5_survival_card_html,
         "{{WHY_LIST}}": indicator_tiles,
+        "{{COMMUNITY_NETWORK_HTML}}": community_network_html,
         "{{CANAL_GRAPH_SECTION_HTML}}": canal_graph_section_html,
         "{{BURDEN_LEDGER_SECTION_HTML}}": burden_ledger_section_html,
+        "{{SAMMAKORN_CHAIN_SECTION_HTML}}": sammakorn_chain_section_html,
+        "{{RECONCILIATION_SECTION_HTML}}": reconciliation_section_html,
         "{{HOURS_LIST}}": hours_list,
         "{{STATUS_NOTE}}": esc(status_note),
         "{{STALE_RIBBON_HIDDEN}}": stale_ribbon_hidden,
@@ -1940,7 +3239,10 @@ def build_area_fragments(area_id, area, now_dt, forecast, bangkok_east=None, bri
         "{{EXIT_ROWS}}": exit_rows,
         "{{FLOODROAD_ROWS}}": floodroad_rows,
         "{{COMMUNITY_COL2_LABEL}}": esc(area.get("community_label") or "จุด"),
-        "{{COMMUNITY_ROWS}}": community_rows,
+        "{{COMMUNITY_ROWS_MORE}}": community_rows_more,
+        "{{COMMUNITY_EMPTY_NOTE}}": community_empty_note,
+        "{{COMMUNITY_ROWS_MORE_COUNT}}": str(community_rows_more_n),
+        "{{COMMUNITY_ROWS_MORE_HIDDEN}}": "" if community_rows_more_n else " hidden",
         "{{NEARBY_COMMUNITY_ROWS}}": nearby_community_rows,
         "{{NEARBY_COMMUNITY_HIDDEN}}": nearby_community_hidden,
         "{{NEARBY_COMMUNITY_LABEL}}": esc(area.get("nearby_community_label") or ""),
@@ -1949,13 +3251,17 @@ def build_area_fragments(area_id, area, now_dt, forecast, bangkok_east=None, bri
         "{{BRIEFING_HERO_HTML}}": briefing_hero_html,
         "{{BRIEFING_HERO_HIDDEN}}": briefing_hero_hidden,
         "{{BRIEFING_HELP_HTML}}": briefing_help_html,
+        "{{LAYER0_TOP_HTML}}": build_layer0_top_html(layer0_public, area_id),
+        "{{LAYER0_PEEK}}": build_layer0_peek_th(layer0_public, area_id),
+        "{{LAYER0_MODEL_LIST_HTML}}": build_layer0_model_list_html(layer0_public, area_id),
     }
 
 
 def render_area_block(area_template, area_id, area, now_dt, forecast, hidden,
                        bangkok_east=None, briefing=None, capacity_records=None,
                        drain_timeline=None, sammakorn_rough=None, forecast_7day_compare=None,
-                       canal_graph=None, burden_ledger=None):
+                       canal_graph=None, burden_ledger=None, sammakorn_chain=None,
+                       cross_source_reconciliation=None, layer0_public=None):
     block = area_template
     fragments = build_area_fragments(area_id, area, now_dt, forecast,
                                       bangkok_east=bangkok_east, briefing=briefing,
@@ -1964,12 +3270,31 @@ def render_area_block(area_template, area_id, area, now_dt, forecast, hidden,
                                       sammakorn_rough=sammakorn_rough,
                                       forecast_7day_compare=forecast_7day_compare,
                                       canal_graph=canal_graph,
-                                      burden_ledger=burden_ledger)
+                                      burden_ledger=burden_ledger,
+                                      sammakorn_chain=sammakorn_chain,
+                                      cross_source_reconciliation=cross_source_reconciliation,
+                                      layer0_public=layer0_public)
     for placeholder, value in fragments.items():
         block = block.replace(placeholder, value)
     block = block.replace("{{AREA_HIDDEN}}", " hidden" if hidden else "")
     block = block.replace("__AREA__", area_id)
     return block
+
+
+def build_client_json(data):
+    """The minimal object the client-side <script id="data"> JSON needs --
+    recheckStaleness() reads only areas[*].stations_near/pumps[].observed_at
+    (index.template.html <script>), so nothing else travels to the browser."""
+    areas = data.get("areas") or {}
+    out_areas = {}
+    for aid, a in areas.items():
+        out_areas[aid] = {
+            "stations_near": [{"observed_at": s.get("observed_at")}
+                               for s in (a.get("stations_near") or [])],
+            "pumps": [{"observed_at": p.get("observed_at")}
+                      for p in (a.get("pumps") or [])],
+        }
+    return {"areas": out_areas}
 
 
 # ---------------- top-level assembly ----------------
@@ -2038,18 +3363,15 @@ def main():
         print(f"ERROR: {data_path} is not valid JSON: {e}", file=sys.stderr)
         return 1
 
-    # Size budget fix 2026-09-26: everything in this page is already server-rendered
-    # into HTML (the water-balance chart, capacity table, daily rain table etc.) --
-    # the embedded <script id="data"> JSON only needs to carry what client JS actually
-    # reads (recheckStaleness() reads `areas[*].stations_near`/`.pumps` observed_at
-    # only, per index.template.html). Bulky fields that exist purely for build-time
-    # HTML rendering are dropped from the EMBEDDED copy only; the standalone
-    # dist/data.json written separately still has everything, unabridged.
-    embed_parsed = dict(parsed)
-    for _k in ("capacity_records", "drain_timeline", "sammakorn_rough", "forecast_7day_compare",
-               "canal_graph", "burden_ledger"):
-        embed_parsed.pop(_k, None)
-    json_text = json.dumps(embed_parsed, ensure_ascii=False, separators=(",", ":"))
+    # Size budget fix 2026-09-26, tightened 2026-09-27: everything in this page is
+    # already server-rendered into HTML (the water-balance chart, capacity table,
+    # daily rain table etc.) -- the embedded <script id="data"> JSON only needs to
+    # carry what client JS actually reads (recheckStaleness() reads
+    # `areas[*].stations_near`/`.pumps[].observed_at` only, per index.template.html).
+    # build_client_json() keeps ONLY those keys; the standalone dist/data.json written
+    # separately still has everything, unabridged.
+    client_json = build_client_json(parsed)
+    json_text = json.dumps(client_json, ensure_ascii=False, separators=(",", ":"))
     json_text = json_text.replace("</script", "<\\/script")
 
     template = template_path.read_text(encoding="utf-8")
@@ -2078,6 +3400,9 @@ def main():
     forecast_7day_compare = parsed.get("forecast_7day_compare")
     canal_graph = parsed.get("canal_graph")
     burden_ledger = parsed.get("burden_ledger")
+    sammakorn_chain = parsed.get("sammakorn_chain")
+    cross_source_reconciliation = parsed.get("cross_source_reconciliation")
+    layer0_public = parsed.get("layer0_public")
 
     static_ok = True
     try:
@@ -2097,7 +3422,10 @@ def main():
                                              sammakorn_rough=sammakorn_rough,
                                              forecast_7day_compare=forecast_7day_compare,
                                              canal_graph=canal_graph,
-                                             burden_ledger=burden_ledger))
+                                             burden_ledger=burden_ledger,
+                                             sammakorn_chain=sammakorn_chain,
+                                             cross_source_reconciliation=cross_source_reconciliation,
+                                             layer0_public=layer0_public))
         area_sections_html = "".join(blocks)
 
         asof = fmt_hm(parsed.get("generated_at_bkk"))
@@ -2119,6 +3447,7 @@ def main():
         return html
 
     template = AREA_SLOT_RE.sub(_area_slot_repl, template, count=1)
+    template = template.replace("{{ICON_SPRITE}}", build_icon_sprite_html())
     template = template.replace("{{ACTIVE_SUBTITLE}}", active_subtitle)
     template = template.replace("{{SOURCES_LIST}}", sources_list)
     template = template.replace(PLACEHOLDER, json_text)

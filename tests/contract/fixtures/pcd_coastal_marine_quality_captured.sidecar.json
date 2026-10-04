@@ -1,0 +1,15 @@
+{
+ "source_id": "pcd_coastal_marine_quality",
+ "url": "https://pcd.gdcatalog.go.th/dataset/c8ec4520-0173-495f-a8f9-e9a9985dc9a3/resource/7e4a31ea-1e5a-4613-bfaa-3898175c1e9d/download/marine_water_quality_2568.csv",
+ "captured_at": "2026-10-03T10:06:27Z",
+ "sha256": "2b59086b8b80236bf8abf31968f0464b460c448be4aaffbdec378b7372faade3",
+ "http_status": 200,
+ "content_type": "text/csv",
+ "fixture_ext": "txt",
+ "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "0b53c31ba1b4cb6640ecc2cc0c495077d06ebc86fec22b394cb196f8428d8944",
+ "trimmed_note": "Further trimmed 2026-10-03 (release pass, publish-safety finding: 300KB total budget for tests/contract/fixtures/ in the public tree) to a minimal real excerpt (header + few real rows, or a real byte-prefix for HTML) -- see the corresponding contract test's own comment for the exact row-count change.",
+ "trimmed_at": "2026-10-03T18:10:36Z"
+}

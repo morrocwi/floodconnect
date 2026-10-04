@@ -1,0 +1,9 @@
+{
+  "directed": true,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {"kind": "pond", "layer": "water", "label_th": "บึงสัมมากร (ทดสอบ)", "id": "WL.SMK.01"}
+  ],
+  "edges": []
+}

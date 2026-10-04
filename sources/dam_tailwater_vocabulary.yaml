@@ -1,0 +1,253 @@
+# sources/dam_tailwater_vocabulary.yaml -- concept crosswalk for dam-release / tailwater-stage /
+# riverside-exposure vocabulary, triggered by the RID Region 13 (สชป.13) "ฉบับที่ 3" Mae Klong dam
+# release notice pasted by the founder 2026-09-27 (see docs/knowledge/card_official_2026-09-27_
+# rid13_maeklong_release_notice3.md for the full incident card).
+#
+# Founder question (verbatim, 2026-09-27 night): asked how to place the words ระบายน้ำ / น้ำท้ายเขื่อน /
+# ริมน้ำ in our system, and where "น้ำท้ายเขื่อน" is.
+#
+# Same schema style as sources/terminology_crosswalk.yaml + sources/model_vocabulary_crosswalk.yaml
+# (companion doc: docs/knowledge/MODEL_VOCABULARY_CROSSWALK_2026-09-27.md) -- this file adds concepts
+# that family did not yet cover (dam release / tailwater / stage-rise / riverside exposure /
+# declared travel time), cross-walked to the SAME canonical choices already decided there
+# (CF Conventions standard_name, OGC WaterML2/SensorThings, SWMM element vocabulary, HEC-RAS/HEC-HMS).
+#
+# Scope: new file only (2026-09-27, Mae Klong task). No tracked file edited, no commit,
+# no build, no collect.py run, no network request beyond the 3 already logged in the sibling card.
+#
+# Toledo: no new equation introduced. toledo_symbol values are CITED from the already-registered
+# PROP-FLOOD-03/06/02 proposals (toledo-wt-flood* JSON files) -- this file adds no new proposal of
+# its own; where a concept has no existing Toledo symbol it is marked "not yet in Toledo" per
+# AGENTS.md ss2, never invented inline.
+#
+# Tags (AGENTS.md ss2 / repo convention):
+#   VERIFIED = this repo's own primary extraction (its own DB query, its own already-collected KG),
+#              cited with the exact query/file.
+#   MEASURED = a live value this repo's own observations.sqlite holds, read directly this check.
+#   RELAYED  = attributed to a named external source (agency wording, general hydrology usage,
+#              vendor documentation) not independently re-verified this check.
+#   INSTINCT = a judgement call / mapping proposal, not a checked fact.
+#   OPEN     = no concept/mapping found and none confidently attributable.
+#
+# Columns: concept_id | thai_official | standard_en | quantity_kind | si_unit | toledo_symbol |
+#   kg_mapping (dam node -> release edge -> river reach -> gauge -> riverside zone node, per
+#   concept) | cf_standard_name (canonical per model_vocabulary_crosswalk.yaml) | model_aliases
+#   (SWMM/HEC-RAS/HEC-HMS terms) | prop_flood_mapping | tag | note
+
+_meta:
+  generated: "2026-09-27"
+  scope: "dam release / tailwater / stage-rise / riverside-exposure / travel-time vocabulary,
+    triggered by the RID13 Mae Klong notice; cross-walks onto the existing canonical choices in
+    sources/model_vocabulary_crosswalk.yaml (CF standard_name / WaterML2 / SensorThings / SWMM /
+    HEC-RAS / HEC-HMS) -- this file does not re-decide the canonical, it extends it."
+  companion_files:
+    - "sources/terminology_crosswalk.yaml (27 base concepts, same schema family)"
+    - "sources/model_vocabulary_crosswalk.yaml (canonical vocabulary decision + international
+       model aliases -- SWMM/HEC-RAS/HEC-HMS/MIKE/InfoWorks)"
+    - "docs/knowledge/card_official_2026-09-27_rid13_maeklong_release_notice3.md (the triggering
+       incident card, quantities, EGAT re-query, unified-ladder mapping proposal)"
+    - "docs/knowledge/MAEKLONG_CHAIN_NEXT_VERSION.md (the node chain this vocabulary attaches to,
+       what exists in the KG vs missing)"
+    - "toledo-wt-flood03/docs/proposals (or equivalent path) -- PROP-FLOOD-03 water balance,
+       PROP-FLOOD-06 declared drainage unit / coping ladder, PROP-FLOOD-02 time-to-threshold"
+  kg_chain_reused: >
+    dam node -> release edge -> river reach -> gauge -> riverside zone node. This is the SAME
+    generic node/edge shape tools/kg/build_kg.py already uses for every other basin in the graph
+    (see output/thailand_water_kg.jsonld node kinds: dam / gauge / sub_basin / canal / district) --
+    no new node/edge KIND is proposed here, only new attribute vocabulary attached to existing kinds.
+
+concepts:
+
+  - concept_id: dam_release
+    thai_official: "ระบายน้ำ(ท้ายเขื่อน) -- คำในประกาศ: 'ปรับเพิ่มระบายน้ำเขื่อนแม่กลองทะลุ 1,500 ลบ.ม./วินาที'"
+    standard_en: "dam release / reservoir outflow / discharge at the dam outlet"
+    quantity_kind: "volumetric flow rate (outflow at a control structure)"
+    si_unit: "m3/s (source values often arrive as MCM/day -- convert via m3/s = MCM/day * 1e6 / 86400,
+      units_datum_crosswalk-style unit arithmetic, NOT a new equation)"
+    toledo_symbol: "Q_out at a dam/control-structure node (PROP-FLOOD-03's O_b(k) term, generalised
+      from a Bangkok drainage-unit outflow to any node's outflow -- same symbol family, dam is just
+      another node kind); PROP-FLOOD-06's declared-drainage-unit outflow O_U is the same shape at
+      urban-node scale"
+    kg_mapping: "attribute on the DIRECTED EDGE leaving a `dam`-kind node toward the next
+      `river_reach`/`sub_basin`-kind node downstream (edge class already exists in
+      tools/kg/build_kg.py's generic dam->river wiring; this concept names the edge's flow-rate
+      attribute, it does not add a new edge class)"
+    cf_standard_name: "water_volume_transport_in_river_channel (canonical per
+      model_vocabulary_crosswalk.yaml, evaluated AT the dam/outfall cross-section)"
+    model_aliases:
+      swmm: "Outfall inflow / Pump discharge (SWMM has no native 'reservoir release' element for a
+        large river dam -- Storage Unit outflow is the closest analogue for a smaller node)"
+      hec_hms: "Reservoir outflow (HMS 'Reservoir' element's release time series)"
+      hec_ras: "Inline Structure outflow / gate opening discharge"
+    prop_flood_mapping: "PROP-FLOOD-03: Q_in of the downstream river reach = this dam's release
+      (the reach immediately below Mae Klong Dam takes this as its inflow boundary condition).
+      PROP-FLOOD-06: a `dam_release` component would sit alongside a drainage unit's own O_U in
+      any future coverage-vector extension that includes river-fed nodes, not just urban polders --
+      NOT yet part of PROP-FLOOD-06's declared vector, marked OPEN below."
+    tag: VERIFIED
+    note: "VERIFIED = the m3/s figure this repo holds for Srinagarind/Vajiralongkorn
+      (egat_dam_release_m3s_computed in data/observations.sqlite) is this repo's own stored,
+      re-queried value, not a relayed one. The 1,500 m3/s Mae Klong figure itself stays RELAYED
+      (see the incident card) -- this row is about the CONCEPT/units, not that specific number.
+      PROP-FLOOD-06 coverage-vector extension to river-fed nodes is OPEN, not decided this check."
+
+  - concept_id: reservoir_inflow
+    thai_official: "ปริมาณน้ำไหลเข้าอ่าง (EGAT field: egat_dam_inflow_mcm)"
+    standard_en: "reservoir inflow"
+    quantity_kind: "volumetric flow rate (inflow to a storage reservoir)"
+    si_unit: "m3/s (source arrives as MCM/day, same conversion as dam_release)"
+    toledo_symbol: "Q_in / I_b(k) (PROP-FLOOD-03 continuity term dS/dt = Q_in - Q_out, evaluated
+      at reservoir scale rather than urban drainage-unit scale -- same equation shape)"
+    kg_mapping: "attribute on the `dam`-kind node itself (inbound aggregate, not a single edge --
+      a reservoir's inflow sums multiple upstream tributary reaches)"
+    cf_standard_name: "water_volume_transport_in_river_channel (same canonical name as release;
+      CF does not distinguish inflow/outflow by name, direction is carried by which cross-section
+      and edge direction it is attached to)"
+    model_aliases:
+      hec_hms: "Reservoir inflow (HMS 'Reservoir' element's inflow hydrograph)"
+      swmm: "no native reservoir-inflow element; closest is a Storage Unit's inflow link"
+    prop_flood_mapping: "PROP-FLOOD-03 Q_in term, at reservoir-node scale"
+    tag: MEASURED
+    note: "MEASURED this check: Srinagarind 144.84 MCM/day, Vajiralongkorn 101.31 MCM/day
+      (data/observations.sqlite, source_id=egat_water_crisis, observed_at_utc
+      2026-09-27T16:47:52Z) -- see the incident card §2 for the full re-query."
+
+  - concept_id: reservoir_storage
+    thai_official: "ปริมาณน้ำเก็บกัก / % ความจุ (EGAT fields: egat_dam_storage_mcm, egat_dam_storage_pct)"
+    standard_en: "reservoir storage / storage volume / percent of capacity"
+    quantity_kind: "volume (storage_mcm) / dimensionless ratio (storage_pct)"
+    si_unit: "m3 (storage_mcm * 1e6); % (storage_pct, denominator = declared full-supply capacity)"
+    toledo_symbol: "S_b(k) (PROP-FLOOD-03 storage state term -- same symbol reused from
+      terminology_crosswalk.yaml's storage_account concept, reservoir is just another node kind)"
+    kg_mapping: "attribute on the `dam`-kind node"
+    cf_standard_name: "no exact CF standard_name for 'reservoir storage volume' found this check --
+      floodconnect:reservoir_storage_volume PROPOSAL (per model_vocabulary_crosswalk.yaml's own
+      convention for concepts CF has no name for), OPEN pending a proper CF table search"
+    model_aliases:
+      hec_hms: "Reservoir storage (HMS storage-elevation-discharge table state variable)"
+      swmm: "Storage Unit depth/volume state"
+    prop_flood_mapping: "PROP-FLOOD-03 S_b(k) state variable, reservoir-node scale"
+    tag: MEASURED
+    note: "MEASURED this check: Srinagarind 89.71% (15,919 MCM), Vajiralongkorn 91.86% (8,139 MCM),
+      same query as reservoir_inflow row."
+
+  - concept_id: tailwater_stage
+    thai_official: "ระดับน้ำท้ายเขื่อน (คำในประกาศ: 'ทำให้น้ำท้ายเขื่อนสูงขึ้นกว่า 2.50 เมตร')"
+    standard_en: "tailwater level / tailwater stage / downstream water surface elevation"
+    quantity_kind: "water surface elevation (a STAGE, i.e. a level, not a flow rate)"
+    si_unit: "m MSL (ม.รทก., Ko Lak / Ko Sichang benchmark per units_datum_crosswalk.yaml) OR
+      m station-datum -- datum MUST be stated explicitly every time (per
+      model_vocabulary_crosswalk.yaml's canonical.exchange rule); for the Mae Klong stations this
+      repo holds (K.3A, RAJ001, RAJ002) the exact datum used by each is NOT confirmed this check --
+      OPEN"
+    toledo_symbol: "not yet in Toledo as a named symbol distinct from the general water-level
+      readings already used elsewhere in this repo's PROP-FLOOD family (canal_river_level in
+      terminology_crosswalk.yaml is the closest existing concept, at urban-canal scale rather than
+      river-reach scale) -- reusing that concept's shape, no new equation"
+    kg_mapping: "attribute on a `gauge`-kind node located at 'the first gauge downstream of a given
+      dam' -- for Mae Klong Dam specifically, WHICH held gauge node qualifies as 'immediately
+      downstream' is NOT confirmed this check (see MAEKLONG_CHAIN_NEXT_VERSION.md §3): K.3A
+      (node:gauge:thaiwater_waterlevel:K.3A) sits ABOVE the dam/confluence, not below it; RAJ001
+      (โพธาราม) and RAJ002 (บ้านโป่ง) are the nearest HELD candidates but their river-distance from
+      the dam is not verified this check -- OPEN"
+    cf_standard_name: "water_surface_height_above_reference_datum (canonical per
+      model_vocabulary_crosswalk.yaml)"
+    model_aliases:
+      hec_ras: "Stage (cross-section water surface elevation) -- 'Stage' itself was RELAYED, not
+        re-verified against the fetched HEC-RAS doc excerpt, per model_vocabulary_crosswalk.yaml's
+        own fetch log"
+      hec_hms: "not a native HMS output (HMS is rainfall-runoff, not open-channel stage) -- OPEN"
+      ogc_waterml2: "gauging / rating -- WaterML2 Part 2 (ratings/gaugings) is the exchange format
+        for a stage reading tied to a rating curve"
+    prop_flood_mapping: "no direct PROP-FLOOD-03/06 term yet -- stage is an OBSERVABLE that would
+      need a rating curve to become a Q_in/Q_out term; PROP-FLOOD-02 (time-to-threshold) is the
+      proposal family that would consume a stage_rise reading as its threshold-crossing variable"
+    tag: OPEN
+    note: "Concept itself is RELAYED-sourced (agency usage, CF/HEC-RAS canonical names); the
+      question of WHICH node in our own KG is 'the' tailwater gauge for Mae Klong Dam is OPEN,
+      not resolved this check -- this is the direct answer to the founder's question 'where is
+      น้ำท้ายเขื่อน' for THIS dam specifically: no single confirmed node yet, three candidates
+      listed, nearest-distance verification is a NEXT VERSION task (see MAEKLONG_CHAIN row #170)."
+
+  - concept_id: stage_rise
+    thai_official: "น้ำสูงขึ้น x เมตร (คำในประกาศ: 'สูงขึ้นกว่า 2.50 เมตร')"
+    standard_en: "stage rise / water level increase (delta, relative to a stated reference time)"
+    quantity_kind: "difference of two water-surface-elevation readings (a delta, not an absolute
+      level)"
+    si_unit: "m (delta) -- MUST carry its reference time (the pre-release stage) per this concept's
+      own definition; the founder's brief for this check states this explicitly: 'a RISE relative
+      to the pre-release stage, not an absolute level -- datum/reference unknown, OPEN'"
+    toledo_symbol: "not yet in Toledo; would be Δ(tailwater_stage) = tailwater_stage(t_after) -
+      tailwater_stage(t_before) if/when both a before- and after-release stage reading are held --
+      this repo holds NEITHER for Mae Klong specifically this check, so no computation is performed,
+      the 2.50 m figure stays a RELAYED quoted figure, never recomputed or verified against a
+      before/after pair we do not have"
+    kg_mapping: "would be a derived attribute (not a node/edge of its own) computed from two
+      timestamped tailwater_stage readings at the SAME gauge node -- requires tailwater_stage's own
+      OPEN item (which node) to be resolved first"
+    cf_standard_name: "no CF standard_name for a stage DELTA specifically (CF names states, not
+      deltas) -- floodconnect:tailwater_stage_rise PROPOSAL, not yet in Toledo"
+    model_aliases:
+      hec_ras: "unsteady-flow output delta between two profile runs (before/after a boundary-
+        condition change) -- a standard HEC-RAS use case, not a new concept in the field, just not
+        yet instantiated in this repo for Mae Klong"
+    prop_flood_mapping: "PROP-FLOOD-02 (time-to-threshold family) would be the natural home for a
+      declared/measured stage-rise-over-time series, once a reference stage and gauge are fixed"
+    tag: RELAYED
+    note: "The 2.50 m number itself is RELAYED (from the founder's paste, ultimately the agency's
+      own wording) -- never presented as VERIFIED or as something this repo computed."
+
+  - concept_id: riverside_zone
+    thai_official: "ริมน้ำ / พื้นที่ลุ่มต่ำริมแม่น้ำ (คำในประกาศ: 'เตือน ปชช.ริมน้ำเร่งยกของขึ้นที่สูงด่วน')"
+    standard_en: "riverside / riparian floodplain exposure zone"
+    quantity_kind: "identifier (a zone/area classification, not a measured quantity)"
+    si_unit: "n/a (identifier; may carry an area in km2/m2 if/when a polygon is held, per
+      drainage_unit_node's si_unit convention in terminology_crosswalk.yaml)"
+    toledo_symbol: "Z (PROP-FLOOD-05b zone symbol, already cited in terminology_crosswalk.yaml's
+      drainage_unit_node row) -- reused directly, no new symbol"
+    kg_mapping: "the node where the people actually are: a `district`/`sub_polder`-kind node (or,
+      for a rural riverside community not yet inside a declared sub-polder, a new community/
+      settlement node OPEN to be created) linked to the nearest `river_reach` node by a proximity/
+      IN_DISTRICT-style edge -- this is the node the warning 'ยกของขึ้นที่สูง' is actually FOR"
+    cf_standard_name: "no CF standard_name (CF describes physical quantities, not exposure zones) --
+      this is a governance/exposure concept, not a physical-variable concept, so CF has no entry
+      by design, not by omission"
+    model_aliases:
+      swmm: "no direct element (SWMM models pipes/nodes, not population exposure) -- exposure
+        zones sit ONE LAYER ABOVE the hydraulic model, same layering this repo already uses for
+        Sammakorn/Bangkok (hydraulic reading -> exposure zone -> resident-facing wording)"
+    prop_flood_mapping: "the target node of PROP-FLOOD-06's coverage vector / T7_T0 action labels
+      (T7_T0_DATA_PLAN.md) -- 'ยกของขึ้นที่สูง' is the SAME action-label family already used for
+      Sammakorn, just attached to a different zone/basin"
+    tag: VERIFIED
+    note: "The concept itself (a riverside exposure zone as the warning's real target) is VERIFIED
+      against this repo's own existing terminology_crosswalk.yaml drainage_unit_node/Z(PROP-FLOOD-
+      05b) pattern -- this row is a direct reuse, not a new invention, answering the founder's
+      question 'where does ริมน้ำ go' with an EXISTING slot, not a new one."
+
+  - concept_id: travel_time
+    thai_official: "น้ำจะถึงเมื่อไร (ไม่ได้อยู่ในข้อความประกาศตรงๆ แต่เป็นคำถามโดยนัยที่ประกาศแบบนี้มักถูกถามกลับ)"
+    standard_en: "flood-wave / release travel time (dam to a named downstream town)"
+    quantity_kind: "duration (declared or measured lag between a release change at the dam and its
+      effect arriving at a downstream point)"
+    si_unit: "hours (declared) -- DECLARED ONLY per Toledo discipline: this repo does not compute a
+      travel time from first principles (would require a routing/wave-celerity equation not
+      currently registered) -- only a value ANNOUNCED by RID/HII would be used, tagged RELAYED at
+      best, never derived inline"
+    toledo_symbol: "not yet in Toledo; would require a routing equation family (e.g. kinematic-
+      wave / Muskingum) to be registered before any AI-derived travel-time number could be used --
+      per AGENTS.md ss2 Toledo-first rule, none is derived here"
+    kg_mapping: "would be an edge attribute on the chain of river_reach edges between the dam node
+      and each town's riverside_zone node (ท่าม่วง -> บ้านโป่ง -> โพธาราม -> ราชบุรี -> ... ->
+      ปากแม่น้ำ) -- see MAEKLONG_CHAIN_NEXT_VERSION.md for the declared chain order"
+    cf_standard_name: "n/a (a routing/lag quantity, not a CF physical-variable standard_name)"
+    model_aliases:
+      hec_hms: "routing reach travel time / lag (Muskingum K parameter is the closest HMS analogue)"
+      hec_ras: "unsteady-flow wave arrival time between two cross-sections"
+    prop_flood_mapping: "PROP-FLOOD-02 (time-to-threshold) is the family this would feed once a
+      declared or HII-measured discharge routing time exists per reach"
+    tag: OPEN
+    note: "No travel-time value is held or computed by this repo for the Mae Klong chain. NEXT
+      VERSION would need either an RID/HII-DECLARED lag per town, or HII waterlevel_load discharge
+      series at consecutive Mae Klong stations to measure it empirically -- both OPEN, listed as
+      TODO rows in MAEKLONG_CHAIN_NEXT_VERSION.md."

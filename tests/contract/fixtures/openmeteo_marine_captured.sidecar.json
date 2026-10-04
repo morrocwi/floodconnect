@@ -1,0 +1,11 @@
+{
+  "source_id": "openmeteo_marine",
+  "url": "https://marine-api.open-meteo.com/v1/marine?latitude=13.7&longitude=100.6&hourly=sea_level_height_msl&timezone=Asia%2FBangkok",
+  "captured_at": "2026-10-02T07:44:27Z",
+  "sha256": "6534b4c51aa11aab636a8f7bea0fe765e7cad771373c8d5e2c7075c96d98d7cf",
+  "http_status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "fixture_ext": "json",
+  "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+  "parser_version": "v1"
+}

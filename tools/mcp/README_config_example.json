@@ -1,0 +1,9 @@
+{
+  "_comment_1": "Self-install (project decision 2026-10-02; no-hosted-access ruling 2026-10-04): this server runs on YOUR machine, inside YOUR own clone of this repo. Replace the two /path/to/floodconnect paths below with the absolute path where you ran `git clone` + `pip install -e '.[mcp]'` (plain `pip install -e .` does NOT pull in the `mcp` SDK -- the `[mcp]` extra installs `mcp>=1.2,<2`, see README section 7b; mcp 2.x renamed an import this server uses and will not work). No env override is set here, so FLOODCONNECT_API_BASE defaults (resolved against the server script's OWN location, not the MCP client's cwd) to this clone's own site/dist/api/v1 path -- fully offline, no network, no call through anyone's server. This repo ships NO pre-computed export: that path does not exist until you run `collect.py --all` then `site/build_data.py` then `tools/api/export_api.py` on your own machine; `get_area_state`/`list_areas` return UNKNOWN with a refresh action until you do. Prefer `floodconnect_answer` (reads `data/observations.sqlite` directly, same refresh-by-default contract as the CLI) over this static export for day-to-day use.",
+  "mcpServers": {
+    "floodconnect": {
+      "command": "/path/to/floodconnect/.venv/bin/python",
+      "args": ["/path/to/floodconnect/tools/mcp/floodconnect_mcp.py"]
+    }
+  }
+}

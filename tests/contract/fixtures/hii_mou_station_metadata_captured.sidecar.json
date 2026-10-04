@@ -1,0 +1,15 @@
+{
+ "source_id": "hii_mou_station_metadata",
+ "url": "https://data.hii.or.th/dataset/617d1a99-e1a3-49a8-b507-2ce6d6c081ec/resource/5301fd2c-3808-4a37-a62c-e50ea06c3cd5/download/0all_stn_metadata.csv",
+ "captured_at": "2026-10-03T09:41:09Z",
+ "sha256": "f0c57d1156d7d939c0ef0ec460565760c9d68ec08304101804584ba35eabef0f",
+ "http_status": 200,
+ "content_type": "text/csv",
+ "fixture_ext": "txt",
+ "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "30ef035d66b43fa2a857d1bac8b735fe0ff86b4983881f7bce4e4fcbaf971c83",
+ "trimmed_note": "Further trimmed 2026-10-03 (release pass, publish-safety finding: 300KB total budget for tests/contract/fixtures/ in the public tree) to a minimal real excerpt (header + few real rows, or a real byte-prefix for HTML) -- see the corresponding contract test's own comment for the exact row-count change.",
+ "trimmed_at": "2026-10-03T18:10:36Z"
+}

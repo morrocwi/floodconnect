@@ -1,0 +1,15 @@
+{
+ "source_id": "thaiwater_flood_road",
+ "url": "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/flood_road",
+ "captured_at": "2026-10-02T07:44:34Z",
+ "sha256": "95abdf0e17484f4917ef3511ca54f560b7019291f48be764111a9ed5b2a45659",
+ "http_status": 200,
+ "content_type": "application/json; charset=utf-8",
+ "fixture_ext": "json",
+ "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "3344d6e20601f9ecab1fa101699a76fb7d19e0816bb9caf04cb9236647dc4326",
+ "trimmed_note": "trimmed from 262 to first 60 station records -- same thaiwater licence family | earlier: trimmed from 262 to first 60 station records -- same thaiwater licence family",
+ "trimmed_at": "2026-10-03T18:10:36Z"
+}

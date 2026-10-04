@@ -1,0 +1,66 @@
+# Self-install (project decision 2026-10-02, verbatim: "คือให้เค้าติดตั้งในคอมตัวเองไม่ใข้เรียก
+# ผ่านเราหนะ" -- users install FloodConnect on their OWN machine; nothing is called through
+# us). This file exists only to make `pip install -e .` + a `floodconnect` console script
+# work for a self-install. It packages the repo's existing flat top-level scripts and the
+# tools/ namespace packages as-is -- it does not restructure the codebase into a "real"
+# src/ package layout, and it adds no server-side component: every collector call made via
+# `floodconnect answer --refresh` or `floodconnect connectors --live` runs upstream GET
+# requests from whatever machine runs this install, using that machine's own network and
+# any API keys present in ITS OWN environment. Nothing on our side ever calls an LLM.
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "floodconnect"
+version = "0.1.0"
+description = "FloodConnect: local-first flood/canal/pump knowledge graph + minimal AI entrypoint (kb.py). Self-install only -- no hosted proxy, no server-side fetch, no LLM call on our side."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "See LICENSE" }
+dependencies = [
+    "pyyaml",
+    "requests",
+    "networkx",
+]
+
+[project.optional-dependencies]
+# Only needed for tools/harvest/bma_drain_pipes.py's UTM47N->WGS84 conversion and the
+# offline knowledge-graph/DEM builders (build_river_kg.py, build_bangkok_canals.py,
+# dem_signal_check.py) -- not needed for `floodconnect answer`/`connectors`. See
+# requirements-ci.txt's own notes for why these are kept separate from the core set.
+geo = ["pyproj", "geopandas", "shapely", "rasterio"]
+dev = ["pytest", "jsonschema", "tiktoken"]
+# Needed ONLY for tools/mcp/floodconnect_mcp.py to speak real MCP stdio (initialize,
+# notifications/initialized, content-wrapped tools/call) to an actual MCP client.
+# Pinned <2 -- the 2.x line renamed mcp.server.fastmcp's import path, which breaks
+# this server's `from mcp.server.fastmcp import FastMCP` import (measured 2026-10-02:
+# mcp 2.2.0 raises ImportError there; mcp 1.28.1/1.30.0 work). `pip install -e .`
+# alone does NOT pull this in -- run `pip install -e '.[mcp]'` for a working MCP
+# server (see README section 7b).
+mcp = ["mcp>=1.2,<2"]
+
+[project.scripts]
+# `floodconnect answer --at sammakorn --json` / `floodconnect connectors` / etc. --
+# a thin alias for `python3 kb.py <same args>`; kb.py's own main() is the one
+# implementation, never duplicated here.
+floodconnect = "kb:main"
+
+[tool.setuptools]
+py-modules = [
+    "agent_claims", "assets_registry", "build_bangkok_canals", "build_river_kg",
+    "burden_ledger", "canal_graph", "check_doc_links", "collect", "community_dag",
+    "convergence_board", "convergence_feasibility", "dem_signal_check", "dsva_decision",
+    "environmental_degradation", "experience_log", "finite_temporal_ledger",
+    "hierarchical_flood_zoom", "human_animal_household", "kb",
+    "klongmap_local_prior_experiment", "live_water_level", "operational_resources",
+    "parsers", "public_shelter_seed", "raw_stage_forecast", "readout",
+    "readout_history", "repo_knowledge_graph", "shelter_decision",
+    "shelter_operation_ladder", "social_listening", "store", "tag_vocabulary",
+    "unified_crisis_state", "water_balance",
+]
+
+[tool.setuptools.packages.find]
+include = ["tools*", "dsva_kernel*"]
+namespaces = true

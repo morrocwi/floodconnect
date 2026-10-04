@@ -1,0 +1,42 @@
+# typology/edges/reports_to_selfhelp_bridge_2026-09-28.yaml -- bridges the imported
+# Community Self-Help DAG (site/inputs/community/self_help_dag.yaml, public/main 5364c23)
+# to the existing power/civil agency layer, using the EXISTING reports_to edge kind (no
+# new edge kind for this bridge). Founder-provided drafting input, 2026-09-28: all rows
+# PROPOSAL/OPEN -- no source states these channels exist/are used today, they document
+# the STRUCTURAL possibility only. Reuses the DAG's own node ids verbatim
+# (sammakorn_zone) -- no CIV.* id invented.
+schema_version: 1
+doc_kind: typology_edge_registry
+edge_kind: reports_to
+status_th: >
+  สะพานเชื่อม self-help DAG เข้า power/civil layer -- proposal ทั้งหมด ไม่มีแหล่งยืนยันว่ามีช่องทาง
+  นี้ใช้งานจริงวันนี้ เก็บ id เดิมของ self_help_dag.yaml ตรง ๆ ไม่สร้าง CIV.* id ใหม่.
+rows:
+  - from: sammakorn_zone
+    to: AG_ESTATE
+    tag: OPEN
+    source: >
+      PROPOSAL (founder-provided drafting input, 2026-09-28) -- zone-level channel to the
+      village juristic person; no source confirms this channel is used today.
+  - from: AG_ESTATE
+    to: AG_DDS
+    tag: OPEN
+    source: >
+      PROPOSAL (founder-provided drafting input, 2026-09-28) -- closes the community->
+      pump-operator gap structurally; pump OWNER remains tagged VERIFIED-CONTRADICTED on
+      typology/edges/owned_by.yaml (ST.SPS.01-04), unchanged by this row.
+  - from: sammakorn_zone
+    to: AG_BMA_GOV
+    tag: OPEN
+    source: >
+      PROPOSAL (founder-provided drafting input, 2026-09-28) -- a FORMAL zone channel,
+      distinct from the existing AG_FB_ADMIN -> AG_BMA_MED social-media case-pickup edge
+      (typology/edges/reports_to.yaml) -- not the same relationship, kept separate.
+  - from: sammakorn_zone
+    to: AG_MEA
+    tag: OPEN
+    source: >
+      PROPOSAL (founder-provided drafting input, 2026-09-28) -- an outage-reporting
+      route, distinct from the existing AG_MEA -> OPEN `warns` edge (typology/edges/
+      warns.yaml, ISSUE-PEOPLE-04) which is about MEA warning outward, not the zone
+      reporting inward -- different direction/meaning, not conflated.

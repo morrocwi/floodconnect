@@ -14,11 +14,30 @@ data/
 .pytest_cache/
 .benchmarks/
 
-# FloodConnect build output (regenerated every run by .github/workflows/floodconnect.yml,
-# published to GitHub Pages -- never committed back to the repo)
+# FloodConnect build output, including the static API v1 export
+# (site/dist/api/v1/**). FIX D (2026-10-04, project decision -- no hosted access):
+# this used to carve out site/dist/api/ as a deliberately TRACKED retained
+# snapshot so a fresh clone had something to read offline. That carve-out is
+# removed -- this repo ships NO pre-computed flood reading for anyone to read
+# without running the pipeline (collect.py --all -> site/build_data.py ->
+# tools/api/export_api.py) on their own machine first. The whole directory is
+# disposable build output now, nothing under it is ever committed.
 site/dist/
+
+# `pip install -e .` generates this; it is build metadata, never source.
+*.egg-info/
 
 # Local-only overrides / scratch (never committed)
 .leakdeny.local
 *.local
 .playwright-mcp/
+
+# Rescued dead-session scratchpad staging (data.json/html blobs -- never committed)
+.redesign_v2_staging/
+
+# Self-labelled internal-use-only community note (ends "ใช้ภายใน") -- kept
+# available locally for site/build_data.py's optional extra-source read, never
+# tracked/published. build_community_extra_20260927()/build_exits_extra_20260927()
+# already return [] gracefully when this path is absent, same as any installer
+# who never has this file.
+site/inputs/community/community_reports_2026-09-27.md

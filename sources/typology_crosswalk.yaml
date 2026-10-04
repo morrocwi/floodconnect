@@ -1,0 +1,129 @@
+# typology_crosswalk.yaml -- governance/typology crosswalk (merged 2026-10-02)
+#
+# WARNING_TYPOLOGY is kept as two distinct RKG nodes rather than merged into one file
+# (per converge design §1): local's hand-curated typology graph
+# (`typology/nodes/*.yaml` + `typology/edges/*.yaml`, node kind `agency`, id prefix
+# `AG_*`, reused verbatim from `docs/knowledge/water_system_dag.mmd`) and origin's role
+# overlay registry (`site/inputs/governance/flood_warning_actor_typology.yaml`, role
+# names like `URBAN_DRAINAGE_OPERATOR`, each with a `primary_actor_ref` pointing into
+# `thailand_water_governance_reference.json`'s `verified_anchors[].id`).
+#
+# This file is the cross-link between the two -- it adds no new claim, no new agency
+# identity, and no new role. It only states, for each AG_* agency id local already has,
+# which `verified_anchors[].id` (governance reference, canonical per the H2 fix union
+# merge) and which typology role(s) (origin's role overlay) refer to the same real-world
+# actor. Where local has an AG_* agency with no governance-reference anchor and/or no
+# typology role yet, that is recorded as `unmapped: true`, not silently dropped or
+# invented.
+#
+# tag: MEASURED (direct read of both files, 2026-10-02) for every row with a match;
+# rows with `unmapped: true` are also MEASURED -- the absence itself was checked, not
+# assumed.
+
+schema_version: 1
+as_of: "2026-10-02"
+purpose: >
+  Cross-link local's typology/nodes agency graph (AG_*) to origin's canonical governance
+  verified_anchors[].id and to origin's flood_warning_actor_typology.yaml role overlay,
+  without merging the two WARNING_TYPOLOGY artifacts into one file.
+sources:
+  - "typology/nodes/agencies.yaml"
+  - "site/inputs/governance/thailand_water_governance_reference.json#verified_anchors"
+  - "site/inputs/governance/flood_warning_actor_typology.yaml#roles"
+
+crosswalk:
+  - local_agency_id: AG_DDS
+    label_th: "สนน. สำนักการระบายน้ำ + ศูนย์ควบคุมระบบป้องกันน้ำท่วม"
+    governance_actor_ref: bma_dds
+    typology_role: URBAN_DRAINAGE_OPERATOR
+    tag: MEASURED
+  - local_agency_id: AG_RID
+    label_th: "กรมชลประทาน"
+    governance_actor_ref: rid
+    typology_role: IRRIGATION_WATER_SYSTEM_OPERATOR
+    tag: MEASURED
+  - local_agency_id: AG_TMD
+    label_th: "กรมอุตุนิยมวิทยา"
+    governance_actor_ref: tmd
+    typology_role: METEOROLOGICAL_OBSERVER_FORECASTER
+    tag: MEASURED
+  - local_agency_id: AG_ONWR
+    label_th: "สทนช. สำนักงานทรัพยากรน้ำแห่งชาติ"
+    governance_actor_ref: onwr
+    typology_role: NATIONAL_WATER_INTEGRATOR
+    tag: MEASURED
+  - local_agency_id: AG_DDPM
+    label_th: "ปภ. กรมป้องกันและบรรเทาสาธารณภัย (ผู้อำนวยการกลาง)"
+    governance_actor_ref: ddpm_ndwc
+    typology_role: NATIONAL_PUBLIC_WARNING_DISSEMINATOR
+    tag: MEASURED
+  - local_agency_id: AG_BMA_GOV
+    label_th: "ผู้ว่าฯ กทม. = ผู้อำนวยการ กทม."
+    governance_actor_ref: bma_dds
+    typology_role: null
+    note: >
+      Role overlay has no separate role for the BMA governor as local-authority warning
+      disseminator distinct from the drainage operator function; mapped to the same
+      governance anchor (bma_dds) as AG_DDS pending a future typology extension. Not a
+      contradiction -- both AG_DDS and AG_BMA_GOV are BMA-internal, this file does not
+      invent a second governance anchor to force a 1:1 mapping.
+    tag: INSTINCT
+  - local_agency_id: AG_MEA
+    label_th: "กฟน. การไฟฟ้านครหลวง"
+    governance_actor_ref: null
+    typology_role: null
+    unmapped: true
+    tag: MEASURED
+  - local_agency_id: AG_ESTATE
+    label_th: "นิติบุคคลหมู่บ้านจัดสรร / คณะกรรมการหมู่บ้านสัมมากร"
+    governance_actor_ref: province_district_local_authority
+    typology_role: LOCAL_LAST_MILE_WARNING_RESPONSE
+    note: >
+      Village juristic committee is a civil-layer actor mapped under the same
+      last-mile-response role as the formal province/district/local-authority anchor --
+      this is the typology registry's own LOCAL_LAST_MILE_WARNING_RESPONSE role, which
+      is explicitly a role (not an exclusive-authority chain), so a civil actor sharing
+      it with the formal local authority is consistent with the registry's own
+      `principles` ("one agency may occupy multiple roles").
+    tag: INSTINCT
+  - local_agency_id: AG_BMA_MED
+    label_th: "สำนักการแพทย์ / ศูนย์เอราวัณ (1669 ใน กทม.)"
+    governance_actor_ref: null
+    typology_role: null
+    unmapped: true
+    tag: MEASURED
+  - local_agency_id: AG_FB_ADMIN
+    label_th: "ผู้ดูแลกลุ่ม Facebook/LINE หมู่บ้าน (อาสา)"
+    governance_actor_ref: null
+    typology_role: null
+    unmapped: true
+    note: "community_report tier source, not a governance anchor candidate."
+    tag: MEASURED
+  - local_agency_id: AG_VOLUNTEER_MOTOSAI_SAMMAKORN
+    label_th: "กลุ่มอาสาขี่มอเตอร์ไซค์ริมคลอง (สัมมากร, ไม่มีองค์กรทางการ)"
+    governance_actor_ref: null
+    typology_role: null
+    unmapped: true
+    tag: MEASURED
+  - local_agency_id: AG_LOCAL_SHOP_SAMSAEK_LOR
+    label_th: "เพจร้านค้าในพื้นที่ (ขอของบริจาคให้โรงเรียนสามแยกหลอแหล้)"
+    governance_actor_ref: null
+    typology_role: null
+    unmapped: true
+    tag: MEASURED
+  - local_agency_id: AG_JS100
+    label_th: "JS100 Radio"
+    governance_actor_ref: null
+    typology_role: null
+    unmapped: true
+    note: "official_shared_inference-tier media relay, not a governance anchor."
+    tag: MEASURED
+
+# Governance anchors with no corresponding local AG_* agency node yet (reverse direction).
+governance_anchors_without_local_agency_node:
+  - nwc            # คณะกรรมการทรัพยากรน้ำแห่งชาติ -- policy body above AG_ONWR, no own node
+  - basin_committees
+  - dwr            # กรมทรัพยากรน้ำ -- distinct from AG_RID (ชลประทาน); no AG_DWR node yet
+  - gistda
+  - hii            # HYDRO_DATA_BROKER_AGGREGATOR role exists but no local AG_HII node yet
+  - province_district_local_authority  # formal anchor; local only has the civil-layer AG_ESTATE

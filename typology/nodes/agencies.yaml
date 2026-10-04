@@ -1,0 +1,145 @@
+# typology/nodes/agencies.yaml -- hand-curated `agency` node registry for the
+# typology-links extension (FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md sec1).
+# Reuse-first: every id that already exists as an AG_* node in
+# docs/knowledge/water_system_dag.mmd is reused VERBATIM (same id string) -- never a
+# renamed twin. `agency_class` is the sec7a civil-society-layer attribute on the same
+# `agency` kind (state / juristic_village / volunteer_informal / local_shop /
+# online_community_group / media_radio / foundation), not a new node kind.
+#
+# Every row: id, kind=agency, layer, label_th, agency_class, tag, source. `layer` is the
+# typology_graph.json/build_graph.py layer bucket (power = state agencies with formal
+# authority, civil = non-state/community actors) -- distinct from `agency_class`, which
+# is finer-grained.
+schema_version: 1
+doc_kind: typology_node_registry
+status_th: >
+  ทะเบียน node kind agency -- เชื่อมกับที่มีอยู่แล้วใน water_system_dag.mmd ก่อนเสมอ (reuse-first),
+  ไม่สร้าง id ใหม่ซ้ำของเดิม. แถวที่ id ขึ้นต้น AG_ และมีอยู่แล้วใน water_system_dag.mmd ถือเป็นการ
+  "อ้างอิงซ้ำ" (cross-reference) ไม่ใช่การประกาศใหม่ -- source บอกไว้ชัดต่อแถว.
+rows:
+  - id: AG_DDS
+    kind: agency
+    layer: power
+    label_th: "สนน. สำนักการระบายน้ำ + ศูนย์ควบคุมระบบป้องกันน้ำท่วม"
+    agency_class: state
+    tag: VERIFIED
+    source: "docs/knowledge/water_system_dag.mmd (existing AG_DDS node, reused verbatim)"
+  - id: AG_BMA_GOV
+    kind: agency
+    layer: power
+    label_th: "ผู้ว่าฯ กทม. = ผู้อำนวยการ กทม."
+    agency_class: state
+    tag: VERIFIED
+    source: "docs/knowledge/water_system_dag.mmd (existing AG_BMA_GOV node, reused verbatim)"
+  - id: AG_RID
+    kind: agency
+    layer: power
+    label_th: "กรมชลประทาน"
+    agency_class: state
+    role_th: >
+      ระบบชลประทาน เขื่อน อ่างเก็บน้ำ ประตูระบายน้ำในเขตชลประทาน (irrigation systems, dams,
+      reservoirs, gates in irrigated areas -- Lanner FB post ~27 ก.ย. 2569, relaying กพร.
+      Joint KPI FY2569-2570, tag RELAYED, verification_status OPEN จนกว่าจะอ่านเอกสาร กพร.
+      ตัวจริง)
+    tag: VERIFIED
+    source: "docs/knowledge/water_system_dag.mmd (existing AG_RID node, reused verbatim)"
+  - id: AG_DDPM
+    kind: agency
+    layer: power
+    label_th: "ปภ. กรมป้องกันและบรรเทาสาธารณภัย (ผู้อำนวยการกลาง)"
+    agency_class: state
+    role_th: >
+      เมื่อกลายเป็นภัยพิบัติ: เตือนภัย อพยพ บรรเทาทุกข์ ร่วมกับจังหวัด/ท้องถิ่น (when it
+      becomes a disaster: warning, evacuation, relief, with province/local government --
+      Lanner FB post, tag RELAYED, verification_status OPEN)
+    tag: VERIFIED
+    source: "docs/knowledge/water_system_dag.mmd (existing AG_DDPM node, reused verbatim)"
+  - id: AG_TMD
+    kind: agency
+    layer: power
+    label_th: "กรมอุตุนิยมวิทยา"
+    agency_class: state
+    role_th: >
+      พยากรณ์/เตือนภัยอากาศ (forecasts/warns -- Lanner FB post ~27 ก.ย. 2569, relaying กพร.
+      Joint KPI FY2569-2570, tag RELAYED, verification_status OPEN)
+    tag: VERIFIED
+    source: "docs/knowledge/water_system_dag.mmd (existing AG_TMD node, reused verbatim)"
+  - id: AG_MEA
+    kind: agency
+    layer: power
+    label_th: "กฟน. การไฟฟ้านครหลวง"
+    agency_class: state
+    tag: VERIFIED
+    source: >
+      docs/knowledge/water_system_dag.mmd (existing AG_MEA node, reused verbatim -- the
+      proposal doc's own §5/§7c called this a "first missing node"; it is NOT missing --
+      confirmed present in the DAG when this build actually checked. Treat that proposal
+      line as superseded by this registry row.)
+  - id: AG_ESTATE
+    kind: agency
+    layer: civil
+    label_th: "นิติบุคคลหมู่บ้านจัดสรร / คณะกรรมการหมู่บ้านสัมมากร"
+    agency_class: juristic_village
+    tag: VERIFIED
+    source: >
+      docs/knowledge/water_system_dag.mmd (existing AG_ESTATE node, reused verbatim --
+      the proposal doc's §5 worked example proposed a new id
+      AG_VILLAGE_JURISTIC_SAMMAKORN; this registry reuses the DAG's own existing
+      AG_ESTATE instead, same real-world referent, per the reuse-first rule. Whether
+      AG_ESTATE actually owns/operates ST.SPS.01-04 remains OPEN -- see edges/owned_by.yaml
+      and edges/operates.yaml.)
+  - id: AG_BMA_MED
+    kind: agency
+    layer: power
+    label_th: "สำนักการแพทย์ / ศูนย์เอราวัณ (1669 ใน กทม.)"
+    agency_class: state
+    tag: VERIFIED
+    source: "docs/knowledge/water_system_dag.mmd (existing AG_BMA_MED node, reused verbatim)"
+  - id: AG_ONWR
+    kind: agency
+    layer: power
+    label_th: "สทนช. สำนักงานทรัพยากรน้ำแห่งชาติ"
+    agency_class: state
+    role_th: >
+      นโยบายและการประสานงานภาพรวม (policy + overall coordination -- Lanner FB post
+      ~27 ก.ย. 2569, relaying กพร. Joint KPI FY2569-2570, tag RELAYED, verification_status
+      OPEN)
+    joint_kpi_host: true
+    joint_kpi_host_note_th: >
+      หน่วยงานเจ้าภาพ (host agency) ของ Joint KPI "การบริหารจัดการและอนุรักษ์ฟื้นฟูน้ำทั้งระบบ"
+      กพร. FY2569-2570 (29 หน่วยงาน: 22 ส่วนราชการ + 2 องค์การมหาชน + 4 รัฐวิสาหกิจ + กทม.) --
+      RELAYED ผ่าน Lanner, OPEN จนกว่าจะอ่านเอกสาร กพร. ตัวจริง
+    tag: VERIFIED
+    source: "docs/knowledge/water_system_dag.mmd (existing AG_ONWR node, reused verbatim)"
+  - id: AG_FB_ADMIN
+    kind: agency
+    layer: civil
+    label_th: "ผู้ดูแลกลุ่ม Facebook/LINE หมู่บ้าน (อาสา)"
+    agency_class: online_community_group
+    tag: VERIFIED
+    source: "docs/knowledge/water_system_dag.mmd (existing AG_FB_ADMIN node, reused verbatim)"
+  - id: AG_VOLUNTEER_MOTOSAI_SAMMAKORN
+    kind: agency
+    layer: civil
+    label_th: "กลุ่มอาสาขี่มอเตอร์ไซค์ริมคลอง (สัมมากร, ไม่มีองค์กรทางการ)"
+    agency_class: volunteer_informal
+    tag: RELAYED
+    source: >
+      STRUCTURAL_ISSUES_2026-09-28.md §7a/§7d (S10-adjacent community report; not one of
+      the 6 founder-pasted sources S1-S6 -- carried from the independent structural-issues
+      review, RELAYED, no organisation name known -- new id, no existing DAG node covers
+      this actor)
+  - id: AG_LOCAL_SHOP_SAMSAEK_LOR
+    kind: agency
+    layer: civil
+    label_th: "เพจร้านค้าในพื้นที่ (ขอของบริจาคให้โรงเรียนสามแยกหลอแหล้)"
+    agency_class: local_shop
+    tag: RELAYED
+    source: "FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §7a (S8, RELAYED, no shop name)"
+  - id: AG_JS100
+    kind: agency
+    layer: civil
+    label_th: "JS100 Radio"
+    agency_class: media_radio
+    tag: RELAYED
+    source: "FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §7a/§7b (S11, RELAYED)"

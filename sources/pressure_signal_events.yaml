@@ -1,0 +1,1935 @@
+schema_version: 1
+kind: pressure_signal_events
+append_only: true
+built: '2026-09-28'
+status: experiment readout -- pressure promoter NOT proposed (no added skill seen; REFUSED FEW_EVENTS for any skill claim)
+card: docs/experiments/2026-09-28-pressure-signal-real-test.md
+code: tools/backtest/pressure_signal.py
+test: tests/test_pressure_signal.py
+signals: {dp24: 'PROP-FLOOD-01 lag-k retained difference, k = 24 hourly ticks: p(t) - p(t-24), same clock hour (twice-daily pressure tide cancels).
+    City = min over 3 cells.', anom: 'p(t) - mean p over TRAINING years at the same cell, calendar month and hour (no held-out leak). City = min
+    over cells. A retained difference against a climatology readout -- not an instance of PROP-FLOOD-01 (no lag); no promoter built on it.', rain: 'rain-only
+    baseline: ERA5 rolling 24 h precipitation (persistence), max over cells -- the only rain baseline available for 2018-2026 (no archived per-model
+    forecasts held).'}
+declared_before_scan:
+  window_h: 72
+  persist_p: 2
+  event_mm_24h: 80
+  episode_gap_h: 72
+  alarm_merge_gap_h: 24
+  fa_day_ceiling: 0.05 ordinary-day firing rate (INSTINCT)
+  criterion: max training HIT s.t. day_rate <= ceiling; tie -> lower day_rate (PROP-FLOOD-06 calibration form)
+  train: 2005-01-01..2017-12-31
+  held_out: 2018-01-01..2026-09-27
+  n_min: 10 (provisional, INSTINCT)
+  grids:
+    dp24_hpa: [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
+    anom_hpa: [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]
+    rain24_mm: [20.0, 30.0, 40.0, 50.0, 60.0, 70.0]
+  ordinary_day: a calendar day not within [onset - 3 d, episode end + 1 d] of any ERA5 >= 80 mm episode
+inputs:
+- {id: era5_pressure_precip, what: 'archive-api.open-meteo.com hourly pressure_msl + precipitation, 3 cells (13.743,100.661 east/Sammakorn; 13.814,100.506;
+    13.814,100.836), 2005-01-01..2026-09-27 Asia/Bangkok', tag: MEASURED-reanalysis, caveat: 'the last days of the archive are preliminary reanalysis;
+    cells are grid means, not gauges'}
+- {id: ibtracs, what: 'sources/ibtracs_bkk_500km.yaml (26 storms, 2005-2025)', tag: VERIFIED (relayed file), finding: 'no storm point within 500
+    km in [-72 h, +24 h] of any of the 11 ERA5 episodes or 3 flood-truth rows (2026 not covered)'}
+- {id: openmeteo_pressure_live, what: 'latest raw payload per point of the collector (issue 2026-09-27 18:11-18:12 UTC), 9 models, past 7 d +
+    16 d', tag: MEASURED-model, note: DB rows are INSERT OR IGNORE (first fetch kept per hour); the verbatim latest payload is used for the forward
+    check}
+scan_training:
+  dp24:
+  - {label: 'dp24:1.0', HIT: 3, MISS: 1, FA_alarms: 1023, fired_days: 2132, day_rate: 0.4513, chosen: false}
+  - {label: 'dp24:1.5', HIT: 3, MISS: 1, FA_alarms: 710, fired_days: 1208, day_rate: 0.2557, chosen: false}
+  - {label: 'dp24:2.0', HIT: 3, MISS: 1, FA_alarms: 368, fired_days: 559, day_rate: 0.1183, chosen: false}
+  - {label: 'dp24:2.5', HIT: 3, MISS: 1, FA_alarms: 167, fired_days: 227, day_rate: 0.0481, chosen: true}
+  - {label: 'dp24:3.0', HIT: 2, MISS: 2, FA_alarms: 59, fired_days: 76, day_rate: 0.0161, chosen: false}
+  - {label: 'dp24:3.5', HIT: 2, MISS: 2, FA_alarms: 25, fired_days: 29, day_rate: 0.0061, chosen: false}
+  - {label: 'dp24:4.0', HIT: 0, MISS: 4, FA_alarms: 3, fired_days: 3, day_rate: 0.0006, chosen: false}
+  - {label: 'dp24:4.5', HIT: 0, MISS: 4, FA_alarms: 0, fired_days: 0, day_rate: 0.0, chosen: false}
+  - {label: 'dp24:5.0', HIT: 0, MISS: 4, FA_alarms: 0, fired_days: 0, day_rate: 0.0, chosen: false}
+  anom:
+  - {label: 'anom:1.0', HIT: 4, MISS: 0, FA_alarms: 440, fired_days: 2054, day_rate: 0.4348, chosen: false}
+  - {label: 'anom:2.0', HIT: 4, MISS: 0, FA_alarms: 326, fired_days: 1150, day_rate: 0.2434, chosen: false}
+  - {label: 'anom:3.0', HIT: 2, MISS: 2, FA_alarms: 193, fired_days: 495, day_rate: 0.1048, chosen: false}
+  - {label: 'anom:4.0', HIT: 1, MISS: 3, FA_alarms: 64, fired_days: 157, day_rate: 0.0332, chosen: true}
+  - {label: 'anom:5.0', HIT: 0, MISS: 4, FA_alarms: 23, fired_days: 47, day_rate: 0.0099, chosen: false}
+  - {label: 'anom:6.0', HIT: 0, MISS: 4, FA_alarms: 8, fired_days: 12, day_rate: 0.0025, chosen: false}
+  - {label: 'anom:7.0', HIT: 0, MISS: 4, FA_alarms: 0, fired_days: 0, day_rate: 0.0, chosen: false}
+  - {label: 'anom:8.0', HIT: 0, MISS: 4, FA_alarms: 0, fired_days: 0, day_rate: 0.0, chosen: false}
+  rain:
+  - {label: 'rain:20.0', HIT: 4, MISS: 0, FA_alarms: 163, fired_days: 316, day_rate: 0.0669, chosen: false}
+  - {label: 'rain:30.0', HIT: 4, MISS: 0, FA_alarms: 48, fired_days: 85, day_rate: 0.018, chosen: false}
+  - {label: 'rain:40.0', HIT: 4, MISS: 0, FA_alarms: 20, fired_days: 32, day_rate: 0.0068, chosen: true}
+  - {label: 'rain:50.0', HIT: 3, MISS: 1, FA_alarms: 11, fired_days: 16, day_rate: 0.0034, chosen: false}
+  - {label: 'rain:60.0', HIT: 2, MISS: 2, FA_alarms: 6, fired_days: 10, day_rate: 0.0021, chosen: false}
+  - {label: 'rain:70.0', HIT: 1, MISS: 3, FA_alarms: 2, fired_days: 3, day_rate: 0.0006, chosen: false}
+  rain_or_dp24:
+    grid_size: 54
+    chosen: rain:40.0|dp24:4.5
+    train: {HIT: 4, MISS: 0, FA_alarms: 20, day_rate: 0.0068}
+  rain_or_anom:
+    grid_size: 48
+    chosen: rain:40.0|anom:7.0
+    train: {HIT: 4, MISS: 0, FA_alarms: 20, day_rate: 0.0068}
+held_out_summary:
+  dp24: {chosen: 'dp24:2.5', HIT: 2, MISS: 5, UNRESOLVED: 0, FALSE_ALARM_alarms: 134, HIT_alarms: 2, DURING_EVENT_alarms: 1, ordinary_days: 3151,
+    fired_ordinary_days: 193, day_rate: 0.0613, p_hit_by_chance_72h: 0.173, expected_chance_hits_of_7: 1.21}
+  anom: {chosen: 'anom:4.0', HIT: 1, MISS: 6, UNRESOLVED: 0, FALSE_ALARM_alarms: 51, HIT_alarms: 1, DURING_EVENT_alarms: 2, ordinary_days: 3151,
+    fired_ordinary_days: 122, day_rate: 0.0387, p_hit_by_chance_72h: 0.112, expected_chance_hits_of_7: 0.78}
+  rain: {chosen: 'rain:40.0', HIT: 7, MISS: 0, UNRESOLVED: 0, FALSE_ALARM_alarms: 39, HIT_alarms: 7, DURING_EVENT_alarms: 0, ordinary_days: 3151,
+    fired_ordinary_days: 57, day_rate: 0.0181, p_hit_by_chance_72h: 0.053, expected_chance_hits_of_7: 0.37}
+  rain_or_dp24: {chosen: 'rain:40.0|dp24:4.5', HIT: 7, MISS: 0, UNRESOLVED: 0, FALSE_ALARM_alarms: 41, HIT_alarms: 7, DURING_EVENT_alarms: 0,
+    ordinary_days: 3151, fired_ordinary_days: 59, day_rate: 0.0187, p_hit_by_chance_72h: 0.055, expected_chance_hits_of_7: 0.39}
+  rain_or_anom: {chosen: 'rain:40.0|anom:7.0', HIT: 7, MISS: 0, UNRESOLVED: 0, FALSE_ALARM_alarms: 40, HIT_alarms: 7, DURING_EVENT_alarms: 0,
+    ordinary_days: 3151, fired_ordinary_days: 59, day_rate: 0.0187, p_hit_by_chance_72h: 0.055, expected_chance_hits_of_7: 0.39}
+n_independent_held_out_rain_events: 7
+extra_hits_rain_or_dp24_over_rain: 0
+verdict: REFUSED FEW_EVENTS
+verdict_reading: 'REFUSED FEW_EVENTS (7 < 10). What was seen: pressure alone 2/7 HIT (dp24) and 1/7 (anom) against about 1.2 and 0.8 expected
+  by chance at their firing rates; 134 and 51 false-alarm episodes; the combined rain-or-pressure scan picked pressure thresholds that never fire,
+  and added 0 hits over rain alone. No added skill seen -> keep pressure as context only.'
+events:
+- event_id: era5_ge80_20050914_12
+  independence_group: TRAIN_2005-09-14
+  period: train
+  unit_scope: city (worst of 3 ERA5 cells)
+  truth: {kind: rain-side (ERA5 rolling 24 h >= 80 mm), onset_local: '2005-09-14T12:00', last_crossing_local: '2005-09-15T02:00', max24_mm: 92.2,
+    tag: MEASURED-reanalysis, caveat: reanalysis grid-cell mean; under-reads convective extremes; no flood outcome implied}
+  readouts: {min_dp24_hpa_72h_before: -3.9, min_anom_hpa_72h_before: -3.9, ibtracs_storm_within_500km_-72h_+24h: none held (IBTrACS 2005-2025;
+      2026 not covered)}
+  cells:
+  - signal: dp24
+    threshold: dp24 <= -2.5 hPa (p=2)
+    cell: HIT
+    lead_h: 9
+    horizons: [0-24h]
+  - signal: anom
+    threshold: anom <= -4.0 hPa (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  - signal: rain
+    threshold: rain24 >= 40 mm (p=2)
+    cell: HIT
+    lead_h: 3
+    horizons: [0-24h]
+  tag: MEASURED-reanalysis
+- event_id: era5_ge80_20120906_11
+  independence_group: TRAIN_2012-09-06
+  period: train
+  unit_scope: city (worst of 3 ERA5 cells)
+  truth: {kind: rain-side (ERA5 rolling 24 h >= 80 mm), onset_local: '2012-09-06T11:00', last_crossing_local: '2012-09-07T16:00', max24_mm: 163.8,
+    tag: MEASURED-reanalysis, caveat: reanalysis grid-cell mean; under-reads convective extremes; no flood outcome implied}
+  readouts: {min_dp24_hpa_72h_before: -2.9, min_anom_hpa_72h_before: -2.3, ibtracs_storm_within_500km_-72h_+24h: none held (IBTrACS 2005-2025;
+      2026 not covered)}
+  cells:
+  - signal: dp24
+    threshold: dp24 <= -2.5 hPa (p=2)
+    cell: HIT
+    lead_h: 20
+    horizons: [0-24h]
+  - signal: anom
+    threshold: anom <= -4.0 hPa (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  - signal: rain
+    threshold: rain24 >= 40 mm (p=2)
+    cell: HIT
+    lead_h: 5
+    horizons: [0-24h]
+  tag: MEASURED-reanalysis
+- event_id: era5_ge80_20120928_03
+  independence_group: TRAIN_2012-09-28
+  period: train
+  unit_scope: city (worst of 3 ERA5 cells)
+  truth: {kind: rain-side (ERA5 rolling 24 h >= 80 mm), onset_local: '2012-09-28T03:00', last_crossing_local: '2012-09-29T01:00', max24_mm: 131.6,
+    tag: MEASURED-reanalysis, caveat: reanalysis grid-cell mean; under-reads convective extremes; no flood outcome implied}
+  readouts: {min_dp24_hpa_72h_before: -0.8, min_anom_hpa_72h_before: -2.7, ibtracs_storm_within_500km_-72h_+24h: none held (IBTrACS 2005-2025;
+      2026 not covered)}
+  cells:
+  - signal: dp24
+    threshold: dp24 <= -2.5 hPa (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  - signal: anom
+    threshold: anom <= -4.0 hPa (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  - signal: rain
+    threshold: rain24 >= 40 mm (p=2)
+    cell: HIT
+    lead_h: 2
+    horizons: [0-24h]
+  tag: MEASURED-reanalysis
+- event_id: era5_ge80_20150917_19
+  independence_group: TRAIN_2015-09-17
+  period: train
+  unit_scope: city (worst of 3 ERA5 cells)
+  truth: {kind: rain-side (ERA5 rolling 24 h >= 80 mm), onset_local: '2015-09-17T19:00', last_crossing_local: '2015-09-18T16:00', max24_mm: 119.7,
+    tag: MEASURED-reanalysis, caveat: reanalysis grid-cell mean; under-reads convective extremes; no flood outcome implied}
+  readouts: {min_dp24_hpa_72h_before: -3.6, min_anom_hpa_72h_before: -5.0, ibtracs_storm_within_500km_-72h_+24h: none held (IBTrACS 2005-2025;
+      2026 not covered)}
+  cells:
+  - signal: dp24
+    threshold: dp24 <= -2.5 hPa (p=2)
+    cell: HIT
+    lead_h: 59
+    horizons: [0-24h, 24-48h, 48-72h]
+  - signal: anom
+    threshold: anom <= -4.0 hPa (p=2)
+    cell: HIT
+    lead_h: 37
+    horizons: [0-24h, 24-48h]
+  - signal: rain
+    threshold: rain24 >= 40 mm (p=2)
+    cell: HIT
+    lead_h: 25
+    horizons: [0-24h, 24-48h]
+  tag: MEASURED-reanalysis
+- event_id: era5_ge80_20180110_13
+  independence_group: HELD_2018-01-10
+  period: held
+  unit_scope: city (worst of 3 ERA5 cells)
+  truth: {kind: rain-side (ERA5 rolling 24 h >= 80 mm), onset_local: '2018-01-10T13:00', last_crossing_local: '2018-01-11T09:00', max24_mm: 99.8,
+    tag: MEASURED-reanalysis, caveat: reanalysis grid-cell mean; under-reads convective extremes; no flood outcome implied}
+  readouts: {min_dp24_hpa_72h_before: -0.3, min_anom_hpa_72h_before: -3.1, ibtracs_storm_within_500km_-72h_+24h: none held (IBTrACS 2005-2025;
+      2026 not covered)}
+  cells:
+  - signal: dp24
+    threshold: dp24 <= -2.5 hPa (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  - signal: anom
+    threshold: anom <= -4.0 hPa (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  - signal: rain
+    threshold: rain24 >= 40 mm (p=2)
+    cell: HIT
+    lead_h: 1
+    horizons: [0-24h]
+  tag: MEASURED-reanalysis
+- event_id: era5_ge80_20180428_13
+  independence_group: HELD_2018-04-28
+  period: held
+  unit_scope: city (worst of 3 ERA5 cells)
+  truth: {kind: rain-side (ERA5 rolling 24 h >= 80 mm), onset_local: '2018-04-28T13:00', last_crossing_local: '2018-04-28T21:00', max24_mm: 93.3,
+    tag: MEASURED-reanalysis, caveat: reanalysis grid-cell mean; under-reads convective extremes; no flood outcome implied}
+  readouts: {min_dp24_hpa_72h_before: -0.5, min_anom_hpa_72h_before: -2.1, ibtracs_storm_within_500km_-72h_+24h: none held (IBTrACS 2005-2025;
+      2026 not covered)}
+  cells:
+  - signal: dp24
+    threshold: dp24 <= -2.5 hPa (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  - signal: anom
+    threshold: anom <= -4.0 hPa (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  - signal: rain
+    threshold: rain24 >= 40 mm (p=2)
+    cell: HIT
+    lead_h: 11
+    horizons: [0-24h]
+  tag: MEASURED-reanalysis
+- event_id: era5_ge80_20180916_04
+  independence_group: HELD_2018-09-16
+  period: held
+  unit_scope: city (worst of 3 ERA5 cells)
+  truth: {kind: rain-side (ERA5 rolling 24 h >= 80 mm), onset_local: '2018-09-16T04:00', last_crossing_local: '2018-09-16T17:00', max24_mm: 89.2,
+    tag: MEASURED-reanalysis, caveat: reanalysis grid-cell mean; under-reads convective extremes; no flood outcome implied}
+  readouts: {min_dp24_hpa_72h_before: -2.0, min_anom_hpa_72h_before: -3.3, ibtracs_storm_within_500km_-72h_+24h: none held (IBTrACS 2005-2025;
+      2026 not covered)}
+  cells:
+  - signal: dp24
+    threshold: dp24 <= -2.5 hPa (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  - signal: anom
+    threshold: anom <= -4.0 hPa (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  - signal: rain
+    threshold: rain24 >= 40 mm (p=2)
+    cell: HIT
+    lead_h: 54
+    horizons: [0-24h, 24-48h, 48-72h]
+  tag: MEASURED-reanalysis
+- event_id: era5_ge80_20190920_06
+  independence_group: HELD_2019-09-20
+  period: held
+  unit_scope: city (worst of 3 ERA5 cells)
+  truth: {kind: rain-side (ERA5 rolling 24 h >= 80 mm), onset_local: '2019-09-20T06:00', last_crossing_local: '2019-09-21T04:00', max24_mm: 93.2,
+    tag: MEASURED-reanalysis, caveat: reanalysis grid-cell mean; under-reads convective extremes; no flood outcome implied}
+  readouts: {min_dp24_hpa_72h_before: -0.2, min_anom_hpa_72h_before: -1.1, ibtracs_storm_within_500km_-72h_+24h: none held (IBTrACS 2005-2025;
+      2026 not covered)}
+  cells:
+  - signal: dp24
+    threshold: dp24 <= -2.5 hPa (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  - signal: anom
+    threshold: anom <= -4.0 hPa (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  - signal: rain
+    threshold: rain24 >= 40 mm (p=2)
+    cell: HIT
+    lead_h: 1
+    horizons: [0-24h]
+  tag: MEASURED-reanalysis
+- event_id: era5_ge80_20200928_22
+  independence_group: HELD_2020-09-28
+  period: held
+  unit_scope: city (worst of 3 ERA5 cells)
+  truth: {kind: rain-side (ERA5 rolling 24 h >= 80 mm), onset_local: '2020-09-28T22:00', last_crossing_local: '2020-09-29T04:00', max24_mm: 90.9,
+    tag: MEASURED-reanalysis, caveat: reanalysis grid-cell mean; under-reads convective extremes; no flood outcome implied}
+  readouts: {min_dp24_hpa_72h_before: -2.5, min_anom_hpa_72h_before: -3.0, ibtracs_storm_within_500km_-72h_+24h: none held (IBTrACS 2005-2025;
+      2026 not covered)}
+  cells:
+  - signal: dp24
+    threshold: dp24 <= -2.5 hPa (p=2)
+    cell: HIT
+    lead_h: 34
+    horizons: [24-48h]
+  - signal: anom
+    threshold: anom <= -4.0 hPa (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  - signal: rain
+    threshold: rain24 >= 40 mm (p=2)
+    cell: HIT
+    lead_h: 9
+    horizons: [0-24h]
+  tag: MEASURED-reanalysis
+- event_id: era5_ge80_20201009_17
+  independence_group: HELD_2020-10-09
+  period: held
+  unit_scope: city (worst of 3 ERA5 cells)
+  truth: {kind: rain-side (ERA5 rolling 24 h >= 80 mm), onset_local: '2020-10-09T17:00', last_crossing_local: '2020-10-11T05:00', max24_mm: 92.2,
+    tag: MEASURED-reanalysis, caveat: reanalysis grid-cell mean; under-reads convective extremes; no flood outcome implied}
+  readouts: {min_dp24_hpa_72h_before: -2.8, min_anom_hpa_72h_before: -4.7, ibtracs_storm_within_500km_-72h_+24h: none held (IBTrACS 2005-2025;
+      2026 not covered)}
+  cells:
+  - signal: dp24
+    threshold: dp24 <= -2.5 hPa (p=2)
+    cell: HIT
+    lead_h: 37
+    horizons: [24-48h]
+  - signal: anom
+    threshold: anom <= -4.0 hPa (p=2)
+    cell: HIT
+    lead_h: 40
+    horizons: [0-24h, 24-48h]
+  - signal: rain
+    threshold: rain24 >= 40 mm (p=2)
+    cell: HIT
+    lead_h: 10
+    horizons: [0-24h]
+  tag: MEASURED-reanalysis
+- event_id: era5_ge80_20260925_10
+  independence_group: HELD_2026-09-25
+  period: held
+  unit_scope: city (worst of 3 ERA5 cells)
+  truth: {kind: rain-side (ERA5 rolling 24 h >= 80 mm), onset_local: '2026-09-25T10:00', last_crossing_local: '2026-09-26T09:00', max24_mm: 132.7,
+    tag: MEASURED-reanalysis, caveat: reanalysis grid-cell mean; under-reads convective extremes; no flood outcome implied}
+  readouts: {min_dp24_hpa_72h_before: -2.3, min_anom_hpa_72h_before: -0.6, ibtracs_storm_within_500km_-72h_+24h: not covered (IBTrACS ends 2025)}
+  cells:
+  - signal: dp24
+    threshold: dp24 <= -2.5 hPa (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  - signal: anom
+    threshold: anom <= -4.0 hPa (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  - signal: rain
+    threshold: rain24 >= 40 mm (p=2)
+    cell: HIT
+    lead_h: 5
+    horizons: [0-24h]
+  tag: MEASURED-reanalysis
+flood_truth_rows:
+- event_id: bkk_2569_09_24_27_districts
+  independence_group: G1_2569_09
+  period: held
+  unit_scope: city/district
+  truth: {kind: urban flooding (repo ledger), onset_local: '2026-09-25T20:00', censoring: left_censored, tag: MEASURED, source: sources/bma_coping_indicator_events.yaml
+      / sources/urban_flood_event_ledger.yaml}
+  readouts: {min_dp24_hpa_72h_before: -2.5, min_anom_hpa_72h_before: -0.6, ibtracs_storm_within_500km_-72h_+24h: not covered (IBTrACS ends 2025)}
+  cells:
+  - signal: dp24
+    threshold: dp24 <= -2.5 hPa (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  - signal: anom
+    threshold: anom <= -4.0 hPa (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  - signal: rain
+    threshold: rain24 >= 40 mm (p=2)
+    cell: HIT
+    lead_h: 15
+    horizons: [0-24h]
+  tag: MEASURED
+  notes: 'dp24 did fire (persisted) at 2026-09-21T20:00 -- 96 h before this onset, outside the declared 72 h window -> scored FALSE_ALARM there,
+    not re-scored as a hit. The pressure anomaly 21-24 Sep was +1 to +4.5 hPa ABOVE the training normal: pressure was not low before this event.'
+- event_id: sammakorn_2569_09_26
+  independence_group: G1_2569_09
+  period: held
+  unit_scope: node
+  truth: {kind: urban flooding (repo ledger), onset_local: '2026-09-26T04:00', censoring: 'onset <= 04:00', tag: MEASURED, source: sources/bma_coping_indicator_events.yaml
+      / sources/urban_flood_event_ledger.yaml}
+  readouts: {min_dp24_hpa_72h_before: -2.7, min_anom_hpa_72h_before: -1.9, ibtracs_storm_within_500km_-72h_+24h: not covered (IBTrACS ends 2025)}
+  cells:
+  - signal: dp24
+    threshold: dp24 <= -2.5 hPa (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  - signal: anom
+    threshold: anom <= -4.0 hPa (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  - signal: rain
+    threshold: rain24 >= 40 mm (p=2)
+    cell: HIT
+    lead_h: 23
+    horizons: [0-24h]
+  tag: MEASURED
+- event_id: bkk_2568_09_14_street
+  independence_group: G2_2568_09
+  period: held
+  unit_scope: city/district
+  truth: {kind: urban flooding (repo ledger), onset_local: '2025-09-14T00:00', censoring: 'day resolution -> onset taken as 00:00 (lead is a lower
+      bound)', tag: RELAYED, source: sources/bma_coping_indicator_events.yaml / sources/urban_flood_event_ledger.yaml}
+  readouts: {min_dp24_hpa_72h_before: -1.3, min_anom_hpa_72h_before: -0.1, ibtracs_storm_within_500km_-72h_+24h: none held}
+  cells:
+  - signal: dp24
+    threshold: dp24 <= -2.5 hPa (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  - signal: anom
+    threshold: anom <= -4.0 hPa (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  - signal: rain
+    threshold: rain24 >= 40 mm (p=2)
+    cell: MISS
+    lead_h: null
+    horizons: []
+  tag: RELAYED
+  notes: ERA5 rain also misses this day (cell sums <= 19 mm, see bma_coping_indicator_events.yaml) -- the pressure and rain baselines both MISS;
+    onset at day resolution.
+monthly_fire_rate_held_out:
+  dp24: {'1': 0.054, '2': 0.067, '3': 0.05, '4': 0.067, '5': 0.1, '6': 0.044, '7': 0.093, '8': 0.09, '9': 0.086, '10': 0.012, '11': 0.033, '12': 0.028}
+  anom: {'1': 0.061, '2': 0.039, '3': 0.047, '4': 0.048, '5': 0.025, '6': 0.004, '7': 0.025, '8': 0.039, '9': 0.064, '10': 0.093, '11': 0.025,
+    '12': 0.008}
+  rain: {'1': 0.007, '2': 0.008, '3': 0.0, '4': 0.03, '5': 0.025, '6': 0.004, '7': 0.029, '8': 0.014, '9': 0.09, '10': 0.073, '11': 0.008, '12': 0.004}
+hii_month_consistency: {source: docs/knowledge/hii_flood_area_2005_2021_east.yaml (month-of-year only), reading: 'dp24 fires on 9-10% of days
+    May/Jul-Sep and 1% in October (the HII flood-area peak month); anom fires most in October (9%). Month-of-year only, years cannot be paired
+    -> no cell scored.', tag: INSTINCT}
+trace_2569_09_era5_6h:
+- {t: '2026-09-20T00:00', dp24: 3.4, anom: 4.6, rain24: 24.8}
+- {t: '2026-09-20T06:00', dp24: 2.4, anom: 4.2, rain24: 25.7}
+- {t: '2026-09-20T12:00', dp24: 2.2, anom: 4.5, rain24: 25.4}
+- {t: '2026-09-20T18:00', dp24: 1.8, anom: 5.4, rain24: 20.8}
+- {t: '2026-09-21T00:00', dp24: -0.2, anom: 4.5, rain24: 15.8}
+- {t: '2026-09-21T06:00', dp24: -0.1, anom: 4.1, rain24: 9.3}
+- {t: '2026-09-21T12:00', dp24: -1.5, anom: 3.0, rain24: 9.8}
+- {t: '2026-09-21T18:00', dp24: -2.3, anom: 3.4, rain24: 15.9}
+- {t: '2026-09-22T00:00', dp24: -1.6, anom: 3.1, rain24: 14.6}
+- {t: '2026-09-22T06:00', dp24: -1.6, anom: 2.5, rain24: 16.9}
+- {t: '2026-09-22T12:00', dp24: -1.4, anom: 1.8, rain24: 17.2}
+- {t: '2026-09-22T18:00', dp24: -1.7, anom: 1.7, rain24: 12.3}
+- {t: '2026-09-23T00:00', dp24: -1.1, anom: 2.1, rain24: 9.5}
+- {t: '2026-09-23T06:00', dp24: -1.3, anom: 1.3, rain24: 7.6}
+- {t: '2026-09-23T12:00', dp24: -0.8, anom: 1.1, rain24: 5.9}
+- {t: '2026-09-23T18:00', dp24: 0.0, anom: 2.0, rain24: 10.1}
+- {t: '2026-09-24T00:00', dp24: -0.6, anom: 1.6, rain24: 11.0}
+- {t: '2026-09-24T06:00', dp24: -0.1, anom: 1.3, rain24: 12.6}
+- {t: '2026-09-24T12:00', dp24: -0.3, anom: 0.9, rain24: 12.5}
+- {t: '2026-09-24T18:00', dp24: -0.3, anom: 1.8, rain24: 15.3}
+- {t: '2026-09-25T00:00', dp24: -0.9, anom: 0.7, rain24: 16.5}
+- {t: '2026-09-25T06:00', dp24: -1.6, anom: -0.3, rain24: 60.3}
+- {t: '2026-09-25T12:00', dp24: -1.3, anom: -0.3, rain24: 91.3}
+- {t: '2026-09-25T18:00', dp24: -2.0, anom: -0.2, rain24: 118.4}
+- {t: '2026-09-26T00:00', dp24: -2.2, anom: -1.4, rain24: 132.7}
+- {t: '2026-09-26T06:00', dp24: -1.2, anom: -1.1, rain24: 103.6}
+- {t: '2026-09-26T12:00', dp24: -1.5, anom: -1.1, rain24: 74.9}
+- {t: '2026-09-26T18:00', dp24: -0.6, anom: -0.5, rain24: 54.1}
+- {t: '2026-09-27T00:00', dp24: -0.2, anom: -1.2, rain24: 45.0}
+- {t: '2026-09-27T06:00', dp24: 0.0, anom: -0.9, rain24: 38.4}
+- {t: '2026-09-27T12:00', dp24: 0.1, anom: -1.0, rain24: 42.6}
+- {t: '2026-09-27T18:00', dp24: 0.8, anom: 0.4, rain24: 49.5}
+tonight_2026_09_28:
+  issue_files_utc: {sammakorn: 2026-09-27T181125Z, ram53: 2026-09-27T181144Z, bangkok_east: 2026-09-27T181202Z}
+  days_D+1_to_D+10: ['2026-09-29', '2026-09-30', '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05', '2026-10-06', '2026-10-07',
+    '2026-10-08']
+  thresholds: 'same as held-out test: synoptic-hour dp24 <= -2.5 hPa; anomaly (bias-corrected vs ERA5 overlap, synoptic hours) <= -4.0 hPa'
+  points:
+    sammakorn:
+      grid: [13.75, 100.75]
+      models:
+        ecmwf_ifs025:
+          bias_vs_era5_hpa: 0.02
+          days:
+            09-29:
+              dp24_all: 0.3
+              dp24_syn: 0.3
+              anom: 4.2
+              flags: []
+            09-30:
+              dp24_all: -0.9
+              dp24_syn: -0.7
+              anom: 3.5
+              flags: []
+            10-01:
+              dp24_all: -0.9
+              dp24_syn: -0.7
+              anom: 1.7
+              flags: []
+            10-02:
+              dp24_all: 0.6
+              dp24_syn: 0.6
+              anom: 2.5
+              flags: []
+            10-03:
+              dp24_all: -2.9
+              dp24_syn: -0.7
+              anom: 2.9
+              flags: [DP24_ALLHOUR_ONLY]
+            10-04:
+              dp24_all: -3.2
+              dp24_syn: -1.7
+              anom: 1.3
+              flags: [DP24_ALLHOUR_ONLY]
+            10-05:
+              dp24_all: -1.8
+              dp24_syn: -1.7
+              anom: 0.0
+              flags: []
+            10-06:
+              dp24_all: -0.7
+              dp24_syn: -0.7
+              anom: 0.1
+              flags: []
+            10-07:
+              dp24_all: -0.3
+              dp24_syn: -0.3
+              anom: -0.1
+              flags: []
+            10-08:
+              dp24_all: -1.3
+              dp24_syn: -1.3
+              anom: -0.9
+              flags: []
+        gfs_seamless:
+          bias_vs_era5_hpa: -0.46
+          days:
+            09-29:
+              dp24_all: 0.2
+              dp24_syn: 1.1
+              anom: 4.4
+              flags: []
+            09-30:
+              dp24_all: -1.6
+              dp24_syn: -1.1
+              anom: 4.3
+              flags: []
+            10-01:
+              dp24_all: -1.7
+              dp24_syn: -1.5
+              anom: 1.5
+              flags: []
+            10-02:
+              dp24_all: -0.3
+              dp24_syn: -0.2
+              anom: 1.3
+              flags: []
+            10-03:
+              dp24_all: -0.7
+              dp24_syn: -0.6
+              anom: 1.4
+              flags: []
+            10-04:
+              dp24_all: -1.1
+              dp24_syn: -1.1
+              anom: 0.9
+              flags: []
+            10-05:
+              dp24_all: -1.7
+              dp24_syn: -1.7
+              anom: 0.0
+              flags: []
+            10-06:
+              dp24_all: -0.6
+              dp24_syn: -0.6
+              anom: -0.2
+              flags: []
+            10-07:
+              dp24_all: 0.8
+              dp24_syn: 0.8
+              anom: 1.1
+              flags: []
+            10-08:
+              dp24_all: -0.6
+              dp24_syn: 0.5
+              anom: 2.3
+              flags: []
+        icon_seamless:
+          bias_vs_era5_hpa: -0.35
+          days:
+            09-29:
+              dp24_all: 0.4
+              dp24_syn: 0.8
+              anom: 4.4
+              flags: []
+            09-30:
+              dp24_all: -0.9
+              dp24_syn: -0.8
+              anom: 4.4
+              flags: []
+            10-01:
+              dp24_all: -1.3
+              dp24_syn: -1.2
+              anom: 1.7
+              flags: []
+            10-02:
+              dp24_all: 0.0
+              dp24_syn: 0.4
+              anom: 2.7
+              flags: []
+            10-03:
+              dp24_all: -0.6
+              dp24_syn: -0.6
+              anom: 3.3
+              flags: []
+            10-04:
+              dp24_all: -1.5
+              dp24_syn: -1.4
+              anom: 2.5
+              flags: []
+            10-05:
+              dp24_all: -1.0
+              dp24_syn: -1.0
+              anom: 1.5
+              flags: []
+            10-06:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-07:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-08:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+        jma_seamless:
+          bias_vs_era5_hpa: -0.21
+          days:
+            09-29:
+              dp24_all: -0.2
+              dp24_syn: 0.6
+              anom: 4.2
+              flags: []
+            09-30:
+              dp24_all: -1.1
+              dp24_syn: -1.0
+              anom: 3.2
+              flags: []
+            10-01:
+              dp24_all: -0.8
+              dp24_syn: -0.8
+              anom: 1.4
+              flags: []
+            10-02:
+              dp24_all: 0.6
+              dp24_syn: 0.7
+              anom: 2.4
+              flags: []
+            10-03:
+              dp24_all: -0.6
+              dp24_syn: -0.5
+              anom: 2.5
+              flags: []
+            10-04:
+              dp24_all: -0.5
+              dp24_syn: -0.5
+              anom: 2.4
+              flags: []
+            10-05:
+              dp24_all: -0.3
+              dp24_syn: -0.3
+              anom: 2.2
+              flags: []
+            10-06:
+              dp24_all: -0.4
+              dp24_syn: -0.4
+              anom: 2.0
+              flags: []
+            10-07:
+              dp24_all: -0.1
+              dp24_syn: -0.1
+              anom: 2.2
+              flags: []
+            10-08:
+              dp24_all: 0.4
+              dp24_syn: 0.5
+              anom: 2.7
+              flags: []
+        gem_seamless:
+          bias_vs_era5_hpa: 0.05
+          days:
+            09-29:
+              dp24_all: 0.7
+              dp24_syn: 1.1
+              anom: 3.8
+              flags: []
+            09-30:
+              dp24_all: -1.4
+              dp24_syn: -0.6
+              anom: 3.6
+              flags: []
+            10-01:
+              dp24_all: -1.4
+              dp24_syn: -1.3
+              anom: 0.8
+              flags: []
+            10-02:
+              dp24_all: -0.7
+              dp24_syn: -0.6
+              anom: 1.2
+              flags: []
+            10-03:
+              dp24_all: -0.7
+              dp24_syn: -0.3
+              anom: 1.1
+              flags: []
+            10-04:
+              dp24_all: -1.5
+              dp24_syn: -0.8
+              anom: 0.5
+              flags: []
+            10-05:
+              dp24_all: -1.5
+              dp24_syn: -1.2
+              anom: -0.2
+              flags: []
+            10-06:
+              dp24_all: -0.6
+              dp24_syn: -0.6
+              anom: 0.0
+              flags: []
+            10-07:
+              dp24_all: 0.3
+              dp24_syn: 0.8
+              anom: 1.8
+              flags: []
+            10-08:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+        meteofrance_seamless:
+          bias_vs_era5_hpa: -0.06
+          days:
+            09-29:
+              dp24_all: 0.3
+              dp24_syn: 1.2
+              anom: 3.9
+              flags: []
+            09-30:
+              dp24_all: -1.1
+              dp24_syn: -0.7
+              anom: 3.5
+              flags: []
+            10-01:
+              dp24_all: -1.1
+              dp24_syn: -1.1
+              anom: 1.3
+              flags: []
+            10-02:
+              dp24_all: 0.0
+              dp24_syn: 0.1
+              anom: 1.9
+              flags: []
+            10-03:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-04:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-05:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-06:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-07:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-08:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+        ukmo_seamless:
+          bias_vs_era5_hpa: -0.04
+          days:
+            09-29:
+              dp24_all: 0.2
+              dp24_syn: 0.8
+              anom: 3.9
+              flags: []
+            09-30:
+              dp24_all: -1.1
+              dp24_syn: -0.8
+              anom: 3.7
+              flags: []
+            10-01:
+              dp24_all: -1.4
+              dp24_syn: -1.1
+              anom: 1.3
+              flags: []
+            10-02:
+              dp24_all: -0.7
+              dp24_syn: -0.7
+              anom: 1.0
+              flags: []
+            10-03:
+              dp24_all: -1.8
+              dp24_syn: -0.9
+              anom: 1.1
+              flags: []
+            10-04:
+              dp24_all: -0.5
+              dp24_syn: 0.1
+              anom: 2.0
+              flags: []
+            10-05:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-06:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-07:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-08:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+        knmi_seamless:
+          bias_vs_era5_hpa: 0.0
+          days:
+            09-29:
+              dp24_all: 0.3
+              dp24_syn: 0.5
+              anom: 4.2
+              flags: []
+            09-30:
+              dp24_all: -1.0
+              dp24_syn: -0.7
+              anom: 3.5
+              flags: []
+            10-01:
+              dp24_all: -1.1
+              dp24_syn: -0.7
+              anom: 1.8
+              flags: []
+            10-02:
+              dp24_all: 0.2
+              dp24_syn: 0.6
+              anom: 2.7
+              flags: []
+            10-03:
+              dp24_all: -2.9
+              dp24_syn: -0.6
+              anom: 2.9
+              flags: [DP24_ALLHOUR_ONLY]
+            10-04:
+              dp24_all: -3.2
+              dp24_syn: -1.7
+              anom: 1.3
+              flags: [DP24_ALLHOUR_ONLY]
+            10-05:
+              dp24_all: -1.8
+              dp24_syn: -1.8
+              anom: 0.2
+              flags: []
+            10-06:
+              dp24_all: -0.7
+              dp24_syn: -0.7
+              anom: 0.3
+              flags: []
+            10-07:
+              dp24_all: -0.3
+              dp24_syn: -0.3
+              anom: 0.1
+              flags: []
+            10-08:
+              dp24_all: -1.3
+              dp24_syn: -1.1
+              anom: -0.8
+              flags: []
+        cma_grapes_global:
+          bias_vs_era5_hpa: -0.6
+          days:
+            09-29:
+              dp24_all: 0.9
+              dp24_syn: 1.1
+              anom: 4.1
+              flags: []
+            09-30:
+              dp24_all: -1.7
+              dp24_syn: -1.3
+              anom: 3.2
+              flags: []
+            10-01:
+              dp24_all: -1.4
+              dp24_syn: -1.4
+              anom: 0.8
+              flags: []
+            10-02:
+              dp24_all: -1.0
+              dp24_syn: -0.4
+              anom: 1.4
+              flags: []
+            10-03:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-04:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-05:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-06:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-07:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-08:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+    ram53:
+      grid: [13.75, 100.5]
+      models:
+        ecmwf_ifs025:
+          bias_vs_era5_hpa: 0.02
+          days:
+            09-29:
+              dp24_all: 0.6
+              dp24_syn: 0.6
+              anom: 4.2
+              flags: []
+            09-30:
+              dp24_all: -0.8
+              dp24_syn: -0.7
+              anom: 3.5
+              flags: []
+            10-01:
+              dp24_all: -1.0
+              dp24_syn: -0.7
+              anom: 1.8
+              flags: []
+            10-02:
+              dp24_all: 0.6
+              dp24_syn: 0.6
+              anom: 2.6
+              flags: []
+            10-03:
+              dp24_all: -2.9
+              dp24_syn: -0.5
+              anom: 2.9
+              flags: [DP24_ALLHOUR_ONLY]
+            10-04:
+              dp24_all: -3.2
+              dp24_syn: -1.7
+              anom: 1.2
+              flags: [DP24_ALLHOUR_ONLY]
+            10-05:
+              dp24_all: -1.8
+              dp24_syn: -1.8
+              anom: 0.1
+              flags: []
+            10-06:
+              dp24_all: -0.6
+              dp24_syn: -0.6
+              anom: 0.2
+              flags: []
+            10-07:
+              dp24_all: -0.3
+              dp24_syn: -0.3
+              anom: 0.0
+              flags: []
+            10-08:
+              dp24_all: -1.1
+              dp24_syn: -0.9
+              anom: -0.9
+              flags: []
+        gfs_seamless:
+          bias_vs_era5_hpa: -0.45
+          days:
+            09-29:
+              dp24_all: 0.2
+              dp24_syn: 1.0
+              anom: 4.2
+              flags: []
+            09-30:
+              dp24_all: -1.5
+              dp24_syn: -1.2
+              anom: 4.1
+              flags: []
+            10-01:
+              dp24_all: -1.7
+              dp24_syn: -1.4
+              anom: 1.5
+              flags: []
+            10-02:
+              dp24_all: -0.3
+              dp24_syn: -0.2
+              anom: 1.3
+              flags: []
+            10-03:
+              dp24_all: -0.7
+              dp24_syn: -0.6
+              anom: 1.4
+              flags: []
+            10-04:
+              dp24_all: -1.1
+              dp24_syn: -1.1
+              anom: 0.8
+              flags: []
+            10-05:
+              dp24_all: -1.5
+              dp24_syn: -1.5
+              anom: 0.0
+              flags: []
+            10-06:
+              dp24_all: -0.6
+              dp24_syn: -0.6
+              anom: -0.2
+              flags: []
+            10-07:
+              dp24_all: 0.8
+              dp24_syn: 0.8
+              anom: 1.0
+              flags: []
+            10-08:
+              dp24_all: -0.5
+              dp24_syn: 0.2
+              anom: 2.2
+              flags: []
+        icon_seamless:
+          bias_vs_era5_hpa: -0.35
+          days:
+            09-29:
+              dp24_all: 0.4
+              dp24_syn: 0.8
+              anom: 4.4
+              flags: []
+            09-30:
+              dp24_all: -0.9
+              dp24_syn: -0.8
+              anom: 4.4
+              flags: []
+            10-01:
+              dp24_all: -1.3
+              dp24_syn: -1.2
+              anom: 1.7
+              flags: []
+            10-02:
+              dp24_all: 0.0
+              dp24_syn: 0.4
+              anom: 2.7
+              flags: []
+            10-03:
+              dp24_all: -0.6
+              dp24_syn: -0.6
+              anom: 3.3
+              flags: []
+            10-04:
+              dp24_all: -1.5
+              dp24_syn: -1.4
+              anom: 2.5
+              flags: []
+            10-05:
+              dp24_all: -1.0
+              dp24_syn: -1.0
+              anom: 1.5
+              flags: []
+            10-06:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-07:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-08:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+        jma_seamless:
+          bias_vs_era5_hpa: -0.21
+          days:
+            09-29:
+              dp24_all: -0.2
+              dp24_syn: 0.6
+              anom: 4.2
+              flags: []
+            09-30:
+              dp24_all: -1.1
+              dp24_syn: -1.0
+              anom: 3.2
+              flags: []
+            10-01:
+              dp24_all: -0.8
+              dp24_syn: -0.8
+              anom: 1.4
+              flags: []
+            10-02:
+              dp24_all: 0.6
+              dp24_syn: 0.7
+              anom: 2.4
+              flags: []
+            10-03:
+              dp24_all: -0.6
+              dp24_syn: -0.5
+              anom: 2.5
+              flags: []
+            10-04:
+              dp24_all: -0.5
+              dp24_syn: -0.5
+              anom: 2.4
+              flags: []
+            10-05:
+              dp24_all: -0.3
+              dp24_syn: -0.3
+              anom: 2.2
+              flags: []
+            10-06:
+              dp24_all: -0.4
+              dp24_syn: -0.4
+              anom: 2.0
+              flags: []
+            10-07:
+              dp24_all: -0.1
+              dp24_syn: -0.1
+              anom: 2.2
+              flags: []
+            10-08:
+              dp24_all: 0.4
+              dp24_syn: 0.5
+              anom: 2.7
+              flags: []
+        gem_seamless:
+          bias_vs_era5_hpa: 0.05
+          days:
+            09-29:
+              dp24_all: 0.7
+              dp24_syn: 1.1
+              anom: 3.8
+              flags: []
+            09-30:
+              dp24_all: -1.4
+              dp24_syn: -0.6
+              anom: 3.6
+              flags: []
+            10-01:
+              dp24_all: -1.4
+              dp24_syn: -1.3
+              anom: 0.8
+              flags: []
+            10-02:
+              dp24_all: -0.7
+              dp24_syn: -0.6
+              anom: 1.2
+              flags: []
+            10-03:
+              dp24_all: -0.7
+              dp24_syn: -0.3
+              anom: 1.1
+              flags: []
+            10-04:
+              dp24_all: -1.5
+              dp24_syn: -0.8
+              anom: 0.5
+              flags: []
+            10-05:
+              dp24_all: -1.5
+              dp24_syn: -1.2
+              anom: -0.2
+              flags: []
+            10-06:
+              dp24_all: -0.6
+              dp24_syn: -0.6
+              anom: 0.0
+              flags: []
+            10-07:
+              dp24_all: 0.3
+              dp24_syn: 0.8
+              anom: 1.8
+              flags: []
+            10-08:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+        meteofrance_seamless:
+          bias_vs_era5_hpa: -0.1
+          days:
+            09-29:
+              dp24_all: 0.4
+              dp24_syn: 1.4
+              anom: 3.8
+              flags: []
+            09-30:
+              dp24_all: -1.1
+              dp24_syn: -0.9
+              anom: 3.5
+              flags: []
+            10-01:
+              dp24_all: -1.0
+              dp24_syn: -1.0
+              anom: 1.3
+              flags: []
+            10-02:
+              dp24_all: -0.1
+              dp24_syn: 0.0
+              anom: 1.9
+              flags: []
+            10-03:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-04:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-05:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-06:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-07:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-08:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+        ukmo_seamless:
+          bias_vs_era5_hpa: -0.04
+          days:
+            09-29:
+              dp24_all: 0.2
+              dp24_syn: 0.8
+              anom: 3.9
+              flags: []
+            09-30:
+              dp24_all: -1.1
+              dp24_syn: -0.8
+              anom: 3.7
+              flags: []
+            10-01:
+              dp24_all: -1.4
+              dp24_syn: -1.1
+              anom: 1.3
+              flags: []
+            10-02:
+              dp24_all: -0.7
+              dp24_syn: -0.7
+              anom: 1.0
+              flags: []
+            10-03:
+              dp24_all: -1.8
+              dp24_syn: -0.9
+              anom: 1.1
+              flags: []
+            10-04:
+              dp24_all: -0.5
+              dp24_syn: 0.1
+              anom: 2.0
+              flags: []
+            10-05:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-06:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-07:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-08:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+        knmi_seamless:
+          bias_vs_era5_hpa: 0.01
+          days:
+            09-29:
+              dp24_all: 0.4
+              dp24_syn: 0.6
+              anom: 4.2
+              flags: []
+            09-30:
+              dp24_all: -0.9
+              dp24_syn: -0.7
+              anom: 3.5
+              flags: []
+            10-01:
+              dp24_all: -1.0
+              dp24_syn: -0.7
+              anom: 1.9
+              flags: []
+            10-02:
+              dp24_all: 0.3
+              dp24_syn: 0.6
+              anom: 2.7
+              flags: []
+            10-03:
+              dp24_all: -2.9
+              dp24_syn: -0.5
+              anom: 2.9
+              flags: [DP24_ALLHOUR_ONLY]
+            10-04:
+              dp24_all: -3.2
+              dp24_syn: -1.7
+              anom: 1.3
+              flags: [DP24_ALLHOUR_ONLY]
+            10-05:
+              dp24_all: -1.8
+              dp24_syn: -1.8
+              anom: 0.2
+              flags: []
+            10-06:
+              dp24_all: -0.7
+              dp24_syn: -0.6
+              anom: 0.3
+              flags: []
+            10-07:
+              dp24_all: -0.3
+              dp24_syn: -0.3
+              anom: 0.1
+              flags: []
+            10-08:
+              dp24_all: -1.3
+              dp24_syn: -1.1
+              anom: -0.8
+              flags: []
+        cma_grapes_global:
+          bias_vs_era5_hpa: -0.6
+          days:
+            09-29:
+              dp24_all: 0.9
+              dp24_syn: 1.1
+              anom: 4.1
+              flags: []
+            09-30:
+              dp24_all: -1.7
+              dp24_syn: -1.3
+              anom: 3.2
+              flags: []
+            10-01:
+              dp24_all: -1.4
+              dp24_syn: -1.4
+              anom: 0.8
+              flags: []
+            10-02:
+              dp24_all: -1.0
+              dp24_syn: -0.4
+              anom: 1.4
+              flags: []
+            10-03:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-04:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-05:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-06:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-07:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-08:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+    bangkok_east:
+      grid: [13.75, 100.75]
+      models:
+        ecmwf_ifs025:
+          bias_vs_era5_hpa: 0.02
+          days:
+            09-29:
+              dp24_all: 0.3
+              dp24_syn: 0.3
+              anom: 4.2
+              flags: []
+            09-30:
+              dp24_all: -0.9
+              dp24_syn: -0.7
+              anom: 3.5
+              flags: []
+            10-01:
+              dp24_all: -0.9
+              dp24_syn: -0.7
+              anom: 1.7
+              flags: []
+            10-02:
+              dp24_all: 0.6
+              dp24_syn: 0.6
+              anom: 2.5
+              flags: []
+            10-03:
+              dp24_all: -2.9
+              dp24_syn: -0.7
+              anom: 2.9
+              flags: [DP24_ALLHOUR_ONLY]
+            10-04:
+              dp24_all: -3.2
+              dp24_syn: -1.7
+              anom: 1.3
+              flags: [DP24_ALLHOUR_ONLY]
+            10-05:
+              dp24_all: -1.8
+              dp24_syn: -1.7
+              anom: 0.0
+              flags: []
+            10-06:
+              dp24_all: -0.7
+              dp24_syn: -0.7
+              anom: 0.1
+              flags: []
+            10-07:
+              dp24_all: -0.3
+              dp24_syn: -0.3
+              anom: -0.1
+              flags: []
+            10-08:
+              dp24_all: -1.3
+              dp24_syn: -1.3
+              anom: -0.9
+              flags: []
+        gfs_seamless:
+          bias_vs_era5_hpa: -0.46
+          days:
+            09-29:
+              dp24_all: 0.2
+              dp24_syn: 1.1
+              anom: 4.4
+              flags: []
+            09-30:
+              dp24_all: -1.6
+              dp24_syn: -1.1
+              anom: 4.3
+              flags: []
+            10-01:
+              dp24_all: -1.7
+              dp24_syn: -1.5
+              anom: 1.5
+              flags: []
+            10-02:
+              dp24_all: -0.3
+              dp24_syn: -0.2
+              anom: 1.3
+              flags: []
+            10-03:
+              dp24_all: -0.7
+              dp24_syn: -0.6
+              anom: 1.4
+              flags: []
+            10-04:
+              dp24_all: -1.1
+              dp24_syn: -1.1
+              anom: 0.9
+              flags: []
+            10-05:
+              dp24_all: -1.7
+              dp24_syn: -1.7
+              anom: 0.0
+              flags: []
+            10-06:
+              dp24_all: -0.6
+              dp24_syn: -0.6
+              anom: -0.2
+              flags: []
+            10-07:
+              dp24_all: 0.8
+              dp24_syn: 0.8
+              anom: 1.1
+              flags: []
+            10-08:
+              dp24_all: -0.6
+              dp24_syn: 0.5
+              anom: 2.3
+              flags: []
+        icon_seamless:
+          bias_vs_era5_hpa: -0.35
+          days:
+            09-29:
+              dp24_all: 0.4
+              dp24_syn: 0.8
+              anom: 4.4
+              flags: []
+            09-30:
+              dp24_all: -0.9
+              dp24_syn: -0.8
+              anom: 4.4
+              flags: []
+            10-01:
+              dp24_all: -1.3
+              dp24_syn: -1.2
+              anom: 1.7
+              flags: []
+            10-02:
+              dp24_all: 0.0
+              dp24_syn: 0.4
+              anom: 2.7
+              flags: []
+            10-03:
+              dp24_all: -0.6
+              dp24_syn: -0.6
+              anom: 3.3
+              flags: []
+            10-04:
+              dp24_all: -1.5
+              dp24_syn: -1.4
+              anom: 2.5
+              flags: []
+            10-05:
+              dp24_all: -1.0
+              dp24_syn: -1.0
+              anom: 1.5
+              flags: []
+            10-06:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-07:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-08:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+        jma_seamless:
+          bias_vs_era5_hpa: -0.21
+          days:
+            09-29:
+              dp24_all: -0.2
+              dp24_syn: 0.6
+              anom: 4.2
+              flags: []
+            09-30:
+              dp24_all: -1.1
+              dp24_syn: -1.0
+              anom: 3.2
+              flags: []
+            10-01:
+              dp24_all: -0.8
+              dp24_syn: -0.8
+              anom: 1.4
+              flags: []
+            10-02:
+              dp24_all: 0.6
+              dp24_syn: 0.7
+              anom: 2.4
+              flags: []
+            10-03:
+              dp24_all: -0.6
+              dp24_syn: -0.5
+              anom: 2.5
+              flags: []
+            10-04:
+              dp24_all: -0.5
+              dp24_syn: -0.5
+              anom: 2.4
+              flags: []
+            10-05:
+              dp24_all: -0.3
+              dp24_syn: -0.3
+              anom: 2.2
+              flags: []
+            10-06:
+              dp24_all: -0.4
+              dp24_syn: -0.4
+              anom: 2.0
+              flags: []
+            10-07:
+              dp24_all: -0.1
+              dp24_syn: -0.1
+              anom: 2.2
+              flags: []
+            10-08:
+              dp24_all: 0.4
+              dp24_syn: 0.5
+              anom: 2.7
+              flags: []
+        gem_seamless:
+          bias_vs_era5_hpa: 0.05
+          days:
+            09-29:
+              dp24_all: 0.7
+              dp24_syn: 1.1
+              anom: 3.8
+              flags: []
+            09-30:
+              dp24_all: -1.4
+              dp24_syn: -0.6
+              anom: 3.6
+              flags: []
+            10-01:
+              dp24_all: -1.4
+              dp24_syn: -1.3
+              anom: 0.8
+              flags: []
+            10-02:
+              dp24_all: -0.7
+              dp24_syn: -0.6
+              anom: 1.2
+              flags: []
+            10-03:
+              dp24_all: -0.7
+              dp24_syn: -0.3
+              anom: 1.1
+              flags: []
+            10-04:
+              dp24_all: -1.5
+              dp24_syn: -0.8
+              anom: 0.5
+              flags: []
+            10-05:
+              dp24_all: -1.5
+              dp24_syn: -1.2
+              anom: -0.2
+              flags: []
+            10-06:
+              dp24_all: -0.6
+              dp24_syn: -0.6
+              anom: 0.0
+              flags: []
+            10-07:
+              dp24_all: 0.3
+              dp24_syn: 0.8
+              anom: 1.8
+              flags: []
+            10-08:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+        meteofrance_seamless:
+          bias_vs_era5_hpa: -0.06
+          days:
+            09-29:
+              dp24_all: 0.3
+              dp24_syn: 1.2
+              anom: 3.9
+              flags: []
+            09-30:
+              dp24_all: -1.1
+              dp24_syn: -0.7
+              anom: 3.5
+              flags: []
+            10-01:
+              dp24_all: -1.1
+              dp24_syn: -1.1
+              anom: 1.3
+              flags: []
+            10-02:
+              dp24_all: 0.0
+              dp24_syn: 0.1
+              anom: 1.9
+              flags: []
+            10-03:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-04:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-05:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-06:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-07:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-08:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+        ukmo_seamless:
+          bias_vs_era5_hpa: -0.04
+          days:
+            09-29:
+              dp24_all: 0.2
+              dp24_syn: 0.8
+              anom: 3.9
+              flags: []
+            09-30:
+              dp24_all: -1.1
+              dp24_syn: -0.8
+              anom: 3.7
+              flags: []
+            10-01:
+              dp24_all: -1.4
+              dp24_syn: -1.1
+              anom: 1.3
+              flags: []
+            10-02:
+              dp24_all: -0.7
+              dp24_syn: -0.7
+              anom: 1.0
+              flags: []
+            10-03:
+              dp24_all: -1.8
+              dp24_syn: -0.9
+              anom: 1.1
+              flags: []
+            10-04:
+              dp24_all: -0.5
+              dp24_syn: 0.1
+              anom: 2.0
+              flags: []
+            10-05:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-06:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-07:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-08:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+        knmi_seamless:
+          bias_vs_era5_hpa: 0.0
+          days:
+            09-29:
+              dp24_all: 0.3
+              dp24_syn: 0.5
+              anom: 4.2
+              flags: []
+            09-30:
+              dp24_all: -1.0
+              dp24_syn: -0.7
+              anom: 3.5
+              flags: []
+            10-01:
+              dp24_all: -1.1
+              dp24_syn: -0.7
+              anom: 1.8
+              flags: []
+            10-02:
+              dp24_all: 0.2
+              dp24_syn: 0.6
+              anom: 2.7
+              flags: []
+            10-03:
+              dp24_all: -2.9
+              dp24_syn: -0.6
+              anom: 2.9
+              flags: [DP24_ALLHOUR_ONLY]
+            10-04:
+              dp24_all: -3.2
+              dp24_syn: -1.7
+              anom: 1.3
+              flags: [DP24_ALLHOUR_ONLY]
+            10-05:
+              dp24_all: -1.8
+              dp24_syn: -1.8
+              anom: 0.2
+              flags: []
+            10-06:
+              dp24_all: -0.7
+              dp24_syn: -0.7
+              anom: 0.3
+              flags: []
+            10-07:
+              dp24_all: -0.3
+              dp24_syn: -0.3
+              anom: 0.1
+              flags: []
+            10-08:
+              dp24_all: -1.3
+              dp24_syn: -1.1
+              anom: -0.8
+              flags: []
+        cma_grapes_global:
+          bias_vs_era5_hpa: -0.6
+          days:
+            09-29:
+              dp24_all: 0.9
+              dp24_syn: 1.1
+              anom: 4.1
+              flags: []
+            09-30:
+              dp24_all: -1.7
+              dp24_syn: -1.3
+              anom: 3.2
+              flags: []
+            10-01:
+              dp24_all: -1.4
+              dp24_syn: -1.4
+              anom: 0.8
+              flags: []
+            10-02:
+              dp24_all: -1.0
+              dp24_syn: -0.4
+              anom: 1.4
+              flags: []
+            10-03:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-04:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-05:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-06:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-07:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+            10-08:
+              dp24_all: null
+              dp24_syn: null
+              anom: null
+              flags: [NO_READOUT]
+requests_made:
+  count: 2
+  list:
+  - {n: 1, host: archive-api.open-meteo.com, what: 'ERA5 hourly pressure_msl+precipitation, 3 cells, 2005-01-01..2015-12-31', status: 200, bytes: 8966902}
+  - {n: 2, host: archive-api.open-meteo.com, what: 'ERA5 hourly pressure_msl+precipitation, 3 cells, 2016-01-01..2026-09-27', status: 200, bytes: 8757354}
+  archive: raw/backtest/pressure_2026-09-28/ (gitignored, verbatim responses + requests.log)

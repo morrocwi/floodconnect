@@ -48,6 +48,30 @@ def test_parse_thaiwater_rain_24h_converts_local_time_to_utc():
     assert r["mm_24h"] == 315.0
 
 
+def test_parse_thaiwater_rain_24h_stores_rain_1h_when_present():
+    # TODO #181 (2026-09-28): fixture has 2 kept records (rain_24h/coord present); both
+    # carry rain_1h (0.5 and 0) -- must be parsed as a distinct mm_1h field, never dropped
+    # or merged into mm_24h.
+    data = json.loads((FIXTURES / "thaiwater_rain_24h_sample.json").read_text(encoding="utf-8"))
+    rows = parsers.parse_thaiwater_rain_24h(data)
+    assert [r["mm_1h"] for r in rows] == [0.5, 0.0]
+
+
+def test_parse_thaiwater_rain_24h_missing_rain_1h_is_none_not_fabricated():
+    # A record with rain_24h + coord present but no rain_1h key at all (real ~12% case,
+    # see registry.yaml TODO #181 note) must yield mm_1h=None, never 0 or a copy of mm_24h.
+    data = {"data": [{
+        "rain_24h": 12.0,
+        "rainfall_datetime": "2026-09-26 10:00",
+        "station": {"id": 999, "tele_station_name": {"th": "test"},
+                    "tele_station_lat": 13.7, "tele_station_long": 100.6},
+    }]}
+    rows = parsers.parse_thaiwater_rain_24h(data)
+    assert len(rows) == 1
+    assert rows[0]["mm_1h"] is None
+    assert rows[0]["mm_24h"] == 12.0
+
+
 def test_parse_dds_flood_report_html_still_flooded_row_is_none_not_zero():
     html = (FIXTURES / "dds_flood_report_sample.html").read_text(encoding="utf-8")
     rows = parsers.parse_dds_flood_report_html(html)

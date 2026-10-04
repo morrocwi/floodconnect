@@ -1,0 +1,5 @@
+Month,GEOCODE,TAMBON_T,TAMBON_E,AMPHOE_CODE,AMPHOE_T,AMPHOE_E,PROV_CODE,PROV_T,PROV_E,COUNT 17 YEAR,CRITERIA,RISK
+1,120501,ต.ไทรน้อย,Sai Noi,1205,อ.ไทรน้อย,Sai Noi District,12,จ.นนทบุรี,Nonthaburi,1,1-3 ครั้งในรอบ 17 ปี,เสี่ยงต่ำ
+9,100601,แขวงคลองจั่น,Khlong Chan,1006,เขตบางกะปิ,Bang Kapi District,10,กรุงเทพมหานคร,Bangkok,1,1-3 ครั้งในรอบ 17 ปี,เสี่ยงต่ำ
+9,100608,แขวงหัวหมาก,Hua Mak,1006,เขตบางกะปิ,Bang Kapi District,10,กรุงเทพมหานคร,Bangkok,1,1-3 ครั้งในรอบ 17 ปี,เสี่ยงต่ำ
+9,104401,แขวงสะพานสูง,Saphan Sung,1044,เขตสะพานสูง,Saphan Sung District,10,กรุงเทพมหานคร,Bangkok,2,1-3 ครั้งในรอบ 17 ปี,เสี่ยงต่ำ

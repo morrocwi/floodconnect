@@ -1,0 +1,84 @@
+# typology/nodes/tool_water_push_boats_2026-09-28.yaml -- "เรือผลักดันน้ำ" (water-pushing
+# boats) as a typology tool/resource. Sources (all RELAYED, none primary): The Bangkok
+# Insight 27 ก.ย. 2569 (https://www.thebangkokinsight.com/news/politics-general/general/
+# 1701479/) + MGR Online 27 ก.ย. 2569 (https://mgronline.com/business/detail/9690000094733)
+# -- 2569 Saen Saep deployment near the Rama 9 tunnel intake; bangkokbiznews
+# (https://www.bangkokbiznews.com/news/1207987) + mgronline (https://mgronline.com/
+# onlinesection/detail/9600000108261) -- established King Rama IX / RID technique, Navy
+# deployments; mgronline 2554 (https://mgronline.com/daily/detail/9540000135295) --
+# effectiveness disputed/unmeasured. Full narrative + every number (boat count, hp, rpm,
+# cm drop, Navy counts/flows) lives ONLY in docs/knowledge/card_tool_water_push_boats.md
+# -- founder rule "ไม่ต้องเอาตัวเลข สกัดแค่เครือข่าย node" applies here exactly like the
+# Environman extension (typology/nodes/environman_extension_2026-09-28.yaml).
+#
+# No private individual's name anywhere in this file (operator referred to by role only:
+# "ผู้ประกอบการเรือโดยสารคลองแสนแสบ", company name also omitted).
+schema_version: 1
+doc_kind: typology_node_registry
+status_th: >
+  node เครื่องมือ "เรือผลักดันน้ำ" -- เครื่องมือทั่วไป (generic tool) 2 ชนิด + ผู้ประกอบการ
+  (civil agency node) ไม่มีตัวเลขใด ๆ ในไฟล์นี้ (ตัวเลขอยู่ในการ์ดความรู้เท่านั้น).
+rows:
+  - id: RES.TOOL.WATER_PUSH_BOAT
+    kind: resource
+    layer: resource
+    label_th: "เรือผลักดันน้ำ (เครื่องมือทั่วไป -- ไม่ผูกกับเหตุการณ์ใดเหตุการณ์เดียว)"
+    resource_type: tool
+    tool_class: water_push_boat
+    infra_class: soft
+    infra_class_tag: INSTINCT
+    mode: boat
+    phase: normal
+    phase_tag: INSTINCT
+    established_technique: true
+    established_technique_origin_th: >
+      พระราชดำริรัชกาลที่ 9, พัฒนาโดยกรมชลประทาน -- ปีที่เริ่มขัดแย้งกันระหว่างแหล่ง (พ.ศ. 2528
+      vs 2538) OPEN, ดูการ์ดความรู้สำหรับรายละเอียด
+    purpose_th: "เร่งการไหลของน้ำเข้าสู่ประตู/จุดสูบ, พัดพาตะกอน, เร่งการระบายออกสู่ทะเล (RELAYED)"
+    effectiveness: OPEN
+    effectiveness_note_th: >
+      มีผู้เชี่ยวชาญโต้แย้งเรื่องจุดวัดผลและการใช้ในลำน้ำกว้าง; วิศวกรบางรายเห็นว่าช่วยได้ในคลองแคบ
+      -- ไม่มีการวัดผลอิสระของคลังนี้ -- ดู docs/knowledge/card_tool_water_push_boats.md §3
+    tag: RELAYED
+    source: >
+      docs/knowledge/card_tool_water_push_boats.md §2-§3 (bangkokbiznews
+      https://www.bangkokbiznews.com/news/1207987, mgronline
+      https://mgronline.com/onlinesection/detail/9600000108261, mgronline 2554
+      https://mgronline.com/daily/detail/9540000135295)
+
+  - id: RES.TOOL.AXIAL_WATER_PUSHER
+    kind: resource
+    layer: resource
+    label_th: "เครื่องผลักดันน้ำแบบ axial-flow ติดตั้งจุดตายตัว (fixed point, lift over banks)"
+    resource_type: tool
+    tool_class: axial_water_pusher
+    infra_class: grey
+    infra_class_tag: INSTINCT
+    mode: fixed_point
+    phase: normal
+    phase_tag: INSTINCT
+    manual_reference: "OPEN -- ไม่พบคู่มือทางการของกรมชลประทาน (RID) ที่อธิบายเครื่องมือนี้โดยตรง"
+    tag: OPEN
+    source: "docs/knowledge/card_tool_water_push_boats.md §4 -- ค้นแล้วไม่พบคู่มือ RID ตรง"
+    note_th: >
+      เครื่องมือคนละประเภทกับเรือผลักดันน้ำ (ไม่เคลื่อนที่, ไม่ใช้เครื่องยนต์เรือ) -- ตั้งใจไม่ใส่
+      edge ใด ๆ (orphan) เพราะไม่มีเหตุการณ์/หน่วยงาน/สถานที่ใดในคลังนี้ที่ยืนยันการใช้งานจริง;
+      part_of ใช้ไม่ได้ (ALLOWED_PAIRS จำกัดแค่ agency->ministry/ministry->government) จึงเหลือ
+      แค่การจัดหมวดผ่าน tool_class attribute นี้เอง ตามที่ founder อนุญาตไว้ ("else leave as
+      orphan listed OPEN").
+
+  - id: AG_OPERATOR_SAENSAEB_BOAT
+    kind: agency
+    layer: civil
+    label_th: "ผู้ประกอบการเรือโดยสารคลองแสนแสบ (ผู้นำเรือมาช่วยผลักดันน้ำ, ไม่ระบุชื่อบุคคล/บริษัท)"
+    agency_class: commercial_operator
+    tag: RELAYED
+    source: >
+      The Bangkok Insight 27 ก.ย. 2569
+      (https://www.thebangkokinsight.com/news/politics-general/general/1701479/) + MGR
+      Online 27 ก.ย. 2569 (https://mgronline.com/business/detail/9690000094733)
+    note_th: >
+      id นี้ใช้แทน founder's ask ตั้งต้น `CIV.OPERATOR.SAENSAEB_BOAT` -- คลังนี้ไม่มี node kind/id
+      prefix CIV.* อยู่จริงที่ไหนเลย (ตรวจแล้ว) มีแต่ kind=agency/layer=civil/agency_class ตาม
+      แบบ AG_ESTATE/AG_FB_ADMIN/AG_JS100 -- ดูเหตุผลเต็มใน docs/knowledge/
+      card_tool_water_push_boats.md §5

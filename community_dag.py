@@ -36,9 +36,28 @@ KIND_LAYER = {
     "household": 0,
     "buddy_cell": 1,
     "zone": 2,
+    # `support` (added 2026-09-28, extension not a fork): a zone-reachable service/
+    # logistics point (kitchen, medical_post, charging, supply_depot, donation_point,
+    # rescue_staging -- see SUPPORT_SERVICES). It shares layer 3 with `internal_safe`
+    # rather than claiming a new layer number -- inserting a genuinely new layer would
+    # require renumbering every existing declared node's `layer` field in site/inputs/
+    # community/self_help_dag.yaml (a fork of the imported protocol's numbering, not an
+    # extension of it). Sharing a layer number is safe here: the forward-only DAG rule
+    # (destination layer strictly greater than source layer) is checked PER EDGE, not
+    # per distinct-kind-per-layer, so two different kinds at the same layer number is
+    # not a schema violation -- a zone(2) can reach a support(3) exactly like it reaches
+    # an internal_safe(3), and a support(3) can itself route onward to egress(4)/
+    # external_safe(5) the same way an internal_safe node can.
+    "support": 3,
     "internal_safe": 3,
     "egress": 4,
     "external_safe": 5,
+    # Imported from origin/main 17b9c3a (superset merge, 2026-10-02):
+    # `supply_point` kept layer-5 for backward compatibility with any already-declared
+    # node of that kind; `service_node` is capability-based (see `node_capabilities()`
+    # below) rather than kind-based, so it has no single fixed layer -- its declared
+    # `layer` is checked against SERVICE_NODE_LAYERS instead of a fixed KIND_LAYER value
+    # (see validate_document() below).
     "supply_point": 5,  # backward-compatible legacy service node
     "service_node": None,  # capability-based service node; declared layer must be 2..5
 }
@@ -48,6 +67,76 @@ SERVICE_NODE_LAYERS = {2, 3, 4, 5}
 NODE_STATUS = {"SAFE", "DEGRADED", "UNSAFE", "UNKNOWN"}
 EDGE_STATUS = {"OPEN", "ASSISTED", "BLOCKED", "UNKNOWN"}
 EDGE_SAFETY = {"CLEAR", "CAUTION", "BLOCKED", "UNKNOWN"}
+
+# Edge mode vocabulary (added 2026-09-28: `boat`, `high_clearance` -- the imported
+# protocol only ever declared `walk`/`vehicle` in its own data, with no closed vocabulary
+# enforced in code at all; this is the first time `modes` is actually validated).
+# `air_drone` (added 2026-09-28, docs/knowledge/card_tool_rescue_drones_romklao_2569.md,
+# เคหะร่มเกล้า case -- boats blocked by obstacles/fences, drones reached what boats could
+# not) -- SUPPLIES/SURVEY MODE ONLY. A drone here means aerial delivery (sling-dropped
+# supplies) or ISR survey (imagery/radar), never a mode for MOVING PEOPLE -- routing a
+# person via `air_drone` is out of scope for this repo's find_safe_route() and must never
+# be added; this mode exists only for the RESOURCE layer (typology `resource`/`support`
+# nodes), not for a household->...->external_safe evacuation edge.
+EDGE_MODES = {"walk", "vehicle", "boat", "high_clearance", "air_drone"}
+
+# `support` node service vocabulary (added 2026-09-28) -- distinct from the general
+# `services` vocabulary docs/COMMUNITY_SELF_HELP_DAG.md §4 already documents for spatial
+# nodes generally (water/power/toilet/first_aid/charging/comms); these are the specific
+# service TYPES a `support` node exists to provide.
+SUPPORT_SERVICES = {"kitchen", "medical_post", "charging", "supply_depot",
+                     "donation_point", "rescue_staging"}
+
+# ---------------------------------------------------------------------------
+# Dual-state / re-escalation / mode-degradation / safe-node-continuity vocabulary
+# (added 2026-09-28, docs/knowledge/card_dual_state_reescalation_hatyai_2026-09-28.md --
+# reasoning over experiments/2025-11-hat-yai-real-data-redteam.md, already in this repo).
+# All OPTIONAL fields, all closed vocabularies, no new equation/formula anywhere below --
+# a value not in the set is a schema error exactly like NODE_STATUS/EDGE_STATUS already
+# are; a field simply absent is not an error (UNKNOWN operational state stays allowed).
+# ---------------------------------------------------------------------------
+
+# Dual-state rule (Hat Yai finding B, 20 พ.ย. 2568: municipal statement No.2 said
+# GREEN/normal locally while ONWR/TMD regional warnings were already active) -- two
+# INDEPENDENT fields a node may declare. Neither is derived from the other anywhere in
+# this module -- a GREEN `current_local_state` must never silently clear an ACTIVE
+# `forward_hazard` (see validate_document() below, which only checks vocabulary
+# membership, never cross-derives one from the other).
+CURRENT_LOCAL_STATE = {"GREEN", "YELLOW", "RED", "UNKNOWN"}
+FORWARD_HAZARD_STATE = {"NONE", "ACTIVE", "UNKNOWN"}
+
+# Edge mode-degradation ladder (Hat Yai finding G: by 25 พ.ย. authorities were using
+# high-clearance trucks and boats as normal vehicle access failed). Distinct from
+# `modes` (which travel modes an edge accepts at all) -- `mode_degradation` is a single
+# CURRENT-STATE label along a fixed, ordered ladder. find_safe_route() does not read
+# this field (routing still gates on status/safety/modes, unchanged) -- this is a
+# readout/display ladder, wiring it into routing is a separate, later step.
+MODE_DEGRADATION_LADDER = ("normal", "high_clearance_only", "boat_only", "blocked")
+MODE_DEGRADATION_STATES = set(MODE_DEGRADATION_LADDER) | {"UNKNOWN"}
+
+# Safe-node continuity fields (Hat Yai finding F: Hospital Hat Yai had an urgent
+# electricity problem despite being a hospital -- a node's KIND never proves it is a
+# safe node). `internal_safe`/`external_safe`/`support` nodes SHOULD declare all 7 as
+# keys; the value "UNKNOWN" is a valid, honest declaration (presence check, not a
+# readiness check) -- report_safe_node_continuity_gaps() below reports which nodes are
+# missing which keys entirely, a non-error report matching this repo's existing OPEN-gap
+# discipline (tools/typology/validate.py's capability_gaps/warning_quality_gaps).
+SAFE_NODE_CONTINUITY_FIELDS = ("access_state", "power_state", "backup_power_state",
+                                "water_state", "comms_state", "medical_capacity_state",
+                                "occupancy_state")
+SAFE_NODE_KINDS_REQUIRING_CONTINUITY = {"internal_safe", "external_safe", "support"}
+
+# Community-role vocabulary (added 2026-09-28, docs/knowledge/
+# card_community_selforg_pattern_2569.md -- แฟลตคลองจั่น/ร่มเกล้า self-organisation, RELAYED
+# FB post by a university academic). docs/COMMUNITY_SELF_HELP_DAG.md §3.3 already
+# documents coordinator/welfare/route_checker/resource_keeper/comms in prose; this is
+# that same list as a closed, testable vocabulary, plus the one role that case adds:
+# `procurement_runner` -- goes out for supplies only when a route is ASSISTED/OPEN
+# (never UNKNOWN), a specialisation of route_checker's access discipline applied to
+# outbound errands. `roles_active` is an OPTIONAL node attribute (a zone/support node
+# may declare which roles are currently staffed); genders are never recorded, roles only.
+COMMUNITY_ROLES = {"coordinator", "welfare", "route_checker", "resource_keeper", "comms",
+                    "procurement_runner"}
 
 
 @dataclass(frozen=True)
@@ -112,6 +201,10 @@ def validate_document(doc: dict[str, Any]) -> dict[str, Any]:
         if kind not in KIND_LAYER:
             errors.append(f"{node_id}: unknown kind {kind!r}")
             continue
+        # service_node is capability-based (origin/main 17b9c3a, superset merge):
+        # its layer is declared per-node, not fixed by kind -- only checked against the
+        # SERVICE_NODE_LAYERS range. Every other kind keeps the original fixed-layer
+        # check unchanged.
         if kind == "service_node":
             if layer not in SERVICE_NODE_LAYERS:
                 errors.append(
@@ -130,6 +223,23 @@ def validate_document(doc: dict[str, Any]) -> dict[str, Any]:
             warnings.append(f"{node_id}: not fresh; it will not be used as a route target/transit")
         if kind == "external_safe" and not node.get("verified_safe", False):
             warnings.append(f"{node_id}: external safe node is not field-verified")
+
+        # Dual-state fields (OPTIONAL, closed vocabulary when present -- see
+        # CURRENT_LOCAL_STATE/FORWARD_HAZARD_STATE above). Checked independently of each
+        # other by construction -- neither field's presence/value affects the other.
+        cls = node.get("current_local_state")
+        if cls is not None and cls not in CURRENT_LOCAL_STATE:
+            errors.append(f"{node_id}: invalid current_local_state {cls!r}")
+        fh = node.get("forward_hazard")
+        if fh is not None and fh not in FORWARD_HAZARD_STATE:
+            errors.append(f"{node_id}: invalid forward_hazard {fh!r}")
+
+        roles_active = node.get("roles_active")
+        if roles_active is not None:
+            bad_roles = set(roles_active) - COMMUNITY_ROLES
+            if bad_roles:
+                errors.append(f"{node_id}: role(s) outside the closed vocabulary "
+                               f"{sorted(COMMUNITY_ROLES)}: {sorted(bad_roles)}")
 
     seen_edge_ids: set[str] = set()
     for i, edge in enumerate(edges):
@@ -157,10 +267,22 @@ def validate_document(doc: dict[str, Any]) -> dict[str, Any]:
             errors.append(f"{edge_id}: invalid edge status {edge.get('status')!r}")
         if edge.get("safety", "UNKNOWN") not in EDGE_SAFETY:
             errors.append(f"{edge_id}: invalid edge safety {edge.get('safety')!r}")
+        bad_modes = set(edge.get("modes") or []) - EDGE_MODES
+        if bad_modes:
+            errors.append(f"{edge_id}: mode(s) outside the closed vocabulary "
+                           f"{sorted(EDGE_MODES)}: {sorted(bad_modes)}")
         if edge.get("fresh") is not True:
             warnings.append(f"{edge_id}: not fresh; it will not be routed")
         if edge.get("field_verified") is not True:
             warnings.append(f"{edge_id}: not field-verified; it will not be routed")
+
+        # Mode-degradation ladder (OPTIONAL, closed vocabulary when present -- see
+        # MODE_DEGRADATION_LADDER above). UNKNOWN is accepted here but never treated as
+        # passable by find_safe_route() (which does not read this field at all yet).
+        deg = edge.get("mode_degradation")
+        if deg is not None and deg not in MODE_DEGRADATION_STATES:
+            errors.append(f"{edge_id}: invalid mode_degradation {deg!r} "
+                           f"(closed ladder: {MODE_DEGRADATION_LADDER})")
 
     topo, cycle_error = topological_order(nodes, edges)
     if cycle_error:
@@ -172,6 +294,24 @@ def validate_document(doc: dict[str, Any]) -> dict[str, Any]:
         "warnings": warnings,
         "topological_order": topo,
     }
+
+
+def report_safe_node_continuity_gaps(doc: dict[str, Any]) -> dict[str, list[str]]:
+    """Non-error report (Hat Yai finding F, docs/knowledge/card_dual_state_reescalation_
+    hatyai_2026-09-28.md): for every internal_safe/external_safe/support node, which of
+    the 7 SAFE_NODE_CONTINUITY_FIELDS are entirely ABSENT (never mind their value --
+    "UNKNOWN" is an honest present value, not a gap). Mirrors tools/typology/validate.py's
+    report_capability_gaps/report_warning_quality_gaps pattern -- surfaces the gap, never
+    fails the build over it."""
+    gaps: dict[str, list[str]] = {}
+    nodes = _nodes(doc)
+    for node_id, node in nodes.items():
+        if node.get("kind") not in SAFE_NODE_KINDS_REQUIRING_CONTINUITY:
+            continue
+        missing = [f for f in SAFE_NODE_CONTINUITY_FIELDS if f not in node]
+        if missing:
+            gaps[node_id] = missing
+    return gaps
 
 
 def topological_order(
@@ -220,6 +360,7 @@ def _free_capacity(node: dict[str, Any]) -> int | None:
 def node_capabilities(node: dict[str, Any]) -> set[str]:
     """Return declared functional capabilities independent of topology kind.
 
+    Imported from origin/main 17b9c3a (superset merge, 2026-10-02).
     `services` remains supported for backward compatibility; new nodes should prefer
     `capabilities`. A node may expose several capabilities at once.
     """
@@ -349,6 +490,113 @@ def _extend_state(
         except (TypeError, ValueError):
             out["unknown_distance"] += 1
     return out
+
+
+# Explicit "no route" reason string (added 2026-09-28, docs/knowledge/
+# card_dual_state_reescalation_hatyai_2026-09-28.md item 6 -- founder ask: confirm
+# find_safe_route() returns an explicit no-route result rather than inventing a path).
+# The behavior already existed (see the return below, unchanged); this constant just
+# names it so callers/tests can check `result.reason == REASON_NO_FEASIBLE_SAFE_ROUTE`
+# instead of matching the string by hand.
+REASON_NO_FEASIBLE_SAFE_ROUTE = (
+    "no feasible field-verified route to a fresh verified external refuge "
+    "with sufficient capacity/services"
+)
+
+
+def find_safe_route(
+    doc: dict[str, Any],
+    start_node: str,
+    *,
+    group_size: int = 1,
+    mode: str = "walk",
+    needs: Iterable[str] = (),
+) -> RouteResult:
+    """Find the best feasible path from start_node to any verified external safe node.
+
+    Unknown, stale, blocked, unverified or capacity-infeasible segments are excluded.
+    The start node is allowed to be UNKNOWN because it represents where the person is
+    already located; every destination/transit node after it must pass operational checks.
+    """
+    if group_size < 1:
+        return RouteResult(False, reason="group_size must be >= 1")
+
+    check = validate_document(doc)
+    if not check["valid"]:
+        return RouteResult(False, reason="invalid DAG: " + "; ".join(check["errors"]))
+
+    nodes = _nodes(doc)
+    edges = _edges(doc)
+    if start_node not in nodes:
+        return RouteResult(False, reason=f"unknown start node: {start_node}")
+
+    needs_set = set(needs)
+    outgoing: dict[str, list[dict[str, Any]]] = {n: [] for n in nodes}
+    for edge in edges:
+        if edge.get("from") in outgoing:
+            outgoing[edge["from"]].append(edge)
+
+    initial = {
+        "assisted_edges": 0,
+        "degraded_nodes": 0,
+        "caution_edges": 0,
+        "unknown_capacity": 0,
+        "bottleneck_slack": None,
+        "unknown_distance": 0,
+        "distance_m": 0.0,
+        "hops": 0,
+    }
+
+    best_state: dict[str, dict[str, Any]] = {start_node: initial}
+    best_path: dict[str, tuple[str, ...]] = {start_node: (start_node,)}
+
+    for u in check["topological_order"]:
+        if u not in best_state:
+            continue
+        for edge in outgoing[u]:
+            v = edge["to"]
+            dest = nodes[v]
+            if not _edge_ok(edge, group_size, mode):
+                continue
+            if not _transit_node_ok(dest, group_size):
+                continue
+            cand_state = _extend_state(best_state[u], edge, dest, group_size)
+            cand_path = best_path[u] + (v,)
+            if v not in best_state or _rank_key(cand_state) < _rank_key(best_state[v]):
+                best_state[v] = cand_state
+                best_path[v] = cand_path
+
+    candidates: list[tuple[tuple[Any, ...], str]] = []
+    for node_id, node in nodes.items():
+        if node_id not in best_state:
+            continue
+        if _target_ok(node, group_size, needs_set):
+            candidates.append((_rank_key(best_state[node_id]), node_id))
+
+    if not candidates:
+        return RouteResult(False, reason=REASON_NO_FEASIBLE_SAFE_ROUTE)
+
+    score, target = min(candidates, key=lambda x: (x[0], x[1]))
+    return RouteResult(
+        True,
+        path=best_path[target],
+        target=target,
+        score=score,
+        reason="constraint-feasible route; ordered lexicographically, not by risk score",
+    )
+
+
+# --------------------------------------------------------------------------------------
+# Imported from origin/main 17b9c3a (superset merge, 2026-10-02): two
+# movement-validation helpers distinct from find_safe_route(). Neither overrides or
+# duplicates find_safe_route() -- find_safe_route() stays the single canonical "is there
+# a safe route to an external_safe node" search (per the 2026-10-02 merge design's H6 fix: the
+# MCP server's route tool must call this one function, never re-implement its own
+# walk). These two are for different, narrower questions:
+#   validate_declared_edge_path -- check one SPECIFIC caller-supplied edge sequence
+#   find_feasible_route_to_target -- search for a feasible route to a named node that
+#       need not be kind=external_safe (e.g. a resupply/service journey)
+# --------------------------------------------------------------------------------------
 
 
 def validate_declared_edge_path(
@@ -495,92 +743,95 @@ def find_feasible_route_to_target(
     )
 
 
-def find_safe_route(
+# --------------------------------------------------------------------------------------
+# Access-first priority rule (added 2026-09-28, founder: "เอ อาจต้องเริ่มจากการทำให้ระบบ
+# การเดินทางเชื่อมถึงก่อน เช่นเรือ หรือรถยกสูง" -- for a mobility-limited zone, a boat/
+# high-clearance-truck link toward the outside world is prerequisite, not one option among
+# equals). Structural rule, NO equation, NO weighted score -- a pure ordering function over
+# the same hard-constraint checks find_safe_route() already uses (field_verified, fresh,
+# status, safety, mode) -- UNKNOWN is never treated as passable, matching the module's
+# existing routing discipline verbatim (see module docstring "Routing discipline").
+# --------------------------------------------------------------------------------------
+
+PRIORITY_RESTORE_ACCESS = "RESTORE_ACCESS"
+PRIORITY_SUPPORT = "SUPPORT"
+PRIORITY_EVACUATE = "EVACUATE"
+
+
+def zone_has_verified_access(
     doc: dict[str, Any],
-    start_node: str,
-    *,
-    group_size: int = 1,
-    mode: str = "walk",
-    needs: Iterable[str] = (),
-) -> RouteResult:
-    """Find the best feasible path from start_node to any verified external safe node.
-
-    Unknown, stale, blocked, unverified or capacity-infeasible segments are excluded.
-    The start node is allowed to be UNKNOWN because it represents where the person is
-    already located; every destination/transit node after it must pass operational checks.
-    """
-    if group_size < 1:
-        return RouteResult(False, reason="group_size must be >= 1")
-
-    check = validate_document(doc)
-    if not check["valid"]:
-        return RouteResult(False, reason="invalid DAG: " + "; ".join(check["errors"]))
-
+    zone_id: str,
+    required_modes: Iterable[str],
+) -> bool:
+    """True iff `zone_id` can reach some node at layer >= egress (4) through a chain of
+    edges that are ALL field_verified, fresh, status in {OPEN, ASSISTED}, safety in
+    {CLEAR, CAUTION}, and whose declared `modes` intersects `required_modes` -- through
+    transit nodes whose own status is in {SAFE, DEGRADED} and fresh=True. UNKNOWN status
+    (node or edge) is never treated as passable -- same discipline as `_edge_ok`/
+    `_transit_node_ok` above, deliberately re-checked here rather than reused as-is
+    because this function asks a different question (can we reach EGRESS at all, for ANY
+    of several modes) than `find_safe_route` (best single-mode path to a capacity-
+    sufficient external_safe target)."""
     nodes = _nodes(doc)
     edges = _edges(doc)
-    if start_node not in nodes:
-        return RouteResult(False, reason=f"unknown start node: {start_node}")
+    if zone_id not in nodes:
+        return False
+    required = set(required_modes) or {"walk"}
 
-    needs_set = set(needs)
-    outgoing: dict[str, list[dict[str, Any]]] = {n: [] for n in nodes}
+    outgoing: dict[str, list[dict[str, Any]]] = {}
     for edge in edges:
-        if edge.get("from") in outgoing:
-            outgoing[edge["from"]].append(edge)
+        outgoing.setdefault(edge.get("from"), []).append(edge)
 
-    initial = {
-        "assisted_edges": 0,
-        "degraded_nodes": 0,
-        "caution_edges": 0,
-        "unknown_capacity": 0,
-        "bottleneck_slack": None,
-        "unknown_distance": 0,
-        "distance_m": 0.0,
-        "hops": 0,
-    }
-
-    best_state: dict[str, dict[str, Any]] = {start_node: initial}
-    best_path: dict[str, tuple[str, ...]] = {start_node: (start_node,)}
-
-    for u in check["topological_order"]:
-        if u not in best_state:
+    seen: set[str] = set()
+    stack = [zone_id]
+    while stack:
+        u = stack.pop()
+        if u in seen:
             continue
-        for edge in outgoing[u]:
-            v = edge["to"]
-            dest = nodes[v]
-            if not _edge_ok(edge, group_size, mode):
+        seen.add(u)
+        node_u = nodes.get(u) or {}
+        if u != zone_id and isinstance(node_u.get("layer"), int) \
+                and node_u["layer"] >= KIND_LAYER["egress"]:
+            return True
+        for edge in outgoing.get(u, []):
+            if edge.get("field_verified") is not True:
                 continue
-            if not _transit_node_ok(dest, group_size):
+            if edge.get("fresh") is not True:
                 continue
-            cand_state = _extend_state(best_state[u], edge, dest, group_size)
-            cand_path = best_path[u] + (v,)
-            if v not in best_state or _rank_key(cand_state) < _rank_key(best_state[v]):
-                best_state[v] = cand_state
-                best_path[v] = cand_path
+            if edge.get("status") not in {"OPEN", "ASSISTED"}:
+                continue
+            if edge.get("safety") not in {"CLEAR", "CAUTION"}:
+                continue
+            if not (set(edge.get("modes") or []) & required):
+                continue
+            v = edge.get("to")
+            dest = nodes.get(v)
+            if dest is None:
+                continue
+            if dest.get("status") not in {"SAFE", "DEGRADED"}:  # excludes UNKNOWN/UNSAFE
+                continue
+            if dest.get("fresh") is not True:
+                continue
+            if v not in seen:
+                stack.append(v)
+    return False
 
-    candidates: list[tuple[tuple[Any, ...], str]] = []
-    for node_id, node in nodes.items():
-        if node_id not in best_state:
-            continue
-        if _target_ok(node, group_size, needs_set):
-            candidates.append((_rank_key(best_state[node_id]), node_id))
 
-    if not candidates:
-        return RouteResult(
-            False,
-            reason=(
-                "no feasible field-verified route to a fresh SAFE external node "
-                "with sufficient capacity/services"
-            ),
-        )
-
-    score, target = min(candidates, key=lambda x: (x[0], x[1]))
-    return RouteResult(
-        True,
-        path=best_path[target],
-        target=target,
-        score=score,
-        reason="constraint-feasible route; ordered lexicographically, not by risk score",
-    )
+def zone_priority_order(
+    doc: dict[str, Any],
+    zone_id: str,
+    required_modes: Iterable[str] = ("walk",),
+) -> list[str]:
+    """Ordered list of what a zone should do first. If NO verified edge chain reaches
+    egress/external_safe using a mode the zone's own demand requires (e.g. the zone
+    declares it needs `boat`/`high_clearance` because water is too deep for `walk`, and
+    no such-moded verified edge exists), the first priority is RESTORE_ACCESS (request
+    the missing mode via a named channel) -- BEFORE using/requesting SUPPORT nodes, which
+    comes before EVACUATE. When access already exists, RESTORE_ACCESS is not returned at
+    all (nothing to restore)."""
+    if zone_has_verified_access(doc, zone_id, required_modes):
+        return [PRIORITY_SUPPORT, PRIORITY_EVACUATE]
+    return [PRIORITY_RESTORE_ACCESS, PRIORITY_SUPPORT, PRIORITY_EVACUATE]
 
 
 if __name__ == "__main__":  # pragma: no cover

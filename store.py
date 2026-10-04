@@ -83,6 +83,68 @@ CREATE TABLE IF NOT EXISTS contradictions (
     observed_b_utc TEXT,
     note TEXT
 );
+
+-- Append-only per-run readout log (project decision 2026-09-27): site/build_data.py's
+-- per-build data.json is overwritten every run, which meant the burden ledger, canal-
+-- graph edge directions, pump counts, hero status word, rain/tide/forecast summary, BMA
+-- briefing fields and water-balance numbers were all lost after each build -- nothing to
+-- read a water-politics/overall-picture lens through later. This table gets ONE row per
+-- (run_at_utc, area, kind, key) -- re-running a build for the SAME data timestamp is a
+-- no-op (INSERT OR IGNORE on the identity index below), never a duplicate or an
+-- overwrite of an earlier run's row. `kind` in
+-- {'burden','edge','pump','status','rain','tide','balance','briefing'}; `key` is the
+-- structure id (e.g. ssb10), edge id, or a per-area label (e.g. sammakorn_pumps).
+CREATE TABLE IF NOT EXISTS readout_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_at_utc TEXT NOT NULL,
+    area TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    key TEXT NOT NULL,
+    state TEXT,
+    burdened_side TEXT,
+    value_a REAL,
+    value_b REAL,
+    diff_m REAL,
+    persistence INTEGER,
+    extra_json TEXT
+);
+
+-- Human-experience layer (founder ask 2026-09-27: "สกัดประสบการณ์มนุษย์เข้าไปในระบบต่างๆ ทั้งด้าน
+-- กรอบเลนส์การเมือง ปรัชญา เชิงโครงสร้าง ระบบ จริยธรรม") -- one row per anonymised, paraphrased
+-- account (social post/comment/interview/paste), never a verified fact. `id` is the card's own
+-- front-matter id (e.g. exp_2026-09-26_donmueang_mobility) and is the primary key -- a card
+-- edited and re-`add`ed replaces its own row (see insert_experience), it never piles up
+-- duplicates. `tag` is expected to always be the literal string 'RELAYED-EXPERIENCE' (enforced
+-- by the card schema in docs/knowledge/experience/README.md, not by a DB constraint here, so an
+-- old/foreign row shape does not hard-fail this table). `*_json` columns hold list/dict fields
+-- serialised with json.dumps; `path` is the source card file's path, for traceability back to
+-- the full body text (the DB row itself only holds the front-matter fields).
+CREATE TABLE IF NOT EXISTS experience_log (
+    id TEXT PRIMARY KEY,
+    date_event TEXT,
+    date_collected TEXT,
+    role TEXT,
+    place TEXT,
+    node_ids_json TEXT,
+    tag TEXT,
+    measurables_json TEXT,
+    politics TEXT,
+    philosophy TEXT,
+    structure TEXT,
+    system TEXT,
+    ethics TEXT,
+    dag_gaps_json TEXT,
+    ews_element TEXT,
+    sprc TEXT,
+    proposed_indicators_json TEXT,
+    future_signal TEXT,
+    path TEXT
+);
+"""
+
+_READOUT_LOG_INDEX_SQL = """
+CREATE UNIQUE INDEX IF NOT EXISTS ux_readout_log_identity
+    ON readout_log(run_at_utc, area, kind, "key")
 """
 
 # The identity indexes are created/repaired explicitly in `connect()` rather than inline
@@ -135,6 +197,7 @@ def connect(db_path: Path = DEFAULT_DB_PATH) -> sqlite3.Connection:
     conn.execute("DROP INDEX IF EXISTS ux_observations_identity")
     conn.execute(_OBSERVATIONS_INDEX_SQL)
     conn.execute(_METHOD_EVALUATION_INDEX_SQL)
+    conn.execute(_READOUT_LOG_INDEX_SQL)
     try:
         conn.execute(_CONTRADICTIONS_INDEX_SQL)
     except sqlite3.IntegrityError:
@@ -231,6 +294,48 @@ def insert_method_evaluation(conn: sqlite3.Connection, *, area, date, metric, va
         (area, date, metric, None if value is None else str(value), note),
     )
     conn.commit()
+
+
+def insert_readout_log(conn: sqlite3.Connection, *, run_at_utc, area, kind, key,
+                        state=None, burdened_side=None, value_a=None, value_b=None,
+                        diff_m=None, persistence=None, extra=None) -> bool:
+    """INSERT OR IGNORE on (run_at_utc, area, kind, key) -- append-only, same posture as
+    `insert_observation`. Returns True if a new row was inserted, False if this exact
+    (run, area, kind, key) was already logged (re-running a build for the same data
+    timestamp is a no-op, never a duplicate). `extra` is any JSON-serialisable dict,
+    stored as `extra_json` for fields that don't have their own column."""
+    extra_json = json.dumps(extra, ensure_ascii=False) if extra is not None else None
+    cur = conn.execute(
+        """INSERT OR IGNORE INTO readout_log
+               (run_at_utc, area, kind, "key", state, burdened_side, value_a, value_b,
+                diff_m, persistence, extra_json)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (run_at_utc, area, kind, key, state, burdened_side, value_a, value_b, diff_m,
+         persistence, extra_json),
+    )
+    conn.commit()
+    return cur.rowcount > 0
+
+
+def query_readout_log(conn: sqlite3.Connection, *, area=None, kind=None, key=None,
+                       since_utc=None, limit=5000) -> list:
+    sql = 'SELECT * FROM readout_log WHERE 1=1'
+    args = []
+    if area:
+        sql += " AND area = ?"
+        args.append(area)
+    if kind:
+        sql += " AND kind = ?"
+        args.append(kind)
+    if key:
+        sql += ' AND "key" = ?'
+        args.append(key)
+    if since_utc:
+        sql += " AND run_at_utc >= ?"
+        args.append(since_utc)
+    sql += " ORDER BY run_at_utc, area, kind, \"key\" LIMIT ?"
+    args.append(limit)
+    return [dict(r) for r in conn.execute(sql, args).fetchall()]
 
 
 def query_method_evaluation(conn: sqlite3.Connection, *, area=None, date=None) -> list:
@@ -346,3 +451,219 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# --- Assets registry (append-only addition) ---------------------------------------
+#
+# Physical flood-management asset registry (gauges, pump stations, gates, tunnels,
+# dams, culverts, ponds, control centres) with an official-source-provable coordinate
+# wherever one exists. Kept in its OWN schema block/functions, never touching the
+# tables/functions above, per this check's append-only constraint.
+#
+# `assets` -- one row per asset_id (our stable id "class:source:code"), upserted in
+# place (INSERT ... ON CONFLICT DO UPDATE) -- never deleted, never overwritten to a
+# worse tag; `last_verified` moves forward each successful (re-)harvest.
+# `assets_log` -- append-only per-verification history (one row per asset_id +
+# verified_at_utc), so an asset's coordinate/tag history over time is never lost even
+# though the `assets` row itself is a single current-state upsert.
+
+ASSETS_SCHEMA = """
+CREATE TABLE IF NOT EXISTS assets (
+    asset_id TEXT PRIMARY KEY,
+    class TEXT NOT NULL,
+    name_th TEXT,
+    source_code TEXT,
+    lat REAL,
+    lon REAL,
+    coord_source TEXT,
+    coord_source_type TEXT,
+    owner TEXT,
+    owner_source TEXT,
+    pumps_total INTEGER,
+    capacity_m3s REAL,
+    capacity_m3s_suspect_count REAL,
+    warning_level REAL,
+    critical_level REAL,
+    bank REAL,
+    first_seen TEXT NOT NULL,
+    last_verified TEXT NOT NULL,
+    tag TEXT NOT NULL,
+    notes TEXT
+);
+
+CREATE TABLE IF NOT EXISTS assets_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    asset_id TEXT NOT NULL,
+    verified_at_utc TEXT NOT NULL,
+    lat REAL,
+    lon REAL,
+    tag TEXT,
+    coord_source TEXT,
+    note TEXT
+);
+"""
+
+_ASSETS_LOG_INDEX_SQL = """
+CREATE UNIQUE INDEX IF NOT EXISTS ux_assets_log_identity
+    ON assets_log(asset_id, verified_at_utc)
+"""
+
+
+def ensure_assets_schema(conn: sqlite3.Connection) -> None:
+    """Idempotent: creates the `assets`/`assets_log` tables (and their identity index)
+    if they don't already exist. Safe to call on every run; never touches the tables
+    defined in SCHEMA above.
+
+    `CREATE TABLE IF NOT EXISTS` does not add a column to an already-existing table --
+    an `assets` table created before `capacity_m3s_suspect_count` existed (TODO #51,
+    2026-09-27: `capacity_m3s` was found to hold a raw PUMP COUNT rather than m3/s for
+    91 stations, per the bma_plan2569 plan cross-check) needs that column added in
+    place. Never touches or resets `capacity_m3s`/`capacity_m3s_suspect_count` values
+    already on record -- upsert_asset()'s own UPDATE list still does not mention
+    `capacity_m3s_suspect_count`, so a future harvest re-run can never silently wipe a
+    correction made here."""
+    conn.executescript(ASSETS_SCHEMA)
+    existing_cols = {r[1] for r in conn.execute("PRAGMA table_info(assets)").fetchall()}
+    if "capacity_m3s_suspect_count" not in existing_cols:
+        conn.execute("ALTER TABLE assets ADD COLUMN capacity_m3s_suspect_count REAL")
+    conn.execute(_ASSETS_LOG_INDEX_SQL)
+    conn.commit()
+
+
+def upsert_asset(conn: sqlite3.Connection, *, asset_id, klass, tag, name_th=None,
+                  source_code=None, lat=None, lon=None, coord_source=None,
+                  coord_source_type=None, owner=None, owner_source=None,
+                  pumps_total=None, capacity_m3s=None, warning_level=None,
+                  critical_level=None, bank=None, notes=None,
+                  verified_at_utc=None) -> bool:
+    """Insert a new asset row, or update the existing one in place by `asset_id` --
+    never deletes a row. `first_seen` is preserved across updates (set once, on first
+    insert). Also appends one row to `assets_log` for this verification instant
+    (INSERT OR IGNORE on (asset_id, verified_at_utc), so re-running a harvest within
+    the same instant/tick is a no-op there, not a duplicate).
+
+    Returns True if this asset_id is new (first time seen), False if it already
+    existed and this call just refreshed it.
+    """
+    verified_at_utc = verified_at_utc or _utcnow()
+    existing = conn.execute(
+        "SELECT first_seen FROM assets WHERE asset_id = ?", (asset_id,)).fetchone()
+    first_seen = existing["first_seen"] if existing else verified_at_utc
+    conn.execute(
+        """INSERT INTO assets
+           (asset_id, class, name_th, source_code, lat, lon, coord_source,
+            coord_source_type, owner, owner_source, pumps_total, capacity_m3s,
+            warning_level, critical_level, bank, first_seen, last_verified, tag, notes)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT(asset_id) DO UPDATE SET
+               class=excluded.class, name_th=excluded.name_th,
+               source_code=excluded.source_code, lat=excluded.lat, lon=excluded.lon,
+               coord_source=excluded.coord_source,
+               coord_source_type=excluded.coord_source_type, owner=excluded.owner,
+               owner_source=excluded.owner_source, pumps_total=excluded.pumps_total,
+               capacity_m3s=excluded.capacity_m3s, warning_level=excluded.warning_level,
+               critical_level=excluded.critical_level, bank=excluded.bank,
+               last_verified=excluded.last_verified, tag=excluded.tag,
+               notes=excluded.notes""",
+        (asset_id, klass, name_th, source_code, lat, lon, coord_source,
+         coord_source_type, owner, owner_source, pumps_total, capacity_m3s,
+         warning_level, critical_level, bank, first_seen, verified_at_utc, tag, notes),
+    )
+    conn.execute(
+        """INSERT OR IGNORE INTO assets_log
+           (asset_id, verified_at_utc, lat, lon, tag, coord_source, note)
+           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        (asset_id, verified_at_utc, lat, lon, tag, coord_source, notes),
+    )
+    conn.commit()
+    return existing is None
+
+
+def query_assets(conn: sqlite3.Connection, *, klass=None, tag=None, owner=None) -> list:
+    sql = "SELECT * FROM assets WHERE 1=1"
+    args = []
+    if klass is not None:
+        sql += " AND class = ?"
+        args.append(klass)
+    if tag is not None:
+        sql += " AND tag = ?"
+        args.append(tag)
+    if owner is not None:
+        sql += " AND owner = ?"
+        args.append(owner)
+    sql += " ORDER BY class, asset_id"
+    return [dict(r) for r in conn.execute(sql, args).fetchall()]
+
+
+def query_assets_log(conn: sqlite3.Connection, *, asset_id=None, limit=200) -> list:
+    sql = "SELECT * FROM assets_log WHERE 1=1"
+    args = []
+    if asset_id is not None:
+        sql += " AND asset_id = ?"
+        args.append(asset_id)
+    sql += " ORDER BY verified_at_utc DESC LIMIT ?"
+    args.append(limit)
+    return [dict(r) for r in conn.execute(sql, args).fetchall()]
+
+
+# ---------------------------------------------------------------------------------------
+# Human-experience layer (docs/knowledge/experience/) -- see the CREATE TABLE comment
+# above for the "why" of this table. `insert_experience`/`query_experience` are the only
+# writers/readers of `experience_log`; `experience_log.py` (root CLI) is the only caller.
+# ---------------------------------------------------------------------------------------
+
+def insert_experience(conn: sqlite3.Connection, *, id, date_event=None, date_collected=None,
+                       role=None, place=None, node_ids=None, tag="RELAYED-EXPERIENCE",
+                       measurables=None, politics=None, philosophy=None, structure=None,
+                       system=None, ethics=None, dag_gaps=None, ews_element=None, sprc=None,
+                       proposed_indicators=None, future_signal=None, path=None) -> None:
+    """INSERT OR REPLACE keyed on `id` (the card's own front-matter id) -- re-`add`ing the
+    same card (e.g. after an edit) replaces that one card's row in place; it never
+    accumulates duplicate rows for the same card, and never touches any other card's row.
+    List/dict fields are stored as JSON text via `*_json` columns."""
+    conn.execute(
+        """INSERT OR REPLACE INTO experience_log
+           (id, date_event, date_collected, role, place, node_ids_json, tag,
+            measurables_json, politics, philosophy, structure, system, ethics,
+            dag_gaps_json, ews_element, sprc, proposed_indicators_json, future_signal, path)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (id, date_event, date_collected, role, place,
+         json.dumps(node_ids if node_ids is not None else [], ensure_ascii=False),
+         tag,
+         json.dumps(measurables if measurables is not None else [], ensure_ascii=False),
+         politics, philosophy, structure, system, ethics,
+         json.dumps(dag_gaps if dag_gaps is not None else [], ensure_ascii=False),
+         None if ews_element is None else str(ews_element),
+         sprc,
+         json.dumps(proposed_indicators if proposed_indicators is not None else [],
+                     ensure_ascii=False),
+         future_signal, path),
+    )
+    conn.commit()
+
+
+def query_experience(conn: sqlite3.Connection, term: str = None, *, id=None,
+                      role=None, limit=500) -> list:
+    """`term` does a case-insensitive substring search across every text field (id, place,
+    role, the five lens fields, future_signal) -- this is the `find <term>` CLI verb.
+    Passing no filters at all returns every row (the `list` CLI verb)."""
+    sql = "SELECT * FROM experience_log WHERE 1=1"
+    args = []
+    if id is not None:
+        sql += " AND id = ?"
+        args.append(id)
+    if role is not None:
+        sql += " AND role = ?"
+        args.append(role)
+    if term:
+        sql += """ AND (
+            id LIKE ? OR place LIKE ? OR role LIKE ? OR politics LIKE ? OR
+            philosophy LIKE ? OR structure LIKE ? OR system LIKE ? OR ethics LIKE ? OR
+            future_signal LIKE ? OR measurables_json LIKE ? OR
+            proposed_indicators_json LIKE ?
+        )"""
+        needle = f"%{term}%"
+        args.extend([needle] * 11)
+    sql += " ORDER BY date_event, id LIMIT ?"
+    args.append(limit)
+    return [dict(r) for r in conn.execute(sql, args).fetchall()]

@@ -1,0 +1,127 @@
+# typology/nodes/sensors.yaml -- `sensor` node kind (proposal §1, optional/supplementary
+# -- separate from the water-typology's own `Node.readings` mechanism, which this
+# extension does NOT change; see proposal §0 "เจตนา sensor/observation แยกจาก node จริง").
+# id scheme: SENSOR.<same code as the water node it is installed on>.
+#
+# Founder-forwarded independent-review fix (2026-09-28, applied here): the proposal
+# document mixed "0/11" (tagged MEASURED) and "0/4" for Sammakorn's pump station count.
+# The repo itself already records this as an OPEN conflict --
+# docs/LAYER0_IN_OUT_CAPACITY.md §7 ("ปั๊มสัมมากร: โจทย์งานนี้อ้างถึง '0/11' แต่คลังนี้เองบันทึกไว้
+# เพียง 4 ตัว (ST.SPS.01-04, ทั้งหมด 'ขัดข้อง') -- ความต่างนี้ยังเปิดอยู่") -- 4 STATION nodes
+# (ST.SPS.01-04) all report status "ขัดข้อง" (fault); the MACHINE total (11, summed across
+# the 4 stations' individual pump counts, per BMA PumpHistory's own per-station
+# `pumps_on`/`pumps_total` fields read live in site/build_data.py) is a SEPARATE count
+# from the station count. Never write a bare "0/11" here or anywhere downstream -- always
+# "สถานี 4/4 ขัดข้อง · เครื่อง 0/11 เดิน" with the station-vs-machine split tagged OPEN
+# (the per-station machine-count split, e.g. how many of the 11 sit at ST.SPS.02 vs
+# ST.SPS.03, is not declared anywhere in this static registry -- only the live pipeline's
+# `sammakorn.pumps` rows carry it, refreshed on demand (no fixed cadence, see AGENTS.md), not snapshotted here).
+schema_version: 1
+doc_kind: typology_node_registry
+status_th: >
+  ทะเบียน node kind sensor (เสริม, ไม่บังคับ) -- แยกจาก Node.readings เดิมของ typology ฐาน (ไม่แตะ).
+  แก้ไขตามรีวิวอิสระ 2026-09-28: สถานี 4/4 ขัดข้อง ≠ เครื่อง 0/11 เดิน -- สองระดับต่างกัน ห้ามเขียน
+  "0/11" เดี่ยว ๆ โดยไม่ระบุว่าเป็นระดับเครื่อง ไม่ใช่ระดับสถานี.
+rows:
+  - id: SENSOR.SSB.10
+    kind: sensor
+    layer: water
+    label_th: "เซนเซอร์ ปตร.แสนแสบ-มีนบุรี (WL.SSB.10)"
+    installed_on_node: WL.SSB.10
+    owner_agency: AG_DDS
+    visible_to: ["AG_DDS", "AG_DDPM"]
+    sensor_status: ok
+    tag: RELAYED
+    source: >
+      STRUCTURAL_ISSUES_2026-09-28.md ISSUE-AGENCY-01 (S1: รศ.ดร.เสรี ศุภราทิตย์, รายการโหนกระแส --
+      เซนเซอร์แสนแสบเป็นของ กทม. ไม่ใช่ ปภ.) + THAI_WATER_GOVERNANCE_MAP.md §(1) (สนน. เก็บสถานะ
+      SCADA ภายใน)
+    note_th: >
+      visible_to=[AG_DDS, AG_DDPM] คือ "ใครเห็นได้" ตามคำอธิบายของ S1 (ปภ. ไม่รู้ว่าเซนเซอร์เป็นของ
+      ใคร ไม่ใช่ว่าเห็นค่าไม่ได้เลย) -- RELAYED จากความเห็นผู้เชี่ยวชาญคนเดียว ไม่ใช่ตัวบทกฎหมาย.
+  - id: SENSOR.SPS.01
+    kind: sensor
+    layer: water
+    label_th: "เซนเซอร์/สถานะสถานีสูบบึงสัมมากร (คลองบ้านม้า), ST.SPS.01"
+    installed_on_node: ST.SPS.01
+    owner_agency: AG_DDS  # completeness pass 2026-09-28, see edges/owned_by.yaml VERIFIED-CONTRADICTED note
+    visible_to: []
+    sensor_status: faulted
+    station_status_th: "ขัดข้อง"
+    machine_count_total: null
+    machine_count_tag: OPEN
+    tag: "MEASURED+OPEN"
+    source: >
+      docs/LAYER0_IN_OUT_CAPACITY.md §7 (station-level MEASURED: ขัดข้อง) + independent
+      review 2026-09-28 fix (per-station machine-count split OPEN, aggregate machine total
+      11 across ST.SPS.01-04 per BMA PumpHistory, not split per station in this static
+      registry)
+  - id: SENSOR.SPS.02
+    kind: sensor
+    layer: water
+    label_th: "เซนเซอร์/สถานะสถานีสูบบึงรับน้ำสัมมากร 4, ST.SPS.02"
+    installed_on_node: ST.SPS.02
+    owner_agency: AG_DDS  # completeness pass 2026-09-28, see edges/owned_by.yaml VERIFIED-CONTRADICTED note
+    visible_to: []
+    sensor_status: faulted
+    station_status_th: "ขัดข้อง"
+    machine_count_total: null
+    machine_count_tag: OPEN
+    tag: "MEASURED+OPEN"
+    source: "docs/LAYER0_IN_OUT_CAPACITY.md §7 + independent review 2026-09-28 fix (same as SENSOR.SPS.01)"
+  - id: SENSOR.SPS.03
+    kind: sensor
+    layer: water
+    label_th: "เซนเซอร์/สถานะสถานีสูบบึงรับน้ำสัมมากร 2, ST.SPS.03"
+    installed_on_node: ST.SPS.03
+    owner_agency: AG_DDS  # completeness pass 2026-09-28, see edges/owned_by.yaml VERIFIED-CONTRADICTED note
+    visible_to: []
+    sensor_status: faulted
+    station_status_th: "ขัดข้อง"
+    machine_count_total: null
+    machine_count_tag: OPEN
+    tag: "MEASURED+OPEN"
+    source: "docs/LAYER0_IN_OUT_CAPACITY.md §7 + independent review 2026-09-28 fix (same as SENSOR.SPS.01)"
+  - id: SENSOR.SPS.04
+    kind: sensor
+    layer: water
+    label_th: "เซนเซอร์/สถานะสถานีสูบบึงรับน้ำสัมมากร 1, ST.SPS.04"
+    installed_on_node: ST.SPS.04
+    owner_agency: AG_DDS  # completeness pass 2026-09-28, see edges/owned_by.yaml VERIFIED-CONTRADICTED note
+    visible_to: []
+    sensor_status: faulted
+    station_status_th: "ขัดข้อง"
+    machine_count_total: null
+    machine_count_tag: OPEN
+    tag: "MEASURED+OPEN"
+    source: "docs/LAYER0_IN_OUT_CAPACITY.md §7 + independent review 2026-09-28 fix (same as SENSOR.SPS.01)"
+  - id: SENSOR.PWT.04
+    kind: sensor
+    layer: water
+    label_th: "เซนเซอร์ ปตร.ประเวศ-ลาดกระบัง (WL.PWT.04)"
+    installed_on_node: WL.PWT.04
+    owner_agency: AG_DDS
+    visible_to: ["AG_DDS"]
+    sensor_status: ok
+    tag: RELAYED
+    source: "FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §5 (owned_by[NEW] AG_BMA_DDS reused as AG_DDS here)"
+
+aggregate_readouts:
+  - id: SAMMAKORN_PUMP_AGGREGATE.2026-09-28
+    station_count_total: 4
+    station_count_faulted: 4
+    station_wording_th: "สถานี 4/4 ขัดข้อง"
+    machine_count_total: 11
+    machine_count_running: 0
+    machine_wording_th: "เครื่อง 0/11 เดิน"
+    combined_wording_th: "สถานี 4/4 ขัดข้อง · เครื่อง 0/11 เดิน"
+    discrepancy_tag: OPEN
+    discrepancy_note_th: >
+      "0/11" อ้างในโจทย์ต้นทาง (proposal ก่อนรีวิว) โดยไม่ระบุว่าเป็นระดับเครื่องหรือสถานี -- แก้ตาม
+      รีวิวอิสระ 2026-09-28: 11 คือผลรวมเครื่องสูบข้าม 4 สถานี (ตาม BMA PumpHistory
+      per-station pumps_on/pumps_total ที่ site/build_data.py อ่านสด) ไม่ใช่จำนวนสถานี -- สถานีมี
+      แค่ 4 (ST.SPS.01-04) เท่านั้น ทั้งหมด "ขัดข้อง"
+    source: >
+      docs/LAYER0_IN_OUT_CAPACITY.md §7, FOUNDER_TASKS_2026-09-27.md "OPEN conflicts"
+      (ตามที่การรีวิวอิสระของงานนี้อ้างถึง), site/build_data.py (n_stations/pumps_on/
+      pumps_total computation, ~line 3270-3280)

@@ -1,0 +1,106 @@
+# typology/nodes/ministries.yaml -- new node kind `ministry` (layer=power), the parent
+# grouping used by typology/edges/part_of.yaml to place every agency in
+# agencies_joint_kpi_2026-09-28.yaml (and a few from agencies.yaml) under its ministry/
+# category, then every ministry/category under one `government` root node.
+#
+# `group_type` distinguishes a REAL กระทรวง (ministry) from the Joint-KPI document's other
+# two grouping categories (องค์การมหาชน "public organization", รัฐวิสาหกิจ "state
+# enterprise") and from กทม.'s own special local-government status -- none of the latter
+# three are literally a "กระทรวง", kept honest in the label + group_type rather than
+# silently calling them all ministries.
+schema_version: 1
+doc_kind: typology_node_registry
+status_th: >
+  Node kind ใหม่ "ministry" (รวม "government" root 1 node) -- โครงจากเอกสาร กพร. Joint KPI
+  FY2569-2570 ผ่าน Lanner FB post (RELAYED, verification_status OPEN). ทุกแถวจริง ๆ คือ
+  "หมวดหมู่ผู้ปกครองตามเอกสารนี้" ไม่ใช่ "กระทรวง" เสมอไป -- ดู group_type ต่อแถว.
+rows:
+  - id: GOV.TH
+    kind: government
+    layer: power
+    label_th: "รัฐบาลไทย (ราชการส่วนกลาง, root node สำหรับ part_of)"
+    group_type: government_root
+    tag: RELAYED
+    source: "tools/typology/build_graph.py -- root node for part_of chains, no single source document"
+  - id: MINISTRY.PMO
+    kind: ministry
+    layer: power
+    label_th: "สำนักนายกรัฐมนตรี"
+    group_type: office_of_pm
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570) -- สทนช. sits here"
+  - id: MINISTRY.AGRI
+    kind: ministry
+    layer: power
+    label_th: "กระทรวงเกษตรและสหกรณ์ (กษ.)"
+    group_type: ministry
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 -- 6 bodies per the Joint KPI list"
+  - id: MINISTRY.TRANSPORT
+    kind: ministry
+    layer: power
+    label_th: "กระทรวงคมนาคม (คค.)"
+    group_type: ministry
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 -- 3 bodies per the Joint KPI list"
+  - id: MINISTRY.NATRES
+    kind: ministry
+    layer: power
+    label_th: "กระทรวงทรัพยากรธรรมชาติและสิ่งแวดล้อม (ทส.)"
+    group_type: ministry
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 -- 6 bodies per the Joint KPI list"
+  - id: MINISTRY.DIGITAL
+    kind: ministry
+    layer: power
+    label_th: "กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม (ดศ.)"
+    group_type: ministry
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 -- 1 body (กรมอุตุนิยมวิทยา) per the Joint KPI list"
+  - id: MINISTRY.INTERIOR
+    kind: ministry
+    layer: power
+    label_th: "กระทรวงมหาดไทย (มท.)"
+    group_type: ministry
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 -- 3 bodies per the Joint KPI list"
+  - id: MINISTRY.HEALTH
+    kind: ministry
+    layer: power
+    label_th: "กระทรวงสาธารณสุข (สธ.)"
+    group_type: ministry
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 -- 1 body (กรมอนามัย) per the Joint KPI list"
+  - id: MINISTRY.INDUSTRY
+    kind: ministry
+    layer: power
+    label_th: "กระทรวงอุตสาหกรรม (อก.)"
+    group_type: ministry
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 -- 1 body (กรมโรงงานอุตสาหกรรม) per the Joint KPI list"
+  - id: CATEGORY.PUBLIC_ORG
+    kind: ministry
+    layer: power
+    label_th: "องค์การมหาชน (หมวดตามเอกสาร กพร. Joint KPI -- ไม่ใช่กระทรวง)"
+    group_type: public_organization
+    tag: RELAYED
+    source: >
+      Lanner FB post ~27 ก.ย. 2569 -- 2 bodies (GISTDA, สสน.) per the Joint KPI list; the
+      post does not name a sponsoring ministry for either, so this category node is their
+      only declared parent (never invented a specific ministry link the post doesn't state)
+  - id: CATEGORY.STATE_ENTERPRISE
+    kind: ministry
+    layer: power
+    label_th: "รัฐวิสาหกิจ (หมวดตามเอกสาร กพร. Joint KPI -- ไม่ใช่กระทรวง)"
+    group_type: state_enterprise
+    tag: RELAYED
+    source: >
+      Lanner FB post ~27 ก.ย. 2569 -- 4 bodies (กปน., กปภ., องค์การจัดการน้ำเสีย, กนอ.) per
+      the Joint KPI list; same no-invented-ministry-link note as CATEGORY.PUBLIC_ORG
+  - id: CATEGORY.LOCAL_GOV
+    kind: ministry
+    layer: power
+    label_th: "ราชการส่วนท้องถิ่นรูปแบบพิเศษ (หมวดตามเอกสาร กพร. Joint KPI -- ไม่ใช่กระทรวง)"
+    group_type: local_government
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 -- กทม. listed as its own body, outside the 22 ส่วนราชการ count"

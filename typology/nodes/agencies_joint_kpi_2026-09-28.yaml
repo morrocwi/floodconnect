@@ -1,0 +1,274 @@
+# typology/nodes/agencies_joint_kpi_2026-09-28.yaml -- founder ask (verbatim):
+# "สกัดไปเข้า typology node การเมืองด้วย" (fold this into the power/การเมือง layer too).
+#
+# Source: Lanner (สื่อออนไลน์ภาคเหนือ) Facebook post, ~27 ก.ย. 2569, relaying กพร.
+# (สำนักงานคณะกรรมการพัฒนาระบบราชการ) Joint KPIs FY2569-2570 for "การบริหารจัดการและ
+# อนุรักษ์ฟื้นฟูน้ำทั้งระบบ" -- 29 bodies (22 ส่วนราชการ + 2 องค์การมหาชน + 4 รัฐวิสาหกิจ +
+# กทม.), host agency สทนช. Tag RELAYED throughout this file: media (Lanner) relaying an
+# official กพร. framework -- NOT read from the กพร. document directly in this check.
+# `verification_status: OPEN` on every row until the กพร. document itself is fetched.
+#
+# Reuse-first: rows below add ONLY the agency ids that were NOT already present in
+# `docs/knowledge/water_system_dag.mmd` (18 brand-new ids) or in this typology's own
+# `typology/nodes/agencies.yaml` (which already carries AG_DDS/AG_BMA_GOV/AG_RID/
+# AG_DDPM/AG_TMD/AG_ONWR -- see that file's own role_th additions in the same commit
+# as this one). 7 more ids exist in water_system_dag.mmd but were NOT yet registered in
+# this typology's own node registry -- registered here (not renamed, not duplicated).
+schema_version: 1
+doc_kind: typology_node_registry
+status_th: >
+  29 หน่วยงานตาม Joint KPI กพร. FY2569-2570 (ผ่าน Lanner, RELAYED, verification_status OPEN
+  จนกว่าจะอ่านเอกสาร กพร. ตัวจริง) -- 11 id reused (7 จาก water_system_dag.mmd ที่ยังไม่เคย
+  ลงทะเบียนใน typology/nodes/*.yaml มาก่อน + 4 ที่ agencies.yaml เดิมมีอยู่แล้วไม่ซ้ำในไฟล์นี้),
+  18 id ใหม่จริง (ไม่มี node ใดในคลังนี้มาก่อนเลย ทั้ง water_system_dag.mmd และ typology registry).
+rows:
+  # -- reused from water_system_dag.mmd, first time registered in typology/nodes/*.yaml --
+  - id: AG_DOH
+    kind: agency
+    layer: power
+    label_th: "กรมทางหลวง"
+    agency_class: state
+    role_th: null
+    verification_status: OPEN
+    tag: RELAYED
+    source: >
+      docs/knowledge/water_system_dag.mmd (existing AG_DOH node, reused verbatim -- NOTE:
+      that node's own label conflates "กรมทางหลวง / กทพ. (ทางด่วน)"; the Joint-KPI list
+      names only กรมทางหลวง (คค.) as one of the 29 bodies, กทพ. is not in that list -- kept
+      the existing shared node rather than splitting it, flagged as a label mismatch, not
+      silently narrowed)
+  - id: AG_MARINE
+    kind: agency
+    layer: power
+    label_th: "กรมเจ้าท่า"
+    agency_class: state
+    role_th: null
+    verification_status: OPEN
+    tag: RELAYED
+    source: "docs/knowledge/water_system_dag.mmd (existing AG_MARINE node, reused verbatim)"
+  - id: AG_DPT
+    kind: agency
+    layer: power
+    label_th: "กรมโยธาธิการและผังเมือง"
+    agency_class: state
+    role_th: >
+      โครงสร้างป้องกันน้ำท่วมและระบบระบายน้ำเมือง ร่วมกับหน่วยงานท้องถิ่น (flood-defence
+      structures and urban drainage, with local bodies -- Lanner post)
+    verification_status: OPEN
+    tag: RELAYED
+    source: "docs/knowledge/water_system_dag.mmd (existing AG_DPT node, reused verbatim)"
+  - id: AG_DWR
+    kind: agency
+    layer: power
+    label_th: "กรมทรัพยากรน้ำ"
+    agency_class: state
+    role_th: "แหล่งน้ำนอกเขตชลประทาน (Lanner/กพร. Joint KPI framing)"
+    verification_status: OPEN
+    tag: RELAYED
+    source: >
+      docs/knowledge/water_system_dag.mmd (existing AG_DWR node, reused verbatim -- NOTE:
+      that node's own label already conflates "น้ำผิวดินนอกเขตชลประทาน+น้ำบาดาล" (surface
+      AND groundwater); the Joint-KPI list names กรมทรัพยากรน้ำ and กรมทรัพยากรน้ำบาดาล as
+      TWO SEPARATE bodies. This row keeps AG_DWR for the surface-water department and adds
+      a brand-new AG_GROUNDWATER below for the groundwater department, rather than
+      silently merging them -- the pre-existing AG_DWR node's own conflated label is left
+      unchanged (out of scope for this check to edit water_system_dag.mmd itself), flagged
+      here as a known discrepancy.
+  - id: AG_GISTDA
+    kind: agency
+    layer: power
+    label_th: "GISTDA"
+    agency_class: state
+    role_th: "ข้อมูล/สนับสนุนดาวเทียม (data & satellite support, Lanner post)"
+    verification_status: OPEN
+    tag: RELAYED
+    source: "docs/knowledge/water_system_dag.mmd (existing AG_GISTDA node, reused verbatim)"
+  - id: AG_HII
+    kind: agency
+    layer: power
+    label_th: "สสน. (thaiwater)"
+    agency_class: state
+    role_th: "ข้อมูล/สนับสนุนดาวเทียม (data & satellite support, Lanner post)"
+    verification_status: OPEN
+    tag: RELAYED
+    source: "docs/knowledge/water_system_dag.mmd (existing AG_HII node, reused verbatim)"
+
+  # -- brand new, 6 bodies under กษ. (กระทรวงเกษตรและสหกรณ์) --
+  - id: AG_MOAC_PERM_SEC
+    kind: agency
+    layer: power
+    label_th: "สป.กษ. สำนักงานปลัดกระทรวงเกษตรและสหกรณ์"
+    agency_class: state
+    role_th: null
+    verification_status: OPEN
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)"
+  - id: AG_ROYAL_RAINMAKING
+    kind: agency
+    layer: power
+    label_th: "กรมฝนหลวงและการบินเกษตร"
+    agency_class: state
+    role_th: null
+    verification_status: OPEN
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)"
+  - id: AG_LAND_DEV
+    kind: agency
+    layer: power
+    label_th: "กรมพัฒนาที่ดิน"
+    agency_class: state
+    role_th: null
+    verification_status: OPEN
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)"
+  - id: AG_ALRO
+    kind: agency
+    layer: power
+    label_th: "ส.ป.ก. สำนักงานการปฏิรูปที่ดินเพื่อเกษตรกรรม"
+    agency_class: state
+    role_th: null
+    verification_status: OPEN
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)"
+  - id: AG_AGRI_EXT
+    kind: agency
+    layer: power
+    label_th: "กรมส่งเสริมการเกษตร"
+    agency_class: state
+    role_th: null
+    verification_status: OPEN
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)"
+
+  # -- brand new, 1 more body under คค. (กระทรวงคมนาคม; AG_DOH/AG_MARINE reused above) --
+  - id: AG_RURAL_ROADS
+    kind: agency
+    layer: power
+    label_th: "กรมทางหลวงชนบท"
+    agency_class: state
+    role_th: null
+    verification_status: OPEN
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)"
+
+  # -- brand new, 4 bodies under ทส. (กระทรวงทรัพยากรธรรมชาติและสิ่งแวดล้อม; AG_DWR reused above) --
+  - id: AG_FORESTRY
+    kind: agency
+    layer: power
+    label_th: "กรมป่าไม้"
+    agency_class: state
+    role_th: null
+    verification_status: OPEN
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)"
+  - id: AG_NATIONAL_PARKS
+    kind: agency
+    layer: power
+    label_th: "กรมอุทยานแห่งชาติ สัตว์ป่า และพันธุ์พืช"
+    agency_class: state
+    role_th: null
+    verification_status: OPEN
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)"
+  - id: AG_GEOLOGY
+    kind: agency
+    layer: power
+    label_th: "กรมทรัพยากรธรณี"
+    agency_class: state
+    role_th: null
+    verification_status: OPEN
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)"
+  - id: AG_POLLUTION_CONTROL
+    kind: agency
+    layer: power
+    label_th: "กรมควบคุมมลพิษ"
+    agency_class: state
+    role_th: null
+    verification_status: OPEN
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)"
+  - id: AG_GROUNDWATER
+    kind: agency
+    layer: power
+    label_th: "กรมทรัพยากรน้ำบาดาล"
+    agency_class: state
+    role_th: null
+    verification_status: OPEN
+    tag: RELAYED
+    source: >
+      Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570) -- see AG_DWR row
+      above for the label-conflation note this split resolves within this typology
+      registry (water_system_dag.mmd's own AG_DWR node label is left unchanged).
+
+  # -- brand new, 1 body under มท. (กระทรวงมหาดไทย; AG_DDPM/AG_DPT reused, role_th on those
+  #    two updated in typology/nodes/agencies.yaml in the same commit) --
+  - id: AG_DLA
+    kind: agency
+    layer: power
+    label_th: "สถ. กรมส่งเสริมการปกครองท้องถิ่น"
+    agency_class: state
+    role_th: null
+    verification_status: OPEN
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)"
+
+  # -- brand new, 1 body under สธ. --
+  - id: AG_ANAMAI
+    kind: agency
+    layer: power
+    label_th: "กรมอนามัย"
+    agency_class: state
+    role_th: null
+    verification_status: OPEN
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)"
+
+  # -- brand new, 1 body under อก. --
+  - id: AG_FACTORY
+    kind: agency
+    layer: power
+    label_th: "กรมโรงงานอุตสาหกรรม"
+    agency_class: state
+    role_th: null
+    verification_status: OPEN
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)"
+
+  # -- brand new, 4 รัฐวิสาหกิจ (AG_GISTDA/AG_HII above are the 2 องค์การมหาชน, reused) --
+  - id: AG_MWA
+    kind: agency
+    layer: power
+    label_th: "กปน. การประปานครหลวง"
+    agency_class: state
+    role_th: null
+    verification_status: OPEN
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)"
+  - id: AG_PWA
+    kind: agency
+    layer: power
+    label_th: "กปภ. การประปาส่วนภูมิภาค"
+    agency_class: state
+    role_th: null
+    verification_status: OPEN
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)"
+  - id: AG_WWMA
+    kind: agency
+    layer: power
+    label_th: "องค์การจัดการน้ำเสีย"
+    agency_class: state
+    role_th: null
+    verification_status: OPEN
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)"
+  - id: AG_IEAT
+    kind: agency
+    layer: power
+    label_th: "กนอ. การนิคมอุตสาหกรรมแห่งประเทศไทย"
+    agency_class: state
+    role_th: null
+    verification_status: OPEN
+    tag: RELAYED
+    source: "Lanner FB post ~27 ก.ย. 2569 (relaying กพร. Joint KPI FY2569-2570)"

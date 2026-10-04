@@ -1,0 +1,1106 @@
+_meta:
+  generated: '2026-09-27'
+  purpose: One row per Bangkok district (all 50 khet). Ground-level elevation vs. mean sea level (MSL),
+    sampled from the RTSD 2010 georeferenced flood-risk map already in this repo (raw/rtsd_2010/), using
+    the same affine georeferencing + legend-color-matching method as raw/rtsd_2010/sammakorn_sample.json
+    (see that file's own method notes).
+  founder_ask: 'https://policywatch.thaipbs.or.th/article/environment-190 -- see docs/knowledge/card_media_thaipbs_policywatch_env190.md:
+    that article does NOT contain subsidence/below-MSL/district-elevation content (checked twice), so
+    it contributes ZERO rows/values to this file. Every value here is RTSD-map-derived or OPEN.'
+  method: 'For each district: took the district''s centroid lat/lon (source: Wikipedia ''List of districts
+    of Bangkok'', used only as a point locator -- not as an elevation source), converted WGS84 -> UTM
+    Zone 47N (EPSG:32647) -> pixel coordinates via the affine model already recorded in raw/rtsd_2010/georef.json,
+    then read the 5x5-pixel neighbourhood (~165 x 165 m) around that pixel, classified each pixel to the
+    nearest RTSD legend color, and took the majority class. If the 5x5 block showed >=4/25 pixels in a
+    class >=2 elevation tiers (>=1 m) away from the majority -- a signature of hitting map label text
+    / road lines / dike markers instead of the terrain color fill -- the district is marked OPEN instead
+    of reporting a contaminated reading.'
+  caveats:
+  - 'This is a SINGLE POINT sample per district (the plotted centroid), not a district-wide or polygon-area
+    statistic. A district can straddle several elevation classes; ''below_msl: true'' means the sampled
+    centroid point read as RTSD class ''< 0 m'', not that the whole district is below MSL.'
+  - RTSD survey is from October 2010; Bangkok/Samut Prakan land subsidence since then means current ground
+    level may be lower than mapped (same caveat as sammakorn_sample.json).
+  - subsidence_rate_mm_yr is null for every row -- no source in this check (article or map) states a per-district
+    subsidence rate.
+  - 'district_code is ''10'' (Bangkok''s 2-digit province code) + the district''s BMA map-number (Wikipedia
+    ''Map #'' column) zero-padded to 2 digits -- this matches the standard Thai administrative geocode
+    convention (province+district) but was NOT independently cross-checked against a DOPA/NSO registry
+    in this check; treat as RELAYED-inferred, not VERIFIED.'
+
+districts:
+- district_th: พระนคร
+  district_en: Phra Nakhon
+  district_code: '1001'
+  bma_map_number: 1
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''<
+    0 m'': 3, ''0 - 0.5 m'': 11, ''>= 3.5 m'': 6, ''0.5 - 1 m'': 5}) mixed the majority class ''0 - 0.5
+    m'' with a distant class (>=2 elevation tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a
+    known artifact where the map''s printed district-name text, road lines, or dike markers sit exactly
+    at the plotted centroid and get misclassified by nearest-legend-color matching (same failure mode
+    already documented in raw/rtsd_2010/sammakorn_sample.json''s ''limits'' section). Left OPEN rather
+    than reporting a contaminated majority; a real reading would need the sample point moved off the label
+    text or a district boundary polygon to sample many points and take a spatial (not just pixel-neighbourhood)
+    majority -- not attempted here (20-minute sampling budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: ดุสิต
+  district_en: Dusit
+  district_code: '1002'
+  bma_map_number: 2
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''1
+    - 1.5 m'': 4, ''3 - 3.5 m'': 1, ''0.5 - 1 m'': 13, ''>= 3.5 m'': 4, ''< 0 m'': 3}) mixed the majority
+    class ''0.5 - 1 m'' with a distant class (>=2 elevation tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25
+    pixels -- a known artifact where the map''s printed district-name text, road lines, or dike markers
+    sit exactly at the plotted centroid and get misclassified by nearest-legend-color matching (same failure
+    mode already documented in raw/rtsd_2010/sammakorn_sample.json''s ''limits'' section). Left OPEN rather
+    than reporting a contaminated majority; a real reading would need the sample point moved off the label
+    text or a district boundary polygon to sample many points and take a spatial (not just pixel-neighbourhood)
+    majority -- not attempted here (20-minute sampling budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: หนองจอก
+  district_en: Nong Chok
+  district_code: '1003'
+  bma_map_number: 3
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''0.5
+    - 1 m'': 16, ''>= 3.5 m'': 9}) mixed the majority class ''0.5 - 1 m'' with a distant class (>=2 elevation
+    tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a known artifact where the map''s printed
+    district-name text, road lines, or dike markers sit exactly at the plotted centroid and get misclassified
+    by nearest-legend-color matching (same failure mode already documented in raw/rtsd_2010/sammakorn_sample.json''s
+    ''limits'' section). Left OPEN rather than reporting a contaminated majority; a real reading would
+    need the sample point moved off the label text or a district boundary polygon to sample many points
+    and take a spatial (not just pixel-neighbourhood) majority -- not attempted here (20-minute sampling
+    budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: บางรัก
+  district_en: Bang Rak
+  district_code: '1004'
+  bma_map_number: 4
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''>=
+    3.5 m'': 10, ''3 - 3.5 m'': 1, ''0.5 - 1 m'': 14}) mixed the majority class ''0.5 - 1 m'' with a distant
+    class (>=2 elevation tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a known artifact where
+    the map''s printed district-name text, road lines, or dike markers sit exactly at the plotted centroid
+    and get misclassified by nearest-legend-color matching (same failure mode already documented in raw/rtsd_2010/sammakorn_sample.json''s
+    ''limits'' section). Left OPEN rather than reporting a contaminated majority; a real reading would
+    need the sample point moved off the label text or a district boundary polygon to sample many points
+    and take a spatial (not just pixel-neighbourhood) majority -- not attempted here (20-minute sampling
+    budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: บางเขน
+  district_en: Bang Khen
+  district_code: '1005'
+  bma_map_number: 5
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''1
+    - 1.5 m'': 17, ''3 - 3.5 m'': 8}) mixed the majority class ''1 - 1.5 m'' with a distant class (>=2
+    elevation tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a known artifact where the map''s
+    printed district-name text, road lines, or dike markers sit exactly at the plotted centroid and get
+    misclassified by nearest-legend-color matching (same failure mode already documented in raw/rtsd_2010/sammakorn_sample.json''s
+    ''limits'' section). Left OPEN rather than reporting a contaminated majority; a real reading would
+    need the sample point moved off the label text or a district boundary polygon to sample many points
+    and take a spatial (not just pixel-neighbourhood) majority -- not attempted here (20-minute sampling
+    budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: บางกะปิ
+  district_en: Bang Kapi
+  district_code: '1006'
+  bma_map_number: 6
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''0
+    - 0.5 m'': 12, ''>= 3.5 m'': 12, ''< 0 m'': 1}) mixed the majority class ''0 - 0.5 m'' with a distant
+    class (>=2 elevation tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a known artifact where
+    the map''s printed district-name text, road lines, or dike markers sit exactly at the plotted centroid
+    and get misclassified by nearest-legend-color matching (same failure mode already documented in raw/rtsd_2010/sammakorn_sample.json''s
+    ''limits'' section). Left OPEN rather than reporting a contaminated majority; a real reading would
+    need the sample point moved off the label text or a district boundary polygon to sample many points
+    and take a spatial (not just pixel-neighbourhood) majority -- not attempted here (20-minute sampling
+    budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: ปทุมวัน
+  district_en: Pathum Wan
+  district_code: '1007'
+  bma_map_number: 7
+  ground_level_m_msl_min: 1.0
+  ground_level_m_msl_max: 1.5
+  ground_level_m_msl_typical: 1.25
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '1 - 1.5 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: ป้อมปราบศัตรูพ่าย
+  district_en: Pom Prap Sattru Phai
+  district_code: '1008'
+  bma_map_number: 8
+  ground_level_m_msl_min: 0.5
+  ground_level_m_msl_max: 1.0
+  ground_level_m_msl_typical: 0.75
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '0.5 - 1 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: พระโขนง
+  district_en: Phra Khanong
+  district_code: '1009'
+  bma_map_number: 9
+  ground_level_m_msl_min: 0.0
+  ground_level_m_msl_max: 0.5
+  ground_level_m_msl_typical: 0.25
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '0 - 0.5 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: มีนบุรี
+  district_en: Min Buri
+  district_code: '1010'
+  bma_map_number: 10
+  ground_level_m_msl_min: 0.5
+  ground_level_m_msl_max: 1.0
+  ground_level_m_msl_typical: 0.75
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '0.5 - 1 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: ลาดกระบัง
+  district_en: Lat Krabang
+  district_code: '1011'
+  bma_map_number: 11
+  ground_level_m_msl_min: 0.5
+  ground_level_m_msl_max: 1.0
+  ground_level_m_msl_typical: 0.75
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '0.5 - 1 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: ยานนาวา
+  district_en: Yan Nawa
+  district_code: '1012'
+  bma_map_number: 12
+  ground_level_m_msl_min: 1.0
+  ground_level_m_msl_max: 1.5
+  ground_level_m_msl_typical: 1.25
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '1 - 1.5 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: สัมพันธวงศ์
+  district_en: Samphanthawong
+  district_code: '1013'
+  bma_map_number: 13
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''0.5
+    - 1 m'': 10, ''< 0 m'': 7, ''>= 3.5 m'': 8}) mixed the majority class ''0.5 - 1 m'' with a distant
+    class (>=2 elevation tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a known artifact where
+    the map''s printed district-name text, road lines, or dike markers sit exactly at the plotted centroid
+    and get misclassified by nearest-legend-color matching (same failure mode already documented in raw/rtsd_2010/sammakorn_sample.json''s
+    ''limits'' section). Left OPEN rather than reporting a contaminated majority; a real reading would
+    need the sample point moved off the label text or a district boundary polygon to sample many points
+    and take a spatial (not just pixel-neighbourhood) majority -- not attempted here (20-minute sampling
+    budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: พญาไท
+  district_en: Phaya Thai
+  district_code: '1014'
+  bma_map_number: 14
+  ground_level_m_msl_min: 1.0
+  ground_level_m_msl_max: 1.5
+  ground_level_m_msl_typical: 1.25
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '1 - 1.5 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: ธนบุรี
+  district_en: Thon Buri
+  district_code: '1015'
+  bma_map_number: 15
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''0.5
+    - 1 m'': 10, ''< 0 m'': 5, ''1 - 1.5 m'': 7, ''>= 3.5 m'': 1, ''3 - 3.5 m'': 2}) mixed the majority
+    class ''0.5 - 1 m'' with a distant class (>=2 elevation tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25
+    pixels -- a known artifact where the map''s printed district-name text, road lines, or dike markers
+    sit exactly at the plotted centroid and get misclassified by nearest-legend-color matching (same failure
+    mode already documented in raw/rtsd_2010/sammakorn_sample.json''s ''limits'' section). Left OPEN rather
+    than reporting a contaminated majority; a real reading would need the sample point moved off the label
+    text or a district boundary polygon to sample many points and take a spatial (not just pixel-neighbourhood)
+    majority -- not attempted here (20-minute sampling budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: บางกอกใหญ่
+  district_en: Bangkok Yai
+  district_code: '1016'
+  bma_map_number: 16
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''0.5
+    - 1 m'': 9, ''< 0 m'': 9, ''>= 3.5 m'': 7}) mixed the majority class ''0.5 - 1 m'' with a distant
+    class (>=2 elevation tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a known artifact where
+    the map''s printed district-name text, road lines, or dike markers sit exactly at the plotted centroid
+    and get misclassified by nearest-legend-color matching (same failure mode already documented in raw/rtsd_2010/sammakorn_sample.json''s
+    ''limits'' section). Left OPEN rather than reporting a contaminated majority; a real reading would
+    need the sample point moved off the label text or a district boundary polygon to sample many points
+    and take a spatial (not just pixel-neighbourhood) majority -- not attempted here (20-minute sampling
+    budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: ห้วยขวาง
+  district_en: Huai Khwang
+  district_code: '1017'
+  bma_map_number: 17
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''0.5
+    - 1 m'': 17, ''>= 3.5 m'': 8}) mixed the majority class ''0.5 - 1 m'' with a distant class (>=2 elevation
+    tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a known artifact where the map''s printed
+    district-name text, road lines, or dike markers sit exactly at the plotted centroid and get misclassified
+    by nearest-legend-color matching (same failure mode already documented in raw/rtsd_2010/sammakorn_sample.json''s
+    ''limits'' section). Left OPEN rather than reporting a contaminated majority; a real reading would
+    need the sample point moved off the label text or a district boundary polygon to sample many points
+    and take a spatial (not just pixel-neighbourhood) majority -- not attempted here (20-minute sampling
+    budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: คลองสาน
+  district_en: Khlong San
+  district_code: '1018'
+  bma_map_number: 18
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''0
+    - 0.5 m'': 6, ''>= 3.5 m'': 4, ''< 0 m'': 15}) mixed the majority class ''< 0 m'' with a distant class
+    (>=2 elevation tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a known artifact where the
+    map''s printed district-name text, road lines, or dike markers sit exactly at the plotted centroid
+    and get misclassified by nearest-legend-color matching (same failure mode already documented in raw/rtsd_2010/sammakorn_sample.json''s
+    ''limits'' section). Left OPEN rather than reporting a contaminated majority; a real reading would
+    need the sample point moved off the label text or a district boundary polygon to sample many points
+    and take a spatial (not just pixel-neighbourhood) majority -- not attempted here (20-minute sampling
+    budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: ตลิ่งชัน
+  district_en: Taling Chan
+  district_code: '1019'
+  bma_map_number: 19
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''0.5
+    - 1 m'': 14, ''>= 3.5 m'': 2, ''< 0 m'': 9}) mixed the majority class ''0.5 - 1 m'' with a distant
+    class (>=2 elevation tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a known artifact where
+    the map''s printed district-name text, road lines, or dike markers sit exactly at the plotted centroid
+    and get misclassified by nearest-legend-color matching (same failure mode already documented in raw/rtsd_2010/sammakorn_sample.json''s
+    ''limits'' section). Left OPEN rather than reporting a contaminated majority; a real reading would
+    need the sample point moved off the label text or a district boundary polygon to sample many points
+    and take a spatial (not just pixel-neighbourhood) majority -- not attempted here (20-minute sampling
+    budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: บางกอกน้อย
+  district_en: Bangkok Noi
+  district_code: '1020'
+  bma_map_number: 20
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''0.5
+    - 1 m'': 6, ''1 - 1.5 m'': 2, ''>= 3.5 m'': 17}) mixed the majority class ''>= 3.5 m'' with a distant
+    class (>=2 elevation tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a known artifact where
+    the map''s printed district-name text, road lines, or dike markers sit exactly at the plotted centroid
+    and get misclassified by nearest-legend-color matching (same failure mode already documented in raw/rtsd_2010/sammakorn_sample.json''s
+    ''limits'' section). Left OPEN rather than reporting a contaminated majority; a real reading would
+    need the sample point moved off the label text or a district boundary polygon to sample many points
+    and take a spatial (not just pixel-neighbourhood) majority -- not attempted here (20-minute sampling
+    budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: บางขุนเทียน
+  district_en: Bang Khun Thian
+  district_code: '1021'
+  bma_map_number: 21
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''0.5
+    - 1 m'': 16, ''>= 3.5 m'': 9}) mixed the majority class ''0.5 - 1 m'' with a distant class (>=2 elevation
+    tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a known artifact where the map''s printed
+    district-name text, road lines, or dike markers sit exactly at the plotted centroid and get misclassified
+    by nearest-legend-color matching (same failure mode already documented in raw/rtsd_2010/sammakorn_sample.json''s
+    ''limits'' section). Left OPEN rather than reporting a contaminated majority; a real reading would
+    need the sample point moved off the label text or a district boundary polygon to sample many points
+    and take a spatial (not just pixel-neighbourhood) majority -- not attempted here (20-minute sampling
+    budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: ภาษีเจริญ
+  district_en: Phasi Charoen
+  district_code: '1022'
+  bma_map_number: 22
+  ground_level_m_msl_min: 0.5
+  ground_level_m_msl_max: 1.0
+  ground_level_m_msl_typical: 0.75
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '0.5 - 1 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: หนองแขม
+  district_en: Nong Khaem
+  district_code: '1023'
+  bma_map_number: 23
+  ground_level_m_msl_min: 0.0
+  ground_level_m_msl_max: 0.5
+  ground_level_m_msl_typical: 0.25
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '0 - 0.5 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: ราษฏร์บูรณะ
+  district_en: Rat Burana
+  district_code: '1024'
+  bma_map_number: 24
+  ground_level_m_msl_min: 3.5
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '>= 3.5 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: บางพลัด
+  district_en: Bang Phlat
+  district_code: '1025'
+  bma_map_number: 25
+  ground_level_m_msl_min: 0.0
+  ground_level_m_msl_max: 0.5
+  ground_level_m_msl_typical: 0.25
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '0 - 0.5 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: ดินแดง
+  district_en: Din Daeng
+  district_code: '1026'
+  bma_map_number: 26
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''1
+    - 1.5 m'': 17, ''3 - 3.5 m'': 8}) mixed the majority class ''1 - 1.5 m'' with a distant class (>=2
+    elevation tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a known artifact where the map''s
+    printed district-name text, road lines, or dike markers sit exactly at the plotted centroid and get
+    misclassified by nearest-legend-color matching (same failure mode already documented in raw/rtsd_2010/sammakorn_sample.json''s
+    ''limits'' section). Left OPEN rather than reporting a contaminated majority; a real reading would
+    need the sample point moved off the label text or a district boundary polygon to sample many points
+    and take a spatial (not just pixel-neighbourhood) majority -- not attempted here (20-minute sampling
+    budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: บึงกุ่ม
+  district_en: Bueng Kum
+  district_code: '1027'
+  bma_map_number: 27
+  ground_level_m_msl_min: 0.5
+  ground_level_m_msl_max: 1.0
+  ground_level_m_msl_typical: 0.75
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '0.5 - 1 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: สาทร
+  district_en: Sathon
+  district_code: '1028'
+  bma_map_number: 28
+  ground_level_m_msl_min: 1.0
+  ground_level_m_msl_max: 1.5
+  ground_level_m_msl_typical: 1.25
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '1 - 1.5 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: บางซื่อ
+  district_en: Bang Sue
+  district_code: '1029'
+  bma_map_number: 29
+  ground_level_m_msl_min: 0.0
+  ground_level_m_msl_max: 0.5
+  ground_level_m_msl_typical: 0.25
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '0 - 0.5 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: จตุจักร
+  district_en: Chatuchak
+  district_code: '1030'
+  bma_map_number: 30
+  ground_level_m_msl_min: 0.0
+  ground_level_m_msl_max: 0.5
+  ground_level_m_msl_typical: 0.25
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '0 - 0.5 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: บางคอแหลม
+  district_en: Bang Kho Laem
+  district_code: '1031'
+  bma_map_number: 31
+  ground_level_m_msl_min: 0.5
+  ground_level_m_msl_max: 1.0
+  ground_level_m_msl_typical: 0.75
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '0.5 - 1 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: ประเวศ
+  district_en: Prawet
+  district_code: '1032'
+  bma_map_number: 32
+  ground_level_m_msl_min: 0.0
+  ground_level_m_msl_max: 0.5
+  ground_level_m_msl_typical: 0.25
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '0 - 0.5 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: คลองเตย
+  district_en: Khlong Toei
+  district_code: '1033'
+  bma_map_number: 33
+  ground_level_m_msl_min: 0.0
+  ground_level_m_msl_max: 0.5
+  ground_level_m_msl_typical: 0.25
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '0 - 0.5 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: สวนหลวง
+  district_en: Suan Luang
+  district_code: '1034'
+  bma_map_number: 34
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: 0.0
+  ground_level_m_msl_typical: null
+  below_msl: true
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '< 0 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: จอมทอง
+  district_en: Chom Thong
+  district_code: '1035'
+  bma_map_number: 35
+  ground_level_m_msl_min: 3.0
+  ground_level_m_msl_max: 3.5
+  ground_level_m_msl_typical: 3.25
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '3 - 3.5 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: ดอนเมือง
+  district_en: Don Mueang
+  district_code: '1036'
+  bma_map_number: 36
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''0.5
+    - 1 m'': 4, ''>= 3.5 m'': 5, ''0 - 0.5 m'': 16}) mixed the majority class ''0 - 0.5 m'' with a distant
+    class (>=2 elevation tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a known artifact where
+    the map''s printed district-name text, road lines, or dike markers sit exactly at the plotted centroid
+    and get misclassified by nearest-legend-color matching (same failure mode already documented in raw/rtsd_2010/sammakorn_sample.json''s
+    ''limits'' section). Left OPEN rather than reporting a contaminated majority; a real reading would
+    need the sample point moved off the label text or a district boundary polygon to sample many points
+    and take a spatial (not just pixel-neighbourhood) majority -- not attempted here (20-minute sampling
+    budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: ราชเทวี
+  district_en: Ratchathewi
+  district_code: '1037'
+  bma_map_number: 37
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''0
+    - 0.5 m'': 18, ''>= 3.5 m'': 7}) mixed the majority class ''0 - 0.5 m'' with a distant class (>=2
+    elevation tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a known artifact where the map''s
+    printed district-name text, road lines, or dike markers sit exactly at the plotted centroid and get
+    misclassified by nearest-legend-color matching (same failure mode already documented in raw/rtsd_2010/sammakorn_sample.json''s
+    ''limits'' section). Left OPEN rather than reporting a contaminated majority; a real reading would
+    need the sample point moved off the label text or a district boundary polygon to sample many points
+    and take a spatial (not just pixel-neighbourhood) majority -- not attempted here (20-minute sampling
+    budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: ลาดพร้าว
+  district_en: Lat Phrao
+  district_code: '1038'
+  bma_map_number: 38
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''0.5
+    - 1 m'': 20, ''>= 3.5 m'': 5}) mixed the majority class ''0.5 - 1 m'' with a distant class (>=2 elevation
+    tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a known artifact where the map''s printed
+    district-name text, road lines, or dike markers sit exactly at the plotted centroid and get misclassified
+    by nearest-legend-color matching (same failure mode already documented in raw/rtsd_2010/sammakorn_sample.json''s
+    ''limits'' section). Left OPEN rather than reporting a contaminated majority; a real reading would
+    need the sample point moved off the label text or a district boundary polygon to sample many points
+    and take a spatial (not just pixel-neighbourhood) majority -- not attempted here (20-minute sampling
+    budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: วัฒนา
+  district_en: Watthana
+  district_code: '1039'
+  bma_map_number: 39
+  ground_level_m_msl_min: 0.0
+  ground_level_m_msl_max: 0.5
+  ground_level_m_msl_typical: 0.25
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '0 - 0.5 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: บางแค
+  district_en: Bang Khae
+  district_code: '1040'
+  bma_map_number: 40
+  ground_level_m_msl_min: 0.5
+  ground_level_m_msl_max: 1.0
+  ground_level_m_msl_typical: 0.75
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '0.5 - 1 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: หลักสี่
+  district_en: Lak Si
+  district_code: '1041'
+  bma_map_number: 41
+  ground_level_m_msl_min: 0.5
+  ground_level_m_msl_max: 1.0
+  ground_level_m_msl_typical: 0.75
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '0.5 - 1 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: สายไหม
+  district_en: Sai Mai
+  district_code: '1042'
+  bma_map_number: 42
+  ground_level_m_msl_min: 0.0
+  ground_level_m_msl_max: 0.5
+  ground_level_m_msl_typical: 0.25
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '0 - 0.5 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: คันนายาว
+  district_en: Khan Na Yao
+  district_code: '1043'
+  bma_map_number: 43
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''3
+    - 3.5 m'': 20, ''1 - 1.5 m'': 5}) mixed the majority class ''3 - 3.5 m'' with a distant class (>=2
+    elevation tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a known artifact where the map''s
+    printed district-name text, road lines, or dike markers sit exactly at the plotted centroid and get
+    misclassified by nearest-legend-color matching (same failure mode already documented in raw/rtsd_2010/sammakorn_sample.json''s
+    ''limits'' section). Left OPEN rather than reporting a contaminated majority; a real reading would
+    need the sample point moved off the label text or a district boundary polygon to sample many points
+    and take a spatial (not just pixel-neighbourhood) majority -- not attempted here (20-minute sampling
+    budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: สะพานสูง
+  district_en: Saphan Sung
+  district_code: '1044'
+  bma_map_number: 44
+  ground_level_m_msl_min: 0.0
+  ground_level_m_msl_max: 0.5
+  ground_level_m_msl_typical: 0.25
+  below_msl: false
+  subsidence_rate_mm_yr: null
+  elevation_tag: VERIFIED-from-map
+  below_msl_tag: VERIFIED-from-map
+  notes: RTSD 2010 georeferenced raster (raw/rtsd_2010/), class '0 - 0.5 m' (class band width 0.5 m except
+    open-ended top/bottom), read as majority-vote over a 5x5-pixel (~165 x 165 m ground) block centred
+    on the district's Wikipedia-listed lat/lon point (a single representative point, NOT a district-wide/polygon
+    statistic — a district can straddle several elevation classes; this is one sampled point only). Sample
+    was internally consistent (no distant-class contamination in the 5x5 block).
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (RTSD Oct 2010, 1:125,000, MSL datum, 2x2km survey grid)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon + BMA map number, used
+    only as the sampling point locator, not as an elevation source)
+- district_th: วังทองหลาง
+  district_en: Wang Thonglang
+  district_code: '1045'
+  bma_map_number: 45
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''1
+    - 1.5 m'': 6, ''3 - 3.5 m'': 14, ''>= 3.5 m'': 5}) mixed the majority class ''3 - 3.5 m'' with a distant
+    class (>=2 elevation tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a known artifact where
+    the map''s printed district-name text, road lines, or dike markers sit exactly at the plotted centroid
+    and get misclassified by nearest-legend-color matching (same failure mode already documented in raw/rtsd_2010/sammakorn_sample.json''s
+    ''limits'' section). Left OPEN rather than reporting a contaminated majority; a real reading would
+    need the sample point moved off the label text or a district boundary polygon to sample many points
+    and take a spatial (not just pixel-neighbourhood) majority -- not attempted here (20-minute sampling
+    budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: คลองสามวา
+  district_en: Khlong Sam Wa
+  district_code: '1046'
+  bma_map_number: 46
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''0.5
+    - 1 m'': 4, ''3 - 3.5 m'': 4, ''1 - 1.5 m'': 16, ''>= 3.5 m'': 1}) mixed the majority class ''1 -
+    1.5 m'' with a distant class (>=2 elevation tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels
+    -- a known artifact where the map''s printed district-name text, road lines, or dike markers sit exactly
+    at the plotted centroid and get misclassified by nearest-legend-color matching (same failure mode
+    already documented in raw/rtsd_2010/sammakorn_sample.json''s ''limits'' section). Left OPEN rather
+    than reporting a contaminated majority; a real reading would need the sample point moved off the label
+    text or a district boundary polygon to sample many points and take a spatial (not just pixel-neighbourhood)
+    majority -- not attempted here (20-minute sampling budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: บางนา
+  district_en: Bang Na
+  district_code: '1047'
+  bma_map_number: 47
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''<
+    0 m'': 14, ''>= 3.5 m'': 11}) mixed the majority class ''< 0 m'' with a distant class (>=2 elevation
+    tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a known artifact where the map''s printed
+    district-name text, road lines, or dike markers sit exactly at the plotted centroid and get misclassified
+    by nearest-legend-color matching (same failure mode already documented in raw/rtsd_2010/sammakorn_sample.json''s
+    ''limits'' section). Left OPEN rather than reporting a contaminated majority; a real reading would
+    need the sample point moved off the label text or a district boundary polygon to sample many points
+    and take a spatial (not just pixel-neighbourhood) majority -- not attempted here (20-minute sampling
+    budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: ทวีวัฒนา
+  district_en: Thawi Watthana
+  district_code: '1048'
+  bma_map_number: 48
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''0.5
+    - 1 m'': 12, ''>= 3.5 m'': 13}) mixed the majority class ''>= 3.5 m'' with a distant class (>=2 elevation
+    tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a known artifact where the map''s printed
+    district-name text, road lines, or dike markers sit exactly at the plotted centroid and get misclassified
+    by nearest-legend-color matching (same failure mode already documented in raw/rtsd_2010/sammakorn_sample.json''s
+    ''limits'' section). Left OPEN rather than reporting a contaminated majority; a real reading would
+    need the sample point moved off the label text or a district boundary polygon to sample many points
+    and take a spatial (not just pixel-neighbourhood) majority -- not attempted here (20-minute sampling
+    budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: ทุ่งครุ
+  district_en: Thung Khru
+  district_code: '1049'
+  bma_map_number: 49
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''0.5
+    - 1 m'': 16, ''>= 3.5 m'': 9}) mixed the majority class ''0.5 - 1 m'' with a distant class (>=2 elevation
+    tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a known artifact where the map''s printed
+    district-name text, road lines, or dike markers sit exactly at the plotted centroid and get misclassified
+    by nearest-legend-color matching (same failure mode already documented in raw/rtsd_2010/sammakorn_sample.json''s
+    ''limits'' section). Left OPEN rather than reporting a contaminated majority; a real reading would
+    need the sample point moved off the label text or a district boundary polygon to sample many points
+    and take a spatial (not just pixel-neighbourhood) majority -- not attempted here (20-minute sampling
+    budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)
+- district_th: บางบอน
+  district_en: Bang Bon
+  district_code: '1050'
+  bma_map_number: 50
+  ground_level_m_msl_min: null
+  ground_level_m_msl_max: null
+  ground_level_m_msl_typical: null
+  below_msl: OPEN
+  subsidence_rate_mm_yr: null
+  elevation_tag: OPEN
+  below_msl_tag: OPEN
+  notes: 'RTSD raster sample at this district''s centroid point was UNSTABLE: the 5x5-pixel block ({''1
+    - 1.5 m'': 17, ''3 - 3.5 m'': 5, ''0 - 0.5 m'': 2, ''< 0 m'': 1}) mixed the majority class ''1 - 1.5
+    m'' with a distant class (>=2 elevation tiers away, e.g. ''>= 3.5 m'' brown) at >=4/25 pixels -- a
+    known artifact where the map''s printed district-name text, road lines, or dike markers sit exactly
+    at the plotted centroid and get misclassified by nearest-legend-color matching (same failure mode
+    already documented in raw/rtsd_2010/sammakorn_sample.json''s ''limits'' section). Left OPEN rather
+    than reporting a contaminated majority; a real reading would need the sample point moved off the label
+    text or a district boundary polygon to sample many points and take a spatial (not just pixel-neighbourhood)
+    majority -- not attempted here (20-minute sampling budget for this check).'
+  sources:
+  - raw/rtsd_2010/flood_01.png + georef.json (attempted, contaminated -- see notes)
+  - https://en.wikipedia.org/wiki/List_of_districts_of_Bangkok (centroid lat/lon locator only)

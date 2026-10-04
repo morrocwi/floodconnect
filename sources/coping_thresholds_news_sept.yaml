@@ -1,0 +1,228 @@
+# coping_thresholds_news_sept.yaml -- news cross-check for the Bangkok Sept 2566-2569 rain
+# ladder. WRITES NEW DATA ONLY (does not edit sources/coping_thresholds.yaml or
+# docs/LAYER0_IN_OUT_CAPACITY.md -- a separate change owns those + all commits).
+#
+# Founder instruction (verbatim, 2026-09-27): "เอาอันนี้เป็นเกณฑ์ได้ และเทียบข่าวช่วงกันยาด้วยว่า
+# จำนวนน้ำแต่ละช่วงเป็นยังไง" + "จริงๆ แล้วในอดีต กทม. รับฝนได้แค่ไหนโดยไม่ท่วม และเท่าไหร่คืออันตราย
+# วิกฤต มหาอุทกภัย" -- use the DDS monthly chart as the baseline, cross-check each September
+# against news for what the rain actually did; derive coped/danger/crisis/catastrophe bands
+# from real evidence pairs, not guesses.
+#
+# Method: WebSearch (unlimited) + <=14 WebFetch (one request per URL, archived under
+# raw/news/2026-09-27/). Every fetched URL's extraction is archived there; this file cites
+# those archive files as source, not the live URL, since the live page can change.
+#
+# Schema: same as sources/coping_thresholds.yaml (unit, variable, value, unit_of_value,
+# outcome, cause, event, date, station, source, tag, note) plus `window` (mm/h | mm/24h |
+# mm/month | qualitative) where the base file's schema left it implicit.
+
+schema_note: >
+  Extends sources/coping_thresholds.yaml's row schema with an explicit `window` field
+  (the rain-accumulation window a value was measured over) since this file mixes mm/24h,
+  partial-window, and monthly figures side by side and the window must never be dropped
+  when comparing two mm values.
+
+rows:
+  # ===================== bangkok -- Sept 2566/2567/2568 outcome search (news) =====================
+  - unit: bangkok
+    variable: rain_month_mm
+    value: 400.5
+    window: mm/month
+    outcome: no_evidence_found
+    cause: rain
+    event: null
+    date: "2023-09"
+    station: null
+    source: "docs/LAYER0_IN_OUT_CAPACITY.md §6 (DDS chart) + this check's WebSearch pass, see raw/news/2026-09-27/websearch_2566_2567_2568_no_distinct_event_found.txt"
+    tag: OPEN
+    note: >
+      Searched (Thai + English, 8 distinct queries) for a September 2566 Bangkok-wide
+      flood/no-flood news outcome tied to this monthly total. Every query returned only
+      the September 2569 event (confirmed by directly re-fetching one underlying article's
+      publish date -- see raw/news/2026-09-27/thaipbs_558588_disaster_declaration_date_check.txt).
+      No genuine 2566-dated Bangkok flood-disaster article was found. This is
+      "searched, not found" -- a stronger OPEN than "not yet searched" -- but still OPEN,
+      never assumed either way.
+  - unit: bangkok
+    variable: rain_month_mm
+    value: 234.0
+    window: mm/month
+    outcome: no_evidence_found
+    cause: rain
+    event: null
+    date: "2024-09"
+    station: null
+    source: "docs/LAYER0_IN_OUT_CAPACITY.md §6 (DDS chart) + this check's WebSearch pass, see raw/news/2026-09-27/websearch_2566_2567_2568_no_distinct_event_found.txt"
+    tag: OPEN
+    note: >
+      Same search-not-found result as the 2566 row above, for 2567. Value is BELOW the
+      30-yr mean (322.6mm full month) -- a real candidate for a "no widespread flood" month,
+      but no news confirmation exists in this check, so it is NOT used as threshold_coped_max
+      (that would be inferring an outcome from a rain total alone, which this repo's own
+      rule forbids -- coped_max must be an observed non-flood day, not an assumption from a
+      lower-than-average number).
+  - unit: bangkok
+    variable: rain_month_mm
+    value: 356.5
+    window: mm/month
+    outcome: no_evidence_found
+    cause: rain
+    event: null
+    date: "2025-09"
+    station: null
+    source: "docs/LAYER0_IN_OUT_CAPACITY.md §6 (DDS chart) + this check's WebSearch pass, see raw/news/2026-09-27/websearch_2566_2567_2568_no_distinct_event_found.txt"
+    tag: OPEN
+    note: >
+      Same search-not-found result for 2568's monthly total -- BUT this check DID find one
+      genuine, distinctly-dated news item inside September 2568 (14 ก.ย. 2568,
+      street-flooding-only, no house flooding/casualties/disaster declaration reported) --
+      see the `bangkok / street_flooding_only_event` row below. That single day is real
+      evidence of a coped-like (street-only) outcome somewhere within this month, but it
+      carries no mm figure, so it cannot become a numeric threshold_coped_max row either.
+
+  - unit: bangkok
+    variable: street_flooding_only_event
+    value: null
+    window: qualitative
+    outcome: coped_street_only
+    cause: rain
+    event: null
+    date: "2025-09-14"
+    station: "หลายเขต: ห้วยขวาง ดอนเมือง บางเขน สายไหม คลองสามวา คันนายาว บึงกุ่ม สะพานสูง ประเวศ เมือง ลาดกระบัง หนองจอก"
+    source: "raw/news/2026-09-27/thansettakij_638849_sep14_2568_street_only.txt (thansettakij.com/general-news/638849, ยืนยันวันที่ตีพิมพ์ 14 ก.ย. 2568)"
+    tag: RELAYED
+    note: >
+      Genuine, confirmed-dated street-flooding-only day: multiple districts had standing
+      water on roads, ZERO mention of house flooding, casualties, or a disaster
+      declaration. This is real evidence that "รับได้ (ท่วมขังถนนแต่ไม่ท่วมบ้าน)" outcomes
+      happen on ordinary September days -- but NO mm figure was published, so this row
+      stays a qualitative/state observation (mirrors how canal_backflow is handled in the
+      base file), never converted into a fabricated coped_max number.
+
+  # ===================== bangkok -- additional Sept 2569 station readings (cross-check) =====================
+  - unit: bangkok_east
+    variable: rain_partial_window_mm
+    value: 101.5
+    window: "cumulative as of 07:00, 25 Sep 2569 (window start not stated in source)"
+    outcome: flooded
+    cause: rain
+    event: bkk_2569
+    date: "2026-09-25T07:00"
+    station: "ปตร.ประชาร่วมใจ (มีนบุรี)"
+    source: "raw/news/2026-09-27/thestandard_minburi_drainage_stations.txt (thestandard.co/bangkok-flood-minburi-drainage/)"
+    tag: RELAYED
+    note: "Same bkk_2569 event as the 203-205mm/24h rows already in sources/coping_thresholds.yaml, different station/day-fraction -- NOT merged into that mm/24h band since the accumulation window here is not stated cleanly (partial-day, not a clean 24h read)."
+  - unit: bangkok_east
+    variable: rain_partial_window_mm
+    value: 96.5
+    window: "cumulative as of 07:00, 25 Sep 2569 (window start not stated in source)"
+    outcome: flooded
+    cause: rain
+    event: bkk_2569
+    date: "2026-09-25T07:00"
+    station: "ปตร.คลองสามวา"
+    source: "raw/news/2026-09-27/thestandard_minburi_drainage_stations.txt"
+    tag: RELAYED
+  - unit: bangkok_east
+    variable: rain_partial_window_mm
+    value: 86.5
+    window: "cumulative as of 07:00, 25 Sep 2569 (window start not stated in source)"
+    outcome: flooded
+    cause: rain
+    event: bkk_2569
+    date: "2026-09-25T07:00"
+    station: "ปตร.คลองประเวศฯ-ลาดกระบัง"
+    source: "raw/news/2026-09-27/thestandard_minburi_drainage_stations.txt"
+    tag: RELAYED
+
+  # ===================== bangkok -- BMA/expert coping-capacity figures (design, conflicting) =====================
+  - unit: bangkok
+    variable: design_capacity_mm_per_day
+    value: 60.0
+    window: mm/24h
+    outcome: design_only
+    cause: rain
+    event: null
+    date: "2026-09-27"
+    station: null
+    source: "raw/news/2026-09-27/bangkokbiznews_1253635_150mm_capacity.txt (bangkokbiznews.com/sustainability/1253635, quoting [ตำแหน่งเท่านั้น] CEO of a private water-management engineering consulting firm, Team Consulting Engineering and Management)"
+    tag: RELAYED
+    note: >
+      OPEN CONFLICT with the existing design row in sources/coping_thresholds.yaml
+      (bangkok_east.rain_24h_mm.design = 80.0mm/day, VERIFIED, sourced from แผนปฏิบัติราชการ
+      2569 สนน. กทม. itself). This 60mm/day figure comes from a private consulting-firm
+      expert quoted in the news, not a primary BMA planning document -- kept as a SEPARATE
+      row, not merged/averaged/overwritten. Two different "official-sounding" capacity
+      numbers (60 vs 80mm/day) now coexist in this repo's evidence base; neither
+      supersedes the other without a primary BMA source resolving it -- flagged OPEN in the
+      derived section below and in the Thai doc.
+  - unit: bangkok
+    variable: design_capacity_mm_per_day
+    value: 50.0
+    window: mm/24h
+    outcome: design_only
+    cause: rain
+    event: null
+    date: "2026-09-27"
+    station: null
+    source: "this check's WebSearch synthesis of multiple outlets (bangkokbiznews.com/news/news-update/1253591 and related coverage), not independently WebFetched -- see raw/news/2026-09-27/websearch_2566_2567_2568_no_distinct_event_found.txt for the search-log discipline used across this check; this specific figure was NOT itself re-fetched, tag reflects that"
+    tag: RELAYED
+    note: >
+      A repeated "ระบบระบายน้ำของกรุงเทพฯ สามารถรองรับฝนประมาณ 50-80 มิลลิเมตร" range appears
+      across several outlets' coverage of the same 2569 event -- the upper end (80) matches
+      the existing VERIFIED base-file design figure; the lower end (50) does not match
+      either the 60 or 80 figures above. Recorded as a third data point in the same OPEN
+      conflict, not resolved.
+
+  # ===================== bangkok -- TMD flood/great-flood definitions (qualitative, no mm) =====================
+  - unit: bangkok
+    variable: tmd_flood_definition
+    value: null
+    window: qualitative
+    outcome: reference
+    cause: rain
+    event: null
+    date: "2026-09-23"
+    station: null
+    source: "raw/news/2026-09-27/thaipbs_558415_flood_definitions.txt (thaipbs.or.th/news/content/558415, quoting [ตำแหน่งเท่านั้น] Director, Radar and Satellite Data Analysis Division, TMD)"
+    tag: RELAYED
+    note: >
+      TMD's own official distinction between อุทกภัย (flood) and มหาอุทกภัย (great flood) is
+      QUALITATIVE ONLY -- duration, breadth of area affected, and intensity/persistence of
+      the driving weather system (low-pressure cell, storm, monsoon trough), NOT a stated
+      mm/24h or mm/month numeric threshold. TMD explicitly names the 2554 floods as the
+      มหาอุทกภัย exemplar. This independently confirms
+      docs/LAYER0_IN_OUT_CAPACITY.md §5's existing treatment of 2554 as "ไม่ใช่ threshold
+      ฝนรายวัน" (not a daily-rain threshold) -- TMD's own criteria agree there is no single
+      rain-mm number that defines มหาอุทกภัย; it is a duration+breadth+system-strength
+      class, orthogonal to the mm/24h axis this ladder otherwise uses.
+
+# ------------------------------------------------------------------------------------------
+# derived: same convention as sources/coping_thresholds.yaml -- plain min/max over rows above,
+# not a registered equation. This block does not re-derive the base file's bands; it adds
+# what this news pass changes or leaves unchanged.
+derived:
+  bangkok:
+    rain_month_mm_outcome_search:
+      sep_2566: {value: 400.5, outcome: OPEN, note: "searched, not found -- see rows above"}
+      sep_2567: {value: 234.0, outcome: OPEN, note: "searched, not found -- see rows above"}
+      sep_2568: {value: 356.5, outcome: OPEN, note: "searched, not found for the MONTH as a whole; but one genuine dated street-flooding-only day found within it (14 ก.ย. 2568, no mm figure)"}
+      status: "This news pass upgrades docs/LAYER0_IN_OUT_CAPACITY.md §6's outcome column from 'not yet fetched' to 'fetched, genuinely not found' for all three years -- the OPEN status itself is unchanged, but its evidentiary basis is now stronger (absence confirmed by search, not merely unattempted)."
+    coped_max_rain_24h_mm:
+      value: null
+      tag: OPEN
+      note: "UNCHANGED by this check -- still no BKK-wide day with high rain AND a confirmed no-significant-flooding outcome AND a stated mm/24h figure found anywhere in this repo's evidence, including this news round. The 14 ก.ย. 2568 street-only day is the closest qualitative match but has no mm figure (see street_flooding_only_event row) -- cannot be promoted to a numeric threshold without fabricating a number."
+    danger_min_rain_24h_mm:
+      value: null
+      tag: OPEN
+      note: "UNCHANGED -- no repo or news evidence yet isolates a rain mm/24h value that produced street-flooding-only (ท่วมขังถนน), distinct from the house-flooding crisis_min (203.0mm) below. The 14 ก.ย. 2568 day is evidence such a band EXISTS, just not evidence of WHERE its lower bound sits numerically."
+    crisis_min_rain_24h_mm:
+      value: 203.0
+      tag: VERIFIED
+      note: "UNCHANGED from sources/coping_thresholds.yaml -- this check adds corroborating (not replacing) partial-window station readings (101.5/96.5/86.5mm as of 07:00 25 Sep, a different window) from the SAME bkk_2569 event, and confirms via TMD's own spokesperson quote that no different mm threshold exists for the mahaututokphai class."
+    design_capacity_conflict:
+      value_a: {value: 80.0, unit: "mm/day", tag: VERIFIED, source: "แผนปฏิบัติราชการ 2569 สนน. กทม. (base file)"}
+      value_b: {value: 60.0, unit: "mm/day", tag: RELAYED, source: "Team Consulting Engineering and Management CEO, quoted 27 ก.ย. 2569"}
+      value_c: {value: 50.0, unit: "mm/day (as lower end of a 50-80 range)", tag: RELAYED, source: "multiple outlets, same 2569 event coverage"}
+      status: OPEN
+      note: "Three non-identical 'official-sounding' BMA design-capacity figures now exist across this repo's evidence (80, 60, and a 50-80 range). None is discarded; none is treated as superseding another. Resolving this requires a primary BMA/DDS planning-document citation, not another news quote -- flagged as the next open task, not solved here."

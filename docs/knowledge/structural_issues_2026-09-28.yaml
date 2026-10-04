@@ -1,0 +1,545 @@
+schema_version: 1
+doc_kind: structural_issue_register
+status_th: >
+  ทะเบียนปัญหาเชิงโครงสร้าง — ย้ายจาก scratchpad (สถานะเดิม proposal_not_yet_toledo) เข้าคลังจริงแล้ว
+  โดยงาน "ทำให้เชื่อมกันหละ" 2026-09-28 (ตาม FLOW_STALL_TYPOLOGY.md §10 + docs/TYPOLOGY_GRAPH.md).
+  ไม่มีสมการในไฟล์นี้ (ไม่มีอะไรถูก "derive"). รูปแบบไฟล์นี้ต่อยอดจาก
+  docs/knowledge/structural_failure_hazard_class_2026-09-28.yaml (schema_version/doc_kind/status_th
+  pattern เดิม) — ไม่ใช่ schema คู่ขนานใหม่. แถวด้านล่างคือปัญหาเชิงโครงสร้างจาก
+  STRUCTURAL_ISSUES_2026-09-28.md แปลงเป็น machine-readable rows พร้อม typology tag ที่อ้างอิง
+  ทะเบียนจริง `typology/nodes/*.yaml`/`typology/edges/*.yaml` (ไม่ใช่ proposal เฉย ๆ อีกต่อไป --
+  node/edge kind ที่ถูกอ้างถึงถูก implement แล้วใน `tools/typology/build_graph.py`).
+  แก้ไขตามรีวิวอิสระ 2026-09-28: ตัวเลขปั๊มสัมมากรแก้เป็น "สถานี 4/4 ขัดข้อง · เครื่อง 0/11 เดิน"
+  ทุกแถว (เดิมปนกัน 0/11 กับ 0/4), และ `decides` ในทะเบียนจริงไม่ชี้ไปที่ `edge` อีกต่อไป (ดู
+  edges/owned_by.yaml, edges/decides.yaml). registered in docs/knowledge/INDEX.yaml.
+scope:
+  event: "กทม.ฝั่งตะวันออก/สัมมากร 24-28 ก.ย. 2569"
+  reuse_of:
+    - docs/knowledge/THAI_WATER_GOVERNANCE_MAP.md
+    - docs/knowledge/CASE_LESSONS_STRUCTURAL.md
+    - docs/knowledge/card_research_thai_flood_governance_fragmentation.md
+    - docs/knowledge/case_interprovincial_gate_politics.md
+    - docs/knowledge/structural_failure_hazard_class_2026-09-28.yaml
+    - docs/knowledge/RAIN_ALERT_THRESHOLDS_CROSS_AGENCY_2026-09-27.md
+    - docs/knowledge/POWER_RESOURCE_MAP.md
+    - docs/knowledge/card_participatory_flood_mgmt.md
+    - docs/knowledge/card_yucharoen_model_2554.md
+    - docs/knowledge/card_opinion_2026-09-27_warning_incentives.md
+    - docs/knowledge/OVERLAP_REGISTER.md
+    - docs/knowledge/WATER_SYSTEM_DAG.md
+    - sources/registry.yaml (trust_tier vocabulary)
+    - social_listening.py (soi extraction / community_report rows)
+    - "PROP-FLOOD-03 (water balance), PROP-FLOOD-05a/05b (burden ledger), PROP-FLOOD-06 (unified ladder) -- Toledo codes cited, not re-derived"
+
+issues:
+  - id: ISSUE-LAW-01
+    layer: law_authority
+    statement_th: >
+      ไม่มีกฎหมายเดียวครอบคลุมการจัดการน้ำ -- อำนาจกระจายใน 36 กฎหมายหลัก + ~2,000 กรอบรอง, 31 กรม/
+      10 กระทรวง/6 คณะกรรมการชาติ.
+    actors_affected: ["ประชาชนทุกฝั่งประตูน้ำ", "อปท./เขต"]
+    actors_with_power: ["31 กรม (10 กระทรวง)", "สทนช.", "6 คณะกรรมการระดับชาติ"]
+    typology_tags:
+      node_kinds: ["agency"]
+      edge_kinds: []
+      status: "PROPOSAL-in-FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md sec1"
+    evidence:
+      - {source: "card_research_thai_flood_governance_fragmentation.md (a)1, OECD Development Matters 2018", tag: RELAYED}
+    counter_evidence:
+      - {source: "เหตุการณ์นี้เองยังไม่มีเอกสารวิเคราะห์ระดับปฏิบัติการวันต่อวันที่ยืนยันผลของ fragmentation โดยตรง", tag: OPEN}
+    floodconnect_signal: "missing -- ไม่มีหน้าแสดงผังอำนาจต่อผู้ใช้"
+    status: OPEN
+
+  - id: ISSUE-LAW-02
+    layer: law_authority
+    statement_th: >
+      กติกาผันน้ำ/ปิดเปิดประตูระหว่างพื้นที่ ไม่มีสัดส่วน/ตารางเวลาที่ประกาศล่วงหน้า -- RID formal
+      authority, de facto รับแรงกดดันสองทาง.
+    actors_affected: ["ชุมชนฝั่งรับภาระ (นอกคัน/ปลายน้ำ)"]
+    actors_with_power: ["กรมชลประทาน (RID)", "ผู้ว่าฯ กทม./รองผู้ว่าฯ"]
+    typology_tags:
+      node_kinds: ["gate", "agency"]
+      edge_kinds: ["decides", "owned_by"]
+      status: "decides/owned_by = PROPOSAL, gate node = EXISTING (FLOW_STALL_TYPOLOGY.md)"
+    evidence:
+      - {source: "case_interprovincial_gate_politics.md (a), ทุ่งรับน้ำอยุธยา", tag: RELAYED}
+      - {source: "S2 (Facebook post, unverified): ยกประตูลาดกระบัง 50 ซม. + เปิดเต็มวัดกระทุ่มเสือปลา เพราะสถานีสูบประเวศบุรีรมย์ปั๊มออกบางปะกงไม่ได้", tag: "RELAYED-unverified"}
+      - {source: "S4/S6 (แถลงทางการ กทม. 28 ก.ย.): ระบายเต็มกำลังทางแสนแสบ-ประเวศ, ลดแสนแสบ-ประเวศเพื่อรับน้ำ", tag: RELAYED}
+    counter_evidence:
+      - {source: "case_interprovincial_gate_politics.md (b): ไม่พบหลักฐานยืนยันความขัดแย้งประตูจุฬาลงกรณ์/สมุทรปราการ", tag: OPEN}
+      - {source: "แถลงทางการ (S4/S6) ไม่ยืนยันรายละเอียดเฉพาะจุดที่ S2 อ้าง -- เก็บคู่กัน ไม่เลือกฝั่ง", tag: OPEN}
+    floodconnect_signal: "docs/knowledge/structural_failure_hazard_class_2026-09-28.yaml pattern + burden ledger (site build_burden_ledger_section_html) -- อนุมานมีอยู่แล้ว, ยังไม่แสดงเป็นภาษาประชาชน"
+    status: OPEN
+
+  - id: ISSUE-AGENCY-01
+    layer: agency
+    statement_th: >
+      ปภ.ส่วนกลางไม่สามารถรู้ได้ว่าเซนเซอร์เป็นของใคร (เช่น เซนเซอร์แสนแสบเป็นของ กทม.) โดยหลักการท้องถิ่น
+      ต้องเตือนก่อน.
+    actors_affected: ["ประชาชนที่รอสัญญาณเตือนภัย"]
+    actors_with_power: ["ปภ.", "กทม./สนน. (เจ้าของเซนเซอร์จริง)"]
+    typology_tags:
+      node_kinds: ["sensor", "agency"]
+      edge_kinds: ["owned_by"]
+      status: "PROPOSAL -- sensor.owned_by ยังไม่มี join key จริง (FLOW_STALL_TYPOLOGY_EXTENSION §4b: OPEN)"
+    evidence:
+      - {source: "S1: รศ.ดร.เสรี ศุภราทิตย์ ในรายการโหนกระแส", tag: RELAYED}
+      - {source: "CASE_LESSONS_STRUCTURAL.md ปัญหาที่ 10 accountability-authority decoupling, 4 อินสแตนซ์อิสระ", tag: RELAYED}
+    counter_evidence:
+      - {source: "ยังไม่มีตัวบทกฎหมาย/ระเบียบที่คลังนี้อ่านตรงยืนยันคำว่า 'ท้องถิ่นต้องเตือนก่อน' เป็นตัวบทจริง", tag: OPEN}
+    floodconnect_signal: "missing -- ไม่มี field sensor_owner_agency ต่อสถานีในระบบปัจจุบัน"
+    status: OPEN
+
+  - id: ISSUE-AGENCY-02
+    layer: agency
+    statement_th: >
+      ศูนย์บัญชาการที่ตั้งใหม่ระหว่าง/หลังวิกฤต (กบอ./ศปภ./war-room ที่เสนอ) ซ้อนทับ ไม่แทนที่กลไกเดิม --
+      PARTLY CONFIRMED (หนักไปทาง confirmed สำหรับ 2554 เท่านั้น).
+    actors_affected: ["ประชาชนที่รอการตัดสินใจสอดประสาน"]
+    actors_with_power: ["สทนช./ปภ.", "กทม./สนน."]
+    typology_tags: {node_kinds: ["agency"], edge_kinds: ["decides"], status: "EXISTING agency nodes ใน WATER_SYSTEM_DAG.md, decides edge = PROPOSAL"}
+    evidence:
+      - {source: "card_research_thai_flood_governance_fragmentation.md (a)2, Water Knowledge Hub case study: กบอ./SCWRM duplicated roles", tag: RELAYED}
+      - {source: "S5: อ.เสรี ศุภราทิตย์ + อ.ศศิน เฉลิมลาภ ในรายการโหนกระแส, เสนอ war room เชื่อม ปภ.-สทนช.", tag: RELAYED}
+      - {source: "S7 (ผู้ใช้เฟซบุ๊ก/นักวิจารณ์นโยบาย): บทเรียนตั้งแต่ 2554 ไม่ถูกแปลงเป็นโครงสร้างบัญชาการใหม่", tag: "RELAYED-OPINION"}
+    counter_evidence:
+      - {source: "S14 (แถลง กทม. 25 ก.ย.): pre-lowering บึงหนองบอนล่วงหน้า -- ตัวอย่างการกระทำเชิงรุกจริง ค้านคำกล่าวว่า 'รัฐทำงานได้แค่เชิงรับ' ของ S7 บางส่วน", tag: RELAYED}
+    floodconnect_signal: "missing -- ไม่มีหน้าแสดง 'ใครเป็นผู้ประเมินสถานการณ์เบื้องต้นตอนนี้'"
+    status: OPEN
+
+  - id: ISSUE-DATA-01
+    layer: data_sensors
+    statement_th: >
+      16 schemes เกณฑ์ฝน/น้ำจาก 8 หน่วยงาน ไม่ตรงกัน -- ไม่มี sensor/threshold registry กลาง; บาง
+      หน่วยงาน (RID/HII/ปภ. บางส่วน) ไม่ระบุตัวเลขอันตรายเลย.
+    actors_affected: ["ทุกคนที่ตีความตัวเลขจากหลายแหล่งพร้อมกัน"]
+    actors_with_power: ["TMD/HII/RID/ปภ./กทม./จังหวัด (แต่ละหน่วยเจ้าของเซนเซอร์)"]
+    typology_tags: {node_kinds: ["sensor"], edge_kinds: ["owned_by"], status: "PROPOSAL"}
+    evidence:
+      - {source: "RAIN_ALERT_THRESHOLDS_CROSS_AGENCY_2026-09-27.md -- VERIFIED โดยคลังนี้เอง: 2 เกณฑ์ TMD ไม่ตรงกัน, การแปลง 80mm/day<->58.7mm/hr ผลิตซ้ำไม่ได้จาก IDF table เดียวกัน (R2 worked check)", tag: VERIFIED}
+    counter_evidence:
+      - {source: "ปัญหานี้เป็นความไม่สอดคล้องทางเทคนิค/มาตรฐาน ไม่ใช่หลักฐานการปกปิดข้อมูลโดยเจตนา -- ต้องแยกจากกัน", tag: INSTINCT}
+    floodconnect_signal: "sources/rain_alert_thresholds_crosswalk.yaml unified_ladder มีอยู่แล้ว (mapping ภายใน) -- ยังไม่เผยแพร่หน้าสาธารณะ"
+    status: OPEN
+
+  - id: ISSUE-DATA-02
+    layer: data_sensors
+    statement_th: >
+      สถานีขัดข้องรายงานค่า 0.0 ซึ่งอ่านผิดได้ง่ายว่า "น้ำแห้ง" -- ยังไม่มี flag แยก sensor_fault
+      ออกจาก reading_value=0 ใน feed สาธารณะ.
+    actors_affected: ["ประชาชนที่อ่าน dashboard"]
+    actors_with_power: ["สนน. (SCADA)"]
+    typology_tags: {node_kinds: ["sensor"], edge_kinds: [], status: "attribute เพิ่มบน Node เดิม ไม่ใช่ kind ใหม่"}
+    evidence:
+      - {source: "MEASURED: สถานี 4/4 (ST.SPS.01-04) ขัดข้อง, เครื่องรวม 0/11 เดิน (สถานี != เครื่อง, แก้ตามรีวิวอิสระ 2026-09-28); THAI_WATER_GOVERNANCE_MAP.md §0.2/§(8) คำถามเปิดข้อ 3, docs/LAYER0_IN_OUT_CAPACITY.md §7", tag: MEASURED}
+    counter_evidence: []
+    floodconnect_signal: "site/build_page.py build_pump_rows() แสดงสถานะปั๊มอยู่แล้ว (MEASURED) -- ยังไม่มี explicit sensor_fault badge แยกจาก reading=0 ใน build_indicator_tiles()"
+    status: OPEN
+
+  - id: ISSUE-DATA-03
+    layer: data_sensors
+    statement_th: >
+      ข้อมูลชุมชนมาถึงก่อนหน่วยงานราชการ (04:00 น. 26 ก.ย.) แต่ไม่นับเป็นแหล่งทางการ/ไม่ใช้เป็น
+      early-warning trigger อย่างเป็นระบบ.
+    actors_affected: ["ชุมชนที่รายงานเอง"]
+    actors_with_power: ["หน่วยงานที่กำหนดว่าอะไรคือ 'แหล่งทางการ'"]
+    typology_tags: {node_kinds: ["community_group (agency_class=online_community_group)"], edge_kinds: ["reports_to"], status: "PROPOSAL"}
+    evidence:
+      - {source: "MEASURED: docs/LESSONS_nodes_2026-09-27.md ตาราง A, ผ่าน THAI_WATER_GOVERNANCE_MAP.md §0.2", tag: MEASURED}
+      - {source: "S9 (แถลง กทม. 28 ก.ย.): ทีมไล่เคสผู้ป่วยที่พบจากโซเชียลมีเดียโดยเฉพาะ -- โซเชียลเป็น intake channel โดยพฤตินัยแล้วบางส่วน", tag: RELAYED}
+    counter_evidence:
+      - {source: "การยกระดับรายงานชุมชนเป็นทางการมีความเสี่ยง (ข้อมูลผิด/ปลอมได้ง่ายกว่าสถานีวัด)", tag: INSTINCT}
+    floodconnect_signal: "social_listening.py มี community_report rows อยู่แล้ว (build_community_rows/build_nearby_community_rows) -- ยังไม่ใช้เป็น early-warning trigger อย่างเป็นระบบสำหรับสัมมากรโดยเฉพาะ"
+    status: OPEN
+
+  - id: ISSUE-DECISION-01
+    layer: decision_command
+    statement_th: >
+      การย้ายภาระน้ำระหว่างพื้นที่เกิดขึ้นจริง (คำกล่าวอ้าง S2-unverified: ยกประตูลาดกระบัง/เปิดวัด
+      กระทุ่มเสือปลา เพื่อลดภาระประเวศบุรีรมย์) โดยไม่มีช่องทางต่อรองที่มองเห็นได้จากภายนอก.
+    actors_affected: ["ชุมชนริมน้ำวัดกระทุ่มเสือปลา (ตามคำกล่าวอ้าง)"]
+    actors_with_power: ["กทม. (ประตูลาดกระบัง/วัดกระทุ่มเสือปลา)", "RID (สถานีสูบประเวศบุรีรมย์)"]
+    typology_tags:
+      node_kinds: ["gate", "pump"]
+      edge_kinds: ["decides"]
+      burden_ledger_attribute: "BURDENED/RELIEVED (PROP-FLOOD-05a/05b, EXISTING -- ไม่ใช่ edge kind ใหม่)"
+      status: "ต้องเพิ่ม node ST.PVR.01 (สถานีสูบประเวศบุรีรมย์) ก่อนตรวจ S2 บนกราฟได้ -- OPEN, missing node"
+    evidence:
+      - {source: "S2 unverified", tag: "RELAYED-unverified"}
+      - {source: "PROP-FLOOD-03 water balance (Toledo code, cited not re-derived)", tag: VERIFIED}
+    counter_evidence:
+      - {source: "burden ledger PROP-FLOOD-05a/05b ปัจจุบันอนุมานสถานะประตูจากส่วนต่างระดับ ไม่ใช่ประกาศทางการ -- ยังไม่ตรวจสอบว่าสอดคล้องกับ S2 หรือไม่ (งานถัดไป)", tag: INSTINCT}
+    floodconnect_signal: "site/build_page.py build_burden_ledger_section_html()/build_burden_ledger_rows_html() มีอยู่แล้ว -- ยังไม่มี explanatory copy ระดับ 'ทำไมโซนนี้รับน้ำเพิ่ม' สำหรับผู้ใช้ทั่วไป"
+    status: OPEN
+
+  - id: ISSUE-DECISION-02
+    layer: decision_command
+    statement_th: >
+      ปั๊มบึงหมู่บ้านสัมมากร 4/4 สถานีขัดข้อง (เครื่องรวม 0/11 เดิน, แก้ตามรีวิวอิสระ 2026-09-28) -- ใครรับผิดชอบปั๊ม/ไฟยังไม่ทราบ; ไม่มี edge จากภาคประชาชน
+      ไปถึงผู้ควบคุมปั๊มจริงในโครงสร้างข้อมูลปัจจุบัน.
+    actors_affected: ["ผู้อยู่อาศัยสัมมากร"]
+    actors_with_power: ["นิติบุคคลหมู่บ้าน (ไม่ยืนยัน) หรือ สนน./กฟน."]
+    typology_tags: {node_kinds: ["pump", "agency"], edge_kinds: ["owned_by", "operates"], status: "PROPOSAL -- ยังไม่มี owner ยืนยันในคลัง"}
+    evidence:
+      - {source: "MEASURED สถานี 4/4 ขัดข้อง, เครื่อง 0/11 เดิน (แก้ตามรีวิวอิสระ 2026-09-28); RELAYED bma_briefing.cause_of_local_pump_faults_note_th (สาเหตุยังไม่ทราบ)", tag: "MEASURED+RELAYED"}
+      - {source: "S10 (โพสต์กลุ่มชุมชน): ไฟดับซ.17/18 ติดต่อการไฟฟ้าไม่ได้", tag: RELAYED}
+    counter_evidence: []
+    floodconnect_signal: "THAI_WATER_GOVERNANCE_MAP.md §(7) checklist มีรายการนี้แล้ว -- FLOW_STALL_TYPOLOGY_EXTENSION §7c ยืนยันซ้ำผ่านการลากกราฟจริงว่าไม่มี edge เลย ไม่ใช่แค่ไม่รู้เจ้าของ"
+    status: OPEN
+
+  - id: ISSUE-WARNING-01
+    layer: warning_communication
+    statement_th: >
+      คำเตือน "เฝ้าระวัง"/"เอาอยู่" ไม่นำไปสู่การกระทำที่เจาะจงพื้นที่ได้.
+    actors_affected: ["ประชาชนทุกคนที่ได้รับคำเตือน"]
+    actors_with_power: ["ทุกหน่วยงานที่ออกคำเตือน"]
+    typology_tags: {node_kinds: ["warning_channel"], edge_kinds: ["warns"], cap_field: "instruction (OASIS CAP 1.2, RELAYED not-fetched)", status: PROPOSAL}
+    evidence:
+      - {source: "S5: อ.เสรี ศุภราทิตย์ + อ.ศศิน เฉลิมลาภ, เสนอ 'เตรียมรับสถานการณ์'/'เตรียมแผนเผชิญเหตุ' แทน", tag: RELAYED}
+      - {source: "S14 (แถลง กทม. 25 ก.ย.): ใช้คำ 'เฝ้าระวัง' จริงในแถลงการณ์เดียวกับ pre-lowering -- ตัวอย่างจริงของปัญหานี้", tag: RELAYED}
+    counter_evidence:
+      - {source: "S12 (TMD via user share): ประกาศฝน 13 จังหวัดใช้ภาษาห่วงใยเป็นรูปธรรม -- counter-example เชิงบวก; กทม.ไม่อยู่ในรายชื่อ 13 จังหวัด (OPEN ว่าเพราะเหตุใด)", tag: RELAYED}
+    floodconnect_signal: "sources/rain_alert_thresholds_crosswalk.yaml unified_ladder มีคำไทย actionable ต่อ rung อยู่แล้ว (L0-L5/LR) -- ยังไม่ผ่านการทดสอบผู้ใช้จริง"
+    status: OPEN
+
+  - id: ISSUE-WARNING-02
+    layer: warning_communication
+    statement_th: >
+      แถลงการณ์ทางการหลายช่องทางคู่ขนาน (Traffy Fondue, LINE, 1555, FB, สายด่วน) ไม่ reconcile กัน
+      เป็นภาพเดียว; ข้อมูล narrative บางจุดขัดกันเอง (S2 vs S4/S6).
+    actors_affected: ["ประชาชนที่ต้องเลือกเชื่อแหล่งใดแหล่งหนึ่งเอง"]
+    actors_with_power: ["ทุกหน่วยงานที่ออกแถลงการณ์คู่ขนาน"]
+    typology_tags: {node_kinds: ["warning_channel"], edge_kinds: ["warns"], status: "S14 ให้ตัวอย่าง 5 ช่องทางพร้อมกันจากหน่วยงานเดียว (กทม.) -- ยืนยัน pattern นี้ตรง"}
+    evidence:
+      - {source: "S14: Traffy Fondue, 1555, LINE @Traffyfondue, FB ศูนย์ป้องกันน้ำท่วม กทม., สายด่วน 0 2248 5115 -- 5 ช่องทางพร้อมกัน", tag: RELAYED}
+    counter_evidence:
+      - {source: "ความขัดแย้งอาจมาจากคนละระดับรายละเอียด (ภาพกว้าง vs จุดเฉพาะ) ไม่ใช่ความขัดแย้งเชิงข้อเท็จจริงเสมอไป", tag: INSTINCT}
+    floodconnect_signal: "sources/registry.yaml trust_tier + statement_contradictions_2026-09-27.yaml มีกติกา 'เก็บทั้งสองฝั่ง' อยู่แล้วสำหรับข้อมูลตัวเลขสถานี -- ยังไม่ครอบคลุมแถลงการณ์/คำกล่าวอ้างระดับ narrative"
+    status: OPEN
+
+  - id: ISSUE-PEOPLE-01
+    layer: people_community
+    statement_th: >
+      สัมมากรมีสัญญาณนำ MEASURED แล้ว (สถานีทางการเข้า WATCH/CRITICAL ก่อนบ้านแรกท่วมหลายชั่วโมง)
+      แต่ยังไม่แปลงเป็นเกณฑ์ประกาศของหมู่บ้านเอง.
+    actors_affected: ["ผู้อยู่อาศัยสัมมากร"]
+    actors_with_power: ["คณะกรรมการ/นิติบุคคลหมู่บ้านสัมมากร (ยังไม่ยืนยันการมีอยู่ในคลัง)"]
+    typology_tags: {node_kinds: ["agency (agency_class=juristic_village)"], edge_kinds: ["warns"], status: PROPOSAL}
+    evidence:
+      - {source: "MEASURED: LESSONS ตาราง C, สัญญาณนำ 4-6 ชม.", tag: MEASURED}
+      - {source: "card_hatyai_city_climate.md [HY]: เกณฑ์ธงผูกสถานี X.90/X.173A", tag: RELAYED}
+    counter_evidence:
+      - {source: "การแปลงสัญญาณ MEASURED เป็นเกณฑ์ประกาศต้องตรวจความเสถียรข้ามหลายเหตุการณ์ก่อน ไม่ใช่แค่ครั้งเดียว", tag: INSTINCT}
+    floodconnect_signal: "THAI_WATER_GOVERNANCE_MAP.md §(7) checklist ข้อแรก -- ยังไม่มี implementation"
+    status: OPEN
+
+  - id: ISSUE-PEOPLE-02
+    layer: people_community
+    statement_th: >
+      ช่องทางต่อรองภาระน้ำของประชาชนไม่มีกลไกทางการ -- บทเรียนคลองสามวา 2554 (ปะทะรุนแรง) ยังไม่ปิด
+      ในปัจจุบัน (OPEN ว่าเกิดซ้ำหรือไม่ในรอบนี้).
+    actors_affected: ["ชุมชนที่รับภาระน้ำ"]
+    actors_with_power: ["ผู้ตัดสินใจประตู (กทม./RID)"]
+    typology_tags: {node_kinds: [], edge_kinds: ["decides"], status: "อ้างอิง ISSUE-DECISION-01"}
+    evidence:
+      - {source: "THAI_WATER_GOVERNANCE_MAP.md §(6): คลองสามวา 2554 ปะทะรุนแรง, ทำลายทรัพย์สินราชการ", tag: RELAYED}
+    counter_evidence:
+      - {source: "ไม่มีแหล่งใหม่ในรอบนี้ (S1-S14) รายงานความขัดแย้ง/ชุมนุมในเหตุการณ์ 2569 -- OPEN ไม่ใช่สันนิษฐานว่าเกิดแน่", tag: OPEN}
+    floodconnect_signal: "missing -- นอกขอบเขตเทคนิคของ FloodConnect โดยตรง, สิ่งที่ทำได้คือ burden ledger โปร่งใส (ดู ISSUE-DECISION-01)"
+    status: OPEN
+
+  - id: ISSUE-PEOPLE-03
+    layer: people_community
+    statement_th: >
+      ภาคประชาชน (นิติบุคคลหมู่บ้าน, อาสาสมัครไม่เป็นทางการ, ร้านค้า, กลุ่มออนไลน์) ทำหน้าที่ resource
+      allocation เองคู่ขนานกับภาครัฐ โดยไม่มี edge เชื่อมเข้าสถาบันทางการอย่างเป็นระบบ ยกเว้นจุดที่ กทม.
+      เริ่มไล่เคสจากโซเชียลแล้ว (S9).
+    actors_affected: ["ผู้อยู่อาศัยสัมมากรและพื้นที่ใกล้เคียง"]
+    actors_with_power: ["นิติบุคคลหมู่บ้าน", "กทม. (ผ่านทีมไล่เคสโซเชียล)"]
+    typology_tags:
+      node_kinds: ["agency (agency_class in [juristic_village, volunteer_informal, local_shop, online_community_group, media_radio])", "resource"]
+      edge_kinds: ["supplies", "reports_to"]
+      status: "PROPOSAL, สรุปเปรียบเทียบกับ card_yucharoen_model_2554.md/card_participatory_flood_mgmt.md ใน FLOW_STALL_TYPOLOGY_EXTENSION §7d"
+    evidence:
+      - {source: "S8: เพจร้านค้าขอของบริจาคให้โรงเรียนสามแยกหลอแหล้ (ผู้ป่วยติดเตียงจำนวนมาก)", tag: RELAYED}
+      - {source: "S9: ทีม กทม. ไล่เคสจากโซเชียลมีเดีย", tag: RELAYED}
+      - {source: "card_yucharoen_model_2554.md หน้า 24-25: วินมอเตอร์ไซค์เป็นบัญชีทักษะลูกบ้านจริงตั้งแต่ 2554 -- รูปแบบซ้ำ 15 ปี", tag: RELAYED}
+    counter_evidence:
+      - {source: "card_participatory_flood_mgmt.md หน้า 322-326 ออกแบบบันไดมีส่วนร่วมแบบบนลงล่าง -- ไม่ครอบคลุมการไล่เคสแบบล่างขึ้นบนที่ S9 แสดง (ช่องว่างของวรรณกรรมเอง)", tag: INSTINCT}
+    floodconnect_signal: "missing -- ไม่มี resource/agency_class node ใดในคลังก่อนหน้านี้เลย เป็นชั้นข้อมูลใหม่จริง"
+    status: OPEN
+
+  - id: ISSUE-PEOPLE-04
+    layer: people_community
+    statement_th: >
+      ไฟฟ้าดับซอย 17/18 สัมมากร ไม่มีทางติดต่อการไฟฟ้านครหลวง (MEA) -- ไม่มี node/edge สำหรับ MEA ใน
+      คลังเลยจนถึงตอนนี้ แม้จะเป็นตัวแปรร่วมของปัญหาปั๊ม (ISSUE-DECISION-02).
+    actors_affected: ["ผู้อยู่อาศัยซอย 17/18 สัมมากร"]
+    actors_with_power: ["การไฟฟ้านครหลวง (MEA) -- ยังไม่มี agency node"]
+    typology_tags: {node_kinds: ["agency (AG_MEA)"], edge_kinds: ["reports_to", "owned_by", "warns"], status: "IMPLEMENTED -- AG_MEA node เดิมมีอยู่แล้วใน water_system_dag.mmd (ตรวจจริงแล้วโดย build_graph.py 2026-09-28, ข้อเสนอเดิมอ้างว่าหายไปผิด); warns edge AG_MEA -> OPEN ยังคงเปิดจริง (typology/edges/warns.yaml)"}
+    evidence:
+      - {source: "S10: โพสต์กลุ่มชุมชน (ไม่ระบุชื่อ), ไฟดับซ.17/18 ติดต่อการไฟฟ้าไม่ได้", tag: RELAYED}
+      - {source: "card_hatyai_city_climate.md [HY] paper/640: เสนอแยกไฟสถานีสูบ -- บทเรียนเดียวกันข้ามภาค", tag: RELAYED}
+    counter_evidence: []
+    floodconnect_signal: "node มีอยู่แล้ว (AG_MEA) -- ช่องว่างจริงคือไม่มี warns edge ที่ยืนยันได้จาก AG_MEA ไปถึง ซ.17/18 (typology/edges/warns.yaml, tag OPEN), ไม่ใช่ node หายไป"
+    status: OPEN
+
+  - id: ISSUE-LAW-03
+    layer: law_authority
+    statement_th: >
+      กพร. Joint KPI FY2569-2570 "การบริหารจัดการและอนุรักษ์ฟื้นฟูน้ำทั้งระบบ" นับ 29 หน่วยงาน
+      (22 ส่วนราชการ + 2 องค์การมหาชน + 4 รัฐวิสาหกิจ + กทม., host สทนช.) -- ตัวเลขนี้เป็นคนละ
+      กรอบ (frame) กับ 31 กรม/10 กระทรวง/36 กฎหมายหลักที่ ISSUE-LAW-01 อ้างจาก OECD Development
+      Matters 2018 -- **ไม่พยายาม reconcile สองตัวเลขนี้เข้าด้วยกัน** (คนละแหล่ง คนละปีที่นับ
+      คนละนิยามขอบเขต "หน่วยงานที่เกี่ยวข้องกับน้ำ") -- เก็บทั้งสองไว้คู่กันตามกติกาคลังนี้.
+      คำถามปิดท้ายของโพสต์ต้นทาง (Lanner, RELAYED): ในแต่ละช่วง (ปกติ/เตือนภัย/วิกฤต) ใครคือ
+      ผู้ตัดสินใจหลัก (lead decision-maker) และประชาชนควรติดต่อใคร -- คำถามนี้ยังไม่มีคำตอบใน
+      คลังนี้ ตรงกับ ISSUE-LAW-01/ISSUE-AGENCY-02 (ขาด "เจ้าภาพหลัก") โดยตรง.
+    actors_affected: ["ประชาชนที่ต้องเลือกติดต่อหน่วยงานถูกต้องในแต่ละช่วงสถานการณ์"]
+    actors_with_power: ["สทนช. (host agency, policy+coordination)", "29 หน่วยงานตาม Joint KPI"]
+    typology_tags:
+      node_kinds: ["agency", "ministry", "government"]
+      edge_kinds: ["part_of"]
+      status: "IMPLEMENTED -- typology/nodes/{agencies_joint_kpi_2026-09-28,ministries}.yaml + typology/edges/part_of.yaml"
+    evidence:
+      - {source: "Lanner (สื่อออนไลน์ภาคเหนือ) FB post ~27 ก.ย. 2569, relaying กพร. Joint KPI FY2569-2570 (29 หน่วยงาน list + role statements)", tag: RELAYED}
+    counter_evidence:
+      - {source: "ยังไม่ได้อ่านเอกสาร กพร. ตัวจริง -- ทุกแถวในทะเบียนนี้ verification_status: OPEN จนกว่าจะยืนยัน", tag: OPEN}
+      - {source: "ISSUE-LAW-01's 31 กรม/36 กฎหมาย (OECD 2018) เป็นคนละกรอบนับ, ไม่ reconcile กับ 29 หน่วยงานนี้", tag: OPEN}
+    floodconnect_signal: "missing -- ยังไม่มีหน้า 'ใครตัดสินอะไรในแต่ละช่วง' ต่อผู้ใช้ (เดียวกับ ISSUE-LAW-01)"
+    status: OPEN
+
+  - id: ISSUE-AGENCY-03
+    layer: agency
+    statement_th: >
+      นโยบายไทยกระจุกตัวที่ระยะ 3-4 ของวงจรภัยพิบัติ (เกิดเหตุ/หลังเกิดเหตุ -- รับมือ+เยียวยา)
+      มากกว่าระยะ 1-2 (ภาวะปกติ/ก่อนเกิดเหตุ -- เตรียมพร้อม+เตือนภัย+ป้องกัน) -- ทั้งสองบทความ TDRI
+      ชี้ทิศทางเดียวกันจากคนละมุม (ดร.นิพนธ์: เตรียมพร้อม+พยากรณ์/เตือนภัย → รับมือ/ช่วยเหลือ →
+      เยียวยา/ฟื้นฟู → ปรับแผน/mitigation incl. กฎหมายผังเมือง; ณัฐสิฏ: ภาวะปกติ/ก่อนเกิดเหตุ
+      (เตือนภัย)/เกิดเหตุ/หลังเกิดเหตุ, อ้างว่านโยบายไทยกระจุกที่ระยะ 3-4).
+    actors_affected: ["ประชาชนที่ต้องพึ่งการเตรียมพร้อม/เตือนภัยที่ยังไม่ได้รับความสำคัญเท่าการช่วยเหลือหลังเกิดเหตุ"]
+    actors_with_power: ["สทนช. (นโยบายภาพรวม)", "หน่วยงานทุกระดับที่จัดสรรงบ/ความสนใจข้ามระยะ"]
+    typology_tags:
+      node_kinds: ["warning_channel", "resource"]
+      edge_kinds: []
+      status: "IMPLEMENTED -- phase attribute (normal|pre_event|incident|post_event) on warning_channel/resource nodes + decides/warns/supplies edges"
+    evidence:
+      - {source: "TDRI ดร.นิพนธ์ พัวพงศกร, tdri.or.th/.../permanent-disaster-management..., 9 ธ.ค. 2025", tag: RELAYED}
+      - {source: "TDRI ณัฐสิฏ รักษ์เกียรติวงศ์, tdri.or.th/.../anatomy-of-preventable-ruin..., 3 ธ.ค. 2025", tag: RELAYED}
+    counter_evidence:
+      - {source: "ทุกแถว phase ในทะเบียนนี้เป็น INSTINCT (การจัดชั้นของงานนี้เอง ทับข้อมูลเหตุการณ์ 25-28 ก.ย. 2569 ที่มีอยู่แล้ว) ไม่ใช่การจัดชั้นที่ TDRI ทำเองรายรายการ", tag: INSTINCT}
+    floodconnect_signal: "missing -- ทุก resource/warning_channel ที่มีในคลังนี้เป็น phase=incident ทั้งหมด, ไม่มีตัวอย่าง phase=normal/pre_event จริงจากคลังนี้เองเลย (ยืนยันข้อสังเกตของ TDRI ทางอ้อม)"
+    status: OPEN
+
+  - id: ISSUE-AGENCY-04
+    layer: agency
+    statement_th: >
+      โครงสร้างบัญชาการถาวร-มืออาชีพ (permanent, level=national/ministry/basin) vs.
+      ศูนย์เฉพาะกิจที่ตั้งขึ้นเฉพาะกิจ (ad_hoc) -- ยังไม่มีชั้นข้อมูล permanence/level ในคลังนี้
+      มาก่อน. อำนาจชักธงแดง/ประกาศเตือนอพยพระดับท้องถิ่นไม่มีกฎหมายรองรับชัดเจน (RELAYED, TDRI
+      3 ธ.ค. 2025) -- ข้อความโครงสร้างกลางเพียงบรรทัดเดียว ไม่บันทึกการวิจารณ์บุคคลที่มีชื่อใด ๆ
+      จากบทความต้นทาง (ตามกติกางานนี้).
+    actors_affected: ["ประชาชนที่ไม่ชัดว่าใครมีอำนาจสั่งอพยพ/ชักธงแดงในพื้นที่ตน"]
+    actors_with_power: ["AG_BASIN_CMT (ถาวร, ระดับลุ่มน้ำ, พ.ร.บ.ทรัพยากรน้ำ 2561)", "AG_REGCOM (ad hoc, คำสั่งสำนักนายกฯ 275/2569)"]
+    typology_tags:
+      node_kinds: ["agency"]
+      edge_kinds: []
+      status: "IMPLEMENTED -- permanence/level attributes on AG_BASIN_CMT/AG_REGCOM (new) + AG_ONWR/AG_DDPM/AG_BMA_GOV/AG_ESTATE/AG_RID/AG_TMD/AG_DPT/AG_MEA (overlay)"
+    evidence:
+      - {source: "TDRI ดร.นิพนธ์ พัวพงศกร, 9 ธ.ค. 2025 -- โครงสร้างถาวร-มืออาชีพ vs. ศูนย์เฉพาะกิจ, ระดับลุ่มน้ำระหว่างกระทรวงกับท้องถิ่น", tag: RELAYED}
+      - {source: "TDRI ณัฐสิฏ รักษ์เกียรติวงศ์, 3 ธ.ค. 2025 -- อำนาจชักธงแดง/ประกาศเตือนอพยพระดับท้องถิ่นไม่มีกฎหมายรองรับชัดเจน", tag: RELAYED}
+    counter_evidence:
+      - {source: "permanence/level ของ agency ที่มีอยู่แล้วในทะเบียนนี้ (นอกเหนือ AG_BASIN_CMT/AG_REGCOM) เป็น INSTINCT -- TDRI ไม่ได้จัดชั้นรายหน่วยงานเอง", tag: INSTINCT}
+    floodconnect_signal: "missing -- ไม่มีหน้าแสดงว่าหน่วยงานใดถาวร/ชั่วคราว หรือมีอำนาจสั่งอพยพจริงหรือไม่"
+    status: OPEN
+
+  - id: ISSUE-AGENCY-05
+    layer: agency
+    statement_th: >
+      C3 (Command/Control/Capability) -- 6 องค์ประกอบความสามารถที่ TDRI ระบุ (นโยบาย/เป้าหมาย
+      ปฏิบัติการ, บทบาท-หน้าที่รับผิดชอบ, แผนปฏิบัติการ/protocol, ระบบเฝ้าระวังสถานการณ์แบบวนซ้ำ,
+      การระดมโลจิสติกส์/เสบียง, การฝึกซ้อม/war-gaming) ยังไม่มีชั้นข้อมูลในคลังนี้มาก่อน -- เพิ่ม
+      เป็น checklist attribute บน agency node (host/command-type) ทุกค่าเป็น OPEN (null) จนกว่าจะ
+      มีแหล่งยืนยันรายหน่วยงาน.
+    actors_affected: ["ประชาชนที่ประเมินความพร้อมของหน่วยงานที่รับผิดชอบไม่ได้"]
+    actors_with_power: ["AG_ONWR", "AG_DDPM", "AG_BMA_GOV", "AG_ESTATE", "AG_REGCOM"]
+    typology_tags:
+      node_kinds: ["agency"]
+      edge_kinds: []
+      status: "IMPLEMENTED -- capability_* checklist attrs (6 fields) + validate.py report_capability_gaps() (non-error report)"
+    evidence:
+      - {source: "TDRI ดร.นิพนธ์ พัวพงศกร, 9 ธ.ค. 2025 -- 6-element C3 checklist", tag: RELAYED}
+    counter_evidence:
+      - {source: "ทุกค่า capability_* ในทะเบียนนี้เป็น OPEN (null) -- ไม่มีแหล่งใดยืนยันรายหน่วยงานเลยในงานนี้", tag: OPEN}
+    floodconnect_signal: "missing -- ไม่มีหน้าแสดงความพร้อมเชิงโครงสร้างของหน่วยงาน"
+    status: OPEN
+
+  - id: ISSUE-INFRA-01
+    layer: data_sensors
+    statement_th: >
+      โครงสร้างพื้นฐาน 3 ประเภท (grey/green-blue/soft) ยังไม่มีการแยกแยะในคลังนี้มาก่อน -- เพิ่ม
+      infra_class attribute บน water/resource node. บึงรับน้ำสัมมากร (WL.SMK.01) และบึงหนองบอน
+      (WL.NBN.01, node ใหม่จากข้อมูลที่มีอยู่แล้วในคลังนี้เอง -- bma_plan2569_retention_ponds.yaml,
+      VERIFIED) = green-blue storage. ตัวอย่างกรุงเทพฯ อื่นจาก TDRI: อุทยาน 100 ปี จุฬาฯ,
+      สวนป่าเบญจกิติ (green-blue, ไม่มีข้อมูลการเชื่อมต่อกับกราฟน้ำใด ๆ ในงานนี้).
+      **ความไม่สอดคล้องของวันที่ (OPEN, ไม่แก้)**: บทความ sponge-city ("flooding-after-rain-
+      bangkok-is...") ระบุวันที่หน้าเว็บ 30 มิ.ย. 2025 แต่เนื้อหาอ้างถึงฝน 24-26 ก.ย. 2569 -- อาจ
+      เป็นเพราะหน้าเว็บถูกแก้ไขภายหลัง -- เก็บทั้งสองวันที่ไว้ ไม่ตัดสินว่าอันใดถูก.
+    actors_affected: ["ผู้วางแผนพื้นที่รับน้ำ/ผู้ใช้ที่ต้องการรู้ว่าจุดใดเป็น grey vs green-blue infra"]
+    actors_with_power: ["AG_DDS/AG_BMA_GOV (grey infra ส่วนใหญ่)", "หน่วยงานที่ดูแลอุทยาน/สวนสาธารณะ (ไม่ระบุในคลังนี้)"]
+    typology_tags:
+      node_kinds: ["pond", "resource"]
+      edge_kinds: []
+      status: "IMPLEMENTED -- infra_class (grey|green_blue|soft) on water/resource nodes"
+    evidence:
+      - {source: "TDRI \"flooding-after-rain-bangkok-is...\" (dated 30 มิ.ย. 2025 on page, text references 24-26 ก.ย. 2569 rain -- OPEN date inconsistency)", tag: RELAYED}
+      - {source: "docs/knowledge/bma_plan2569_retention_ponds.yaml capacity_list_appendix_ko seq=1 (บึงหนองบอน, VERIFIED)", tag: VERIFIED}
+    counter_evidence: []
+    floodconnect_signal: "missing -- ไม่มีการแยก grey/green-blue/soft ในการแสดงผลปัจจุบัน"
+    status: OPEN
+
+  - id: ISSUE-WARNING-03
+    layer: warning_communication
+    statement_th: >
+      คำเตือนคุณภาพดีต้องระบุ datum/จุดอ้างอิง ("1.5 ม. จากไหน?"), พื้นที่ที่ได้รับผลกระทบ,
+      ปลายทาง/เส้นทางปลอดภัย, และมาถึงพร้อม lead time -- ยังไม่มี field เหล่านี้บน warns edge
+      มาก่อน (มีแค่ instruction). ผูกตรงกับกติกาเดิมของคลังนี้เอง (docs/FLOW_STALL_TYPOLOGY.md:
+      "ระดับพื้นดิน ≠ ระดับผิวน้ำ" -- คำเตือนที่ไม่มี datum คือปัญหาเดียวกับสถานีที่ไม่มี datum
+      ประกาศ, canal_graph.py REASON_DATUM_MISMATCH).
+    actors_affected: ["ประชาชนที่ได้รับคำเตือนแต่ตีความระดับ/พื้นที่/เวลาที่มีไม่ได้"]
+    actors_with_power: ["ทุกหน่วยงานที่ออกคำเตือน"]
+    typology_tags:
+      node_kinds: []
+      edge_kinds: ["warns"]
+      status: "IMPLEMENTED -- datum/area/lead_time fields on warns edges + validate.py report_warning_quality_gaps() (non-error report)"
+    evidence:
+      - {source: "TDRI framing (คุณภาพคำเตือน CAP-like fields)", tag: RELAYED}
+      - {source: "docs/FLOW_STALL_TYPOLOGY.md (ground level != water level rule, existing)", tag: VERIFIED}
+    counter_evidence:
+      - {source: "ทุกแถว warns ในทะเบียนนี้มี datum/lead_time เป็น OPEN จริง -- ไม่มีแหล่งใดระบุเลย", tag: OPEN}
+    floodconnect_signal: "unified_ladder มีคำกริยาการกระทำอยู่แล้ว (ปัญหาชั้น 5.1) แต่ยังไม่มี datum/lead_time explicit"
+    status: OPEN
+
+  - id: ISSUE-LESSON-HATYAI
+    layer: agency
+    statement_th: >
+      หาดใหญ่เป็นกรณีข้ามพื้นที่ที่ TDRI อ้างถึงเพื่อยกตัวอย่างโครงสร้าง (ไม่ใช่การวิจารณ์บุคคล
+      ในทะเบียนนี้) -- ขอบเขตงานนี้จำกัดที่กทม./สัมมากร, หาดใหญ่เป็น **next-version scope**
+      บันทึกไว้เพียงแถวเดียวเป็นบทเรียนข้ามกรณี ไม่ลงรายละเอียด ไม่สร้าง node ใด ๆ สำหรับหาดใหญ่
+      ในกราฟของงานนี้.
+    actors_affected: ["OPEN -- นอกขอบเขตงานนี้"]
+    actors_with_power: ["OPEN -- นอกขอบเขตงานนี้"]
+    typology_tags: {node_kinds: [], edge_kinds: [], status: "NOT IMPLEMENTED -- cross-case lesson row only, next-version scope"}
+    evidence:
+      - {source: "TDRI ณัฐสิฏ รักษ์เกียรติวงศ์, 3 ธ.ค. 2025 (โครงสร้างอำนาจ/cross-case reference เท่านั้น ไม่บันทึกการวิจารณ์บุคคล)", tag: RELAYED}
+    counter_evidence: []
+    floodconnect_signal: "out of scope -- next version"
+    status: OPEN
+
+  - id: ISSUE-INFRA-02
+    layer: data_sensors
+    statement_th: >
+      "บางสถานีสูบน้ำยังมีขยะจำนวนมากขวางทางระบาย" -- การบำรุงรักษา/ขยะอุดตันลดความสามารถระบาย
+      น้ำที่แท้จริงลงจากค่าออกแบบ โดยไม่มี node/attribute ใดบันทึกสภาพนี้มาก่อนในคลังนี้ -- เพิ่ม
+      `condition` attribute (OPEN) บน pump/tunnel intake node ที่เกี่ยวข้อง (ST.SPS.01-04,
+      pump_station:water_station:1/2, tunnel:bma_dds:saensaeb_ladprao) โพสต์ไม่ระบุสถานีที่
+      แน่ชัด จึงติด OPEN ทุกจุดแทนการเดา.
+    actors_affected: ["ประชาชนที่พึ่งความจุระบายน้ำที่ประกาศ (design capacity) โดยไม่รู้สภาพจริง"]
+    actors_with_power: ["AG_DDS (ผู้ดูแลสถานีสูบ/อุโมงค์ส่วนใหญ่)"]
+    typology_tags:
+      node_kinds: ["pump", "tunnel"]
+      edge_kinds: []
+      status: "IMPLEMENTED -- condition attribute (OPEN) on pump/tunnel intake nodes"
+    evidence:
+      - {source: "Environman (สื่อสิ่งแวดล้อม) FB post 28 ก.ย. 2569, citing ubonmet.tmd.go.th/.../1_Month/09.pdf, prd.go.th/.../iid/545141, thaipbs 558736/558712", tag: RELAYED}
+    counter_evidence:
+      - {source: "โพสต์ไม่ระบุสถานีที่แน่ชัด -- condition ติด OPEN ทุกจุดที่เกี่ยวข้อง ไม่เลือกจุดใดจุดหนึ่ง", tag: OPEN}
+    floodconnect_signal: "missing -- ไม่มีการแสดงสภาพ/การบำรุงรักษาของจุดสูบน้ำในหน้าเว็บปัจจุบัน"
+    status: OPEN
+
+  - id: ISSUE-WARNING-04
+    layer: warning_communication
+    statement_th: >
+      กระทรวงดีอียอมรับ/ขอโทษต่อสาธารณะสำหรับความล้มเหลวของการสื่อสารเตือนภัยในเหตุการณ์ล่าสุด และ
+      ตอบสนองด้วยนโยบายใหม่: ศูนย์ความร่วมมือด้านการสื่อสารข้อมูลสภาพภูมิอากาศ (ข้อความชุดเดียว
+      single-source ผ่าน TMD/PRD/MCOT/โฆษกสำนักนายกฯ) + severity scale สัญลักษณ์พร้อมตัวเลข
+      เทียบเหตุการณ์ในอดีต.
+    actors_affected: ["ประชาชนทุกคนที่ได้รับคำเตือน"]
+    actors_with_power: ["AG_TMD", "AG_PRD", "AG_MCOT", "AG_PM_SPOKES", "AG_CLIMATE_COMMS_CENTRE"]
+    typology_tags:
+      node_kinds: ["agency", "warning_channel"]
+      edge_kinds: ["part_of", "operates", "reports_to", "warns"]
+      status: "IMPLEMENTED 2026-09-28 -- typology/nodes/mdes_climate_comms_2026-09-28.yaml"
+    evidence:
+      - {source: "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569 (docs/knowledge/card_climate_comms_centre_2026-09-28.md)", tag: RELAYED}
+    counter_evidence:
+      - {source: "นโยบายเพิ่งประกาศ ยังไม่มีเหตุการณ์จริงทดสอบว่า severity scale ใหม่ใช้ได้จริงหรือไม่", tag: OPEN}
+    floodconnect_signal: "เชื่อมกับ ISSUE-WARNING-01 เดิม (ปัญหา 'ภาษาคน') -- ยังไม่มีการทดสอบผู้ใช้จริงเช่นกัน"
+    status: OPEN
+
+  - id: ISSUE-WARNING-05
+    layer: warning_communication
+    statement_th: >
+      นโยบาย "เสียงเดียว" (single-source message) ของศูนย์สื่อสารใหม่ อาจตีความขัดกับกติกาของ
+      คลังนี้เองที่เก็บค่าที่วัดขัดแย้งกันไว้ทั้งสองฝั่งเสมอ (ไม่เฉลี่ย ไม่ตัดฝั่งใดออก) -- การมีข้อความ
+      ทางการเดียวไม่ได้ลบล้างการอ่านค่าที่ขัดแย้งกันจากเกจ/แหล่งอื่น.
+    actors_affected: ["ประชาชนที่พึ่งข้อความทางการเป็นแหล่งเดียว"]
+    actors_with_power: ["AG_CLIMATE_COMMS_CENTRE"]
+    typology_tags:
+      node_kinds: ["agency"]
+      edge_kinds: []
+      status: "neutral framing -- no verdict on the policy itself"
+    evidence:
+      - {source: "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569 -- นโยบายข้อความชุดเดียว", tag: RELAYED}
+    counter_evidence:
+      - {source: "docs/knowledge/card_official_2026-09-27_bma_saensaeb_tunnel_sideflow.md contradiction check -- ตัวอย่างจริงที่คลังนี้เก็บทั้งสองฝั่งไว้แล้วก่อนนโยบายนี้ประกาศ", tag: RELAYED}
+    floodconnect_signal: "sources/registry.yaml trust_tier + statement_contradictions_2026-09-27.yaml -- กติกาเก็บทั้งสองฝั่งยังใช้อยู่ ไม่ถูกแทนที่โดยนโยบายเสียงเดียว"
+    status: OPEN
+
+  - id: ISSUE-WARNING-06
+    layer: warning_communication
+    statement_th: >
+      สถานะสาธารณะแบบแกนเดียว (municipal flag เดียว) อาจอ่านเป็น "ปกติ" ได้ ขณะที่คำเตือนล่วงหน้า
+      (forward hazard) จากหน่วยงานอื่นยังทำงานอยู่จริง -- เทศบาลนครหาดใหญ่แถลงการณ์ฉบับที่ 2
+      (20 พ.ย. 2568) ระบุสถานะเมือง "ปกติ/ธงเขียว" ขณะที่คำเตือนฝนหนัก/น้ำท่วมฉับพลันระดับภูมิภาค
+      จาก ONWR/TMD ยังคงมีผลต่อเนื่อง (ประกาศ ONWR 30/2568 13-14 พ.ย., คำเตือน TMD 16-19 พ.ย.).
+    actors_affected: ["ประชาชนที่พึ่งธง/สถานะสาธารณะเดียวเป็นแหล่งตัดสินใจ"]
+    actors_with_power: ["เทศบาลนครหาดใหญ่", "ONWR", "TMD"]
+    typology_tags:
+      node_kinds: ["zone", "internal_safe", "external_safe", "support"]
+      edge_kinds: []
+      cap_field: "current_local_state / forward_hazard (community_dag.py, added 2026-09-28)"
+      status: "IMPLEMENTED -- community_dag.py CURRENT_LOCAL_STATE/FORWARD_HAZARD_STATE"
+    evidence:
+      - {source: "experiments/2025-11-hat-yai-real-data-redteam.md §20 พ.ย. (เทศบาลนครหาดใหญ่ แถลงการณ์ฉบับที่ 2, hatyaicity.go.th/news/detail/388300/data.html)", tag: RELAYED}
+      - {source: "experiments/2025-11-hat-yai-real-data-redteam.md §13-19 พ.ย. (ONWR 30/2568, TMD คำเตือนต่อเนื่อง)", tag: RELAYED}
+    counter_evidence:
+      - {source: "การมีสถานะสาธารณะเดียวไม่ได้แปลว่าหน่วยงานไม่มีข้อมูลอื่น -- อาจเป็นข้อจำกัดของช่องทางสื่อสารสาธารณะ (สรุปเป็นธงเดียวเพื่อความง่าย) มากกว่าการขาดข้อมูลจริงภายใน", tag: INSTINCT}
+    floodconnect_signal: "community_dag.py ตอนนี้รองรับสอง field แยกกันแล้ว (current_local_state/forward_hazard) -- ยังไม่มี node จริงในคลังนี้ที่ใส่ค่าทั้งสองพร้อมกัน (fixture อยู่ในเทสต์เท่านั้น ไม่ใช่หน้าเว็บจริง)"
+    status: OPEN
+
+  - id: ISSUE-INFRA-03
+    layer: data_sensors
+    statement_th: >
+      ความจุประกาศ (design capacity) ของสถานีสูบปลายทางใช้ไม่ได้จริงเมื่อทางน้ำต้นทางถูกกีดขวาง --
+      ปากคลองบางตลาด: ปั๊มใหญ่ 4 ตัวเดินไม่ได้เพราะระดับน้ำฝั่งรับต่ำเกินไป (น้ำมาไม่ถึงจุดสูบ) ทั้งที่
+      คลองช่วงสะพานติวานนท์ยังมีความจุเหลือ แต่มีผักตบชวา/ขยะอุดตัน -- ตัวเลขความจุที่ประกาศไว้จึง
+      สูงกว่าการระบายจริงในสถานการณ์นี้.
+    actors_affected: ["ประชาชนที่พึ่งความจุระบายน้ำที่ประกาศ (design capacity) โดยไม่รู้สภาพจริง"]
+    actors_with_power: ["AG_DDS (สมมติฐาน -- owner_agency ของ ST.BANGTALAD.01 ยังเป็น OPEN)"]
+    typology_tags:
+      node_kinds: ["pump", "canal_reach"]
+      edge_kinds: ["flows_to"]
+      status: "IMPLEMENTED -- stall_state=INTAKE_STARVED บน ST.BANGTALAD.01"
+    evidence:
+      - {source: "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md §1 (RELAYED-field, ทีมลงพื้นที่ภาคประชาชน 28 ก.ย. 2569)", tag: RELAYED}
+    counter_evidence:
+      - {source: "ยังไม่ทราบว่าสถานีสูบ relay ตามแนวคลองล้มเหลวหรือไม่ -- อาจเป็นสาเหตุร่วม ไม่ใช่แค่สิ่งกีดขวางต้นน้ำ", tag: OPEN}
+    floodconnect_signal: "เชื่อมกับ ISSUE-INFRA-02 เดิม (ขยะอุดตันสถานีสูบ, Environman post) -- เคสที่สองของปัญหาเดียวกัน คนละจุด"
+    status: OPEN
+
+todo:
+  - ["1", "ยังไม่มี owner/operator ยืนยันสำหรับปั๊มบึงสัมมากร 4 สถานี", "เพิ่ม sensor_owner.yaml/agency node ใหม่เมื่อยืนยันได้จริงจากคณะกรรมการหมู่บ้าน", "committer", "high"]
+  - ["2", "ไม่มี resource/warning_channel node ใดในคลังก่อนหน้านี้เลย (ชั้นทรัพยากร/ภาคประชาชนใหม่ทั้งหมด)", "ออกแบบ collector สำหรับ resource node เมื่อ founder ตัดสินใจรับข้อเสนอ typology extension", "committer", "medium"]
+  - ["3", "AG_MEA node มีอยู่แล้ว (water_system_dag.mmd) แต่ไม่มี warns edge ยืนยันได้ไปถึงซ.17/18 -- ไฟฟ้าเป็นตัวแปรร่วมของปัญหาปั๊มซ้ำหลายพื้นที่ (สัมมากร+หาดใหญ่)", "ยืนยัน warning channel จริงของ AG_MEA แล้วเติม edges/warns.yaml (แก้ตามรีวิวอิสระ 2026-09-28 -- แก้ status ที่นี่แล้ว)", "committer", "high"]
+  - ["4", "S2 (คำกล่าวอ้างสถานีสูบประเวศบุรีรมย์) ยังไม่ตรวจกับ WL.PWT.*/WL.SSB.* จริง", "ให้ทีมที่เข้าถึง data.json ปัจจุบันตรวจสอบ (นอกขอบเขต write-scope ของงานนี้)", "committer", "medium"]

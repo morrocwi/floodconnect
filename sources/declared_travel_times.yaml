@@ -1,0 +1,429 @@
+# declared_travel_times.yaml -- per-edge travel time (delay d_e) for every upstream control
+# node that drains to Bangkok, plus the ordered downstream path of each node to Bangkok.
+#
+# Written 2026-09-28 for the founder request (verbatim): "หมายถึง กทม. หาว่าน้ำจาก KG graph
+# ใน node ของเขื่อนต่างๆ จะมาถึง กทม. เมื่อไหร่ น้ำเหนือ เพราะถือเป็นหนี้สำคัญ".
+# Read with docs/knowledge/INBOUND_DEBT_ARRIVAL_TIMES_2026-09-28.md (answer + reasoning).
+#
+# Rules this file follows (Toledo PROP-FLOOD-09 v1.1, toledo-wt-flood08,
+# docs/proposals/PROP-FLOOD-09.md -- itself NEW DERIVATION / PROPOSAL, tier Dr, unverified):
+#   - d_e is DECLARED (an official agency publication) or MEASURED (this repo's own data,
+#     tools/backtest/lag_estimate.py) -- never derived, never assumed;
+#   - an edge with neither has delay_min_h/delay_max_h = null and
+#     state REFUSED / reason TAU_UNDECLARED -- never 0;
+#   - no averaging across sources: one row per (edge, source). Where two sources cover the
+#     same edge, `envelope_h` in `paths:` is the union [min of mins, max of maxes], and the
+#     row says so -- a union is not an average;
+#   - tick = 1 hour (integer hours; the declared "2.5 วัน" = 60 h is already integral, so
+#     PROP-FLOOD-09's OPEN rounding rule is not triggered by any row here).
+#
+# Tag vocabulary (AGENTS.md §2): VERIFIED / MEASURED / RELAYED / INSTINCT / OPEN.
+#   "VERIFIED-visual" = the label text and both bracket end-arrows were read by eye from
+#   the archived official image (HII chart) this check -- the image, not an OCR, not a
+#   memory. "INSTINCT-endpoint" = the label and one end are read, but the OTHER end is a
+#   tick mark that does not sit on a labelled station; the station named is the nearest
+#   one drawn beside the tick (judgement).
+#
+# Equations: the path window = element-wise sum of per-edge [min, max] (Δ1 of PROP-FLOOD-09
+# composed edge by edge over storage-free junctions). That interval sum is **not yet in
+# Toledo** as a registered form (composition only; see the doc §6). No other formula here.
+
+sources:
+  hii_tiwrm_chart_png:
+    agency: "HII (สสน.)"
+    url: "https://tiwrm.hii.or.th/DATA/REPORT/php/chart/chaopraya/2013/20241004_chaopraya_chart_edit.png"
+    page: "https://tiwrm.hii.or.th/DATA/REPORT/php/chart/chaopraya/2013/chaopraya.php"
+    fetched_utc: "2026-09-28"
+    archived: "raw/backtest/lag_2026-09-28/tiwrm_20241004_chaopraya_chart_edit.png (gitignored raw)"
+    what: >
+      Static background image of HII's Chao Phraya diagram (file name dated 2024-10-04,
+      "edit"). Travel-time labels are drawn as RED BRACKET LINES with an arrow at each end,
+      so the image itself shows which two points each label spans (unlike the SVG below).
+      Values are single numbers, not flow-conditioned, not dated per value.
+    tag: "VERIFIED-visual (labels + bracket ends read from the image)"
+  hii_waterchart_svg:
+    agency: "HII (สสน.)"
+    url: "https://waterchart.thaiwater.net/assets/svg/chaophraya/chaophraya.svg"
+    fetched_utc: "2026-09-28"
+    archived: "raw/backtest/lag_2026-09-28/chaophraya.svg (gitignored raw)"
+    what: >
+      <g id="Days"> holds 11 bare <text> elements (2 วัน, 1 วัน, 3 วัน, 6 ชม., 2 วัน, 2 วัน,
+      20 ชม., 2.5 วัน, 1 วัน, 1 วัน, 1 วัน) with a transform position only -- no id, no
+      data attribute, no link to any station group. VERIFIED by reading the SVG: the
+      structure does NOT prove any pair. Pairing below is by nearest-node geometry against
+      the station icons, cross-checked with the PNG layout -> INSTINCT.
+    tag: "VERIFIED (text + structure); pairing INSTINCT"
+  lag_estimate_2026-09-28:
+    agency: "this repo (measured from HII api-v3 waterlevel_graph history)"
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_graph (station_type=tele_waterlevel, 2025-09-29..2026-09-28, one request per station)"
+    archived: "raw/backtest/lag_2026-09-28/*_2025-09-29_2026-09-28.json + lag_results.json (gitignored raw)"
+    method: >
+      tools/backtest/lag_estimate.py: hourly grid, 25-h centred running mean on both series,
+      rising limbs of the upstream series (24-h rise, min_rise per pair), per-event lag =
+      argmax Pearson r of first differences over lag 0..max_lag h; r < 0.5, boundary lag, or
+      truncated-at-record-start events are UNRESOLVED and not used. Procedures not yet in
+      Toledo (marked in the code).
+    caveat: >
+      Lag varies with flow (wave speed changes with discharge) and, at tidal stations, with
+      the tide; C.13 is a gate-controlled barrage, so C.2->C.13 partly reflects RID
+      operations, not free travel. Reported as [min, max] over events, never averaged.
+    tag: MEASURED
+
+# ------------------------------------------------------------------ edges (one row per source)
+edges:
+  # ---- DECLARED, HII tiwrm chart (PNG) ----
+  - id: dec_bhumibol_to_p17
+    from: {label: "เขื่อนภูมิพล", kg: "node:dam:hii_dam:1"}
+    to: {label: "P.17 บ้านท่างิ้ว (tick)", kg: "node:gauge:thaiwater_waterlevel:P.17"}
+    delay_min_h: 48
+    delay_max_h: 48
+    basis: declared
+    source: hii_tiwrm_chart_png
+    quote: "2 วัน"
+    events_used: null
+    tag: "VERIFIED-visual label + dam end; INSTINCT-endpoint (tick beside the P.17 label)"
+  - id: dec_p17_to_c2
+    from: {label: "P.17 (tick)", kg: "node:gauge:thaiwater_waterlevel:P.17"}
+    to: {label: "C.2 ค่ายจิรประวัติ", kg: "node:gauge:thaiwater_waterlevel:C.2"}
+    delay_min_h: 24
+    delay_max_h: 24
+    basis: declared
+    source: hii_tiwrm_chart_png
+    quote: "1 วัน"
+    events_used: null
+    tag: "VERIFIED-visual label + C.2 end; INSTINCT-endpoint at P.17"
+    note: "The two brackets are contiguous, so เขื่อนภูมิพล -> C.2 = 72 h has BOTH ends VERIFIED-visual."
+  - id: dec_y1c_to_c2
+    from: {label: "Y.1C เมืองแพร่ (แม่น้ำยม)", kg: "node:gauge:thaiwater_waterlevel:Y.1C"}
+    to: {label: "C.2", kg: "node:gauge:thaiwater_waterlevel:C.2"}
+    delay_min_h: 72
+    delay_max_h: 72
+    basis: declared
+    source: hii_tiwrm_chart_png
+    quote: "3 วัน"
+    events_used: null
+    tag: "VERIFIED-visual"
+  - id: dec_sirikit_to_n5a
+    from: {label: "เขื่อนสิริกิติ์", kg: "node:dam:hii_dam:12"}
+    to: {label: "N.5A เมืองพิษณุโลก (arrow head)", kg: "node:gauge:thaiwater_waterlevel:N.5A"}
+    delay_min_h: 72
+    delay_max_h: 72
+    basis: declared
+    source: hii_tiwrm_chart_png
+    quote: "3 วัน"
+    events_used: null
+    tag: "VERIFIED-visual label + dam end; INSTINCT-endpoint (arrow head beside N.5A/NAN012 เมืองพิษณุโลก)"
+    contradiction: "OPEN -- the waterchart SVG's nearest label on this reach reads '2 วัน' (row dec_svg_nan_upper). Both kept; not averaged."
+  - id: dec_n5a_to_n67
+    from: {label: "N.5A (arrow tail)", kg: "node:gauge:thaiwater_waterlevel:N.5A"}
+    to: {label: "N.67 ชุมแสง (tick)", kg: "node:gauge:thaiwater_waterlevel:N.67"}
+    delay_min_h: 48
+    delay_max_h: 48
+    basis: declared
+    source: hii_tiwrm_chart_png
+    quote: "2 วัน"
+    events_used: null
+    tag: "VERIFIED-visual label; INSTINCT-endpoint both ends"
+  - id: dec_n67_to_c2
+    from: {label: "N.67 (tick)", kg: "node:gauge:thaiwater_waterlevel:N.67"}
+    to: {label: "C.2", kg: "node:gauge:thaiwater_waterlevel:C.2"}
+    delay_min_h: 6
+    delay_max_h: 6
+    basis: declared
+    source: hii_tiwrm_chart_png
+    quote: "6 ชม."
+    events_used: null
+    tag: "VERIFIED-visual label + C.2 end; INSTINCT-endpoint at N.67"
+    note: "Contiguous with the two brackets above: เขื่อนสิริกิติ์ -> C.2 = 126 h, both ends VERIFIED-visual."
+  - id: dec_c2_to_c13
+    from: {label: "C.2", kg: "node:gauge:thaiwater_waterlevel:C.2"}
+    to: {label: "เขื่อนเจ้าพระยา / C.13", kg: "node:gauge:thaiwater_waterlevel:C.13"}
+    delay_min_h: 20
+    delay_max_h: 20
+    basis: declared
+    source: hii_tiwrm_chart_png
+    quote: "20 ชม."
+    events_used: null
+    tag: "VERIFIED-visual"
+  - id: dec_c13_to_c29a
+    from: {label: "เขื่อนเจ้าพระยา / C.13", kg: "node:gauge:thaiwater_waterlevel:C.13"}
+    to: {label: "C.29A บางไทร", kg: "node:gate:hii_watergate:46", kg_note: "no C.29A gauge node in KG; nearest = HII watergate 'บางไทร' (INSTINCT mapping); node:AS_GAUGE_C29_SAMKHOK is C.29B สามโคก, downstream, a different point"}
+    delay_min_h: 60
+    delay_max_h: 60
+    basis: declared
+    source: hii_tiwrm_chart_png
+    quote: "2.5 วัน"
+    events_used: null
+    tag: "VERIFIED-visual"
+  - id: dec_c29a_to_c4
+    from: {label: "C.29A บางไทร", kg: "node:gate:hii_watergate:46"}
+    to: {label: "C.4 สะพานพุทธ (กทม.)", kg: null, kg_note: "KG_ABSENT -- no C.4 node in output/thailand_water_kg.jsonld (OPEN); nearest Bangkok main-stem KG nodes: node:gauge:thaiwater_waterlevel:C.12 (สามเสน, upstream of C.4), node:gauge:thaiwater_waterlevel:CPY015 (สะพานกรุงเทพ, downstream)"}
+    delay_min_h: 24
+    delay_max_h: 24
+    basis: declared
+    source: hii_tiwrm_chart_png
+    quote: "1 วัน"
+    events_used: null
+    tag: "VERIFIED-visual (arrow head level with the C.4-สะพานพุทธ label)"
+  - id: dec_pasak_dam_to_rama6
+    from: {label: "เขื่อนป่าสักชลสิทธิ์", kg: "node:dam:hii_dam:11"}
+    to: {label: "เขื่อนพระรามหก / S.26", kg: "node:gauge:thaiwater_waterlevel:S.26"}
+    delay_min_h: 24
+    delay_max_h: 24
+    basis: declared
+    source: hii_tiwrm_chart_png
+    quote: "1 วัน"
+    events_used: null
+    tag: "VERIFIED-visual"
+  - id: dec_rama6_to_ayutthaya_confluence
+    from: {label: "เขื่อนพระรามหก / S.26", kg: "node:gauge:thaiwater_waterlevel:S.26"}
+    to: {label: "จุดบรรจบเจ้าพระยา อยุธยา", kg: null, kg_note: "KG_ABSENT confluence node (OPEN); the bracket passes S.5 สะพานปรีดี-ธำรง (node:gauge:thaiwater_waterlevel:S.5) and ends at the Chao Phraya main stem"}
+    delay_min_h: 24
+    delay_max_h: 24
+    basis: declared
+    source: hii_tiwrm_chart_png
+    quote: "1 วัน"
+    events_used: null
+    tag: "VERIFIED-visual"
+
+  # ---- DECLARED, HII waterchart SVG (pairing INSTINCT) -- only the row that DIFFERS from the PNG ----
+  - id: dec_svg_nan_upper
+    from: {label: "เขื่อนสิริกิติ์ (INSTINCT pairing)", kg: "node:dam:hii_dam:12"}
+    to: {label: "แม่น้ำน่าน ช่วงพิษณุโลก (INSTINCT pairing)", kg: "node:gauge:thaiwater_waterlevel:N.5A"}
+    delay_min_h: 48
+    delay_max_h: 48
+    basis: declared
+    source: hii_waterchart_svg
+    quote: "2 วัน"
+    svg_position: [635.6359, 232.9202]
+    events_used: null
+    tag: "INSTINCT (SVG gives no pair; geometry places it on the upper Nan reach where the PNG reads 3 วัน)"
+    contradiction: "OPEN vs dec_sirikit_to_n5a (3 วัน). The other 10 SVG labels match the PNG brackets' values in layout order (INSTINCT) and add no new number, so they are not repeated as rows."
+
+  # ---- MEASURED, this repo (tools/backtest/lag_estimate.py over 1 year of hourly history) ----
+  - id: mea_c2_to_c13
+    from: {label: "C.2 (discharge)", kg: "node:gauge:thaiwater_waterlevel:C.2"}
+    to: {label: "C.13 (discharge)", kg: "node:gauge:thaiwater_waterlevel:C.13"}
+    delay_min_h: 12
+    delay_max_h: 24
+    basis: measured
+    source: lag_estimate_2026-09-28
+    events_used: 4
+    events_tried: 5
+    per_event_h: {"2025-10-12": 23, "2025-10-31": 13, "2026-05-22": 24, "2026-09-08": 12}
+    tag: MEASURED
+    note: "C.13 is a gated barrage: part of this lag is RID operating response, not free travel. Declared 20 h lies inside."
+  - id: mea_c13_to_c7a
+    from: {label: "C.13 (discharge)", kg: "node:gauge:thaiwater_waterlevel:C.13"}
+    to: {label: "C.7A บ้านบางแก้ว อ่างทอง (stage)", kg: "node:gauge:thaiwater_waterlevel:C.7A"}
+    delay_min_h: 10
+    delay_max_h: 25
+    basis: measured
+    source: lag_estimate_2026-09-28
+    events_used: 5
+    events_tried: 7
+    per_event_h: {"2025-09-29": 24, "2025-10-14": 10, "2025-10-31": 10, "2026-08-23": 25, "2026-09-09": 15}
+    tag: MEASURED
+  - id: mea_c7a_to_c35
+    from: {label: "C.7A (stage)", kg: "node:gauge:thaiwater_waterlevel:C.7A"}
+    to: {label: "C.35 บ้านป้อม อยุธยา (stage)", kg: "node:gauge:thaiwater_waterlevel:C.35"}
+    delay_min_h: 1
+    delay_max_h: 23
+    basis: measured
+    source: lag_estimate_2026-09-28
+    events_used: 3
+    events_tried: 6
+    per_event_h: {"2025-10-10": 6, "2026-05-22": 1, "2026-08-23": 23}
+    tag: MEASURED
+    note: "3 further events gave lag 0 at r 0.79-0.97 (simultaneous response, likely backwater/operations) -> UNRESOLVED_BOUNDARY, not used."
+  - id: mea_c35_to_c12
+    from: {label: "C.35 (stage)", kg: "node:gauge:thaiwater_waterlevel:C.35"}
+    to: {label: "C.12 กรมชลประทานสามเสน กทม. (stage, tidal)", kg: "node:gauge:thaiwater_waterlevel:C.12"}
+    delay_min_h: null
+    delay_max_h: null
+    basis: measured
+    source: lag_estimate_2026-09-28
+    events_used: 0
+    events_tried: 5
+    state: REFUSED
+    reason: "NO_RESOLVED_EVENT (best r 0.23-0.42 < 0.5 -- the spring-neap tide dominates C.12 even after a 25-h mean)"
+    tag: MEASURED
+  - id: mea_c13_to_c12
+    from: {label: "C.13 (discharge)", kg: "node:gauge:thaiwater_waterlevel:C.13"}
+    to: {label: "C.12 สามเสน (stage, tidal)", kg: "node:gauge:thaiwater_waterlevel:C.12"}
+    delay_min_h: 96
+    delay_max_h: 96
+    basis: measured
+    source: lag_estimate_2026-09-28
+    events_used: 1
+    events_tried: 7
+    per_event_h: {"2026-09-09": 96}
+    tag: "MEASURED (weak: n=1, r=0.506 just over the 0.5 floor; 6 other events unresolved)"
+    note: "Declared C.13 -> C.29A -> C.4 = 60 + 24 = 84 h; this single measured event (96 h) is 12 h later, to a point ~5 km upstream of C.4."
+  - id: mea_s28_to_s26
+    from: {label: "S.28 ท้ายเขื่อนป่าสักชลสิทธิ์ (discharge)", kg: "node:gauge:thaiwater_waterlevel:S.28"}
+    to: {label: "S.26 ท้ายเขื่อนพระรามหก (stage)", kg: "node:gauge:thaiwater_waterlevel:S.26"}
+    delay_min_h: 8
+    delay_max_h: 13
+    basis: measured
+    source: lag_estimate_2026-09-28
+    events_used: 2
+    events_tried: 3
+    per_event_h: {"2025-10-12": 13, "2026-09-21": 8}
+    tag: MEASURED
+    note: "Declared dam -> Rama VI = 24 h; measured tailwater -> Rama VI 8-13 h (different start point: S.28 is below the dam)."
+  - id: mea_s26_to_c12
+    from: {label: "S.26 (stage)", kg: "node:gauge:thaiwater_waterlevel:S.26"}
+    to: {label: "C.12 (stage, tidal)", kg: "node:gauge:thaiwater_waterlevel:C.12"}
+    delay_min_h: null
+    delay_max_h: null
+    basis: measured
+    source: lag_estimate_2026-09-28
+    events_used: 0
+    events_tried: 6
+    state: REFUSED
+    reason: "NO_RESOLVED_EVENT (r 0.16-0.38; one boundary lag 0)"
+    tag: MEASURED
+
+  # ---- UNDECLARED and UNMEASURED -- REFUSED TAU_UNDECLARED ----
+  - id: und_ayutthaya_confluence_to_c29a
+    from: {label: "จุดบรรจบป่าสัก-เจ้าพระยา อยุธยา", kg: null}
+    to: {label: "C.29A บางไทร", kg: "node:gate:hii_watergate:46"}
+    delay_min_h: null
+    delay_max_h: null
+    state: REFUSED
+    reason: "TAU_UNDECLARED -- the HII 2.5-day bracket spans C.13 -> C.29A as ONE edge; no label for the confluence -> C.29A part, and no C.29A history was fetched (no C.29A gauge in our API data)"
+    tag: OPEN
+  - id: und_kwaenoi_to_nan
+    from: {label: "เขื่อนแควน้อยบำรุงแดน", kg: "node:dam:hii_dam:36"}
+    to: {label: "แม่น้ำน่าน (จุดบรรจบใต้พิษณุโลก)", kg: null}
+    delay_min_h: null
+    delay_max_h: null
+    state: REFUSED
+    reason: "TAU_UNDECLARED -- no bracket on แม่น้ำแควน้อย in the HII chart; no history fetched"
+    tag: OPEN
+    kg_contradiction: >
+      OPEN: KG edge node:AS_DAM_KWAENOI -> node:AS_PASAK_RIVER (source water_system_dag.mmd,
+      RELAYED-GENERAL) contradicts node:dam:hii_dam:36 IN_SUBBASIN node:sub_basin:0920
+      (basin 09 น่าน, VERIFIED-geometric) and the HII chart, which draws เขื่อนแควน้อย on
+      แม่น้ำแควน้อย flowing into the Nan. Kept both; not edited here.
+  - id: und_kiewlom_to_ping
+    from: {label: "เขื่อนกิ่วลม (แม่น้ำวัง)", kg: "node:dam:hii_dam:34"}
+    to: {label: "แม่น้ำปิง (บรรจบที่ตาก)", kg: null}
+    delay_min_h: null
+    delay_max_h: null
+    state: REFUSED
+    reason: "TAU_UNDECLARED -- no bracket on แม่น้ำวัง in the HII chart"
+    tag: OPEN
+  - id: und_kiewkhoma_to_ping
+    from: {label: "เขื่อนกิ่วคอหมา (แม่น้ำวัง)", kg: "node:dam:hii_dam:35"}
+    to: {label: "แม่น้ำปิง (บรรจบที่ตาก)", kg: null}
+    delay_min_h: null
+    delay_max_h: null
+    state: REFUSED
+    reason: "TAU_UNDECLARED -- no bracket on แม่น้ำวัง in the HII chart"
+    tag: OPEN
+
+# ------------------------------------------------------------------ paths to Bangkok
+# For each upstream node: the ordered downstream path to the Bangkok receiving node as KG
+# node ids, with a per-hop window. A later worker can walk `hops` to flag every node
+# downstream of an L5 / structural-failure node, with its arrival window (cumulative).
+# `envelope_h` = union of the declared and measured rows for that hop (never an average).
+# A hop with window null => everything downstream of it is REFUSED TAU_UNDECLARED
+# (still list the nodes: an L5 flag can propagate by topology even where timing is refused).
+# Two variants for the main stem below C.13: `declared_hops` (C.13 -> C.29A -> C.4) and
+# `measured_hops` (C.13 -> C.7A -> C.35 -> C.12). Cumulative windows use the
+# `bangkok_window_h` line, which takes C.13 -> Bangkok = [84, 96] h = union of declared
+# 84 h (60 + 24) and the single measured 96 h (n=1, weak).
+receiving_node_mvp:
+  declared: {label: "C.4 สะพานพุทธ", kg: null, note: "KG_ABSENT"}
+  measured: {label: "C.12 สามเสน", kg: "node:gauge:thaiwater_waterlevel:C.12"}
+
+paths:
+  node:gauge:thaiwater_waterlevel:C.13:
+    declared_hops:
+      - {to: "node:gate:hii_watergate:46", window_h: [60, 60], rows: [dec_c13_to_c29a]}
+      - {to: "KG_ABSENT:C.4", window_h: [24, 24], rows: [dec_c29a_to_c4]}
+    measured_hops:
+      - {to: "node:gauge:thaiwater_waterlevel:C.7A", window_h: [10, 25], rows: [mea_c13_to_c7a]}
+      - {to: "node:gauge:thaiwater_waterlevel:C.35", window_h: [1, 23], rows: [mea_c7a_to_c35]}
+      - {to: "node:gauge:thaiwater_waterlevel:C.12", window_h: null, state: "REFUSED TAU_UNDECLARED", rows: [mea_c35_to_c12]}
+    bangkok_window_h: [84, 96]
+    bangkok_basis: "envelope of declared 84 h (dec_c13_to_c29a + dec_c29a_to_c4) and measured 96 h (mea_c13_to_c12, n=1)"
+  node:gauge:thaiwater_waterlevel:C.2:
+    hops:
+      - {to: "node:gauge:thaiwater_waterlevel:C.13", window_h: [12, 24], rows: [dec_c2_to_c13, mea_c2_to_c13], envelope_h: [12, 24]}
+      - {then: "node:gauge:thaiwater_waterlevel:C.13 path"}
+    bangkok_window_h: [96, 120]
+  node:gauge:thaiwater_waterlevel:N.67:
+    hops:
+      - {to: "node:gauge:thaiwater_waterlevel:C.2", window_h: [6, 6], rows: [dec_n67_to_c2], tag: "INSTINCT-endpoint"}
+      - {then: "node:gauge:thaiwater_waterlevel:C.2 path"}
+    bangkok_window_h: [102, 126]
+  node:gauge:thaiwater_waterlevel:P.17:
+    hops:
+      - {to: "node:gauge:thaiwater_waterlevel:C.2", window_h: [24, 24], rows: [dec_p17_to_c2], tag: "INSTINCT-endpoint"}
+      - {then: "node:gauge:thaiwater_waterlevel:C.2 path"}
+    bangkok_window_h: [120, 144]
+  node:gauge:thaiwater_waterlevel:Y.1C:
+    hops:
+      - {to: "node:gauge:thaiwater_waterlevel:C.2", window_h: [72, 72], rows: [dec_y1c_to_c2]}
+      - {then: "node:gauge:thaiwater_waterlevel:C.2 path"}
+    bangkok_window_h: [168, 192]
+  node:dam:hii_dam:1:
+    label: "เขื่อนภูมิพล (also node:AS_DAM_BHUMIBOL, node:dam:hii_dam:43)"
+    hops:
+      - {to: "node:gauge:thaiwater_waterlevel:P.17", window_h: [48, 48], rows: [dec_bhumibol_to_p17], tag: "INSTINCT-endpoint"}
+      - {to: "node:gauge:thaiwater_waterlevel:C.2", window_h: [24, 24], rows: [dec_p17_to_c2]}
+      - {then: "node:gauge:thaiwater_waterlevel:C.2 path"}
+    bangkok_window_h: [168, 192]
+  node:dam:hii_dam:12:
+    label: "เขื่อนสิริกิติ์ (also node:AS_DAM_SIRIKIT, node:dam:hii_dam:52)"
+    hops:
+      - {to: "node:gauge:thaiwater_waterlevel:N.5A", window_h: [48, 72], rows: [dec_sirikit_to_n5a, dec_svg_nan_upper], envelope_h: [48, 72], tag: "OPEN contradiction 3 วัน (PNG) vs 2 วัน (SVG, INSTINCT pairing)"}
+      - {to: "node:gauge:thaiwater_waterlevel:N.67", window_h: [48, 48], rows: [dec_n5a_to_n67], tag: "INSTINCT-endpoint"}
+      - {to: "node:gauge:thaiwater_waterlevel:C.2", window_h: [6, 6], rows: [dec_n67_to_c2]}
+      - {then: "node:gauge:thaiwater_waterlevel:C.2 path"}
+    bangkok_window_h: [198, 246]
+  node:dam:hii_dam:11:
+    label: "เขื่อนป่าสักชลสิทธิ์ (also node:AS_DAM_PASAK)"
+    hops:
+      - {to: "node:gauge:thaiwater_waterlevel:S.26", window_h: [8, 24], rows: [dec_pasak_dam_to_rama6, mea_s28_to_s26], envelope_h: [8, 24]}
+      - {to: "KG_ABSENT:confluence_ayutthaya", window_h: [24, 24], rows: [dec_rama6_to_ayutthaya_confluence]}
+      - {to: "node:gate:hii_watergate:46", window_h: null, state: "REFUSED TAU_UNDECLARED", rows: [und_ayutthaya_confluence_to_c29a]}
+      - {to: "KG_ABSENT:C.4", window_h: [24, 24], rows: [dec_c29a_to_c4]}
+    reach_window_h: {"KG_ABSENT:confluence_ayutthaya": [32, 48]}
+    bangkok_window_h: null
+    bangkok_state: "REFUSED TAU_UNDECLARED (confluence -> C.29A)"
+  node:gauge:thaiwater_waterlevel:S.26:
+    hops:
+      - {to: "KG_ABSENT:confluence_ayutthaya", window_h: [24, 24], rows: [dec_rama6_to_ayutthaya_confluence]}
+      - {to: "node:gate:hii_watergate:46", window_h: null, state: "REFUSED TAU_UNDECLARED"}
+      - {to: "KG_ABSENT:C.4", window_h: [24, 24], rows: [dec_c29a_to_c4]}
+    bangkok_window_h: null
+    bangkok_state: "REFUSED TAU_UNDECLARED"
+  node:dam:hii_dam:36:
+    label: "เขื่อนแควน้อยบำรุงแดน (also node:AS_DAM_KWAENOI)"
+    hops:
+      - {to: "KG_ABSENT:kwaenoi_nan_confluence", window_h: null, state: "REFUSED TAU_UNDECLARED", rows: [und_kwaenoi_to_nan]}
+      - {to: "node:gauge:thaiwater_waterlevel:N.67", window_h: null, note: "confluence position relative to N.5A is OPEN"}
+      - {to: "node:gauge:thaiwater_waterlevel:C.2", window_h: [6, 6], rows: [dec_n67_to_c2]}
+      - {then: "node:gauge:thaiwater_waterlevel:C.2 path"}
+    bangkok_window_h: null
+    bangkok_state: "REFUSED TAU_UNDECLARED"
+  node:dam:hii_dam:34:
+    label: "เขื่อนกิ่วลม"
+    hops:
+      - {to: "KG_ABSENT:wang_ping_confluence", window_h: null, state: "REFUSED TAU_UNDECLARED", rows: [und_kiewlom_to_ping]}
+      - {to: "node:gauge:thaiwater_waterlevel:P.17", window_h: null}
+      - {to: "node:gauge:thaiwater_waterlevel:C.2", window_h: [24, 24], rows: [dec_p17_to_c2]}
+      - {then: "node:gauge:thaiwater_waterlevel:C.2 path"}
+    bangkok_window_h: null
+    bangkok_state: "REFUSED TAU_UNDECLARED"
+  node:dam:hii_dam:35:
+    label: "เขื่อนกิ่วคอหมา (upstream of กิ่วลม on the Wang)"
+    hops:
+      - {to: "node:dam:hii_dam:34", window_h: null, state: "REFUSED TAU_UNDECLARED"}
+      - {then: "node:dam:hii_dam:34 path"}
+    bangkok_window_h: null
+    bangkok_state: "REFUSED TAU_UNDECLARED"

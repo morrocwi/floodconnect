@@ -1,0 +1,292 @@
+# sources/backtest_units.yaml -- TRACKED PROP-FLOOD-06 backtest unit registry.
+#
+# Moved here 2026-09-27 (FOUNDER_TASKS_2026-09-27.md #38, follow-up on commit 9105fa3):
+# this file's `units:` block is a VERBATIM copy of raw/backtest/units.yaml (still present,
+# still gitignored per .gitignore's `raw/` line) at the moment of the move -- every one of
+# the 6 units this repo's PROP-FLOOD-06 backtest work has ever declared (HATYAI, NAN,
+# CHIANGMAI, AYUTTHAYA_BANGBAN, BANGKOK_EAST, SAMMAKORN) lived ONLY in that gitignored
+# path before this commit, which meant the whole unit registry -- including the SAMMAKORN
+# unit's VERIFIED BMA-plan-sourced D_H/pond-capacity figures -- was never actually tracked
+# by git. That is a bug for anything the public page or a test cites as a source: an
+# untracked file can silently change or vanish across checkouts with no diff, no review,
+# no history. This file is the fix: the tracked base of record. raw/backtest/units.yaml
+# remains as the run-time OVERRIDE layer other backtest runners (run_backtest_v1.py,
+# run_backtest_v2.py) still read directly for their own experiments -- untouched by this
+# move, still gitignored, still fine for quick untracked what-if edits that should never
+# land in git. tools/backtest/compute_prop_flood_06_sammakorn.py's own loader reads THIS
+# tracked file first and treats raw/backtest/units.yaml purely as an optional per-run
+# override on top (see that module's `_sammakorn_normalized_fields()` docstring).
+#
+# Schema/tagging discipline (unchanged from the original file, AGENTS.md ss2): every
+# constant is tagged VERIFIED / MEASURED / RELAYED / INSTINCT / OPEN. "OPEN" fields cause
+# a REFUSED tier for every day of that unit -- deliberate, see docs/BACKTEST_PROP_FLOOD_06_v0.md.
+# Ledger row ids (led:*, AS_*, outfall:*) are cited wherever a constant is reused from
+# sources/capacity_ledger.yaml -- never re-derived.
+
+units:
+
+  - id: HATYAI
+    element_th: "เทศบาลนครหาดใหญ่ (คลอง ร.1 / คลองภูมิพลานุสรณ์)"
+    centre: {lat: 7.0084, lon: 100.4747}
+    A_U:
+      value_km2: 28.27
+      basis: "radius fallback r=3km (INSTINCT, per PROP-FLOOD-06 sec.8 opt-in fallback -- no
+        basin/municipality polygon area found in any source read for this check)"
+      tag: INSTINCT
+    outlet:
+      element_th: "คลองระบายน้ำภูมิพลานุสรณ์ (คลอง ร.1)"
+      ledger_id: "led:U_hatyai_r1_canal"
+      Q_cap_o_m3s:
+        pre_2565-11-01: {value: 465, tag: INSTINCT, note: "founder-declared pre-expansion figure (17:30 founder's instructions); ledger's own row states 'original 465 m3/s before an expansion, year not stated -- OPEN' -- the 2565-11-01 cutover date used here is a founder-supplied convention for this backtest, not independently re-sourced this check"}
+        post_2565-11-01: {value: 1200, tag: RELAYED, source: "led:U_hatyai_r1_canal (th.wikipedia.org, design capacity)"}
+      Q_o_now_source: "raw/backtest/flood/HATYAI_CANAL_*.json (Open-Meteo Flood API / GloFAS)"
+      Q_o_now_caveat: "GloFAS 0.25deg grid at this coordinate returns sub-10 m3/s values
+        for a canal this size -- almost certainly snapped to the wrong (too-small) reach,
+        not a credible reading of คลอง ร.1's actual flow. Treated as REFUSED
+        (MISSING_INPUT / not a credible Q_o,now) rather than used at face value -- see
+        docs/BACKTEST_PROP_FLOOD_06_v0.md limitations."
+    pumps:
+      P_U_m3s: 0
+      basis: "NO_PUMPS_IN_UNIT -- Hat Yai's ร.1 system is a gravity floodway diversion, not
+        a BMA-style pump station chain; no pump asset declared for this unit in any
+        source read this check"
+      tag: RELAYED
+    c_U: {low: 0.5, high: 1.0, tag: OPEN}
+    upstream_edge: "UNDECLARED_EDGE -- no upstream inflow gauge/discharge series wired for
+      this unit this check; Q_in,up term := 0 per PROP-FLOOD-03's own UNDECLARED_EDGE
+      convention (reused by PROP-FLOOD-06)"
+
+  - id: NAN
+    element_th: "เทศบาลเมืองน่าน (แม่น้ำน่านผ่านตัวเมือง)"
+    centre: {lat: 18.7756, lon: 100.7730}
+    A_U:
+      value_km2: 78.54
+      basis: "radius fallback r=5km (INSTINCT) -- no municipality polygon area found"
+      tag: INSTINCT
+    outlet:
+      element_th: "แม่น้ำน่านสายหลักผ่านตัวเมือง"
+      ledger_id: null
+      Q_cap_o_m3s: {value: null, tag: OPEN, note: "no design/bankfull conveyance capacity
+        for the Nan River reach through Mueang Nan found in sources/capacity_ledger.yaml
+        or any docs/knowledge card read this check -- OUTLET_CAPACITY_UNKNOWN, REFUSED for
+        every day of this unit"}
+      Q_o_now_source: "raw/backtest/flood/NAN_TOWN_*.json"
+      Q_o_now_caveat: "GloFAS cell at this coordinate returns ~1-2 m3/s even during the
+        2567 flood peak -- does not resolve the actual Nan River channel at this
+        0.25deg grid resolution. NO_GAUGE_IN_UNIT-equivalent: not used as a real value."
+    pumps: {P_U_m3s: 0, basis: "NO_PUMPS_IN_UNIT -- mainstem river town, no pump reliance declared", tag: RELAYED}
+    c_U: {low: 0.5, high: 1.0, tag: OPEN}
+    upstream_edge: "no upstream gauge point resolved to a credible river cell this check
+      (see Q_o_now_caveat) -- Q_in,up term OPEN, contributes to the same
+      OUTLET_CAPACITY_UNKNOWN/NO_GAUGE_IN_UNIT refusal, not silently set to 0"
+
+  - id: CHIANGMAI
+    element_th: "เทศบาลนครเชียงใหม่ (แม่น้ำปิงผ่านตัวเมือง)"
+    centre: {lat: 18.7883, lon: 98.9853}
+    A_U:
+      value_km2: 78.54
+      basis: "radius fallback r=5km (INSTINCT) -- no municipality polygon area found"
+      tag: INSTINCT
+    outlet:
+      element_th: "แม่น้ำปิงสายหลักผ่านตัวเมือง"
+      ledger_id: "led:U_ping_dam / led:U_ping_wang_outlet (nodes only, no capacity -- see capacity_ledger.yaml)"
+      Q_cap_o_m3s: {value: null, tag: OPEN, note: "same OPEN status as Nan: no
+        design/bankfull capacity for the Ping River reach through Chiang Mai found
+        anywhere in this repo's knowledge base -- OUTLET_CAPACITY_UNKNOWN"}
+      Q_o_now_source: "raw/backtest/flood/CHIANGMAI_TOWN_*.json"
+      Q_o_now_caveat: "GloFAS cell returns 6-8 m3/s during the 2567 event (real gauge
+        readings that week were 4.93-5.28 m water LEVEL, not discharge, per
+        docs/knowledge/case_chiangmai_2567.md -- no comparable discharge unit) -- treated
+        as not credible, same as Nan."
+    pumps: {P_U_m3s: 0, basis: "NO_PUMPS_IN_UNIT", tag: RELAYED}
+    c_U: {low: 0.5, high: 1.0, tag: OPEN}
+    upstream_edge: "OPEN, same reasoning as NAN"
+
+  - id: AYUTTHAYA_BANGBAN
+    element_th: "อำเภอบางบาล/เมือง พระนครศรีอยุธยา (แม่น้ำเจ้าพระยาสายหลัก)"
+    centre: {lat: 14.4744, lon: 100.5013}
+    A_U:
+      value_km2: 78.54
+      basis: "radius fallback r=5km (INSTINCT) -- no district polygon area found"
+      tag: INSTINCT
+    outlet:
+      element_th: "แม่น้ำเจ้าพระยาสายหลักผ่านอยุธยา (proxy: C.13/downstream operational limit)"
+      ledger_id: "AS_DAM_C13 / led:river_through_bangkok (operational_limit row, reused as a PROXY)"
+      Q_cap_o_m3s: {value: 3100, tag: INSTINCT, note: "PROXY substitution, flagged
+        explicitly: no ledger row states an Ayutthaya-reach-specific bankfull/design
+        capacity. The 3,100 m3/s C.13 operational-limit figure (2565/2022) is reused
+        as a stand-in for 'mainstem carrying capacity at this reach' -- an INSTINCT
+        choice by this backtest, not a ledger fact for this specific location. Also
+        note: the purpose-built บางบาล-บางไทร floodway (1,200 m3/s, led:bangban_bangsai_floodway)
+        did NOT exist during the 2554 (2011) event being backtested -- using ANY
+        current-day capacity figure against a 2011 event is a methodological
+        anachronism, called out again in docs/BACKTEST_PROP_FLOOD_06_v0.md."}
+      Q_o_now_source: "raw/backtest/flood/AYUTTHAYA_BANGBAN_2011-*.json,
+        raw/backtest/flood/AYUTTHAYA_BANGBAN_2012-*.json (request point 14.45,100.53,
+        GloFAS-resolved cell 14.425,100.525 -- credible mainstem magnitude, ~1200-1370
+        m3/s early Oct 2011, consistent with ledger's other Chao Phraya readings)"
+    pumps: {P_U_m3s: 0, basis: "NO_PUMPS_IN_UNIT -- river-mainstem town, matches
+      PROP-FLOOD-06's own worked-instantiation table (binding always OUTLET for this
+      unit type)", tag: RELAYED}
+    c_U: {low: 0.5, high: 1.0, tag: OPEN}
+    upstream_edge:
+      element_th: "สถานี C.2 นครสวรรค์ (proxy จุดต้นน้ำ)"
+      ledger_id: "AS_GAUGE_C2 (node reused; discharge series is this check's own GloFAS pull, not the ledger's cited thaipbs reading)"
+      Q_in_up_source: "raw/backtest/flood/NAKHONSAWAN_C2_UPSTREAM_*.json (request point
+        15.7047,100.1372 -> resolved cell 15.725,100.125; ~4,500-4,900 m3/s early Oct
+        2011 -- consistent with AS_GAUGE_C2's own cited 2554 historical peak reference,
+        4,686 m3/s, trueid.net)"
+      tag: RELAYED
+
+  - id: BANGKOK_EAST
+    element_th: "กรุงเทพฯ ฝั่งตะวันออก (แสนแสบ/ประเวศ/พระโขนง, ใกล้สัมมากร) + ทางออกแม่น้ำเจ้าพระยา"
+    centre: {lat: 13.7734, lon: 100.6813}
+    A_U:
+      value_km2: 78.54
+      basis: "radius fallback r=5km (INSTINCT) -- no east-zone catchment polygon area used"
+      tag: INSTINCT
+    outlet:
+      element_th: "แม่น้ำเจ้าพระยา -- ทางออกหลักของระบบระบายน้ำ กทม."
+      ledger_id: "outfall:chao_phraya_boundary"
+      Q_cap_o_m3s: {value: 3100, tag: RELAYED, source: "outfall:chao_phraya_boundary
+        (operational_limit, 2565/2022)"}
+      Q_o_now_source: "raw/backtest/flood/BANGKOK_CHAOPHRAYA_*.json (request point
+        13.73,100.50 -> resolved cell 13.725,100.525; ~8,000-8,600 m3/s in Oct/Nov 2011 --
+        markedly higher than the ledger's own 2554 river-through-Bangkok readings
+        (peak reference order ~3,700-4,900 m3/s upstream); this reanalysis-vs-gauge gap
+        is a named limitation, not silently reconciled, see backtest doc)"
+    pumps:
+      P_U_m3s: 1200
+      basis: "led:bkk_total_pumping_phranakhon (ฝั่งพระนคร reported max, 2569 observation)
+        -- reused as this unit's installed pump capacity for BOTH historical eras
+        (2554 and 2569), an INSTINCT anachronism for the 2554 run (the 2554-era actual
+        installed capacity was almost certainly lower -- not sourced separately this
+        task, flagged as a limitation)"
+      tag: RELAYED
+    c_U: {low: 0.5, high: 1.0, tag: OPEN}
+    upstream_edge: "no significant upstream edge declared for this unit (per
+      PROP-FLOOD-06's own worked-instantiation table: '~0 for Bangkok/a village with no
+      upstream edge') -- Q_in,up term := 0"
+
+  - id: SAMMAKORN
+    element_th: "หมู่บ้านสัมมากร เขตสะพานสูง (บึงรับน้ำเอกชน + สถานีสูบ ST.SPS.01-04)"
+    centre: {lat: 13.76700, lon: 100.67716}
+    added: "2026-09-27, FOUNDER_TASKS_2026-09-27.md row 19 (PROP-FLOOD-06 real-anchor task)"
+    A_U:
+      value_km2: null
+      basis: "OUTLET_CAPACITY_UNKNOWN-equivalent for the catchment term -- no รับน้ำ
+        catchment-area polygon/figure found for this private-pond unit in any source
+        read this check (BMA แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. 2569, this
+        repo's sources/capacity_ledger.yaml, docs/CAPACITY.md). Left null/OPEN, never
+        estimated -- F_H(U) cannot resolve without it (PARTIAL mode covers this)."
+      tag: OPEN
+    pond_storage_capacity_m3:
+      value: 227200
+      unit_of_value: "m3 (ปริมาตรเก็บกัก, a STORAGE volume -- distinct from D_H/R_H's
+        m3/s discharge-capacity terms; not substituted into C_H(U), reported separately
+        as a declared historical/design capacity fact, same posture as Layer0's own
+        capacity_band 'design' kind)"
+      source: "BMA แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วมกรุงเทพมหานคร ปี 2569,
+        ภาคผนวก ก (แก้มลิง/บึงรับน้ำฝั่งพระนคร), หน้า 74, แถวลำดับที่ 25 'บึงรับน้ำ
+        หมู่บ้านสัมมากร 227,200' (ลบ.ม.) -- อ่านจาก
+        /tmp scratchpad text layer of the deposited PDF this check, table header confirms
+        column = ปริมาตรเก็บกัก (ลบ.ม.)"
+      tag: VERIFIED
+    bma_operating_permission:
+      note: "BMA แผนเดียวกัน หน้า 78 (ส่วน 'พื้นที่แก้มลิงเอกชน'): บึงหมู่บ้านสัมมากร
+        เขตสะพานสูง อยู่ในรายชื่อบึงเอกชนที่เจ้าของอนุญาตให้ กทม. เข้าไปดำเนินการ
+        (ปรับปรุงบึง/บ่อสูบ/ประตูระบายน้ำ) -- confirms this pond is an operated,
+        not purely private-uncoordinated, retention asset."
+      tag: VERIFIED
+    outlet:
+      element_th: "คลองบ้านม้า 2 (ทางออกแรงโน้มถ่วงเมื่อบึงสูงกว่าคลอง)"
+      ledger_id: null
+      Q_cap_o_m3s:
+        value: null
+        tag: OPEN
+        note: "OUTLET_CAPACITY_UNKNOWN -- no channel width/depth/design-discharge figure
+          found for 'คลองบ้านม้า 2' specifically in the BMA plan's dredging-maintenance
+          tables (those tables' 'คลองบ้านม้า' rows, e.g. ~5,930 m long 7-25 m wide near
+          บางกะปิ 13.775,100.665, describe a DIFFERENT reach near สวนหลวง/บางกะปิ, not
+          the สะพานสูง reach this unit's pumps discharge into -- not conflated). Left
+          OPEN, never estimated."
+      Q_o_now_source: null
+    pumps:
+      P_U_m3s:
+        value: 7.75
+        basis: "sum of 4 stations' declared total pumping capacity (กำลังสูบรวม,
+          ลบ.ม./วินาที) from BMA แผนปฏิบัติการฯ 2569 ภาคผนวก ง (สถานีสูบน้ำ), หน้า ง-25,
+          ลำดับ 28-31: สถานีสูบน้ำคลองบ้านม้า 2 (ST.SPS.01) 4 (เครื่อง 4x1.0) + สถานีสูบ
+          น้ำบึงที่ 1 ตอนคลองสะพานสูง (ST.SPS.04) 1 (เครื่อง 2x0.5) + สถานีสูบน้ำบึงที่ 2
+          ตอนคลองบ้านม้า 2 (ST.SPS.03) 0.75 (เครื่อง 3x0.25) + สถานีสูบน้ำบึงที่ 4 ตอน
+          คลองวัดใหญ่/วังใหญ่ (ST.SPS.02) 2 (เครื่อง 2x1.0) = 7.75 m3/s -- station names
+          and coordinates in this table match this repo's own sources/registry.yaml
+          ST.SPS.01-04 rows exactly (cross-checked lat/lon)."
+        stations:
+          - {code: "ST.SPS.01", name_th: "สถานีสูบน้ำคลองบ้านม้า 2", design_m3s: 4.0, units: "4x1.0"}
+          - {code: "ST.SPS.04", name_th: "สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง", design_m3s: 1.0, units: "2x0.5"}
+          - {code: "ST.SPS.03", name_th: "สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2", design_m3s: 0.75, units: "3x0.25"}
+          - {code: "ST.SPS.02", name_th: "สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่", design_m3s: 2.0, units: "2x1.0"}
+        tag: VERIFIED
+      pumps_running_count_now:
+        value: 0
+        of_stations: 4
+        observed_at_utc: "2026-09-27T13:40:00+00:00"
+        source: "data/observations.sqlite, source_id=bma_watermap/registry ST.SPS.01-04,
+          status='ขัดข้อง' all 4 stations this reading (already MEASURED in this repo's
+          own pipeline before this check, e.g. docs/SAMMAKORN_STANDING_WATER_2026-09-27.md)"
+        tag: MEASURED
+    c_U: {low: null, high: null, tag: OPEN}
+    upstream_edge: "no upstream discharge gauge/Q_in,up feed declared -- this is a village
+      retention-pond unit, not a river-mainstem town (same convention as BANGKOK_EAST's
+      own 'no significant upstream edge'). Canal-backflow risk into this unit IS tracked,
+      but as tools/layer0's own qualitative BackflowState (active/not_active/likely/
+      unknown), never converted into a fabricated Q_in,up m3/s figure here."
+    canal_level_gauge:
+      code: "WL.SMK.01"
+      name_th: "จุดวัดบึงรับน้ำหมู่บ้านสัมมากร ตอนสถานีสูบน้ำบึงที่ 2 คลองบ้านม้า 2"
+      lat: 13.76700
+      lon: 100.67716
+      source: "BMA แผนปฏิบัติการฯ 2569 หน้า 241 (รายชื่อจุดวัด, ลำดับ 176) + this repo's
+        own data/observations.sqlite (station_code WL.SMK.01, warning=0.35 m, critical=
+        0.44 m, official_telemetry)"
+      tag: VERIFIED
+
+# --------------------------------------------------------------------------------------
+# normalized_fields -- a machine-readable value/unit/source/page/tag view of specific
+# fields that tools/backtest/compute_prop_flood_06_sammakorn.py's loader reads directly
+# (task 1, FOUNDER_TASKS #38). The `units:` block above is this registry's full prose
+# schema (unchanged, verbatim-preserved for lineage); this block restates a handful of
+# its SAMMAKORN fields in one flat, easy-to-test shape rather than requiring every
+# consumer to know that block's nested prose layout. Every field carries value/unit/
+# source/page/tag -- "page" is the specific BMA-plan page cited (never re-derived from
+# the prose `source` string at read time, so a page citation can't silently drift from
+# the string it was extracted from).
+normalized_fields:
+  sammakorn:
+    pond_storage_capacity_m3:
+      value: 227200
+      unit: "m3"
+      source: "BMA แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วมกรุงเทพมหานคร ปี 2569 ภาคผนวก ก
+        หน้า 74 (แถวลำดับที่ 25 บึงรับน้ำหมู่บ้านสัมมากร 227,200 ลบ.ม.)"
+      page: "74"
+      tag: VERIFIED
+    D_H:
+      value: 7.75
+      unit: "m3/s"
+      source: "BMA แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วมกรุงเทพมหานคร ปี 2569 ภาคผนวก ง
+        (สถานีสูบน้ำ) หน้า ง-25, ลำดับ 28-31 (สถานีสูบน้ำ ST.SPS.01-04, รวม 4+1+0.75+2 = 7.75 m3/s)"
+      page: "ง-25"
+      tag: VERIFIED
+    A_U:
+      value: null
+      unit: "km2"
+      source: null
+      page: null
+      tag: OPEN
+    R_H:
+      value: null
+      unit: "m3/s"
+      source: null
+      page: null
+      tag: OPEN

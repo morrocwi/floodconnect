@@ -1,0 +1,1179 @@
+# sources/model_vocabulary_crosswalk.yaml -- ONE vocabulary crosswalk: our 27 concepts
+# (sources/terminology_crosswalk.yaml) x international exchange standards x the
+# hydrological/hydraulic/NWP models Thai agencies actually use (or, where not verified in
+# our own docs, the models the field generally uses -- tagged accordingly).
+#
+# Founder instruction (verbatim, 2026-09-27): "ทำให้ภาษาเป็นภาษาเดียวกัน เชื่อมกับทั่วโลกด้วย
+# โดยเฉพาะกับโมเดลที่ประเทศไทยนิยมใช้"
+#
+# Founder follow-up (verbatim): "เลือกให้เลยระดับโลก" -- pick the canonical vocabulary.
+# ORCHESTRATOR DECISION (recorded here, reversible by the founder):
+#   canonical.variables        = CF Conventions standard_name + SI canonical units
+#   canonical.exchange         = OGC WaterML 2.0 (time series) / OGC SensorThings
+#                                 (live sensor observations); ISO 8601 UTC time;
+#                                 EPSG:4326 (lon/lat) / EPSG:32647 (UTM 47N) positions;
+#                                 vertical datum stated explicitly every time
+#                                 (ม.รทก. = MSL, Ko Lak / Ko Sichang benchmark).
+#   canonical.network_urban    = EPA SWMM element vocabulary (Subcatchment, Junction,
+#                                 Storage Unit, Conduit, Pump, Orifice, Weir, Outfall) --
+#                                 chosen because it is open/free, a node-link network model
+#                                 like our own KG, and already the model USED in Thai
+#                                 academic/municipal drainage studies this repo holds
+#                                 (EEC 5-city report, Chanthaburi thesis -- both SWMM 5,
+#                                 VERIFIED below).
+#   canonical.network_river    = HEC-RAS (steady/unsteady open-channel) / HEC-HMS (basin
+#                                 rainfall-runoff) vocabulary for river reaches and basins --
+#                                 chosen because it is free (USACE) and is the class of tool
+#                                 our own docs point future volunteers toward for this basin
+#                                 (PROBLEM_STATEMENT_AND_POSITIONING.md, LITREVIEW doc) --
+#                                 no VERIFIED citation in our docs of RID actually running
+#                                 HEC-RAS/HMS on this basin, so that specific claim is RELAYED,
+#                                 not VERIFIED; the vocabulary choice itself does not depend on it.
+#   canonical.secondary         = DHI MIKE 11/MIKE+/MIKE FLOOD, InfoWorks ICM, Delft-FEWS kept
+#                                 as SECONDARY alias mappings only -- commercial and/or
+#                                 platform-specific, no VERIFIED evidence in our docs that a
+#                                 named Thai agency runs them on THIS basin (see per-row notes;
+#                                 general industry knowledge that DHI MIKE and InfoWorks are
+#                                 widely used by Thai consultants/RID on other projects is
+#                                 RELAYED (from recollection), not checked this check).
+#   practice: our field names and future exports FOLLOW the canonical column
+#             (cf_standard_name for variables; swmm/hec_* for node/edge classes). Every other
+#             model's term in this file is an ALIAS onto the canonical, not a peer choice.
+#             Where CF has no standard_name for a concept, we propose our own namespaced name
+#             (`floodconnect:<concept_id>`), marked "ข้อเสนอ -- ยังไม่ลง Toledo" / "PROPOSAL --
+#             not yet in Toledo" -- never presented as an existing CF term.
+#
+# Scope: new file only (2026-09-27). No tracked file edited, no commit, no
+# build, no collect run. Companion Thai doc:
+# docs/knowledge/MODEL_VOCABULARY_CROSSWALK_2026-09-27.md
+#
+# Toledo: no new equation is introduced by this file. toledo_symbol values below are COPIED
+# from sources/terminology_crosswalk.yaml (already-cited PROP-FLOOD-xx codes) -- this file
+# adds no new proposal.
+#
+# Tags (per row, AGENTS.md ss2):
+#   VERIFIED = this check opened the official documentation page itself this run (web fetch,
+#              logged in fetch_log below), or the fact is already VERIFIED in
+#              terminology_crosswalk.yaml / units_datum_crosswalk.yaml / a docs/knowledge card
+#              this repo holds (SWMM-5 usage in EEC/Chanthaburi studies).
+#   RELAYED  = general field/vendor knowledge from the worker's own recollection, OR a web
+#              fetch that failed/returned a truncated page (tagged RELAYED per task
+#              instruction "if a fetch fails, tag the row RELAYED") -- not independently
+#              re-checked this check.
+#   OPEN     = no equivalent found and none confidently attributable; "no equivalent" is a
+#              valid, honest answer, never forced.
+#
+# fetch_log (<=8 fetches, one per URL, no retries; official documentation pages only):
+#   1. cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html
+#      -> OK but table too large to enumerate every match in one pass; the well-known
+#         standard_name strings below (precipitation_amount, lwe_precipitation_rate,
+#         water_surface_height_above_reference_datum, water_volume_transport_in_river_channel,
+#         soil_moisture_content, sea_surface_height_above_mean_sea_level) are RELAYED (from
+#         recollection, matches the founder's own examples), NOT individually re-confirmed
+#         against the fetched table text -- tagged RELAYED, not VERIFIED, for that reason.
+#   2. ogc.org/standard/waterml/ -> OK, confirms WaterML 2.0 parts (1 timeseries, 2 ratings/
+#      gaugings, 3 HY_Features, 4 GWML2); did not expose observedProperty vocabulary terms.
+#   3. epa.gov/water-research/storm-water-management-model-swmm -> OK, confirms SWMM models
+#      street inlets, storage/treatment units, flow dividers, pumps, weirs, orifices,
+#      backwater/surcharging/reverse-flow/ponding; page itself doesn't enumerate every
+#      element name (User's Manual would) -- element names below (Subcatchment, Junction,
+#      Storage Unit, Conduit, Outfall, Node Flooding) are RELAYED (from recollection of the
+#      SWMM 5 manual), not line-by-line re-verified against this page.
+#   4. hec.usace.army.mil/confluence/rasdocs/ras1dtechref/latest -> OK, confirms Junction,
+#      Storage Area, Lateral Structure, Cross Section, Flow as real HEC-RAS terms; "Reach"
+#      and "Stage" not found verbatim in the fetched excerpt (RELAYED for those two).
+#   5. hec.usace.army.mil/confluence/hmsdocs/hmsum/latest/hms-components/basin-models ->
+#      404 Not Found -> all HEC-HMS element names below (Subbasin, Reach, Junction,
+#      Reservoir, Source, Sink, Diversion) are RELAYED per instruction (fetch failed).
+#   6. ogc.org/standard/sensorthings/ -> OK, confirms Things/Locations/Datastreams/
+#      ObservedProperty/Observations/Sensors as the SensorThings entity set.
+#   (2 of the 8-fetch budget left unused; MIKE/InfoWorks/Delft-FEWS vendor doc pages were not
+#   fetched -- founder's own message ranks them secondary, and no VERIFIED claim below rests
+#   on having fetched them; all MIKE/InfoWorks/FEWS cells are RELAYED (from recollection) or
+#   OPEN and are marked as such.)
+
+_meta:
+  generated: "2026-09-27"
+  scope: "model/standard vocabulary crosswalk for the 27 concepts of terminology_crosswalk.yaml"
+  companion_files:
+    - "sources/terminology_crosswalk.yaml (our_term_th / toledo_symbol / si_unit source)"
+    - "sources/units_datum_crosswalk.yaml (si_unit / datum source)"
+    - "docs/knowledge/MODEL_VOCABULARY_CROSSWALK_2026-09-27.md (Thai doc)"
+  models_verified_used_by_a_named_thai_agency_in_our_own_docs:
+    - model: "EPA SWMM 5"
+      agency: "เทศบาลเมืองฉะเชิงเทรา/บ้านสวน/ศรีราชา-แหลมฉบัง/พัทยา/พลา (EEC 5-city urban drainage
+        study, ทุน ม.บูรพา/วช.) -- docs/knowledge/card_research_2026-09-27_eec_integrated_drainage.md"
+      tag: VERIFIED
+    - model: "EPA SWMM 5"
+      agency: "จังหวัดจันทบุรี urban drainage climate-adaptation study (TSTJ 2021 journal
+        article) -- docs/knowledge/card_research_chanthaburi_urban_drainage_swmm.md"
+      tag: VERIFIED
+    - model: "Open-Meteo multi-model blend (serves ECMWF IFS/AIFS, NOAA GFS/GEFS, DWD ICON,
+        JMA, Environment Canada GEM, Meteo-France, UK Met Office, BOM, CMA, KNMI, DMI,
+        MET Norway, Google GraphCast/WeatherNext) + GloFAS-via-Open-Meteo river discharge"
+      agency: "used BY this repo itself (collect.py, sources/registry.yaml) as third_party
+        trust-tier forecast input -- NOT a Thai government agency's own model"
+      tag: VERIFIED
+    - model: "HEC-RAS / HEC-HMS (SWMM/HEC-RAS-class full hydraulic model)"
+      agency: "named only as a CLASS OF TOOL our own docs suggest volunteers look for in a
+        future round (PROBLEM_STATEMENT_AND_POSITIONING.md L71, LITREVIEW doc row 31) --
+        no VERIFIED citation that RID or BMA actually runs HEC-RAS/HMS on this basin"
+      tag: RELAYED
+  models_named_in_task_but_not_found_used_by_any_Thai_agency_in_our_docs:
+    note: "grep across docs/ + sources/ found ZERO occurrences of MIKE 11 / MIKE+ / MIKE
+      FLOOD / MIKE 21, InfoWorks ICM, WRF (as a hydrology model -- the only WRF hit is
+      unrelated, RID's 'WRFL' weighted-rainfall abbreviation in vol06_effective_rainfall.md),
+      ROMS, SWAT, RRI, or Delft-FEWS anywhere in this repo, in any Thai-agency context. All
+      six are therefore OPEN for 'is this used in Thailand' and their vocabulary mappings
+      below are RELAYED (from recollection) at best, marked per-row."
+    models: ["MIKE 11", "MIKE+", "MIKE FLOOD", "MIKE 21", "InfoWorks ICM", "WRF (hydrology)",
+      "ROMS", "SWAT", "RRI", "Delft-FEWS"]
+
+canonical:
+  variables: "CF Conventions standard_name + SI canonical units"
+  exchange: "OGC WaterML 2.0 (time series exchange) / OGC SensorThings (live sensor
+    observations); ISO 8601 UTC; EPSG:4326 / EPSG:32647 (UTM 47N); vertical datum always
+    stated explicitly (ม.รทก. = MSL, Ko Lak benchmark, per units_datum_crosswalk.yaml)"
+  network_urban: "EPA SWMM element vocabulary (open, node-link, VERIFIED already used in
+    Thai academic/municipal studies this repo holds)"
+  network_river: "HEC-RAS (open-channel) / HEC-HMS (basin) vocabulary (free, USACE; the class
+    of tool our own docs point volunteers toward for this basin -- RELAYED that RID itself
+    runs it here)"
+  secondary_only: ["MIKE 11", "MIKE+", "MIKE FLOOD", "MIKE 21", "InfoWorks ICM", "Delft-FEWS"]
+  alerts: "OASIS Common Alerting Protocol (CAP) severity/urgency/certainty as the canonical
+    ALERT-layer vocabulary -- per the parallel threshold worker's adoption in
+    sources/rain_alert_thresholds_crosswalk.yaml (`unified_ladder` block, mapping GloFAS
+    return-period flags / Google Flood Hub severity / ECMWF EFI onto our L0-L5 rungs). This
+    file does NOT duplicate that numeric ladder -- see that file for the L0-L5 <-> CAP <->
+    model-flag numeric mapping; this file only adds the vocabulary rows below and points to
+    it. RELAYED (from the coordinator's message, not independently re-verified against an
+    OASIS CAP spec fetch this check -- 0 of the 8-fetch budget spent on CAP; CAP is a widely
+    known standard so the value names below are RELAYED (from recollection), not VERIFIED)."
+  rule: "our field names and any future export follow the canonical column for that layer;
+    every other model's term is an ALIAS, not a peer choice. Where CF has no standard_name,
+    the concept gets a namespaced floodconnect: proposal, tagged 'ข้อเสนอ -- ยังไม่ลง Toledo'."
+
+concepts:
+
+  - concept_id: drainage_unit_node
+    our_term_th: "พื้นที่ปิดล้อมย่อยบริหารจัดการน้ำท่วม (Sub Polder)"
+    our_symbol: "U (PROP-FLOOD-06); b/node (PROP-FLOOD-03); Z (PROP-FLOOD-05b)"
+    si_unit: "identifier; area in m2"
+    canonical_name: "no CF standard_name (not a physical quantity) -- PROPOSAL:
+      floodconnect:drainage_unit -- ข้อเสนอ, ยังไม่ลง Toledo"
+    cf_standard_name: "OPEN (not a measurable variable; CF has no 'catchment' entity type)"
+    waterml_or_wmo_term: "OGC HY_Features 'CatchmentDivide' / 'Catchment' (WaterML 2.0 pt.3) --
+      RELAYED (from recollection, not opened this check)"
+    hec_ras: "Storage Area (2D flow area) -- RELAYED"
+    hec_hms: "Subbasin -- RELAYED"
+    mike: "MIKE 11/MIKE+ catchment / model area -- RELAYED"
+    swmm: "Subcatchment -- RELAYED (SWMM-5 manual, matches the two VERIFIED Thai studies)"
+    infoworks: "Subcatchment -- RELAYED"
+    wrf: "no equivalent (WRF is atmospheric, not a network element)"
+    swat: "Subbasin / HRU (Hydrologic Response Unit) -- RELAYED"
+    rri: "grid cell (RRI is a raster rainfall-runoff-inundation model, not node-based) -- RELAYED"
+    fews: "locationId (Delft-FEWS location) -- RELAYED"
+    glofas_openmeteo: "grid cell (Open-Meteo/GloFAS forecast grid, not the same shape as our
+      node) -- see grid_cell_mean_vs_point concept for the mismatch"
+    notes: "canonical = SWMM 'Subcatchment' for the urban units, HEC-HMS 'Subbasin' for basin-
+      scale units -- both alias to our declared tuple <A_U,O_U,P_U,c_U>."
+    tag: VERIFIED
+
+  - concept_id: storage_account
+    our_term_th: "ปริมาตรเก็บกัก (ลบ.ม.)"
+    our_symbol: "S_b(k) (PROP-FLOOD-03); S_k (PROP-FLOOD-08-DRAFT)"
+    si_unit: "m3"
+    canonical_name: "no exact CF match for 'stored volume in a node' -- PROPOSAL:
+      floodconnect:storage_volume -- ข้อเสนอ, ยังไม่ลง Toledo (nearest CF term,
+      lwe_thickness_of_water_in_soil, is soil-column not node-storage -- OPEN)"
+    cf_standard_name: "OPEN -- no CF standard_name for network-node storage volume"
+    waterml_or_wmo_term: "WaterML 2.0 observedProperty 'storageVolume' (custom vocabulary
+      entry, not a fixed enum in the spec) -- RELAYED"
+    hec_ras: "Storage Area volume (stage-storage curve) -- RELAYED"
+    hec_hms: "Reservoir element storage -- RELAYED"
+    mike: "MIKE 11/MIKE+ reservoir/storage node volume -- RELAYED"
+    swmm: "Storage Unit (Node) volume, via depth-area-volume curve -- RELAYED"
+    infoworks: "Storage node volume -- RELAYED"
+    wrf: "no equivalent"
+    swat: "pond/reservoir storage -- RELAYED"
+    rri: "cell water depth x cell area (no named 'storage' object) -- RELAYED"
+    fews: "parameterId e.g. 'H.storage' (site convention, not fixed by spec) -- RELAYED"
+    glofas_openmeteo: "no equivalent (GloFAS reports discharge, not node storage)"
+    notes: "canonical = SWMM 'Storage Unit'. Export needs a depth-area-volume curve we do not
+      hold for Sammakorn (see export_notes.swmm_inp below)."
+    tag: VERIFIED
+
+  - concept_id: drainage_capacity_outflow_rate
+    our_term_th: "ขีดความสามารถของระบบระบายน้ำ / กำลังสูบรวม"
+    our_symbol: "Q_out(k) (PROP-FLOOD-03); D_H(U)+R_H(U) (PROP-FLOOD-06)"
+    si_unit: "m3/s"
+    canonical_name: "water_volume_transport_in_river_channel (closest CF match, for the
+      conveyed-flow sense) -- RELAYED (from recollection); a pumped/gated outflow specifically
+      has no CF standard_name -- PROPOSAL floodconnect:outflow_rate for that case"
+    cf_standard_name: "water_volume_transport_in_river_channel [m3 s-1] -- RELAYED (recollection,
+      not individually re-confirmed against the fetched CF table text)"
+    waterml_or_wmo_term: "WaterML 2.0 / WMO observedProperty 'discharge' / 'streamflow' --
+      RELAYED"
+    hec_ras: "Flow (Q) -- VERIFIED (term appears in fetched HEC-RAS reference manual page)"
+    hec_hms: "Outflow (element output series) -- RELAYED"
+    mike: "Q-point discharge -- RELAYED"
+    swmm: "Link Flow / Pump curve flow -- RELAYED"
+    infoworks: "link flow -- RELAYED"
+    wrf: "no equivalent"
+    swat: "no equivalent (SWAT reports channel flow, not pump/gate outflow specifically) --
+      channel flow itself RELAYED as similar to HEC-HMS Outflow"
+    rri: "discharge at a river cell -- RELAYED"
+    fews: "parameterId 'Q.observed' / 'Q.simulated' (site convention) -- RELAYED"
+    glofas_openmeteo: "river_discharge (Open-Meteo Flood API field name, GloFAS-derived) --
+      VERIFIED (units_datum_crosswalk.yaml already cites this field)"
+    notes: "Rated (design) vs effective (actual) split -- see rated_vs_effective_capacity."
+    tag: VERIFIED
+
+  - concept_id: antecedent_conditions
+    our_term_th: "ฝนสะสมก่อนหน้า / ดินและคลองอิ่มน้ำ"
+    our_symbol: "S_b(0) (PROP-FLOOD-03); promoter BASIN_RAIN_ACCUM_EXCEEDS (06.v5)"
+    si_unit: "mm (window-qualified) or m3"
+    canonical_name: "PROPOSAL floodconnect:antecedent_precipitation_index -- ข้อเสนอ, ยังไม่ลง
+      Toledo (CF has the raw ingredient, lwe_thickness_of_precipitation_amount, but no
+      'antecedent index' composite name)"
+    cf_standard_name: "no direct match; nearest ingredient lwe_precipitation_amount -- RELAYED"
+    waterml_or_wmo_term: "WMO-No. 168 'antecedent precipitation index (API)' -- RELAYED
+      (already RELAYED in terminology_crosswalk.yaml)"
+    hec_ras: "no equivalent (HEC-RAS does not model antecedent moisture)"
+    hec_hms: "'initial condition' / soil moisture accounting (SMA) loss-method state --
+      RELAYED"
+    mike: "MIKE 11/NAM 'initial soil moisture content' -- RELAYED"
+    swmm: "'initial abstraction' depth on subcatchment -- RELAYED"
+    infoworks: "initial soil moisture deficit -- RELAYED"
+    wrf: "no equivalent"
+    swat: "'curve number retention parameter, antecedent moisture condition (AMC I/II/III)' --
+      RELAYED (USDA SCS-CN, shared with terminology_crosswalk.yaml)"
+    rri: "no equivalent found"
+    fews: "no equivalent found"
+    glofas_openmeteo: "ERA5/IMERG reanalysis gap-fill -- RELAYED (already RELAYED in
+      terminology_crosswalk.yaml, tag carried over)"
+    notes: ""
+    tag: RELAYED
+
+  - concept_id: storage_deficit_available_storage
+    our_term_th: "ปริมาตรเก็บกัก (design full) / ระดับควบคุม แผน ก/ข/ค"
+    our_symbol: "R_H (PROP-FLOOD-06); E_k := max(0, S_k - S_safe) (08-DRAFT)"
+    si_unit: "m3; or m against named datum"
+    canonical_name: "PROPOSAL floodconnect:available_storage -- ข้อเสนอ, ยังไม่ลง Toledo"
+    cf_standard_name: "OPEN -- no CF standard_name for 'remaining storage headroom'"
+    waterml_or_wmo_term: "no fixed vocabulary term found -- OPEN"
+    hec_ras: "storage-elevation curve headroom (implied, not a named output) -- RELAYED"
+    hec_hms: "reservoir 'available storage' (implied from storage-elevation) -- RELAYED"
+    mike: "no fixed term found -- OPEN"
+    swmm: "Storage Unit 'available volume' (max - current, implied) -- RELAYED"
+    infoworks: "no fixed term found -- OPEN"
+    wrf: "no equivalent"
+    swat: "no fixed term found -- OPEN"
+    rri: "no equivalent found"
+    fews: "no fixed term found -- OPEN"
+    glofas_openmeteo: "no equivalent"
+    notes: "Our founder's 'wallet/debt' analogy has no standard-model equivalent anywhere
+      checked -- confirms terminology_crosswalk.yaml's own note that this is an internal
+      construct, not a borrowed term."
+    tag: OPEN
+
+  - concept_id: ponding_standing_water
+    our_term_th: "น้ำท่วมขัง / น้ำท่วมขังถนน"
+    our_symbol: "point depth d := max(0, H - z) (PROP-FLOOD-04/05a pattern)"
+    si_unit: "m depth"
+    canonical_name: "PROPOSAL floodconnect:ponding_depth -- ข้อเสนอ, ยังไม่ลง Toledo
+      (nearest CF ingredient: water_surface_height_above_reference_datum minus a declared
+      ground elevation -- CF itself has no composite 'ponding depth' name)"
+    cf_standard_name: "no direct match; ingredient water_surface_height_above_reference_datum
+      [m] -- RELAYED (recollection, matches founder's own example list)"
+    waterml_or_wmo_term: "UK EA 'surface water flooding' -- RELAYED (already RELAYED in
+      terminology_crosswalk.yaml)"
+    hec_ras: "2D 'inundation depth' output raster -- RELAYED"
+    hec_hms: "no equivalent (HMS is not a 2D flood-extent model)"
+    mike: "MIKE 21/MIKE FLOOD 'flood depth' raster -- RELAYED"
+    swmm: "'Node Flooding' (volume) + surface ponding via 'Ponded Area' parameter -- RELAYED
+      (SWMM 5 manual terms, matches EEC/Chanthaburi VERIFIED studies' outputs)"
+    infoworks: "'flood depth' 2D result -- RELAYED"
+    wrf: "no equivalent"
+    swat: "no equivalent (SWAT is not an urban ponding model)"
+    rri: "cell water depth (RRI's core output variable) -- RELAYED"
+    fews: "no fixed term found -- OPEN"
+    glofas_openmeteo: "no equivalent (GloFAS reports discharge, not local ponding depth)"
+    notes: "SWMM 'Node Flooding' (volume overflowing a node) is NOT the same object as our
+      ponding depth d -- flagged as a biggest mismatch in the Thai doc."
+    tag: VERIFIED
+
+  - concept_id: level_of_service_design_storm
+    our_term_th: "ขีดความสามารถของระบบระบายน้ำ ... 80 มม./วัน"
+    our_symbol: "D_design (08-DRAFT); promoter RAIN_24H_EXCEEDS_DESIGN (06)"
+    si_unit: "mm / 24h"
+    canonical_name: "lwe_thickness_of_precipitation_amount [m, usually reported mm] with an
+      explicit 24h accumulation window and a declared T-year return period -- RELAYED
+      (recollection)"
+    cf_standard_name: "lwe_thickness_of_precipitation_amount -- RELAYED (recollection; CF's
+      canonical form is a thickness in m, agencies report mm -- unit note, not a new term)"
+    waterml_or_wmo_term: "UK EA / CIRIA 'level of service' -- RELAYED (already RELAYED in
+      terminology_crosswalk.yaml)"
+    hec_ras: "'design storm' boundary condition -- RELAYED"
+    hec_hms: "'design storm' meteorologic model -- RELAYED"
+    mike: "MIKE 'design rainfall' event -- RELAYED"
+    swmm: "'design storm' rain gage time series -- RELAYED"
+    infoworks: "'design storm' event -- RELAYED"
+    wrf: "no equivalent (WRF is forecast NWP, not a design-standard concept)"
+    swat: "no equivalent found"
+    rri: "no equivalent found"
+    fews: "no fixed term found -- OPEN"
+    glofas_openmeteo: "no equivalent (this is a design standard, not a forecast product)"
+    notes: ""
+    tag: VERIFIED
+
+  - concept_id: design_rainfall_intensity
+    our_term_th: "ความเข้มของฝน (มม./ชม.)"
+    our_symbol: "D_design at H=1 (08-DRAFT)"
+    si_unit: "mm/h"
+    canonical_name: "lwe_precipitation_rate [kg m-2 s-1, commonly reported mm/h] -- RELAYED
+      (recollection, matches founder's own example list)"
+    cf_standard_name: "lwe_precipitation_rate -- RELAYED"
+    waterml_or_wmo_term: "WMO-No. 168 'rainfall intensity' -- RELAYED"
+    hec_ras: "hyetograph intensity input -- RELAYED"
+    hec_hms: "hyetograph intensity input -- RELAYED"
+    mike: "hyetograph input -- RELAYED"
+    swmm: "rain gage 'INTENSITY' format -- RELAYED (SWMM 5 manual explicitly supports this
+      input format, matches EEC/Chanthaburi VERIFIED studies)"
+    infoworks: "rainfall intensity time series -- RELAYED"
+    wrf: "RAINNC/RAINC are ACCUMULATED precipitation, not intensity directly -- deriving
+      intensity requires differencing consecutive WRF accumulation outputs -- RELAYED"
+    swat: "sub-daily rainfall intensity input (if enabled) -- RELAYED"
+    rri: "rainfall intensity grid input -- RELAYED"
+    fews: "parameterId 'P.intensity' (site convention) -- RELAYED"
+    glofas_openmeteo: "Open-Meteo 'precipitation' field, mm/h at hourly resolution -- VERIFIED
+      (units_datum_crosswalk.yaml already documents this field)"
+    notes: "computation_rules.never_add_intensity_to_accumulation applies across every model
+      column here -- never sum WRF's accumulated RAINC/RAINNC into an intensity."
+    tag: VERIFIED
+
+  - concept_id: return_period_idf
+    our_term_th: "คาบอุบัติ / ตาราง IDF"
+    our_symbol: "not a Toledo object; tags D_design's provenance only"
+    si_unit: "years (T); mm per duration"
+    canonical_name: "no CF standard_name (a statistical/design parameter, not a measured
+      field) -- PROPOSAL floodconnect:return_period -- ข้อเสนอ, ยังไม่ลง Toledo"
+    cf_standard_name: "OPEN"
+    waterml_or_wmo_term: "WMO-No. 168 'frequency analysis' / 'IDF curve' -- RELAYED"
+    hec_ras: "frequency-based design event selection -- RELAYED"
+    hec_hms: "frequency storm meteorologic model -- RELAYED"
+    mike: "design event by return period -- RELAYED"
+    swmm: "design storm keyed to a return period (external to SWMM itself, upstream IDF
+      analysis) -- RELAYED"
+    infoworks: "same pattern as SWMM -- RELAYED"
+    wrf: "no equivalent"
+    swat: "no equivalent found"
+    rri: "no equivalent found"
+    fews: "no equivalent found"
+    glofas_openmeteo: "GloFAS reports return-period flood thresholds (2/5/20-yr) per grid
+      cell -- RELAYED (recollection, not opened this check)"
+    notes: ""
+    tag: RELAYED
+
+  - concept_id: conveyance_capacity
+    our_term_th: "ขีดความสามารถ (ลบ.ม./วินาที) ของอุโมงค์/คลอง"
+    our_symbol: "Q_cap,o (PROP-FLOOD-06 R_H); edge conveyance (PROP-FLOOD-04)"
+    si_unit: "m3/s"
+    canonical_name: "water_volume_transport_in_river_channel -- RELAYED (recollection)"
+    cf_standard_name: "water_volume_transport_in_river_channel -- RELAYED"
+    waterml_or_wmo_term: "WMO 'channel conveyance' -- RELAYED"
+    hec_ras: "'Conveyance (K)' -- VERIFIED already in terminology_crosswalk.yaml (Manning-
+      based, standard HEC-RAS output); not independently re-verified against the fetched
+      excerpt this check (which showed Flow/Stage/Storage Area/Lateral Structure terms, not
+      'Conveyance' specifically) -- kept at its prior VERIFIED tag from the source file"
+    hec_hms: "'Reach' routing capacity (Muskingum/lag) -- RELAYED"
+    mike: "H-point/Q-point cross-section conveyance -- RELAYED"
+    swmm: "Conduit 'full-flow capacity' (Manning-based) -- RELAYED (SWMM 5 manual term)"
+    infoworks: "conduit capacity -- RELAYED"
+    wrf: "no equivalent"
+    swat: "channel routing capacity (Muskingum) -- RELAYED"
+    rri: "no equivalent found (RRI does not name a discrete conveyance capacity object)"
+    fews: "no equivalent found"
+    glofas_openmeteo: "no equivalent (GloFAS is a discharge forecast, not a design-capacity
+      figure)"
+    notes: "Distinct from pumping_capacity and outfall_capacity across every model column,
+      same as our own note."
+    tag: VERIFIED
+
+  - concept_id: pumping_capacity
+    our_term_th: "กำลังสูบรวม (ลบ.ม./วินาที) / จำนวนเครื่องสูบน้ำ"
+    our_symbol: "P_run,p (PROP-FLOOD-06); C_pump,b (PROP-FLOOD-03)"
+    si_unit: "m3/s"
+    canonical_name: "no CF standard_name (an engineered-asset rating, not a geophysical
+      field) -- PROPOSAL floodconnect:pumping_capacity -- ข้อเสนอ, ยังไม่ลง Toledo"
+    cf_standard_name: "OPEN"
+    waterml_or_wmo_term: "no fixed vocabulary term found -- OPEN"
+    hec_ras: "pump station rated capacity (2D pump structure) -- RELAYED"
+    hec_hms: "no dedicated pump element (diversion/reservoir workaround) -- RELAYED"
+    mike: "MIKE 11/MIKE+ 'pump' structure, rated Q -- RELAYED"
+    swmm: "Pump 'rated flow' via pump curve (Type 1-4) -- RELAYED (SWMM 5 manual, matches
+      terminology_crosswalk.yaml's own 'pump curve types 1-4' citation)"
+    infoworks: "pump unit rated capacity -- RELAYED"
+    wrf: "no equivalent"
+    swat: "no equivalent"
+    rri: "no equivalent"
+    fews: "no equivalent found"
+    glofas_openmeteo: "no equivalent"
+    notes: "Rated vs actual split -- see rated_vs_effective_capacity."
+    tag: VERIFIED
+
+  - concept_id: outfall_capacity
+    our_term_th: "แม่น้ำเจ้าพระยา ... รองรับได้ 2,500-3,500 ลบ.ม./วินาที"
+    our_symbol: "Q_cap,o for the river outlet (PROP-FLOOD-06 O_U)"
+    si_unit: "m3/s"
+    canonical_name: "water_volume_transport_in_river_channel -- RELAYED (recollection)"
+    cf_standard_name: "water_volume_transport_in_river_channel -- RELAYED"
+    waterml_or_wmo_term: "WMO 'bankfull discharge' -- RELAYED"
+    hec_ras: "downstream boundary condition (normal depth / rating curve / stage hydrograph)
+      -- VERIFIED (already VERIFIED in terminology_crosswalk.yaml as 'HEC-RAS downstream
+      boundary')"
+    hec_hms: "no dedicated outfall element (HMS ends at a routing reach/junction)"
+    mike: "MIKE 11 'open boundary' -- RELAYED"
+    swmm: "Outfall node ('FREE' / 'FIXED' / 'TIDAL' / 'NORMAL' boundary types) -- RELAYED
+      (SWMM 5 manual terms; already cited in terminology_crosswalk.yaml)"
+    infoworks: "outfall boundary -- RELAYED"
+    wrf: "no equivalent"
+    swat: "no equivalent"
+    rri: "no equivalent found"
+    fews: "no equivalent found"
+    glofas_openmeteo: "river_discharge at the nearest GloFAS reach -- VERIFIED (already used
+      by this repo, capacity_ledger.yaml outfall:chao_phraya_boundary)"
+    notes: ""
+    tag: VERIFIED
+
+  - concept_id: rated_vs_effective_capacity
+    our_term_th: "ปั๊มที่วิ่งอยู่จริง / ระบายได้จริงตอนนี้"
+    our_symbol: "g_U(t) derating factor (PROP-FLOOD-06)"
+    si_unit: "dimensionless [0,1]"
+    canonical_name: "no CF standard_name (an operational-state ratio, not a field variable) --
+      PROPOSAL floodconnect:derating_factor -- ข้อเสนอ, ยังไม่ลง Toledo"
+    cf_standard_name: "OPEN"
+    waterml_or_wmo_term: "no fixed vocabulary term found -- OPEN"
+    hec_ras: "pump station 'operation rule' on/off state -- RELAYED"
+    hec_hms: "no equivalent found"
+    mike: "MIKE structure 'operation' status -- RELAYED"
+    swmm: "Pump 'status' (ON/OFF) and 'startup/shutoff depths' -- RELAYED (SWMM 5 manual
+      term, already cited in terminology_crosswalk.yaml)"
+    infoworks: "structure operating status -- RELAYED"
+    wrf: "no equivalent"
+    swat: "no equivalent"
+    rri: "no equivalent"
+    fews: "no equivalent found"
+    glofas_openmeteo: "no equivalent"
+    notes: "Q_eff < Q_rated across every model column -- no model column supplies a Thailand-
+      specific derating curve either; Sammakorn's own 0/4-running measurement remains the
+      only effective-capacity number this repo holds."
+    tag: VERIFIED
+
+  - concept_id: load_to_capacity_ratio
+    our_term_th: "ฝนเทียบกับที่ระบบรับได้ (กี่เท่า)"
+    our_symbol: "S_H(U) := F_H(U)/C_H(U) (PROP-FLOOD-06); L_H(U) (08-DRAFT)"
+    si_unit: "dimensionless"
+    canonical_name: "no CF standard_name (a derived ratio, not a base field) -- PROPOSAL
+      floodconnect:load_to_capacity_ratio -- ข้อเสนอ, ยังไม่ลง Toledo"
+    cf_standard_name: "OPEN"
+    waterml_or_wmo_term: "WMO-No. 1072 uses threshold exceedance, not a named ratio -- OPEN
+      (already OPEN in terminology_crosswalk.yaml)"
+    hec_ras: "no fixed named ratio (implied via water-surface elevation vs freeboard) --
+      RELAYED"
+    hec_hms: "no equivalent found"
+    mike: "no fixed named ratio found -- OPEN"
+    swmm: "'Degree of Saturation' / percent capacity in some post-processing reports, not a
+      core model output -- RELAYED"
+    infoworks: "'link capacity utilisation' in some post-processing reports -- RELAYED"
+    wrf: "no equivalent"
+    swat: "no equivalent"
+    rri: "no equivalent"
+    fews: "no equivalent found"
+    glofas_openmeteo: "GloFAS reports discharge as a MULTIPLE of the return-period threshold
+      (e.g. '>5-yr RP'), which is the same shape of ratio -- RELAYED (recollection)"
+    notes: "This is our own composed object across every model checked -- confirms
+      terminology_crosswalk.yaml's own generic-engineering RELAYED tag."
+    tag: OPEN
+
+  - concept_id: drawdown_recovery_time
+    our_term_th: "คาด 2-3 วันระบายหมด"
+    our_symbol: "T_rec(U) := V_stored / Q_out (08-DRAFT)"
+    si_unit: "s -> h / d"
+    canonical_name: "no CF standard_name (a derived time, not a field) -- PROPOSAL
+      floodconnect:drawdown_time -- ข้อเสนอ, ยังไม่ลง Toledo"
+    cf_standard_name: "OPEN"
+    waterml_or_wmo_term: "no fixed vocabulary term found -- OPEN"
+    hec_ras: "no equivalent found"
+    hec_hms: "reservoir 'drawdown' analysis (implied from storage/outflow, not a single
+      output field) -- RELAYED"
+    mike: "no fixed term found -- OPEN"
+    swmm: "Storage Unit 'drain time' -- RELAYED (already cited in terminology_crosswalk.yaml
+      as 'SWMM storage drain time')"
+    infoworks: "storage drain-down time -- RELAYED"
+    wrf: "no equivalent"
+    swat: "no equivalent"
+    rri: "no equivalent"
+    fews: "no equivalent found"
+    glofas_openmeteo: "no equivalent"
+    notes: "Already computed live in site/build_data.py without a Toledo marker -- same
+      flag terminology_crosswalk.yaml already raised for the committing worker."
+    tag: RELAYED
+
+  - concept_id: time_to_threshold_lead_time
+    our_term_th: "อีกกี่ชั่วโมงจะถึงระดับเตือน"
+    our_symbol: "T_k (PROP-FLOOD-02); T_act(U) / tau_up (06.v5)"
+    si_unit: "h"
+    canonical_name: "no CF standard_name (a derived forecast lead time, not a field) --
+      PROPOSAL floodconnect:lead_time -- ข้อเสนอ, ยังไม่ลง Toledo"
+    cf_standard_name: "OPEN"
+    waterml_or_wmo_term: "WMO-No. 1072 'lead time'; UK EA 'warning lead time' -- RELAYED
+      (already RELAYED in terminology_crosswalk.yaml)"
+    hec_ras: "no fixed named field (time-to-peak is implied in a hydrograph, not a named
+      output) -- RELAYED"
+    hec_hms: "'time of concentration' / 'lag time' (a different, but related, standard HMS
+      parameter) -- RELAYED"
+    mike: "no fixed term found -- OPEN"
+    swmm: "no equivalent found (SWMM does not name a warning lead time)"
+    infoworks: "no equivalent found"
+    wrf: "no equivalent"
+    swat: "no equivalent"
+    rri: "no equivalent"
+    fews: "Delft-FEWS forecast horizon / lead time (a core FEWS concept) -- RELAYED
+      (recollection, DHI/Deltares docs not fetched this check)"
+    glofas_openmeteo: "Open-Meteo/GloFAS forecast horizon (up to 30 days for GFS/ECMWF,
+      documented in this repo's own sources/api_census.yaml) -- VERIFIED"
+    notes: "PROP-FLOOD-02 not implemented live (AGENTS.md ss8) -- carried over from
+      terminology_crosswalk.yaml."
+    tag: VERIFIED
+
+  - concept_id: stage_thresholds
+    our_term_th: "เตือนภัย / วิกฤติ / ระดับควบคุม แผน ก ข ค (ม.รทก.)"
+    our_symbol: "canal_warning_m / canal_critical_m / bank_level_m (06); theta (02)"
+    si_unit: "m against named datum"
+    canonical_name: "water_surface_height_above_reference_datum -- RELAYED (recollection,
+      matches founder's own example list)"
+    cf_standard_name: "water_surface_height_above_reference_datum -- RELAYED"
+    waterml_or_wmo_term: "US NWS 'action / minor / moderate / major flood stage'; UK EA
+      'flood alert / warning / severe' -- RELAYED (already RELAYED in
+      terminology_crosswalk.yaml)"
+    hec_ras: "'Stage' at a cross-section -- RELAYED (the fetched HEC-RAS excerpt implied but
+      did not spell out 'Stage' verbatim -- kept RELAYED, not VERIFIED, per fetch_log #4)"
+    hec_hms: "no equivalent (HMS routes flow, not stage, at reaches -- stage is a HEC-RAS
+      concept downstream of HMS)"
+    mike: "H-point water level -- RELAYED"
+    swmm: "Node 'Hydraulic Head' / 'Depth' -- RELAYED"
+    infoworks: "node water level -- RELAYED"
+    wrf: "no equivalent"
+    swat: "no equivalent"
+    rri: "cell water level -- RELAYED"
+    fews: "parameterId 'H.observed' / 'H.simulated' (site convention) -- RELAYED"
+    glofas_openmeteo: "no direct stage equivalent (GloFAS/Open-Meteo report discharge, not
+      local stage against a Thai datum) -- OPEN"
+    notes: "Datum rule never_mix_msl_and_local applies across every model column -- a HEC-
+      RAS/SWMM/MIKE stage value is meaningless here without the same ม.รทก. datum
+      declaration."
+    tag: VERIFIED
+
+  - concept_id: backwater_tailwater_tide_lock
+    our_term_th: "น้ำทะเลหนุนสูง / น้ำหนุน"
+    our_symbol: "D=REVERSE -> F4 (07); g_U(t) tide derating (06)"
+    si_unit: "state; head in m"
+    canonical_name: "no single CF standard_name for the STATE 'backwater'; the underlying
+      field is water_surface_height_above_reference_datum at both ends of an edge --
+      RELAYED"
+    cf_standard_name: "OPEN for the state itself; ingredient field RELAYED as above"
+    waterml_or_wmo_term: "no fixed vocabulary term found -- OPEN"
+    hec_ras: "'backwater profile' / 'M1 backwater curve' -- VERIFIED (already VERIFIED in
+      terminology_crosswalk.yaml as 'HEC-RAS backwater profile')"
+    hec_hms: "no equivalent (HMS does not model backwater; that is a HEC-RAS concept)"
+    mike: "MIKE 11 'tidal boundary' / reverse-flow structure state -- RELAYED"
+    swmm: "'tidal outfall' + node 'surcharge' (F5-adjacent, not identical) -- RELAYED
+      (already RELAYED in terminology_crosswalk.yaml)"
+    infoworks: "tidal boundary + reverse flow flag -- RELAYED"
+    wrf: "no equivalent"
+    swat: "no equivalent"
+    rri: "no equivalent"
+    fews: "no equivalent found"
+    glofas_openmeteo: "no equivalent"
+    notes: ""
+    tag: VERIFIED
+
+  - concept_id: hydraulic_head_difference
+    our_term_th: "ระดับน้ำด้านใน / ด้านนอก (ปตร.)"
+    our_symbol: "a_c(t) := h_A(t) - h_B(t) (PROP-FLOOD-05a)"
+    si_unit: "m (same datum both sides)"
+    canonical_name: "PROPOSAL floodconnect:head_difference -- ข้อเสนอ, ยังไม่ลง Toledo
+      (ingredient field water_surface_height_above_reference_datum is a real CF name;
+      the DIFFERENCE across a structure is our own derived object, same as
+      storage_deficit -- a delta_R, not a new base quantity)"
+    cf_standard_name: "no direct match; ingredient water_surface_height_above_reference_datum
+      -- RELAYED"
+    waterml_or_wmo_term: "no fixed vocabulary term found -- OPEN"
+    hec_ras: "'head' across a hydraulic structure (weir/gate) -- VERIFIED (already VERIFIED
+      in terminology_crosswalk.yaml as 'HEC-RAS/Chow open-channel head')"
+    hec_hms: "no equivalent found"
+    mike: "MIKE structure 'upstream/downstream head' -- RELAYED"
+    swmm: "Orifice/Weir 'head' (driving head across the structure) -- RELAYED"
+    infoworks: "structure head -- RELAYED"
+    wrf: "no equivalent"
+    swat: "no equivalent"
+    rri: "no equivalent"
+    fews: "no equivalent found"
+    glofas_openmeteo: "no equivalent"
+    notes: ""
+    tag: VERIFIED
+
+  - concept_id: runoff_coefficient
+    our_term_th: "ไม่พบในเอกสารที่เราถือ (OPEN)"
+    our_symbol: "c_b (03); c_U bound pair [0.5,1] (06)"
+    si_unit: "dimensionless [0,1]"
+    canonical_name: "no CF standard_name (a lumped model parameter, not a measured field) --
+      PROPOSAL floodconnect:runoff_coefficient -- ข้อเสนอ, ยังไม่ลง Toledo"
+    cf_standard_name: "OPEN"
+    waterml_or_wmo_term: "no fixed vocabulary term found -- OPEN"
+    hec_ras: "no equivalent (HEC-RAS does not compute runoff; that is HEC-HMS's job)"
+    hec_hms: "SCS Curve Number (CN) OR rational-method 'C' (both supported loss methods) --
+      RELAYED (already RELAYED in terminology_crosswalk.yaml as 'Chow rational method')"
+    mike: "MIKE 11/NAM 'runoff coefficient' parameter -- RELAYED"
+    swmm: "'percent impervious' (%Imperv) per subcatchment -- RELAYED (already RELAYED in
+      terminology_crosswalk.yaml as 'SWMM percent impervious', matches EEC/Chanthaburi
+      VERIFIED studies' parameter set)"
+    infoworks: "percent impervious / runoff surface parameters -- RELAYED"
+    wrf: "no equivalent"
+    swat: "SCS Curve Number (CN) -- RELAYED"
+    rri: "no fixed single parameter (RRI resolves runoff from infiltration physics per
+      cell, not a lumped C) -- OPEN"
+    fews: "no equivalent found"
+    glofas_openmeteo: "no equivalent"
+    notes: "Infiltration I and evaporation E absorbed into (1-c) -- carried over from
+      terminology_crosswalk.yaml."
+    tag: OPEN
+
+  - concept_id: catchment_area
+    our_term_th: "พื้นที่ (ตร.กม.) ของ 38 พื้นที่ปิดล้อมย่อย"
+    our_symbol: "A_b (03); A_U (06)"
+    si_unit: "m2 (declared as km2 x 1e6)"
+    canonical_name: "no CF standard_name (a static geometric attribute, not a time-varying
+      field) -- PROPOSAL floodconnect:catchment_area -- ข้อเสนอ, ยังไม่ลง Toledo"
+    cf_standard_name: "OPEN"
+    waterml_or_wmo_term: "OGC HY_Features 'Catchment.area' attribute -- RELAYED"
+    hec_ras: "2D flow area (planimetered) -- RELAYED"
+    hec_hms: "Subbasin 'area' parameter -- RELAYED"
+    mike: "catchment area parameter -- RELAYED"
+    swmm: "Subcatchment 'AREA' parameter -- RELAYED (already RELAYED in
+      terminology_crosswalk.yaml)"
+    infoworks: "subcatchment area -- RELAYED"
+    wrf: "no equivalent (WRF grid cell area, not a delineated catchment)"
+    swat: "Subbasin area -- RELAYED"
+    rri: "grid cell count x cell area -- RELAYED"
+    fews: "no equivalent found"
+    glofas_openmeteo: "no equivalent"
+    notes: ""
+    tag: VERIFIED
+
+  - concept_id: retention_detention_retarding
+    our_term_th: "แก้มลิง / พื้นที่รองรับและเก็บกัก / บึงรับน้ำ"
+    our_symbol: "storage node b (03); pond_storage_capacity_m3 (backtest_units.yaml)"
+    si_unit: "m3"
+    canonical_name: "no CF standard_name (an engineered-asset class, not a field) --
+      PROPOSAL floodconnect:retention_pond -- ข้อเสนอ, ยังไม่ลง Toledo"
+    cf_standard_name: "OPEN"
+    waterml_or_wmo_term: "no fixed vocabulary term found -- OPEN"
+    hec_ras: "Storage Area (design-full capacity variant) -- RELAYED"
+    hec_hms: "Reservoir element -- RELAYED"
+    mike: "MIKE 11/MIKE+ reservoir/storage node -- RELAYED"
+    swmm: "Storage Unit -- RELAYED (already RELAYED in terminology_crosswalk.yaml)"
+    infoworks: "storage node -- RELAYED"
+    wrf: "no equivalent"
+    swat: "pond/wetland element -- RELAYED"
+    rri: "no dedicated element (RRI treats it as low-lying cells) -- OPEN"
+    fews: "no equivalent found"
+    glofas_openmeteo: "no equivalent"
+    notes: "Retention (holds) vs detention (delays) distinction not made in any of the
+      Thai-official or model terms checked except HEC-HMS/SWMM's own internal typing --
+      matches terminology_crosswalk.yaml's own note."
+    tag: VERIFIED
+
+  - concept_id: floodway_floodplain
+    our_term_th: "พื้นที่ทางน้ำหลากตามธรรมชาติ (Flood Way) 468 ตร.กม."
+    our_symbol: "a KG node/area attribute, not a Toledo object"
+    si_unit: "km2"
+    canonical_name: "no CF standard_name (a land-designation attribute, not a physical
+      field) -- PROPOSAL floodconnect:floodway_zone -- ข้อเสนอ, ยังไม่ลง Toledo"
+    cf_standard_name: "OPEN"
+    waterml_or_wmo_term: "no fixed vocabulary term found -- OPEN"
+    hec_ras: "'Floodway' encroachment analysis (a named HEC-RAS study type) -- RELAYED
+      (already RELAYED in terminology_crosswalk.yaml as 'US FEMA/USACE floodway')"
+    hec_hms: "no equivalent (HMS does not delineate floodways)"
+    mike: "MIKE 21 flood-extent zoning (not a named 'floodway' object specifically) --
+      RELAYED"
+    swmm: "no equivalent (SWMM is a pipe/conduit network model, not a floodplain delineation
+      tool)"
+    infoworks: "InfoWorks ICM 2D flood-extent zoning -- RELAYED"
+    wrf: "no equivalent"
+    swat: "no equivalent"
+    rri: "no equivalent (RRI produces an inundation extent, not a designated floodway
+      polygon)"
+    fews: "no equivalent found"
+    glofas_openmeteo: "no equivalent"
+    notes: ""
+    tag: VERIFIED
+
+  - concept_id: pump_availability_outage
+    our_term_th: "ขัดข้อง"
+    our_symbol: "P_U^run vs P_U (06); promoter PUMPS_ZERO_RUNNING_ABOVE_THRESHOLD"
+    si_unit: "count / fraction"
+    canonical_name: "no CF standard_name (an asset-status enum, not a field) -- PROPOSAL
+      floodconnect:pump_status -- ข้อเสนอ, ยังไม่ลง Toledo"
+    cf_standard_name: "OPEN"
+    waterml_or_wmo_term: "no fixed vocabulary term found -- OPEN"
+    hec_ras: "pump station operation rule state -- RELAYED"
+    hec_hms: "no equivalent"
+    mike: "structure 'operation' status -- RELAYED"
+    swmm: "Pump 'status' -- RELAYED"
+    infoworks: "structure operating status -- RELAYED"
+    wrf: "no equivalent"
+    swat: "no equivalent"
+    rri: "no equivalent"
+    fews: "no equivalent found"
+    glofas_openmeteo: "no equivalent"
+    notes: "Public wording is already fixed by AGENTS.md ss2: 'ขัดข้อง (กทม. รายงาน สาเหตุไม่
+      ทราบ)' -- do not paraphrase, do not replace with a model's own status enum on the
+      public page."
+    tag: VERIFIED
+
+  - concept_id: data_quality_flags
+    our_term_th: "ไม่มีคำทางการในเอกสารที่เราถือ; repo vocabulary REFUSED/OPEN"
+    our_symbol: "REFUSED(reason) codes (02/03/06/07); cov6 present/absent/inferred"
+    si_unit: "enum"
+    canonical_name: "no single CF standard_name (CF instead uses a separate 'flag_values'/
+      'flag_meanings' attribute mechanism on a variable, not a standard_name of its own) --
+      PROPOSAL floodconnect:data_quality_flag -- ข้อเสนอ, ยังไม่ลง Toledo"
+    cf_standard_name: "OPEN (CF flag_values/flag_meanings mechanism, not a standard_name --
+      RELAYED, recollection)"
+    waterml_or_wmo_term: "WMO-No. 306 (Manual on Codes, BUFR quality flags) / WMO-No. 1238 --
+      OPEN (already OPEN in terminology_crosswalk.yaml, named as a lead only, not verified)"
+    hec_ras: "no fixed QC-flag vocabulary found"
+    hec_hms: "no fixed QC-flag vocabulary found"
+    mike: "no fixed QC-flag vocabulary found"
+    swmm: "no fixed QC-flag vocabulary found (SWMM does not carry input QC flags)"
+    infoworks: "no fixed QC-flag vocabulary found"
+    wrf: "no equivalent"
+    swat: "no equivalent"
+    rri: "no equivalent"
+    fews: "Delft-FEWS 'flag' column on a time series (e.g. Reliable/Doubtful/Unreliable/
+      Missing) -- RELAYED (recollection, a well-known FEWS feature, DHI/Deltares docs not
+      fetched this check)"
+    glofas_openmeteo: "no fixed QC-flag vocabulary found in the fields this repo already
+      pulls (units_datum_crosswalk.yaml)"
+    notes: "Mapping our SUSPECT-like states to a WMO flag set is left OPEN per instruction
+      (no fetch) -- carried over from terminology_crosswalk.yaml. Delft-FEWS's flag column
+      is the closest existing pattern found across every model checked."
+    tag: OPEN
+
+  - concept_id: grid_cell_mean_vs_point
+    our_term_th: "ไม่มีคำทางการ; repo rule grid_cell_vs_gauge_not_equal"
+    our_symbol: "forecast_grid_cell_mean (06.v6.1)"
+    si_unit: "mm per window"
+    canonical_name: "PROPOSAL floodconnect:areal_vs_point_precipitation -- ข้อเสนอ, ยังไม่ลง
+      Toledo (ingredient CF field lwe_thickness_of_precipitation_amount applies to both the
+      grid-cell mean and the point gauge equally -- the MISMATCH itself has no CF name)"
+    cf_standard_name: "no direct match for the mismatch; ingredient field RELAYED as above"
+    waterml_or_wmo_term: "WMO-No. 168 'areal precipitation' / 'areal reduction factor' --
+      RELAYED (already RELAYED in terminology_crosswalk.yaml)"
+    hec_ras: "no equivalent (not a rainfall-runoff model)"
+    hec_hms: "gage weighting / Thiessen polygon areal-mean method -- RELAYED"
+    mike: "NAM catchment-mean rainfall input -- RELAYED"
+    swmm: "rain gage assigned per subcatchment (point, not grid-cell mean, unless the user
+      pre-processes a gridded product) -- RELAYED"
+    infoworks: "same pattern as SWMM -- RELAYED"
+    wrf: "RAINC+RAINNC per grid cell IS the grid-cell mean product itself -- VERIFIED
+      (already VERIFIED in units_datum_crosswalk.yaml / this repo's own forecast_grid_cell_
+      mean rows, 13-53mm cell vs 203mm gauge, 26 Sep 2569)"
+    swat: "subbasin-mean rainfall (areal, same family of mismatch) -- RELAYED"
+    rri: "grid-cell rainfall input (same family of mismatch) -- RELAYED"
+    fews: "no equivalent found"
+    glofas_openmeteo: "Open-Meteo/GloFAS forecast IS the grid-cell mean product -- VERIFIED
+      (this repo's own single evidence pair, 13-53mm cell vs 203mm gauge)"
+    notes: ""
+    tag: VERIFIED
+
+  - concept_id: ensemble_scenarios_worst_first
+    our_term_th: "ไม่มีคำทางการ; repo: ไม่เฉลี่ยข้ามโมเดล กรณีแย่สุดก่อน"
+    our_symbol: "multi_model_scenarios worst_case/best_case/majority_band (06.v6.1)"
+    si_unit: "same as the underlying term"
+    canonical_name: "PROPOSAL floodconnect:ensemble_scenario_band -- ข้อเสนอ, ยังไม่ลง Toledo"
+    cf_standard_name: "CF has a 'realization' dimension convention for ensemble members, not
+      a standard_name of its own for 'ensemble spread' -- RELAYED (recollection)"
+    waterml_or_wmo_term: "WMO-No. 1072 ensemble flood forecasting terminology -- RELAYED
+      (already RELAYED in terminology_crosswalk.yaml)"
+    hec_ras: "no native ensemble concept (single deterministic run per execution)"
+    hec_hms: "no native ensemble concept"
+    mike: "no native ensemble concept (single deterministic run, though DHI offers a
+      separate MIKE ensemble/probabilistic add-on) -- RELAYED"
+    swmm: "no native ensemble concept"
+    infoworks: "no native ensemble concept"
+    wrf: "WRF itself is typically run as a single deterministic configuration; WRF-based
+      ensembles exist (e.g. research SREF-class systems) but are not a named SWMM/HEC-class
+      output -- RELAYED"
+    swat: "no native ensemble concept"
+    rri: "no native ensemble concept"
+    fews: "Delft-FEWS 'ensemble' module (explicitly designed to hold multiple forecast
+      members per location/parameter) -- RELAYED (recollection, a well-known FEWS feature)"
+    glofas_openmeteo: "Open-Meteo `/v1/ensemble` endpoint: ICON-EPS, GFS-ENS, ECMWF-ENS,
+      GEM-EPS -- VERIFIED (already VERIFIED in docs/knowledge/GLOBAL_FREE_HAZARD_APIS.md,
+      fetched/cited by this repo directly)"
+    notes: "A missing bound is REFUSED, never +/-infinity -- carried over from
+      terminology_crosswalk.yaml, applies regardless of which model supplied the members."
+    tag: VERIFIED
+
+  # ---------------------------------------------------------------- alert layer (CAP) --
+  # added per coordinator alignment note 2026-09-27: parallel threshold worker adopts CAP
+  # as canonical ALERT vocabulary in sources/rain_alert_thresholds_crosswalk.yaml
+  # (`unified_ladder` block). Numeric L0-L5 <-> model-flag mapping lives THERE, not here --
+  # these rows are vocabulary only, cross-referenced to that file.
+  - concept_id: alert_severity
+    our_term_th: "ระดับ L0-L5 (ดู sources/rain_alert_thresholds_crosswalk.yaml unified_ladder)"
+    our_symbol: "L0-L5 rung (not a Toledo equation object -- a declared threshold ladder)"
+    si_unit: "ordinal enum"
+    canonical_name: "CAP <severity> element: Extreme | Severe | Moderate | Minor | Unknown"
+    cf_standard_name: "OPEN (CF has no alert-severity standard_name; this is a CAP/OGC-alert
+      concept, not a CF geophysical variable)"
+    waterml_or_wmo_term: "WMO WIGOS/CAP profile (WMO uses CAP as its own alerting profile
+      for MHEWS -- RELAYED, recollection)"
+    hec_ras: "no equivalent"
+    hec_hms: "no equivalent"
+    mike: "no equivalent"
+    swmm: "no equivalent"
+    infoworks: "no equivalent"
+    wrf: "no equivalent"
+    swat: "no equivalent"
+    rri: "no equivalent"
+    fews: "FEWS threshold-crossing state (e.g. 'alert'/'action'/'flood') -- RELAYED, a
+      similar-shaped concept, not the same enum"
+    glofas_openmeteo: "GloFAS return-period exceedance flag (>2yr/>5yr/>20yr RP) and Google
+      Flood Hub severity trend -- RELAYED; see rain_alert_thresholds_crosswalk.yaml for the
+      exact numeric mapping onto our L0-L5"
+    notes: "Numeric mapping (which GloFAS/Flood-Hub/ECMWF-EFI value -> which L0-L5 rung) is
+      NOT duplicated here -- authoritative source is
+      sources/rain_alert_thresholds_crosswalk.yaml `unified_ladder`."
+    tag: RELAYED
+
+  - concept_id: alert_urgency
+    our_term_th: "ไม่มีอ็อบเจกต์เทียบเท่าในระบบเราวันนี้ (OPEN)"
+    our_symbol: "not a Toledo object"
+    si_unit: "ordinal enum"
+    canonical_name: "CAP <urgency> element: Immediate | Expected | Future | Past | Unknown"
+    cf_standard_name: "OPEN"
+    waterml_or_wmo_term: "WMO CAP profile -- RELAYED"
+    hec_ras: "no equivalent"
+    hec_hms: "no equivalent"
+    mike: "no equivalent"
+    swmm: "no equivalent"
+    infoworks: "no equivalent"
+    wrf: "no equivalent"
+    swat: "no equivalent"
+    rri: "no equivalent"
+    fews: "no equivalent found"
+    glofas_openmeteo: "forecast lead-time bucket (see time_to_threshold_lead_time concept)
+      is the nearest existing ingredient, not the same enum -- RELAYED"
+    notes: "OPEN for our own repo: we have no CAP-shaped alert object yet, only the L0-L5
+      ladder and lead-time hours separately."
+    tag: OPEN
+
+  - concept_id: alert_certainty
+    our_term_th: "ไม่มีอ็อบเจกต์เทียบเท่าในระบบเราวันนี้ (OPEN)"
+    our_symbol: "not a Toledo object -- closest existing idea is our VERIFIED/MEASURED/
+      RELAYED/INSTINCT/OPEN epistemic tag (AGENTS.md ss2), a DIFFERENT axis (evidence
+      strength, not forecast-outcome confidence)"
+    si_unit: "ordinal enum"
+    canonical_name: "CAP <certainty> element: Observed | Likely | Possible | Unlikely |
+      Unknown"
+    cf_standard_name: "OPEN"
+    waterml_or_wmo_term: "WMO CAP profile -- RELAYED"
+    hec_ras: "no equivalent"
+    hec_hms: "no equivalent"
+    mike: "no equivalent"
+    swmm: "no equivalent"
+    infoworks: "no equivalent"
+    wrf: "no equivalent"
+    swat: "no equivalent"
+    rri: "no equivalent"
+    fews: "no equivalent found"
+    glofas_openmeteo: "ensemble agreement / probability-of-exceedance (see
+      ensemble_scenarios_worst_first concept) is the nearest existing ingredient -- RELAYED"
+    notes: "Do not conflate CAP certainty (forecast-outcome confidence) with our epistemic
+      tags (evidence-provenance confidence) -- two different axes, both real, never merged
+      into one column on the public page."
+    tag: OPEN
+
+  - concept_id: alert_return_period_exceedance
+    our_term_th: "เกินคาบอุบัติ (ดู return_period_idf concept ข้างต้น สำหรับนิยามคาบอุบัติเอง)"
+    our_symbol: "not a Toledo object; a declared-threshold comparison over return_period_idf"
+    si_unit: "boolean / ordinal (which RP band exceeded)"
+    canonical_name: "no fixed CAP element name (CAP <parameter> is a free-text/value pair
+      block, not a fixed enum for this) -- PROPOSAL floodconnect:return_period_exceedance --
+      ข้อเสนอ, ยังไม่ลง Toledo"
+    cf_standard_name: "OPEN"
+    waterml_or_wmo_term: "no fixed vocabulary term found -- OPEN"
+    hec_ras: "no equivalent"
+    hec_hms: "no equivalent"
+    mike: "no equivalent"
+    swmm: "no equivalent"
+    infoworks: "no equivalent"
+    wrf: "no equivalent"
+    swat: "no equivalent"
+    rri: "no equivalent"
+    fews: "FEWS 'threshold crossing' report against a declared level -- RELAYED"
+    glofas_openmeteo: "GloFAS reports discharge as a multiple of the 2/5/20-yr RP threshold
+      per grid cell (same object as our load_to_capacity_ratio row, applied to river
+      discharge specifically) -- RELAYED; numeric mapping in
+      rain_alert_thresholds_crosswalk.yaml"
+    notes: ""
+    tag: RELAYED
+
+  - concept_id: alert_area
+    our_term_th: "พื้นที่ที่แจ้งเตือน (เขต/ซอย/สับเบซิน)"
+    our_symbol: "our drainage_unit_node / KG area attribute reused, not a new object"
+    si_unit: "polygon/circle geometry (WGS84) or an area-code reference"
+    canonical_name: "CAP <area> block: <areaDesc> (free text) + <polygon>/<circle>
+      (WGS84 coordinate pairs) + <geocode> (a named coding-system + value pair, e.g. a
+      Thai administrative area code)"
+    cf_standard_name: "OPEN (not a CF concept -- CF has no alert-area geometry primitive)"
+    waterml_or_wmo_term: "OGC GML polygon (CAP's own <polygon> element is GML-derived) --
+      RELAYED"
+    hec_ras: "no equivalent"
+    hec_hms: "no equivalent"
+    mike: "no equivalent"
+    swmm: "no equivalent"
+    infoworks: "no equivalent"
+    wrf: "no equivalent"
+    swat: "no equivalent"
+    rri: "no equivalent"
+    fews: "locationId polygon/point (same shape idea, different schema) -- RELAYED"
+    glofas_openmeteo: "grid cell polygon (same shape idea, different schema) -- RELAYED"
+    notes: "canonical alias = CAP <area>/<geocode>; our KG's own drainage_unit_node polygons
+      would need a <geocode> mapping onto whatever Thai administrative code scheme (เขต/
+      ตำบล code) the founder wants used -- OPEN, not decided this check."
+    tag: OPEN
+
+  # ---------------------------------------------------------------- meteorological /
+  # tropical-cyclone feeds (added per coordinator alignment note 2026-09-27: pressure_msl
+  # and IBTrACS track fields are being wired now)
+  - concept_id: pressure_msl
+    our_term_th: "ความกดอากาศที่ระดับน้ำทะเล (ยังไม่มีในคลังนี้ก่อนวันนี้ -- ผู้ประสานงานกำลังต่อ feed)"
+    our_symbol: "not yet a Toledo object -- OPEN, this check only names the vocabulary"
+    si_unit: "Pa (CF canonical); commonly reported/displayed hPa (1 hPa = 100 Pa)"
+    canonical_name: "air_pressure_at_mean_sea_level"
+    cf_standard_name: "air_pressure_at_mean_sea_level [Pa] -- RELAYED (recollection, a very
+      well-established CF name; not individually re-confirmed against the fetched CF table
+      text this check)"
+    waterml_or_wmo_term: "WMO BUFR/WIGOS observed-variable 'pressure reduced to MSL' --
+      RELAYED"
+    hec_ras: "no equivalent"
+    hec_hms: "no equivalent (not an input HMS uses directly)"
+    mike: "no equivalent (not a direct MIKE hydraulic input; used upstream in a met model)"
+    swmm: "no equivalent"
+    infoworks: "no equivalent"
+    wrf: "WRF diagnostic field 'SLP' (sea-level pressure, derived) -- RELAYED"
+    swat: "no equivalent"
+    rri: "no equivalent"
+    fews: "parameterId e.g. 'P.msl' (site convention) -- RELAYED"
+    glofas_openmeteo: "Open-Meteo field 'pressure_msl' (hPa) -- RELAYED (recollection of the
+      Open-Meteo API field naming convention, matches the exact CF-derived name; not opened
+      this check)"
+    notes: "Unit trap: Open-Meteo/most display layers report hPa, CF canonical is Pa --
+      same discipline as units_datum_crosswalk.yaml's other unit-mismatch warnings; convert
+      explicitly, never silently."
+    tag: OPEN
+
+  - concept_id: tropical_cyclone_track_position
+    our_term_th: "ตำแหน่งศูนย์กลางพายุ (ยังไม่มีในคลังนี้ก่อนวันนี้ -- ผู้ประสานงานกำลังต่อ feed)"
+    our_symbol: "not yet a Toledo object -- OPEN"
+    si_unit: "degrees (lat/lon, EPSG:4326); time ISO 8601 UTC"
+    canonical_name: "IBTrACS fields LAT / LON / ISO_TIME (best-track position + fix time)"
+    cf_standard_name: "no single CF standard_name for a storm-track fix; ingredient fields
+      latitude/longitude are standard CF coordinate variables, not standard_names -- OPEN"
+    waterml_or_wmo_term: "WMO IBTrACS (International Best Track Archive for Climate
+      Stewardship) is itself the WMO-sponsored international archive/standard for this --
+      RELAYED (recollection, not fetched this check)"
+    hec_ras: "no equivalent"
+    hec_hms: "no equivalent"
+    mike: "no equivalent (DHI has a separate cyclone/storm-surge module, MIKE 21 with a
+      parametric wind-field model referencing track position, not a fixed vocabulary term
+      checked here) -- RELAYED"
+    swmm: "no equivalent"
+    infoworks: "no equivalent"
+    wrf: "WRF tropical-cyclone tracking utilities reference 'TC vitals' (a distinct, older
+      NCEP format for storm center fix) -- RELAYED"
+    swat: "no equivalent"
+    rri: "no equivalent"
+    fews: "no equivalent found"
+    glofas_openmeteo: "no equivalent (Open-Meteo/GloFAS do not carry cyclone track objects)"
+    notes: "canonical for this concept = IBTrACS field names, per coordinator instruction;
+      JTWC/JMA/TMD best-track advisories are the underlying agency products IBTrACS
+      archives -- RELAYED, not independently checked this check."
+    tag: OPEN
+
+  - concept_id: tropical_cyclone_intensity
+    our_term_th: "ความรุนแรงพายุ (WIND/PRES) (ยังไม่มีในคลังนี้ก่อนวันนี้)"
+    our_symbol: "not yet a Toledo object -- OPEN"
+    si_unit: "knots (WMO 10-min sustained wind convention) or km/h/mph depending on agency;
+      hPa for central pressure"
+    canonical_name: "IBTrACS fields WMO_WIND (or agency-specific *_WIND, e.g. USA_WIND) /
+      WMO_PRES (or agency-specific *_PRES)"
+    cf_standard_name: "wind_speed [m s-1] (ingredient CF name for the underlying physical
+      quantity; IBTrACS itself reports in agency-specific units/averaging periods, not CF
+      canonical units directly) -- RELAYED"
+    waterml_or_wmo_term: "WMO best-track intensity convention (10-minute mean wind, distinct
+      from JTWC's 1-minute mean -- a known cross-agency averaging-period mismatch) --
+      RELAYED (recollection)"
+    hec_ras: "no equivalent"
+    hec_hms: "no equivalent"
+    mike: "MIKE 21 parametric cyclone wind model uses central pressure + radius of max
+      wind as direct inputs (same underlying quantities) -- RELAYED"
+    swmm: "no equivalent"
+    infoworks: "no equivalent"
+    wrf: "WRF vortex-following diagnostics (min SLP, max 10m wind in the vortex) -- RELAYED"
+    swat: "no equivalent"
+    rri: "no equivalent"
+    fews: "no equivalent found"
+    glofas_openmeteo: "no equivalent"
+    notes: "Averaging-period mismatch (10-min WMO vs 1-min JTWC) is a real cross-agency
+      trap, same family as our own never_add_intensity_to_accumulation rule -- flag if this
+      feed is wired against a US(JTWC)-sourced product."
+    tag: OPEN
+
+node_edge_classes:
+  # our KG class -> each model's element type for the SAME network object.
+  - our_class: "sub-polder / drainage unit"
+    swmm: "Subcatchment"
+    hec_ras: "Storage Area (2D) / cross-section group forming a reach"
+    hec_hms: "Subbasin"
+    mike: "catchment / model area"
+    notes: "canonical alias = SWMM Subcatchment for urban units, HEC-HMS Subbasin for
+      basin-scale units."
+
+  - our_class: "pond / retention basin (แก้มลิง)"
+    swmm: "Storage Unit"
+    hec_ras: "Storage Area"
+    hec_hms: "Reservoir"
+    mike: "reservoir / storage node"
+    notes: "canonical alias = SWMM Storage Unit. our pond = SWMM Storage Unit = HEC-RAS
+      Storage Area = MIKE reservoir/storage node (founder's own example, confirmed)."
+
+  - our_class: "canal reach"
+    swmm: "Conduit (open-channel type)"
+    hec_ras: "Reach (a sequence of cross-sections) -- RELAYED, not verbatim-confirmed this
+      task (fetch_log #4)"
+    hec_hms: "Reach (routing element)"
+    mike: "branch between two H-points"
+    notes: "canonical alias = HEC-RAS/HEC-HMS Reach for river-scale canals, SWMM Conduit for
+      urban drains."
+
+  - our_class: "junction (node where reaches/conduits meet)"
+    swmm: "Junction"
+    hec_ras: "Junction"
+    hec_hms: "Junction"
+    mike: "H-point node"
+    notes: "canonical alias = SWMM/HEC-RAS/HEC-HMS 'Junction' -- all three use this exact
+      word (VERIFIED for SWMM/HEC-RAS from the fetched pages, RELAYED for HEC-HMS since its
+      docs page 404'd, fetch_log #5)."
+
+  - our_class: "gate (ประตูระบายน้ำ / ปตร.)"
+    swmm: "Orifice (gated) or a controlled Weir"
+    hec_ras: "Inline/Lateral Structure with a gate opening"
+    hec_hms: "no dedicated gate element (represented as a diversion rule)"
+    mike: "structure 'gate' (MIKE 11/MIKE+ dedicated gate object)"
+    notes: "canonical alias = SWMM Orifice for a controlled gate."
+
+  - our_class: "pump station"
+    swmm: "Pump (with a pump curve Type 1-4)"
+    hec_ras: "pump station (2D pump structure)"
+    hec_hms: "no dedicated element"
+    mike: "structure 'pump'"
+    notes: "canonical alias = SWMM Pump."
+
+  - our_class: "tunnel (อุโมงค์ระบายน้ำ)"
+    swmm: "Conduit (closed, circular/force-main cross-section)"
+    hec_ras: "Culvert (large box/circular) or a 1D reach with a closed cross-section"
+    hec_hms: "Reach"
+    mike: "MIKE FLOOD-class culvert/tunnel structure"
+    notes: "canonical alias = SWMM Conduit (closed) for the hydraulic object; HEC-RAS Culvert
+      terminology if analysed as an open-channel structure instead."
+
+  - our_class: "outfall (river/sea discharge point)"
+    swmm: "Outfall (FREE/FIXED/TIDAL/NORMAL boundary)"
+    hec_ras: "downstream boundary condition"
+    hec_hms: "terminal junction/reach (no dedicated 'outfall' element)"
+    mike: "open boundary"
+    notes: "canonical alias = SWMM Outfall."
+
+  - our_class: "river reach (แม่น้ำ)"
+    swmm: "not modeled (SWMM is a pipe/urban-conduit tool, not a river hydraulics tool) --
+      OPEN for this row"
+    hec_ras: "Reach"
+    hec_hms: "Reach"
+    mike: "branch between H-points"
+    notes: "canonical alias = HEC-RAS/HEC-HMS Reach; SWMM has no equivalent object."
+
+  - our_class: "dam / reservoir (เขื่อน)"
+    swmm: "not modeled (out of SWMM's urban-drainage scope) -- OPEN for this row"
+    hec_ras: "Storage Area with an outlet-works rating, or a Reservoir (2D) element"
+    hec_hms: "Reservoir"
+    mike: "reservoir structure"
+    notes: "canonical alias = HEC-HMS Reservoir for basin-scale dams; not an EPA SWMM
+      concept."
+
+export_notes:
+  swmm_inp:
+    what_it_needs: ["conduit geometry (shape, diameter/width x height, length, roughness n)",
+      "invert elevations at each end of every conduit, in the SAME datum (MSL / ม.รทก.)",
+      "junction rim/ground elevation (for surcharge/flooding to compute)",
+      "storage unit depth-area-volume curve (or a functional/tabular shape)",
+      "subcatchment area, %imperv, width, slope, and an infiltration method + parameters",
+      "pump curve (Type 1-4) with on/off depths",
+      "a rain gage time series (we have this: DDS/BMA telemetry)"]
+    what_we_lack: "invert elevations in MSL for nearly every conduit/canal in this repo
+      (bma_plan2569_canal_dimensions.yaml has width/depth-dredged only, no discharge or
+      invert -- OPEN, already flagged in terminology_crosswalk.yaml's conveyance_capacity
+      row); no stage-storage curve for Sammakorn's own retention pond (OPEN, already flagged
+      in storage_deficit_available_storage); no %imperv/runoff-coefficient for any unit
+      (OPEN, runoff_coefficient row)."
+    tag: OPEN
+
+  hec_dss:
+    what_it_needs: ["pathname convention (A/B/C/D/E/F parts: basin/location/parameter/date/
+      time-interval/version)", "a declared vertical datum per gauge (MSL vs local gauge
+      datum -- units_datum_crosswalk.yaml already tracks this per station)",
+      "cross-section geometry (station-elevation pairs) for any HEC-RAS reach we'd export",
+      "Manning's n per reach/panel"]
+    what_we_lack: "cross-section geometry for essentially every canal (we hold plan-view
+      dimensions, not surveyed station-elevation profiles -- OPEN); Manning's n anywhere in
+      this repo (OPEN, not previously flagged, new gap found by this check)."
+    tag: OPEN
+
+  cf_netcdf:
+    what_it_needs: ["a standard_name + canonical unit per exported variable (this file
+      supplies the mapping)", "a CF-compliant grid or point/timeSeries featureType
+      (discrete sampling geometries) with proper coordinate variables (time, lat, lon,
+      or a station id + WKT/CRS attribute)", "an explicit datum/CRS attribute (EPSG:4326 or
+      EPSG:32647) since CF's own vertical-datum support is thin for local/national datums
+      like ม.รทก."]
+    what_we_lack: "most of our variables have no registered CF standard_name (this file
+      marks them PROPOSAL floodconnect:* pending Toledo/CF submission); no formal CRS/datum
+      attribute is currently attached to any exported file in this repo (OPEN, new gap)."
+    tag: OPEN
+
+  waterml2:
+    what_it_needs: ["an ObservedProperty URI per variable (we would mint our own
+      floodconnect: URIs where CF/WaterML has no fixed term)", "a MonitoringPoint per
+      station with a declared position (EPSG:4326) and vertical datum", "a
+      MeasurementTimeseriesObservationCollection per station/parameter with ISO 8601 UTC
+      timestamps and an explicit interpolation-type / aggregation-duration metadata field"]
+    what_we_lack: "no ObservedProperty URI registry of our own yet (this file is the
+      first step toward one, via the canonical_name column); no declared interpolation-type
+      metadata (instantaneous vs mean-over-interval) for any of our own collected series --
+      OPEN, new gap found by this check."
+    tag: OPEN

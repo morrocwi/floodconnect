@@ -1,0 +1,32 @@
+[
+  {
+    "latitude": 13.208336,
+    "longitude": 100.625015,
+    "timezone": "Asia/Bangkok",
+    "hourly_units": {"time": "iso8601", "sea_surface_temperature": "°C"},
+    "hourly": {
+      "time": ["2026-09-27T00:00", "2026-09-27T01:00"],
+      "sea_surface_temperature": [29.8, null]
+    }
+  },
+  {
+    "latitude": 12.0,
+    "longitude": 110.0,
+    "timezone": "Asia/Bangkok",
+    "hourly_units": {"time": "iso8601", "sea_surface_temperature": "°C"},
+    "hourly": {
+      "time": ["2026-09-27T00:00", "2026-09-27T01:00"],
+      "sea_surface_temperature": [29.5, 29.4]
+    }
+  },
+  {
+    "latitude": 9.0,
+    "longitude": 97.5,
+    "timezone": "Asia/Bangkok",
+    "hourly_units": {"time": "iso8601", "sea_surface_temperature": "°C"},
+    "hourly": {
+      "time": ["2026-09-27T00:00", "2026-09-27T01:00"],
+      "sea_surface_temperature": [29.9, 29.9]
+    }
+  }
+]

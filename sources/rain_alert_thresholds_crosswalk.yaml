@@ -1,0 +1,990 @@
+# sources/rain_alert_thresholds_crosswalk.yaml — cross-agency rain/water alert-colour crosswalk
+#
+# Founder question (verbatim, 2026-09-27): "สกัดเกณฑ์หน่อยว่า กรมอุตุฯ เค้าแบ่งเกณฑ์ฝนเป็นสีต่างๆ ยังไง
+# ด้วยหน่วยอะไร และสอดคล้องกับอย่างอื่นไหม" + "เช่นเกณฑ์ของกรมชลฯ หรือเกณฑ์ของ ปภ. และเกณฑ์ของ กทม. หรือจังหวัด"
+# Follow-up (verbatim): "ว่าตัวเลขเหล่านี้อันตราย" -> every level below carries a `danger_meaning`
+# field, quoted from the agency's own wording, never our paraphrase.
+# Follow-up (verbatim): "เอาเกณฑ์ของ กรมชล อุตุ ปภ กทม จังหวัด มาวางเพื่อสร้างเกณฑ์รวมเดียวกันในภาษาของเรา"
+# -> `unified_ladder` block (mapping only, not new numbers).
+# Follow-up (verbatim): "สร้างกฎแปลงเพื่อให้เกณฑ์ชัด" -> `conversion_rules` block.
+#
+# WRITE SCOPE: this file + docs/knowledge/RAIN_ALERT_THRESHOLDS_CROSS_AGENCY_2026-09-27.md are the
+# only two files this check wrote. No tracked file edited, no commit, no build, no collect.py run.
+#
+# Web fetch budget: <=8 fetches total, one request per URL, no retries, official sources only
+# (tmd.go.th, rid.go.th, disaster.go.th, bangkok.go.th, thaiwater.net/hii.or.th, onwr.go.th).
+# Fetches actually made this check (see docs card §0 for the full log): tmd.go.th (FAILED, TLS cert
+# error, same failure mode already recorded elsewhere in this repo, NOT retried) / ndwc.disaster.go.th
+# (redirected, not re-fetched, NOT retried) / wmsc.rid.go.th (200, no numeric criteria on the page
+# itself) / thaiwater.net/water/wl (200, page shell only, no criteria text extracted). Every other
+# agency row below is built from this repo's OWN already-collected primary sources (BMA plan 2569
+# PDF text, HII API sample payload, Hat Yai/Rangsit government-plan cards) or from WebSearch snippets,
+# tagged RELAYED (secondary, not independently re-verified by this check's own primary fetch).
+#
+# Tags: VERIFIED (this repo's own primary-source extraction, cited) / RELAYED (secondary source,
+# WebSearch snippet, or another repo file's own RELAYED tag) / MEASURED (a live API sample this repo
+# read directly) / INSTINCT (a judgement call) / OPEN (no source found, or found-and-not-fetchable).
+
+_meta:
+  generated: "2026-09-27"
+  founder_questions_th:
+    - "สกัดเกณฑ์หน่อยว่า กรมอุตุฯ เค้าแบ่งเกณฑ์ฝนเป็นสีต่างๆ ยังไง ด้วยหน่วยอะไร และสอดคล้องกับอย่างอื่นไหม"
+    - "เช่นเกณฑ์ของกรมชลฯ หรือเกณฑ์ของ ปภ. และเกณฑ์ของ กทม. หรือจังหวัด"
+    - "ว่าตัวเลขเหล่านี้อันตราย"
+    - "เอาเกณฑ์ของ กรมชล อุตุ ปภ กทม จังหวัด มาวางเพื่อสร้างเกณฑ์รวมเดียวกันในภาษาของเรา"
+    - "สร้างกฎแปลงเพื่อให้เกณฑ์ชัด"
+  tmd_risk_map_transcription_source: >
+    TMD/MDES infographic "แผนที่แสดงพื้นที่คาดการณ์ความเสี่ยงในการเกิดภัย ประจำวันที่ 27 กันยายน
+    พ.ศ. 2569 (ออกประกาศเวลา 18.00 น.)", founder-supplied image, VERIFIED-transcription by a
+    predecessor session; footnote on the map itself: "เกณฑ์ปริมาณฝนสะสม 24 ชม. วิเคราะห์จากเกณฑ์การ
+    เตือนของกรมอุตุนิยมวิทยาและสถาบันสารสนเทศทรัพยากรน้ำ" (criteria analysed from TMD + HII warning
+    criteria jointly — the map's OWN footnote states this is a TMD+HII derived product, not a pure
+    TMD scheme).
+  web_fetches_this_task:
+    - {url: "https://www.tmd.go.th/info/เกณฑ์อากาศ", status: "FAILED — unable to verify the first
+        certificate (same TLS-chain failure mode already recorded in
+        docs/knowledge/TIER_THRESHOLDS_RATIONALE.md and RAIN_LADDER_BKK_SEPT_NEWS.md for tmd.go.th)",
+       retried: false}
+    - {url: "https://ndwc.disaster.go.th/", status: "302 redirect to http://ndwc.disaster.go.th/ndwc,
+        not re-fetched (one-request-per-URL budget)", retried: false}
+    - {url: "https://wmsc.rid.go.th/", status: "200, page lists report links only, no numeric
+        warning-criteria text present in the fetched content", retried: false}
+    - {url: "https://www.thaiwater.net/water/wl", status: "200, page title/shell only in the fetched
+        content, no criteria table text extracted (likely JS-rendered, not visible to a text fetch)",
+       retried: false}
+  non_fetch_evidence: >
+    TMD's own descriptive rain-24h classes (เล็กน้อย/ปานกลาง/หนัก/หนักมาก) were corroborated via
+    WebSearch snippets pointing at tmd.go.th pages this check could not itself open (cert failure) —
+    tagged RELAYED, not VERIFIED, consistent with this repo's existing units_datum_crosswalk.yaml
+    row for the same classes ("RELAYED, not primary-verified"). Every DDPM/RID/HII row below where no
+    successful fetch exists is tagged accordingly and, where no number exists at all, states
+    "ไม่ได้ระบุตัวเลขอันตราย" (rather than inferring one), per the founder's own stated rule for open
+    items.
+
+# =================================================================================================
+# schemes — one block per (agency, scheme_id). Each level: level_id, label_th, colour, quantity,
+# unit, window, lower, upper, inclusive_rule, danger_meaning (agency's own wording, quoted),
+# action, source, page_or_url, tag, comparable_with (scheme_ids sharing the same unit+window).
+# =================================================================================================
+schemes:
+
+  # ============================================================ TMD (กรมอุตุนิยมวิทยา) ============
+  - agency: "กรมอุตุนิยมวิทยา (TMD)"
+    scheme_id: tmd_descriptive_rain_24h
+    scheme_kind: descriptive_class
+    tag: RELAYED
+    note: >
+      TMD's general-purpose rain-intensity class names, used in daily forecast text nationwide
+      (NOT Bangkok-specific). This repo could not open tmd.go.th directly this check (TLS cert
+      failure, not retried) — corroborated via WebSearch snippet only, matching the identical
+      numbers already carried in sources/units_datum_crosswalk.yaml
+      (rain_intensity_descriptors, same RELAYED tag, same 90.0/90.1 boundary ambiguity below).
+    levels:
+      - {level_id: light, label_th: ฝนเล็กน้อย, colour: null, quantity: rainfall_depth,
+         unit: mm/24h, window: 24h, lower: 0.1, upper: 10.0, inclusive_rule: "closed both ends",
+         danger_meaning: "ไม่ได้ระบุตัวเลขอันตราย — เป็นชั้นบรรยายเชิงปริมาณ ไม่มีถ้อยคำ 'อันตราย' ผูกกับชั้นนี้ในแหล่งที่พบ",
+         action: "ไม่มีการเตือนภัยผูก (บรรยายพยากรณ์ปกติ)", source: "WebSearch snippet, tmd.go.th (RELAYED, page not opened this check)",
+         page_or_url: "tmd.go.th (exact page not confirmed — WebFetch failed, cert error)", tag: RELAYED,
+         comparable_with: [tmd_risk_map_rain_24h]}
+      - {level_id: moderate, label_th: ฝนปานกลาง, colour: null, quantity: rainfall_depth,
+         unit: mm/24h, window: 24h, lower: 10.1, upper: 35.0, inclusive_rule: "closed both ends",
+         danger_meaning: "ไม่ได้ระบุตัวเลขอันตราย", action: "ไม่มีการเตือนภัยผูก",
+         source: "WebSearch snippet, tmd.go.th (RELAYED)", page_or_url: "tmd.go.th (not confirmed)",
+         tag: RELAYED, comparable_with: [tmd_risk_map_rain_24h]}
+      - {level_id: heavy, label_th: ฝนหนัก, colour: null, quantity: rainfall_depth,
+         unit: mm/24h, window: 24h, lower: 35.1, upper: 90.0, inclusive_rule: "closed both ends",
+         danger_meaning: "ไม่ได้ระบุตัวเลขอันตราย (ชั้นนี้เอง) — แต่ทับซ้อนกับช่วง 'เสี่ยงปานกลาง/เสี่ยงสูง' ของ tmd_risk_map_rain_24h ที่ล่างสุด (ดู contradictions ในการ์ด)",
+         action: "ไม่มีการเตือนภัยผูกโดยตรงในแหล่งที่พบ", source: "WebSearch snippet, tmd.go.th (RELAYED)",
+         page_or_url: "tmd.go.th (not confirmed)", tag: RELAYED, comparable_with: [tmd_risk_map_rain_24h]}
+      - {level_id: very_heavy, label_th: ฝนหนักมาก, colour: null, quantity: rainfall_depth,
+         unit: mm/24h, window: 24h, lower: 90.1, upper: null, inclusive_rule: "closed lower, open upper (no stated ceiling)",
+         danger_meaning: "ไม่ได้ระบุตัวเลขอันตราย เชิงประกาศ แต่เป็นชั้นสูงสุดของบันไดบรรยาย (ไม่มีชั้นเหนือกว่านี้ในเกณฑ์นี้)",
+         action: "ไม่มีการเตือนภัยผูกโดยตรงในแหล่งที่พบ; ในทางปฏิบัติชั้นนี้มักไปพร้อมกับประกาศเตือนภัยลักษณะอากาศของ TMD (เชิงคุณภาพ ไม่ผูกตัวเลข, ดู tmd_weather_warning_bulletin ด้านล่าง)",
+         source: "WebSearch snippet, tmd.go.th (RELAYED)", page_or_url: "tmd.go.th (not confirmed)",
+         tag: RELAYED, comparable_with: [tmd_risk_map_rain_24h]}
+    known_contradiction: >
+      sources/units_datum_crosswalk.yaml already records a 90.0-vs-90.1 boundary ambiguity for this
+      exact scheme (heavy upper edge printed as 90.0 in one WebSearch rendering, very_heavy lower
+      edge printed as 90.1 in another) — kept as OPEN, never averaged or silently rounded to one value.
+
+  - agency: "กรมอุตุนิยมวิทยา (TMD) + สถาบันสารสนเทศทรัพยากรน้ำ (HII) — joint product"
+    scheme_id: tmd_risk_map_rain_24h
+    scheme_kind: hazard_map_colour
+    tag: VERIFIED-transcription
+    note: >
+      From the founder-supplied TMD/MDES risk-map image (2026-09-27 18:00 issue), transcribed
+      directly by a predecessor session (VERIFIED-transcription of the image, not of a fetched
+      web page). The map's own footnote states this is TMD+HII derived jointly, not a pure-TMD
+      scheme — kept as its own scheme_id, distinct from tmd_descriptive_rain_24h above, per this
+      task's instruction not to merge classification schemes.
+    levels:
+      - {level_id: white, label_th: ปลอดภัย, colour: white, quantity: rainfall_depth, unit: mm/24h,
+         window: 24h, lower: 0, upper: 35.0, inclusive_rule: "closed both ends",
+         danger_meaning: "ไม่ได้ระบุตัวเลขอันตราย — เป็นชั้น 'ปลอดภัย' ต่ำสุดของแผนที่", action: "ไม่มีการปฏิบัติผูก",
+         source: "TMD/MDES risk-map image, founder-supplied, transcribed 2026-09-27", page_or_url: "image (not a URL)",
+         tag: VERIFIED-transcription, comparable_with: [tmd_descriptive_rain_24h]}
+      - {level_id: yellow, label_th: มีความเสี่ยงน้อย, colour: yellow, quantity: rainfall_depth,
+         unit: mm/24h, window: 24h, lower: 35.1, upper: 65.0, inclusive_rule: "closed both ends",
+         danger_meaning: "ไม่ได้ระบุตัวเลขอันตรายเป็นคำพูดตรง — ป้ายชั้นเองคือ 'มีความเสี่ยงน้อย'",
+         action: "ไม่มีการปฏิบัติเฉพาะระบุในภาพ (จังหวัด/พื้นที่ถูกจัดอยู่ใน 'พื้นที่เสี่ยงภัย ฝนตกหนักถึงหนักมาก' — เฝ้าระวังทั่วไป)",
+         source: "TMD/MDES risk-map image", page_or_url: "image (not a URL)", tag: VERIFIED-transcription,
+         comparable_with: [tmd_descriptive_rain_24h]}
+      - {level_id: orange, label_th: มีความเสี่ยงปานกลาง, colour: orange, quantity: rainfall_depth,
+         unit: mm/24h, window: 24h, lower: 65.1, upper: 125.0, inclusive_rule: "closed both ends",
+         danger_meaning: "ป้ายชั้นเองคือ 'มีความเสี่ยงปานกลาง' — ไม่มีคำ 'อันตราย' ตรงตัว",
+         action: "จังหวัดในรายการ list 2 ของภาพ (เช่น ตาก กำแพงเพชร นครสวรรค์ กาญจนบุรี ชลบุรี ระยอง) — ไม่มีคำแนะนำการปฏิบัติเป็นข้อความในภาพเอง",
+         source: "TMD/MDES risk-map image", page_or_url: "image (not a URL)", tag: VERIFIED-transcription,
+         comparable_with: [tmd_descriptive_rain_24h]}
+      - {level_id: red, label_th: มีความเสี่ยงสูง, colour: red, quantity: rainfall_depth,
+         unit: mm/24h, window: 24h, lower: 125.1, upper: 250.0, inclusive_rule: "closed both ends",
+         danger_meaning: "ป้ายชั้นเองคือ 'มีความเสี่ยงสูง' — นี่คือชั้นที่ใกล้เคียงที่สุดกับคำว่า 'อันตราย' ในบันไดนี้",
+         action: "ไม่มีคำแนะนำการปฏิบัติเป็นข้อความในภาพเอง (การ์ดนี้ไม่เพิ่มคำแนะนำเอง)", source: "TMD/MDES risk-map image",
+         page_or_url: "image (not a URL)", tag: VERIFIED-transcription, comparable_with: [tmd_descriptive_rain_24h]}
+      - {level_id: purple, label_th: มีความเสี่ยงสูงมาก, colour: purple, quantity: rainfall_depth,
+         unit: mm/24h, window: 24h, lower: 250.1, upper: null, inclusive_rule: "closed lower, open upper (no stated ceiling)",
+         danger_meaning: "ป้ายชั้นเองคือ 'มีความเสี่ยงสูงมาก' — ชั้นสูงสุดของแผนที่นี้",
+         action: "ไม่มีคำแนะนำการปฏิบัติเป็นข้อความในภาพเอง", source: "TMD/MDES risk-map image",
+         page_or_url: "image (not a URL)", tag: VERIFIED-transcription, comparable_with: [tmd_descriptive_rain_24h]}
+    tmd_descriptive_alignment: >
+      yellow lower edge (35.1) = tmd_descriptive_rain_24h's "heavy" lower edge (35.1) exactly —
+      CONSISTENT, same number, same unit, same window (VERIFIED arithmetic match, both mm/24h).
+      orange/red/purple edges (65.1/125.1/250.1) do NOT match the descriptive scheme's own
+      "very_heavy >= 90.1" edge anywhere — these are confirmed to be TWO DIFFERENT TMD-linked
+      schemes (the map's own footnote already says "TMD+HII jointly analysed", not a restatement
+      of the plain descriptive classes) — never merge the two ladders into one.
+
+  - agency: "กรมอุตุนิยมวิทยา (TMD)"
+    scheme_id: tmd_weather_warning_bulletin
+    scheme_kind: qualitative_bulletin
+    tag: OPEN
+    note: >
+      TMD issues numbered weather-warning bulletins ("ประกาศเตือนภัยลักษณะอากาศ ฉบับที่ N") for
+      storms/heavy-rain events (page URL found via WebSearch: tmd.go.th/warning-and-events/warning-storm,
+      NOT fetched this check — outside the 8-fetch budget after the cert failure on the main criteria
+      page). No numeric rain/wind threshold that triggers issuing a bulletin was found in this
+      task's search results.
+    levels: []
+    danger_meaning_summary: "ไม่ได้ระบุตัวเลขอันตราย — พบแต่ว่ามีระบบ 'ฉบับที่' ประกาศเป็นชุด ไม่พบเกณฑ์ตัวเลขที่ทำให้ออกประกาศ"
+    source: "WebSearch (tmd.go.th/warning-and-events/warning-storm URL identified, page not opened)"
+
+  # ============================================================ HII / thaiwater.net ================
+  - agency: "สถาบันสารสนเทศทรัพยากรน้ำ (HII) / thaiwater.net"
+    scheme_id: hii_situation_level
+    scheme_kind: computed_integer_scale
+    tag: OPEN
+    note: >
+      The live API field `situation_level` (integer, seen as `5` in this repo's own already-collected
+      sample row for a river/tele_waterlevel station — docs/knowledge/card_api_2026-09-27_
+      hii_waterchart_basin.md §2) has NO published scale definition this check could confirm. A
+      WebFetch to thaiwater.net/water/wl this check returned only the page shell (JS-rendered content
+      not visible to a text fetch). A WebSearch answer surfaced numbers that describe a DIFFERENT
+      HII quantity (storage-percent / water-availability bands, not the 0-5 situation_level integer
+      seen in the API) — kept SEPARATE below as hii_storage_percent_bands, NOT presented as the
+      definition of situation_level, to avoid conflating two different HII fields.
+    levels: []
+    danger_meaning_summary: "ไม่ได้ระบุตัวเลขอันตราย — ไม่พบนิยามที่ตรงกับฟิลด์ situation_level (0-5) เอง"
+    source: "docs/knowledge/card_api_2026-09-27_hii_waterchart_basin.md §2 (MEASURED sample only, no glossary found)"
+
+  - agency: "สถาบันสารสนเทศทรัพยากรน้ำ (HII) — candidate, NOT confirmed to be situation_level"
+    scheme_id: hii_storage_percent_bands_candidate
+    scheme_kind: percent_band
+    tag: RELAYED
+    note: >
+      A WebSearch answer (not independently opened/verified this check, and NOT confirmed to be
+      the same field as `situation_level` or `storage_percent` seen live in the HII API sample)
+      described 5 percent-of-capacity bands. Recorded here as a CANDIDATE reference only, explicitly
+      flagged as unresolved which HII field/station type it applies to — this repo's own existing
+      OPEN flag on `storage_percent` (units_datum_crosswalk.yaml: a 209.48% sample value already
+      proves it is NOT simply "percent of design capacity" in the naive sense) is NOT resolved by
+      this candidate and is NOT treated as resolved by it.
+    levels:
+      - {level_id: critical_low, label_th: น้ำน้อยวิกฤติ, colour: null, quantity: storage_percent,
+         unit: "% (denominator unconfirmed)", window: instantaneous, lower: null, upper: 30,
+         inclusive_rule: "upper closed (<=30)", danger_meaning: "ไม่ได้ระบุตัวเลขอันตรายที่ยืนยันแล้ว — เป็น candidate ไม่ใช่นิยามที่ตรวจสอบแล้ว",
+         action: "OPEN", source: "WebSearch snippet (unconfirmed origin page)", page_or_url: "OPEN",
+         tag: RELAYED, comparable_with: []}
+      - {level_id: low, label_th: น้ำน้อย, colour: null, quantity: storage_percent, unit: "% (denominator unconfirmed)",
+         window: instantaneous, lower: 30, upper: 50, inclusive_rule: ">30 to <=50",
+         danger_meaning: "ไม่ได้ระบุตัวเลขอันตรายที่ยืนยันแล้ว", action: "OPEN",
+         source: "WebSearch snippet (unconfirmed origin page)", page_or_url: "OPEN", tag: RELAYED, comparable_with: []}
+      - {level_id: normal, label_th: น้ำปานกลาง, colour: null, quantity: storage_percent, unit: "% (denominator unconfirmed)",
+         window: instantaneous, lower: 50, upper: 80, inclusive_rule: ">50 to <=80",
+         danger_meaning: "ไม่ได้ระบุตัวเลขอันตรายที่ยืนยันแล้ว", action: "OPEN",
+         source: "WebSearch snippet (unconfirmed origin page)", page_or_url: "OPEN", tag: RELAYED, comparable_with: []}
+      - {level_id: high, label_th: น้ำมาก, colour: null, quantity: storage_percent, unit: "% (denominator unconfirmed)",
+         window: instantaneous, lower: 80, upper: 100, inclusive_rule: ">80 to <=100",
+         danger_meaning: "ไม่ได้ระบุตัวเลขอันตรายที่ยืนยันแล้ว — น่าจะใกล้ 'เต็มความจุ' แต่ไม่มีคำยืนยันตรงจากแหล่ง", action: "OPEN",
+         source: "WebSearch snippet (unconfirmed origin page)", page_or_url: "OPEN", tag: RELAYED, comparable_with: []}
+      - {level_id: over_capacity, label_th: เกินความจุเก็บกัก, colour: null, quantity: storage_percent,
+         unit: "% (denominator unconfirmed)", window: instantaneous, lower: 100, upper: null,
+         inclusive_rule: ">100, open upper", danger_meaning: "ป้ายชั้นเองคือ 'เกินความจุเก็บกัก' — ใกล้เคียงที่สุดกับคำว่าอันตรายในชุดนี้ แต่ไม่ยืนยันแหล่งต้นทาง",
+         action: "OPEN", source: "WebSearch snippet (unconfirmed origin page)", page_or_url: "OPEN",
+         tag: RELAYED, comparable_with: []}
+
+  # ============================================================ RID (กรมชลประทาน) ===================
+  - agency: "กรมชลประทาน (RID)"
+    scheme_id: rid_public_colour_scale
+    scheme_kind: none_found
+    tag: OPEN
+    note: >
+      No published, general-purpose colour-coded or numbered public warning scale for river
+      level/reservoir storage/discharge was found on wmsc.rid.go.th (fetched this check, 200, no
+      criteria text present) or via WebSearch. RID's SWOC (ศูนย์ปฏิบัติการน้ำอัจฉริยะ) portal
+      publishes raw reservoir tables and daily/weekly reports, not a published traffic-light scale,
+      as far as this check's fetch reached.
+    levels: []
+    danger_meaning_summary: "ไม่ได้ระบุตัวเลขอันตราย — ไม่พบเกณฑ์สีสาธารณะทั่วไปของกรมชลประทานเอง"
+    source: "wmsc.rid.go.th (fetched, no criteria text) + WebSearch (no scale found)"
+
+  - agency: "กรมชลประทาน (RID) — specific gauge/reach criteria, RELAYED via BMA plan 2569"
+    scheme_id: rid_gauge_specific_critical_levels
+    scheme_kind: gauge_specific_numeric
+    tag: RELAYED
+    note: >
+      RID does NOT publish a general public colour scale (see rid_public_colour_scale, OPEN), but
+      specific RID-operated/RID-monitored gauges DO carry an explicit RID-attributed critical number,
+      quoted directly in the BMA plan 2569 (which cites RID data for these two gauges) — kept as
+      RID's own criterion at that specific station, RELAYED via the BMA document (this check did not
+      independently open a RID page confirming these two numbers itself).
+    levels:
+      - {level_id: c29b_critical, label_th: "ระดับวิกฤติ (C.29B อ.สามโคก)", colour: null, quantity: discharge,
+         unit: m3/s, window: instantaneous, lower: null, upper: 3500.0, inclusive_rule: "critical when discharge reaches or exceeds 3500 (source's own printed unit was 'ล้านลบ.ม./วินาที', a typo — context confirms m3/s per BMA plan p19)",
+         danger_meaning: "อ้างคำในแผน กทม.: 'ปริมาณน้ำที่ไหลผ่านแม่น้ำเจ้าพระยา ที่จุดวัด อ.สามโคก (C.29B) ระดับวิกฤติไม่เกิน 3,500 ล้านลบ.ม./วินาที' (หน่วยพิมพ์ผิดในต้นฉบับ, บริบทคือ ลบ.ม./วินาที)",
+         action: "ทริกเกอร์ช่วงปฏิบัติการที่ 3 ของแผน กทม. (ประสานงานกับ กรมชลประทาน)",
+         source: "docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md §1, BMA plan 2569 PDF p22",
+         page_or_url: "internal card (PDF source, not a URL)", tag: RELAYED, comparable_with: [chao_phraya_bkk_reach_coping_history]}
+    danger_meaning_summary_note: >
+      Historical (not agency-declared) coping-history evidence also exists for the Chao Phraya
+      mainstem at C.13 (flooded_min 3,721 m3/s, 2011; coped_max 2,800 m3/s bank-overflow ceiling) —
+      see sources/coping_thresholds.yaml — kept as a SEPARATE row (comparable_with tag) since it is
+      evidence-derived, not an agency-declared danger number for the same gauge.
+
+  # ============================================================ DDPM (ปภ.) ==========================
+  - agency: "กรมป้องกันและบรรเทาสาธารณภัย (ปภ. / DDPM)"
+    scheme_id: ddpm_national_disaster_management_level
+    scheme_kind: command_escalation_not_hazard_numeric
+    tag: RELAYED
+    note: >
+      This is a COMMAND/ORGANISATIONAL escalation scale from the National Disaster Prevention and
+      Mitigation Plan 2564-2570 (แผนการป้องกันและบรรเทาสาธารณภัยแห่งชาติ พ.ศ. 2564-2570) — it answers
+      "who commands the response" (Incident Commander at province / regional / national tier), NOT a
+      rainfall/water-level numeric hazard threshold. Explicitly kept separate from a colour/numeric
+      hazard scale, per this check's instruction not to conflate schemes. Levels 3-4 were the only
+      ones surfaced in this check's WebSearch results; levels 1-2 not independently confirmed this
+      task (OPEN).
+    levels:
+      - {level_id: level_1, label_th: "สาธารณภัยขนาดเล็ก (ระดับ 1)", colour: null, quantity: command_escalation,
+         unit: n/a, window: n/a, lower: null, upper: null, inclusive_rule: n/a,
+         danger_meaning: "ไม่ได้ระบุตัวเลขอันตราย — เป็นระดับการบังคับบัญชา ไม่ใช่เกณฑ์อันตรายเชิงตัวเลข",
+         action: "OPEN — รายละเอียดผู้บัญชาการเหตุการณ์ระดับนี้ไม่ยืนยันในงานนี้", source: "WebSearch snippet (page not opened)",
+         page_or_url: "disaster.go.th (exact page not confirmed)", tag: OPEN, comparable_with: []}
+      - {level_id: level_2, label_th: "สาธารณภัยขนาดกลาง (ระดับ 2)", colour: null, quantity: command_escalation,
+         unit: n/a, window: n/a, lower: null, upper: null, inclusive_rule: n/a,
+         danger_meaning: "ไม่ได้ระบุตัวเลขอันตราย", action: "OPEN", source: "WebSearch snippet (page not opened)",
+         page_or_url: "disaster.go.th (exact page not confirmed)", tag: OPEN, comparable_with: []}
+      - {level_id: level_3, label_th: "สาธารณภัยขนาดใหญ่ (ระดับ 3)", colour: null, quantity: command_escalation,
+         unit: n/a, window: n/a, lower: null, upper: null, inclusive_rule: n/a,
+         danger_meaning: "ไม่ได้ระบุตัวเลขอันตราย — ระดับนี้ยกระดับผู้บัญชาการเหตุการณ์ขึ้นระดับจังหวัด/ภาค",
+         action: "แต่งตั้งผู้บัญชาการเหตุการณ์ระดับที่สูงขึ้น (รายละเอียดตัวบุคคล/ตำแหน่งไม่บันทึกตามกติกาคลังนี้)",
+         source: "WebSearch snippet, referencing แผนการป้องกันและบรรเทาสาธารณภัยแห่งชาติ พ.ศ. 2564-2570",
+         page_or_url: "env.anamai.moph.go.th (mirror copy found; disaster.go.th original page not opened this check)",
+         tag: RELAYED, comparable_with: []}
+      - {level_id: level_4, label_th: "สาธารณภัยร้ายแรงอย่างยิ่ง (ระดับ 4)", colour: null, quantity: command_escalation,
+         unit: n/a, window: n/a, lower: null, upper: null, inclusive_rule: n/a,
+         danger_meaning: "ป้ายชั้นเองคือ 'ร้ายแรงอย่างยิ่ง' — ชั้นสูงสุดของบันไดบังคับบัญชานี้ ไม่ใช่ตัวเลขอันตรายเชิงฟิสิกส์",
+         action: "ยกระดับบังคับบัญชาสูงสุด (นายกรัฐมนตรี/ระดับชาติ ตามแผน — รายละเอียดตำแหน่งเท่านั้น ไม่บันทึกชื่อบุคคล)",
+         source: "WebSearch snippet, แผนการป้องกันและบรรเทาสาธารณภัยแห่งชาติ พ.ศ. 2564-2570",
+         page_or_url: "env.anamai.moph.go.th (mirror copy found; disaster.go.th original not opened this check)",
+         tag: RELAYED, comparable_with: []}
+
+  - agency: "กรมป้องกันและบรรเทาสาธารณภัย (ปภ. / DDPM) + กระทรวงมหาดไทย"
+    scheme_id: ddpm_public_facing_3_stage
+    scheme_kind: qualitative_stage_no_numeric_threshold_found
+    tag: RELAYED
+    note: >
+      The public-facing operational vocabulary used in Sept 2026 government instructions — เฝ้าระวัง
+      (watch) / แจ้งเตือน (alert/warn) / อพยพ (evacuate) — is real and current (WebSearch, Sept 2026
+      news), but no explicit numeric rain/water-level threshold that separates the three stages was
+      found in this check's search results. Cell Broadcast alerts (30+ sent nationwide per news
+      reports) are also issued under this vocabulary without a published numeric trigger found here.
+    levels:
+      - {level_id: watch, label_th: เฝ้าระวัง, colour: null, quantity: qualitative, unit: n/a, window: n/a,
+         lower: null, upper: null, inclusive_rule: n/a,
+         danger_meaning: "ไม่ได้ระบุตัวเลขอันตราย — คำสั่ง: 'ติดตามสถานการณ์ฝน ปริมาณน้ำ ระดับน้ำ และพื้นที่เสี่ยงภัยอย่างใกล้ชิด'",
+         action: "เตรียมกำลังคน เครื่องจักรกล วัสดุอุปกรณ์ จุดอพยพ", source: "WebSearch, thaipbs.or.th/mgronline.com Sept 2026 coverage",
+         page_or_url: "thaipbs.or.th/news/content/558571 (per WebSearch listing; not independently re-fetched)",
+         tag: RELAYED, comparable_with: []}
+      - {level_id: alert, label_th: แจ้งเตือน, colour: null, quantity: qualitative, unit: n/a, window: n/a,
+         lower: null, upper: null, inclusive_rule: n/a, danger_meaning: "ไม่ได้ระบุตัวเลขอันตราย",
+         action: "แจ้งเตือนประชาชนพื้นที่เสี่ยง (Cell Broadcast + ช่องทางท้องถิ่น)",
+         source: "WebSearch, bangkokbiznews.com/politics/1253545", page_or_url: "bangkokbiznews.com/politics/1253545",
+         tag: RELAYED, comparable_with: []}
+      - {level_id: evacuate, label_th: อพยพ, colour: null, quantity: qualitative, unit: n/a, window: n/a,
+         lower: null, upper: null, inclusive_rule: n/a,
+         danger_meaning: "ป้ายชั้นเองคือ 'อพยพ' — ชั้นสูงสุดของวลีนี้ ไม่มีตัวเลขกำกับที่พบ",
+         action: "อพยพประชาชนพื้นที่เสี่ยง", source: "WebSearch, bangkokbiznews.com/politics/1253545",
+         page_or_url: "bangkokbiznews.com/politics/1253545", tag: RELAYED, comparable_with: []}
+
+  # ============================================================ BMA (กทม. / สนน.) ====================
+  - agency: "กทม. สำนักการระบายน้ำ (BMA / DDS)"
+    scheme_id: bma_operational_period_rain_intensity
+    scheme_kind: numeric_band
+    tag: VERIFIED
+    note: >
+      Already fully extracted in docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md §1
+      and sources/coping_thresholds.yaml (official_threshold rows). Restated here in this crosswalk's
+      schema for cross-agency comparison, same VERIFIED PDF-quote basis, no new extraction performed.
+    levels:
+      - {level_id: period1_normal, label_th: "ช่วงที่ 1 ต้นฤดูฝน (พ.ค.-ก.ค.) ปกติ", colour: null,
+         quantity: rainfall_intensity, unit: mm/h, window: 1h, lower: 10.0, upper: 60.0,
+         inclusive_rule: "closed both ends", danger_meaning: "ไม่ได้ระบุตัวเลขอันตรายในช่วงนี้เอง — เป็นช่วง 'ปกติ'",
+         action: "ปฏิบัติการตามปกติ", source: "BMA plan 2569 PDF p22 (§5.1)", page_or_url: "internal card (PDF, not URL)",
+         tag: VERIFIED, comparable_with: [bma_operational_period_rain_intensity]}
+      - {level_id: period1_abnormal, label_th: "ช่วงที่ 1 ลักษณะอากาศผิดปกติ", colour: null,
+         quantity: rainfall_intensity, unit: mm/h, window: 1h, lower: 90.1, upper: null,
+         inclusive_rule: "closed lower, open upper",
+         danger_meaning: "อ้างคำตรง: 'ลักษณะอากาศผิดปกติ (ปริมาณฝนอาจเกิน 90 มิลลิเมตรต่อชั่วโมง)' — นี่คือถ้อยคำ 'ผิดปกติ' ของ กทม. เอง ที่ใกล้เคียงคำว่าอันตรายที่สุดในเกณฑ์นี้",
+         action: "ยกระดับการเฝ้าระวัง (ไม่ระบุ action แยกจากปกติในข้อความ)", source: "BMA plan 2569 PDF p22 (§5.1)",
+         page_or_url: "internal card (PDF, not URL)", tag: VERIFIED, comparable_with: [bma_operational_period_rain_intensity]}
+      - {level_id: period2_normal, label_th: "ช่วงที่ 2 ปลายฤดูฝน (ส.ค.-ต.ค.) ปกติ", colour: null,
+         quantity: rainfall_intensity, unit: mm/h, window: 1h, lower: 60.0, upper: 90.0,
+         inclusive_rule: "closed both ends", danger_meaning: "ไม่ได้ระบุตัวเลขอันตรายในช่วงนี้เอง",
+         action: "ปฏิบัติการตามปกติ", source: "BMA plan 2569 PDF p22 (§5.1)", page_or_url: "internal card (PDF, not URL)",
+         tag: VERIFIED, comparable_with: [bma_operational_period_rain_intensity]}
+      - {level_id: period2_abnormal, label_th: "ช่วงที่ 2 ลักษณะอากาศผิดปกติ (พายุหมุน)", colour: null,
+         quantity: rainfall_intensity, unit: mm/h, window: 1h, lower: 90.1, upper: null,
+         inclusive_rule: "closed lower, open upper",
+         danger_meaning: "อ้างคำตรง: 'ลักษณะอากาศผิดปกติ เช่น มีพายุหมุนเข้ามา (ปริมาณฝนเกิน 90 มิลลิเมตรต่อชั่วโมง หรือตกติดต่อกันหลายวัน)'",
+         action: "ไม่ระบุ action แยกในข้อความ (เชิงสถานการณ์เตือนภัย)", source: "BMA plan 2569 PDF p22 (§5.1)",
+         page_or_url: "internal card (PDF, not URL)", tag: VERIFIED, comparable_with: [bma_operational_period_rain_intensity]}
+      - {level_id: period3, label_th: "ช่วงที่ 3 น้ำเหนือไหลบ่า/น้ำทะเลหนุนสูง (ต.ค.-ธ.ค.)", colour: null,
+         quantity: rainfall_intensity, unit: mm/h, window: 1h, lower: 90.1, upper: null,
+         inclusive_rule: "closed lower, open upper",
+         danger_meaning: "อ้างคำตรง: 'ความเข้มของฝนสูงในช่วงต้นเดือนตุลาคม (มากกว่า 90 มิลลิเมตรต่อชั่วโมง)'",
+         action: "ติดตามน้ำทุ่งจากด้านเหนือ/ตะวันออก + ระดับน้ำเจ้าพระยา", source: "BMA plan 2569 PDF p22 (§5.1)",
+         page_or_url: "internal card (PDF, not URL)", tag: VERIFIED, comparable_with: [bma_operational_period_rain_intensity]}
+
+  - agency: "กทม. สำนักการระบายน้ำ (BMA / DDS)"
+    scheme_id: bma_chaophraya_river_level_period
+    scheme_kind: numeric_band
+    tag: VERIFIED
+    levels:
+      - {level_id: period1_line, label_th: "ช่วงที่ 1 ระดับน้ำเจ้าพระยา", colour: null, quantity: water_level,
+         unit: m_MSL, window: instantaneous, lower: null, upper: 1.20, inclusive_rule: "the plan states 'ที่ระดับ +1.20 ม.รทก.' as the period-1 reference level, not an explicit upper bound",
+         danger_meaning: "ไม่ได้ระบุคำ 'อันตราย' ตรงตัวในช่วงนี้ — เป็นระดับอ้างอิงของช่วงฤดู",
+         action: "ปฏิบัติการตามช่วงที่ 1", source: "BMA plan 2569 PDF p22 (§5.1)", page_or_url: "internal card (PDF, not URL)",
+         tag: VERIFIED, comparable_with: [bma_chaophraya_river_level_period]}
+      - {level_id: period2_band, label_th: "ช่วงที่ 2 ระดับน้ำเจ้าพระยา", colour: null, quantity: water_level,
+         unit: m_MSL, window: instantaneous, lower: 1.50, upper: 1.80, inclusive_rule: "closed both ends",
+         danger_meaning: "ไม่ได้ระบุคำ 'อันตราย' ตรงตัว", action: "ปฏิบัติการตามช่วงที่ 2",
+         source: "BMA plan 2569 PDF p22 (§5.1)", page_or_url: "internal card (PDF, not URL)", tag: VERIFIED,
+         comparable_with: [bma_chaophraya_river_level_period]}
+      - {level_id: period3_band, label_th: "ช่วงที่ 3 ระดับน้ำเจ้าพระยาสูงมากกว่า", colour: null, quantity: water_level,
+         unit: m_MSL, window: instantaneous, lower: 1.80, upper: null, inclusive_rule: "closed lower (>1.80), open upper",
+         danger_meaning: "ไม่ได้ระบุคำ 'อันตราย' ตรงตัวในบรรทัดนี้เอง (ดู failure_line ด้านล่างสำหรับคำที่ชัดกว่า)",
+         action: "ปฏิบัติการตามช่วงที่ 3 (น้ำเหนือ+น้ำหนุน)", source: "BMA plan 2569 PDF p22 (§5.1)",
+         page_or_url: "internal card (PDF, not URL)", tag: VERIFIED, comparable_with: [bma_chaophraya_river_level_period]}
+      - {level_id: failure_line, label_th: "ระดับที่การป้องกันอาจล้มเหลว", colour: null, quantity: water_level,
+         unit: m_MSL, window: instantaneous, lower: 2.00, upper: null, inclusive_rule: "closed lower (>2.00), open upper",
+         danger_meaning: "อ้างคำตรงจากแผน กทม. เอง: 'ในกรณีที่ระดับน้ำในแม่น้ำเจ้าพระยาที่สูงเกินกว่า +2.00 ม.รทก. ตามที่คาดหมายไว้อาจทำให้การป้องกันน้ำท่วมไม่ได้ผล' — นี่คือคำ 'อันตราย' ที่ตรงที่สุดในเอกสารของ กทม. เอง (§9.2.1)",
+         action: "ติดตามและคาดหมายระดับน้ำล่วงหน้าเพื่อเสริมแนวป้องกัน (คำแผนเอง)", source: "BMA plan 2569 PDF p47 (§9.2.1)",
+         page_or_url: "internal card (PDF, not URL)", tag: VERIFIED, comparable_with: [bma_chaophraya_river_level_period]}
+
+  - agency: "กทม. สำนักการระบายน้ำ (BMA / DDS)"
+    scheme_id: bma_canal_control_structure_thresholds
+    scheme_kind: per_structure_numeric
+    tag: VERIFIED
+    note: >
+      406 rows already extracted in docs/knowledge/bma_plan2569_canal_thresholds.yaml — one
+      เตือนภัย/วิกฤติ/แผน ก/ข/ค pair per control structure, in m MSL. Not repeated row-by-row here
+      (see that file); summarised as a scheme with a worked example.
+    worked_example:
+      structure: "ปตร.แสนแสบ (มีนบุรี), ด้านใน"
+      levels:
+        - {level_id: warning, label_th: เตือนภัย, colour: null, quantity: water_level, unit: m_MSL,
+           window: instantaneous, lower: null, upper: 0.50, inclusive_rule: "reaches 0.50",
+           danger_meaning: "ป้ายชั้นเองคือ 'เตือนภัย' (คำอันตรายระดับต้นของ กทม. ต่อโครงสร้างนี้)",
+           action: "เฝ้าระวัง เตรียมเดินเครื่องสูบ", source: "docs/knowledge/bma_plan2569_canal_thresholds.yaml",
+           page_or_url: "internal card (PDF p190-193, not URL)", tag: VERIFIED, comparable_with: []}
+        - {level_id: critical, label_th: วิกฤติ, colour: null, quantity: water_level, unit: m_MSL,
+           window: instantaneous, lower: null, upper: 0.60, inclusive_rule: "reaches 0.60",
+           danger_meaning: "ป้ายชั้นเองคือ 'วิกฤติ' (คำอันตรายระดับสูงสุดต่อโครงสร้างนี้)",
+           action: "เดินเครื่องสูบเต็มกำลัง/ประสานกรมชลประทาน", source: "docs/knowledge/bma_plan2569_canal_thresholds.yaml",
+           page_or_url: "internal card (PDF p190-193, not URL)", tag: VERIFIED, comparable_with: []}
+
+  - agency: "กทม. สำนักการระบายน้ำ (BMA / DDS)"
+    scheme_id: bma_design_capacity_rain
+    scheme_kind: system_capacity_not_alert_colour
+    tag: VERIFIED
+    note: >
+      Not itself an alert scheme (no colour, no level_id ladder) — a single system-capacity design
+      figure, restated here because the founder's follow-up asks specifically where it falls on the
+      TMD risk-map axis (see the consistency analysis in the companion .md doc).
+    levels:
+      - {level_id: current_design, label_th: "ขีดความสามารถระบบระบายน้ำ (ปัจจุบัน)", colour: null,
+         quantity: rainfall_depth, unit: mm/24h, window: 24h, lower: null, upper: 80.0,
+         inclusive_rule: "system copes up to and including 80.0; the plan's own wording is 'ไม่เกิน 80 มิลลิเมตร ใน 1 วัน'",
+         danger_meaning: "ไม่ใช่คำ 'อันตราย' ของ กทม. เอง แต่คือ 'ขีดความสามารถของระบบระบายน้ำ' — เกินเลขนี้ = เกินขีดความสามารถออกแบบ (implied, ไม่ใช่ถ้อยคำตรงที่ใช้คำว่าอันตราย)",
+         action: "n/a (a design limit, not a triggered action)", source: "BMA plan 2569 PDF p63 (ก-9)",
+         page_or_url: "internal card (PDF, not URL)", tag: VERIFIED, comparable_with: [tmd_risk_map_rain_24h, tmd_descriptive_rain_24h]}
+      - {level_id: future_target, label_th: "เป้าหมายอนาคต", colour: null, quantity: rainfall_depth,
+         unit: mm/24h, window: 24h, lower: null, upper: 104.0, inclusive_rule: "future design target, not current",
+         danger_meaning: "n/a — เป้าหมายอนาคต ไม่ใช่เกณฑ์ปัจจุบัน", action: "n/a", source: "BMA plan 2569 PDF p64 (ก-10)",
+         page_or_url: "internal card (PDF, not URL)", tag: VERIFIED, comparable_with: [tmd_risk_map_rain_24h, tmd_descriptive_rain_24h]}
+
+  # ============================================================ Provinces / cities ===================
+  - agency: "เทศบาลนครหาดใหญ่ + คณะอนุกรรมการจังหวัดสงขลา (Hat Yai flag system)"
+    scheme_id: hatyai_flag_system
+    scheme_kind: station_specific_numeric_and_qualitative
+    tag: RELAYED
+    note: "Already extracted in docs/knowledge/card_hatyai_city_climate.md (c), self-description of the network, RELAYED not independent research."
+    levels:
+      - {level_id: yellow_flag, label_th: ธงเหลือง, colour: yellow, quantity: water_level, unit: m_MSL,
+         window: "6h persistence + daily basin rain", lower: 8.00, upper: null,
+         inclusive_rule: "X.90 reaches +8.00 m MSL, sustained 6 consecutive hours, AND basin-average rain > 100 mm/day",
+         danger_meaning: "ป้ายชั้นเองคือ 'ธงเหลือง' — เงื่อนไขระบุคือ 'ระดับน้ำ X.90 = +8.00 ม.รทก. ติดต่อกัน 6 ชม. และฝนเฉลี่ยในลุ่มน้ำ >100 มม./วัน'",
+         action: "เทศบาลเตรียมความพร้อม/ซ้อมแผนตั้งแต่ธงเหลือง", source: "docs/knowledge/card_hatyai_city_climate.md (paper/620)",
+         page_or_url: "hatyaicityclimate.org/paper/620 (RELAYED, not re-fetched this check)", tag: RELAYED,
+         comparable_with: []}
+      - {level_id: red_flag, label_th: ธงแดง, colour: red, quantity: water_level, unit: m_MSL,
+         window: "instantaneous (X.90) or forecast (X.173A) or 3-day/1-day rain accumulation",
+         lower: 9.30, upper: null,
+         inclusive_rule: "X.90 reaches 9.30 m MSL; OR forecast from X.173A reaches +16.4 m MSL (upstream-rain-dominant case); OR basin rain > 300 mm/3-day or > 200 mm/day (downstream-rain-dominant case, committee real-time judgement)",
+         danger_meaning: "ป้ายชั้นเองคือ 'ธงแดง' — นายกเทศมนตรีเป็นผู้ประกาศยกธง; ปี 2568 มีข้อบกพร่องจริง (ยกธงแดงทั้งที่น้ำยังไม่เข้าเกณฑ์ทีมจังหวัด — บันทึกไว้ตรงในการ์ด)",
+         action: "อพยพ (ตามแผนหาดใหญ่โมเดลพลัส)", source: "docs/knowledge/card_hatyai_city_climate.md (paper/620, paper/640)",
+         page_or_url: "hatyaicityclimate.org/paper/620, /paper/640 (RELAYED, not re-fetched this check)", tag: RELAYED,
+         comparable_with: []}
+
+  - agency: "เทศบาลเมืองควนลัง (Hat Yai group, 5-colour national-practice system)"
+    scheme_id: khuanlang_5_colour_system
+    scheme_kind: qualitative_no_numeric_threshold_found
+    tag: RELAYED
+    note: "Already extracted in docs/knowledge/card_hatyai_city_climate.md (paper/676). Purely qualitative flags, tied to vulnerable-population evacuation stages, no rain/water numeric edge stated in the source."
+    levels:
+      - {level_id: green, label_th: เขียว, colour: green, quantity: qualitative, unit: n/a, window: n/a,
+         lower: null, upper: null, inclusive_rule: n/a, danger_meaning: "ปกติ — ไม่ได้ระบุตัวเลขอันตราย",
+         action: "ไม่มี", source: "docs/knowledge/card_hatyai_city_climate.md (paper/676)", page_or_url: "hatyaicityclimate.org/paper/676",
+         tag: RELAYED, comparable_with: []}
+      - {level_id: blue, label_th: น้ำเงิน, colour: blue, quantity: qualitative, unit: n/a, window: n/a,
+         lower: null, upper: null, inclusive_rule: n/a, danger_meaning: "ไม่ได้ระบุตัวเลขอันตราย",
+         action: "กลุ่มเปราะบางเตรียมพร้อมอพยพ", source: "docs/knowledge/card_hatyai_city_climate.md (paper/676)",
+         page_or_url: "hatyaicityclimate.org/paper/676", tag: RELAYED, comparable_with: []}
+      - {level_id: yellow_5c, label_th: เหลือง, colour: yellow, quantity: qualitative, unit: n/a, window: n/a,
+         lower: null, upper: null, inclusive_rule: n/a, danger_meaning: "ไม่ได้ระบุตัวเลขอันตราย",
+         action: "กลุ่มเปราะบางติดเตียง/ฟอกไต อพยพ", source: "docs/knowledge/card_hatyai_city_climate.md (paper/676)",
+         page_or_url: "hatyaicityclimate.org/paper/676", tag: RELAYED, comparable_with: []}
+      - {level_id: orange_5c, label_th: ส้ม, colour: orange, quantity: qualitative, unit: n/a, window: n/a,
+         lower: null, upper: null, inclusive_rule: n/a, danger_meaning: "ไม่ได้ระบุตัวเลขอันตราย",
+         action: "กลุ่มเปราะบางและกลุ่มเสี่ยงอื่นๆ อพยพ", source: "docs/knowledge/card_hatyai_city_climate.md (paper/676)",
+         page_or_url: "hatyaicityclimate.org/paper/676", tag: RELAYED, comparable_with: []}
+      - {level_id: red_5c, label_th: แดง, colour: red, quantity: qualitative, unit: n/a, window: n/a,
+         lower: null, upper: null, inclusive_rule: n/a,
+         danger_meaning: "ป้ายชั้นเองคือ 'น้ำท่วมแล้ว ทุกคนอยู่ในที่ปลอดภัย ไม่มีการอพยพ' — นี่คือชั้นที่น้ำมาถึงแล้ว ไม่ใช่ชั้นเตือนล่วงหน้า",
+         action: "ทุกคนอยู่ในที่ปลอดภัยแล้ว", source: "docs/knowledge/card_hatyai_city_climate.md (paper/676)",
+         page_or_url: "hatyaicityclimate.org/paper/676", tag: RELAYED, comparable_with: []}
+
+  - agency: "เทศบาลนครรังสิต (Rangsit local government, ประตูระบายน้ำจุฬาลงกรณ์ gauge)"
+    scheme_id: rangsit_4_level_gauge
+    scheme_kind: gauge_specific_numeric
+    tag: VERIFIED
+    note: "Already extracted in docs/knowledge/card_rangsit_local_gov_flood_2561.md (table 1, p217-218), an official municipal flood-response plan document."
+    levels:
+      - {level_id: watch, label_th: "1. เฝ้าระวัง", colour: null, quantity: water_level, unit: m,
+         window: instantaneous, lower: 2.40, upper: 2.60,
+         inclusive_rule: "in-gate ~2.40-2.60 m (out-gate ~3.30-3.50 m, same event, different station — kept as a paired reading, not merged)",
+         danger_meaning: "อ้างคำในเอกสาร: 'น้ำเอ่อเข้าบ้าน/กระทบการจราจร แต่ยังคุมได้'",
+         action: "ประชาสัมพันธ์; ระวังสัตว์มีพิษ/อุปกรณ์ไฟฟ้า; ขนของมีค่าขึ้นที่สูง",
+         source: "docs/knowledge/card_rangsit_local_gov_flood_2561.md (table 1, p217-218)",
+         page_or_url: "internal card (municipal plan PDF, not URL)", tag: VERIFIED, comparable_with: []}
+      - {level_id: moderate, label_th: "2. ปานกลาง", colour: null, quantity: water_level, unit: m,
+         window: instantaneous, lower: 2.60, upper: 2.90,
+         inclusive_rule: "in-gate ~2.60-2.90 m (out-gate ~3.50-3.80 m) OR flooding across Phahonyothin road at Wang Noi",
+         danger_meaning: "อ้างคำในเอกสาร: 'คาดว่าน้ำจะท่วมคันกั้นน้ำ ต้องเสริมคัน'",
+         action: "เสียงตามสาย/ประธานชุมชน; ขนของ; เตรียมอพยพเด็ก สตรี คนชรา; ให้เฉพาะผู้ชายเฝ้าบ้าน",
+         source: "docs/knowledge/card_rangsit_local_gov_flood_2561.md (table 1, p217-218)",
+         page_or_url: "internal card (municipal plan PDF, not URL)", tag: VERIFIED, comparable_with: []}
+      - {level_id: critical, label_th: "3. วิกฤต", colour: null, quantity: water_level, unit: m,
+         window: instantaneous, lower: 3.00, upper: null,
+         inclusive_rule: "in-gate ~3.00 m, out-gate >=3.80 m; open upper",
+         danger_meaning: "อ้างคำในเอกสาร: 'น้ำสูงเกินคันกั้นน้ำ ประตูน้ำป้องกันไม่ได้' — ป้ายชั้นเองคือ 'วิกฤต'",
+         action: "ประชาสัมพันธ์ + สัญญาณเสียงฉุกเฉิน ให้อพยพไปที่ปลอดภัยที่เทศบาลจัดไว้",
+         source: "docs/knowledge/card_rangsit_local_gov_flood_2561.md (table 1, p217-218)",
+         page_or_url: "internal card (municipal plan PDF, not URL)", tag: VERIFIED, comparable_with: []}
+      - {level_id: severe, label_th: "4. รุนแรง", colour: null, quantity: structural_failure, unit: n/a,
+         window: n/a, lower: null, upper: null, inclusive_rule: "a structural-failure state, not a water-level number",
+         danger_meaning: "อ้างคำในเอกสาร: 'ประตูน้ำจุฬาลงกรณ์เสียหายพังทลาย หรือเขื่อนบริเวณสะพานปูนริมทางรถไฟแตก น้ำทะลัก' — ระดับสูงสุด เป็น 'โครงสร้างล้มเหลว' ไม่ใช่ 'น้ำสูง' (per this repo's own note)",
+         action: "ไซเรนฉุกเฉินเร่งด่วน, ช่วยเหลือ/อพยพ, เลี่ยงเส้นทางน้ำไหล",
+         source: "docs/knowledge/card_rangsit_local_gov_flood_2561.md (table 1, p217-218; note line 174)",
+         page_or_url: "internal card (municipal plan PDF, not URL)", tag: VERIFIED, comparable_with: []}
+
+  - agency: "กทม. สำนักการระบายน้ำ (BMA / DDS)"
+    scheme_id: bma_dds_action_plan_kpi
+    scheme_kind: performance_target_not_alert
+    tag: VERIFIED
+    note: "Restated from docs/knowledge/card_official_2026-09-27_dds_action_plan_2567.md — a KPI target, not an alert level, kept for the mm/h axis comparison."
+    levels:
+      - {level_id: kpi_drain_time, label_th: "KPI 1.3.1.2 เวลาระบายน้ำ", colour: null, quantity: rainfall_intensity,
+         unit: mm/h, window: 1h, lower: null, upper: 100.0,
+         inclusive_rule: "KPI stated FOR rain intensity not exceeding 100 mm/h",
+         danger_meaning: "ไม่ใช่คำอันตราย — เป็นเงื่อนไขของ KPI เอง: 'น้ำระบายภายใน 120 นาที (2567) 90 นาที (2570) กรณีความเข้มฝนไม่เกิน 100 มม./ชม.'",
+         action: "n/a (service-level target)", source: "docs/knowledge/card_official_2026-09-27_dds_action_plan_2567.md",
+         page_or_url: "internal card (municipal plan PDF, p28/30, not URL)", tag: VERIFIED, comparable_with: []}
+
+# =================================================================================================
+# top summary table — agency, danger threshold, unit, window, action, source (founder's explicit ask)
+# =================================================================================================
+danger_summary_table:
+  - agency: TMD (risk-map, joint TMD+HII product)
+    danger_threshold: "125.1 (มีความเสี่ยงสูง, ป้ายชั้นเอง)"
+    unit: mm
+    window: 24h
+    action_told_to_people: "ไม่ระบุ action ในภาพเอง (การ์ดนี้ไม่เพิ่มคำแนะนำเอง)"
+    source: "TMD/MDES risk-map image, 2026-09-27 18:00, VERIFIED-transcription"
+  - agency: TMD (descriptive classes)
+    danger_threshold: "90.1 (ฝนหนักมาก, ป้ายชั้นเอง — no explicit 'danger' word found)"
+    unit: mm
+    window: 24h
+    action_told_to_people: "ไม่ได้ระบุตัวเลขอันตรายเชิงประกาศ — ชั้นบรรยายเท่านั้น"
+    source: "WebSearch snippet, tmd.go.th (RELAYED, page not opened this check)"
+  - agency: "HII/thaiwater (situation_level 0-5)"
+    danger_threshold: "ไม่ได้ระบุตัวเลขอันตราย"
+    unit: n/a
+    window: n/a
+    action_told_to_people: "n/a"
+    source: "OPEN — no glossary found this check"
+  - agency: "RID (general public scale)"
+    danger_threshold: "ไม่ได้ระบุตัวเลขอันตราย"
+    unit: n/a
+    window: n/a
+    action_told_to_people: "n/a"
+    source: "wmsc.rid.go.th fetched, no criteria text; OPEN"
+  - agency: "RID (C.29B gauge specific, RELAYED via BMA plan)"
+    danger_threshold: "3,500 (ระดับวิกฤติ, คำจากแผน กทม. อ้างข้อมูลกรมชลฯ)"
+    unit: m3/s
+    window: instantaneous
+    action_told_to_people: "ประสานงานควบคุมการระบาย (คำแผน กทม.)"
+    source: "docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md §1, BMA plan 2569 p22"
+  - agency: "DDPM (national command-escalation level 4)"
+    danger_threshold: "ไม่ได้ระบุตัวเลขอันตราย (เป็นระดับบังคับบัญชา ไม่ใช่เกณฑ์ตัวเลข)"
+    unit: n/a
+    window: n/a
+    action_told_to_people: "ยกระดับบังคับบัญชาสูงสุด (รายละเอียดไม่ยืนยันนี้ทาสก์)"
+    source: "WebSearch, แผนการป้องกันและบรรเทาสาธารณภัยแห่งชาติ 2564-2570"
+  - agency: "DDPM (public 3-stage: เฝ้าระวัง/แจ้งเตือน/อพยพ)"
+    danger_threshold: "ไม่ได้ระบุตัวเลขอันตราย"
+    unit: n/a
+    window: n/a
+    action_told_to_people: "อพยพ (ชั้นสูงสุดของวลีนี้)"
+    source: "WebSearch, bangkokbiznews.com/politics/1253545, Sept 2026"
+  - agency: "BMA (rain intensity, own wording 'ผิดปกติ')"
+    danger_threshold: "90.1 (ลักษณะอากาศผิดปกติ, คำแผนเอง)"
+    unit: mm
+    window: 1h
+    action_told_to_people: "ไม่ระบุ action แยกในข้อความ (เชิงสถานการณ์เตือนภัย)"
+    source: "BMA plan 2569 PDF p22 (§5.1), VERIFIED"
+  - agency: "BMA (Chao Phraya river level, explicit failure quote)"
+    danger_threshold: "2.00 (ระดับที่การป้องกันอาจล้มเหลว, คำแผนเอง)"
+    unit: m_MSL
+    window: instantaneous
+    action_told_to_people: "ติดตามและคาดหมายระดับน้ำล่วงหน้าเพื่อเสริมแนวป้องกัน"
+    source: "BMA plan 2569 PDF p47 (§9.2.1), VERIFIED"
+  - agency: "BMA (canal control structure, worked example ปตร.แสนแสบ)"
+    danger_threshold: "0.60 (วิกฤติ, ป้ายชั้นเอง)"
+    unit: m_MSL
+    window: instantaneous
+    action_told_to_people: "เดินเครื่องสูบเต็มกำลัง/ประสานกรมชลประทาน"
+    source: "docs/knowledge/bma_plan2569_canal_thresholds.yaml, VERIFIED"
+  - agency: "จังหวัดสงขลา/หาดใหญ่ (red flag)"
+    danger_threshold: "9.30 (X.90) หรือ +16.4 (X.173A พยากรณ์) หรือ >300mm/3วัน หรือ >200mm/วัน"
+    unit: "m MSL / mm"
+    window: "instantaneous / forecast / 3-day or 1-day accumulation"
+    action_told_to_people: "อพยพ (ตามแผนหาดใหญ่โมเดลพลัส)"
+    source: "docs/knowledge/card_hatyai_city_climate.md (paper/620), RELAYED"
+  - agency: "เทศบาลนครรังสิต (level 3 วิกฤต)"
+    danger_threshold: "3.00 (ในประตู) / >=3.80 (นอกประตู)"
+    unit: m
+    window: instantaneous
+    action_told_to_people: "ประชาสัมพันธ์ + สัญญาณเสียงฉุกเฉิน ให้อพยพไปที่ปลอดภัยที่เทศบาลจัดไว้"
+    source: "docs/knowledge/card_rangsit_local_gov_flood_2561.md (table 1, p217-218), VERIFIED"
+
+# =================================================================================================
+# conversion_rules — R1-R9, per founder's "สร้างกฎแปลงเพื่อให้เกณฑ์ชัด" instruction. Every rule states
+# from/to, formula-in-words+symbols, validity conditions, what is REFUSED, source/basis, Toledo status.
+# None of these are registered Toledo equations -- plain-arithmetic/lookup rules only, exactly the same
+# discipline as sources/units_datum_crosswalk.yaml's own computation_rules block.
+# =================================================================================================
+conversion_rules:
+  - rule_id: R1
+    name: depth_intensity_same_duration_identity
+    from: {quantity: rainfall_intensity, unit: mm/h, window: "duration D hours"}
+    to: {quantity: rainfall_depth, unit: mm, window: "same duration D hours"}
+    formula_words: "depth (mm) equals intensity (mm/h) multiplied by duration (h), for the SAME duration window on both sides"
+    formula_symbols: "depth_mm = intensity_mm_per_h * duration_h"
+    conditions_of_validity: "valid ONLY when both sides describe the identical duration window (e.g. a 1h intensity converts to a 1h depth, not a 24h depth) — this is a unit identity, not an empirical relationship"
+    refused_when: "the two sides name different durations (that is R2's problem, not R1's) — R1 never bridges durations"
+    source_basis: "plain arithmetic (depth = rate x time), same discipline as sources/units_datum_crosswalk.yaml computation_rules.never_add_intensity_to_accumulation"
+    toledo_status: "not a Toledo equation — dimensional identity, same footing as capacity_ledger.yaml's own /86400 conversion"
+
+  - rule_id: R2
+    name: depth_intensity_across_durations_via_idf_return_period_match
+    from: {quantity: rainfall_depth, unit: mm, window: "24h (or any duration in the IDF table)"}
+    to: {quantity: rainfall_intensity, unit: mm/h, window: "a DIFFERENT duration (e.g. 1h) in the same IDF table"}
+    formula_words: >
+      NOT an identity. The only sanctioned bridge across durations is: (1) find the return period T
+      in the official Bangkok IDF table whose value AT THE GIVEN DURATION equals the input, (2) read
+      off that SAME T's value at the target duration from the same table row. If no T reproduces the
+      input at the given duration, or the input falls outside the table's own duration/return-period
+      range, this rule REFUSES — no interpolation, no extrapolation, no division by an assumed
+      "average rain hours per day".
+    formula_symbols: "intensity_D2(T) := IDF_table[T][D2], where T solves depth_D1(T) = given_depth, D1 = given duration, D2 = target duration"
+    conditions_of_validity: "both durations D1, D2 must be columns actually present in the IDF table (5min,10min,15min,30min,1h,2h,3h,6h,12h,24h); T must be one of the table's own return periods (2y,5y,7y,10y,12y)"
+    refused_when: "no exact or declared-tolerance match exists in the table for the given duration/value pair; input outside the table's stated range"
+    worked_check_80_vs_58_7: >
+      RESULT: NOT REPRODUCED BY THE IDF TABLE'S OWN SAME-T MATCHING -- kept OPEN, not VERIFIED.
+      The BMA plan's own design-capacity quote (p63) pairs 80 mm/24h with 58.7 mm/h as if the same
+      design statement. Checking against docs/knowledge/bma_plan2569_assets.yaml's design_storm_table_p18
+      (VERIFIED IDF table): the 2-year return period row gives 24h depth = 93.6 mm and 1h intensity =
+      58.7 mm/h -- so 58.7 mm/h DOES match the table's own T=2y/1h column exactly (VERIFIED), but the
+      24h depth at that SAME T=2y is 93.6 mm, NOT 80 mm. The 80 mm/day figure is therefore NOT the
+      T=2y/24h value from this table -- it is a separately-stated, rounded system-capacity figure that
+      happens to be presented alongside the T=2y/1h intensity value, not derived from the 24h column of
+      the same return period. The plan's own prose ("80 mm in 1 day, on average rain falls ~3 hours a
+      day") is also not simple division (80/3 = 26.7, not 58.7). CONCLUSION: the 80<->58.7 pairing is
+      OPEN -- not an IDF same-T identity, and not a stated /3h division either; it is two independently
+      declared numbers presented together in the plan's own text.
+    worked_check_104_vs_76: >
+      Same method: 76.0 mm/h matches the table's own T=5y/1h column exactly (VERIFIED), but T=5y/24h
+      is 122.4 mm, NOT 104 mm. Same conclusion as above: OPEN, not an IDF same-T identity.
+    source_basis: "docs/knowledge/bma_plan2569_assets.yaml design_storm_table_p18 (VERIFIED, BMA plan 2569 PDF p18)"
+    toledo_status: "not yet in Toledo — empirical table lookup, not a derived formula"
+
+  - rule_id: R3
+    name: day_boundary_shift_by_resummation_only
+    from: {quantity: rainfall_depth, unit: mm, window: "24h ending at one day-boundary convention (e.g. TMD 07:00 ICT)"}
+    to: {quantity: rainfall_depth, unit: mm, window: "24h ending at a different day-boundary convention (local midnight or UTC midnight)"}
+    formula_words: "shifting the day boundary is only valid by RE-SUMMING the underlying hourly series over the new window — never by pro-rating or shifting a single already-aggregated daily total"
+    formula_symbols: "depth[new_window] = sum(hourly_mm[t] for t in new_window_hours) -- requires the hourly series, not just the daily total"
+    conditions_of_validity: "the underlying hourly-resolution series must exist and be accessible"
+    refused_when: "only a pre-aggregated daily total is available (no hourly series to re-sum) -- REFUSED, no pro-rating allowed"
+    source_basis: "sources/units_datum_crosswalk.yaml international_apis.day_boundary_mismatch block (already VERIFIED/RELAYED per-source boundary statements)"
+    toledo_status: "not a Toledo equation — a resummation procedure, not a formula"
+
+  - rule_id: R4
+    name: water_level_vs_agency_line_margin
+    from: {quantity: water_level, unit: m, window: instantaneous}
+    to: {quantity: margin_to_agency_line, unit: m, window: instantaneous}
+    formula_words: "margin (m) equals the gauge reading H minus the agency's own named line (warning/critical/bank), read at the SAME station and the SAME vertical datum only"
+    formula_symbols: "margin_m = H - line_value (same station, same datum)"
+    conditions_of_validity: "H and line_value must share the identical datum (m MSL or the same station-local zero) — never mixed"
+    refused_when: >
+      cross-station comparison is REFUSED unless both stations' readings are confirmed m MSL; the 8
+      BMA-plan station codes with a coordinate mismatch >100m and any station whose datum basis is
+      unresolved (per sources/units_datum_crosswalk.yaml water_level block, e.g. the BMA canal
+      water_level_m family, tag OPEN there) are REFUSED for cross-station use until their datum is
+      confirmed. HII's own "%bank" (storage_percent-style) field has no confirmed denominator
+      definition found this check (see hii_situation_level / hii_storage_percent_bands_candidate
+      schemes above, both OPEN) — treat any %-bank figure as OPEN, not a computable margin, until a
+      primary HII glossary confirms the denominator.
+    source_basis: "sources/units_datum_crosswalk.yaml computation_rules.never_mix_msl_and_local; docs/knowledge/bma_plan2569_canal_thresholds.yaml"
+    toledo_status: "not a Toledo equation — subtraction on a shared datum, a stated REFUSAL rule otherwise"
+
+  - rule_id: R5
+    name: discharge_ratio_same_reach_only
+    from: {quantity: discharge, unit: m3/s, window: instantaneous}
+    to: {quantity: discharge_ratio, unit: dimensionless, window: instantaneous}
+    formula_words: "ratio equals the gauge's discharge Q divided by that SAME station/reach's own declared bankfull or agency-critical discharge — never a different reach's number"
+    formula_symbols: "ratio = Q / Q_bankfull_or_critical (same station/reach)"
+    conditions_of_validity: "Q_bankfull_or_critical must be declared for that exact station/reach (e.g. C.13 flooded_min 3,721 m3/s per sources/coping_thresholds.yaml is C.13-specific, NOT interchangeable with the Bangkok-reach 2,500-3,500 m3/s band, per that file's own explicit non-merge note)"
+    refused_when: "a GloFAS/model-estimated discharge (openmeteo_flood, forecast-inferred) is NEVER substituted for a real gauge reading at the same coordinate, per sources/units_datum_crosswalk.yaml computation_rules.grid_cell_vs_gauge_not_equal — tag forecast-inferred always"
+    source_basis: "sources/coping_thresholds.yaml chao_phraya_bkk_reach rows; sources/units_datum_crosswalk.yaml international_apis.openmeteo_flood row"
+    toledo_status: "not a Toledo equation — a ratio of two same-reach declared numbers"
+
+  - rule_id: R6
+    name: reservoir_storage_percent_declared_denominator
+    from: {quantity: storage_volume, unit: million_m3, window: instantaneous}
+    to: {quantity: storage_percent, unit: "%", window: instantaneous}
+    formula_words: "storage percent equals stored volume divided by the reservoir's own declared capacity, AT THE AGENCY'S OWN STATED DEFINITION of that capacity (normal/effective storage level, vs the reservoir's maximum/spillway-crest storage) — the two denominators give different percentages for the same volume, so the definition used MUST be stated every time"
+    formula_symbols: "storage_pct = volume_mcm / capacity_mcm(definition) * 100 -- definition in {normal_storage, max_storage}"
+    conditions_of_validity: "the denominator definition (normal vs max) must be stated alongside every percentage; EGAT's egat_dam_storage_pct is RELAYED-assumed 'against the dam's own rated full-supply capacity' per sources/units_datum_crosswalk.yaml, not independently re-verified this check"
+    refused_when: "the denominator definition is unstated or unconfirmed (as with HII's own storage_percent field, whose 209.48% sample value already proves it is not naive percent-of-design-capacity) — treat as OPEN, not computable, until confirmed"
+    source_basis: "sources/units_datum_crosswalk.yaml quantities.storage_percent block"
+    toledo_status: "not a Toledo equation — a ratio requiring a stated, agency-specific denominator"
+
+  - rule_id: R7
+    name: category_forecast_to_interval
+    from: {quantity: rainfall_depth, unit: mm/24h, window: 24h}
+    to: {quantity: interval, unit: "[lower, upper] mm/24h", window: 24h}
+    formula_words: "a named class or colour maps to its own declared [lower, upper] band from the scheme it belongs to (see `schemes` above); the open-ended top class's upper edge is REFUSED, never set to +infinity"
+    formula_symbols: "interval(class) = [lower(class), upper(class)] ; upper(top_class) := REFUSED"
+    conditions_of_validity: "used only to produce a POSSIBLE/ROBUST qualitative label from a forecast category, never a point numeric estimate"
+    refused_when: "the class is the open-ended top class (e.g. TMD 'หนักมาก' >=90.1, or risk-map 'ม่วง' >250.0) — no upper bound is stated, so none is fabricated"
+    source_basis: "this file's own `schemes` block above"
+    toledo_status: "not a Toledo equation — a lookup into an already-declared band table"
+
+  - rule_id: R8
+    name: per_model_forecast_to_rung_worst_first
+    from: {quantity: any, unit: "per named forecast model", window: "per model's own window"}
+    to: {quantity: any, unit: "unified ladder rung", window: "same as from"}
+    formula_words: "evaluate EACH named model/source separately against the rung's declared edge; report the WORST model (the one placing the term closest to/over the danger edge) FIRST, with every other model's placement shown alongside — never averaged into one number"
+    formula_symbols: "rung_reported := rung(worst_case_model) ; rung(model_i) shown for all i"
+    conditions_of_validity: "applies whenever more than one model/source reports the same declared term (rain forecast ensembles, dam-release figures from EGAT vs HII, etc.)"
+    refused_when: "n/a — this rule itself IS the refusal of averaging, per PROP-FLOOD-06 v6.1's own multi_model_scenarios discipline"
+    source_basis: "toledo-wt-flood06/docs/proposals/PROP-FLOOD-06.md v6.1 definitions.multi_model_scenarios (worst_case/best_case/majority_band, never averaged)"
+    toledo_status: "not a Toledo equation — a selection/reporting discipline, reused verbatim from PROP-FLOOD-06's own already-registered convention"
+
+  - rule_id: R10
+    name: return_period_to_rung_same_reach_only
+    from: {quantity: discharge_or_level, unit: "m3/s or m", window: "a stated return period T (e.g. 2y/5y/20y)"}
+    to: {quantity: any, unit: "unified ladder rung", window: n/a}
+    formula_words: >
+      A return-period exceedance (GloFAS, Google Flood Hub, or any other return-period-based global
+      model) maps to a rung ONLY by matching the return-period's stated discharge/level value against
+      the SAME station/reach's own agency-declared critical/bankfull number for that identical
+      location — exactly like R5's discharge ratio rule, applied to a return-period-labelled source
+      instead of a raw gauge reading. Never matched against a different reach's number.
+    formula_symbols: "rung := rung_of(agency_critical_value) where agency_critical_value is declared for the SAME station/reach as the return-period figure"
+    conditions_of_validity: "the agency must have its own declared critical/bankfull value for that exact station/reach; the return-period source and the agency value must refer to the identical point"
+    refused_when: "no agency-declared critical value exists for that exact station/reach (current state for all 3 GloFAS-collected points in this repo — see global_layer.systems.glofas_return_period, OPEN) — REFUSED, not guessed"
+    source_basis: "generalises R5 (discharge_ratio_same_reach_only) to a return-period-labelled input"
+    toledo_status: "not a Toledo equation — a same-reach lookup/match rule"
+
+  - rule_id: R11
+    name: cap_style_categorical_mapping_no_numeric_conversion
+    from: {quantity: "categorical severity/urgency/certainty label (CAP, Meteoalarm, or any similar global vocabulary)", unit: categorical, window: n/a}
+    to: {quantity: any, unit: "unified ladder rung", window: n/a}
+    formula_words: >
+      A global categorical vocabulary (CAP severity/urgency/certainty, Meteoalarm colour) maps to a
+      rung by NAME ONLY, exactly like R9's categorical mapping for a national/local flag — this is
+      the same rule generalised to a global-model vocabulary. The mapping itself is a PROPOSAL
+      (INSTINCT) unless the founder adopts it; it is never derived from or blended with a numeric
+      threshold from any other rule.
+    formula_symbols: "rung := categorical_map(global_label) -- a stated lookup table, not a formula"
+    conditions_of_validity: "always usable as a proposal; becomes a decided mapping only when the founder accepts it"
+    refused_when: "n/a — no numeric conversion is ever attempted by this rule"
+    source_basis: "generalises R9 (declaration_flag_to_rung_categorical_only) to global-model vocabularies"
+    toledo_status: "not a Toledo equation — a categorical mapping rule, proposal status until decided"
+
+  - rule_id: R9
+    name: declaration_flag_to_rung_categorical_only
+    from: {quantity: "official declaration or flag colour", unit: categorical, window: n/a}
+    to: {quantity: any, unit: "unified ladder rung", window: n/a}
+    formula_words: "a flag/declaration maps to a rung by NAME ONLY (categorical lookup) — never converted into or averaged with a numeric quantity; the underlying observed number (if any) that triggered the declaration is kept as a SEPARATE field alongside the declared flag, never merged into one value"
+    formula_symbols: "rung := categorical_map(flag_name) ; observed_value kept separate, never substituted for or blended with the flag"
+    conditions_of_validity: "always — this is the correct handling for Hat Yai flags, Rangsit levels, BMA's เตือนภัย/วิกฤติ labels, and DDPM's เฝ้าระวัง/แจ้งเตือน/อพยพ vocabulary"
+    refused_when: "n/a — this rule never numerically converts; if a numeric equivalent is needed and none is declared, that specific need is OPEN, not this rule's problem"
+    source_basis: "this file's own `schemes` block (Hat Yai, Rangsit, DDPM, BMA canal thresholds all carry both a categorical label AND, where available, a numeric edge, kept as two separate fields)"
+    toledo_status: "not a Toledo equation — a categorical mapping rule"
+
+# =================================================================================================
+# unified_ladder — FloodConnect's OWN language, per founder's "เอาเกณฑ์ ... มาวางเพื่อสร้างเกณฑ์รวม
+# เดียวกันในภาษาของเรา". THIS IS A MAPPING, NOT NEW NUMBERS. Every rung cites PROP-FLOOD-06's own
+# L0-L5/LR tier ladder (toledo-wt-flood06/docs/proposals/PROP-FLOOD-06.md) and the T7-T0 action
+# labels (thailand_flood_kg/docs/T7_T0_DATA_PLAN.md), and shows, per quantity family, which agency
+# level lands on that rung in the agency's OWN words. Where agencies disagree for the same rung, ALL
+# are kept and the earliest/strictest (worst-case) is marked explicitly — never averaged.
+# =================================================================================================
+unified_ladder:
+  _meta:
+    numbers_source: "every numeric edge below is copied from the `schemes` block above (or is PROP-FLOOD-06's own already-declared S_H/T_act edges) — this block adds NO new number of its own except where explicitly marked ข้อเสนอ (proposal, not yet decided)"
+    tier_source: "toledo-wt-flood06/docs/proposals/PROP-FLOOD-06.md — L0..L5, LR (refused); T_act/S_H bands"
+    action_label_source: "thailand_flood_kg/docs/T7_T0_DATA_PLAN.md — PREPARE(L0-L1)/READY(L1-L2)/ACTIVATE(L2-L3)/EARLY_MOVE(L3-L4)/RESPONSE(L4-L5/LR)"
+    banned_words_avoided: ["ไม่ต้อง", "ห้าม", "ไม่ควร", "ผ่อนคลาย"]
+
+  rungs:
+    - rung: L0
+      action_label: PREPARE
+      resident_wording_th: "ติดตามข่าวตามปกติ"
+      global_layer_at_this_rung: {cap: "Minor/Future/Possible (proposal)", meteoalarm: "green (proposal)", glofas: "OPEN — no value held", google_flood_hub: "ปกติ (cross-check only)"}
+      quantity_families:
+        rain_mm_24h:
+          agency_levels: ["TMD white/ปลอดภัย 0-35.0 (VERIFIED-transcription)", "TMD เล็กน้อย/ปานกลาง 0.1-35.0 (RELAYED)"]
+          worst_case_first: "n/a — this rung is the lowest, no disagreement to arbitrate"
+        rain_mm_h: {agency_levels: ["BMA period1/2 normal band 10-60/60-90 (VERIFIED)"]}
+        canal_river_level: {agency_levels: ["below any agency's own 'เตือนภัย'/warning line (VERIFIED, per-structure)"]}
+        discharge_vs_bankfull: {agency_levels: ["well below coped_max (e.g. C.13 < 2,800 m3/s, RELAYED historical evidence, not an agency declaration)"]}
+        reservoir_percent: {agency_levels: ["OPEN — no confirmed denominator (see R6)"]}
+        official_declaration: {agency_levels: ["Rangsit: no level declared", "Hat Yai: เขียว/no flag", "DDPM: no ประกาศ"]}
+
+    - rung: L1
+      action_label: "PREPARE → READY"
+      resident_wording_th: "เตรียมของที่ย้ายง่าย"
+      global_layer_at_this_rung: {cap: "Minor/Future/Possible (proposal)", meteoalarm: "yellow (proposal)", glofas: "OPEN — no value held (candidate: 2y exceedance, proposal)", google_flood_hub: "ปกติ (cross-check only)"}
+      quantity_families:
+        rain_mm_24h:
+          agency_levels: ["TMD risk-map yellow 35.1-65.0 (VERIFIED-transcription)", "TMD descriptive หนัก lower edge 35.1 (RELAYED) — CONSISTENT, same number"]
+          worst_case_first: "both agree at 35.1 — no disagreement"
+        rain_mm_h: {agency_levels: ["FORECAST_RAIN_72H_EXCEEDS promoter tier per PROP-FLOOD-06 (deliberately lowest tier, a watch signal only)"]}
+        canal_river_level: {agency_levels: ["Rangsit: below level-1 in-gate 2.40m", "BMA canal: below 'เตือนภัย'"]}
+        discharge_vs_bankfull: {agency_levels: ["ratio < ~0.75 of coped_max (INSTINCT interpolation of PROP-FLOOD-06 S_H<0.3 band — ข้อเสนอ, ยังไม่ลง Toledo / รอผู้ก่อตั้งตัดสิน"]}
+        reservoir_percent: {agency_levels: ["OPEN"]}
+        official_declaration: {agency_levels: ["DDPM: เฝ้าระวัง (RELAYED, no numeric edge)", "Hat Yai group: น้ำเงิน (RELAYED, qualitative)"]}
+
+    - rung: L2
+      action_label: READY
+      resident_wording_th: "ย้ายของ ตรวจทางน้ำเข้าบ้าน"
+      global_layer_at_this_rung: {cap: "Moderate/Expected/Likely (proposal)", meteoalarm: "yellow (proposal)", glofas: "OPEN — no value held (candidate: 2-5y exceedance, proposal)", google_flood_hub: "ปกติ→อันตราย boundary (cross-check only)"}
+      quantity_families:
+        rain_mm_24h:
+          agency_levels: ["TMD risk-map orange 65.1-125.0 (VERIFIED-transcription)"]
+          worst_case_first: "n/a, single scheme for this axis at this rung"
+        rain_mm_h: {agency_levels: ["BMA CANAL_AT_WARNING_LINE-style promoter", "BMA period abnormal-weather quote '>90 มม./ชม.' (VERIFIED) — NOTE: this text-quote edge (90.1) sits ABOVE this rung's own mm/24h-mapped orange band; kept as a separate axis per the no-cross-unit-conversion rule (R1/R3), not reconciled numerically here"]}
+        canal_river_level: {agency_levels: ["BMA canal: at 'เตือนภัย' (worked example ปตร.แสนแสบ 0.50 m MSL, VERIFIED)", "Rangsit level 1 เฝ้าระวัง 2.40-2.60m in-gate (VERIFIED)"]}
+        discharge_vs_bankfull: {agency_levels: ["RID C.29B approaching but below 3,500 critical (RELAYED)"]}
+        reservoir_percent: {agency_levels: ["OPEN"]}
+        official_declaration: {agency_levels: ["DDPM: แจ้งเตือน (RELAYED)", "Rangsit: level 1 เฝ้าระวัง (VERIFIED)", "Hat Yai group: เหลือง (RELAYED)"]}
+      bangkok_specific_override:
+        note: "BMA design capacity 80 mm/24h (VERIFIED) sits INSIDE the TMD orange band (65.1-125.0) -- for BMA drainage units, the rung meaning 'exceeds the drainage system's own design capacity' starts at 80, not at the TMD-wide red edge (125.1). This is a per-unit override for BMA-governed units only, sourced VERIFIED (BMA plan 2569 p63), NOT a change to the TMD scheme itself."
+        applies_to: "BMA drainage sub-polder units only (not province-wide TMD reading)"
+
+    - rung: L3
+      action_label: ACTIVATE
+      resident_wording_th: "ยืนยันเส้นทาง จุดปลอดภัยที่ตรวจแล้ว"
+      global_layer_at_this_rung: {cap: "Severe/Expected/Likely (proposal)", meteoalarm: "orange (proposal)", glofas: "OPEN — no value held (candidate: 5y exceedance, proposal)", google_flood_hub: "อันตราย (cross-check only, per card §4)"}
+      quantity_families:
+        rain_mm_24h:
+          agency_levels: ["TMD risk-map red 125.1-250.0 (VERIFIED-transcription)", "BMA design-capacity exceedance >=80 for BMA units (VERIFIED, per bangkok_specific_override above) — EARLIEST/STRICTEST trigger for BMA units specifically"]
+          worst_case_first: "for a BMA drainage unit: 80 (BMA design) is STRICTER (fires earlier) than 125.1 (TMD red) -- BMA's own 80 is reported as the worst-case/earliest trigger for that unit, TMD red kept alongside as the province-wide reading, never averaged"
+        rain_mm_h: {agency_levels: ["BMA RAIN_24H_EXCEEDS_DESIGN promoter (>80mm/24h, min tier L3 per PROP-FLOOD-06)", "DDS KPI 100 mm/h boundary (VERIFIED, a service-level target, not itself an alert)"]}
+        canal_river_level: {agency_levels: ["BMA CANAL_AT_CRITICAL_LINE-style promoter (min tier L4 per PROP-FLOOD-06 -- NOTE: this specific promoter's OWN min tier is L4, shown here only to locate it on the agency axis; the ladder rung assignment follows PROP-FLOOD-06's own promoter table, not re-derived)", "Rangsit level 2 ปานกลาง 2.60-2.90m (VERIFIED)"]}
+        discharge_vs_bankfull: {agency_levels: ["ratio approaching 1.0 (S_H approaching flooded_min, PROP-FLOOD-06 L3 band 0.9<=S_H<1.2)"]}
+        reservoir_percent: {agency_levels: ["OPEN"]}
+        official_declaration: {agency_levels: ["Rangsit level 2 ปานกลาง (VERIFIED)"]}
+
+    - rung: L4
+      action_label: EARLY_MOVE
+      resident_wording_th: "ย้ายกลุ่มเปราะบางออกทางที่ยืนยันแล้ว"
+      global_layer_at_this_rung: {cap: "Severe/Immediate/Likely (proposal)", meteoalarm: "orange→red boundary (proposal)", glofas: "OPEN — no value held (candidate: 5-20y exceedance, proposal)", google_flood_hub: "อันตราย/อันตรายมาก boundary (cross-check only)"}
+      quantity_families:
+        rain_mm_24h:
+          agency_levels: ["TMD risk-map red upper region approaching 250.0 (VERIFIED-transcription, no separate agency edge inside red band)", "26 Sep 2026 observed 203-205 mm/24h at three BKK stations sits inside TMD red (125.1-250.0) -- observed event, not a declared agency edge, kept as historical evidence (VERIFIED, sources/coping_thresholds.yaml)"]
+        rain_mm_h: {agency_levels: ["BMA period3 quote '>90 มม./ชม.' explicit abnormal-weather wording (VERIFIED)"]}
+        canal_river_level:
+          agency_levels: ["BMA canal วิกฤติ (worked example 0.60 m MSL, VERIFIED)", "Rangsit level 3 วิกฤต >=3.00m in-gate (VERIFIED, explicit 'ประตูน้ำป้องกันไม่ได้' quote)", "Chao Phraya BMA river +2.00 m MSL failure line (VERIFIED, explicit 'อาจทำให้การป้องกันน้ำท่วมไม่ได้ผล' quote) -- EARLIEST/STRICTEST trigger for river-facing units"]
+          worst_case_first: "the +2.00 m MSL river-failure line is BMA's own most explicit 'danger' quote in the whole crosswalk -- reported as the strictest trigger on this axis"
+        discharge_vs_bankfull: {agency_levels: ["RID C.29B at or above 3,500 critical (RELAYED)", "C.13 historical flooded_min 3,721 m3/s (RELAYED, evidence not declaration)"]}
+        reservoir_percent: {agency_levels: ["OPEN"]}
+        official_declaration: {agency_levels: ["Hat Yai red flag (9.30 X.90 / +16.4 X.173A / >300mm-3day / >200mm-day, RELAYED)", "Rangsit level 3 วิกฤต (VERIFIED)", "Hat Yai group ส้ม (RELAYED)"]}
+
+    - rung: "L5 / LR"
+      action_label: RESPONSE
+      resident_wording_th: "ออกจากพื้นที่ทางที่ปลอดภัยตอนนี้"
+      global_layer_at_this_rung: {cap: "Extreme/Immediate/Observed (proposal)", meteoalarm: "red (proposal)", glofas: "OPEN — no value held (candidate: 20y exceedance, proposal)", google_flood_hub: "อันตรายมาก (cross-check only, per card §4)"}
+      quantity_families:
+        rain_mm_24h:
+          agency_levels: ["TMD risk-map purple >250.0 (VERIFIED-transcription, open upper edge, R7 REFUSED-no-infinity applies)", "TMD descriptive หนักมาก >=90.1 kept as a DIFFERENT scheme (RELAYED) -- not merged onto this same numeric edge, per the founder's own instruction not to merge schemes"]
+        rain_mm_h: {agency_levels: ["PUMPS_ZERO_RUNNING_ABOVE_THRESHOLD promoter (0 pumps running AND level >= critical, min tier L5 per PROP-FLOOD-06)"]}
+        canal_river_level: {agency_levels: ["BMA CANAL_AT_BANK_LEVEL promoter (min tier L5, no remaining headroom by definition)", "Rangsit level 4 รุนแรง -- structural failure, not a water-level number (VERIFIED)"]}
+        discharge_vs_bankfull: {agency_levels: ["min(D_H,R_H)=0 AND F_H(U)>0 per PROP-FLOOD-06 L5 pre-check (system already exceeded)"]}
+        reservoir_percent: {agency_levels: ["candidate 'เกินความจุเก็บกัก' >100% (RELAYED, unconfirmed origin -- see hii_storage_percent_bands_candidate)"]}
+        official_declaration: {agency_levels: ["Hat Yai group แดง ('น้ำท่วมแล้ว ทุกคนอยู่ในที่ปลอดภัย ไม่มีการอพยพ', RELAYED)", "DDPM: อพยพ (RELAYED)", "Rangsit level 4 รุนแรง (VERIFIED)"]}
+
+    - rung: LR
+      action_label: "RESPONSE (refused readout)"
+      resident_wording_th: "ใช้ข้อมูลสดล่าสุดเท่านั้น ระบบนี้ไม่มีข้อมูลตอนนี้"
+      quantity_families:
+        note: "LR dominates every numeric level per PROP-FLOOD-06 (no cov(U) component present/inferable) -- not a quantity family mapping, a refusal state. No agency scheme maps onto LR; it is FloodConnect's own data-availability state."
+
+  cross_agency_disagreement_note: >
+    Where the SAME nominal rung has more than one agency edge on the SAME axis (e.g. L2/L3 rain
+    mm/24h: TMD orange 65.1 vs BMA design-exceedance 80 for BMA units), BOTH are kept, and the
+    numerically EARLIEST (strictest, worst-case) one is the one FloodConnect's own rung fires on
+    for that specific unit type -- per the founder's explicit worst-case-first rule. No edge here
+    was invented by this check; every number is a direct copy from the `schemes` block above.
+
+  global_layer:
+    _meta: >
+      Founder instruction (verbatim, 2026-09-27): "ทำให้ระบบภาษาอันตรายหรือเกณฑ์ในภาษาของเราเชื่อมได้หมด
+      ตั้งแต่โมเดลระดับโลก ถึงองค์กร กรมต่างๆ" -- adds a global-model layer on top of the national/agency
+      rungs above, via R10 (return-period -> rung, same station/reach only) and R11 (CAP-style
+      categorical mapping only, never numeric). Every rung-mapping in this block is explicitly a
+      PROPOSAL/INSTINCT unless a specific tag says otherwise -- the founder decides, this check does
+      not silently adopt any of these as settled.
+    systems:
+      - system_id: cap_common_alerting_protocol
+        name: "Common Alerting Protocol (CAP), WMO/OASIS standard vocabulary"
+        tag: RELAYED
+        note: "CAP itself is a message-format standard (not a Thai-agency system) -- its severity/urgency/certainty vocabulary is widely reused internationally as a categorical alert vocabulary. Not independently re-fetched this check (no CAP spec URL in the founder's allowed official-source list); recalled as general public knowledge, RELAYED."
+        dimensions:
+          severity: ["Minor", "Moderate", "Severe", "Extreme"]
+          urgency: ["Immediate", "Expected", "Future"]
+          certainty: ["Observed", "Likely", "Possible"]
+        rung_mapping_proposal:
+          - {rung: L0, cap_severity: "Minor", cap_urgency: "Future", cap_certainty: "Possible", status: "ข้อเสนอ — ยังไม่ลง Toledo / รอผู้ก่อตั้งตัดสิน"}
+          - {rung: L1, cap_severity: "Minor", cap_urgency: "Future", cap_certainty: "Possible", status: "ข้อเสนอ — ยังไม่ลง Toledo / รอผู้ก่อตั้งตัดสิน"}
+          - {rung: L2, cap_severity: "Moderate", cap_urgency: "Expected", cap_certainty: "Likely", status: "ข้อเสนอ — ยังไม่ลง Toledo / รอผู้ก่อตั้งตัดสิน"}
+          - {rung: L3, cap_severity: "Severe", cap_urgency: "Expected", cap_certainty: "Likely", status: "ข้อเสนอ — ยังไม่ลง Toledo / รอผู้ก่อตั้งตัดสิน"}
+          - {rung: L4, cap_severity: "Severe", cap_urgency: "Immediate", cap_certainty: "Likely", status: "ข้อเสนอ — ยังไม่ลง Toledo / รอผู้ก่อตั้งตัดสิน"}
+          - {rung: "L5 / LR", cap_severity: "Extreme", cap_urgency: "Immediate", cap_certainty: "Observed", status: "ข้อเสนอ — ยังไม่ลง Toledo / รอผู้ก่อตั้งตัดสิน"}
+        via_rule: R11
+
+      - system_id: glofas_return_period
+        name: "GloFAS (Global Flood Awareness System) exceedance-probability thresholds, as served via Open-Meteo Flood API"
+        tag: RELAYED
+        note: >
+          This repo's own registry (sources/units_datum_crosswalk.yaml international_apis.openmeteo_flood,
+          VERIFIED endpoint) serves GloFAS river_discharge for 3 fixed points -- but GloFAS's own
+          return-period THRESHOLD definitions (the 2-year/5-year/20-year exceedance discharge per
+          point) are NOT currently collected or stored anywhere in this repo's own files; this check
+          did not fetch GloFAS/Copernicus documentation (outside the founder's allowed official-source
+          list for this check). Recorded as a KNOWN EXTERNAL CONCEPT, not a value this repo holds.
+        candidate_bands: ["2-year exceedance (common/minor)", "5-year exceedance (moderate)", "20-year exceedance (severe)"]
+        rung_mapping_proposal: "OPEN — no GloFAS return-period threshold value is held in this repo for any of the 3 collected points (C.2/นครสวรรค์, เขื่อนเจ้าพระยา, สัมมากร); cannot be mapped to a rung without that value. Proposal only once obtained: 2y -> L1/L2, 5y -> L3, 20y -> L4/L5, via R10."
+        via_rule: R10
+
+      - system_id: google_flood_hub_severity
+        name: "Google Flood Hub / Flood Forecasting Initiative return-period risk category"
+        tag: "MEASURED (screenshot readout) / RELAYED (methodology) / OPEN (mapping)"
+        note: >
+          Already recorded in docs/knowledge/card_thirdparty_google_flood_hub_2026-09-27.md and in
+          sources/units_datum_crosswalk.yaml's own google_flood_hub row: reports a return-period RISK
+          LEVEL per gauge (e.g. "exceeds a 1-in-5-year event"), not a raw discharge/level figure --
+          that card's own §4 already states the correct handling: qualitative cross-check only (does
+          our own L3+ zone agree with Google's "อันตราย/อันตรายมาก" zone), never a numeric input.
+        rung_mapping_proposal:
+          - {google_label: "ปกติ / normal", rung: L0, status: "cross-check only, per card §4"}
+          - {google_label: "อันตราย", rung: "L3/L4", status: "cross-check only, per card §4 -- ข้อเสนอ, ยังไม่ลง Toledo"}
+          - {google_label: "อันตรายมาก", rung: "L4/L5", status: "cross-check only, per card §4 -- ข้อเสนอ, ยังไม่ลง Toledo"}
+        via_rule: R10
+
+      - system_id: ecmwf_efi_sot
+        name: "ECMWF Extreme Forecast Index (EFI) / Shift of Tails (SOT)"
+        tag: RELAYED
+        note: >
+          A model-diagnostic pair (EFI in [-1,1] measuring how far an ensemble forecast distribution
+          departs from the model's own climate distribution; SOT measuring how far the extreme tail
+          departs) used by ECMWF/national met services as an EARLY, qualitative "watch for extremes"
+          signal, not a rung-calibrated threshold. RELAYED (general knowledge, not fetched this check
+          — no ECMWF page in the founder's allowed official-source list). NOT mapped to a specific
+          rung here — recorded as a candidate future L1 "watch" signal only (PROP-FLOOD-06's own
+          FORECAST_RAIN_72H_EXCEEDS promoter already occupies this same conceptual slot), left OPEN
+          pending founder decision on whether to adopt EFI/SOT as an additional input.
+        rung_mapping_proposal: "OPEN — not mapped; candidate future L1-only 'watch' signal, analogous to PROP-FLOOD-06's own FORECAST_RAIN_72H_EXCEEDS promoter (which is already the lowest-tier, forward-looking-only promoter in that ladder)."
+        via_rule: "n/a — no numeric mapping proposed"
+
+      - system_id: meteoalarm_colour_scheme
+        name: "Meteoalarm (European national met services network) green/yellow/orange/red colour scheme"
+        tag: RELAYED
+        note: >
+          The European analogue structurally closest to the TMD risk-map colour scheme (4-5 colour
+          bands for weather hazards, aggregated across national met services). RELAYED, general
+          knowledge, not fetched this check (no meteoalarm.org page in the founder's allowed
+          official-source list, and it is not a Thai source). No Thailand-specific numeric edge
+          exists for this scheme by construction -- it is offered only as a STRUCTURAL analogue
+          (how many colours, what each roughly means), never as a source of Thai numeric thresholds.
+        colour_meaning_general: ["green: no significant weather", "yellow: be aware", "orange: be prepared", "red: take action"]
+        rung_mapping_proposal:
+          - {meteoalarm_colour: green, rung: L0, status: "structural analogue only, ข้อเสนอ — ยังไม่ลง Toledo / รอผู้ก่อตั้งตัดสิน"}
+          - {meteoalarm_colour: yellow, rung: "L1/L2", status: "structural analogue only, ข้อเสนอ — ยังไม่ลง Toledo / รอผู้ก่อตั้งตัดสิน"}
+          - {meteoalarm_colour: orange, rung: L3, status: "structural analogue only, ข้อเสนอ — ยังไม่ลง Toledo / รอผู้ก่อตั้งตัดสิน"}
+          - {meteoalarm_colour: red, rung: "L4/L5", status: "structural analogue only, ข้อเสนอ — ยังไม่ลง Toledo / รอผู้ก่อตั้งตัดสิน"}
+        via_rule: R11
+
+  global_layer_disagreement_note: >
+    No global-model number here overrides or averages with a Thai-agency number anywhere in this
+    file. Where a global system supplies only a category (CAP, Meteoalarm, Google Flood Hub) it is
+    mapped via R11 (categorical only, no numeric conversion). Where a global system supplies a
+    return-period THRESHOLD (GloFAS) it would be mapped via R10 (same station/reach only, currently
+    OPEN — no value held). ECMWF EFI/SOT is recorded but not mapped at all (OPEN). Every rung_mapping
+    above not already tagged VERIFIED/RELAYED-with-a-real-value is explicitly marked
+    "ข้อเสนอ — ยังไม่ลง Toledo / รอผู้ก่อตั้งตัดสิน", per the founder's own rule for any edge that is
+    our choice rather than an agency's.

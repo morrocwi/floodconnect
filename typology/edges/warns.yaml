@@ -1,0 +1,169 @@
+# typology/edges/warns.yaml -- edge_kind=warns, 2-hop ALWAYS: agency -> warning_channel
+# (hop 1) then warning_channel -> zone (hop 2, `soi_surface`-kind node group) (proposal
+# §2/§4c). A direct agency -> zone row is never written -- every warning must name its
+# channel (closes structural issue ISSUE-WARNING-01/5.1: non-actionable warnings). Every
+# row carries a non-empty `instruction` (CAP 1.2 `instruction` field, RELAYED-not-fetched
+# per proposal §3) -- validate.py rejects any warns row with a blank instruction.
+#
+# WARNING QUALITY fields (added 2026-09-28, TDRI framing -- a warning must state
+# datum/reference ("1.5 m from where?"), affected area, safe destination/route, and
+# arrive with lead time): `datum`, `area`, `lead_time` alongside `instruction`. Ties
+# directly to this repo's OWN existing rule (docs/FLOW_STALL_TYPOLOGY.md: "ระดับพื้นดิน ≠
+# ระดับผิวน้ำ" -- ground level != water level) -- a warning number with no stated
+# reference/datum is the SAME structural failure as a station reading with no declared
+# datum (`canal_graph.py`'s `REASON_DATUM_MISMATCH`). `tools/typology/validate.py`'s new
+# "warning quality gaps" report lists every row missing one of these (non-error, by
+# design -- matches this typology's whole OPEN-gap discipline). None of S9/S14's actual
+# announcements state a datum or a lead time, so every row below has `datum: OPEN` and
+# `lead_time: OPEN` -- never invented.
+schema_version: 1
+doc_kind: typology_edge_registry
+edge_kind: warns
+status_th: >
+  ทุก warns ต้องผ่าน warning_channel เสมอ (2-hop) และมี instruction ไม่ว่างเปล่า (ตรง CAP
+  instruction field, ปัญหาชั้น 5.1 ของ STRUCTURAL_ISSUES_2026-09-28.md). เพิ่ม datum/area/
+  lead_time (คุณภาพคำเตือน, TDRI framing 2026-09-28) -- ทุกแถว OPEN จริง ไม่มีแหล่งใดระบุ
+  datum/lead_time เลย.
+rows:
+  # hop 1: agency -> warning_channel (S14, กทม. 25 ก.ย. ใช้ 5 ช่องทางพร้อมกัน)
+  - from: AG_BMA_GOV
+    to: WCH.TRAFFY_FONDUE
+    instruction: "รับแจ้งเหตุ/ส่งต่อประกาศเฝ้าระวังผ่านแอป"
+    datum: "OPEN"
+    area: "OPEN"
+    lead_time: "OPEN"
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14)"
+  - from: AG_BMA_GOV
+    to: WCH.LINE_TRAFFYFONDUE
+    instruction: "รับแจ้งเหตุ/ส่งต่อประกาศเฝ้าระวังผ่าน LINE OA"
+    datum: "OPEN"
+    area: "OPEN"
+    lead_time: "OPEN"
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14)"
+  - from: AG_BMA_GOV
+    to: WCH.HOTLINE_1555
+    instruction: "รับแจ้งเหตุ/ให้ข้อมูลสถานการณ์ทั่วไปทางโทรศัพท์"
+    datum: "OPEN"
+    area: "OPEN"
+    lead_time: "OPEN"
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14)"
+  - from: AG_BMA_GOV
+    to: WCH.FB_FLOODCONTROL_BMA
+    instruction: "ประกาศเฝ้าระวัง/สถานะบึงหนองบอนและแผนลดระดับล่วงหน้า"
+    datum: "OPEN"
+    area: "OPEN"
+    lead_time: "OPEN"
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14)"
+  - from: AG_BMA_GOV
+    to: WCH.FLOOD_CONTROL_CENTER_HOTLINE
+    instruction: "ติดต่อศูนย์ควบคุมระบบป้องกันน้ำท่วมโดยตรง"
+    datum: "OPEN"
+    area: "OPEN"
+    lead_time: "OPEN"
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14)"
+  - from: AG_BMA_MED
+    to: WCH.HOTLINE_1669
+    instruction: "แจ้งเคลื่อนย้ายผู้ป่วยติดเตียง/ผู้สูงอายุ/ผู้พิการฉุกเฉิน"
+    datum: "OPEN"
+    area: "OPEN"
+    lead_time: "OPEN"
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9)"
+  # hop 2: warning_channel -> zone (soi_surface group). WL.NBN.01 (บึงหนองบอน) pre-lowering
+  # warning reached the soi group near the Prawet-connected canal, per S14 -- modelled here
+  # as reaching the two Sammakorn soi zones this build declares (SOI.SAMMAKORN.17/18) since
+  # those are the only declared `soi_surface` zone nodes in this typology-links build; a
+  # fuller area list is OPEN (not enumerated by any source read in this check).
+  - from: WCH.FB_FLOODCONTROL_BMA
+    to: SOI.SAMMAKORN.17
+    instruction: "เฝ้าระวัง ยกของขึ้นที่สูง"
+    datum: "OPEN"
+    area: "SOI.SAMMAKORN.17"
+    lead_time: "OPEN"
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14, 25 ก.ย. pre-lowering บึงหนองบอน)"
+    note_th: >
+      คำว่า "เฝ้าระวัง" เป็นตัวอย่างจริงของปัญหาชั้น 5.1 (ไม่ actionable) แม้จะมี instruction
+      ประกอบ (ยกของขึ้นที่สูง) -- เก็บ instruction ตามคำจริงในแถลงการณ์ ไม่ได้เกลาคำใหม่ datum/
+      lead_time เป็น OPEN จริง -- แถลงการณ์ไม่ระบุระดับอ้างอิง/เวลานำหน้าเลย (TDRI framing:
+      คำเตือนที่ดีต้องมี datum, area, safe destination/route, lead time)
+  - from: WCH.FB_FLOODCONTROL_BMA
+    to: SOI.SAMMAKORN.18
+    instruction: "เฝ้าระวัง ยกของขึ้นที่สูง"
+    datum: "OPEN"
+    area: "SOI.SAMMAKORN.18"
+    lead_time: "OPEN"
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14)"
+  # OPEN gap (structural finding, not fabricated): S10 -- ไฟดับซ.17/18, ผู้อยู่อาศัยติดต่อ MEA
+  # ไม่ได้ -- ไม่มี warns edge จาก AG_MEA ไปหา soi group เลยในสถานการณ์นี้ (ต่างจากแถวข้างบนที่มี
+  # ช่องทางจริง) -- บันทึกเป็นช่องว่างที่ยืนยันแล้ว ไม่ใช่แถวเดา
+  - from: AG_MEA
+    to: "OPEN"
+    instruction: "OPEN -- ไม่มีช่องทางที่ยืนยันได้ว่า AG_MEA เตือน/ตอบกลับซ.17/18 โดยตรง"
+    datum: "OPEN"
+    area: "OPEN"
+    lead_time: "OPEN"
+    phase: incident
+    phase_tag: INSTINCT
+    tag: OPEN
+    source: >
+      STRUCTURAL_ISSUES_2026-09-28.md ISSUE-PEOPLE-04 (S10: ไฟดับซ.17/18 ติดต่อการไฟฟ้าไม่ได้) --
+      ยืนยันเป็น node/edge gap จริงจากการลากกราฟ ไม่ใช่การอนุมาน
+
+  # ศูนย์ความร่วมมือด้านการสื่อสารข้อมูลสภาพภูมิอากาศ (ดีอี), ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569 --
+  # hop 1 เท่านั้น (ศูนย์ -> ช่องทาง). hop 2 (ช่องทาง -> zone) ยัง OPEN เพราะศูนย์นี้สื่อสารระดับชาติ
+  # ไม่ผูกกับ soi_surface zone ใดใน worked example ของคลังนี้โดยตรง -- ไม่เดา zone เป้าหมาย.
+  - from: AG_CLIMATE_COMMS_CENTRE
+    to: WCH.TV_RADIO_PRD_MCOT
+    instruction: "OPEN"
+    datum: "OPEN"
+    area: "OPEN"
+    lead_time: "OPEN"
+    severity_scale: "symbolic+numeric compared to past events (announced policy)"
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569"
+  - from: AG_CLIMATE_COMMS_CENTRE
+    to: WCH.GOV_SOCIAL
+    instruction: "OPEN"
+    datum: "OPEN"
+    area: "OPEN"
+    lead_time: "OPEN"
+    severity_scale: "symbolic+numeric compared to past events (announced policy)"
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569"
+  - from: AG_LINEMAN
+    to: WCH.LINEMAN_INAPP_RISK
+    instruction: "OPEN"
+    datum: "OPEN"
+    area: "OPEN"
+    lead_time: "OPEN"
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §2"

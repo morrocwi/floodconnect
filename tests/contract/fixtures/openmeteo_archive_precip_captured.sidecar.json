@@ -1,0 +1,11 @@
+{
+  "source_id": "openmeteo_archive_precip",
+  "url": "https://archive-api.open-meteo.com/v1/archive?latitude=13.758235&longitude=100.676084&start_date=2026-09-18&end_date=2026-09-25&daily=precipitation_sum&timezone=Asia%2FBangkok",
+  "captured_at": "2026-10-02T07:44:30Z",
+  "sha256": "f3bed2449842d0d99a6fd40b9544852582b80ce5d6b7a9d35d6a60c9a44c648c",
+  "http_status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "fixture_ext": "json",
+  "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+  "parser_version": "v1"
+}

@@ -16,13 +16,13 @@
   "district": {
     "best_estimate_khet": "วังทองหลาง (Wang Thong Lang)",
     "border_with_khet": "บางกะปิ (Bang Kapi) -- centre sits within ~600m of stations/pumps whose own agency-reported geocode splits between the two",
-    "khwaeng": "OPEN -- not resolved (Overpass administrative-boundary pull failed on this session's mirror; see raw/ram53/overpass_attempts.log)",
+    "khwaeng": "OPEN -- not resolved (Overpass administrative-boundary pull failed on this check's mirror; see raw/ram53/overpass_attempts.log)",
     "tag": "RELAYED",
     "evidence": [
       "nearest BMA canal station (597m) WL.CKS.01 geocode.amphoe_name.th = วังทองหลาง",
       "nearest BMA pump station (511m) code prefix ST.WTL.* = วังทองหลาง's own agency code prefix",
       "2nd/3rd nearest canal stations (622-626m) and nearest rain gauge (576m) all geocode to บางกะปิ",
-      "Overpass admin-boundary relation pull failed (OOM) this session -- NOT independently confirmed via OSM boundary polygon"
+      "Overpass admin-boundary relation pull failed (OOM) this check -- NOT independently confirmed via OSM boundary polygon"
     ]
   },
   "chain": {
@@ -58,7 +58,7 @@
     {"code": "WL.YPN.02", "name_th": "ค.ยายเผื่อน ถ.ลาดพร้าว", "dist_m": 2213, "bearing": "E", "value_m": -0.21, "bank_m": 0.7, "warning_m": -0.2, "critical_m": 0, "observed_at": "2026-09-25T13:05:00+00:00", "amphoe": "บางกะปิ", "flag": "slightly BELOW warning (-0.21 < -0.2) -- normal"},
     {"code": "WL.PPA.02", "name_th": "ค.พลับพลา ศูนย์แพทย์พัฒนา", "dist_m": 2358, "bearing": "W", "value_m": -0.19, "bank_m": 0.4, "warning_m": -0.2, "critical_m": 0, "observed_at": "2024-05-14T06:45:00+00:00", "amphoe": "วังทองหลาง", "flag": "STALE (2024) -- not usable live"},
     {"code": "WL.HMK.01", "name_th": "ค.หัวหมาก ถ.ศรีนครินทร์", "dist_m": 4319, "bearing": "SE", "value_m": 0.46, "bank_m": 1, "warning_m": -0.2, "critical_m": 0, "observed_at": "2026-09-25T13:05:00+00:00", "amphoe": "สวนหลวง", "flag": "ABOVE critical (0.46 > 0); OUTSIDE the 1.5-2km scope, included only because another worker's community-report file (raw ram53 scratchpad) had already flagged it as 'วิกฤต' RELAYED from a Facebook post -- this is the direct BMA-station confirmation of that relay"},
-    {"note": "all 'value vs threshold' comparisons above are plain fact-statements from BMA's own published numbers for that one station, not a composite/aggregated risk score", "tag": "MEASURED", "source": "raw/live/thaiwater_bma/2026-09-26T050415Z.json, api-v3.thaiwater.net public canal_waterlevel, no auth needed (cached, no new fetch this session)", "staleness_note": "most non-stale readings are timestamped 2026-09-25T13:05:00 UTC = 2026-09-25 20:05 Bangkok time -- about 16h before this session's centre pull, not truly this-minute-live; several stations (SS05, WL.SSB.05, WL.PPA.02) are multi-year stale and excluded from live comparison"}
+    {"note": "all 'value vs threshold' comparisons above are plain fact-statements from BMA's own published numbers for that one station, not a composite/aggregated risk score", "tag": "MEASURED", "source": "raw/live/thaiwater_bma/2026-09-26T050415Z.json, api-v3.thaiwater.net public canal_waterlevel, no auth needed (cached, no new fetch this check)", "staleness_note": "most non-stale readings are timestamped 2026-09-25T13:05:00 UTC = 2026-09-25 20:05 Bangkok time -- about 16h before this check's centre pull, not truly this-minute-live; several stations (SS05, WL.SSB.05, WL.PPA.02) are multi-year stale and excluded from live comparison"}
   ],
   "pumps": {
     "ST_pumping_stations_nearest": [
@@ -113,7 +113,7 @@
       "candidate": "ถ.รามคำแหง (Thanon Ramkhamhaeng)",
       "via": "south end of the soi, (13.7599218, 100.6202595)",
       "tag": "INSTINCT",
-      "reasoning": "a soi named 'ซอยรามคำแหง N' conventionally starts at its junction with Thanon Ramkhamhaeng itself; the Overpass around-radius query that would have confirmed the actual crossing road's name/class failed on this session's mirror (see overpass_attempts.log) -- NOT independently confirmed this session"
+      "reasoning": "a soi named 'ซอยรามคำแหง N' conventionally starts at its junction with Thanon Ramkhamhaeng itself; the Overpass around-radius query that would have confirmed the actual crossing road's name/class failed on this check's mirror (see overpass_attempts.log) -- NOT independently confirmed this check"
     },
     {
       "candidate": "ซอยลาดพร้าว 112 (Soi Lat Phrao 112) or another Lat Phrao-side minor road",
@@ -126,7 +126,7 @@
     "Overpass admin-boundary (แขวง) pull failed all attempts (OOM/504) -- exact แขวง not resolved",
     "Overpass around-radius surrounding highway pull failed all attempts -- 'exits' above are INSTINCT, not VERIFIED",
     "canal flow direction is OPEN/heuristic-only for every waterway in this chain",
-    "most BMA canal-station readings are ~16h stale (2026-09-25 20:05 local) relative to this session, not this-minute-live",
+    "most BMA canal-station readings are ~16h stale (2026-09-25 20:05 local) relative to this check, not this-minute-live",
     "no risk score computed or implied anywhere in this file, per task instruction"
   ]
 }

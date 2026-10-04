@@ -12,8 +12,12 @@ Usage:
     GISTDA_API_KEY=xxx python3 build_kg.py --strahler-min 6   # also overlays live flood extent
 
 Requires the raw HydroRIVERS Asia shapefile to already be downloaded and unzipped at
-raw/HydroRIVERS_v10_as_shp/HydroRIVERS_v10_as.shp (see README.md "Re-running" section
-for the download command if raw/ is missing).
+raw/HydroRIVERS_v10_as_shp/HydroRIVERS_v10_as.shp -- see
+docs/RIVER_KNOWLEDGE_GRAPH_TECHNICAL.md for the download command if raw/ is missing
+(finding: this used to point at a "README.md 'Re-running' section"
+that no longer exists there -- the actual re-running steps for THIS builder live in
+that doc instead; README_bangkok_canals.md's own "Re-running" section is for the
+unrelated build_bangkok_canals.py/build_river_kg.py builders).
 """
 import argparse
 import json

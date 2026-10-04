@@ -1,0 +1,109 @@
+{
+  "generated_at_bkk": "2026-09-28T12:00:00+07:00",
+  "generated_at_utc": "2026-09-28T05:00:00+00:00",
+  "epistemic_note": "เป็นการอ่านค่าจากหน่วยงาน ไม่ใช่การพยากรณ์",
+  "default_area": "sammakorn",
+  "forecast_caveat_th": "ตัวอย่างข้อมูลทดสอบ ไม่ใช่ข้อมูลจริง",
+  "forecast_7day_compare": [],
+  "cross_source_reconciliation": [
+    {
+      "topic": "WL.SSB.08 water level",
+      "station_code": "WL.SSB.08",
+      "source_a": "thaiwater_canal_waterlevel",
+      "value_a": 0.42,
+      "observed_a_utc": "2026-09-28T04:55:00+00:00",
+      "source_b": "bma_watermap",
+      "value_b": 0.71,
+      "observed_b_utc": "2026-09-28T04:50:00+00:00",
+      "note": "two official sources disagree on the same station in the same window"
+    }
+  ],
+  "areas": {
+    "sammakorn": {
+      "label": "หมู่บ้านสัมมากร (ทดสอบ)",
+      "water_balance": {
+        "node_id": "sammakorn",
+        "status": "REFUSED",
+        "reason_codes": ["MISSING_INPUT"],
+        "S_next": null
+      },
+      "pumps": [
+        {"code": "ST.SPS.01", "running": true, "observed_at": "2026-09-28T04:58:00+00:00"}
+      ],
+      "stations_near": [
+        {
+          "code": "WL.SSB.08",
+          "value_m": 0.42,
+          "warning": 0.8,
+          "critical": 1.0,
+          "bank": 1.3,
+          "observed_at": "2026-09-28T04:55:00+00:00",
+          "delta_m": 0.02
+        },
+        {
+          "code": "WL.BMA.02",
+          "value_m": 0.10,
+          "warning": 0.6,
+          "critical": 0.9,
+          "bank": 1.1,
+          "observed_at": "2026-09-27T00:00:00+00:00",
+          "delta_m": null
+        }
+      ],
+      "rain": {"mm_24h": 12.5, "unit": "mm/24h"},
+      "tide": {"next_high": []},
+      "tiers": [],
+      "forecast": {"available": true, "status": "ok"},
+      "forecast_short": {"next6h_mm": 2.0},
+      "forecast_72h_worst": {"worst_mm": 40.0},
+      "sources": [
+        {"id": "thaiwater_canal_waterlevel", "agency_th": "ทดสอบ", "url": "https://example.invalid/a", "fetched_at": "2026-09-28T05:00:00+00:00", "trust_tier": "official_telemetry"}
+      ]
+    },
+    "ram53": {
+      "label": "ซอยรามคำแหง 53 (ทดสอบ)",
+      "water_balance": {"node_id": "ram53", "status": "REFUSED", "reason_codes": ["MISSING_INPUT"], "S_next": null},
+      "pumps": [],
+      "stations_near": [
+        {
+          "code": "WL.BKP.06",
+          "value_m": null,
+          "warning": null,
+          "critical": null,
+          "bank": null,
+          "observed_at": null,
+          "delta_m": null
+        }
+      ],
+      "rain": null,
+      "tide": null,
+      "tiers": [],
+      "forecast": {"available": false},
+      "forecast_short": null,
+      "forecast_72h_worst": null,
+      "sources": []
+    }
+  },
+  "layer0_public": {
+    "areas": {
+      "sammakorn": {
+        "label_th": "สัมมากร",
+        "in_items": [{"label_th": "ฝนวัดจริง", "text_th": "12.5 mm/24h", "tag_th": "วัดจากไฟล์ข้อมูล"}],
+        "out_items": [],
+        "capacity_items": [],
+        "in_vs_capacity_th": "ทดสอบ",
+        "out_vs_in_th": "ทดสอบ",
+        "time_to_exceed_th": null
+      },
+      "ram53": {
+        "label_th": "รามคำแหง 53",
+        "in_items": [],
+        "out_items": [],
+        "capacity_items": [],
+        "in_vs_capacity_th": "ยังไม่มีคำตอบ",
+        "out_vs_in_th": "ยังไม่มีคำตอบ",
+        "time_to_exceed_th": null
+      }
+    }
+  }
+}

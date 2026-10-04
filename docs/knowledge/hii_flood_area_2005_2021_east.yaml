@@ -1,0 +1,1030 @@
+_meta:
+  generated: '2026-09-27'
+  source: HII (สสน.) CKAN 'flood-area' dataset -- monthly flood-risk area frequency,
+    2005-2021 (GISTDA satellite imagery aggregate)
+  url: https://data.hii.or.th/api/3/action/package_show?id=flood-area
+  licence: CC BY-NC (HII open data)
+  licence_ruling: 'founder 2026-09-27: non-commercial use OK, commit + public page
+    (verbatim: "ใช้ได้เพราะอันนี้ไม่ใช่พาณิชย์ อัพขึ้น git ได้เลย")'
+  attribution_required: 'ที่มา: สถาบันสารสนเทศทรัพยากรน้ำ (สสน.) — data.hii.or.th,
+    CC BY-NC'
+  public_page: true
+  tag: VERIFIED
+  kind: 17-year monthly flood-frequency BASELINE, NOT a per-date event record -- calibration
+    prior for PROP-FLOOD-08 D_critical, never used directly as an urban_event_ledger
+    row.
+  scope: east-side districts only (Sammakorn's own neighbourhood per sources/bkk_district_elevation.yaml)
+    -- see EAST_DISTRICTS_TH in this file's own harvester script for the full list,
+    not a nationwide dump.
+  row_count: 101
+rows:
+- month: 6
+  geocode: '100301'
+  tambon_th: แขวงกระทุ่มราย
+  tambon_en: Krathum Rai
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 6
+  geocode: '100302'
+  tambon_th: แขวงหนองจอก
+  tambon_en: Nong Chok
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 6
+  geocode: '100303'
+  tambon_th: แขวงคลองสิบ
+  tambon_en: Khlong Sip
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 6
+  geocode: '100304'
+  tambon_th: แขวงคลองสิบสอง
+  tambon_en: Khlong Sip Song
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 6
+  geocode: '100305'
+  tambon_th: แขวงโคกแฝด
+  tambon_en: Khok Faet
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 6
+  geocode: '100306'
+  tambon_th: แขวงคู้ฝั่งเหนือ
+  tambon_en: Khu Fung Nuea
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 6
+  geocode: '100307'
+  tambon_th: แขวงลำผักชี
+  tambon_en: Lam Phak Chi
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 6
+  geocode: '100308'
+  tambon_th: แขวงลำต้อยติ่ง
+  tambon_en: Lam Toiting
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 6
+  geocode: '101002'
+  tambon_th: แขวงแสนแสบ
+  tambon_en: Saen Saep
+  amphoe_th: เขตมีนบุรี
+  amphoe_en: Min Buri District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 6
+  geocode: '101104'
+  tambon_th: แขวงลำปลาทิว
+  tambon_en: Lam Pla Thio
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 6
+  geocode: '101105'
+  tambon_th: แขวงทับยาว
+  tambon_en: Thap Yao
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 6
+  geocode: '101106'
+  tambon_th: แขวงขุมทอง
+  tambon_en: Khum Thong
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 6
+  geocode: '103201'
+  tambon_th: แขวงประเวศ
+  tambon_en: Prawet
+  amphoe_th: เขตประเวศ
+  amphoe_en: Prawet District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 6
+  geocode: '104301'
+  tambon_th: แขวงคันนายาว
+  tambon_en: Khan Na Yao
+  amphoe_th: เขตคันนายาว
+  amphoe_en: Khan Na Yao District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 9
+  geocode: '100301'
+  tambon_th: แขวงกระทุ่มราย
+  tambon_en: Krathum Rai
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 9
+  geocode: '100302'
+  tambon_th: แขวงหนองจอก
+  tambon_en: Nong Chok
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 9
+  geocode: '100303'
+  tambon_th: แขวงคลองสิบ
+  tambon_en: Khlong Sip
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 9
+  geocode: '100304'
+  tambon_th: แขวงคลองสิบสอง
+  tambon_en: Khlong Sip Song
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 9
+  geocode: '100305'
+  tambon_th: แขวงโคกแฝด
+  tambon_en: Khok Faet
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 9
+  geocode: '100306'
+  tambon_th: แขวงคู้ฝั่งเหนือ
+  tambon_en: Khu Fung Nuea
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 9
+  geocode: '100307'
+  tambon_th: แขวงลำผักชี
+  tambon_en: Lam Phak Chi
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 9
+  geocode: '100308'
+  tambon_th: แขวงลำต้อยติ่ง
+  tambon_en: Lam Toiting
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 9
+  geocode: '100601'
+  tambon_th: แขวงคลองจั่น
+  tambon_en: Khlong Chan
+  amphoe_th: เขตบางกะปิ
+  amphoe_en: Bang Kapi District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 9
+  geocode: '100608'
+  tambon_th: แขวงหัวหมาก
+  tambon_en: Hua Mak
+  amphoe_th: เขตบางกะปิ
+  amphoe_en: Bang Kapi District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 9
+  geocode: '101001'
+  tambon_th: แขวงมีนบุรี
+  tambon_en: Min Buri
+  amphoe_th: เขตมีนบุรี
+  amphoe_en: Min Buri District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 2
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 9
+  geocode: '101002'
+  tambon_th: แขวงแสนแสบ
+  tambon_en: Saen Saep
+  amphoe_th: เขตมีนบุรี
+  amphoe_en: Min Buri District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 9
+  geocode: '101101'
+  tambon_th: แขวงลาดกระบัง
+  tambon_en: Lat Krabang
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 9
+  geocode: '101102'
+  tambon_th: แขวงคลองสองต้นนุ
+  tambon_en: Khlong Song Ton Nun
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 2
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 9
+  geocode: '101103'
+  tambon_th: แขวงคลองสามประเวศ
+  tambon_en: Khlong Sam Prawet
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 2
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 9
+  geocode: '101104'
+  tambon_th: แขวงลำปลาทิว
+  tambon_en: Lam Pla Thio
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 9
+  geocode: '101105'
+  tambon_th: แขวงทับยาว
+  tambon_en: Thap Yao
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 9
+  geocode: '101106'
+  tambon_th: แขวงขุมทอง
+  tambon_en: Khum Thong
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 9
+  geocode: '102701'
+  tambon_th: แขวงคลองกุ่ม
+  tambon_en: Khlong Kum
+  amphoe_th: เขตบึงกุ่ม
+  amphoe_en: Bueng Kum District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 9
+  geocode: '104301'
+  tambon_th: แขวงคันนายาว
+  tambon_en: Khan Na Yao
+  amphoe_th: เขตคันนายาว
+  amphoe_en: Khan Na Yao District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 9
+  geocode: '104401'
+  tambon_th: แขวงสะพานสูง
+  tambon_en: Saphan Sung
+  amphoe_th: เขตสะพานสูง
+  amphoe_en: Saphan Sung District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 2
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 10
+  geocode: '100301'
+  tambon_th: แขวงกระทุ่มราย
+  tambon_en: Krathum Rai
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 5
+  criteria_th: 4-8 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงปานกลาง
+- month: 10
+  geocode: '100302'
+  tambon_th: แขวงหนองจอก
+  tambon_en: Nong Chok
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 5
+  criteria_th: 4-8 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงปานกลาง
+- month: 10
+  geocode: '100303'
+  tambon_th: แขวงคลองสิบ
+  tambon_en: Khlong Sip
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 5
+  criteria_th: 4-8 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงปานกลาง
+- month: 10
+  geocode: '100304'
+  tambon_th: แขวงคลองสิบสอง
+  tambon_en: Khlong Sip Song
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 5
+  criteria_th: 4-8 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงปานกลาง
+- month: 10
+  geocode: '100305'
+  tambon_th: แขวงโคกแฝด
+  tambon_en: Khok Faet
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 5
+  criteria_th: 4-8 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงปานกลาง
+- month: 10
+  geocode: '100306'
+  tambon_th: แขวงคู้ฝั่งเหนือ
+  tambon_en: Khu Fung Nuea
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 5
+  criteria_th: 4-8 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงปานกลาง
+- month: 10
+  geocode: '100307'
+  tambon_th: แขวงลำผักชี
+  tambon_en: Lam Phak Chi
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 5
+  criteria_th: 4-8 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงปานกลาง
+- month: 10
+  geocode: '100308'
+  tambon_th: แขวงลำต้อยติ่ง
+  tambon_en: Lam Toiting
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 5
+  criteria_th: 4-8 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงปานกลาง
+- month: 10
+  geocode: '100601'
+  tambon_th: แขวงคลองจั่น
+  tambon_en: Khlong Chan
+  amphoe_th: เขตบางกะปิ
+  amphoe_en: Bang Kapi District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 2
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 10
+  geocode: '100608'
+  tambon_th: แขวงหัวหมาก
+  tambon_en: Hua Mak
+  amphoe_th: เขตบางกะปิ
+  amphoe_en: Bang Kapi District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 2
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 10
+  geocode: '101001'
+  tambon_th: แขวงมีนบุรี
+  tambon_en: Min Buri
+  amphoe_th: เขตมีนบุรี
+  amphoe_en: Min Buri District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 4
+  criteria_th: 4-8 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงปานกลาง
+- month: 10
+  geocode: '101002'
+  tambon_th: แขวงแสนแสบ
+  tambon_en: Saen Saep
+  amphoe_th: เขตมีนบุรี
+  amphoe_en: Min Buri District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 5
+  criteria_th: 4-8 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงปานกลาง
+- month: 10
+  geocode: '101101'
+  tambon_th: แขวงลาดกระบัง
+  tambon_en: Lat Krabang
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 2
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 10
+  geocode: '101102'
+  tambon_th: แขวงคลองสองต้นนุ
+  tambon_en: Khlong Song Ton Nun
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 10
+  geocode: '101103'
+  tambon_th: แขวงคลองสามประเวศ
+  tambon_en: Khlong Sam Prawet
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 4
+  criteria_th: 4-8 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงปานกลาง
+- month: 10
+  geocode: '101104'
+  tambon_th: แขวงลำปลาทิว
+  tambon_en: Lam Pla Thio
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 5
+  criteria_th: 4-8 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงปานกลาง
+- month: 10
+  geocode: '101105'
+  tambon_th: แขวงทับยาว
+  tambon_en: Thap Yao
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 4
+  criteria_th: 4-8 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงปานกลาง
+- month: 10
+  geocode: '101106'
+  tambon_th: แขวงขุมทอง
+  tambon_en: Khum Thong
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 5
+  criteria_th: 4-8 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงปานกลาง
+- month: 10
+  geocode: '102701'
+  tambon_th: แขวงคลองกุ่ม
+  tambon_en: Khlong Kum
+  amphoe_th: เขตบึงกุ่ม
+  amphoe_en: Bueng Kum District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 2
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 10
+  geocode: '103201'
+  tambon_th: แขวงประเวศ
+  tambon_en: Prawet
+  amphoe_th: เขตประเวศ
+  amphoe_en: Prawet District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 10
+  geocode: '103202'
+  tambon_th: แขวงหนองบอน
+  tambon_en: Nong Bon
+  amphoe_th: เขตประเวศ
+  amphoe_en: Prawet District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 10
+  geocode: '103203'
+  tambon_th: แขวงดอกไม้
+  tambon_en: Dokmai
+  amphoe_th: เขตประเวศ
+  amphoe_en: Prawet District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 10
+  geocode: '104301'
+  tambon_th: แขวงคันนายาว
+  tambon_en: Khan Na Yao
+  amphoe_th: เขตคันนายาว
+  amphoe_en: Khan Na Yao District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 4
+  criteria_th: 4-8 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงปานกลาง
+- month: 10
+  geocode: '104401'
+  tambon_th: แขวงสะพานสูง
+  tambon_en: Saphan Sung
+  amphoe_th: เขตสะพานสูง
+  amphoe_en: Saphan Sung District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '100301'
+  tambon_th: แขวงกระทุ่มราย
+  tambon_en: Krathum Rai
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '100302'
+  tambon_th: แขวงหนองจอก
+  tambon_en: Nong Chok
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '100303'
+  tambon_th: แขวงคลองสิบ
+  tambon_en: Khlong Sip
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '100304'
+  tambon_th: แขวงคลองสิบสอง
+  tambon_en: Khlong Sip Song
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '100305'
+  tambon_th: แขวงโคกแฝด
+  tambon_en: Khok Faet
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '100306'
+  tambon_th: แขวงคู้ฝั่งเหนือ
+  tambon_en: Khu Fung Nuea
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '100307'
+  tambon_th: แขวงลำผักชี
+  tambon_en: Lam Phak Chi
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '100308'
+  tambon_th: แขวงลำต้อยติ่ง
+  tambon_en: Lam Toiting
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '100601'
+  tambon_th: แขวงคลองจั่น
+  tambon_en: Khlong Chan
+  amphoe_th: เขตบางกะปิ
+  amphoe_en: Bang Kapi District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '100608'
+  tambon_th: แขวงหัวหมาก
+  tambon_en: Hua Mak
+  amphoe_th: เขตบางกะปิ
+  amphoe_en: Bang Kapi District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '101001'
+  tambon_th: แขวงมีนบุรี
+  tambon_en: Min Buri
+  amphoe_th: เขตมีนบุรี
+  amphoe_en: Min Buri District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 2
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '101002'
+  tambon_th: แขวงแสนแสบ
+  tambon_en: Saen Saep
+  amphoe_th: เขตมีนบุรี
+  amphoe_en: Min Buri District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '101101'
+  tambon_th: แขวงลาดกระบัง
+  tambon_en: Lat Krabang
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '101102'
+  tambon_th: แขวงคลองสองต้นนุ
+  tambon_en: Khlong Song Ton Nun
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 2
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '101103'
+  tambon_th: แขวงคลองสามประเวศ
+  tambon_en: Khlong Sam Prawet
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 2
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '101104'
+  tambon_th: แขวงลำปลาทิว
+  tambon_en: Lam Pla Thio
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '101105'
+  tambon_th: แขวงทับยาว
+  tambon_en: Thap Yao
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '101106'
+  tambon_th: แขวงขุมทอง
+  tambon_en: Khum Thong
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '102701'
+  tambon_th: แขวงคลองกุ่ม
+  tambon_en: Khlong Kum
+  amphoe_th: เขตบึงกุ่ม
+  amphoe_en: Bueng Kum District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '103201'
+  tambon_th: แขวงประเวศ
+  tambon_en: Prawet
+  amphoe_th: เขตประเวศ
+  amphoe_en: Prawet District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '103202'
+  tambon_th: แขวงหนองบอน
+  tambon_en: Nong Bon
+  amphoe_th: เขตประเวศ
+  amphoe_en: Prawet District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '103203'
+  tambon_th: แขวงดอกไม้
+  tambon_en: Dokmai
+  amphoe_th: เขตประเวศ
+  amphoe_en: Prawet District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '104301'
+  tambon_th: แขวงคันนายาว
+  tambon_en: Khan Na Yao
+  amphoe_th: เขตคันนายาว
+  amphoe_en: Khan Na Yao District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 3
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 11
+  geocode: '104401'
+  tambon_th: แขวงสะพานสูง
+  tambon_en: Saphan Sung
+  amphoe_th: เขตสะพานสูง
+  amphoe_en: Saphan Sung District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 2
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 12
+  geocode: '100301'
+  tambon_th: แขวงกระทุ่มราย
+  tambon_en: Krathum Rai
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 12
+  geocode: '100302'
+  tambon_th: แขวงหนองจอก
+  tambon_en: Nong Chok
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 12
+  geocode: '100303'
+  tambon_th: แขวงคลองสิบ
+  tambon_en: Khlong Sip
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 12
+  geocode: '100304'
+  tambon_th: แขวงคลองสิบสอง
+  tambon_en: Khlong Sip Song
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 12
+  geocode: '100305'
+  tambon_th: แขวงโคกแฝด
+  tambon_en: Khok Faet
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 12
+  geocode: '100306'
+  tambon_th: แขวงคู้ฝั่งเหนือ
+  tambon_en: Khu Fung Nuea
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 12
+  geocode: '100307'
+  tambon_th: แขวงลำผักชี
+  tambon_en: Lam Phak Chi
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 12
+  geocode: '100308'
+  tambon_th: แขวงลำต้อยติ่ง
+  tambon_en: Lam Toiting
+  amphoe_th: เขตหนองจอก
+  amphoe_en: Nong Chok District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 12
+  geocode: '101001'
+  tambon_th: แขวงมีนบุรี
+  tambon_en: Min Buri
+  amphoe_th: เขตมีนบุรี
+  amphoe_en: Min Buri District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 12
+  geocode: '101002'
+  tambon_th: แขวงแสนแสบ
+  tambon_en: Saen Saep
+  amphoe_th: เขตมีนบุรี
+  amphoe_en: Min Buri District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 12
+  geocode: '101101'
+  tambon_th: แขวงลาดกระบัง
+  tambon_en: Lat Krabang
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 12
+  geocode: '101102'
+  tambon_th: แขวงคลองสองต้นนุ
+  tambon_en: Khlong Song Ton Nun
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 12
+  geocode: '101103'
+  tambon_th: แขวงคลองสามประเวศ
+  tambon_en: Khlong Sam Prawet
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 12
+  geocode: '101104'
+  tambon_th: แขวงลำปลาทิว
+  tambon_en: Lam Pla Thio
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 12
+  geocode: '101105'
+  tambon_th: แขวงทับยาว
+  tambon_en: Thap Yao
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 12
+  geocode: '101106'
+  tambon_th: แขวงขุมทอง
+  tambon_en: Khum Thong
+  amphoe_th: เขตลาดกระบัง
+  amphoe_en: Lat Krabang District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 12
+  geocode: '104301'
+  tambon_th: แขวงคันนายาว
+  tambon_en: Khan Na Yao
+  amphoe_th: เขตคันนายาว
+  amphoe_en: Khan Na Yao District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ
+- month: 12
+  geocode: '104401'
+  tambon_th: แขวงสะพานสูง
+  tambon_en: Saphan Sung
+  amphoe_th: เขตสะพานสูง
+  amphoe_en: Saphan Sung District
+  province_th: กรุงเทพมหานคร
+  count_17_year: 1
+  criteria_th: 1-3 ครั้งในรอบ 17 ปี
+  risk_th: เสี่ยงต่ำ

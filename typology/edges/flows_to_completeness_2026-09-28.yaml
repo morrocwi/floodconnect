@@ -1,0 +1,17 @@
+# typology/edges/flows_to_completeness_2026-09-28.yaml -- edge_kind=flows_to, closes the
+# WL.NBN.01 (บึงหนองบอน) orphan using the SAME source already cited on that node
+# (FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §5's own worked-example text).
+schema_version: 1
+doc_kind: typology_edge_registry
+edge_kind: flows_to
+status_th: >
+  ปิดช่องว่าง orphan WL.NBN.01 ด้วยข้อความที่มีอยู่แล้วใน proposal เดิม §5.
+rows:
+  - from: WL.NBN.01
+    to: tunnel:bma_dds:nongbon
+    tag: RELAYED
+    source: "FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §5 (\"บึงหนองบอน --controlled--> อุโมงค์\")"
+  - from: tunnel:bma_dds:nongbon
+    to: river:chao_phraya
+    tag: RELAYED
+    source: "FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §5 (\"อุโมงค์ --controlled--> river\") + sources/capacity_ledger.yaml discharges_to: แม่น้ำเจ้าพระยา"

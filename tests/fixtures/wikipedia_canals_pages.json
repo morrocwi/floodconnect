@@ -1,0 +1,80 @@
+[
+  {
+    "pageid": 32585,
+    "title": "คลองเปรมประชากร",
+    "coordinates": [
+      {
+        "lat": 13.76126,
+        "lon": 100.51182,
+        "primary": "",
+        "globe": "earth"
+      }
+    ],
+    "pageprops": {
+      "defaultsort": "เปรมประชากร",
+      "kartographer_frames": "1",
+      "page_image_free": "Khlong_Prem_Prachakon2.jpg",
+      "wikibase_item": "Q16306966"
+    },
+    "revisions": [
+      {
+        "revid": 13137916,
+        "timestamp": "2026-07-23T07:19:49Z",
+        "slots": {
+          "main": {
+            "*": "{{Infobox canal\n| name = คลองเปรมประชากร\n| image = Khlong Prem Prachakon2.jpg\n| image_caption = คลองเปรมประชากรข้าง[[ทำเนียบรัฐบาล]]\n| location = [[กรุงเทพมหานคร]]\n| country = [[ประเทศไทย]]\n| coordinates =\n| length_km = {{convert|50.846|km}}\n| lock_length_km =\n| lock_width_m =\n| len_m =\n| max_boat_length =\n| min_boat_draft =\n| min_boat_air_draft =\n| current_num_locks = \n| original_num_locks =\n| elev_m =\n| min_elev_m =\n| total_rise =\n| status =\n| navigation_authority =\n| former_names = คลองสวัสดิ์เปรมประชากร\n| modern_name = \n| present_owner = \n| original_owner =\n| engineer = [[สมเด็จเจ้าพระยาบรมมหาศรีสุริยวงศ์ (ช่วง บุนนาค)]]\n| other_engineer = \n| date_approved = พ.ศ. 2412\n| date_act = \n| date_began = พ.ศ. 2412\n| date_use = \n| date_completed = พ.ศ. 2413\n| date_extended =\n| date_closed = \n| date_restored =\n| direction = ใต้\n| begin_coord =\n| end_coord =\n| branch =\n| branch_of = [[แม่น้ำเจ้าพระยา]]\n| connects_to = [[แม่น้ำเจ้าพระยา]]\n| start_point = [[คลองผดุงกรุงเกษม]] [[แขวงวัดโสมนัส]] [[เขตป้อมปราบศัตรูพ่าย]], [[แขวงสี่แยกมหานาค]]และ[[แขวงดุสิต]] [[เขตดุสิต]] [[กรุงเทพมหานคร]]\n| original_start =\n| start_note =\n| end_point = [[แม่น้ำเจ้าพระยา]] [[ตำบลบางกระสั้น]] [[อำเภอบางปะอิน]] [[จังหวัดพระนครศรีอยุธยา]]\n| original_end = \n| end_npte =\n| module = {{Infobox historic site|embed=yes \n| designation1            = THAILAND\n| designat"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "pageid": 32586,
+    "title": "คลองพระโขนง",
+    "coordinates": [
+      {
+        "lat": 13.709574,
+        "lon": 100.59558,
+        "primary": "",
+        "globe": "earth"
+      }
+    ],
+    "pageprops": {
+      "kartographer_frames": "1",
+      "page_image_free": "วัดมหาบุศย์_เขตสวนหลวง_กรุงเทพมหานคร_(10).jpg",
+      "wikibase_item": "Q13013742"
+    },
+    "revisions": [
+      {
+        "revid": 13158508,
+        "timestamp": "2026-08-01T08:10:10Z",
+        "slots": {
+          "main": {
+            "*": "{{กล่องข้อมูล คลอง\n| name        = คลองพระโขนง\n| image       =  วัดมหาบุศย์ เขตสวนหลวง กรุงเทพมหานคร (10).jpg\n| image_size  =\n| image_caption = คลองพระโขนงบริเวณ[[วัดมหาบุศย์]]\n| map = {{maplink|frame=yes|plain=yes|frame-width=290|frame-height=250|frame-align=center|type=line|stroke-width=3}}\n| map_caption = แผนที่แนวเส้นทางคลองพระโขนงแบบโต้ตอบได้\n| start_point   = [[แม่น้ำเจ้าพระยา]]\n| end_point     = [[คลองประเวศบุรีรมย์]]\n| connects_to   = \n| length_km      = 14.5\n| engineer = [[สมเด็จเจ้าพระยาบรมมหาพิไชยญาติ (ทัต บุนนาค)]]<br>[[เจ้าพระยาทิพากรวงศมหาโกษาธิบดี (ขำ บุนนาค)]]\n| date_began =  พ.ศ. 2380\n| date_completed = พ.ศ. 2383\n| date_extended = พ.ศ. 2400 และ พ.ศ. 2421\n}}\n'''คลองพระโขนง''' เป็นคลองที่อยู่ใน[[เขตคลองเตย]] [[เขตวัฒนา]] และ[[เขตสวนหลวง]] [[กรุงเทพมหานคร]] ขุดแยกจาก[[แม่น้ำเจ้าพระยา]]ฝั่งตะวันออก บริเวณท่าเรือกรุงเทพ ไปต่อกับ[[คลองประเวศบุรีรมย์]] คลองยาว 14.5 กิโลเมตร<ref"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "pageid": 202395,
+    "title": "คลองดำเนินสะดวก",
+    "coordinates": null,
+    "pageprops": {
+      "defaultsort": "ดำเนินสะดวก",
+      "page_image_free": "Near_floating_market_-_poblíž_plovoucího_trhu_-_panoramio_-_Thajsko.jpg",
+      "wikibase_item": "Q6401830"
+    },
+    "revisions": [
+      {
+        "revid": 13282351,
+        "timestamp": "2026-09-19T03:11:46Z",
+        "slots": {
+          "main": {
+            "*": "[[ไฟล์:Near floating market - poblíž plovoucího trhu - panoramio - Thajsko.jpg|thumb|right|คลองดำเนินสะดวก]]\n'''คลองดำเนินสะดวก''' เป็นคลองเชื่อมระหว่าง[[แม่น้ำท่าจีน]] และ[[แม่น้ำแม่กลอง]]เข้าด้วยกัน โดยในสมัยโบราณการคมนาคมขนส่งทั่วไป จะใช้ทางบก ใช้สัตว์หรือเกวียน ท้องที่[[อำเภอดำเนินสะดวก]]ในสมัยก่อนเป็นที่ไร่ เรียกกันว่าโคกไผ่ (ตำบลดอนไผ่ในปัจจุบัน) ไม่มีคลองมากมายเหมือนเช่นในปัจจุบัน\n\n== ประวั"
+          }
+        }
+      }
+    ]
+  }
+]

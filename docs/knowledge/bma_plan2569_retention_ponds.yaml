@@ -1,0 +1,1021 @@
+# New file only, added 2026-09-27 (BMA flood plan 2569 extraction). Not merged into
+# any registry. (Note: this comment used to say "not
+# committed as part of this change" -- stale, this file IS committed and shipped
+# in the public MVP tree.)
+meta:
+  document: แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วมกรุงเทพมหานคร เนื่องจากน้ำฝนและน้ำหนุน ประจำปี 2569 (ในส่วนความรับผิดชอบของสำนักการระบายน้ำ กรุงเทพมหานคร)
+  issuer: สำนักการระบายน้ำ กรุงเทพมหานคร (BMA Department of Drainage and Sewerage)
+  source_file_public: dds.bangkok.go.th public_content 0011290_1.pdf (322 pages; print stamp on p1 dated 23 พ.ค. 2569)
+  page_convention: '`page` = PDF page number (1-based, physical). Printed appendix page labels (ก-1, ข-5, ง-25, จ-3, ฉ-13 ...) are given in `printed_page` where the parser could read them.'
+  extraction_method: pdftotext -layout text layer, regex row parser (no OCR). `raw` is the verbatim text-layer line(s) the row came from; values are copied as printed, no unit conversion.
+  glyph_note: 'The text layer renders some Thai glyphs inconsistently: in ch.1/appendix ง ''ำ'' often appears as ''า'' (น้า = น้ำ, ลาดับ = ลำดับ), in appendix ข ''า'' often appears as ''ำ'' (บำงกะปิ = บางกะปิ). `raw` keeps
+    the layer as-is; `name`/`district` are lightly normalised only where the mapping is unambiguous (see `normalise()` in the extractor).'
+  tag_default: MEASURED  # note: was "VERIFIED" -- a value read
+  # by regex from a PDF text layer with known-damaged glyphs is a MEASURED read of
+  # that file, not an independently-checked VERIFIED fact; parser-mapped fields
+  # carry their own parse_confidence on top of this
+  tables:
+  - ภาคผนวก ก 'พื้นที่รองรับและเก็บกักที่สามารถจัดหาไว้ได้แล้ว 38 แห่ง' + กำลังก่อสร้าง 4 + ปรับปรุง 4 + จะจัดหาเพิ่มเติม 20 (PDF p78-81, ก-24..ก-27) -- capacity list, no coordinates
+  - ภาคผนวก ข 'ภารกิจรักษาความสะอาดบึงรับน้ำ ประจำปี 2569' (PDF p98-99, p103, p107) -- 17 ponds WITH coordinates, volumes, area, dredge level
+  summary_quotes:
+    p78: ปัจจุบันสำนักการระบายน้ำ สามารถจัดหาพื้นที่รองรับและเก็บกักน้ำไว้ได้แล้ว จำนวน 38 แห่ง เก็บกักน้ำได้ประมาณ 13.71 ล้านลูกบาศก์เมตร โดยฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง เก็บกักน้ำได้ประมาณ 7.68
+      ล้านลูกบาศก์เมตร ฝั่งตะวันตกของแม่น้ำเจ้าพระยา (ฝั่งธนบุรี) จำนวน 3 แห่ง เก็บกักน้ำได้ประมาณ 6.03 ล้านลูกบาศก์เมตร
+    p83_need: พื้นที่ด้านตะวันออกของกรุงเทพมหานคร ต้องการแก้มลิงเพื่อรองรับน้ำเพื่อป้องกันน้ำท่วม ประมาณ 13 ล้านลูกบาศก์เมตร แต่ขณะนี้สามารถจัดหาได้ 34 แห่ง เก็บกักน้ำได้ประมาณ 7.64 ล้านลูกบาศก์เมตร ต้องการเพิ่มเติมอีกประมาณ
+      5.36 ล้านลูกบาศก์เมตร
+    p83_private_ponds: มีบึงหมู่บ้านเอกชนที่อนุญาตให้เข้าไปดำเนินการ ได้แก่ บึงหมู่บ้านสัมมากร เขตสะพานสูง หมู่บ้านศุภาลัย เขตมีนบุรี หมู่บ้านเมืองทองการ์เด้น หมู่บ้านเมืองทอง 2/1 และหมู่บ้านเมืองทอง 2/2 เขตประเวศ ซึ่งช่วยแก้ไขปัญหาน้ำท่วมใน
+      หมู่บ้านดังกล่าวและบริเวณพื้นที่ใกล้เคียง
+    p63_pump_pits_of_ponds: บ่อสูบน้ำของแก้มลิง 12 แห่ง; บ่อสูบน้ำของ Water Bank 4 แห่ง
+  totals_as_printed:
+    phra_nakhon_35: 7680005
+    thonburi_3: 6032300
+    all_38: 13712305
+    under_construction_4: 200000
+    improvement_4: 1248000
+    additional_20: 7619900
+  comparison_with_repo:
+    plan_rows_with_coords_appendix_kh: 17
+    plan_rows_capacity_list_appendix_ko: 57
+    repo_pond_or_retention_basin_rows: 15
+    repo_pond_rows_with_coords: 0
+    repo_rows:
+    - asset_id: pond:hand_declared:sammakorn
+      name: บึงสัมมากร
+      lat: null
+      lon: null
+    - asset_id: retention_basin:thaipbs_12thung:01_chiangrak
+      name: ทุ่งเชียงราก
+      lat: null
+      lon: null
+    - asset_id: retention_basin:thaipbs_12thung:02_chainat_pasak_left
+      name: ทุ่งฝั่งซ้ายคลองชัยนาท-ป่าสัก
+      lat: null
+      lon: null
+    - asset_id: retention_basin:thaipbs_12thung:03_thawung
+      name: ทุ่งท่าวุ้ง
+      lat: null
+      lon: null
+    - asset_id: retention_basin:thaipbs_12thung:04_bangkum
+      name: ทุ่งบางกุ่ม
+      lat: null
+      lon: null
+    - asset_id: retention_basin:thaipbs_12thung:05_bangkung
+      name: ทุ่งบางกุ้ง
+      lat: null
+      lon: null
+    - asset_id: retention_basin:thaipbs_12thung:06_pamok
+      name: ทุ่งป่าโมก
+      lat: null
+      lon: null
+    - asset_id: retention_basin:thaipbs_12thung:07_phakhai
+      name: ทุ่งผักไห่
+      lat: null
+      lon: null
+    - asset_id: retention_basin:thaipbs_12thung:08_chaochet
+      name: ทุ่งเจ้าเจ็ด
+      lat: null
+      lon: null
+    - asset_id: retention_basin:thaipbs_12thung:09_phrayabanlue
+      name: ทุ่งพระยาบรรลือ
+      lat: null
+      lon: null
+    - asset_id: retention_basin:thaipbs_12thung:10_phophraya
+      name: ทุ่งโพธิ์พระยา
+      lat: null
+      lon: null
+    - asset_id: retention_basin:thaipbs_12thung:11_bangban
+      name: ทุ่งบางบาล
+      lat: null
+      lon: null
+    - asset_id: retention_basin:thaipbs_12thung:12_rangsittai
+      name: ทุ่งรังสิตใต้
+      lat: null
+      lon: null
+    - asset_id: retention_basin:pidthong_scheme:east
+      name: โครงการแก้มลิงฝั่งตะวันออกของแม่น้ำเจ้าพระยา
+      lat: null
+      lon: null
+    - asset_id: retention_basin:pidthong_scheme:west
+      name: โครงการแก้มลิงฝั่งตะวันตกของแม่น้ำเจ้าพระยา
+      lat: null
+      lon: null
+    verdict: All 38 existing + 4 + 4 + 20 named ponds are NEW to the registry except บึงสัมมากร (pond:hand_declared:sammakorn, no capacity, no coords) which now gets storage 227,200 m3 (p79) -- it still has no coordinate in
+      this plan's pond lists (WL.SMK.01 gauge coord on p257 is the nearest official point). 17 ponds gain VERIFIED coordinates from appendix ข.
+capacity_list_appendix_ko:
+- seq: 1
+  name: บึงหนองบอน
+  storage_m3: 5000000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 78
+  printed_page: ก-24
+  raw: 1 | บึงหนองบอน | 5,000,000
+  tag: VERIFIED
+- seq: 2
+  name: บึงมักกะสัน
+  storage_m3: 261000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 78
+  printed_page: ก-24
+  raw: 2 | บึงมักกะสัน | 261,000
+  tag: VERIFIED
+- seq: 3
+  name: บึงพระราม 9
+  storage_m3: 10875
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 78
+  printed_page: ก-24
+  raw: 3 | บึงพระราม 9 | 10,875
+  tag: VERIFIED
+- seq: 4
+  name: บึงพิบูลพัฒนา
+  storage_m3: 48000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 78
+  printed_page: ก-24
+  raw: 4 | บึงพิบูลพัฒนา | 48,000
+  tag: VERIFIED
+- seq: 5
+  name: บึงลำพังพวย
+  storage_m3: 200000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 78
+  printed_page: ก-24
+  raw: 5 | บึงลำพังพวย | 200,000
+  tag: VERIFIED
+- seq: 6
+  name: บึงทรงกระเทียม
+  storage_m3: 81000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 78
+  printed_page: ก-24
+  raw: 6 | บึงทรงกระเทียม | 81,000
+  tag: VERIFIED
+- seq: 7
+  name: บึงกุ่ม
+  storage_m3: 148000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 78
+  printed_page: ก-24
+  raw: 7 | บึงกุ่ม | 148,000
+  tag: VERIFIED
+- seq: 8
+  name: บึงสนามกอล์ฟรถไฟ
+  storage_m3: 107000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 78
+  printed_page: ก-24
+  raw: 8 | บึงสนามกอล์ฟรถไฟ | 107,000
+  tag: VERIFIED
+- seq: 9
+  name: บึงตาเกตุ
+  storage_m3: 5500
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 9 | บึงตาเกตุ | 5,500
+  tag: VERIFIED
+- seq: 10
+  name: บึงกองพลทหารม้าที่ 2 และกองพัน 1 รอ.
+  storage_m3: 94000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 10 | บึงกองพลทหารม้าที่ 2 และกองพัน 1 รอ. | 94,000
+  tag: VERIFIED
+- seq: 11
+  name: บึงเรือนจำคลองเปรม
+  storage_m3: 68000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 11 | บึงเรือนจำคลองเปรม | 68,000
+  tag: VERIFIED
+- seq: 12
+  name: บึงข้าง ร.พ.บุรฉัตรไชยากร
+  storage_m3: 12800
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 12 | บึงข้าง ร.พ.บุรฉัตรไชยากร | 12,800
+  tag: VERIFIED
+- seq: 13
+  name: บึงปูนซีเมนต์ไทย (บึงฝรั่ง)
+  storage_m3: 78000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 13 | บึงปูนซีเมนต์ไทย (บึงฝรั่ง) | 78,000
+  tag: VERIFIED
+- seq: 14
+  name: บึงเอกมัย
+  storage_m3: 3500
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 14 | บึงเอกมัย | 3,500
+  tag: VERIFIED
+- seq: 15
+  name: บึงสวนเบญจกิติ
+  storage_m3: 137000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 15 | บึงสวนเบญจกิติ | 137,000
+  tag: VERIFIED
+- seq: 16
+  name: บึงในกรมทหารราบที่ 11 รอ.
+  storage_m3: 288000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 16 | บึงในกรมทหารราบที่ 11 รอ. | 288,000
+  tag: VERIFIED
+- seq: 17
+  name: บึงสีกัน
+  storage_m3: 150000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 17 | บึงสีกัน | 150,000
+  tag: VERIFIED
+- seq: 18
+  name: บึงข้างโรงเรียนแอนเนกซ์
+  storage_m3: 8400
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 18 | บึงข้างโรงเรียนแอนเนกซ์ | 8,400
+  tag: VERIFIED
+- seq: 19
+  name: บึงลาดโตนด
+  storage_m3: 44080
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 19 | บึงลาดโตนด | 44,080
+  tag: VERIFIED
+- seq: 20
+  name: บึงหมู่บ้านเมืองทองการ์เด้น
+  storage_m3: 76800
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 20 | บึงหมู่บ้านเมืองทองการ์เด้น | 76,800
+  tag: VERIFIED
+- seq: 21
+  name: บึงหมู่บ้านเมืองทอง 2/1
+  storage_m3: 26000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 21 | บึงหมู่บ้านเมืองทอง 2/1 | 26,000
+  tag: VERIFIED
+- seq: 22
+  name: บึงหมู่บ้านเมืองทอง 2/2
+  storage_m3: 26700
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 22 | บึงหมู่บ้านเมืองทอง 2/2 | 26,700
+  tag: VERIFIED
+- seq: 23
+  name: บึงมะขามเทศและบึงสะแกงามสามเดือน
+  storage_m3: 180000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 23 | บึงมะขามเทศและบึงสะแกงามสามเดือน | 180,000
+  tag: VERIFIED
+- seq: 24
+  name: บึงหมู่บ้านเธียรสวน
+  storage_m3: 32000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 24 | บึงหมู่บ้านเธียรสวน | 32,000
+  tag: VERIFIED
+- seq: 25
+  name: บึงรับน้ำหมู่บ้านสัมมากร
+  storage_m3: 227200
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 25 | บึงรับน้ำหมู่บ้านสัมมากร | 227,200
+  tag: VERIFIED
+- seq: 26
+  name: บึงน้ำประชานิเวศน์
+  storage_m3: 73000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 26 | บึงน้ำประชานิเวศน์ | 73,000
+  tag: VERIFIED
+- seq: 27
+  name: บึงเสือดำ
+  storage_m3: 17250
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 27 | บึงเสือดำ | 17,250
+  tag: VERIFIED
+- seq: 28
+  name: บึงหมู่บ้านเฟรนด์ชิพ
+  storage_m3: 120000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 28 | บึงหมู่บ้านเฟรนด์ชิพ | 120,000
+  tag: VERIFIED
+- seq: 29
+  name: สวนน้ำเสรีไทยช่วงคลองรหัสถึงคลองครุ
+  storage_m3: 89700
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 29 | สวนน้ำเสรีไทยช่วงคลองรหัสถึงคลองครุ | 89,700
+  tag: VERIFIED
+- seq: 30
+  name: แก้มลิงวงเวียนบางเขน
+  storage_m3: 6000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 30 | แก้มลิงวงเวียนบางเขน | 6,000
+  tag: VERIFIED
+- seq: 31
+  name: แก้มลิงสวนสาธารณะลาดพร้าว 71
+  storage_m3: 38000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 31 | แก้มลิงสวนสาธารณะลาดพร้าว 71 | 38,000
+  tag: VERIFIED
+- seq: 32
+  name: Water Bank ใต้ สน. บางเขน
+  storage_m3: 1000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 32 | Water Bank ใต้ สน. บางเขน | 1,000
+  tag: VERIFIED
+- seq: 33
+  name: Water Bank สุทธิพร 2
+  storage_m3: 1200
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 33 | Water Bank สุทธิพร 2 | 1,200
+  tag: VERIFIED
+- seq: 34
+  name: Water Bank รัชดาตัดวิภาวดี
+  storage_m3: 10000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 34 | Water Bank รัชดาตัดวิภาวดี | 10,000
+  tag: VERIFIED
+- seq: 35
+  name: Water Bank ศรีนครินทร์กรุงเทพกรีฑา
+  storage_m3: 10000
+  section: พื้นที่รองรับและเก็บกักฝั่งตะวันออกของแม่น้ำเจ้าพระยา (ฝั่งพระนคร) จำนวน 35 แห่ง
+  page: 79
+  printed_page: ก-25
+  raw: 35 | Water Bank ศรีนครินทร์กรุงเทพกรีฑา | 10,000
+  tag: VERIFIED
+- seq: 1
+  name: บึงวัดพรหมรังษี พื้นที่เขตดอนเมือง
+  storage_m3: 10000
+  section: "พื้นที่รองรับและเก็บกักที่กำลังก่อสร้าง 4 แห่ง\x03"
+  page: 80
+  printed_page: ก-26
+  raw: 1 | บึงวัดพรหมรังษี พื้นที่เขตดอนเมือง | 10,000
+  tag: VERIFIED
+- seq: 2
+  name: บึงสวนพระนคร พื้นที่เขตลาดกระบัง
+  storage_m3: 42000
+  section: "พื้นที่รองรับและเก็บกักที่กำลังก่อสร้าง 4 แห่ง\x03"
+  page: 80
+  printed_page: ก-26
+  raw: 2 | บึงสวนพระนคร พื้นที่เขตลาดกระบัง | 42,000
+  tag: VERIFIED
+- seq: 3
+  name: ทำนบเพื่อการเกษตรพื้นที่เขตลาดกระบังตอนคลองหลวงแพ่ง
+  storage_m3: 120000
+  section: "พื้นที่รองรับและเก็บกักที่กำลังก่อสร้าง 4 แห่ง\x03"
+  page: 80
+  printed_page: ก-26
+  raw: 3 | ทำนบเพื่อการเกษตรพื้นที่เขตลาดกระบังตอนคลองหลวงแพ่ง | 120,000
+  tag: VERIFIED
+- seq: 4
+  name: แก้มลิงอำนวยสงคราม พื้นที่เขตดุสิต
+  storage_m3: 28000
+  section: "พื้นที่รองรับและเก็บกักที่กำลังก่อสร้าง 4 แห่ง\x03"
+  page: 80
+  printed_page: ก-26
+  raw: 4 | แก้มลิงอำนวยสงคราม พื้นที่เขตดุสิต | 28,000
+  tag: VERIFIED
+- seq: 3
+  name: บึงปูนซีเมนต์ไทย
+  storage_m3: 56000
+  section: มีแผนปรับปรุงเพิ่มประสิทธิภาพแก้มลิงเดิม 4 แห่ง
+  page: 80
+  printed_page: ก-26
+  raw: 3 | บึงปูนซีเมนต์ไทย | 56,000
+  tag: VERIFIED
+- seq: 4
+  name: บึงหมู่บ้านเธียรสวน
+  storage_m3: 32000
+  section: มีแผนปรับปรุงเพิ่มประสิทธิภาพแก้มลิงเดิม 4 แห่ง
+  page: 80
+  printed_page: ก-26
+  raw: 4 | บึงหมู่บ้านเธียรสวน | 32,000
+  tag: VERIFIED
+- seq: 3
+  name: บึงข้างหมู่บ้านธนินทร
+  storage_m3: 6500
+  section: ภายในคันกั้นน้ำพระราชดำริ
+  page: 81
+  printed_page: ก-27
+  raw: 3 | บึงข้างหมู่บ้านธนินทร | 6,500
+  tag: VERIFIED
+- seq: 4
+  name: บึงลาดพร้าว
+  storage_m3: 5000
+  section: ภายในคันกั้นน้ำพระราชดำริ
+  page: 81
+  printed_page: ก-27
+  raw: 4 | บึงลาดพร้าว | 5,000
+  tag: VERIFIED
+- seq: 5
+  name: บึงโกสุม
+  storage_m3: 292000
+  section: ภายในคันกั้นน้ำพระราชดำริ
+  page: 81
+  printed_page: ก-27
+  raw: 5 | บึงโกสุม | 292,000
+  tag: VERIFIED
+- seq: 6
+  name: บึงลำผักชี
+  storage_m3: 340000
+  section: ภายในคันกั้นน้ำพระราชดำริ
+  page: 81
+  printed_page: ก-27
+  raw: 6 | บึงลำผักชี | 340,000
+  tag: VERIFIED
+- seq: 9
+  name: พื้นที่ว่างบริเวณคลองคู้บอน*
+  storage_m3: 728000
+  section: ภายในคันกั้นน้ำพระราชดำริ
+  page: 81
+  printed_page: ก-27
+  raw: 9 | พื้นที่ว่างบริเวณคลองคู้บอน* | 728,000
+  tag: VERIFIED
+- seq: 10
+  name: พื้นที่ว่างบริเวณคลองบางชัน*
+  storage_m3: 218400
+  section: ภายในคันกั้นน้ำพระราชดำริ
+  page: 81
+  printed_page: ก-27
+  raw: 10 | พื้นที่ว่างบริเวณคลองบางชัน* | 218,400
+  tag: VERIFIED
+- seq: 11
+  name: บึงสวน 60 พรรษา พื้นที่เขตลาดกระบัง
+  storage_m3: 45000
+  section: ภายในคันกั้นน้ำพระราชดำริ
+  page: 81
+  printed_page: ก-27
+  raw: 11 | บึงสวน 60 พรรษา พื้นที่เขตลาดกระบัง | 45,000
+  tag: VERIFIED
+- seq: 12
+  name: บึงเสนานิเวศน์ เขตลาดพร้าว
+  storage_m3: 19000
+  section: ภายในคันกั้นน้ำพระราชดำริ
+  page: 81
+  printed_page: ก-27
+  raw: 12 | บึงเสนานิเวศน์ เขตลาดพร้าว | 19,000
+  tag: VERIFIED
+- seq: 13
+  name: สวนเบญจสิริ เขตคลองเตย
+  storage_m3: 10000
+  section: Water Bank
+  page: 81
+  printed_page: ก-27
+  raw: 13 | สวนเบญจสิริ เขตคลองเตย | 10,000
+  tag: VERIFIED
+- seq: 14
+  name: สวนสันติภาพ เขตราชเทวี
+  storage_m3: 10000
+  section: Water Bank
+  page: 81
+  printed_page: ก-27
+  raw: 14 | สวนสันติภาพ เขตราชเทวี | 10,000
+  tag: VERIFIED
+- seq: 15
+  name: สนามกีฬาไทย-ญี่ปุ่น เขตดินแดง
+  storage_m3: 10000
+  section: Water Bank
+  page: 81
+  printed_page: ก-27
+  raw: 15 | สนามกีฬาไทย-ญี่ปุ่น เขตดินแดง | 10,000
+  tag: VERIFIED
+- seq: 16
+  name: สวนสาธารณะหมู่บ้านศิริสุข พื้นที่เขตดอนเมือง
+  storage_m3: 9000
+  section: Water Bank
+  page: 81
+  printed_page: ก-27
+  raw: 16 | สวนสาธารณะหมู่บ้านศิริสุข พื้นที่เขตดอนเมือง | 9,000
+  tag: VERIFIED
+- seq: 17
+  name: บึงฟิชชิ่งปาร์ค
+  storage_m3: 3600000
+  section: ภายนอกคันกั้นน้ำพระราชดำริ
+  page: 81
+  printed_page: ก-27
+  raw: 17 | บึงฟิชชิ่งปาร์ค | 3,600,000
+  tag: VERIFIED
+- seq: 18
+  name: บึงลำหิน
+  storage_m3: 800000
+  section: ภายนอกคันกั้นน้ำพระราชดำริ
+  page: 81
+  printed_page: ก-27
+  raw: 18 | บึงลำหิน | 800,000
+  tag: VERIFIED
+- seq: 19
+  name: บึงหนองปลาหมอ
+  storage_m3: 1200000
+  section: ภายนอกคันกั้นน้ำพระราชดำริ
+  page: 81
+  printed_page: ก-27
+  raw: 19 | บึงหนองปลาหมอ | 1,200,000
+  tag: VERIFIED
+- seq: 20
+  name: ทำนบหน่วงน้ำเพื่อการเกษตรคลองลำปลาทิว
+  storage_m3: 250000
+  section: ภายนอกคันกั้นน้ำพระราชดำริ
+  page: 81
+  printed_page: ก-27
+  raw: 20 | ทำนบหน่วงน้ำเพื่อการเกษตรคลองลำปลาทิว | 250,000
+  tag: VERIFIED
+ponds_with_coordinates_appendix_kho:
+- seq: 1
+  name: บึงมักกะสัน
+  canal: สามเสน
+  district: ราชเทวี
+  lat: 13.756529
+  lon: 100.548645
+  numbers_as_printed:
+  - '1'
+  - 650,000
+  - 270,600
+  - 162,500
+  - '101.56'
+  - '-3.00'
+  mission: ภารกิจรักษาความสะอาด บึงรับน้ำ ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 98
+  printed_page: ข-6
+  raw: 1 บึงมักกะสัน | สำมเสน | 650,000 270,600 162,500 101.56 -3.00 รำชเทวี | 13.756529 | 100.548645
+  tag: VERIFIED
+  parse_confidence: medium
+  volume_total_m3: 650000.0
+  volume_storage_m3: 270600.0
+  area_m2: 162500.0
+  area_rai: 101.56
+  dredge_level_m_msl: -3.0
+  column_order_note: table prints ปริมาตรทั้งหมด | ปริมาตรเก็บกักน้ำ | พื้นที่ ตรม. | ไร่ | ระดับขุดลอก | เขต
+- seq: 2
+  name: บึงบางซื่อ
+  canal: null
+  district: บางซื่อ
+  lat: 13.82289
+  lon: 100.542287
+  numbers_as_printed:
+  - '2'
+  - 160,000
+  - 78,000
+  - 84,600
+  - '52.87'
+  - '-4.00'
+  mission: ภารกิจรักษาความสะอาด บึงรับน้ำ ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 98
+  printed_page: ข-6
+  raw: 2 บึงบำงซื่อ | เปรมประชำกร 160,000 78,000 84,600 52.87 -4.00 จตุจักร | 13.82289 | 100.542287
+  tag: VERIFIED
+  parse_confidence: medium
+  volume_total_m3: 160000.0
+  volume_storage_m3: 78000.0
+  area_m2: 84600.0
+  area_rai: 52.87
+  dredge_level_m_msl: -4.0
+  column_order_note: table prints ปริมาตรทั้งหมด | ปริมาตรเก็บกักน้ำ | พื้นที่ ตรม. | ไร่ | ระดับขุดลอก | เขต
+- seq: 3
+  name: บึงเอกมัย
+  canal: แสนแสบ
+  district: ห้วยขวาง
+  lat: 13.742745
+  lon: 100.589901
+  numbers_as_printed:
+  - '3'
+  - 3,500
+  - 3,500
+  - 1,500
+  - '0.93'
+  - '-3.00'
+  mission: ภารกิจรักษาความสะอาด บึงรับน้ำ ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 98
+  printed_page: ข-6
+  raw: 3 บึงเอกมัย | แสนแสบ | 3,500 | 3,500 1,500 | 0.93 -3.00 ห้วยขวำง | 13.742745 | 100.589901
+  tag: VERIFIED
+  parse_confidence: medium
+  volume_total_m3: 3500.0
+  volume_storage_m3: 3500.0
+  area_m2: 1500.0
+  area_rai: 0.93
+  dredge_level_m_msl: -3.0
+  column_order_note: table prints ปริมาตรทั้งหมด | ปริมาตรเก็บกักน้ำ | พื้นที่ ตรม. | ไร่ | ระดับขุดลอก | เขต
+- seq: 4
+  name: บึงข้าง รพ.
+  canal: แสนแสบ
+  district: ราชเทวี
+  lat: 13.751185
+  lon: 100.550401
+  numbers_as_printed:
+  - '4'
+  - 64,000
+  - 12,800
+  - 32,000
+  - '20.00'
+  - '-2.00'
+  mission: ภารกิจรักษาความสะอาด บึงรับน้ำ ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 98
+  printed_page: ข-6
+  raw: 4 บึงข้ำง รพ. | แสนแสบ | 64,000 12,800 32,000 20.00 -2.00 รำชเทวี | 13.751185 | 100.550401
+  tag: VERIFIED
+  parse_confidence: medium
+  volume_total_m3: 64000.0
+  volume_storage_m3: 12800.0
+  area_m2: 32000.0
+  area_rai: 20.0
+  dredge_level_m_msl: -2.0
+  column_order_note: table prints ปริมาตรทั้งหมด | ปริมาตรเก็บกักน้ำ | พื้นที่ ตรม. | ไร่ | ระดับขุดลอก | เขต
+- seq: 5
+  name: บึงพิบูลย์วัฒนา เปรมประชากร
+  canal: null
+  district: พญาไท
+  lat: 13.783985
+  lon: 100.539658
+  numbers_as_printed:
+  - '5'
+  - 64,000
+  - 48,000
+  - 26,590
+  - '16.61'
+  - '-3.00'
+  mission: ภารกิจรักษาความสะอาด บึงรับน้ำ ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 98
+  printed_page: ข-6
+  raw: 5 บึงพิบูลย์วัฒนำ เปรมประชำกร | 64,000 48,000 26,590 16.61 -3.00 พญำไท | 13.783985 100.539658
+  tag: VERIFIED
+  parse_confidence: medium
+  volume_total_m3: 64000.0
+  volume_storage_m3: 48000.0
+  area_m2: 26590.0
+  area_rai: 16.61
+  dredge_level_m_msl: -3.0
+  column_order_note: table prints ปริมาตรทั้งหมด | ปริมาตรเก็บกักน้ำ | พื้นที่ ตรม. | ไร่ | ระดับขุดลอก | เขต
+- seq: 6
+  name: บึงเรือนจำกลาง- เปรมประชากร
+  canal: null
+  district: จตุจักร
+  lat: 13.848134
+  lon: 100.557753
+  numbers_as_printed:
+  - '6'
+  - 225,000
+  - 68,000
+  - 77,120
+  - '48.20'
+  - '-3.00'
+  mission: ภารกิจรักษาความสะอาด บึงรับน้ำ ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 98
+  printed_page: ข-6
+  raw: 6 บึงเรือนจำกลำง- เปรมประชำกร 225,000 68,000 77,120 48.20 -3.00 จตุจักร | 13.848134 100.557753
+  tag: VERIFIED
+  parse_confidence: medium
+  volume_total_m3: 225000.0
+  volume_storage_m3: 68000.0
+  area_m2: 77120.0
+  area_rai: 48.2
+  dredge_level_m_msl: -3.0
+  column_order_note: table prints ปริมาตรทั้งหมด | ปริมาตรเก็บกักน้ำ | พื้นที่ ตรม. | ไร่ | ระดับขุดลอก | เขต
+- seq: 7
+  name: บึงสวนรถไฟ
+  canal: คูระบายน้ำ
+  district: จตุจักร
+  lat: 13.814869
+  lon: 100.557898
+  numbers_as_printed:
+  - '7'
+  - 160,000
+  - 107,000
+  - 107,750
+  - '67.34'
+  - '-2.00'
+  mission: ภารกิจรักษาความสะอาด บึงรับน้ำ ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 98
+  printed_page: ข-6
+  raw: 7 บึงสวนรถไฟ | คูระบำยน้ำ | 160,000 107,000 107,750 67.34 -2.00 | จตุจักร | 13.814869 100.557898
+  tag: VERIFIED
+  parse_confidence: medium
+  volume_total_m3: 160000.0
+  volume_storage_m3: 107000.0
+  area_m2: 107750.0
+  area_rai: 67.34
+  dredge_level_m_msl: -2.0
+  column_order_note: table prints ปริมาตรทั้งหมด | ปริมาตรเก็บกักน้ำ | พื้นที่ ตรม. | ไร่ | ระดับขุดลอก | เขต
+- seq: 1
+  name: บึงประชานิเวศน์ เปรมประชากร
+  canal: null
+  district: จตุจักร
+  lat: 13.839488
+  lon: 100.541908
+  numbers_as_printed:
+  - '1'
+  - 50,400
+  - 22,400
+  - 33,600
+  - '21.00'
+  - '-2.00'
+  mission: ภารกิจรักษาความสะอาด บึงรับน้ำ ประจำปี (โดยใช้แรงงานประจำ)
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 99
+  printed_page: ข-7
+  raw: 1 | บึงประชำนิเวศน์ เปรมประชำกร | 50,400 | 22,400 33,600 21.00 | -2.00 จตุจักร | 13.839488 100.541908
+  tag: VERIFIED
+  parse_confidence: medium
+  volume_total_m3: 50400.0
+  volume_storage_m3: 22400.0
+  area_m2: 33600.0
+  area_rai: 21.0
+  dredge_level_m_msl: -2.0
+  column_order_note: table prints ปริมาตรทั้งหมด | ปริมาตรเก็บกักน้ำ | พื้นที่ ตรม. | ไร่ | ระดับขุดลอก | เขต
+- seq: 1
+  name: บึงแอนเน็กซ์ คลองสอง
+  canal: null
+  district: สายไหม
+  lat: 13.93475
+  lon: 100.638886
+  numbers_as_printed:
+  - '1'
+  - 5,040
+  - 3,360
+  - '2.50'
+  - '-1.00'
+  - 8,400
+  mission: ภารกิจรักษาความสะอาดบึงรับน้ำ
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1
+  page: 103
+  printed_page: ข-11
+  raw: 1 บึงแอนเน็กซ์ คลองสอง 5,040 | 3,360 2.50 | -1.00 สายไหม 8,400 | 13.93475 100.638886
+  tag: VERIFIED
+  parse_confidence: medium
+  volume_storage_m3: 5040.0
+  area_m2: 3360.0
+  area_rai: 2.5
+  dredge_level_m_msl: -1.0
+  volume_total_m3: 8400.0
+  column_order_note: p103 table prints ปริมาตรเก็บกักน้ำ | พื้นที่ ตรม. | ไร่ | ระดับขุดลอก | เขต | ปริมาตรทั้งหมด
+- seq: 2
+  name: บึงลำพังพวย คลอง
+  canal: null
+  district: บึงกุ่ม
+  lat: 13.77947
+  lon: 100.651648
+  numbers_as_printed:
+  - '2'
+  - 200,000
+  - 155,000
+  - '96.88'
+  - '-1.80'
+  - 403,970
+  mission: ภารกิจรักษาความสะอาดบึงรับน้ำ
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1
+  page: 103
+  printed_page: ข-11
+  raw: 2 บึงลาพังพวย คลอง | 200,000 155,000 96.88 | -1.80 | บึงกุ่ม 403,970 | 13.77947 100.651648
+  tag: VERIFIED
+  parse_confidence: medium
+  volume_storage_m3: 200000.0
+  area_m2: 155000.0
+  area_rai: 96.88
+  dredge_level_m_msl: -1.8
+  volume_total_m3: 403970.0
+  column_order_note: p103 table prints ปริมาตรเก็บกักน้ำ | พื้นที่ ตรม. | ไร่ | ระดับขุดลอก | เขต | ปริมาตรทั้งหมด
+- seq: 3
+  name: บึงกุ่ม
+  canal: null
+  district: บึงกุ่ม
+  lat: 13.78112
+  lon: 100.657866
+  numbers_as_printed:
+  - '3'
+  - 148,000
+  - 90,000
+  - '56.25'
+  - '-1.70'
+  - 581,530
+  mission: ภารกิจรักษาความสะอาดบึงรับน้ำ
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1
+  page: 103
+  printed_page: ข-11
+  raw: 3 บึงกุ่ม | บางเตย 148,000 90,000 56.25 | -1.70 | บึงกุ่ม | 581,530 | 13.78112 100.657866
+  tag: VERIFIED
+  parse_confidence: medium
+  volume_storage_m3: 148000.0
+  area_m2: 90000.0
+  area_rai: 56.25
+  dredge_level_m_msl: -1.7
+  volume_total_m3: 581530.0
+  column_order_note: p103 table prints ปริมาตรเก็บกักน้ำ | พื้นที่ ตรม. | ไร่ | ระดับขุดลอก | เขต | ปริมาตรทั้งหมด
+- seq: 1
+  name: บึงมะขามเทศ พระรามดำริ 2
+  canal: null
+  district: คลองสามวา
+  lat: 13.85274
+  lon: 100.76774
+  numbers_as_printed:
+  - '1'
+  - '2'
+  - 250,700
+  - 87,450
+  - 87,936
+  - '54.96'
+  - '-3.30'
+  mission: ภารกิจรักษาความสะอาดบึงรับน้ำ ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 107
+  printed_page: null
+  raw: 1 | บึงมะขามเทศ พระรามดาริ 2 | 250,700 | 87,450 | 87,936 54.96 -3.30 คลองสามวา 13.852740 100.767740
+  tag: VERIFIED
+  parse_confidence: medium
+  volume_total_m3: 250700.0
+  volume_storage_m3: 87450.0
+  area_m2: 87936.0
+  area_rai: 54.96
+  dredge_level_m_msl: -3.3
+  column_order_note: table prints ปริมาตรทั้งหมด | ปริมาตรเก็บกักน้ำ | พื้นที่ ตรม. | ไร่ | ระดับขุดลอก | เขต
+- seq: 2
+  name: บึงกระเทียม
+  canal: คลองบางชัน
+  district: มีนบุรี
+  lat: 13.80673
+  lon: 100.70667
+  numbers_as_printed:
+  - '2'
+  - 233,400
+  - 81,000
+  - 77,800
+  - '48.62'
+  - '-4.00'
+  mission: ภารกิจรักษาความสะอาดบึงรับน้ำ ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 107
+  printed_page: null
+  raw: 2 | บึงกระเทียม | คลองบางชัน | 233,400 | 81,000 | 77,800 48.62 -4.00 | มีนบุรี 13.806730 100.706670
+  tag: VERIFIED
+  parse_confidence: medium
+  volume_total_m3: 233400.0
+  volume_storage_m3: 81000.0
+  area_m2: 77800.0
+  area_rai: 48.62
+  dredge_level_m_msl: -4.0
+  column_order_note: table prints ปริมาตรทั้งหมด | ปริมาตรเก็บกักน้ำ | พื้นที่ ตรม. | ไร่ | ระดับขุดลอก | เขต
+- seq: 3
+  name: บึงตาเกตุ
+  canal: คลองบางชัน
+  district: มีนบุรี
+  lat: 13.80652
+  lon: 100.70212
+  numbers_as_printed:
+  - '3'
+  - 19,600
+  - 5,500
+  - 11,000
+  - '6.87'
+  - '-2.00'
+  mission: ภารกิจรักษาความสะอาดบึงรับน้ำ ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 107
+  printed_page: null
+  raw: 3 | บึงตาเกตุ | คลองบางชัน | 19,600 | 5,500 | 11,000 | 6.87 | -2.00 | มีนบุรี | 13.80652000 100.702120
+  tag: VERIFIED
+  parse_confidence: medium
+  volume_total_m3: 19600.0
+  volume_storage_m3: 5500.0
+  area_m2: 11000.0
+  area_rai: 6.87
+  dredge_level_m_msl: -2.0
+  column_order_note: table prints ปริมาตรทั้งหมด | ปริมาตรเก็บกักน้ำ | พื้นที่ ตรม. | ไร่ | ระดับขุดลอก | เขต
+- seq: 1
+  name: บึงสะแกงาม
+  canal: พระรามดำริ 2
+  district: คลองสามวา
+  lat: 13.84967
+  lon: 100.77506
+  numbers_as_printed:
+  - '1'
+  - '2'
+  - 266,400
+  - 92,940
+  - 106,484
+  - '-4.00'
+  mission: ภารกิจรักษาความสะอาดบึงรับน้ำ ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 107
+  printed_page: null
+  raw: 1 | บึงสะแกงาม | พระรามดาริ 2 | 266,400 | 92,940 | 106,484 | -4.00 คลองสามวา 13.849670 100.775060
+  tag: VERIFIED
+  parse_confidence: low
+  volume_total_m3: null
+  volume_storage_m3: null
+  area_m2: null
+  area_rai: null
+  dredge_level_m_msl: null
+  parse_note: column values wrapped onto adjacent lines in the text layer -- read numbers_as_printed/raw against the page image
+  column_order_note: table prints ปริมาตรทั้งหมด | ปริมาตรเก็บกักน้ำ | พื้นที่ ตรม. | ไร่ | ระดับขุดลอก | เขต
+- seq: 2
+  name: บึงหนองบอน
+  canal: null
+  district: ประเวศ
+  lat: 13.69544
+  lon: 100.66001
+  numbers_as_printed:
+  - '2'
+  - 5,000,000
+  - 5,000,000
+  - 1,030,950
+  - '644.34'
+  - '-5.00'
+  mission: ภารกิจรักษาความสะอาดบึงรับน้ำ ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 107
+  printed_page: null
+  raw: 2 | บึงหนองบอน | คลองหนองบอน 5,000,000 5,000,000 1,030,950 644.34 -5.00 | ประเวศ 13.695440 100.660010
+  tag: VERIFIED
+  parse_confidence: medium
+  volume_total_m3: 5000000.0
+  volume_storage_m3: 5000000.0
+  area_m2: 1030950.0
+  area_rai: 644.34
+  dredge_level_m_msl: -5.0
+  column_order_note: table prints ปริมาตรทั้งหมด | ปริมาตรเก็บกักน้ำ | พื้นที่ ตรม. | ไร่ | ระดับขุดลอก | เขต
+- seq: 3
+  name: บึงหลัง
+  canal: อาจารย์พร
+  district: ประเวศ
+  lat: 13.66739
+  lon: 100.68624
+  numbers_as_printed:
+  - '3'
+  - 432,000
+  - 432,000
+  - 108,000
+  - '67.50'
+  mission: ภารกิจรักษาความสะอาดบึงรับน้ำ ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 107
+  printed_page: null
+  raw: 3 | บึงหลัง | อาจารย์พร | 432,000 | 432,000 | 108,000 | 67.50 | ประเวศ 13.667390 100.686240
+  tag: VERIFIED
+  parse_confidence: low
+  volume_total_m3: null
+  volume_storage_m3: null
+  area_m2: null
+  area_rai: null
+  dredge_level_m_msl: null
+  parse_note: column values wrapped onto adjacent lines in the text layer -- read numbers_as_printed/raw against the page image
+  column_order_note: table prints ปริมาตรทั้งหมด | ปริมาตรเก็บกักน้ำ | พื้นที่ ตรม. | ไร่ | ระดับขุดลอก | เขต

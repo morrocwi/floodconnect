@@ -1,0 +1,426 @@
+# docs/knowledge/api_census_additions_missing_inputs_2026-09-27.yaml
+#
+# Purpose: additions to sources/api_census.yaml's schema (NOT an edit of that file -- write-scope
+# for this check is NEW files only). Founder question: "เราต้องการหาสิ่งที่ขาดจาก API ภายนอกที่หาง่าย
+# ที่สุด" -- one row per external source probed this check while looking for the missing inputs to
+# PROP-FLOOD-03's per-sub-polder 72h water-balance run: Q_up (upstream inflow), tide/boundary,
+# antecedent wetness S_0, ground elevation z, runoff coefficient c, historical flood events for
+# D_critical calibration, BMA drain flow, TMD 7-day forecast.
+#
+# Same tag vocabulary as sources/api_census.yaml:
+#   VERIFIED -- this check fetched the URL and saw the payload.
+#   RELAYED  -- seen on a portal/menu/prior census entry, not fetched by this check.
+#   OPEN     -- existence/shape unknown or unresolved after the probe attempted.
+# status vocabulary: connected (already in registry.yaml) | reachable (2xx/plausible) |
+#   unreachable (non-2xx/timeout) | needs_key | needs_signup | unknown (not probed).
+#
+# See docs/knowledge/EASIEST_EXTERNAL_APIS_FOR_MISSING_INPUTS_2026-09-27.md for the full readout,
+# ranking, and the scope-escalation note (this check did NOT wire anything into collect.py/
+# sources/registry.yaml/data/observations.sqlite -- proposal only, per its own write-scope).
+
+census_date: "2026-09-27"
+probe_budget_used: 20
+probe_budget_ceiling: "25 base + 5 raised for data.hii.or.th + 10 raised for arcgis-family hosts (used 5/10)"
+
+sources:
+
+  - id: hii_waterlevel_load_discharge
+    agency: HII (สสน.) และหน่วยงานเจ้าของสถานี -- ผ่าน thaiwater.net
+    name_th: ระดับน้ำ+ปริมาณน้ำ (discharge) รายสถานี พร้อม cross-section
+    name_en: HII public/waterlevel_load -- richer per-station shape incl. discharge (cms)
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_load?basin_id=6,7,8,9,10,11,12,13,14,15,26&&start_date=YYYY-MM-DD%2000:00&&end_date=YYYY-MM-DD%2023:59"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: near-real-time
+    has_coords: true
+    coverage: "basin:chao_phraya + tributaries (11/25 basin_code observed -- NOT confirmed nationwide)"
+    asset_classes: [gauge, river]
+    status: reachable
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      MEASURED this check -- 380 rows, sample: C.35 discharge=1257.00 cms, C.36=691.00 cms,
+      C.37=87.00 cms, C.13=1950.00 cms, C.2=1875.00 cms (all 2026-09-27 22:00). NO C.29/C.29A
+      found in this basin_id set -- OPEN which basin those stations belong to. Same host/endpoint
+      already scoped in tools/harvest/hii_waterchart_draft.py (draft, not wired) -- this entry adds
+      the "which basin covers Bangkok's actual upstream entry gauge" gap, not a new endpoint.
+      Answers gap #1 (Q_up) for PROP-FLOOD-03's Q_in(k) term.
+    tag: VERIFIED
+    thailand_q: "b) พยากรณ์ฝน/น้ำ 1-5 วันข้างหน้าเหนือ กทม."
+    effort: S
+    unlocks: "PROP-FLOOD-03 Q_in(k) (upstream inflow into Bangkok sub-polders on the eastern/RID chain)"
+
+  - id: openmeteo_flood_bangsai
+    agency: "Open-Meteo (open GloFAS global flood model) -- NOT a Thai government agency"
+    name_th: GloFAS ผ่าน Open-Meteo ที่จุดต้นน้ำ (บางไทร/ปทุมธานี)
+    name_en: Open-Meteo Flood API at an upstream point (Bang Sai / Pathum Thani)
+    url: "https://flood-api.open-meteo.com/v1/flood?latitude=14.35&longitude=100.55&daily=river_discharge&timezone=Asia%2FBangkok&forecast_days=3"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: daily model output
+    has_coords: true
+    coverage: "global 5km grid; already-connected id openmeteo_flood uses different points (C.2/เขื่อนเจ้าพระยา/สัมมากร) -- this is a NEW point, not a new source"
+    asset_classes: [river]
+    status: reachable
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      MEASURED this check -- resolved grid point (14.325,100.575): 2026-09-27=8.64 m3/s,
+      2026-09-28=9.4 m3/s, 2026-09-29=5.93 m3/s. Model estimate, not a gauge (per
+      units_datum_crosswalk.yaml's grid_cell_vs_gauge_not_equal rule) -- cross-check only, never
+      substitute for hii_waterlevel_load_discharge above.
+    tag: VERIFIED
+    thailand_q: "b) พยากรณ์ฝน/น้ำ 1-5 วันข้างหน้าเหนือ กทม."
+    effort: S
+    unlocks: "PROP-FLOOD-03 Q_in(k), secondary/cross-check source"
+
+  - id: openmeteo_soil_moisture
+    agency: "Open-Meteo (open ECMWF/GFS land-surface model) -- NOT a Thai government agency"
+    name_th: ความชื้นในดิน 3 ชั้นความลึก (0-1cm, 1-3cm, 3-9cm)
+    name_en: Open-Meteo hourly soil_moisture_0_to_1cm / 1_to_3cm / 3_to_9cm
+    url: "https://api.open-meteo.com/v1/forecast?latitude=13.758&longitude=100.676&hourly=soil_moisture_0_to_1cm,soil_moisture_1_to_3cm,soil_moisture_3_to_9cm&timezone=Asia%2FBangkok&forecast_days=3"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: hourly (forecast + past_days available)
+    has_coords: true
+    coverage: nationwide (global grid, any point)
+    asset_classes: [rain]
+    status: reachable
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      MEASURED this check -- Sammakorn point, 2026-09-27T00:00=0.495, T01:00=0.496, T02:00=0.487
+      m3/m3 (volumetric soil water content). NOT yet in units_datum_crosswalk.yaml's
+      canonical_units -- a new category (soil_moisture, m3/m3) would need to be added before this
+      is wired. Directly answers the founder's "antecedent wetness / initial storage proxy S_0"
+      gap -- the single easiest new field found this check.
+    tag: VERIFIED
+    thailand_q: "antecedent wetness (PROP-FLOOD-03 S_0 proxy) -- founder ask, not in the original 8-question table"
+    effort: S
+    unlocks: "PROP-FLOOD-03 S_b(0) / c_b antecedent-condition proxy"
+
+  - id: openmeteo_archive_precip_30d
+    agency: "Open-Meteo Historical Weather API (ERA5-derived reanalysis) -- NOT a Thai government agency"
+    name_th: ฝนสะสมย้อนหลัง 30 วัน (ERA5)
+    name_en: Open-Meteo Archive API daily precipitation_sum, 30-day trailing window
+    url: "https://archive-api.open-meteo.com/v1/archive?latitude=13.758&longitude=100.676&start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&daily=precipitation_sum&timezone=Asia%2FBangkok"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: "daily, historical (not real-time)"
+    has_coords: true
+    coverage: nationwide (global grid)
+    asset_classes: [rain]
+    status: reachable
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      MEASURED this check -- Sammakorn point, 2026-08-28..2026-09-26 (30 days), sum=493.5mm,
+      single-day 2026-09-25=118.3mm, 2026-09-26=44.7mm. UTC-day-vs-local-midnight boundary
+      caveat applies same as openmeteo_forecast family (see units_datum_crosswalk.yaml
+      day_boundary_mismatch). Secondary antecedent-wetness proxy alongside soil_moisture.
+    tag: VERIFIED
+    thailand_q: "antecedent precipitation (PROP-FLOOD-03 S_0 proxy, secondary to soil_moisture)"
+    effort: S
+    unlocks: "PROP-FLOOD-03 S_b(0) proxy, secondary"
+
+  - id: openmeteo_elevation_points
+    agency: "Open-Meteo Elevation API (Copernicus GLO-90 DEM re-serve) -- NOT a Thai government agency"
+    name_th: ระดับความสูงพื้นดิน (DEM 90m) หลายจุดในคำขอเดียว
+    name_en: Open-Meteo Elevation API, comma-separated multi-point
+    url: "https://api.open-meteo.com/v1/elevation?latitude=13.758,13.758,...&longitude=100.676,100.676,..."
+    kind: json_api
+    auth: none
+    format: json
+    cadence: static (DEM, not time-varying)
+    has_coords: true
+    coverage: "global 90m grid"
+    asset_classes: []
+    status: reachable
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      MEASURED this check -- 7 points near Sammakorn returned [4.0, 4.0, 1.0, 2.0, 3.0, 6.0, 4.0] m.
+      CAVEAT (stated per founder's own instruction): this is DEM SURFACE elevation, NOT a
+      ม.รทก. survey benchmark -- differs in kind from sources/bkk_district_elevation.yaml's
+      RTSD-2010-survey-derived values (which have their own land-subsidence caveat, method
+      documented in that file's own header). Keep both as separate rows, never merge silently.
+    tag: VERIFIED
+    thailand_q: "ground elevation z for datum/point-depth (founder ask)"
+    effort: S
+    unlocks: "PROP-FLOOD-03/09 ground_level proxy where HII/BMA station cross-section fields are absent"
+
+  - id: esa_worldcover_wms_terrascope
+    agency: "ESA WorldCover (via VITO Terrascope) -- global land-cover"
+    name_th: สิ่งปกคลุมผิวดิน 10m (ทดสอบ WMS)
+    name_en: ESA WorldCover WMS GetCapabilities probe
+    url: "https://services.terrascope.be/wms/v2?service=WMS&request=GetCapabilities"
+    kind: page
+    auth: none
+    format: xml
+    cadence: static
+    has_coords: false
+    coverage: "global 10m (if reachable)"
+    asset_classes: []
+    status: unreachable
+    http_status: 0
+    probed_at: "2026-09-27"
+    notes: "Connection timeout, no retry per one-attempt rule. Not usable within this check's budget."
+    tag: OPEN
+    thailand_q: "runoff coefficient c / imperviousness (founder ask)"
+    effort: L
+    unlocks: "NONE this check -- c stays declared [0.5, 1] bound pair per PROP-FLOOD-06"
+
+  - id: ghsl_built_wms_jrc
+    agency: "JRC GHSL (Global Human Settlement Layer) -- EU Joint Research Centre"
+    name_th: พื้นที่สิ่งปลูกสร้าง/ความหนาแน่นเมือง (ทดสอบ WMS)
+    name_en: GHSL Built-up WMS GetCapabilities probe
+    url: "https://ghslsys.jrc.ec.europa.eu/arcgis/services/GHS_composites/GHS_BUILT_S_R2023A/MapServer/WMSServer?service=WMS&request=GetCapabilities"
+    kind: page
+    auth: none
+    format: xml
+    cadence: static
+    has_coords: false
+    coverage: "global (if reachable)"
+    asset_classes: []
+    status: reachable
+    http_status: 302
+    probed_at: "2026-09-27"
+    notes: "HTTP 302 redirect, not followed (one-attempt-per-URL rule -- following would be a second request to a new URL). Real endpoint/shape unresolved."
+    tag: OPEN
+    thailand_q: "runoff coefficient c / imperviousness (founder ask), alternative to ESA WorldCover"
+    effort: L
+    unlocks: "NONE this check -- c stays declared [0.5, 1] bound pair per PROP-FLOOD-06"
+
+  - id: reliefweb_api_v2
+    agency: "ReliefWeb (OCHA)"
+    name_th: รายงานภัยพิบัติ/มนุษยธรรม (ต้องขอ appname)
+    name_en: ReliefWeb API v2 disasters endpoint
+    url: "https://api.reliefweb.int/v2/disasters?appname=<registered-appname>&filter[field]=country&filter[value]=Thailand&query[value]=flood"
+    kind: json_api
+    auth: needs_signup
+    format: json
+    cadence: unknown
+    has_coords: false
+    coverage: nationwide
+    asset_classes: [flood_report]
+    status: needs_key
+    http_status: 403
+    probed_at: "2026-09-27"
+    notes: >
+      MEASURED this check -- HTTP 403 {"type":"AccessDeniedHttpException","message":"You are not
+      using an approved appname. Kindly request an appname from ReliefWeb here:
+      https://apidoc.reliefweb.int/parameters#appname"}. Free but not instant-key -- a real
+      sign-up/approval step is required, confirming GLOBAL_FREE_HAZARD_APIS.md's existing note
+      that v1 was already found retired.
+    tag: MEASURED
+    thailand_q: "e) เหตุการณ์ย้อนหลังเพื่อยืนยัน (D_critical calibration)"
+    effort: M
+    unlocks: "NONE until appname approved -- proposed only"
+
+  - id: gdacs_event_list_thailand
+    agency: "GDACS (Global Disaster Alert and Coordination System, EU JRC + UN OCHA)"
+    name_th: รายการเหตุการณ์ภัยพิบัติ (กรองไทยฝั่ง client)
+    name_en: GDACS geteventlist EVENTS4APP endpoint
+    url: "https://www.gdacs.org/gdacsapi/api/events/geteventlist/EVENTS4APP?country=Thailand&fromdate=2020-01-01&todate=2026-09-27"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: "polled, ~100 most-recent global events per request (no working country filter observed)"
+    has_coords: true
+    coverage: "global; Thailand when an event meets GDACS's own severity threshold"
+    asset_classes: [flood_report]
+    status: reachable
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      VERIFIED this check -- HTTP 200, 100 features returned (the `country=` query param did NOT
+      filter server-side; client-side filter on `iso3`/`country` found exactly 1 Thailand flood
+      event: "FL Flood in Thailand", fromdate 2026-08-18T01:00:00). Country-level granularity
+      only, no province/tambon detail -- a trip-wire signal, not a calibration-grade dataset by
+      itself.
+    tag: VERIFIED
+    thailand_q: "e) เหตุการณ์ย้อนหลังเพื่อยืนยัน (D_critical calibration), b) trip-wire"
+    effort: S
+    unlocks: "PROP-FLOOD-08 D_critical: country-level trip-wire only"
+
+  - id: hii_flood_road_past_date_param
+    agency: "HII (สสน.) / thaiwater.net"
+    name_th: ถนนน้ำท่วม พร้อม query date (ทดสอบว่า filter ตามวันจริงหรือไม่)
+    name_en: HII public/flood_road with a ?date= query param (past-date backfill test)
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/flood_road?date=2025-10-15"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: n/a
+    has_coords: true
+    coverage: "nationwide (262 stations, same as connected thaiwater_flood_road)"
+    asset_classes: [flood_extent]
+    status: reachable
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      MEASURED this check -- HTTP 200, BUT the `date=2025-10-15` parameter is IGNORED: the payload
+      returned floodroad_datetime values spanning 2019-01-30 through 2026-09-27 in ONE response
+      (each station's own last-known reading, not a snapshot of the requested date). This endpoint
+      does NOT provide date-scoped historical backfill -- confirmed by direct observation, not by
+      documentation. A real gap: no back-fill mechanism found via this endpoint.
+    tag: FAILED
+    thailand_q: "e) เหตุการณ์ย้อนหลังเพื่อยืนยัน -- back-fill flood_road history before 2026"
+    effort: n/a
+    unlocks: "NONE -- endpoint does not do what was hoped"
+
+  - id: hii_flood_area_monthly_risk_ckan
+    agency: "HII (สสน.) -- data.hii.or.th CKAN portal"
+    name_th: พื้นที่เสี่ยงน้ำท่วมรายเดือน/ตำบล (17 ปี, 2548-2564)
+    name_en: HII CKAN 'flood-area' dataset -- monthly flood-risk frequency per tambon, 17-year aggregate
+    url: "https://data.hii.or.th/api/3/action/package_show?id=flood-area"
+    kind: json_api + csv
+    auth: none
+    format: json (metadata) / csv (resource)
+    cadence: static (17-year aggregate, GISTDA satellite imagery 2005-2021 source)
+    has_coords: false
+    coverage: "nationwide, by tambon -- confirmed covers Bang Kapi / Saphan Sung districts (Sammakorn's own)"
+    asset_classes: [flood_report]
+    status: reachable
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      VERIFIED this check -- package_show 200 (title "พื้นที่เสี่ยงน้ำท่วม", licence Creative Commons
+      Attribution Non-Commercial, org สถาบันสารสนเทศทรัพยากรน้ำ). Downloaded the full CSV resource
+      (monthly-flood-risk-area.csv, 27,024 rows): columns Month(1-12), GEOCODE, TAMBON/AMPHOE/PROV
+      (TH+EN), COUNT 17 YEAR, CRITERIA, RISK (เสี่ยงต่ำ/ปานกลาง/สูง). Confirmed rows for Bang Kapi
+      (แขวงคลองจั่น/หัวหมาก, month 9, COUNT=1, RISK=เสี่ยงต่ำ) and Saphan Sung (แขวงสะพานสูง, month 9,
+      COUNT=2, RISK=เสี่ยงต่ำ). This is a FREQUENCY baseline (times flooded per month across 17
+      years), NOT a per-date event record -- does not directly backfill flood_road's daily history,
+      but is the easiest real historical-risk baseline found this check. LICENCE CAVEAT: CC BY-NC --
+      internal/non-commercial use only; check before showing these numbers verbatim on the public
+      page.
+    tag: VERIFIED
+    thailand_q: "e) เหตุการณ์ย้อนหลังเพื่อยืนยัน (D_critical calibration baseline)"
+    effort: S
+    unlocks: "PROP-FLOOD-08 D_critical: 17-year monthly flood-frequency prior per tambon, first of its kind in this repo"
+
+  - id: hii_flood_risk_area_6month_forecast_ckan
+    agency: "HII (สสน.) + TMD -- data.hii.or.th CKAN portal (ONE MAP collaboration)"
+    name_th: รายงานคาดการณ์พื้นที่เสี่ยงน้ำท่วม 6 เดือนล่วงหน้า
+    name_en: HII CKAN 'flood-risk-area' dataset -- 6-month-ahead tambon flood-risk forecast (HII+TMD ONE MAP)
+    url: "https://data.hii.or.th/api/3/action/package_show?id=flood-risk-area"
+    kind: json_api (metadata only; resource on a separate owncloud host)
+    auth: none
+    format: "json (metadata) / html+xlsx (resource, hosted on hdrive.hii.or.th/owncloud, a DIFFERENT host)"
+    cadence: "monthly (most recent resource dated 2026-05-06 per this probe)"
+    has_coords: false
+    coverage: nationwide, by tambon
+    asset_classes: [flood_report]
+    status: reachable
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      VERIFIED (metadata only) this check -- package_show 200, licence CC BY-NC, notes describe a
+      6-month-ahead per-tambon flood-risk forecast built from baseline risk maps + TMD monthly
+      rainfall forecast (ONE MAP). The actual resource files (HTML report, XLSX) live on
+      hdrive.hii.or.th/owncloud/... -- a SEPARATE host, not a REST API, not fetched this check
+      (out of the CKAN-probe budget). Content of the resource itself is OPEN.
+    tag: RELAYED
+    thailand_q: "f) โมเดลพยากรณ์ระดับตำบล 6 เดือน (ภาครัฐเอง, ต่างจาก NWP 7-16 วัน)"
+    effort: M
+    unlocks: "PROP-FLOOD-06 multi_model_scenarios: a genuinely different-mechanism 6-month signal, if resource is fetched and licence allows"
+
+  - id: bma_flow_field_code_check
+    agency: "BMA สำนักการระบายน้ำ (code-review only, no new network request)"
+    name_th: ตรวจโค้ดที่มีอยู่ว่ามี field อัตราการไหล (flow, cms) หรือไม่
+    name_en: Code-level check of collect.py/parsers.py for a flow_cms field on bma_watermap/bma_station_detail
+    url: "n/a -- no new HTTP request; existing weather.bangkok.go.th sources already in sources/registry.yaml"
+    kind: n/a
+    auth: n/a
+    format: n/a
+    cadence: n/a
+    has_coords: false
+    coverage: bangkok
+    asset_classes: []
+    status: unknown
+    http_status: null
+    probed_at: "2026-09-27"
+    notes: >
+      Grepped collect.py/parsers.py/live_water_level.py for a flow field on the BMA sources this
+      repo already connects (bma_watermap, bma_station_detail) -- found only water_level_m,
+      gate_opening_m, water_control_m; no discharge/flow_cms field anywhere. Confirms
+      GLOBAL_FREE_HAZARD_APIS.md's existing conclusion ("ระดับ/สถานะประตูระบายน้ำ กทม. แบบเรียลไทม์
+      ยังเป็น OPEN") -- the 30 SCADA flow stations named in the DDS plan are not exposed via any
+      endpoint this repo has found, and no international API can substitute (internal-only BMA
+      infrastructure).
+    tag: FAILED
+    thailand_q: "BMA drain flow (30 SCADA stations per DDS plan)"
+    effort: n/a
+    unlocks: "NONE -- confirmed real gap, not a probe failure"
+
+  - id: tmd_opendata_api_root
+    agency: "TMD (กรมอุตุนิยมวิทยา)"
+    name_th: ทดสอบ data.tmd.go.th/api/ ว่ามี JSON API หรือไม่
+    name_en: TMD open-data portal API root probe
+    url: "https://data.tmd.go.th/api/"
+    kind: page
+    auth: unknown
+    format: unknown
+    cadence: unknown
+    has_coords: false
+    coverage: nationwide
+    asset_classes: []
+    status: reachable
+    http_status: 302
+    probed_at: "2026-09-27"
+    notes: >
+      HTTP 302 redirect to index1.php?aspxerrorpath=/api/ -- not followed (one-attempt rule).
+      Whether this resolves to a real JSON API form or a plain landing page is unresolved. TMD's
+      own 7-day text forecast (tmd_7day_text_forecast, sources/api_census_forecast7d.yaml) remains
+      the only confirmed TMD source -- text, not numeric.
+    tag: OPEN
+    thailand_q: "h) TMD 7-day text forecast archive / any TMD numeric API"
+    effort: L
+    unlocks: "NONE this check"
+
+  - id: esri_thailand_flood_data_hub_app
+    agency: "Esri Thailand (ArcGIS Online, account 'admin.demo')"
+    name_th: "Flood Data Hub by Esri Thailand -- ArcGIS Experience Builder app (resolved via REST, not scraped)"
+    name_en: "ArcGIS Experience Builder app item -- resolved to its underlying web map + feature/image services"
+    url: "https://www.arcgis.com/sharing/rest/content/items/84c8194746d247fe981141596b0e8232?f=json"
+    kind: json_api (ArcGIS REST, item + webmap + service metadata)
+    auth: none
+    format: json
+    cadence: "mixed per underlying layer (see notes)"
+    has_coords: true
+    coverage: "nationwide (web map), plus one Bangkok-relevant DRR layer that is NOT flood-related"
+    asset_classes: [flood_extent, gauge]
+    status: reachable
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      VERIFIED this check (5 requests: item info, app data, web map data, DRR_Feature MapServer
+      root, Sentinel1RTC ImageServer metadata). item access=public, licenseInfo=null (no explicit
+      licence statement). Resolved operational layers: (1) "ระดับน้ำที่สถานีวัด (Thaiwater)" ->
+      utility.arcgis.com/.../Hosted/thaiwater_waterlevel/FeatureServer/0 -- a RE-HOST of the
+      thaiwater_waterlevel data this repo already connects, NOT new; (2) "ข้อมูลทางหลวงชนบท (DRR)"
+      -> gis.drr.go.th/arcgis/rest/services/DRR_Feature/MapServer -- VERIFIED layers are bridges
+      (สะพาน) and rural highways (ทางหลวงชนบท); DRR = กรมทางหลวงชนบท (Department of Rural Roads),
+      NOT flood/disaster data -- irrelevant to this check's gaps; (3) "พื้นที่น้ำท่วม" GISTDA
+      WebTiledLayer (3/7/30-day + 10-year recurrence tiles) -- templateUrl embeds a live GISTDA
+      api_key; this is the SAME product family as the already-known gistda_flood_extent_api
+      (Referer-locked, 403 without a valid Referer per sources/api_census.yaml) -- NOT new, and
+      this check did NOT fire that embedded key (same caution this repo already applies to the MWA
+      bearer-token-in-CKAN case: a key found embedded in someone else's public app config is not
+      confirmed to be a public key, do not reuse); (4) "พื้นที่น้ำท่วม" Sentinel-1 SAR (RTC) ->
+      utility.arcgis.com/.../Sentinel1RTC/ImageServer -- CONFIRMED public Esri Living Atlas layer
+      (copyright "Esri, European Commission, European Space Agency, Microsoft"), 10m SAR, global,
+      2 bands, no key needed -- but the "water" classification seen in the app is a CLIENT-SIDE
+      renderer (classBreaks on raw band value <=75 / >255), not an official flood-classification
+      product; using it for real flood extent needs a genuine SAR water-index analysis pipeline
+      (raster processing), a materially higher-effort task than any point/bbox JSON source in this
+      census.
+    tag: VERIFIED
+    thailand_q: "founder-supplied second source, resolve-not-scrape instruction"
+    effort: "S (metadata) / L (Sentinel-1 SAR actual use)"
+    unlocks: "NONE new and easy -- confirms existing sources, surfaces one high-effort raster option (Sentinel-1 SAR) and one irrelevant layer (DRR bridges)"

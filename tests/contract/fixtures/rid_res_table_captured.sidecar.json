@@ -1,0 +1,15 @@
+{
+ "source_id": "rid_res_table",
+ "url": "http://water.rid.go.th/flood/flood/res_table.htm",
+ "captured_at": "2026-10-02T11:32:24Z",
+ "sha256": "c0d7f8dcf19deb800d691de5fa6f75270a68dada9eb17092b0736b9f4e71d04d",
+ "http_status": 200,
+ "content_type": "text/html",
+ "fixture_ext": "html",
+ "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "73ea6a00434cea211f0a3bcff8993aa67e361a28057deceab682fe435ae614f9",
+ "trimmed_note": "Further trimmed 2026-10-03 (release pass, publish-safety finding: 300KB total budget for tests/contract/fixtures/ in the public tree) to a minimal real excerpt (header + few real rows, or a real byte-prefix for HTML) -- see the corresponding contract test's own comment for the exact row-count change.",
+ "trimmed_at": "2026-10-03T18:10:36Z"
+}

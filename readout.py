@@ -4,7 +4,7 @@ Sammakorn live flood-context readout -- reads `data/observations.sqlite` (popula
 `collect.py`) and writes a plain-Markdown + JSON snapshot centred on one point.
 
 NO flood-risk score or formula is computed anywhere in this file (this workspace's
-equation discipline / the project's own instruction for this task) -- every row is either
+equation discipline / the project's own instruction for this check) -- every row is either
 a MEASURED reading, a RELAYED official forecast/report figure, or explicitly marked OPEN
 (missing). Contradictions between sources are listed side by side and never resolved to
 a single "true" value (per the maintainers' own framing: Thai agencies compete and disagree,
@@ -35,6 +35,104 @@ SAMMAKORN_NODES = {
 }
 SAMMAKORN_PUMPS = ["ST.SPS.01", "ST.SPS.02", "ST.SPS.03", "ST.SPS.04"]
 
+# fix (2026-10-04, re-fix after the first attempt was found to still be insufficient
+# -- 40km-of-central-Bangkok + canal-name substring match -- still let a FAR gate
+# decide any Bangkok-area point, e.g. Thonburi/Don Mueang/a point near Lat Krabang all
+# got RED from ปตร.คลองประเวศฯ-ลาดกระบัง or ปตร.คลองแสนแสบ-มีนบุรี, both `canal_outer`
+# ("ระดับน้ำพื้นที่ กทม. ภายนอกคันปองกันน้ำทวม" -- OUTSIDE the flood-protection dike)
+# rows that measure a different hydraulic regime than what a resident inside the dike
+# experiences): the bulletin's own canal rows carry no lat/lon (collect_dds_daily_pdf's
+# documented limitation, see its own docstring), so this file now keeps an EXPLICIT
+# gate-name -> (lat, lon) table below, sourced from this repo's own
+# `sources/canal_normal_levels.yaml` (a per-canal dry-season-median project, itself
+# MEASURED-history from a real api-v3.thaiwater.net station fetch -- see that file's own
+# header for the archived raw payload each row cites). A bulletin row now decides
+# `current_local_state` only if BOTH hold:
+#   1. it is a `canal_inner` ("ภายในคันปองกันน้ำทวม") row -- every `canal_outer` row is
+#      excluded from the decision unconditionally, regardless of distance, because it is
+#      a different hydraulic zone, not merely a distant one (see `_DDS_CANAL_OUTER_SECTION`
+#      below).
+#   2. its OWN gate has a sourced coordinate in `_DDS_GATE_COORDS` (keyed by
+#      `_normalize_name` of the bulletin's own station name) AND that coordinate lies
+#      within `radius_km` of the query centre -- the same radius the caller already
+#      asked for, not a separate hardcoded one.
+# A gate this repo has no sourced coordinate for (most of them -- BMA has never
+# published a canal-gate lat/lon crosswalk; this table is NOT a geocoding guess, only
+# real matches to a row already in `sources/canal_normal_levels.yaml`) stays OPEN --
+# visible, never silently dropped (per `feedback-floodconnect-conflicting-data-rule.md`),
+# but never used to decide anything.
+_DDS_CANAL_OUTER_SECTION = "canal_outer"
+
+
+def _normalize_name(s: str) -> str:
+    """Strips the usual prefix junk, PLUS (fix, 2026-10-04) any Private-Use-Area
+    codepoint (U+F700-U+F8FF) -- MEASURED on this repo's own real dds_daily_pdf captures:
+    the bulletin PDF's font maps several Thai vowel/tone marks (sara i, sara aa, mai tho,
+    ...) to PUA codepoints that pdftotext/pypdf cannot resolve to the real Unicode
+    character (e.g. real station_name "คลองแสนแสบ-เขตบางกะป" where  stands in
+    for the dropped "ิ"). Left unstripped, these PUA artifacts silently broke every exact-
+    name lookup against `_DDS_GATE_COORDS` (this fix's own coordinate table) and against
+    `all_canal_any`'s clean thaiwater names (the contradiction-pairing loop below, which
+    already relies on this same function for exact-match equality) -- stripping them is
+    strictly a noise removal, never a different real character, so it only makes an
+    already-exact-match check match more of what it was always meant to."""
+    if not s:
+        return ""
+    s = "".join(ch for ch in s if not (0xF700 <= ord(ch) <= 0xF8FF))
+    for junk in ("ปตร.", "ค.", "คลอง", "ประตูระบายน้ำ"):
+        s = s.replace(junk, " ")
+    return " ".join(s.split())
+
+
+# {_normalize_name(bulletin station_name): (lat, lon, source_citation)}. Every entry
+# here must be traceable to a real coordinate already on record in this repo -- see the
+# per-entry comment for the exact source row cited. Do NOT add a coordinate here from a
+# canal-name match alone (a canal can run tens of km) -- only when the SPECIFIC gate the
+# DDS bulletin names also appears, by name, as a specific station in a sourced file.
+_DDS_GATE_COORDS = {
+    # DDS canal_outer row "ปตร.คลองประเวศฯ-ลาดกระบัง" is an EXACT string match to
+    # sources/canal_normal_levels.yaml station_code WL.PWT.04's own `canal_name_th`
+    # ("ปตร.คลองประเวศฯ-ลาดกระบัง") -- same gate, VERIFIED coordinate (that file's own
+    # `source`: api-v3.thaiwater.net waterlevel_graph, station_id=81). Kept here even
+    # though this is an outer-section row (excluded from the decision either way, see
+    # above) so a future outer/inner reclassification still has a real coordinate to
+    # check against, rather than silently falling back to "no coordinate = OPEN".
+    _normalize_name("ปตร.คลองประเวศฯ-ลาดกระบัง"): (13.72411, 100.74987,
+        "sources/canal_normal_levels.yaml#WL.PWT.04 (api-v3.thaiwater.net station_id=81)"),
+    # DDS canal_inner row "คลองแสนแสบ-เขตบางกะปิ" is the same real gate as
+    # sources/canal_normal_levels.yaml station_code WL.SSB.07 ("ค.แสนแสบ-สนข.บางกะปิ" --
+    # เขต/สนข. บางกะปิ, same office, same canal) -- VERIFIED coordinate, that file's own
+    # `source`: api-v3.thaiwater.net waterlevel_graph, station_id=77. Keyed on the real
+    # captured station_name's own PUA-stripped form ("...กะป", not "...กะปิ" -- see
+    # `_normalize_name`'s own docstring: the bulletin PDF's font drops the final สระอิ to
+    # an unresolved Private-Use-Area codepoint, which this lookup's normalization already
+    # strips on both sides) -- `_normalize_name` is idempotent on an already-clean literal
+    # with no PUA/sara-i ambiguity, so this key is written in that already-stripped form
+    # directly rather than re-deriving it from a literal that still has the ิ.
+    "แสนแสบ-เขตบางกะป": (13.76509, 100.64791,
+        "sources/canal_normal_levels.yaml#WL.SSB.07 (api-v3.thaiwater.net station_id=77)"),
+    # The SAME WL.SSB.07 gate, under the station's own canonical label
+    # (`sources/canal_normal_levels.yaml`'s own `canal_name_th: "ค.แสนแสบ-สนข.บางกะปิ"`,
+    # also this repo's existing `tests/test_readout.py::_seed_fixture_store` fixture
+    # name for the identical WL.SSB.07 lat/lon) -- a second real naming convention for
+    # the same sourced coordinate, not a second gate.
+    _normalize_name("ค.แสนแสบ-สนข.บางกะปิ"): (13.76509, 100.64791,
+        "sources/canal_normal_levels.yaml#WL.SSB.07 (api-v3.thaiwater.net station_id=77)"),
+    # DDS canal_inner row "คลองลาดพราว 56" (the soi-56 reading point on Khlong Lat
+    # Phrao) is matched to sources/canal_normal_levels.yaml station_code WL.LPW.01
+    # ("ปตร.คลองลาดพร้าว") -- same named canal gate; VERIFIED coordinate from that file's
+    # `source`: api-v3.thaiwater.net waterlevel_graph, station_id=72.
+    _normalize_name("คลองลาดพราว 56"): (13.79446, 100.58957,
+        "sources/canal_normal_levels.yaml#WL.LPW.01 (api-v3.thaiwater.net station_id=72)"),
+    # Every OTHER dds_daily_pdf canal row seen in real captures (ปตร.คลองสองสายใต,
+    # ปตร.คลองแสนแสบ-มีนบุรี, คลองแสนแสบ-คลองตัน (แสนแสบเกา), คลองเปรมประชากร,
+    # ปตร.คลองทวีวัฒนา, ปตร.คลองมหาสวัสดิ์-ฉิมพลี, คลองทวีวัฒนาตัดคลองภาษีเจริญ) has NO
+    # sourced coordinate anywhere in this repo as of this fix -- deliberately left out
+    # of this table rather than guessed from the canal's name (a canal can run tens of
+    # km; "มีนบุรี" alone does not pin a specific gate to a specific point). Each stays
+    # OPEN/`used_for_decision=False` below, not silently assumed nearby.
+}
+
 CANAL_VALUE_DIFF_NOTE_M = 0.05  # a plain diff-detection cutoff for WHETHER to log a
                                  # contradiction row -- not a risk score/threshold
 
@@ -45,14 +143,6 @@ SOCIAL_LISTENING_SOURCES = ("social_listening_google", "social_listening_paste")
 FLOODING_STATES = {"house", "garage", "road", "canal_overbank", "pond_overflow", "rising"}
 NORMAL_LIKE_STATUS = {"NORMAL", "NO_THRESHOLD"}
 FLOOD_LIKE_STATUS = {"WATCH", "CRITICAL", "OVERBANK"}
-
-
-def _normalize_name(s: str) -> str:
-    if not s:
-        return ""
-    for junk in ("ปตร.", "ค.", "คลอง", "ประตูระบายน้ำ"):
-        s = s.replace(junk, " ")
-    return " ".join(s.split())
 
 
 def _fmt(v, nd=2):
@@ -237,12 +327,44 @@ def _social_listening_section(area: str, rows: list, sammakorn_nodes: dict) -> d
 
 
 def build_readout(conn, centre_lat: float, centre_lon: float, radius_km: float,
-                   as_of_date: str = None, generated_at_utc: str = None) -> dict:
-    # Live callers omit generated_at_utc and retain wall-clock freshness semantics.
-    # Tests/backtests may inject an explicit clock so a historical fixture does not
-    # become STALE merely because the test is run days later.
-    generated_at = generated_at_utc or datetime.datetime.now(datetime.timezone.utc).isoformat()
+                   as_of_date: str = None) -> dict:
+    generated_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    # STALE/MEASURED staleness (lwl.STALE_HOURS, see below) must be judged against the
+    # instant this readout claims to represent, never against the real wall-clock "now" --
+    # otherwise a historical replay (readout_history.py) or a fixture test pinning a past
+    # as_of_date would mislabel its own already-declared-fresh window as STALE purely
+    # because real time has since moved on. When the caller does not pin a date (the live
+    # collect.py -> build_data.py path, which never passes --date), as_of_date is None here
+    # and staleness_reference_utc stays generated_at (real now) -- unchanged live behaviour.
+    # When the caller explicitly pins as_of_date (replay, backfill, or a test fixture),
+    # staleness is judged from the START of that declared day, so a reading from earlier
+    # the same historical "as of" window is still MEASURED, not incorrectly STALE (bug
+    # fixed here, see AGENTS.md §8 / tests/test_readout.py::test_build_readout_with_fixture_store).
+    as_of_date_explicit = as_of_date is not None
     as_of_date = as_of_date or generated_at[:10]
+    staleness_reference_utc = f"{as_of_date}T00:00:00+00:00" if as_of_date_explicit else generated_at
+    # fix: `lwl.is_fresh`'s `future_tolerance_h` default (-1.0) is for a REAL
+    # wall-clock reference. A day-pinned reference is LOCAL MIDNIGHT of the declared
+    # day, so a legitimate same-day reading can be up to ~24h "after" it -- widen the
+    # tolerance only for that explicit, bounded case (never unbounded).
+    future_tolerance_h = -24.0 if as_of_date_explicit else -1.0
+
+    # Single freshness gate (house rule, 2026-10-03): every age/staleness decision below
+    # calls `lwl.is_fresh(observed_at, staleness_reference_utc, max_age)` -- ONE function,
+    # never a re-inlined `age_h is None or age_h > lwl.STALE_HOURS` check. `max_age` per
+    # source comes from `sources/registry.yaml`'s own `max_age_hours` field (falls back to
+    # `lwl.STALE_HOURS` when the registry/field is unavailable -- see
+    # `lwl.max_age_hours_for`'s own docstring). The registry is loaded once per call here,
+    # not once per row, and a load failure must not crash a readout -- the per-source
+    # fallback below is always `lwl.STALE_HOURS`, same as before this gate existed.
+    try:
+        import collect as collect_mod
+        _registry = collect_mod.load_registry()
+    except Exception:  # pragma: no cover - defensive, registry must not crash a readout
+        _registry = {}
+
+    def _max_age(source_id):
+        return lwl.max_age_hours_for(source_id, _registry)
 
     def dist_km(o):
         return (haversine_km(centre_lat, centre_lon, o["lat"], o["lon"])
@@ -380,8 +502,9 @@ def build_readout(conn, centre_lat: float, centre_lon: float, radius_km: float,
     # value) sat in the "live drainage table" indistinguishable from a fresh reading.
     _key = lambda o: o.get("station_code") or o.get("station_name")
     for o in _latest_by_composite_key(near_canal, _key).values():
-        age_h = lwl.age_hours(o["observed_at_utc"], generated_at)
-        stale = age_h is None or age_h > lwl.STALE_HOURS
+        fresh, age_h = lwl.is_fresh(o["observed_at_utc"], staleness_reference_utc,
+                                    _max_age("thaiwater_canal_waterlevel"), future_tolerance_h=future_tolerance_h)
+        stale = not fresh
         f4["measured"].append({
             "station": o.get("station_name") or o.get("station_code"),
             "value": o["value"], "unit": "m", "status": o.get("status"),
@@ -389,8 +512,9 @@ def build_readout(conn, centre_lat: float, centre_lon: float, radius_km: float,
             "source": "thaiwater_canal_waterlevel", "tag": "STALE" if stale else "MEASURED",
         })
     for o in _latest_by_composite_key(near_pumps, _key).values():
-        age_h = lwl.age_hours(o["observed_at_utc"], generated_at)
-        stale = age_h is None or age_h > lwl.STALE_HOURS
+        fresh, age_h = lwl.is_fresh(o["observed_at_utc"], staleness_reference_utc,
+                                    _max_age("bma_pumphistory"), future_tolerance_h=future_tolerance_h)
+        stale = not fresh
         f4["measured"].append({
             "station": o.get("station_name") or o.get("station_code"),
             "value": o["value"], "unit": "m", "status": o.get("status"),
@@ -398,16 +522,66 @@ def build_readout(conn, centre_lat: float, centre_lon: float, radius_km: float,
             "source": "bma_pumphistory", "tag": "STALE" if stale else "MEASURED",
         })
     dds_canal = [o for o in dds_obs if o["variable"] == "canal_level_0700_m"]
+    # fix, re-fixed 2026-10-04 (see the long comment on `_DDS_GATE_COORDS` above
+    # for the full story -- the first attempt, 40km-of-central-Bangkok + canal-name
+    # substring, still let a far `canal_outer` gate decide Thonburi/Don Mueang/other
+    # Bangkok-area points). A row now decides `current_local_state` only if it is a
+    # `canal_inner` row, its own gate has a sourced coordinate in `_DDS_GATE_COORDS`,
+    # and that coordinate lies within the CALLER's own `radius_km` of the centre --
+    # never a separate hardcoded radius. A row failing any of these three stays visible
+    # (never silently dropped) but `used_for_decision=False`.
     for o in dds_canal:
         # dds_canal is always exactly one bulletin's rows (load_latest_dds_daily already
         # selects the single latest fetched_at_utc batch), so no separate dedupe is needed
         # here -- only the tag, for the same reason as above.
-        age_h = lwl.age_hours(o["observed_at_utc"], generated_at)
-        stale = age_h is None or age_h > lwl.STALE_HOURS
+        fresh, age_h = lwl.is_fresh(o["observed_at_utc"], staleness_reference_utc,
+                                    _max_age("dds_daily_pdf"), future_tolerance_h=future_tolerance_h)
+        stale = not fresh
+        # fix: a bulletin row whose header date could not be parsed is stamped
+        # with the FETCH time as `observed_at_utc` (see collect_dds_daily_pdf), which
+        # `lwl.is_fresh` then reads as "just fetched" -- always passing the freshness
+        # gate even when the underlying bulletin date is unknown. Treat
+        # `header_date_recognized=False` as STALE/not-decided regardless of what the
+        # freshness-by-age check alone says (factor 1's rain rows already do this; this
+        # was the one other dds_daily_pdf loop that didn't).
+        date_recognized = _header_date_recognized(o)
+        stale = stale or not date_recognized
+        try:
+            _section = json.loads(o.get("provenance_json") or "{}").get("section")
+        except (TypeError, ValueError):
+            _section = None
+        is_outer = _section == _DDS_CANAL_OUTER_SECTION
+        _row_canal_name = _normalize_name(o.get("station_name") or "")
+        _coord = _DDS_GATE_COORDS.get(_row_canal_name)
+        if _coord is None:
+            has_coord = False
+            in_radius = False
+            coord_source = None
+        else:
+            has_coord = True
+            _gate_lat, _gate_lon, coord_source = _coord
+            in_radius = haversine_km(centre_lat, centre_lon, _gate_lat, _gate_lon) <= radius_km
+        local_match = (not is_outer) and has_coord and in_radius
+        if is_outer:
+            scope_note = ("ค่าฝั่งนอกคันป้องกันน้ำท่วม (canal_outer) -- คนละสภาพน้ำกับคลอง"
+                          "ในคันป้องกัน, ไม่ใช้ตัดสินสถานะปัจจุบันของจุดนี้ [OPEN]")
+        elif not has_coord:
+            scope_note = ("กทม. ทั้งเมือง (bulletin) -- ไม่มีพิกัดที่ยืนยันแล้วสำหรับสถานีนี้ใน"
+                          "คลังข้อมูล, ไม่ใช่สถานีใกล้จุดนี้ [OPEN]")
+        elif not in_radius:
+            scope_note = f"กทม. ทั้งเมือง (bulletin) -- สถานีอยู่นอกรัศมี {radius_km} km ของจุดนี้"
+        else:
+            scope_note = f"สถานีใกล้จุดนี้ (พิกัดยืนยันแล้ว, {coord_source})"
         f4["measured"].append({
             "station": o["station_name"], "value": o["value"], "unit": "m",
             "status": o.get("status"), "observed_at_utc": o["observed_at_utc"],
-            "age_h": age_h, "source": "dds_daily_pdf", "tag": "STALE" if stale else "MEASURED",
+            "age_h": age_h, "source": "dds_daily_pdf",
+            "tag": "STALE" if stale else "MEASURED",
+            "header_date_recognized": date_recognized,
+            "canal_outer": is_outer,
+            "local_match": local_match,
+            "used_for_decision": local_match and not stale,
+            "scope_note": scope_note,
         })
     f4["missing"].append({
         "note": ("No pump-on/off or gate-open/shut FORECAST exists anywhere in these "
@@ -431,8 +605,9 @@ def build_readout(conn, centre_lat: float, centre_lon: float, radius_km: float,
     _nonzero_flood_road = [o for o in near_flood_road if o.get("value") and o["value"] > 0]
     for o in _latest_by_composite_key(
             _nonzero_flood_road, lambda r: r.get("station_code") or r.get("station_name")).values():
-        age_h = lwl.age_hours(o["observed_at_utc"], generated_at)
-        stale = age_h is None or age_h > lwl.STALE_HOURS
+        fresh, age_h = lwl.is_fresh(o["observed_at_utc"], staleness_reference_utc,
+                                    _max_age("thaiwater_flood_road"), future_tolerance_h=future_tolerance_h)
+        stale = not fresh
         name = o.get("station_name") or ""
         f5["measured"].append({
             "station": name, "value": o["value"], "unit": "cm",
@@ -470,8 +645,9 @@ def build_readout(conn, centre_lat: float, centre_lon: float, radius_km: float,
                 rows.append({"station_code": code, "tag": "OPEN",
                              "note": "not found in the current store", "source": None})
                 continue
-            age_h = lwl.age_hours(o["observed_at_utc"], generated_at)
-            stale = age_h is None or age_h > lwl.STALE_HOURS
+            fresh, age_h = lwl.is_fresh(o["observed_at_utc"], staleness_reference_utc,
+                                        _max_age("thaiwater_canal_waterlevel"), future_tolerance_h=future_tolerance_h)
+            stale = not fresh
             rows.append({
                 "station_code": code, "name": o.get("station_name"),
                 "value_m": o["value"], "status": o.get("status"),
@@ -490,8 +666,9 @@ def build_readout(conn, centre_lat: float, centre_lon: float, radius_km: float,
             pump_rows.append({"station_code": code, "tag": "OPEN",
                               "note": "not found in the current store", "source": None})
             continue
-        age_h = lwl.age_hours(o["observed_at_utc"], generated_at)
-        stale = age_h is None or age_h > lwl.STALE_HOURS
+        fresh, age_h = lwl.is_fresh(o["observed_at_utc"], staleness_reference_utc,
+                                    _max_age("bma_pumphistory"), future_tolerance_h=future_tolerance_h)
+        stale = not fresh
         prov = json.loads(o["provenance_json"]) if o.get("provenance_json") else {}
         pump_rows.append({
             "station_code": code, "name": o.get("station_name"),
@@ -544,18 +721,31 @@ def build_readout(conn, centre_lat: float, centre_lon: float, radius_km: float,
             continue
         gap_h = lwl.age_hours(o["observed_at_utc"], best["observed_at_utc"])
         gap_note = f"~{abs(gap_h):.1f}h apart" if gap_h is not None else "gap unknown"
+        # Single freshness gate, same as factor 4 above -- a contradiction row is always
+        # shown (both sides, never resolved/averaged, per the house rule), but a STALE
+        # side must say so plainly rather than read as a live disagreement (the real
+        # example this fixes: `all_canal_any` can hold a years-old row like SS06/2019,
+        # which a name match could otherwise pair as if it were a fresh contradiction).
+        fresh_b, age_b_h = lwl.is_fresh(best["observed_at_utc"], staleness_reference_utc,
+                                         _max_age("thaiwater_canal_waterlevel"), future_tolerance_h=future_tolerance_h)
+        staleness_note = ("" if fresh_b else
+                           f" -- '{best.get('station_name')}' side is STALE "
+                           f"(age {age_b_h:.1f}h if parseable, not used for any decision, "
+                           "shown for transparency only)" if age_b_h is not None else
+                           f" -- '{best.get('station_name')}' side is STALE (age unknown)")
         row = {
             "topic": "canal_level_same_name_candidate", "tag": "INSTINCT",
             "source_a": "dds_daily_pdf", "value_a": o["value"],
             "observed_a": o["observed_at_utc"],
             "source_b": "thaiwater_canal_waterlevel", "value_b": best["value"],
             "observed_b": best["observed_at_utc"],
+            "age_b_h": age_b_h, "stale_b": not fresh_b,
             "note": (f"CANDIDATE pairing by exact normalized-name match only (no "
                      f"coordinate/code crosswalk available for the DDS row) -- "
                      f"'{o['station_name']}' (DDS bulletin) vs "
                      f"'{best.get('station_name')}' (thaiwater) -- {diff:.2f} m apart, "
                      f"observations {gap_note} -- NOT verified as the same physical "
-                     f"station, not resolved."),
+                     f"station, not resolved.{staleness_note}"),
         }
         contradictions.append(row)
         store.insert_contradiction(
@@ -634,32 +824,97 @@ def build_readout(conn, centre_lat: float, centre_lon: float, radius_km: float,
     result["missing"] = missing
 
     # --- ภาพรวม (overall picture) -- INSTINCT, descriptive counts only, NEVER a score ---
-    # Directly answers the project's own framing for this task ("ต้องชั่งน้ำหนักแล้ว
+    # Directly answers the project's own framing for this check ("ต้องชั่งน้ำหนักแล้ว
     # ประเมินภาพรวม" -- weigh and assess the overall picture): every number below is a
     # plain count of what the tables above already show (station statuses AS PUBLISHED by
     # their own agency, contradiction count, source count, staleness count) -- nothing is
     # combined into a single index or ranked, and no threshold decides anything here.
     overall_notes = []
+    # FIX (2026-10-03, founder-reported bug): this used to count raw `status` words
+    # straight off `near_canal`/`near_pumps` -- EVERY historical row within range, no
+    # dedup, no staleness check at all (`readout.build_readout`'s own README/AGENTS.md
+    # note never claimed this line was gated). That meant a STALE row (sometimes the
+    # ONLY row, e.g. WL.SSB.08's last reading 5-6 days old) could drive this sentence's
+    # CRITICAL/etc count while sitting right next to "สถานะปัจจุบัน" looking exactly like
+    # the stations' current status -- a real violation of the house "stale -> never
+    # decides a colour" rule, even on a run where the actual RED/GREEN decision
+    # (`kb._classify_current_local_state`, which already only reads `status_counts` from
+    # THIS SAME gated loop below) was unaffected. Built from the already-deduplicated,
+    # already-gated `f4["measured"]` rows (the single freshness gate, `lwl.is_fresh`,
+    # already ran above) -- a STALE row is counted in `status_counts_stale` and shown as
+    # NOT used for the decision, never folded into `status_counts`.
+    #
+    # FIX (2026-10-03): this loop used to `continue` past any row whose
+    # `source` was not `thaiwater_canal_waterlevel`/`bma_pumphistory`, i.e. it dropped
+    # every `dds_daily_pdf` row from this sentence/the UNKNOWN-sentinel decision below --
+    # but `kb._answer_state`'s `status_counts` (what ACTUALLY decides
+    # `current_local_state`/RED-GREEN via `_classify_current_local_state`) reads ALL of
+    # `f4["measured"]` with no such filter. That let a real run show the verbose headline
+    # "no fresh value left in this radius -- UNKNOWN" (this sentence, filtered) in the
+    # SAME answer whose `current_local_state` was RED, decided by 3 fresh `dds_daily_pdf`
+    # "ระดับน้ำวิกฤติ" rows this filter had thrown away before counting -- the display and
+    # the decision silently counted different row sets. The filter is now dropped so this
+    # loop counts the EXACT SAME set `_answer_state` decides from -- `f4["measured"]` as
+    # a whole, no per-source carve-out.
+    # fix (2026-10-04): this loop used to count every fresh row in `f4["measured"]`
+    # regardless of the dds_canal loop's own `used_for_decision` field (the comment above
+    # claimed this was "the EXACT SAME set `_answer_state` decides from", but `kb.py`'s
+    # `_answer_state` already reads `used_for_decision` -- see its own fix comment
+    # -- so a `canal_outer`/no-coordinate/out-of-radius dds_daily_pdf row, though excluded
+    # from `kb.py`'s decision, was still silently folded into THIS prose summary). A row
+    # with no `used_for_decision` field at all (thaiwater_canal_waterlevel/bma_pumphistory,
+    # already radius-filtered before reaching `measured`) still defaults to "decide iff
+    # fresh" -- unchanged for those sources.
     status_counts: dict = {}
+    status_counts_stale: dict = {}
     stale_count = 0
-    for o in list(near_canal) + list(near_pumps):
-        st = o.get("status") or "UNKNOWN"
-        status_counts[st] = status_counts.get(st, 0) + 1
+    fresh_count = 0
+    # fix (2026-10-04): a row that is fresh (tag != STALE) but geo-
+    # excluded (canal_outer / no coordinate / outside radius, `used_for_decision=
+    # False`) used to be silently dropped from EVERY count here -- invisible to both
+    # `status_counts` and `stale_count`, which let the `elif stale_count:` branch below
+    # claim "ALL values here are STALE" while such fresh-but-excluded rows also
+    # existed, uncounted. Counted (never a decision input) so the headline below can
+    # tell "no fresh data at all" apart from "fresh data exists, it's just not local".
+    geo_excluded_count = 0
     for row in f4["measured"]:
+        st = row.get("status") or "UNKNOWN"
         if row.get("tag") == "STALE":
             stale_count += 1
+            status_counts_stale[st] = status_counts_stale.get(st, 0) + 1
+            continue
+        _used = row.get("used_for_decision")
+        if _used is False:
+            geo_excluded_count += 1
+            continue
+        status_counts[st] = status_counts.get(st, 0) + 1
+        fresh_count += 1
     if status_counts:
         parts = ", ".join(f"{k}={v}" for k, v in sorted(status_counts.items()))
         overall_notes.append(
-            f"สถานะที่แต่ละหน่วยงานประกาศเองสำหรับสถานีในรัศมี {radius_km} km ({len(near_canal) + len(near_pumps)} reading(s)): {parts}. "
+            f"สถานะที่แต่ละหน่วยงานประกาศเองสำหรับสถานีสด (ไม่ STALE) ในรัศมี {radius_km} km "
+            f"({fresh_count} reading(s)): {parts}. "
             "นี่คือการนับสถานะที่หน่วยงานต้นทางตั้งไว้เอง (warning/critical/bank ของแต่ละสถานี) "
             "ไม่ใช่คะแนนหรือการจัดอันดับของ pipeline นี้.")
+    elif stale_count and not geo_excluded_count:
+        overall_notes.append(
+            "ไม่มีค่าสดเหลือในรัศมีนี้รอบนี้ -- ค่าทั้งหมดที่มี STALE (ดูด้านล่าง), จึงไม่มีการ"
+            "ตัดสินสถานะปัจจุบันจากสถานีเหล่านี้ [UNKNOWN].")
+    elif stale_count or geo_excluded_count:
+        # fix: at least one fresh-but-geo-excluded row exists -- never
+        # claim "ทั้งหมดที่มี STALE" (all values are stale) when that is false.
+        overall_notes.append(
+            f"ไม่มีค่าที่ตัดสินใน radius นี้รอบนี้ -- {stale_count} แถวเก่าเกินเกณฑ์ (STALE), "
+            f"{geo_excluded_count} แถวสดแต่อยู่นอกรัศมี/ไม่มีพิกัดยืนยัน (ไม่ใช่ STALE แต่ไม่ใช้"
+            "ตัดสินสถานีนี้ด้วย) -- จึงไม่มีการตัดสินสถานะปัจจุบันจากสถานีเหล่านี้ [UNKNOWN].")
     else:
         overall_notes.append("ยังไม่มีสถานี telemetry ในรัศมีนี้ในรอบนี้ [OPEN].")
     if stale_count:
+        stale_parts = ", ".join(f"{k}={v}" for k, v in sorted(status_counts_stale.items()))
         overall_notes.append(
-            f"{stale_count} แถวใน 'การระบาย' เป็นค่าเก่ากว่า {lwl.STALE_HOURS:.0f} ชั่วโมง "
-            "(tag STALE) -- ยังแสดงไว้เพื่อความโปร่งใส แต่ไม่ควรอ่านเป็นสถานการณ์ปัจจุบัน.")
+            f"{stale_count} แถวใน 'การระบาย' เป็นค่าเก่ากว่าเกณฑ์ freshness ของแหล่งนั้น (tag "
+            f"STALE, สถานะที่อ่านได้ตอนนั้น: {stale_parts}) -- ยังแสดงไว้เพื่อความโปร่งใส แต่ "
+            "ไม่ถูกใช้ในการตัดสินสถานะปัจจุบัน (ไม่ควรอ่านเป็นสถานการณ์ปัจจุบัน).")
     if contradictions:
         overall_notes.append(
             f"พบ {len(contradictions)} รายการที่แหล่งข้อมูลไม่ตรงกัน (ดู 'ความขัดแย้งระหว่าง"

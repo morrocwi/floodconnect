@@ -1,0 +1,13 @@
+{
+ "source_id": "hii_analyst_cctv",
+ "url": "https://api-v3.thaiwater.net/api/v1/thaiwater30/analyst/cctv",
+ "captured_at": "2026-10-03T05:21:00Z",
+ "sha256": "570df6a2aae2819ea09bec129ef256fa94ed597a06a46632011f0718f9d529b5",
+ "http_status": 200,
+ "fixture_ext": "json",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "48c21cca144b86bcc61371c5defa18fdf0d67fc4d8c35a22b4b59c96e0b963d6",
+ "trimmed_note": "Further trimmed 2026-10-03 (release pass, publish-safety finding: 300KB total budget for tests/contract/fixtures/ in the public tree) to a minimal real excerpt (header + few real rows, or a real byte-prefix for HTML) -- see the corresponding contract test's own comment for the exact row-count change.",
+ "trimmed_at": "2026-10-03T18:10:36Z"
+}

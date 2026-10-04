@@ -11,16 +11,6 @@ shown at the bottom of this file.
 registration (PROP-FLOOD-01/02) first. `epistemic_note` in the JSON says this in Thai
 for anyone reading the raw file directly.
 
-
-## Static governance reference (not emitted to `data.json`)
-
-`site/inputs/governance/thailand_water_governance_reference.json` is a curated,
-partially-verified institutional map extracted from a third-party civic infographic and
-cross-checked against official Thai water-governance sources. It is **context only**:
-it is not live telemetry, not a forecast, not an authoritative exhaustive agency register,
-and is deliberately kept outside `site/inputs/official/` and `sources/registry.yaml`.
-See `docs/THAILAND_WATER_GOVERNANCE.md` for verification notes and provenance.
-
 ## Top-level fields
 
 - `generated_at_bkk` — when this script ran, Bangkok local time (UTC+7). Not an official
@@ -35,7 +25,8 @@ See `docs/THAILAND_WATER_GOVERNANCE.md` for verification notes and provenance.
   canal/pump/flood-road/DDS sources are copied verbatim from this repo's own
   `floodconnect/sources/registry.yaml` (its `trust_tier` vocabulary is reused
   as-is). The rain (`thaiwater_rain_24h`) source is now collected live every CI run
-  (2026-09-26 red-team fix HIGH-3) by `collect.py`'s `collect_thaiwater_rain_24h` and
+  (fixed 2026-09-26: CI previously had no rain collector at all) by `collect.py`'s
+  `collect_thaiwater_rain_24h` and
   registered in `sources/registry.yaml`, so its `url`/`agency_th` are also copied
   verbatim from there.
 
@@ -112,7 +103,7 @@ around now, grouped by date.
 
 `floodconnect/raw/live/thaiwater_flood_road/` (newest file; falls back to
 `sammakorn/flood_road.json` if that directory is empty), filtered to
-`FLOOD_ROAD_RADIUS_KM` = 5 km of the village centre (fixed by the task brief), sorted
+`FLOOD_ROAD_RADIUS_KM` = 5 km of the village centre (fixed by the founder's instructions), sorted
 deepest-first. `depth_cm` = the source's own `floodroad_value` field, unit as published
 by thaiwater/BMA (not independently re-verified against a unit label — see this repo's
 `sources/registry.yaml` note on `thaiwater_flood_road`). A road name ending in `*` is
@@ -139,7 +130,7 @@ file exists, `tiers: []` and `tiers_note` says so plainly.
 `pdftotext -layout` on the newest `*.pdf` in `floodconnect/raw/live/dds_daily_pdf/`
 (where `collect.py` actually writes the live-fetched PDF every run), falling back to
 `floodconnect/raw/dds_reports/dds_daily_*.pdf` only if that live directory is empty
-(2026-09-26 red-team fix HIGH-2: the two paths had silently diverged and this reader
+(fixed 2026-09-26: the two paths had silently diverged and this reader
 was pointed at the wrong one) — BMA's daily situation bulletin, keeping only
 lines containing สะพานสูง / แสนแสบ / ประเวศ / น้ำทะเลหนุน / คาดการณ์, each tagged with
 its PDF page number (pages are split on pdftotext's own `\f` form-feed). Thai-font
@@ -201,3 +192,12 @@ when that newest observation is `null` or more than 2 hours old relative to
   "staleness_banner": false
 }
 ```
+
+## Static governance reference (pointer)
+
+`site/inputs/governance/thailand_water_governance_reference.json` is a curated,
+partially-verified institutional map, cross-checked against official Thai
+water-governance sources (merged into this branch, 2026-10-02). It is context
+only -- not live telemetry, not a forecast, not an exhaustive agency register -- and is
+deliberately kept outside `site/inputs/official/` and `sources/registry.yaml`. See
+`docs/THAILAND_WATER_GOVERNANCE.md` for verification notes and provenance.

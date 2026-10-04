@@ -1,0 +1,137 @@
+# typology/edges/supplies.yaml -- edge_kind=supplies, from_kind=resource ->
+# to_kind in {zone (soi_surface group), node}, many->many (proposal §2/§7b).
+schema_version: 1
+doc_kind: typology_edge_registry
+edge_kind: supplies
+status_th: >
+  ทรัพยากรที่จัดสรรให้พื้นที่/จุด -- ตัวอย่างทั้งหมด RELAYED จากข่าว/แถลงการณ์ ไม่มี collector อัตโนมัติ.
+rows:
+  - from: RES.MEAL_BOX.AG_BMA_KHET_LADKRABANG.01
+    to: "OPEN"
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9) -- โซนย่อยในลาดกระบังที่ได้รับจริงไม่ระบุ"
+  - from: RES.MEAL_BOX.AG_BMA_KHET_BANGKAPI.01
+    to: "OPEN"
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9) -- โซนย่อยในบางกะปิที่ได้รับจริงไม่ระบุ"
+  - from: RES.BOAT_PUSH.AG_UNKNOWN.01
+    to: WL.SSB.10
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 4.3 (S11, JS100) -- เสริมทิศทางระบายคลองแสนแสบ, ผลยังไม่วัด (OPEN)"
+  - from: RES.DONATION_INTAKE.CITYHALL_DINDAENG.01
+    to: "OPEN"
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9) -- ปลายทางกระจายของบริจาคจริงไม่ระบุ"
+  - from: RES.DONATION_INTAKE.KHET_PRAWET_VOCTRAIN.01
+    to: "OPEN"
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9)"
+  - from: AG_ESTATE
+    to: SOI.SAMMAKORN.17
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: >
+      FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §7b (นิติบุคคลหมู่บ้านจัดรถหกล้อรับส่ง
+      ภายในหมู่บ้านเอง ไม่ผ่านภาครัฐ -- community report)
+  - from: AG_ESTATE
+    to: SOI.SAMMAKORN.18
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §7b"
+  - from: AG_VOLUNTEER_MOTOSAI_SAMMAKORN
+    to: SOI.SAMMAKORN.17
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §7b (ขนส่งคน/ของช่วงน้ำท่วม -- ไม่มีองค์กรทางการรองรับ)"
+  - from: RES.TRUCK_GMC.AG_BMA_DDS.01
+    to: "OPEN"
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: >
+      completeness pass 2026-09-28 -- resolves RES.TRUCK_GMC's prior orphan status (no
+      supplies row existed at all): STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9) states
+      the trucks are wanted for "โซนน้ำสูง" without naming a specific zone -- to: OPEN kept
+      honest, same convention as the other resource rows in this file.
+  - from: RES.BOAT_PUSH.AG_UNKNOWN.01
+    to: "tunnel:bma_dds:saensaeb_ladprao"
+    tag: RELAYED
+    source: >
+      docs/knowledge/card_tool_water_push_boats.md §1 (The Bangkok Insight 27 ก.ย. 2569
+      https://www.thebangkokinsight.com/news/politics-general/general/1701479/ + MGR
+      Online 27 ก.ย. 2569 https://mgronline.com/business/detail/9690000094733) -- เรือเดิน
+      เครื่องผลักดันน้ำเข้าหาจุดรับน้ำอุโมงค์นี้โดยตรง (alias candidate "อุโมงค์พระราม 9"),
+      additional to the existing WL.SSB.10 row above (different, more specific source)
+  - from: RES.DRONE.ROMKLAO_20260928
+    to: romklao_zone
+    tag: RELAYED
+    source: "docs/knowledge/card_tool_rescue_drones_romklao_2569.md §1"
+  - from: RES.KITCHEN.MSDHS_CENTRAL
+    to: romklao_zone
+    tag: RELAYED
+    source: "docs/knowledge/card_tool_rescue_drones_romklao_2569.md §1"
+  - from: RES.TOOL.SHARED_POOL
+    to: CIV.ZONE.KHLONGCHAN_FLATS
+    tag: RELAYED
+    source: "docs/knowledge/card_community_selforg_pattern_2569.md §1-2 -- pattern applicability"
+  - from: RES.TOOL.SHARED_POOL
+    to: CIV.ZONE.ROMKLAO
+    tag: RELAYED
+    source: "docs/knowledge/card_community_selforg_pattern_2569.md §1-2 -- pattern applicability"
+  - from: RES.PUMP.BANGTALAD_MOBILE_01
+    to: ST.BANGTALAD.01
+    tag: RELAYED
+    source: "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md §1 -- ปั๊มเคลื่อนที่ใช้แทนปั๊มใหญ่"
+  - from: RES.COW.SHELTER_KMITL_01
+    to: AS_SHELTER_KMITL
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §1"
+  - from: RES.CHARGING.SHELTER_KMITL_01
+    to: AS_SHELTER_KMITL
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §1"
+  - from: RES.DONATION_INTAKE.CENTRALPATTANA.01
+    to: "OPEN"
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §3 -- ส่งต่อจังหวัดที่ได้รับผลกระทบ ไม่ระบุปลายทางชัด"
+  - from: RES.DONATION_INTAKE.CENTRALPATTANA.01
+    to: AG_DIST_NEIGH
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §7"
+  - from: RES.DONATION_INTAKE.ROBINSON.01
+    to: AG_RTAF_CIVIL
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §7"
+  - from: AG_WHOLESALE_SUPPLIER
+    to: AG_ESTATE
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §4 -- ผู้ค้าส่งจัดหาวัตถุดิบให้ผู้ใหญ่บ้าน"
+  - from: AG_ESTATE
+    to: khlongchan_flats_kitchen
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §4 -- ผู้ใหญ่บ้าน/นิติบุคคล ส่งต่อครัวชุมชน"
+  - from: RES.DONATION_INTAKE.ROBINSON.01
+    to: AS_SHELTER_SCHOOL
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §4 -- ถุงยังชีพส่งถึงศูนย์พักพิงโรงเรียน"
+  - from: RES.MEAL_BOX.PRIVATE_RESTAURANTS.KMITL.01
+    to: AS_SHELTER_KMITL
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §7"
+  - from: RES.RELIEF_DELIVERY.PRIVATE_KHLONGCHAN_01
+    to: CIV.ZONE.KHLONGCHAN_FLATS
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §6"

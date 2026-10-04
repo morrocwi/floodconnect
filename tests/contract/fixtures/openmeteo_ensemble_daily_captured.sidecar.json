@@ -1,0 +1,11 @@
+{
+  "source_id": "openmeteo_ensemble_daily",
+  "url": "https://ensemble-api.open-meteo.com/v1/ensemble?latitude=13.758235&longitude=100.676084&daily=precipitation_sum&models=gfs_seamless&timezone=Asia%2FBangkok",
+  "captured_at": "2026-10-02T07:44:41Z",
+  "sha256": "230d7b6a60bbc400b28ea2021dbf719f676a813e5a36bae720122f83ae1c6ae5",
+  "http_status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "fixture_ext": "json",
+  "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+  "parser_version": "v1"
+}

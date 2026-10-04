@@ -1,0 +1,25 @@
+# typology/nodes/environman_overlay_2026-09-28.yaml -- `condition` flag (Environman FB
+# post 28 ก.ย. 2569: "บางสถานีสูบน้ำยังมีขยะจำนวนมากขวางทางระบาย") merged onto existing
+# pump/tunnel intake nodes (ST.SPS.01-04, already built by build_water_layer). Which
+# specific station(s) the post means is OPEN -- applied to all 4 rather than guessed at
+# one, each flagged OPEN, never asserted as a confirmed debris condition.
+schema_version: 1
+doc_kind: typology_node_overlay
+status_th: >
+  condition=OPEN บนทุก pump intake node ของสัมมากร -- โพสต์ไม่ระบุสถานีที่แน่ชัด ห้ามเดาว่าเป็น
+  สถานีใดสถานีหนึ่ง.
+rows:
+  - id: ST.SPS.01
+    condition: "OPEN"
+    condition_note_th: >
+      "บางสถานีสูบน้ำยังมีขยะจำนวนมากขวางทางระบาย" (Environman FB post 28 ก.ย. 2569, RELAYED) --
+      ไม่ระบุว่าเป็นสถานีใดใน 4 สถานี, ไม่เดา
+  - id: ST.SPS.02
+    condition: "OPEN"
+    condition_note_th: "same Environman post as ST.SPS.01 -- ไม่ระบุสถานีที่แน่ชัด"
+  - id: ST.SPS.03
+    condition: "OPEN"
+    condition_note_th: "same Environman post as ST.SPS.01 -- ไม่ระบุสถานีที่แน่ชัด"
+  - id: ST.SPS.04
+    condition: "OPEN"
+    condition_note_th: "same Environman post as ST.SPS.01 -- ไม่ระบุสถานีที่แน่ชัด"

@@ -1,0 +1,15 @@
+# typology/edges/supplies_selfhelp_bridge_2026-09-28.yaml -- bridges the imported
+# Community Self-Help DAG to the resource layer, using the EXISTING supplies edge kind.
+schema_version: 1
+doc_kind: typology_edge_registry
+edge_kind: supplies
+status_th: >
+  สะพานเชื่อม self-help DAG เข้า resource layer -- proposal, ไม่มีแหล่งยืนยันว่ามีการจัดสรรจริงวันนี้.
+rows:
+  - from: sammakorn_internal_safe
+    to: sammakorn_zone
+    tag: OPEN
+    source: >
+      PROPOSAL (founder-provided drafting input, 2026-09-28) -- an internal-safe muster
+      point supplying its own zone; sammakorn_internal_safe itself remains status=UNKNOWN
+      (not field-verified) in site/inputs/community/self_help_dag.yaml, unchanged here.

@@ -1,0 +1,110 @@
+# Census-update snippet, 2026-09-27 — endpoints discovered via one live Playwright network
+# capture of https://waterchart.thaiwater.net/basin/chaophraya (20s post-load window) plus
+# one curl sample each. Same schema as rows in sources/api_census.yaml -- NOT merged into
+# that file by this check (read-only-reviewer session, new-files-only). A separate
+# maker/checker pass should fold these rows in after review.
+#
+# Context row already in sources/api_census.yaml (unchanged by this file):
+#   id: hii_waterchart_thaiwater_net -- status: reachable, tag: RELAYED, notes: "no
+#   fetch/axios/api string found in bundled JS ... status OPEN pending live browser network
+#   capture." This file is that pending capture's result.
+
+- id: hii_waterchart_public_waterlevel_load
+  agency: "HII (สสน.) และหน่วยงานเจ้าของสถานีต่อรายการ, ผ่าน thaiwater.net"
+  name_th: "Hii thaiwater30 public waterlevel load (basin-filtered)"
+  name_en: "HII thaiwater30 public waterlevel_load (basin-filtered)"
+  url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_load"
+  kind: json_api
+  auth: none
+  format: "JSON, requires query params basin_id=<comma basin_code list> (or 999, meaning
+    unconfirmed -- possibly all-basin) plus start_date/end_date (YYYY-MM-DD HH:MM). No
+    query params observed to work without them (not tested bare)."
+  cadence: "near-real-time (waterlevel_datetime per record, e.g. 2026-09-27 18:00); date
+    window is caller-supplied, not fixed by the API"
+  has_coords: true
+  coverage: "confirmed for basin_code group 6,7,8,9,10,11,12,13,14,15,26 (Chao Phraya +
+    tributary basins) -- 380 records in one 2026-09-27 sample. Full 25-basin national
+    coverage NOT confirmed -- basin_code list for the other ~14 basins not yet enumerated
+    (OPEN)."
+  asset_classes: [river]
+  status: reachable
+  http_status: 200
+  probed_at: "2026-09-27"
+  notes: "MEASURED this run (1 curl GET, same query the live page fires). Distinct from
+    already-registered thaiwater_waterlevel (public/waterlevel, no query params, full
+    nationwide sweep already wired in collect.py) -- different path, richer per-record
+    schema: adds discharge (cms), storage_percent (unit/basis unconfirmed -- OPEN),
+    waterlevel_msl + waterlevel_msl_previous (mean-sea-level referenced, with prior
+    timestamp for trend), situation_level (0-5 severity flag, scale meaning unconfirmed --
+    OPEN), river_gid/river_name (station-to-river join), and per-station cross-section
+    params (left_bank/right_bank/min_bank/ground_level/critical_level_msl/is_key_station)
+    not present on public/waterlevel. Confirmed Chao Phraya main-stem stations present via
+    station.tele_station_oldcode: C.2, C.3, C.7A, C.12, C.13, C.35, C.36, C.37, C.67.
+    No auth/token required -- 200 with no special headers. TLS on api-v3.thaiwater.net
+    verifies normally (no -k needed; contrast with waterchart.thaiwater.net's separate TLS
+    chain issue, unrelated host)."
+  tag: MEASURED
+
+- id: hii_waterchart_analyst_cctv
+  agency: "หน่วยงานเจ้าของกล้องต่อสถานี (เช่น กรมทรัพยากรน้ำ), รวบรวมผ่าน thaiwater.net"
+  name_th: "Hii thaiwater30 analyst cctv (national station camera directory)"
+  name_en: "HII thaiwater30 analyst/cctv (national station camera directory)"
+  url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/analyst/cctv"
+  kind: json_api
+  auth: none
+  format: "JSON {result, data:[...]}, no query params required"
+  cadence: "directory, not telemetry -- each row's own image/stream freshness depends on
+    the owning agency's camera server (cctv_url), not on this endpoint"
+  has_coords: true
+  coverage: "106 camera/station records nationwide in one 2026-09-27 sample (no basin
+    filter applied -- appears to be the full national set, not confirmed against a second
+    fetch)"
+  asset_classes: [other]
+  status: reachable
+  http_status: 200
+  probed_at: "2026-09-27"
+  notes: "MEASURED this run (1 curl GET, no params). Entirely new endpoint, not a
+    query-filtered variant of any already-registered source. Each record: id, dam_id
+    (blank in most), tele_station_name, basin/basin_name, lat/long, sub_basin_id, title,
+    description (station name + amphoe/province in Thai), media_type (img observed),
+    cctv_url (points to the OWNING agency's own server, e.g. a dyndns.org address --
+    liveness/uptime of individual cctv_url values NOT verified, OPEN per-link), is_active,
+    geocode (area/amphoe/tumbon/province), basin, agency. Value is field verification by
+    image, not a new numeric telemetry variable -- candidate for a reference-document-style
+    ingest (station photo links), not observations.sqlite rows. No auth/token required."
+  tag: MEASURED
+
+- id: hii_waterchart_chaophraya_svg_topology
+  agency: "HII (สสน.)"
+  name_th: "Hii waterchart chaophraya basin diagram (static SVG, station topology)"
+  name_en: "HII waterchart Chao Phraya basin diagram (static SVG, station topology)"
+  url: "https://waterchart.thaiwater.net/assets/svg/chaophraya/chaophraya.svg"
+  kind: static_asset
+  auth: none
+  format: "SVG, ~560KB. Per-station placeholder text elements named <code>-wl-value /
+    <code>-cms-value / <code>-msl-value... (populated by page JS at runtime from the JSON
+    endpoints above) plus free-text travel-time labels between some node pairs (Thai:
+    '2 วัน', '1 วัน', '6 ชม.', '3 วัน', '20 ชม.', '2.5 วัน')."
+  cadence: "static (diagram artwork, not live data itself -- update cadence unknown, not a
+    per-run fetch target)"
+  has_coords: false
+  coverage: "~90 node codes found in one sample: C2; CPY001-017 (Chao Phraya main stem,
+    ordering not yet confirmed against tele_station_oldcode); PIN001-006, NAN003-014,
+    YOM005-012, WAN001-005 (Ping/Nan/Yom/Wang headwater rivers); plus ATG*, BKK*, BPK*,
+    DIV*, CHM*, DR*, GLF*, KWN*, LBI*, SKG*, TCY37, THA*, TN21, TY54, temp001/002/004."
+  asset_classes: [river, other]
+  status: reachable
+  http_status: 200
+  probed_at: "2026-09-27"
+  notes: "MEASURED this run (1 curl -k GET -- TLS chain verify FAILS on
+    waterchart.thaiwater.net, same as the already-recorded hii_waterchart_thaiwater_net
+    census row; api-v3.thaiwater.net, the actual data host, verifies fine, so this is a
+    waterchart.thaiwater.net-specific TLS issue, not project-wide). Node-id ordering
+    (CPY001..CPY017) is INSTINCT to read as HII's own confirmed main-stem sequence, NOT yet
+    VERIFIED -- mapping each CPYxxx id to a tele_station_oldcode (e.g. C.2, C.13) requires
+    reading node x/y position or the page's own JS bundle, not done this run (OPEN). If
+    confirmed, this would be a VERIFIED-from-source topology for
+    docs/knowledge/NATIONWIDE_HIERARCHY.md's Chao Phraya chain, replacing coordinate-based
+    inference. No licence/ToS text found on the page for this asset specifically (same
+    unresolved status as the parent hii_waterchart_thaiwater_net row)."
+  tag: RELAYED

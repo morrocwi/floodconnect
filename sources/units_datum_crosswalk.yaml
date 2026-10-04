@@ -1,0 +1,1395 @@
+# sources/units_datum_crosswalk.yaml -- the unit/datum crosswalk table this repo did not
+# have until now.
+#
+# Founder question (verbatim, 2026-09-27): "เรามีตารางหน่วย แปลงข้ามหน่วยงานหรือยัง เช่น กทม
+# กรมชล อุตุ อื่นๆ รวมทั้งระหว่างประเทศ เช่น ม.รทก. คือหน่วยอะไร"
+# Answer before this file existed: NO -- the only crosswalk in this repo was
+# sources/owner_agency_crosswalk.yaml, which maps an asset's `owner` string to a governance-DAG
+# AG_* node (WHO owns something), not units or vertical datums (WHAT NUMBER means what, on what
+# zero-point). This file is that missing table.
+#
+# WRITE SCOPE: this file + docs/UNITS_AND_DATUMS.md are the only two files this check wrote.
+# No tracked file edited, no commit, no build run, no network request made -- every row below is
+# read from files already in this repo (sources/registry.yaml, collect.py/parsers.py docstrings,
+# capacity_ledger.yaml, coping_thresholds.yaml, canal_normal_levels.yaml,
+# bkk_district_elevation.yaml, docs/LAYER0_IN_OUT_CAPACITY.md, docs/FLOW_STALL_TYPOLOGY.md,
+# docs/SAMMAKORN_STANDING_WATER_2026-09-27.md, docs/knowledge/card_api_2026-09-27_
+# hii_waterchart_basin.md, data/observations.sqlite schema, and the BMA plan 2569 PDF text
+# already extracted to this check's scratchpad) or one arithmetic conversion cited inline
+# (unit conversion, not a registered equation -- same discipline as capacity_ledger.yaml's own
+# header note: "Toledo: no equation is used anywhere in this file").
+#
+# Tags: VERIFIED (this check opened the primary document/API response itself, or read it from
+# this repo's own already-VERIFIED files) / RELAYED (from a secondary source, news, or another
+# repo file's own RELAYED tag, not independently re-checked here) / OPEN (unresolved -- no
+# source found stating it).
+
+_meta:
+  generated: "2026-09-27"
+  founder_question_th: >
+    เรามีตารางหน่วย แปลงข้ามหน่วยงานหรือยัง เช่น กทม กรมชล อุตุ อื่นๆ รวมทั้งระหว่างประเทศ เช่น
+    ม.รทก. คือหน่วยอะไร
+  founder_followup_th: >
+    อย่าลืมเชื่อมกับหน่วยต่างชาติด้วย เพื่อให้คำนวณกับ API ต่างชาติได้อย่างเป็นระบบ
+  answer_before_this_file: >
+    NO such table existed -- only sources/owner_agency_crosswalk.yaml, which crosswalks OWNER
+    strings to governance nodes, not units/datums. This file fills that specific gap, and (per
+    the founder's follow-up) makes the foreign/international API side first-class rather than
+    a footnote -- see canonical_units, computation_rules, and international_apis below.
+  scope_note: "Write-scope only: this file + docs/UNITS_AND_DATUMS.md. No tracked file edited,
+    no commit, no build, no network. International-API rows below are built from reading
+    collect.py/parsers.py (this repo's own collector code, already-live field names/units --
+    VERIFIED against code, not a fresh network call) and sources/registry.yaml's own notes
+    (also VERIFIED-against-registry) plus provider documentation named as text only (RELAYED,
+    doc URL cited, never fetched this check)."
+
+# =============================================================================================
+# canonical_units -- FloodConnect's own computation unit for each SI-style quantity.
+# Every source row in `quantities` and `international_apis` below maps INTO these.
+# =============================================================================================
+canonical_units:
+  length_level: "m (metres), stated against a named datum (MSL / station-local / grid) --
+    never a bare metre without a datum tag, per the datums section above"
+  discharge: "m3/s (cubic metres per second)"
+  volume: "m3 (cubic metres); this repo's own files often carry million_m3 (MCM) as a
+    secondary convenience unit alongside m3 -- both kept, never silently interchanged without
+    the x1,000,000 factor stated"
+  depth_accumulation: "mm (millimetres), always with an explicit accumulation window (hour /
+    24h / event) -- a bare 'mm' with no window is treated as incomplete, per computation_rules"
+  intensity: "mm/h (millimetres per hour)"
+  percent: "% -- ONLY meaningful alongside its stated denominator/basis; a bare % is never
+    assumed comparable across sources, per computation_rules and the storage_percent OPEN item
+    above"
+  time: "UTC, ISO-8601 (observations.sqlite's own observed_at_utc/fetched_at_utc columns are
+    the canonical store-level convention) -- ICT (+07:00) and BE-calendar dates are display/
+    source-native conventions, converted to this canonical form on ingest, per
+    time_and_calendar above"
+  probability: "% (0-100), as published by the model provider -- NOT converted or recalibrated
+    by this repo; kept as the provider's own probability estimate"
+  soil_moisture: "m3/m3 (volumetric water content) -- ADDED 2026-09-27 per docs/knowledge/
+    EASIEST_EXTERNAL_APIS_FOR_MISSING_INPUTS_2026-09-27.md #4 (antecedent-wetness/S_0 proxy).
+    This repo had NO canonical unit for this quantity before that task -- it is neither m/mm/
+    m3/s (the categories above), a genuinely new SI-style ratio."
+  pressure: "hPa (hectopascals), mean sea level -- ADDED 2026-09-27 (founder addition,
+    storm-track/pressure context). Data only -- no danger threshold derived from this
+    quantity anywhere in this repo (a draft promoter would be a separate Toledo task)."
+  sea_surface_temperature: "degC -- ADDED 2026-09-27 (founder addition). Data only, same
+    no-threshold posture as pressure above."
+  climate_index: "n/a -- dimensionless anomaly/index value (e.g. NOAA ONI's degC-anomaly,
+    BoM RMM's unitless amplitude), NOT a convertible physical quantity like the categories
+    above -- same non-mapped posture as google_flood_hub's return-period risk category
+    below. ADDED 2026-09-27 (founder addition)."
+
+# =============================================================================================
+# computation_rules -- hard rules for combining/comparing values across sources.
+# None of these are new Toledo equations -- these are REFUSAL/handling rules (same family as
+# docs/FLOW_STALL_TYPOLOGY.md's existing "REFUSE เมื่อ datum ไม่ตรงกัน"), not derivations.
+# =============================================================================================
+computation_rules:
+  - rule: "never_add_intensity_to_accumulation"
+    statement: "Never add or average a mm/h intensity figure with a mm/24h (or any other
+      window) accumulation figure as if they were the same quantity. Convert explicitly first
+      (intensity x hours = depth for THAT window only), and state the window used."
+    example: "BMA's own 58.7 mm/h design intensity and 80 mm/24h design depth are NOT two
+      independent figures to be summed -- they are the SAME design statement expressed two
+      ways (58.7 mm/h x ~3h assumed rain duration ≈ 80mm/day, per docs/CAPACITY.md §1's own
+      VERIFIED quote)."
+  - rule: "grid_cell_vs_gauge_not_equal"
+    statement: "A model's grid-cell mean/point estimate (Open-Meteo, GloFAS, MET Norway, NASA
+      POWER -- all reanalysis/forecast PRODUCTS, not physical sensors) is NEVER treated as
+      equal in kind to a physical gauge reading (RID/HII telemetry, BMA canal sensor, TMD
+      station). Tag every grid/model-derived value `forecast-inferred` or `model-estimate`
+      alongside its own VERIFIED/RELAYED evidence tag -- the two tags answer different
+      questions (source-checked-or-not vs measured-or-modelled)."
+  - rule: "never_mix_msl_and_local"
+    statement: "Never subtract, average, or otherwise combine an MSL-referenced level with a
+      station-local-datum level as if on the same axis. This restates docs/FLOW_STALL_
+      TYPOLOGY.md's existing REFUSE rule -- see the datums section above for which of this
+      repo's own stations are OPEN (unknown datum) vs VERIFIED-MSL."
+  - rule: "never_sum_ensemble_members"
+    statement: "An ensemble forecast (Open-Meteo openmeteo_ensemble/openmeteo_ensemble_daily,
+      31-39 members; MET Norway is NOT an ensemble, single deterministic run) is summarised by
+      median/min/max ACROSS members for the SAME timestep, never by summing member values
+      together. This repo's own collect_openmeteo_ensemble* code already reports per-hour
+      median/min/max across whichever members are present that hour (sources/registry.yaml id
+      openmeteo_ensemble note) -- this rule states that convention explicitly so a future
+      collector does not silently sum instead."
+  - rule: "always_convert_to_utc_before_windowing"
+    statement: "Before computing any accumulation window (e.g. 'last 24h'), convert every
+      source timestamp to UTC first, THEN apply the window boundary. Do not window in mixed
+      local/UTC time. This matters most for the TMD-07:00-ICT vs Open-Meteo/GloFAS-00:00-UTC
+      day-boundary mismatch documented in international_apis.day_boundary_mismatch below --
+      naively treating both as 'daily' and comparing them day-for-day silently shifts the
+      comparison by 7 hours."
+  - rule: "state_conversion_factor_even_when_it_is_1"
+    statement: "Every row below states its conversion_factor_to_canonical explicitly, including
+      the common case of 1 (already canonical) -- so a reader never has to assume 'no unit
+      shown = no conversion needed' silently."
+
+# =============================================================================================
+# international_apis -- foreign/global API sources, first-class (not a footnote), per the
+# founder's explicit follow-up. One row per feed we actually collect (collect.py/registry.yaml)
+# plus Google Flood Hub (not yet collected live -- screenshot-card only, see its own row).
+# =============================================================================================
+international_apis:
+
+  - id: openmeteo_forecast
+    provider: "Open-Meteo (open ECMWF/GFS blend) -- NOT TMD"
+    api_field: "precipitation"
+    provider_documented_unit: "mm, per hourly timestep (Open-Meteo forecast API convention,
+      provider docs: open-meteo.com/en/docs)"
+    provider_documented_unit_secondary: "precipitation_probability: % (0-100), per hourly
+      timestep -- a forecast-model probability, not a measured frequency"
+    grid_resolution: "ECMWF IFS ~9-11 km / GFS ~13 km (blend, per Open-Meteo's own documented
+      model list) -- RELAYED from provider docs, not re-verified this check"
+    grid_vs_point_caveat: "Value returned is the model's own interpolation to the requested
+      lat/lon point (not a station reading) -- tag every value forecast-inferred per
+      computation_rules.grid_cell_vs_gauge_not_equal"
+    canonical_mapping: "precipitation (mm/hourly step) -> canonical depth_accumulation (mm),
+      window = 1 hour per step; sum consecutive steps for a longer window, using the
+      timezone=Asia%2FBangkok localisation already passed in this repo's own URL (per
+      sources/registry.yaml id openmeteo_forecast)"
+    conversion_factor_to_canonical: 1
+    thai_agency_equivalent: "TMD rain_24h_mm (mm/24h) and BMA rain_mm_24h (dds_daily_pdf) --
+      SAME nominal quantity (rainfall depth) but see day_boundary_mismatch below: Open-Meteo's
+      own day boundary (when daily-aggregated) follows the timezone param's local midnight,
+      NOT TMD's 07:00-ICT observation-day convention -- do not compare day-for-day without the
+      correction rule stated there."
+    tag: VERIFIED
+    note: "VERIFIED against this repo's own collect_openmeteo_forecast/parse_openmeteo_forecast
+      code (parsers.py ~line 1079-1095) and the exact URL in sources/registry.yaml -- the field
+      names precipitation/precipitation_probability are read directly from this repo's live
+      collector, not merely from provider docs."
+
+  - id: openmeteo_forecast16d
+    provider: "Open-Meteo, 9 explicit deterministic models (ecmwf_ifs025, gfs_seamless,
+      icon_seamless, jma_seamless, gem_seamless, meteofrance_seamless, ukmo_seamless,
+      knmi_seamless, cma_grapes_global)"
+    api_field: "precipitation_sum"
+    provider_documented_unit: "mm, per DAILY step (daily= param, not hourly) -- a true daily
+      total per the provider's own daily aggregation, forecast_days=16"
+    grid_resolution: "varies per model, roughly 9-28 km class per Open-Meteo's own documented
+      model list (RELAYED, not re-verified per-model this check)"
+    grid_vs_point_caveat: "Same as openmeteo_forecast above -- 8 fixed points
+      (collect.FORECAST7D_POINTS), model-interpolated, not gauges."
+    canonical_mapping: "precipitation_sum (mm/day) -> canonical depth_accumulation (mm),
+      window = 1 day, day boundary = the timezone=Asia%2FBangkok local-midnight-to-local-
+      midnight convention (per the URL's own timezone param, sources/registry.yaml)"
+    conversion_factor_to_canonical: 1
+    thai_agency_equivalent: "Same as openmeteo_forecast row -- TMD 24h rain, day-boundary
+      mismatch caveat applies identically."
+    tag: VERIFIED
+    note: "VERIFIED live this check's predecessor session at Sammakorn + Nakhon Sawan per
+      sources/registry.yaml's own last_status note -- field name and unit read directly from a
+      real response, not provider docs alone."
+
+  - id: openmeteo_multimodel
+    provider: "Open-Meteo, 6 open models (ECMWF/GFS/ICON/JMA/GEM/Météo-France)"
+    api_field: "precipitation"
+    provider_documented_unit: "mm, per hourly timestep, one request per model
+      (models=<model> param)"
+    grid_resolution: "varies per model, same caveat as openmeteo_forecast16d"
+    grid_vs_point_caveat: "Same as openmeteo_forecast -- model-interpolated to a fixed
+      Sammakorn point."
+    canonical_mapping: "precipitation (mm/hourly) -> canonical depth_accumulation (mm),
+      per-step; this repo's own build_data.py drain-timeline chart reads these files for a
+      6-model median/min/max/JMA band (per sources/registry.yaml note on this id)"
+    conversion_factor_to_canonical: 1
+    thai_agency_equivalent: "Same TMD/BMA rain-depth equivalence as above."
+    tag: VERIFIED
+    note: "VERIFIED against parsers.py/collect.py field usage, not yet run live in this
+      environment per sources/registry.yaml's own last_status (shape confirmed against an
+      existing manual snapshot of the same API family)."
+
+  - id: openmeteo_ensemble
+    provider: "Open-Meteo Ensemble API, icon_seamless model, hourly"
+    api_field: "precipitation (per member)"
+    provider_documented_unit: "mm, per hourly timestep, per ensemble member (39 members +
+      control run per sources/registry.yaml's own last_status note)"
+    grid_resolution: "ICON ensemble class resolution, RELAYED from provider docs, not
+      re-verified per-member this check"
+    grid_vs_point_caveat: "Model-interpolated to 2 fixed points (Sammakorn + one upstream
+      point) -- forecast-inferred, per computation_rules."
+    canonical_mapping: "per-member precipitation (mm/hourly) -> canonical depth_accumulation,
+      summarised as per-hour median/min/max ACROSS members (never summed across members, per
+      computation_rules.never_sum_ensemble_members -- this repo's own collector already does
+      this, per sources/registry.yaml's own description of this id)."
+    conversion_factor_to_canonical: 1
+    thai_agency_equivalent: "Same TMD/BMA rain-depth equivalence; the ensemble SPREAD itself
+      (min-to-max range) has no direct single-number Thai-agency equivalent -- it is a
+      forecast-uncertainty product, a genuinely different kind of information from any single
+      Thai-agency reading."
+    tag: VERIFIED
+
+  - id: openmeteo_ensemble_daily
+    provider: "Open-Meteo Ensemble API, serves NOAA GEFS, 31 members, daily"
+    api_field: "precipitation_sum (per member)"
+    provider_documented_unit: "mm, per DAILY step, per member (forecast_days=16)"
+    grid_resolution: "GEFS ~25 km class, RELAYED from provider docs"
+    grid_vs_point_caveat: "Model-interpolated to 8 fixed points -- forecast-inferred."
+    canonical_mapping: "per-member precipitation_sum (mm/day) -> canonical depth_accumulation,
+      summarised per-day median/min/max across members, never summed."
+    conversion_factor_to_canonical: 1
+    thai_agency_equivalent: "Same TMD/BMA rain-depth equivalence, day-boundary caveat applies."
+    tag: VERIFIED
+    note: "VERIFIED live this check's predecessor session at Sammakorn -- 31 real per-member
+      7-day totals (15.4-75.2mm range), per sources/registry.yaml's own last_status note."
+
+  - id: openmeteo_previous_runs
+    provider: "Open-Meteo Previous Runs API (GFS, forecast-vs-later-self-estimate skill check)"
+    api_field: "precipitation, precipitation_previous_day1, precipitation_previous_day3"
+    provider_documented_unit: "mm, per hourly timestep, aggregated by this repo's own
+      collect_openmeteo_previous_runs/parse_openmeteo_previous_runs_skillcheck into a daily
+      precipitation_skillcheck_daily_mm value (variable name confirmed live in
+      data/observations.sqlite's own distinct-variables list, queried this check)"
+    grid_resolution: "GFS class, same caveat as above"
+    grid_vs_point_caveat: "This is model-vs-ITSELF (GFS's own later best-estimate vs its own
+      earlier forecast), NOT model-vs-gauge -- do not read this as a forecast-accuracy figure
+      against a real rain gauge; sources/registry.yaml's own last_status note states this
+      explicitly (4-10x MEASURED-vs-forecast underforecast, 'model vs. itself, NOT vs. a
+      gauge')."
+    canonical_mapping: "precipitation* (mm/hourly) -> canonical depth_accumulation (mm/day
+      after this repo's own aggregation)"
+    conversion_factor_to_canonical: 1
+    thai_agency_equivalent: "None directly -- this is a model self-diagnostic product, not a
+      quantity any Thai agency publishes an equivalent of."
+    tag: VERIFIED
+
+  - id: metno_locationforecast
+    provider: "MET Norway Locationforecast/2.0 compact -- ECMWF-based, independent pipeline/ToS
+      from Open-Meteo"
+    api_field: "precipitation_amount"
+    provider_documented_unit: "mm, per PERIOD -- MET Norway's own API structures periods as
+      next_1_hours / next_6_hours blocks (NOT a uniform hourly grid like Open-Meteo); this
+      repo's own docs/knowledge/FORECAST_7DAY_SOURCES.md §3 note (cited in
+      collect_metno_locationforecast's own docstring) states: daily aggregation MUST keep only
+      non-overlapping next_6_hours blocks (hour%6==0) -- naive summing of overlapping
+      next_1_hours and next_6_hours blocks double/triple-counts."
+    grid_resolution: "MET Norway's own MEPS/ECMWF-derived grid, ~1-9 km class depending on
+      region (RELAYED from provider docs, not re-verified this check)"
+    grid_vs_point_caveat: "Model-interpolated to 8 fixed points -- forecast-inferred."
+    canonical_mapping: "precipitation_amount (mm per next_6_hours block, non-overlapping only)
+      -> canonical depth_accumulation (mm), window = 6h per block, sum 4 blocks for a 24h
+      total, per this repo's own already-documented aggregation rule."
+    conversion_factor_to_canonical: 1
+    thai_agency_equivalent: "Same TMD/BMA rain-depth equivalence -- day-boundary caveat applies,
+      PLUS this source's own internal overlapping-block trap (see canonical_mapping) which is a
+      SEPARATE hazard from the day-boundary mismatch."
+    tag: VERIFIED
+    note: "VERIFIED live this check's predecessor session at Sammakorn -- 90 hourly timesteps
+      (9.75 days), per sources/registry.yaml's own last_status note, PLUS field names
+      confirmed directly in collect.py's own collect_metno_locationforecast function (read this
+      task)."
+
+  - id: nasa_power
+    provider: "NASA POWER (open reanalysis product)"
+    api_field: "PRECTOTCORR"
+    provider_documented_unit: "mm/day, bias-corrected precipitation, daily temporal resolution,
+      point query (community=AG agroclimatology parameter set) -- per NASA POWER's own
+      documented API (power.larc.nasa.gov), RELAYED-provider-doc for the exact grid-cell size:
+      NASA POWER's underlying reanalysis grid is commonly documented elsewhere as ~0.5° x 0.5°
+      (roughly 50 km at this latitude) -- NOT independently re-verified against NASA POWER's own
+      docs text by this check, RELAYED."
+    grid_resolution: "~0.5 degree (≈50 km at Bangkok's latitude), RELAYED from general NASA
+      POWER documentation, not re-fetched this check"
+    grid_vs_point_caveat: "This is the COARSEST grid of any source in this table (~50 km vs
+      ~9-28 km for the Open-Meteo family) -- a single grid cell here covers essentially all of
+      Sammakorn plus a large surrounding area; treat as a regional-context figure, not a
+      neighbourhood-resolution one, per computation_rules.grid_cell_vs_gauge_not_equal (applies
+      with extra force at this resolution)."
+    canonical_mapping: "PRECTOTCORR (mm/day, UTC calendar day per NASA POWER's own daily
+      convention) -> canonical depth_accumulation (mm), window = 1 UTC day -- NOT the same day
+      boundary as Open-Meteo's local-midnight daily aggregation or TMD's 07:00 ICT boundary,
+      see day_boundary_mismatch below."
+    conversion_factor_to_canonical: 1
+    thai_agency_equivalent: "Same nominal quantity as TMD rain_24h_mm -- day-boundary mismatch
+      applies (UTC day here vs local-midnight for Open-Meteo vs 07:00 ICT for TMD -- THREE
+      different day-boundary conventions across just these sources, none identical)."
+    tag: RELAYED
+    note: "Field name PRECTOTCORR VERIFIED directly against this repo's own collect_nasa_power
+      code (collect.py, read this check) and its -999.0 fill-value handling (sources/
+      registry.yaml's own last_status note: 'last 3 days = the feed's own -999.0 fill value...
+      skipped by the parser'). The mm/day unit and UTC-day convention themselves are RELAYED
+      from general NASA POWER documentation (power.larc.nasa.gov), not re-fetched this check."
+
+  - id: openmeteo_flood
+    provider: "Open-Meteo Flood API, serving GloFAS (open global flood model)"
+    api_field: "river_discharge"
+    provider_documented_unit: "m3/s, daily mean, per Open-Meteo's flood-api documentation --
+      GloFAS's own native grid is commonly documented as ~0.05 degree (~5 km) resolution
+      (RELAYED from general GloFAS/Copernicus documentation, not re-fetched this check)"
+    grid_resolution: "~5 km (GloFAS native grid, RELAYED)"
+    grid_vs_point_caveat: "3 fixed points (C.2 นครสวรรค์, เขื่อนเจ้าพระยา, สัมมากร per
+      collect.OPENMETEO_FLOOD_POINTS) -- a GLOBAL hydrological model's own river-routing
+      estimate, not a gauge reading, even at points that happen to sit near a real RID gauge
+      (C.2). Tag forecast-inferred always, per computation_rules."
+    canonical_mapping: "river_discharge (m3/s, daily mean) -> canonical discharge (m3/s),
+      conversion factor 1 -- ALREADY the canonical unit, no conversion arithmetic needed, only
+      the grid-vs-gauge caveat."
+    conversion_factor_to_canonical: 1
+    thai_agency_equivalent: "RID/HII gauge discharge -- e.g. C.2 นครสวรรค์ (thaiwater_waterlevel
+      / capacity_ledger.yaml AS_GAUGE_C2). SAME unit (m3/s), SAME nominal reach in one case
+      (the C.2 point), but GloFAS is a MODEL ESTIMATE at that coordinate, not the RID gauge's
+      own telemetry reading -- never silently substitute one for the other; if both exist for
+      the same day, keep both as separate rows (per this repo's own coping_thresholds.yaml
+      discipline: 'never merge without source')."
+    tag: VERIFIED
+    note: "VERIFIED against parse_openmeteo_flood (parsers.py line 932-939) and a real sample
+      fetch (sources/registry.yaml's own last_status: 7-day daily river_discharge series in
+      m3/s, no missing days)."
+
+  - id: openmeteo_marine
+    provider: "Open-Meteo Marine API (open marine/tide model)"
+    api_field: "sea_level_height_msl, wave_height (this repo's own collector uses only
+      sea_level_height_msl per collect.py collect_openmeteo_marine -- wave_height is a real
+      field in Open-Meteo's marine API per its own documentation but is NOT currently collected
+      by this repo; listed here because the founder's brief named it explicitly)"
+    provider_documented_unit: "sea_level_height_msl: m, vs MSL, hourly (field name states MSL
+      directly, per Open-Meteo's own marine-API field naming); wave_height: m, significant wave
+      height, hourly (RELAYED from Open-Meteo's own marine-API docs, not collected/verified by
+      this repo's code)"
+    grid_resolution: "marine model class (ocean reanalysis/forecast blend), RELAYED from
+      provider docs, not re-verified this check"
+    grid_vs_point_caveat: "One fixed point near the Chao Phraya river-mouth bar in the Gulf of
+      Thailand -- a marine-model estimate, not a tide-gauge reading (contrast with the Navy
+      Hydrographic astronomical tide table, which IS a gauge/prediction from the responsible
+      Thai authority, not a global model)."
+    canonical_mapping: "sea_level_height_msl (m, MSL) -> canonical length_level (m, MSL) --
+      already canonical, conversion factor 1, and ALREADY on the correct datum (MSL) unlike
+      most of this repo's own BMA canal-gauge readings."
+    conversion_factor_to_canonical: 1
+    thai_agency_equivalent: "กรมอุทกศาสตร์ กองทัพเรือ tide_high/low_level_m (dds_tide_pdf) --
+      SAME nominal quantity (sea level vs MSL) but DIFFERENT method: Navy table is an
+      ASTRONOMICAL PREDICTION (excludes dam-release water and rainfall, per its own stated
+      scope) while Open-Meteo marine is a MODEL blend (may include weather-driven surge/wind
+      setup depending on the model's own inputs, not independently confirmed this check) --
+      do not treat the two as interchangeable even though both report m vs MSL."
+    tag: VERIFIED
+    note: "VERIFIED against parse_openmeteo_marine (parsers.py line 1017-1023) and a real
+      sample fetch (sources/registry.yaml's own last_status: 72h hourly series, tidal
+      oscillation visible, -0.53m to +1.94m range)."
+
+  - id: openmeteo_soil_moisture
+    provider: "Open-Meteo (open ECMWF/GFS land-surface model) -- NOT a Thai government agency"
+    api_field: "soil_moisture_0_to_1cm, soil_moisture_1_to_3cm, soil_moisture_3_to_9cm"
+    provider_documented_unit: "m3/m3 (volumetric water content), hourly, per Open-Meteo's own
+      field naming (units confirmed live this check: hourly_units.soil_moisture_0_to_1cm =
+      'm³/m³')"
+    grid_resolution: "global grid (model-dependent, RELAYED from provider docs)"
+    grid_vs_point_caveat: "Model grid-cell estimate, not a physical sensor -- tag every row
+      forecast-inferred per computation_rules.grid_cell_vs_gauge_not_equal. No physical
+      soil-moisture sensor exists anywhere else in this repo to cross-check against."
+    canonical_mapping: "soil_moisture_* (m3/m3) -> canonical soil_moisture (m3/m3), conversion
+      factor 1 -- already canonical, this repo simply had no such category before 2026-09-27."
+    conversion_factor_to_canonical: 1
+    thai_agency_equivalent: "None found this check -- no Thai agency antecedent-wetness/soil-
+      moisture product identified anywhere in this repo's census work."
+    tag: VERIFIED
+    note: "VERIFIED this check -- Sammakorn point, 2026-09-27T00:00=0.495 m3/m3 (see
+      docs/knowledge/EASIEST_EXTERNAL_APIS_FOR_MISSING_INPUTS_2026-09-27.md #4)."
+
+  - id: openmeteo_archive_precip
+    provider: "Open-Meteo Historical Weather API (ERA5-derived reanalysis) -- NOT a Thai
+      government agency"
+    api_field: "precipitation_sum"
+    provider_documented_unit: "mm/day, historical (not real-time), per Open-Meteo's archive-
+      API documentation"
+    grid_resolution: "ERA5, ~31km native (RELAYED from general ERA5 documentation, not
+      re-fetched this check)"
+    grid_vs_point_caveat: "Same day_boundary_mismatch posture as openmeteo_forecast16d --
+      local-midnight-to-local-midnight (Asia/Bangkok), per the URL's own timezone param."
+    canonical_mapping: "precipitation_sum (mm/day) -> canonical depth_accumulation (mm),
+      window = 1 day, conversion factor 1 -- already canonical."
+    conversion_factor_to_canonical: 1
+    thai_agency_equivalent: "Same as openmeteo_forecast16d's TMD/BMA equivalents -- see
+      day_boundary_mismatch above before comparing day-for-day."
+    tag: VERIFIED
+    note: "VERIFIED this check -- Sammakorn point, 2026-08-28..2026-09-26 sum=493.5mm (see
+      docs/knowledge/EASIEST_EXTERNAL_APIS_FOR_MISSING_INPUTS_2026-09-27.md #5)."
+
+  - id: openmeteo_pressure
+    provider: "Open-Meteo, 9 explicit deterministic models (same list as
+      openmeteo_forecast16d)"
+    api_field: "pressure_msl"
+    provider_documented_unit: "hPa, hourly, per model (multi-model field naming
+      pressure_msl_<model>, confirmed live this check -- same convention as
+      openmeteo_forecast16d's precipitation_sum_<model>)"
+    grid_resolution: "varies per model, same class as openmeteo_forecast16d"
+    grid_vs_point_caveat: "3 fixed points (sammakorn, ram53, bangkok_east) -- model
+      interpolation, not a barometer reading. No physical barometer exists anywhere else in
+      this repo to cross-check against."
+    canonical_mapping: "pressure_msl (hPa) -> canonical pressure (hPa), conversion factor 1
+      -- already canonical. DATA ONLY -- no danger threshold derived from this quantity
+      (founder's own instruction, 2026-09-27: a draft promoter is a separate Toledo task)."
+    conversion_factor_to_canonical: 1
+    thai_agency_equivalent: "TMD publishes surface pressure in its own bulletins (RELAYED,
+      not independently collected by this repo) -- no live numeric TMD pressure feed found
+      this check."
+    tag: VERIFIED
+    note: "Shape confirmed live this check (pressure_msl_<model> column naming). Founder
+      addition 2026-09-27 (\"เอาเลย\")."
+
+  - id: openmeteo_sst
+    provider: "Open-Meteo Marine API (open marine/tide model) -- NOT a Thai government agency"
+    api_field: "sea_surface_temperature"
+    provider_documented_unit: "degC, hourly, per Open-Meteo's marine-API documentation
+      (confirmed live this check)"
+    grid_resolution: "marine model class, RELAYED from provider docs"
+    grid_vs_point_caveat: "3 fixed sea points (upper Gulf of Thailand, South China Sea off
+      Vietnam, Andaman Sea) via ONE multi-coordinate request -- model estimate, not a buoy
+      reading. No physical sea-temperature buoy exists anywhere else in this repo."
+    canonical_mapping: "sea_surface_temperature (degC) -> canonical sea_surface_temperature
+      (degC), conversion factor 1 -- already canonical. DATA ONLY, no threshold derived."
+    conversion_factor_to_canonical: 1
+    thai_agency_equivalent: "None found this check."
+    tag: VERIFIED
+    note: "Shape confirmed live this check (JSON array of 3 per-point objects, in request
+      order). Founder addition 2026-09-27 (\"เอาเลย เชื่อมเลย\")."
+
+  - id: noaa_oni
+    provider: "NOAA CPC (Climate Prediction Center)"
+    api_field: "ANOM (column 4 of the whitespace text table)"
+    provider_documented_unit: "degC anomaly, per 3-month rolling season (a climate INDEX,
+      not a physical station reading)"
+    grid_resolution: "n/a -- a single basin-averaged (Nino 3.4 region) index value, not a
+      grid product"
+    grid_vs_point_caveat: "n/a -- not a point/grid quantity at all; one value per season for
+      the whole Nino 3.4 region."
+    canonical_mapping: "NOT MAPPED to a per-point canonical unit -- same non-mapped posture
+      as google_flood_hub below (a climate index, not a convertible physical quantity). Kept
+      under canonical_units.climate_index as an explicit non-mapped category rather than
+      silently forcing it into degC length_level or similar."
+    conversion_factor_to_canonical: "n/a -- not a convertible quantity"
+    thai_agency_equivalent: "No Thai-agency equivalent index found this check -- ONI is a
+      Pacific-basin-wide index used globally (including by TMD's own seasonal outlooks,
+      RELAYED, not independently confirmed this check) as ENSO context, not a Thailand-
+      specific measurement."
+    tag: VERIFIED
+    note: "VERIFIED this check -- latest row JJA 2026, anom=1.80degC. Founder addition
+      2026-09-27 (\"เอาเลย\"), data only, no threshold derived from this quantity here."
+
+  - id: google_flood_hub
+    provider: "Google Flood Hub / Flood Forecasting Initiative"
+    api_field: "not applicable -- no API access this check; this repo has NO live collector for
+      Google Flood Hub. The only input this repo holds is a screenshot read by a predecessor
+      session, per docs/knowledge/card_thirdparty_google_flood_hub_2026-09-27.md."
+    provider_documented_unit: "RELAYED-general (per that card's own §2): Google's model reports
+      a RETURN-PERIOD RISK LEVEL per gauge/virtual-gauge (e.g. 'exceeds a 1-in-5-year event'),
+      NOT a raw discharge/level figure in m3/s or m -- this is a categorically different kind
+      of output from every other row in this table (a calibrated risk category, not a physical
+      unit). A public API (google_flood_hub_api) exists per docs/knowledge/
+      GLOBAL_FREE_HAZARD_APIS.md but is waitlist/pilot-only, OPEN access status, not integrated."
+    grid_resolution: "n/a -- point/gauge and virtual-gauge based, per-location risk category,
+      not a uniform grid product per the card's own description"
+    grid_vs_point_caveat: "Virtual gauges are explicitly model-inferred locations with no
+      physical instrument at all (per the card's §2 RELAYED-general description) -- an even
+      stronger version of computation_rules.grid_cell_vs_gauge_not_equal: some Google Flood Hub
+      points have no equivalent physical gauge anywhere, ever."
+    canonical_mapping: "NOT MAPPED -- there is no canonical-unit conversion possible for a
+      return-period risk CATEGORY into this repo's own m3/s / m / mm canonical units. This
+      repo's own card already states the correct handling: use only as a qualitative cross-
+      check (does our own L3+ zone agree with Google's 'อันตราย/อันตรายมาก' zone), never as a
+      numeric input, per that card's §4."
+    conversion_factor_to_canonical: "n/a -- not a convertible quantity"
+    thai_agency_equivalent: "No direct Thai-agency equivalent publishes the same return-period-
+      category product; the closest comparable concept in this repo's own data is
+      coping_thresholds.yaml's flooded_min/coped_max band, which is evidence-derived per-unit,
+      not a global per-point model output."
+    tag: "MEASURED (for the §1 screenshot readout itself, per that card) / RELAYED-general (for
+      Google's methodology description) / OPEN (API access status, exact virtual-gauge
+      semantics)"
+    note: "This row exists to make explicit WHY Google Flood Hub cannot simply be added as
+      another international_apis row with a conversion_factor like the others -- it is not
+      omitted by oversight, it is structurally a different kind of product (see canonical_
+      mapping above)."
+
+  - id: day_boundary_mismatch
+    description_th: >
+      สรุปการชนกันของ "ขอบเขตวัน" (day boundary) ที่พบจริงข้าม 3+ แหล่งในตารางนี้ -- founder's
+      brief ตัวอย่างตรงตัว: "Open-Meteo daily mm ↔ TMD 24 h แต่คนละ day boundary (00:00 UTC vs
+      07:00 ICT)"
+    boundaries_found:
+      - {source: "TMD (rain_24h_mm convention, RELAYED per TIER_THRESHOLDS_RATIONALE.md)",
+         boundary: "24h window ending 07:00 ICT (local)"}
+      - {source: "Open-Meteo daily-aggregated products (forecast16d, ensemble_daily) when a
+          timezone= param is passed", boundary: "24h window = local midnight to local
+          midnight (Asia/Bangkok, i.e. ICT 00:00-24:00), per Open-Meteo's own documented
+          timezone-localisation behaviour -- this repo's own URLs always pass
+          timezone=Asia%2FBangkok (sources/registry.yaml)"}
+      - {source: "NASA POWER PRECTOTCORR", boundary: "24h window = UTC calendar day (00:00-
+          24:00 UTC), per general NASA POWER documentation, RELAYED, not re-verified this
+          task"}
+      - {source: "BMA daily bulletin (dds_daily_pdf)", boundary: "OPEN -- exact issue clock-
+          time not stated in sources/registry.yaml; see time_and_calendar.bma_bulletin_rain_24h
+          above"}
+    correction_rule: >
+      Never compare two 'daily' rain figures from different sources on this list as if the same
+      calendar day means the same 24h window. Before comparing, state each source's own
+      boundary explicitly (as above) and, where an exact hour-level comparison matters, shift
+      one series by the boundary offset (TMD 07:00 ICT = 00:00 UTC; Open-Meteo local-midnight
+      ICT = 17:00 UTC the PREVIOUS day; NASA POWER UTC midnight = 07:00 ICT) -- this is plain
+      arithmetic on a stated offset, not a new Toledo equation, same discipline as capacity_
+      ledger.yaml's own /86400 conversion.
+    tag: "VERIFIED for TMD/Open-Meteo/BMA boundary claims already stated elsewhere in this repo
+      (time_and_calendar block above); RELAYED for the NASA POWER UTC-day claim (general
+      documentation, not re-fetched this check)"
+
+# =============================================================================================
+# (a) quantities -- one physical quantity per block, canonical unit + per-agency rows
+# =============================================================================================
+quantities:
+
+  water_level:
+    canonical_unit: "m_MSL (metres above Mean Sea Level, national vertical datum)"
+    canonical_note: >
+      Not every agency's own field is actually on MSL -- see the `datums` section below for
+      which of THIS repo's own stations are confirmed-MSL vs confirmed-local vs unknown. Do not
+      assume waterlevel_msl-named fields are always true MSL without checking the datums block.
+    agencies:
+      - agency: "กทม. สนน. (BMA Department of Drainage and Sewerage)"
+        field_as_printed: "canal_water_level_m / level_m / canal_out_m (sources/registry.yaml
+          ids thaiwater_canal_waterlevel, bma_pumphistory, bma_watermap)"
+        thai_abbrev: "ม. (เทียบระดับสถานี -- ไม่ยืนยันว่า MSL หรือ local datum ต่อสถานี)"
+        conversion_to_canonical: "1:1 IF the station is confirmed MSL -- OPEN per-station, see
+          datums block. Never assume 1:1 without that check."
+        accumulation_window: "instantaneous (telemetry reading, canal_datetime timestamp per
+          record)"
+        tag: OPEN
+        note: "sources/registry.yaml itself never states whether canal_water_level_m is MSL or
+          a local station-zero reading -- this repo has not resolved this for any BMA canal
+          station (see WL.BMA.02 case in docs/SAMMAKORN_STANDING_WATER_2026-09-27.md, quoted
+          under datums below)."
+      - agency: "กรมชลประทาน (Royal Irrigation Department, RID)"
+        field_as_printed: "waterlevel_msl / waterlevel_msl_previous (via HII/thaiwater.net,
+          sources/registry.yaml id thaiwater_waterlevel; RID owns most of these gauges, HII
+          republishes) -- also left_bank/right_bank/min_bank/ground_level/critical_level_msl
+          fields seen in the public/waterlevel_load endpoint per docs/knowledge/
+          card_api_2026-09-27_hii_waterchart_basin.md §2"
+        thai_abbrev: "ม.รทก. (when the field name itself says _msl) or ม. (bare station reading)"
+        conversion_to_canonical: "1:1 -- field name explicitly states MSL"
+        accumulation_window: "near-real-time, varies per station (waterlevel_datetime per row)"
+        tag: VERIFIED
+        note: "VERIFIED against the live field name/shape MEASURED this check's predecessor
+          session (card_api_2026-09-27_hii_waterchart_basin.md), not against an RID/HII
+          published glossary document -- the field is literally named _msl, which is the basis
+          for this VERIFIED tag; the underlying datum realisation (which physical benchmark
+          defines 0.00) is not separately re-derived here."
+      - agency: "สสน./HII (thaiwater.net, republishing multiple owning agencies)"
+        field_as_printed: "waterlevel_msl (public/waterlevel, public/waterlevel_load) /
+          canal_water_level_m (public/canal_waterlevel) -- TWO DIFFERENT ENDPOINTS, different
+          field-naming convention, per sources/registry.yaml + card_api_2026-09-27_
+          hii_waterchart_basin.md"
+        thai_abbrev: "ม.รทก. (waterlevel* family) vs ม. bare (canal_water_level_m family)"
+        conversion_to_canonical: "1:1 for the _msl-named family (VERIFIED by field name);
+          canal_water_level_m family: OPEN, same caveat as the BMA canal row above (HII is
+          republishing BMA's own canal telemetry here, so it inherits BMA's same unresolved
+          datum status, not a separate HII datum)."
+        accumulation_window: "near-real-time; multiple distinct timestamps observed across one
+          snapshot per sources/registry.yaml's own cadence note"
+        tag: OPEN
+        note: "Two field-naming families on the SAME host (api-v3.thaiwater.net) do not
+          automatically share a datum just because they share a host -- this repo has not
+          cross-checked whether canal_water_level_m stations are secretly also MSL, only that
+          the field NAME does not say so."
+      - agency: "กฟผ. (EGAT)"
+        field_as_printed: "egat_dam_level_m (sources/registry.yaml id egat_water_crisis,
+          water.egat.co.th/water_crisis.php)"
+        thai_abbrev: "ม.รนก. is EGAT's own convention name for reservoir level in some public
+          EGAT documents -- NOT independently confirmed against this specific page's own text
+          by this check (RELAYED assumption from general EGAT dam-reporting convention, not
+          re-verified against water_crisis.php's own header text this check)."
+        conversion_to_canonical: "OPEN -- EGAT reservoir level is conventionally reported
+          relative to the reservoir's OWN full-supply-level datum in many EGAT public
+          documents, not necessarily national MSL; this specific page's datum basis was not
+          re-checked this check."
+        accumulation_window: "daily (report's own date header, e.g. 26 ก.ย. 2569)"
+        tag: OPEN
+      - agency: "สทนช. (Office of National Water Resources, ONWR)"
+        field_as_printed: "not directly collected by any source in sources/registry.yaml --
+          ONWR appears only as a basin-classification reference (basin:onwr:* ids in
+          capacity_ledger.yaml), never as its own water-level telemetry source"
+        thai_abbrev: OPEN
+        conversion_to_canonical: OPEN
+        accumulation_window: OPEN
+        tag: OPEN
+        note: "No ONWR-sourced water-level field exists anywhere in this repo's registry/store
+          to crosswalk -- flagged as a gap, not guessed."
+      - agency: "กรมทรัพยากรน้ำ (Department of Water Resources, DWR)"
+        field_as_printed: "not directly collected -- DWR appears only via
+          sources/owner_agency_crosswalk.yaml's AG_DWR node (surface water outside irrigation
+          zones + groundwater), no live telemetry field in sources/registry.yaml"
+        thai_abbrev: OPEN
+        conversion_to_canonical: OPEN
+        accumulation_window: OPEN
+        tag: OPEN
+      - agency: "Open-Meteo / GloFAS / MET Norway / NASA POWER / Google Flood Hub"
+        field_as_printed: "openmeteo_marine: sea_level_height_msl (hourly, m); GloFAS
+          (openmeteo_flood): does not publish a water-LEVEL field, only river_discharge (see
+          discharge quantity below); Google Flood Hub: not integrated into this repo at all --
+          no source/collector entry exists for it in sources/registry.yaml, searched and
+          confirmed absent"
+        thai_abbrev: "n/a -- these are international/model sources, field names are English
+          only"
+        conversion_to_canonical: "sea_level_height_msl_m: 1:1, field name states MSL explicitly
+          (Open-Meteo marine API documentation, per sources/registry.yaml id openmeteo_marine)"
+        accumulation_window: "hourly model timestep, Asia/Bangkok timezone param passed
+          explicitly (see time_and_calendar block)"
+        tag: RELAYED
+        note: "Google Flood Hub: OPEN/absent, not merely unconverted -- this repo has no
+          integration point for it to crosswalk yet."
+
+  discharge:
+    canonical_unit: "m3/s (cubic metres per second, cms)"
+    agencies:
+      - agency: "กรมชลประทาน (RID)"
+        field_as_printed: "current_value_this_week.release_m3s / .inflow_m3s in
+          capacity_ledger.yaml (e.g. AS_DAM_C13, AS_GAUGE_C2) -- ultimately sourced from
+          RID-adjacent news relays (thaipbs.or.th), not a raw RID API field name"
+        thai_abbrev: "ลบ.ม./วินาที (cubic metres per second) -- the standard Thai unit string
+          seen throughout capacity_ledger.yaml and the BMA plan PDF"
+        conversion_to_canonical: "1:1"
+        accumulation_window: "instantaneous/daily reading, varies by source article"
+        tag: RELAYED
+      - agency: "สสน./HII (thaiwater.net)"
+        field_as_printed: "discharge (public/waterlevel_load, per docs/knowledge/
+          card_api_2026-09-27_hii_waterchart_basin.md §2 sample row: \"discharge\": \"0.00\")"
+        thai_abbrev: "cms (English abbreviation used directly in the API's own JSON, per that
+          card's example payload)"
+        conversion_to_canonical: "1:1 -- MEASURED this check's predecessor session directly
+          against a live sample payload"
+        accumulation_window: "near-real-time"
+        tag: VERIFIED
+      - agency: "EGAT"
+        field_as_printed: "inflow/release today + past week columns on water.egat.co.th/
+          water_crisis.php (sources/registry.yaml id egat_water_crisis) -- stored in this repo
+          as egat_dam_inflow_mcm/egat_dam_release_mcm (MILLION CUBIC METRES, a VOLUME, not a
+          RATE) plus a derived egat_dam_release_m3s_computed field"
+        thai_abbrev: "ล้าน ลบ.ม./วัน (million m3/day) on the source page itself, per
+          capacity_ledger.yaml's AS_DAM_BHUMIBOL/AS_DAM_SIRIKIT notes (\"inflow 36.16 ล้าน
+          ลบ.ม./วัน (≈418 m3/s)\")"
+        conversion_to_canonical: "million_m3_per_day -> m3/s: divide by 86400 (basic arithmetic,
+          NOT a registered Toledo equation -- capacity_ledger.yaml's own header states this
+          exact convention: \"unit conversion million-m3/day -> m3/s by /86400\"). Example
+          verified in that file: 36.16 ล้าน ลบ.ม./วัน / 86400 * 1e6 = ~418.5 m3/s, matches the
+          ≈418 m3/s already recorded."
+        accumulation_window: "daily (today) + weekly rollup (past week column)"
+        tag: MEASURED
+        note: "MEASURED-from-payload per capacity_ledger.yaml's own tagging of these exact
+          rows -- the /86400 conversion itself is plain arithmetic, explicitly NOT claimed as a
+          Toledo equation by that file's own header."
+      - agency: "GloFAS (via Open-Meteo openmeteo_flood)"
+        field_as_printed: "river_discharge (glofas_river_discharge_m3s)"
+        thai_abbrev: "n/a"
+        conversion_to_canonical: "1:1, field name states m3/s directly (sources/registry.yaml
+          id openmeteo_flood: \"7-day daily river_discharge series in m3/s\")"
+        accumulation_window: "daily model output"
+        tag: RELAYED
+      - agency: "กทม. สนน. -- pumping capacity figures"
+        field_as_printed: "led:bkk_total_pumping_phranakhon (1,200), led:bkk_total_pumping_
+          citywide_theoretical (2,467.69), led:pump_bmakstations_summary (718.0) -- ALL
+          m3/s already, but THREE DIFFERENT, non-reconcilable totals for overlapping scope
+          (per capacity_ledger.yaml's own explicit non-merge notes on these three rows)"
+        thai_abbrev: "ลบ.ม./วินาที"
+        conversion_to_canonical: "1:1 -- already canonical unit; the problem here is SCOPE
+          disagreement between agencies' own published totals, not a unit-conversion problem.
+          Flagged in known_unit_errors_in_sources below as a related-but-distinct caution."
+        accumulation_window: "point-in-time reported max / theoretical design sum (not
+          comparable time bases either -- see capacity_ledger.yaml notes)"
+        tag: RELAYED
+      - agency: "กรมอุทกศาสตร์ กองทัพเรือ (Royal Thai Navy Hydrographic Dept, tide)"
+        field_as_printed: "tide_hw_am_level_m / tide_lw_am_level_m etc. -- this is a LEVEL
+          (m, see water_level block), not a discharge; listed here only to flag that this
+          agency publishes NO discharge/flow figure anywhere in this repo's sources."
+        thai_abbrev: "n/a"
+        conversion_to_canonical: "n/a"
+        accumulation_window: "n/a"
+        tag: OPEN
+
+  storage_volume:
+    canonical_unit: "million_m3 (MCM, ล้านลูกบาศก์เมตร)"
+    agencies:
+      - agency: "สสน./HII (thaiwater.net analyst/dam)"
+        field_as_printed: "dam_hourly_storage_mcm / dam_daily_storage_mcm /
+          dam_medium_storage_mcm (sources/registry.yaml id hii_dam)"
+        thai_abbrev: "ล้าน ลบ.ม. (MCM)"
+        conversion_to_canonical: "1:1, field name states mcm directly"
+        accumulation_window: "mixed cadence per dam class -- dam_hourly/dam_daily near-
+          real-time, dam_medium/dam_small_tele daily (sources/registry.yaml note)"
+        tag: VERIFIED
+      - agency: "EGAT"
+        field_as_printed: "egat_dam_storage_mcm (water.egat.co.th/water_crisis.php,
+          \"ปริมาณน้ำเก็บกัก\" column, million m3)"
+        thai_abbrev: "ล้าน ลบ.ม."
+        conversion_to_canonical: "1:1"
+        accumulation_window: "daily"
+        tag: RELAYED
+      - agency: "กรมชลประทาน (RID, rid_res_table)"
+        field_as_printed: "no numeric field at all -- rid_res_table publishes dam NAMES only,
+          no coordinate, no storage figure (sources/registry.yaml id rid_res_table, explicit
+          note: \"the page publishes NO coordinate or numeric reading anywhere\")"
+        thai_abbrev: OPEN
+        conversion_to_canonical: OPEN
+        accumulation_window: OPEN
+        tag: OPEN
+
+  storage_percent:
+    canonical_unit: "% of a station's own denominator -- NOT a canonical, comparable percentage
+      across stations without knowing each station's own basis"
+    agencies:
+      - agency: "สสน./HII"
+        field_as_printed: "dam_hourly_storage_pct / storage_percent (public/waterlevel(_load))"
+        thai_abbrev: "% (เก็บกัก / ตลิ่ง -- ไม่ระบุชัดในชื่อฟิลด์เอง)"
+        conversion_to_canonical: "NONE -- this repo has NOT confirmed what storage_percent's
+          denominator is for a RIVER GAUGE row (as opposed to a dam row). See
+          card_api_2026-09-27_hii_waterchart_basin.md §2's own flag: \"storage_percent --
+          น่าจะคือ % เทียบตลิ่ง/ความจุ (ต้องยืนยันหน่วยกับ HII glossary ก่อนใช้จริง -- OPEN)\". A
+          sample value of 209.48% (in that card's example row) is itself evidence the field is
+          NOT simply \"percent of design capacity\" in the naive sense (>100% would be
+          impossible under that reading) -- likely percent-of-something-else or a different
+          convention per station_type. Do not treat storage_percent values across two different
+          station_type rows (dam vs tele_waterlevel) as comparable without resolving this."
+        accumulation_window: "same as parent reading"
+        tag: OPEN
+        note: "This is the single most dangerous OPEN item in this quantity block -- a % field
+          that LOOKS comparable across stations/agencies but is not confirmed to share a
+          denominator convention. See known_unit_errors_in_sources for the flag."
+      - agency: "EGAT"
+        field_as_printed: "egat_dam_storage_pct (\"ปริมาณน้ำเก็บกัก... %\")"
+        thai_abbrev: "% ความจุเก็บกัก (ของอ่างเก็บน้ำ -- against the dam's own full-supply
+          capacity, per common EGAT reporting convention)"
+        conversion_to_canonical: "Likely % of the reservoir's own rated storage capacity, NOT
+          re-verified against water_crisis.php's own header text this check -- RELAYED
+          assumption from general EGAT convention."
+        accumulation_window: "daily"
+        tag: RELAYED
+
+  rainfall_depth:
+    canonical_unit: "mm (millimetres, accumulated over a stated window)"
+    agencies:
+      - agency: "กทม. สนน. (DDS daily bulletin)"
+        field_as_printed: "rain_mm_24h (dds_daily_pdf, sources/registry.yaml)"
+        thai_abbrev: "มม. (ใน 24 ชม., นับจาก... -- window start time NOT independently
+          re-verified against the PDF's own header text by this check; see accumulation_window
+          note)"
+        conversion_to_canonical: "1:1"
+        accumulation_window: "24h rolling, ending at the bulletin's own issue time -- this
+          repo's own docs (docs/CAPACITY.md §5) cite specific station readings dated to a
+          single day (26 ก.ย. 2569) without separately re-stating the exact clock-time window
+          boundary; OPEN whether this exactly matches TMD's 07:00-to-07:00 convention below or
+          BMA uses its own bulletin-issue-time rolling window (RELAYED distinction, not
+          reconciled this check)."
+        tag: VERIFIED
+        note: "The 203.0/203.5/205.0mm/24h readings (พญาไท/สะพานสูง/วังทองหลาง) are VERIFIED
+          per docs/CAPACITY.md §5 direct PDF quote."
+      - agency: "สสน./HII (thaiwater.net rain_24h)"
+        field_as_printed: "rain_24h_mm (sources/registry.yaml id thaiwater_rain_24h)"
+        thai_abbrev: "มม./24ชม."
+        conversion_to_canonical: "1:1"
+        accumulation_window: "24h rolling, exact window boundary OPEN -- sources/registry.yaml
+          itself states cadence \"unknown -- not yet observed across two fetches\""
+        tag: OPEN
+      - agency: "สสน./HII (thaiwater.net rain_24h, same endpoint, added row 2026-09-28
+          per TODO #181)"
+        field_as_printed: "rain_1h_mm (sources/registry.yaml id thaiwater_rain_24h, same
+          endpoint as the rain_24h_mm row above -- confirmed MEASURED against a live
+          raw/live/thaiwater_rain_24h/*.json payload, 4439 records, that the API also
+          carries a `rain_1h` field; no rain_3h/6h/12h field exists anywhere in this API
+          family)"
+        thai_abbrev: "มม./ชม."
+        conversion_to_canonical: "1:1"
+        accumulation_window: "1h rolling, ending at the same `rainfall_datetime` timestamp
+          as the 24h reading on the same record -- window-end convention RELAYED/assumed
+          from the field name, no written thaiwater.net API spec found to independently
+          verify it against. `rain_1h` is absent on ~12% of records (539/4439 checked) --
+          stored only when present, never fabricated as 0 or derived from rain_24h."
+        tag: OPEN
+      - agency: "กรมอุตุนิยมวิทยา (TMD)"
+        field_as_printed: "no live field collected anywhere in sources/registry.yaml -- TMD
+          appears only in owner_agency_crosswalk.yaml as AG_TMD (a governance node), never as
+          a telemetry source"
+        thai_abbrev: "มม./24ชม., official convention: 24h ending 07:00 local (Asia/Bangkok) --
+          this is TMD's OWN publicly known observation-day convention, but NOT independently
+          re-verified against tmd.go.th by this repo (docs/LAYER0_IN_OUT_CAPACITY.md §6 already
+          records \"WebFetch tmd.go.th ล้มเหลว\" -- a direct fetch failed with a TLS certificate
+          error). RELAYED, not primary-verified."
+        conversion_to_canonical: "1:1 in principle, but this repo has NO live TMD rain field at
+          all to convert -- OPEN as a data-availability gap, separate from the unit question."
+        accumulation_window: "24h ending 07:00 ICT (RELAYED, general TMD convention, not
+          primary-verified per the WebFetch-failure note above)"
+        tag: RELAYED
+      - agency: "Open-Meteo / NASA POWER"
+        field_as_printed: "precipitation_mm (openmeteo_forecast, hourly, NOT a 24h depth
+          directly -- must be summed) / rain_24h_mm (nasa_power, PRECTOTCORR, daily, bias-
+          corrected mm/day)"
+        thai_abbrev: "n/a"
+        conversion_to_canonical: "Open-Meteo hourly precipitation_mm: sum 24 consecutive hourly
+          values for a 24h depth, using the timezone= param's own day boundary (see
+          time_and_calendar block) -- NOT the same day-boundary convention as TMD's 07:00 or
+          BMA's bulletin-issue-time; NASA POWER PRECTOTCORR is already a daily total, UTC-day
+          boundary per NASA POWER's own documented convention (RELAYED, not independently
+          re-verified against NASA POWER's own docs text by this check)."
+        accumulation_window: "Open-Meteo: hourly, timezone=Asia/Bangkok when requested (local
+          day boundary); NASA POWER: daily, UTC calendar day (RELAYED assumption, standard NASA
+          POWER convention, not re-verified against their docs this check)"
+        tag: RELAYED
+
+  rainfall_intensity:
+    canonical_unit: "mm/h (millimetres per hour)"
+    agencies:
+      - agency: "กทม. สนน. (design standard, VERIFIED PDF quote)"
+        field_as_printed: "\"58.7 มิลลิเมตรต่อชั่วโมง\" (design intensity, equivalent to the
+          80mm/day design depth above) -- แผนปฏิบัติราชการ 2569 หน้า 4"
+        thai_abbrev: "มม./ชม."
+        conversion_to_canonical: "1:1"
+        accumulation_window: "design-basis: 80mm/day averaged over an assumed 3h rain duration
+          per day (\"ใน 1 วัน โดยเฉลี่ยแล้วฝนตกประมาณ 3 ชั่วโมง\") -- this is a DESIGN
+          convention/assumption, not a measured intensity."
+        tag: VERIFIED
+      - agency: "กทม. สนน. -- BMA flood-plan operational-period table (§5, this check's own
+          grep of the plan PDF, distinct from the §1/design-standard figures above)"
+        field_as_printed: "ช่วงที่ 1 (พ.ค.-ก.ค.): 10-60 มม./ชม. ปกติ, >90 มม./ชม. ผิดปกติ; ช่วงที่
+          2 (ส.ค.-ต.ค.): 60-90 มม./ชม.; ช่วงที่ 3 (ต.ค.-ธ.ค.): >90 มม./ชม."
+        thai_abbrev: "มม./ชม."
+        conversion_to_canonical: "1:1"
+        accumulation_window: "operational-period classification bands, not a single design
+          figure -- distinct basis from the §1 58.7mm/h as-built design figure (this is an
+          OPERATIONAL SEVERITY classification used to decide which of the plan's 3 seasonal
+          response postures applies, not the drainage system's rated capacity)."
+        tag: VERIFIED
+        note: "VERIFIED this check directly from the plan PDF text (grep hit, see
+          known_unit_errors_in_sources for the adjacent §5.1 3,500 ล้านลบ.ม./วินาที line found in
+          the same table)."
+      - agency: "JICA master-plan (RELAYED, news-relayed, per docs/CAPACITY.md §1)"
+        field_as_printed: "76 mm/h (current, RELAYED) / 100 mm/h (future 20-40yr target,
+          RELAYED)"
+        thai_abbrev: "มม./ชม."
+        conversion_to_canonical: "1:1"
+        accumulation_window: "design-basis, different project/scope than the สนน. 58.7mm/h
+          figure -- see known_unit_errors_in_sources, this is a basis conflict, not a unit
+          error."
+        tag: RELAYED
+      - agency: "กรมอุตุนิยมวิทยา (TMD) intensity-class reference"
+        field_as_printed: "see rain_intensity_descriptors block below -- separate table, kept
+          apart per this check's own instruction not to merge classification schemes"
+        thai_abbrev: "มม./ชม. AND มม./24ชม. (TMD publishes classes on BOTH bases in different
+          contexts -- this repo's own coping_thresholds.yaml only has the 24h-basis class
+          boundaries, RELAYED, not primary-verified)"
+        conversion_to_canonical: OPEN
+        accumulation_window: OPEN
+        tag: RELAYED
+
+  pump_capacity:
+    canonical_unit: "m3/s"
+    agencies:
+      - agency: "กทม. สนน."
+        field_as_printed: "capacity_value/unit=m3s rows throughout capacity_ledger.yaml (pump_
+          station:water_station:1/2, led:pump_bmakstations_summary, led:bkk_total_pumping_*)"
+        thai_abbrev: "ลบ.ม./วินาที"
+        conversion_to_canonical: "1:1 -- already canonical; the open problem is which of the
+          THREE non-reconciled citywide totals (1,200 / 2,467.69 / 718.0, plus 3 more disputed
+          figures in docs/CAPACITY.md §3: 1,200 / 1,230.55 / 1,300, plus the specifically-asked
+          1,272.33 which is NOT FOUND anywhere) to use for what purpose."
+        accumulation_window: "n/a (design/rated capacity, not a time series)"
+        tag: RELAYED
+
+  canal_tunnel_design_capacity:
+    canonical_unit: "m3/s"
+    agencies:
+      - agency: "กทม. สนน. (via SpringNews infographic + docs/CAPACITY.md relay)"
+        field_as_printed: "capacity_value/unit=m3s, kind=tunnel rows in capacity_ledger.yaml
+          (e.g. tunnel:bma_dds:saensaeb_ladprao = 60 m3/s from TWO independent RELAYED
+          sources agreeing)"
+        thai_abbrev: "ลบ.ม./วินาที"
+        conversion_to_canonical: "1:1"
+        accumulation_window: "n/a (design capacity)"
+        tag: RELAYED
+      - agency: "BMA flood plan PDF §... (this check's own grep, \"อาคารรับน้ำ\" list, line
+          ~1969-2007 of the extracted plan text)"
+        field_as_printed: "อาคารรับน้ำบึงหนองบอน ขนาด 60 ลบ.ม./วินาที; อาคารรับน้ำคลองหนองบอน 30;
+          อาคารรับน้ำคลองเคล็ด 25; อาคารรับน้ำอุดมสุข 56 = 5; อาคารรับน้ำอุดมสุข 42 = 5; อาคารรับน้ำ
+          ถ.สุขุมวิท 101/1 = 5; อาคารรับน้ำ ถ.สุขุมวิท 66/1 = 15; สถานีสูบน้ำอุโมงค์บางอ้อ = 60;
+          อาคารรับน้ำคลองลาดพร้าว = 38"
+        thai_abbrev: "ลบ.ม./วินาที"
+        conversion_to_canonical: "1:1"
+        accumulation_window: "n/a (design capacity)"
+        tag: VERIFIED
+        note: "VERIFIED this check directly from the plan PDF text grep -- these figures were
+          NOT previously in capacity_ledger.yaml (nongbon tunnel row there cites a DIFFERENT
+          source, SpringNews, also 60 m3/s -- consistent, independently confirms, not merged
+          into one row per this repo's own never-merge-without-source discipline)."
+
+  ground_elevation:
+    canonical_unit: "m_MSL (metres above Mean Sea Level, national vertical datum)"
+    agencies:
+      - agency: "กรมแผนที่ทหาร (RTSD, Royal Thai Survey Department) 2010 survey"
+        field_as_printed: "ground_level_m_msl_min/_max/_typical (sources/
+          bkk_district_elevation.yaml, per-district, raw/rtsd_2010/)"
+        thai_abbrev: "ม.รทก. (RTSD's own map legend, per bkk_district_elevation.yaml's _meta
+          method note)"
+        conversion_to_canonical: "1:1 -- already MSL by definition of the source map"
+        accumulation_window: "n/a (static Oct 2010 survey, 1:125,000, 2x2km survey grid, single-
+          point centroid sample per district -- NOT a district-wide statistic, see that file's
+          own caveats block)"
+        tag: VERIFIED-from-map
+        note: "This tag is copied VERBATIM from bkk_district_elevation.yaml's own row-level
+          tag (elevation_tag field) -- not re-derived here. Many districts are OPEN in that
+          same file (raster-sample contamination, see its own notes) -- do not treat every
+          district as VERIFIED; only rows the source file itself marked VERIFIED-from-map are."
+      - agency: "subsidence caveat (all agencies)"
+        field_as_printed: "subsidence_rate_mm_yr: null for every district in
+          bkk_district_elevation.yaml -- no source states a per-district rate"
+        thai_abbrev: "มม./ปี"
+        conversion_to_canonical: "n/a -- OPEN, no value exists to convert"
+        accumulation_window: "n/a"
+        tag: OPEN
+        note: "CRITICAL caveat already stated in bkk_district_elevation.yaml's own _meta:
+          the 2010 RTSD survey predates 15 years of Bangkok/Samut Prakan subsidence -- current
+          ground level may be LOWER than the mapped value everywhere, direction of error known,
+          magnitude OPEN."
+
+  gate_opening:
+    canonical_unit: "m (metres, height of gate opening above its own sill)"
+    agencies:
+      - agency: "กทม. สนน. (bma_watermap)"
+        field_as_printed: "gate_opening_m / watergate01..06 (sources/registry.yaml id
+          bma_watermap)"
+        thai_abbrev: "ม. (ความสูงช่องเปิด)"
+        conversion_to_canonical: "1:1"
+        accumulation_window: "near-real-time (52 of 312 stations non-null in the probe
+          archive, per sources/registry.yaml's own last_status note)"
+        tag: MEASURED
+      - agency: "สสน./HII (hii_watergate)"
+        field_as_printed: "watergate_upstream_level_m / watergate_downstream_level_m
+          (sources/registry.yaml id hii_watergate) -- these are LEVELS either side of a gate,
+          not the gate-opening height itself; listed here to flag they are a DIFFERENT quantity
+          from BMA's gate_opening_m despite both being \"about a gate\""
+        thai_abbrev: "ม."
+        conversion_to_canonical: "n/a -- different quantity (water_level, not gate_opening);
+          do not conflate with bma_watermap's gate_opening_m."
+        accumulation_window: "near-real-time"
+        tag: VERIFIED
+
+  tide:
+    canonical_unit: "m_MSL, with an explicit HW/LW (high-water/low-water) event tag, not a
+      continuous series"
+    agencies:
+      - agency: "กรมอุทกศาสตร์ กองทัพเรือ (Royal Thai Navy Hydrographic Department)"
+        field_as_printed: "tide_high_am_level_m / tide_low_am_level_m / tide_high_pm_level_m /
+          tide_low_pm_level_m (sources/registry.yaml id dds_tide_pdf) -- ASTRONOMICAL
+          prediction only, explicitly excludes dam-release water and rainfall per the source
+          document's own stated scope (capacity_ledger.yaml outfall:tide_boundary_condition
+          row: \"ไม่รวมน้ำระบายจากเขื่อน และปริมาณน้ำฝน\")"
+        thai_abbrev: "ม.รทก. (per the ปากคลองตลาด historical-max-level table in the BMA plan
+          PDF, which uses the same ม.รทก. unit for river-level-at-high-tide readings, e.g.
+          \"ระดับน้าสูงสุด 2.13...2.53 (ม.รทก.)\" for years 2526-2568)"
+        conversion_to_canonical: "1:1"
+        accumulation_window: "yearly PDF covering all 12 months, up to 2 HW + 2 LW events per
+          day (AM/PM)"
+        tag: VERIFIED
+      - agency: "Open-Meteo marine API"
+        field_as_printed: "sea_level_height_msl_m (openmeteo_marine)"
+        thai_abbrev: "n/a"
+        conversion_to_canonical: "1:1, field states MSL directly"
+        accumulation_window: "hourly, continuous series (not an HW/LW-only table like the Navy
+          source) -- a genuinely different granularity/basis from the Navy astronomical table,
+          not merged."
+        tag: RELAYED
+
+# =============================================================================================
+# (b) datums -- what "ม.รทก." is, and which of THIS repo's own stations are on it
+# =============================================================================================
+datums:
+  m_rtk_definition:
+    thai: "ม.รทก. = เมตร (เทียบ) ระดับทะเลปานกลาง"
+    english: "metres above Mean Sea Level (MSL), Thailand's national vertical datum"
+    realising_authority: "กรมแผนที่ทหาร (Royal Thai Survey Department, RTSD) -- the benchmark
+      network that physically realises this datum traces to the Ko Lak (เกาะหลัก, Prachuap
+      Khiri Khan) mean-sea-level gauge, per the standard/widely-cited Thai national datum
+      convention"
+    tag: RELAYED
+    note: >
+      This repo holds no primary RTSD datum-definition document of its own -- the Ko Lak/
+      กรมแผนที่ทหาร attribution is standard published convention (widely cited in Thai survey/
+      GIS literature), not independently re-verified against an RTSD primary document by this
+      task. What this repo DOES hold directly: the RTSD 2010 flood-risk raster
+      (raw/rtsd_2010/, sources/bkk_district_elevation.yaml's own _meta states "MSL datum"
+      explicitly for that map) and the BMA plan PDF's own repeated use of "ม.รทก." for river/
+      tide levels (VERIFIED, this check's own grep, see quantities.tide above). Treat the Ko Lak
+      attribution as RELAYED background, and the repo's own RTSD-map/plan-PDF usages as the
+      VERIFIED anchor for what ม.รทก. means operationally in this repo's own sources.
+
+  bma_canal_gauges_datum_status:
+    summary: "OPEN for every single BMA canal-telemetry station in this repo -- no source read
+      states whether a given WL.* canal gauge's own zero-point is MSL or a local/arbitrary
+      station-zero."
+    evidence: >
+      docs/SAMMAKORN_STANDING_WATER_2026-09-27.md line 122 states plainly (Thai, verbatim):
+      "เคยอ้าง ต่างสเกล/datum กันด้วย ดูตัวเลข ΔH จริงไม่ได้" (different scale/datum have been
+      cited before -- the real ΔH cannot be read this way) and line 135: "ไม่มีค่า MSL ของ
+      WL.SMK.01/WL.BMA.02 ในคลังนี้ ไม่มี anchor ใดเชื่อม..." (no MSL value for WL.SMK.01/
+      WL.BMA.02 exists in this store, no anchor connects them...). Line 197 of the same
+      document: "ไม่พบตัวเลขนี้ในคลังนี้เลย -- OPEN (ไม่กล้าอ้างเลข '-1.50 ม.รทก.' ใดๆ เพราะไม่พบ
+      แหล่งในคลัง)" -- an explicit refusal to state a specific ม.รทก. figure without a source.
+    per_station:
+      "WL.BMA.02 (คลองบ้านม้า ตอนถนนรามคำแหง)": {datum: OPEN, live_reading_m: 0.73,
+        as_of: "2026-09-27", source: "docs/knowledge/BMA_WATER_MAP_PROBE.md via
+          sources/canal_normal_levels.yaml notes", tag: OPEN, note: "warning=2.14/critical=2.68
+          flagged as a likely mismatched/legacy threshold in canal_normal_levels.yaml's own
+          notes -- the mismatch itself is evidence the warning/critical pair may be on a
+          DIFFERENT datum/scale realisation than the live reading, not merely a stale number."}
+      "WL.SMK.01": {datum: OPEN, source: "docs/SAMMAKORN_STANDING_WATER_2026-09-27.md line 135",
+        tag: OPEN, note: "explicitly named in that doc as having no MSL value anywhere in this
+          repo's store."}
+      "WL.SSB.07/09/10, WL.PWT.03/04, WL.LPW.01": {datum: OPEN, source:
+          "sources/canal_normal_levels.yaml", tag: OPEN, note: "That file computes a
+          dry-season MEDIAN water level per station (normal_level_m) directly comparable to a
+          live reading from the SAME station/instrument (self-consistent), but never states
+          whether the underlying station_id's own zero-point is MSL or local -- see that
+          file's own header: 'basis values used here' section does not address datum
+          realisation at all, only the statistical basis (median vs agency-declared control
+          level)."}
+    normal_control_level: >
+      sources/canal_normal_levels.yaml's own notes block states directly: the one archived BMA
+      planning PDF checked (raw/capacity/plan_2569.pdf, same document cited throughout this
+      crosswalk) was searched for "ระดับควบคุม"/"ระดับปกติ" via pdftotext and returned ZERO hits
+      -- it is a general action-plan document, not a per-canal control-level table. HOWEVER,
+      this check's OWN direct grep of the same/an adjacent BMA plan PDF text (the fuller extract
+      at this check's scratchpad) DID find per-canal operational control levels stated in
+      ม.รทก. for RID-operated pump stations (not BMA canal gauges) -- see the
+      rid_operational_control_levels block immediately below. These are two DIFFERENT station
+      sets (BMA canal telemetry vs RID pump-station control rules), not a resolution of the
+      BMA canal-gauge datum question.
+
+  rid_operational_control_levels_found_this_task:
+    summary: "VERIFIED (this check's own grep of the BMA plan PDF text) -- these are RID
+      (กรมชลประทาน)-declared operational control levels for named pump stations, all stated
+      in ม.รทก., found while searching for the founder's requested terms. Distinct from the
+      canal-gauge datum question above (different agency, different station type)."
+    rows:
+      - station: "สถานีสูบน้ำคลองหกวา ตอนคลอง 13"
+        outer_max_m_rtk: 1.70
+        inner_max_m_rtk: 0.80
+        note: "เมื่อระดับน้ำด้านในเกิน +0.80 ม.รทก. กรมชลประทานจะเดินเครื่องสูบ; หยุดเมื่อด้านนอกถึง
+          +1.70 ม.รทก."
+        source_line: "plan PDF, ~line 926-931 of this check's extracted text"
+        tag: VERIFIED
+      - station: "สถานีสูบน้ำคลองแสนแสบ ตอนหนองจอก"
+        outer_max_m_rtk: 1.30
+        inner_max_m_rtk: 0.50
+        note: "เดินเครื่องสูบเมื่อด้านในเกิน +0.50 ม.รทก.; หยุดเมื่อด้านนอกถึง +1.50 ม.รทก."
+        source_line: "plan PDF, ~line 933-936"
+        tag: VERIFIED
+      - station: "(third station, unnamed in the extracted fragment read this check)"
+        inner_max_m_rtk: 0.20
+        note: "เดินเครื่องสูบเมื่อด้านในเกิน +0.20 ม.รทก.; อีกจุดหนึ่งหยุดที่ +0.75 ม.รทก. -- station
+          name itself was not captured within this check's grep window, flagged OPEN for the
+          name, VERIFIED for the two numbers"
+        source_line: "plan PDF, ~line 939-941"
+        tag: VERIFIED-numbers-OPEN-station-name
+      - context: "ประตูระบายน้ำ (ปตร.) จุฬาลงกรณ์ area, dry-season gate operation rule"
+        value_m_rtk: 0.50
+        note: "ช่วงฤดูแล้งจะเปิดบานประตูเพื่อนำน้ำจากคลองรังสิตผ่านเข้ามาไหลเวียนคลองเปรมประชากร ที่
+          +0.50 ม.รทก."
+        source_line: "plan PDF, ~line 918"
+        tag: VERIFIED
+      - context: "ปตร. เดียวกัน, rainy-season posture"
+        value_m_rtk: 0.70
+        note: "ถ้าระดับน้ำมากกว่านี้จะเปิดประตูบางส่วนหรือปิดประตูระบายน้ำทั้งหมด"
+        source_line: "plan PDF, ~line 894"
+        tag: VERIFIED
+      - context: "seasonal river-level operational bands (§5.1, 3 ช่วงปฏิบัติการ)"
+        rows:
+          - {period: "ต้นฤดูฝน (พ.ค.-ก.ค.)", chao_phraya_level_m_rtk: 1.20}
+          - {period: "ปลายฤดูฝน (ส.ค.-ต.ค.)", chao_phraya_level_m_rtk: "1.50 to 1.80"}
+          - {period: "น้ำเหนือ+น้ำทะเลหนุน (ต.ค.-ธ.ค.)", chao_phraya_level_m_rtk: "> 1.80"}
+        source_line: "plan PDF, ~line 529-538"
+        tag: VERIFIED
+      - context: "flood-defence embankment/sandbag target levels (post-2554 reinforcement)"
+        rows:
+          - {location: "คลองบางเขน/คลองบางซื่อ area, ตอนเหนือ กทม.",
+             peak_2554_m_rtk: 2.83, old_bank_m_rtk: 3.00, post_2554_bank_m_rtk: 3.50}
+          - {location: "sandbag emergency line", range_m_rtk: "2.30 to 2.50"}
+          - {location: "คันกั้นน้ำ ด้านตะวันออก (คลองหกวา ถึง ถนนบางพลี-ตำหรุ)",
+             range_m_rtk: "2.50 to 3.95 (varies by segment)"}
+        source_line: "plan PDF, ~lines 761-777, 1660-1674"
+        tag: VERIFIED
+
+  hii_waterlevel_msl_vs_waterlevel_bare: >
+    HII/thaiwater publishes at least two water-level field families on the SAME host
+    (api-v3.thaiwater.net): fields explicitly named *_msl (waterlevel_msl, waterlevel_msl_
+    previous, critical_level_msl -- these ARE MSL, VERIFIED by field name per
+    docs/knowledge/card_api_2026-09-27_hii_waterchart_basin.md §2) versus canal_water_level_m
+    (public/canal_waterlevel, sources/registry.yaml id thaiwater_canal_waterlevel -- this is
+    BMA's own canal telemetry republished by HII, OPEN datum status, inherited from the BMA
+    canal-gauge OPEN status above, not a separate HII decision).
+
+  rid_bank_levels_in_msl: >
+    left_bank / right_bank / min_bank / ground_level / critical_level_msl fields seen in the
+    public/waterlevel_load sample row (docs/knowledge/card_api_2026-09-27_hii_waterchart_basin.md
+    §2, e.g. "left_bank": 72.14, "right_bank": 60.48, "ground_level": 55.63,
+    "critical_level_msl": 62.4) -- these sit alongside a waterlevel_msl field in the SAME row,
+    strongly suggesting (INSTINCT, not independently confirmed against an HII glossary) that
+    left_bank/right_bank/ground_level in that same endpoint share the MSL basis of their sibling
+    field, but this repo has not obtained an explicit HII statement that bank/ground fields are
+    themselves MSL rather than a station-local cross-section datum. Tag: OPEN for the bank/
+    ground fields specifically, VERIFIED only for the field literally named *_msl.
+
+  ground_level_m_rtk_and_subsidence_caveat: >
+    See quantities.ground_elevation above -- RTSD 2010 map is MSL by definition, but every
+    district's subsidence_rate_mm_yr is null (no source), so a district's CURRENT ground level
+    relative to MSL is systematically uncertain (biased toward "lower than mapped", direction
+    known, magnitude OPEN) for the ~15 years since the 2010 survey.
+
+  how_to_compare_two_stations: >
+    Per this repo's own existing discipline (PROP-FLOOD-04, canal_graph.py / reconcile.py,
+    referenced in docs/FLOW_STALL_TYPOLOGY.md §2-4): two stations' water levels may only be
+    subtracted/compared directly (ΔH) when BOTH are confirmed on the SAME datum realisation.
+    docs/FLOW_STALL_TYPOLOGY.md's own stated rule: "REFUSE เมื่อ datum ไม่ตรงกัน" (refuse when
+    datums don't match) -- this is an existing refusal rule, not a new one introduced by this
+    file. This crosswalk's job is to make it possible to CHECK that precondition per pair of
+    stations (see per_station block above) rather than silently assuming a shared datum because
+    two fields happen to look similar (e.g. two different water_level_m-named fields from two
+    different agencies are NOT thereby proven comparable).
+
+# =============================================================================================
+# (c) time_and_calendar
+# =============================================================================================
+time_and_calendar:
+  utc_vs_ict:
+    ict_offset: "+07:00 (Indochina Time, no daylight saving)"
+    note: "Open-Meteo/HII/BMA sources mostly report already-localised ICT timestamps when a
+      timezone param is passed (Open-Meteo: timezone=Asia%2FBangkok explicit in every URL per
+      sources/registry.yaml); observations.sqlite's own schema stores observed_at_utc as the
+      column name (UTC), so a collector must convert on ingest -- not independently re-verified
+      per-collector this check, flagged as a thing to check per source, not assumed uniform."
+    tag: VERIFIED-for-schema-column-name / OPEN-for-per-collector-conversion-correctness
+  buddhist_calendar:
+    formula: "พ.ศ. (BE) = ค.ศ. (CE) + 543"
+    example: "2569 BE = 2026 CE (this repo's own dates, e.g. plan PDF title '2569', are BE;
+      this crosswalk and this repo's other files consistently render both, e.g. '2026-09-27'
+      alongside '26 ก.ย. 2569')"
+    tag: VERIFIED
+    note: "This is a fixed, universally known conversion (not agency-specific), included here
+      because the BMA plan PDF and most Thai-agency documents in this repo are BE-dated while
+      this repo's own internal timestamps are CE."
+  tmd_daily_boundary:
+    convention: "24h ending 07:00 local (ICT) -- standard TMD observation-day convention"
+    tag: RELAYED
+    note: "Per docs/LAYER0_IN_OUT_CAPACITY.md §6 and coping_thresholds.yaml's own
+      tmd_intensity_classes_reference note: a direct WebFetch to tmd.go.th failed with a TLS
+      certificate error this repo's own prior session -- this 07:00 boundary convention is
+      carried as RELAYED/not-primary-verified, same as TMD's intensity-class boundaries."
+  hii_timestamps:
+    convention: "Per-record timestamp fields (waterlevel_datetime, canal_datetime, dam_date/
+      dam_hourly timestamps, etc.), station-local refresh, NOT a fixed daily boundary -- near-
+      real-time telemetry, varies per station per sources/registry.yaml's own repeated
+      \"cadence: near-real-time\" notes."
+    tag: VERIFIED
+    note: "VERIFIED as 'varies per record', not as any specific fixed clock convention -- HII
+      does not publish on a single daily-boundary cadence the way TMD/BMA-bulletin do."
+  bma_bulletin_rain_24h:
+    convention: "24h window ending at the daily bulletin's own issue time (dds_daily_pdf,
+      issue number increments daily e.g. ฉบับที่ 269/69 on 2026-09-26) -- NOT independently
+      confirmed to be the same 07:00 boundary as TMD's convention above; sources/registry.yaml
+      does not state the bulletin's exact issue clock-time."
+    tag: OPEN
+  openmeteo_timezone_param:
+    convention: "Every Open-Meteo URL in sources/registry.yaml explicitly passes
+      timezone=Asia%2FBangkok -- hourly/daily arrays are LOCALISED to ICT when this param is
+      set, per Open-Meteo's own documented behaviour (this repo's own collector code relies on
+      this, per sources/registry.yaml notes on multiple openmeteo_* entries)."
+    tag: VERIFIED
+    note: "VERIFIED as 'this repo's registry states the param is always passed', not as an
+      independent re-check of Open-Meteo's own server-side localisation behaviour this check."
+
+# =============================================================================================
+# (d) station_code_prefixes -- only prefixes actually observed in this repo's own sources
+# =============================================================================================
+station_code_prefixes:
+  "WL.": {meaning: "Water Level station (BMA canal telemetry, e.g. WL.SSB.07, WL.BMA.02,
+    WL.PWT.03/04, WL.LPW.01, WL.SMK.01)", agency: "กทม. สนน. (via weather.bangkok.go.th /
+    thaiwater.net republish)", tag: VERIFIED, source: "sources/canal_normal_levels.yaml,
+    sources/registry.yaml (bma_watermap/bma_station_detail)"}
+  "RF.": {meaning: "assumed Rainfall station prefix, by analogy with WL./ST./PS. below -- NOT
+    directly observed as a live station_code in any file read this check (searched
+    sources/*.yaml and registry.yaml, no RF.* code found)", agency: OPEN, tag: OPEN,
+    note: "Founder's instructions listed this prefix as an example to check -- this check did not
+      find it actually in use anywhere in this repo's own sources; flagged OPEN rather than
+      assumed present."}
+  "ST.": {meaning: "Station prefix for Sammakorn's own private pump stations (ST.SPS.01-04)",
+    agency: "นิติบุคคลหมู่บ้านสามัคคี (private village, AG_ESTATE) -- NOT a กทม. public station,
+    per docs/CAPACITY.md §2's own note that these do not appear in BMA's public
+    water_station.csv/pump_stations_full.json", tag: VERIFIED,
+    source: "docs/CAPACITY.md, capacity_ledger.yaml led:bkk_east_pump_summary"}
+  "PS.": {meaning: "assumed Pump Station prefix -- NOT directly observed as a live station_code
+    string in any file read this check (BMA's own pump rows in capacity_ledger.yaml use IDs like
+    pump_station:water_station:1, not a PS.* code)", agency: OPEN, tag: OPEN,
+    note: "Same caveat as RF. above -- listed in the founder's brief as an example, not
+      confirmed present in this repo's actual data."}
+  "C.": {meaning: "Chao Phraya main-stem RID gauge (e.g. C.2 นครสวรรค์, C.13 ชัยนาท, C.29
+    บางไทร, C.29B สามโคก, C.3, C.7A, C.12, C.35, C.36, C.37, C.67)", agency: "กรมชลประทาน (RID)",
+    tag: VERIFIED, source: "capacity_ledger.yaml, docs/knowledge/
+      card_api_2026-09-27_hii_waterchart_basin.md §2 (station.tele_station_oldcode)"}
+  "X.": {meaning: "Southern-basin RID gauge (e.g. X.44 บ้านหาดใหญ่ใน, X.47 บ้านท่าจีน -- note:
+    X.47 appears in a Tha Chin-basin context in coping_thresholds.yaml, so this prefix is not
+    exclusively 'south' in this repo's own usage -- flagged, not resolved)", agency: "กรมชลประทาน
+    (RID)", tag: VERIFIED, source: "sources/coping_thresholds.yaml, capacity_ledger.yaml"}
+  "P.": {meaning: "Ping river RID gauge (e.g. P.1 สะพานนวรัฐ เชียงใหม่)", agency: "กรมชลประทาน
+    (RID)", tag: VERIFIED, source: "sources/coping_thresholds.yaml, sources/
+      capacity_ledger_additions.yaml"}
+  "N.": {meaning: "Nan river RID gauge (e.g. N.1 หน้าสำนักงานป่าไม้ อ.เมืองน่าน, N.64 บ้านผาขวาง)",
+    agency: "กรมชลประทาน (RID)", tag: VERIFIED, source: "sources/coping_thresholds.yaml"}
+  "Y.": {meaning: "assumed Yom river RID gauge prefix, by analogy with the HII chaophraya.svg
+    node-group naming (YOM005-012 seen in that SVG per docs/knowledge/
+    card_api_2026-09-27_hii_waterchart_basin.md §4) -- a bare 'Y.' RID gauge code itself was NOT
+    directly observed in any sources/*.yaml file this check, only the HII SVG's own YOM* node
+    group naming.", agency: "กรมชลประทาน (RID), inferred", tag: OPEN}
+  "W.": {meaning: "assumed Wang river RID gauge prefix, by analogy with the SVG's WAN001-005
+    node group (same caveat as Y. above -- not directly observed as a bare RID station code in
+    this repo's own sources/*.yaml files)", agency: "กรมชลประทาน (RID), inferred", tag: OPEN}
+  "E.": {meaning: "assumed Pasak (ป่าสัก) river RID gauge prefix per the founder's instructions --
+    NOT found anywhere in this repo's own sources (no E.* code observed; the Pasak-basin
+    reference in capacity_ledger.yaml uses named dams AS_DAM_PASAK/AS_DAM_RAMA6, not a gauge
+    code)", agency: OPEN, tag: OPEN}
+  "CPY0xx/PIN0xx/NAN0xx/YOM0xx/WAN0xx/BKK*/ATG*/BPK*/DIV*/CHM*/GLF*/KWN*/LBI*/SKG*/TCY37/THA*/TN21/TY54":
+    {meaning: "HII's OWN internal node-id scheme used in the chaophraya.svg topology diagram
+      (waterchart.thaiwater.net) -- NOT yet mapped 1:1 to the tele_station_oldcode/C.x scheme
+      above; this repo's own predecessor-session card explicitly leaves this OPEN
+      ('ยังไม่ยืนยัน... ไม่ด่วนสรุปว่า CPY001 = C.2 หรือสถานีไหนโดยไม่ยืนยัน')",
+    agency: "สสน./HII (internal SVG-diagram scheme)", tag: OPEN,
+    source: "docs/knowledge/card_api_2026-09-27_hii_waterchart_basin.md §4"}
+  "FL.": {meaning: "Flood-road monitoring point (floodroad_oldcode, e.g. FL.<area>.<n>) --
+    mirrors the canal_oldcode numbering scheme per sources/registry.yaml's own note on
+    thaiwater_flood_road", agency: "กทม. สนน. (via thaiwater.net republish)", tag: VERIFIED,
+    source: "sources/registry.yaml id thaiwater_flood_road"}
+
+# =============================================================================================
+# (e) rain_intensity_descriptors -- side by side, NEVER merged
+# =============================================================================================
+rain_intensity_descriptors:
+  note: "Three separate classification schemes on different bases (24h depth vs hourly
+    intensity vs this repo's own observed coping ladder) -- kept side by side per this check's
+    explicit instruction not to merge them into one number."
+
+  tmd_general_classes_24h_basis:
+    basis: "mm per 24h, general Thailand-wide classification, NOT Bangkok-specific"
+    tag: "RELAYED, not-primary-verified (docs/knowledge/TIER_THRESHOLDS_RATIONALE.md records a
+      failed direct WebFetch to tmd.go.th with a certificate error -- carried from
+      coping_thresholds.yaml's own tmd_intensity_classes_reference block, not re-verified here)"
+    classes:
+      - {label_th: "ฝนเล็กน้อย/ปานกลาง", max_mm_24h: 35.0}
+      - {label_th: "ฝนหนัก", range_mm_24h: [35.1, 90.0]}
+      - {label_th: "ฝนหนักมาก", min_mm_24h: 90.0}
+
+  bma_plan_hourly_operational_bands:
+    basis: "mm per hour, Bangkok-specific, tied to the plan's own 3 seasonal operational
+      periods (§5.1) -- an OPERATIONAL SEVERITY classification, not a design-capacity figure"
+    tag: "VERIFIED (this check's own grep of the plan PDF text)"
+    bands:
+      - {period_th: "ต้นฤดูฝน (พ.ค.-ก.ค.)", normal_range_mm_h: [10, 60], abnormal_min_mm_h: 90}
+      - {period_th: "ปลายฤดูฝน (ส.ค.-ต.ค.)", normal_range_mm_h: [60, 90], abnormal_min_mm_h: 90}
+      - {period_th: "น้ำเหนือ+น้ำทะเลหนุน (ต.ค.-ธ.ค.)", abnormal_min_mm_h: 90}
+
+  this_repo_coping_ladder_24h_basis:
+    basis: "Observed flooded/coped evidence rows, mm per 24h, per
+      sources/coping_thresholds.yaml derived.bangkok.rain_24h_mm_ladder block"
+    tag: "mixed -- see per-row tags; NOT a design or classification standard, an
+      evidence-derived ladder"
+    rungs:
+      - {label_th: "ออกแบบ (as-built)", value_mm_24h: 80.0, basis: "58.7mm/h design intensity",
+         tag: VERIFIED}
+      - {label_th: "coped_max (เคยรับได้โดยไม่ท่วม)", value_mm_24h: null, tag: OPEN,
+         note: "no historical non-flood high-rain day recorded anywhere in this repo"}
+      - {label_th: "danger_min (ท่วมขังถนน, แยกจาก crisis)", value_mm_24h: null, tag: OPEN}
+      - {label_th: "crisis_min (ท่วมบ้าน-หลายเขต)", value_mm_24h: 203.0,
+         date: "2026-09-26", station: "พญาไท", tag: VERIFIED}
+      - {label_th: "มหาอุทกภัย 2554 (NOT on this axis)", value_mm_24h: null,
+         note: "driven by upstream dam-release volume + river discharge over months, not a
+           single BKK daily-rain figure -- see coping_thresholds.yaml's own catastrophe_note",
+         tag: RELAYED}
+
+# =============================================================================================
+# (f) known_unit_errors_in_sources
+# =============================================================================================
+known_unit_errors_in_sources:
+  - id: "bma_plan_2569_section5.1_million_per_second"
+    location: "BMA flood plan 2569 PDF (dds.bangkok.go.th/public_content/files/001/0011062_1.pdf,
+      raw/capacity/plan_2569.pdf), §5.1 (ช่วงปฏิบัติการ table, ช่วงที่ 3), this check's own
+      extracted-text line ~540"
+    error_text_th: "ระดับวิกฤติไม่เกิน 3,500 ล้านลบ.ม./วินาที"
+    diagnosis: >
+      "ล้าน ลบ.ม./วินาที" (million cubic-metres PER SECOND) is not a coherent discharge unit at
+      Chao Phraya scale -- it would mean 3,500,000,000 m3/s, roughly a thousand times the
+      largest discharge figure recorded anywhere else in this entire repo (the 2554 historical
+      peak at C.29 was 3,930 m3/s, per coping_thresholds.yaml). The SAME document, in the
+      earlier §2.1.3 discussion of the same river reach (this check's own extracted-text line
+      ~420-422), correctly states the comparable figure WITHOUT "ล้าน": "ขนาดของแม่น้าเจ้าพระยา
+      บริเวณกรุงเทพมหานคร สามารถรองรับปริมาณน้าเหนือได้ประมาณ 2,500 - 3,500 ลบ.ม./วินาที โดยไม่มี
+      น้าล้นตลิ่งโดยทั่วไป" -- a near-identical 3,500 ceiling figure, same reach, correct unit.
+      Read together, the §5.1 occurrence is almost certainly a copy/typo error inserting
+      "ล้าน" (a word that belongs on VOLUME figures elsewhere in the same document, e.g. "ล้าน
+      ลบ.ม." storage figures) into a RATE figure that should read plain "ลบ.ม./วินาที", matching
+      the §2.1.3 figure.
+    correct_reading_per_document_itself: "3,500 ลบ.ม./วินาที (no ล้าน), consistent with §2.1.3's
+      2,500-3,500 ลบ.ม./วินาที river-conveyance figure for the same reach"
+    tag: "VERIFIED-error-identified (this check's own direct read of both PDF passages);
+      RELAYED-interpretation for WHY it happened (copy/typo, not independently confirmed with
+      the document's authors)"
+    action: "Do not cite '3,500 ล้านลบ.ม./วินาที' as a real discharge figure anywhere downstream.
+      If this figure is ever wired into capacity_ledger.yaml or a public-facing page, cite it as
+      '3,500 ลบ.ม./วินาที (§5.1 of the source PDF prints \"ล้าน\" ล้านลบ.ม./วินาที, an apparent
+      unit error against the document's own §2.1.3)', per this crosswalk row."
+
+  - id: "bma_design_intensity_58.7_vs_jica_76to100_mm_h"
+    location: "docs/CAPACITY.md §1 / sources/coping_thresholds.yaml design row"
+    description: >
+      NOT a unit error (both figures are correctly mm/h) -- a BASIS conflict already flagged by
+      this repo's own docs/CAPACITY.md: 58.7mm/h (VERIFIED, สนน. 2569 plan, as-built capacity)
+      vs 76mm/h current / 100mm/h future-target (RELAYED, JICA master-plan news relay, a
+      different project/scope). Listed here because it is the single most-cited "which design
+      number do I use" confusion point in this repo, per docs/CAPACITY.md's own explicit
+      flagging.
+    tag: "VERIFIED (58.7) vs RELAYED (76/100) -- basis difference, not a unit error"
+    action: "Never average or silently pick one -- state which basis (as-built vs JICA-target)
+      a given figure uses, per docs/CAPACITY.md's own existing discipline."
+
+  - id: "bkk_total_pumping_three_disagreeing_totals"
+    location: "capacity_ledger.yaml (led:bkk_total_pumping_phranakhon=1200,
+      led:bkk_total_pumping_citywide_theoretical=2467.69,
+      led:pump_bmakstations_summary=718.0) AND docs/CAPACITY.md §3 (1,200 / 1,230.55 / 1,300,
+      a THIRD, partially-overlapping set of three numbers) AND the founder-asked figure
+      1,272.33 which is NOT FOUND in any source read by either this check or the predecessor
+      capacity-note task."
+    description: >
+      Not a single unit error, but a cluster of same-unit (m3/s), same-nominal-quantity
+      ('total BKK pumping capacity') figures from overlapping-but-not-identical scope
+      definitions (one-side-only vs citywide-theoretical-design vs a narrower published subset)
+      that LOOK directly comparable and are NOT. Already flagged by capacity_ledger.yaml's own
+      notes on each row as non-mergeable; repeated here because a reader of THIS unit-crosswalk
+      file specifically, encountering "m3/s, กทม. สนน." for the first time, could easily assume
+      these numbers all mean the same thing.
+    tag: RELAYED
+    action: "Always cite which of the (at least 6, across 2 files) disagreeing totals is being
+      used, and its scope qualifier (ฝั่งพระนคร only / citywide theoretical / published subset /
+      unsourced-1,272.33), never a bare 'BKK total pumping capacity = N m3/s'."
+
+  - id: "pump_station_water_station_1_capacity_discrepancy"
+    location: "capacity_ledger.yaml pump_station:water_station:1 (สถานีสูบน้ำพระโขนง)"
+    description: "45 m3/s (sqlite-registry figure, MEASURED-from-store) vs 173 m3/s (a 2550/2007
+      official document quoted in docs/CAPACITY.md §2, same station name) -- an 18 m3/s-scale
+      gap already flagged OPEN by both files, unresolved, cause unknown (different equipment
+      generation? different counting convention for '45 เครื่อง'? not established)."
+    tag: OPEN
+    action: "Do not silently pick either figure; both already correctly tagged OPEN in their
+      source files."
+
+  - id: "hii_storage_percent_denominator_unresolved"
+    location: "quantities.storage_percent block above"
+    description: "A storage_percent sample value of 209.48% observed on a tele_waterlevel-type
+      station row (per docs/knowledge/card_api_2026-09-27_hii_waterchart_basin.md §2) is itself
+      evidence the field's denominator is NOT simply 'percent of design capacity' for that
+      station_type -- likely a different per-station-type convention (e.g. percent of a
+      reference/baseline flow, not bankfull capacity), unresolved."
+    tag: OPEN
+    action: "Do not compare storage_percent values across different station_type rows (dam vs
+      tele_waterlevel) without first resolving the HII glossary definition per station_type."

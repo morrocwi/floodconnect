@@ -1,0 +1,121 @@
+# sources/owner_agency_crosswalk.yaml -- owner-string -> governance-DAG AG_ node crosswalk.
+#
+# Known gap (tools/kg/README.md "Known gaps", tools/kg/build_kg.py build_graph()): the KG's
+# `agency:<slug>` nodes are synthesised straight from the `assets` table's own `owner` string
+# (assets_registry.py harvesters) and are NEVER cross-walked to docs/knowledge/water_system_dag.mmd's
+# `AG_*` nodes, because no source file declared that mapping explicitly. This file is that missing,
+# explicit mapping -- built for `tools/kg/accountability.py` (kb.py accountability), read-only input,
+# never auto-generated, never fuzzy-matched.
+#
+# Row shape:
+#   owner: <verbatim owner string from the `assets` table -- exact match only>
+#   agency_id: <AG_* node id in docs/knowledge/water_system_dag.mmd, or null if none exists>
+#   tag: VERIFIED (this row's own mapping was checked against water_system_dag.mmd node labels
+#        by this check) | OPEN (no AG_ node exists yet for this owner, or the owner string names
+#        more than one real agency and cannot be split without guessing)
+#   note: why
+#
+# Coverage as of this file's creation (2026-09-27): all 61 distinct non-null `owner` values in
+# `assets` were checked. Every `เขต<name>` (Bangkok district office) EXCEPT the one already named
+# by the governance DAG for the Sammakorn case (เขตสะพานสูง -> AG_DIST_SS) is OPEN here -- the DAG
+# only names Saphan Sung and its immediate neighbours (AG_DIST_SS/AG_DIST_WORKS/.../AG_DIST_NEIGH),
+# not a per-district AG_ node for all 50 Bangkok districts. A future task that adds one AG_ node
+# per district to the DAG would let this row flip to VERIFIED without touching this file's shape.
+rows:
+  - owner: "กรมชลประทาน"
+    agency_id: "AG_RID"
+    tag: VERIFIED
+    note: "exact label match: AG_RID = \"กรมชลประทาน\""
+  - owner: "กรมชลประทาน "
+    agency_id: "AG_RID"
+    tag: VERIFIED
+    note: "same as \"กรมชลประทาน\" -- trailing-space variant in the assets table, kept as its own row rather than silently trimmed at read time"
+  - owner: "กรมชลประทาน (RID)"
+    agency_id: "AG_RID"
+    tag: VERIFIED
+    note: "same agency, \"(RID)\" suffix variant"
+  - owner: "กรมทรัพยากรน้ำ"
+    agency_id: "AG_DWR"
+    tag: VERIFIED
+    note: "exact label match: AG_DWR = \"กรมทรัพยากรน้ำ (น้ำผิวดินนอกเขตชลประทาน+น้ำบาดาล)\""
+  - owner: "กรมประมง"
+    agency_id: null
+    tag: OPEN
+    note: "no AG_ node for the Department of Fisheries anywhere in water_system_dag.mmd"
+  - owner: "กรมป้องกันและบรรเทาสาธารณภัย"
+    agency_id: "AG_DDPM"
+    tag: VERIFIED
+    note: "exact label match: AG_DDPM = \"ปภ. กรมป้องกันและบรรเทาสาธารณภัย (ผู้อำนวยการกลาง)\""
+  - owner: "กรมอุตุนิยมวิทยา "
+    agency_id: "AG_TMD"
+    tag: VERIFIED
+    note: "exact label match: AG_TMD = \"กรมอุตุนิยมวิทยา\" (owner string carries a trailing space)"
+  - owner: "กรมอุทยานแห่งขาติ สัตว์ป่าและพันธุ์พืช"
+    agency_id: null
+    tag: OPEN
+    note: "no AG_ node for the Department of National Parks anywhere in water_system_dag.mmd"
+  - owner: "กรมเจ้าท่า"
+    agency_id: "AG_MARINE"
+    tag: VERIFIED
+    note: "exact label match: AG_MARINE = \"กรมเจ้าท่า\""
+  - owner: "กรมโยธาธิการและผังเมือง / อบต. 6 แห่ง (บางยอ, บางกะเจ้า, บางกอบัว, บางน้ำผึ้ง, บางกระสอบ, ทรงคนอง)"
+    agency_id: null
+    tag: OPEN
+    note: "compound owner string names one national dept (AG_DPT exists) PLUS 6 named tambon admin orgs (no per-tambon AG_ node) -- splitting it would guess which agency actually controls the specific asset row; left OPEN rather than picking one arbitrarily"
+  - owner: "การไฟฟ้าฝ่ายผลิตแห่งประเทศไทย"
+    agency_id: "AG_EGAT"
+    tag: VERIFIED
+    note: "exact label match: AG_EGAT = \"กฟผ.\""
+  - owner: "นิติบุคคลหมู่บ้านสามัคคี (private village)"
+    agency_id: "AG_ESTATE"
+    tag: VERIFIED
+    note: "AG_ESTATE label names \"นิติบุคคลหมู่บ้านจัดสรร / คณะกรรมการหมู่บ้านสัมมากร\" verbatim -- this is the Sammakorn village juristic person"
+  - owner: "กทม. สนน. (กลุ่มงานระบบควบคุมน้ำตะวันออก)"
+    agency_id: "AG_DDS"
+    tag: VERIFIED
+    note: "TODO #50, 2026-09-27: correction row for ST.SPS.01-04 (สถานีสูบน้ำคลองบ้านม้า 2 /
+      บึงที่ 1 ตอนคลองสะพานสูง / บึงที่ 2 ตอนคลองบ้านม้า 2 / บึงที่ 4 ตอนคลองวังใหญ่) -- these
+      4 pump stations were previously believed to belong to the Sammakorn village juristic
+      person (owner row above, AG_ESTATE); the BMA 2569 plan p.191 (พิมพ์ ง-25) lists them
+      under สนน. กลุ่มงานระบบควบคุมน้ำตะวันออก by name+coordinates (VERIFIED, matched in
+      docs/knowledge/bma_plan2569_control_structures.yaml). water_system_dag.mmd has no
+      separate AG_ node for the East Water-Control Group specifically, so this maps to the
+      parent AG_DDS (สนน.) node, same as every other DDS-owned asset in this file. Still
+      CONTRADICTED/pending founder confirmation -- see docs/CAPACITY.md §2, AGENTS.md §8."
+  - owner: "ประตูระบายน้ำแสนแสบ (มีนบุรี)"
+    agency_id: null
+    tag: OPEN
+    note: "this owner-field value names an asset (a gate), not an owning agency -- a data-quality gap in the assets table itself, not a crosswalk gap; flagged rather than silently mapped"
+  - owner: " (ด้านนอก)"
+    agency_id: null
+    tag: OPEN
+    note: "malformed owner string (fragment of a longer note, e.g. \"...(ด้านนอก)\") -- data-quality gap in the source row, not resolvable by this crosswalk"
+  - owner: "มูลนิธิอาสาเพื่อนพึ่ง (ภาฯ) ยามยาก สภากาชาดไทย"
+    agency_id: null
+    tag: OPEN
+    note: "Thai Red Cross Pa Foundation -- no AG_ node in water_system_dag.mmd"
+  - owner: "สถาบันสารสนเทศทรัพยากรน้ำ (องค์การมหาชน)"
+    agency_id: "AG_HII"
+    tag: VERIFIED
+    note: "exact label match: AG_HII = \"สสน. (thaiwater)\" (HII's own Thai name is สถาบันสารสนเทศทรัพยากรน้ำ)"
+  - owner: "สำนักการระบายน้ำ กรุงเทพมหานคร"
+    agency_id: "AG_DDS"
+    tag: VERIFIED
+    note: "exact label match: AG_DDS = \"สนน. สำนักการระบายน้ำ + ศูนย์ควบคุมระบบป้องกันน้ำท่วม\""
+  - owner: "สำนักการระบายน้ำ กรุงเทพมหานคร / กรมชลประทาน"
+    agency_id: null
+    tag: OPEN
+    note: "compound owner (joint BMA-DDS / RID scheme, e.g. the Pidthong retention basins) -- both AG_DDS and AG_RID exist individually, but picking one as THE owner for this row would misstate a jointly-run asset; left OPEN, both candidates named in this note"
+  - owner: "เขตสะพานสูง"
+    agency_id: "AG_DIST_SS"
+    tag: VERIFIED
+    note: "exact label match: AG_DIST_SS = \"ผอ.เขตสะพานสูง (ผู้ช่วยผู้อำนวยการ กทม.)\" -- Sammakorn's own district, the only Bangkok district the DAG names individually"
+  # All other เขต<name> owner strings observed in the assets table (เขตภาษีเจริญ, เขตคลองสาน,
+  # เขตคลองเตย, เขตจอมทอง, เขตจตุจักร, เขตดอนเมือง, เขตดินแดง, เขตดุสิต, เขตตลิ่งชัน, เขตทวีวัฒนา,
+  # เขตธนบุรี, เขตบางกอกน้อย, เขตบางกอกใหญ่, เขตบางกะปิ, เขตบางขุนเทียน, เขตบางคอแหลม, เขตบางซื่อ,
+  # เขตบางนา, เขตบางพลัด, เขตบางรัก, เขตบางเขน, เขตบางแค, เขตบึงกุ่ม, เขตปทุมวัน, เขตประเวศ, เขตพญาไท,
+  # เขตพระนคร, เขตพระโขนง, เขตภาษีเจริญ, เขตมีนบุรี, เขตยานนาวา, เขตราชเทวี, เขตราษฏร์บูรณะ, เขตลาดกระบัง,
+  # เขตลาดพร้าว, เขตวังทองหลาง, เขตวัฒนา, เขตสวนหลวง, เขตสาธร, เขตสามวา, เขตสายไหม, เขตหนองจอก,
+  # เขตหนองแขม, เขตหลักสี่, เขตห้วยขวาง) have NO row here and resolve OPEN by the accountability
+  # tool's default (agency_id not found in this file) -- water_system_dag.mmd does not carry a
+  # per-district AG_ node for any Bangkok district other than Saphan Sung.

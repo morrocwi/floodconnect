@@ -109,7 +109,7 @@
       "source_title": "mcot.net \"ไขคำตอบอุโมงค์ยักษ์ กทม.อยู่ไหน\"",
       "source_url": null,
       "page": null,
-      "note": "อุโมงค์พระราม 9-รามคำแหง -- diameter 4.60 m, length 5.98 km. Capacity not found in any source read for this task."
+      "note": "อุโมงค์พระราม 9-รามคำแหง -- diameter 4.60 m, length 5.98 km. Capacity not found in any source read for this check."
     },
     {
       "key": "citywide_pump_stations_count",
@@ -129,7 +129,7 @@
       "source_title": "thaipr.net (release 3600663, ปี 2568)",
       "source_url": null,
       "page": null,
-      "note": "Conflicts with the 195-station figure above -- likely different budget years (stations are added/renovated yearly) but neither figure was read from a primary BMA document in this task."
+      "note": "Conflicts with the 195-station figure above -- likely different budget years (stations are added/renovated yearly) but neither figure was read from a primary BMA document in this check."
     },
     {
       "key": "citywide_floodgates_count",
@@ -159,7 +159,7 @@
       "source_title": "search result referencing dds.bangkok.go.th (source page not opened to verify)",
       "source_url": null,
       "page": null,
-      "note": "Total canal length maintained by สำนักการระบายน้ำ. Not read from a primary document in this task."
+      "note": "Total canal length maintained by สำนักการระบายน้ำ. Not read from a primary document in this check."
     },
     {
       "key": "citywide_supplementary_pump_pits",
@@ -309,7 +309,7 @@
       "source_title": "commonly cited BMA administrative-area figure",
       "source_url": null,
       "page": null,
-      "note": "Well-known public figure for the Bangkok Metropolitan Administration's administrative area -- NOT found inside any document under raw/capacity for this task, so it is tagged RELAYED rather than VERIFIED (per this repo's rule: a claim is only VERIFIED when the source document was actually read for it). Used only as a fallback denominator for the bangkok_east upper-bound comparison since no east-zone-specific catchment area figure was found anywhere in raw/capacity either."
+      "note": "Well-known public figure for the Bangkok Metropolitan Administration's administrative area -- NOT found inside any document under raw/capacity for this check, so it is tagged RELAYED rather than VERIFIED (per this repo's rule: a claim is only VERIFIED when the source document was actually read for it). Used only as a fallback denominator for the bangkok_east upper-bound comparison since no east-zone-specific catchment area figure was found anywhere in raw/capacity either."
     },
     {
       "key": "flood_history_2007_top_roads",

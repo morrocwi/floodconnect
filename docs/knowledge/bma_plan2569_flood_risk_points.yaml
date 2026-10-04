@@ -1,0 +1,3032 @@
+# New file only, added 2026-09-27 (BMA flood plan 2569 extraction). Not merged into
+# any registry. (Note: this comment used to say "not
+# committed as part of this change" -- stale, this file IS committed and shipped
+# in the public MVP tree.)
+meta:
+  document: แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วมกรุงเทพมหานคร เนื่องจากน้ำฝนและน้ำหนุน ประจำปี 2569 (ในส่วนความรับผิดชอบของสำนักการระบายน้ำ กรุงเทพมหานคร)
+  issuer: สำนักการระบายน้ำ กรุงเทพมหานคร (BMA Department of Drainage and Sewerage)
+  source_file_public: dds.bangkok.go.th public_content 0011290_1.pdf (322 pages; print stamp on p1 dated 23 พ.ค. 2569)
+  page_convention: '`page` = PDF page number (1-based, physical). Printed appendix page labels (ก-1, ข-5, ง-25, จ-3, ฉ-13 ...) are given in `printed_page` where the parser could read them.'
+  extraction_method: pdftotext -layout text layer, regex row parser (no OCR). `raw` is the verbatim text-layer line(s) the row came from; values are copied as printed, no unit conversion.
+  glyph_note: 'The text layer renders some Thai glyphs inconsistently: in ch.1/appendix ง ''ำ'' often appears as ''า'' (น้า = น้ำ, ลาดับ = ลำดับ), in appendix ข ''า'' often appears as ''ำ'' (บำงกะปิ = บางกะปิ). `raw` keeps
+    the layer as-is; `name`/`district` are lightly normalised only where the mapping is unambiguous (see `normalise()` in the extractor).'
+  tag_default: MEASURED  # note: was "VERIFIED" -- a value read
+  # by regex from a PDF text layer with known-damaged glyphs is a MEASURED read of
+  # that file, not an independently-checked VERIFIED fact; parser-mapped fields
+  # carry their own parse_confidence on top of this
+  table: ภาคผนวก ค ข้อมูลจุดเสี่ยงน้ำท่วมในถนนสายหลักถอดบทเรียนปี 2568 จำนวน 216 จุด (PDF p117-123, printed ค-1..ค-7)
+  definition_quote_p117: “จุดเสี่ยงน้ำท่วม” ความหมาย พื้นที่ที่เสี่ยงต่อน้ำท่วมกรณีฝนตกปานกลางถึงหนัก (ข้อความต่อท้ายถูกตัดในชั้นข้อความ)
+  declared:
+    total: 216
+    phra_nakhon_side: 191
+    thonburi_side: 25
+    north_group: 47
+    central_group: 51
+    south_group: 54
+    east_group: (ต่อ) -- count not on the page header read
+    thonburi_north: 5
+    thonburi_south: 20
+  extracted: 214
+  missing_seq_not_parsed:
+  - 196
+  - 206
+  IMPORTANT: The printed column headed 'Latitude' holds 100.xxxxx (a longitude) and the column headed 'Longitude' holds 13.xxxxx (a latitude) on every page of this table -- the headers are swapped in the source. lat/lon here
+    are assigned by value range; both printed cells are kept verbatim.
+  high_res_map_url_p125: https://u.bangkok.go.th/prevent_area
+rows:
+- seq: 1
+  location: ถนนพหลโยธิน ช่วงหน้ำห้างเซ็นทรัลลาดพร้าว
+  district: จตุจักร
+  lat: 13.81652
+  lon: 100.56181
+  printed_under_Latitude_header: '100.56181'
+  printed_under_Longitude_header: '13.81652'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 1 | ถนนพหลโยธิน ช่วงหน้าห้างเซ็นทรัลลาดพร้าว | 100.56181 | 13.81652
+  tag: VERIFIED
+- seq: 2
+  location: ถนนงามวงศ์วาน ช่วงหน้ำมหาวิทยาลัยเกษตรศาสตร์
+  district: จตุจักร
+  lat: 13.84227
+  lon: 100.57123
+  printed_under_Latitude_header: '100.57123'
+  printed_under_Longitude_header: '13.84227'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 2 | ถนนงามวงศ์วาน ช่วงหน้ามหาวิทยาลัยเกษตรศาสตร์ | 100.57123 | 13.84227
+  tag: VERIFIED
+- seq: 3
+  location: ถนนพหลโยธิน ห้าแยกลาดพร้าว
+  district: จตุจักร
+  lat: 13.81349
+  lon: 100.56035
+  printed_under_Latitude_header: '100.56035'
+  printed_under_Longitude_header: '13.81349'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 3 | ถนนพหลโยธิน ห้าแยกลาดพร้าว | 100.56035 | 13.81349
+  tag: VERIFIED
+- seq: 4
+  location: ถนนลาดพร้าว ปากซอยลาดพร้าว 15
+  district: จตุจักร
+  lat: 13.80788
+  lon: 100.57052
+  printed_under_Latitude_header: '100.57052'
+  printed_under_Longitude_header: '13.80788'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 4 | ถนนลาดพร้าว ปากซอยลาดพร้าว 15 | 100.57052 | 13.80788
+  tag: VERIFIED
+- seq: 5
+  location: ถนนรัชดาภิเษก หน้ำศาลอาญา
+  district: จตุจักร
+  lat: 13.81616
+  lon: 100.57538
+  printed_under_Latitude_header: '100.57538'
+  printed_under_Longitude_header: '13.81616'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 5 | ถนนรัชดาภิเษก หน้าศาลอาญา | 100.57538 | 13.81616
+  tag: VERIFIED
+- seq: 6
+  location: ถนนเทศบาลสงเคราะห์ ช่วงหน้ำตลาดประชานิเวศน์
+  district: จตุจักร
+  lat: 13.84023
+  lon: 100.54502
+  printed_under_Latitude_header: '100.54502'
+  printed_under_Longitude_header: '13.84023'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 6 | ถนนเทศบาลสงเคราะห์ ช่วงหน้าตลาดประชานิเวศน์ | 100.54502 | 13.84023
+  tag: VERIFIED
+- seq: 7
+  location: ถนนรัชดาภิเษก ช่วงหน้ำมหาวิทยาลัยราชภัฏจันทรเกษม
+  district: จตุจักร
+  lat: 13.81922
+  lon: 100.57551
+  printed_under_Latitude_header: '100.57551'
+  printed_under_Longitude_header: '13.81922'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 7 | ถนนรัชดาภิเษก ช่วงหน้ามหาวิทยาลัยราชภัฏจันทรเกษม | 100.57551 | 13.81922
+  tag: VERIFIED
+- seq: 8
+  location: ถนนพหลโยธิน ช่วงสถานี BTS มหาวิทยาลัยเกษตรศาสตร์
+  district: จตุจักร
+  lat: 13.8419
+  lon: 100.57679
+  printed_under_Latitude_header: '100.57679'
+  printed_under_Longitude_header: '13.84190'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 8 | ถนนพหลโยธิน ช่วงสถานี BTS มหาวิทยาลัยเกษตรศาสตร์ | 100.57679 | 13.84190
+  tag: VERIFIED
+- seq: 9
+  location: ถนนพหลโยธิน หน้ำกรมขนส่งทางบก
+  district: จตุจักร
+  lat: 13.80048
+  lon: 100.55251
+  printed_under_Latitude_header: '100.55251'
+  printed_under_Longitude_header: '13.80048'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 9 | ถนนพหลโยธิน หน้ากรมขนส่งทางบก | 100.55251 | 13.80048
+  tag: VERIFIED
+- seq: 10
+  location: ถนนลาดพร้าววังหิน ซอยลาดพร้าววังหิน 64
+  district: ลาดพร้าว
+  lat: 13.8251
+  lon: 100.59174
+  printed_under_Latitude_header: '100.59174'
+  printed_under_Longitude_header: '13.82510'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 10 | ถนนลาดพร้าววังหิน ซอยลาดพร้าววังหิน 64 | 100.59174 | 13.82510
+  tag: VERIFIED
+- seq: 11
+  location: ถนนเสนานิคม 1 ซอยเสนานิเวศน์ 112
+  district: ลาดพร้าว
+  lat: 13.82735
+  lon: 100.60851
+  printed_under_Latitude_header: '100.60851'
+  printed_under_Longitude_header: '13.82735'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 11 | ถนนเสนานิคม 1 ซอยเสนานิเวศน์ 112 | 100.60851 | 13.82735
+  tag: VERIFIED
+- seq: 12
+  location: ถนนสุคนธสวัสดิ์ ซอยสุคนธสวัสดิ์ 15
+  district: ลาดพร้าว
+  lat: 13.82845
+  lon: 100.62307
+  printed_under_Latitude_header: '100.62307'
+  printed_under_Longitude_header: '13.82845'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 12 | ถนนสุคนธสวัสดิ์ ซอยสุคนธสวัสดิ์ 15 | 100.62307 | 13.82845
+  tag: VERIFIED
+- seq: 13
+  location: ถนนนาคนิวาส ช่วงซอยนาคนิวาส 38
+  district: ลาดพร้าว
+  lat: 13.8132
+  lon: 100.61078
+  printed_under_Latitude_header: '100.61078'
+  printed_under_Longitude_header: '13.81320'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 13 | ถนนนาคนิวาส ช่วงซอยนาคนิวาส 38 | 100.61078 | 13.81320
+  tag: VERIFIED
+- seq: 14
+  location: ถนนลาดพร้าววังหิน สี่แยกวังหิน
+  district: ลาดพร้าว
+  lat: 13.82443
+  lon: 100.59169
+  printed_under_Latitude_header: '100.59169'
+  printed_under_Longitude_header: '13.82443'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 14 | ถนนลาดพร้าววังหิน สี่แยกวังหิน | 100.59169 | 13.82443
+  tag: VERIFIED
+- seq: 15
+  location: ถนนโชคชัย 4 ช่วงซอย 40
+  district: ลาดพร้าว
+  lat: 13.81156
+  lon: 100.59626
+  printed_under_Latitude_header: '100.59626'
+  printed_under_Longitude_header: '13.81156'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 15 | ถนนโชคชัย 4 ช่วงซอย 40 | 100.59626 | 13.81156
+  tag: VERIFIED
+- seq: 16
+  location: ถนนลาดปลาเค้า ซอยลาดปลาเค้า 30/2
+  district: ลาดพร้าว
+  lat: 13.84356
+  lon: 100.59772
+  printed_under_Latitude_header: '100.59772'
+  printed_under_Longitude_header: '13.84356'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 16 | ถนนลาดปลาเค้า ซอยลาดปลาเค้า 30/2 | 100.59772 | 13.84356
+  tag: VERIFIED
+- seq: 17
+  location: ถนนโชคชัย 4 ซอย 28
+  district: ลาดพร้าว
+  lat: 13.80808
+  lon: 100.59652
+  printed_under_Latitude_header: '100.59652'
+  printed_under_Longitude_header: '13.80808'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 17 | ถนนโชคชัย 4 ซอย 28 | 100.59652 | 13.80808
+  tag: VERIFIED
+- seq: 18
+  location: ถนนสุคนธสวัสดิ์ ซอยสุคนธสวัสดิ์ 25/2
+  district: ลาดพร้าว
+  lat: 13.8357
+  lon: 100.62727
+  printed_under_Latitude_header: '100.62727'
+  printed_under_Longitude_header: '13.83570'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 18 | ถนนสุคนธสวัสดิ์ ซอยสุคนธสวัสดิ์ 25/2 | 100.62727 | 13.83570
+  tag: VERIFIED
+- seq: 19
+  location: ถนนแจ้งวัฒนะขาออก (มทบ.11)
+  district: หลักสี่
+  lat: 13.89438
+  lon: 100.55679
+  printed_under_Latitude_header: '100.55679'
+  printed_under_Longitude_header: '13.89438'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 19 | ถนนแจ้งวัฒนะขาออก (มทบ.11) | 100.55679 | 13.89438
+  tag: VERIFIED
+- seq: 20
+  location: ถนนงามวงศ์วาน แยกพงษ์เพชร
+  district: หลักสี่
+  lat: 13.85601
+  lon: 100.54572
+  printed_under_Latitude_header: '100.54572'
+  printed_under_Longitude_header: '13.85601'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 20 | ถนนงามวงศ์วาน แยกพงษ์เพชร | 100.54572 | 13.85601
+  tag: VERIFIED
+- seq: 21
+  location: ถนนแจ้งวัฒนะ หน้ำไปรษณีย์หลักสี่ถึงศาลปกครองกลาง
+  district: หลักสี่
+  lat: 13.88907
+  lon: 100.57195
+  printed_under_Latitude_header: '100.57195'
+  printed_under_Longitude_header: '13.88907'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 21 | ถนนแจ้งวัฒนะ หน้าไปรษณีย์หลักสี่ถึงศาลปกครองกลาง | 100.57195 | 13.88907
+  tag: VERIFIED
+- seq: 22
+  location: ถนนแจ้งวัฒนะขาเข้า โลตัส
+  district: หลักสี่
+  lat: 13.89489
+  lon: 100.55576
+  printed_under_Latitude_header: '100.55576'
+  printed_under_Longitude_header: '13.89489'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 22 | ถนนแจ้งวัฒนะขาเข้า โลตัส | 100.55576 | 13.89489
+  tag: VERIFIED
+- seq: 23
+  location: ถนนแจ้งวัฒนะ หน้ำ Big C (สถานีรถไฟฟ้าแจ้งวัฒนะ 14)
+  district: หลักสี่
+  lat: 13.89343
+  lon: 100.56004
+  printed_under_Latitude_header: '100.56004'
+  printed_under_Longitude_header: '13.89343'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 23 | ถนนแจ้งวัฒนะ หน้า Big C (สถานีรถไฟฟ้าแจ้งวัฒนะ 14) | 100.56004 | 13.89343
+  tag: VERIFIED
+- seq: 24
+  location: ถนนงามวงศ์วาน ซอยชินเขต
+  district: หลักสี่
+  lat: 13.85476
+  lon: 100.54875
+  printed_under_Latitude_header: '100.54875'
+  printed_under_Longitude_header: '13.85476'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 24 | ถนนงามวงศ์วาน ซอยชินเขต | 100.54875 | 13.85476
+  tag: VERIFIED
+- seq: 25
+  location: ถนนแจ้งวัฒนะ หน้ำศาลปกครองกลาง
+  district: หลักสี่
+  lat: 13.89057
+  lon: 100.56741
+  printed_under_Latitude_header: '100.56741'
+  printed_under_Longitude_header: '13.89057'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 25 | ถนนแจ้งวัฒนะ หน้าศาลปกครองกลาง | 100.56741 | 13.89057
+  tag: VERIFIED
+- seq: 26
+  location: ถนนแจ้งวัฒนะ หน้ำกระทรวงยุติธรรม
+  district: หลักสี่
+  lat: 13.88982
+  lon: 100.57033
+  printed_under_Latitude_header: '100.57033'
+  printed_under_Longitude_header: '13.88982'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 26 | ถนนแจ้งวัฒนะ หน้ากระทรวงยุติธรรม | 100.57033 | 13.88982
+  tag: VERIFIED
+- seq: 27
+  location: ถนนแจ้งวัฒนะ ปากซอยแจ้งวัฒนะ10
+  district: หลักสี่
+  lat: 13.88642
+  lon: 100.57803
+  printed_under_Latitude_header: '100.57803'
+  printed_under_Longitude_header: '13.88642'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 27 | ถนนแจ้งวัฒนะ ปากซอยแจ้งวัฒนะ10 | 100.57803 | 13.88642
+  tag: VERIFIED
+- seq: 28
+  location: ถนนแจ้งวัฒนะ ตรงข้ามบริษัท โทรคมนาคมแห่งชาติ จำกัด (มหาชน)
+  district: หลักสี่
+  lat: 13.88748
+  lon: 100.57613
+  printed_under_Latitude_header: '100.57613'
+  printed_under_Longitude_header: '13.88748'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 28 | ถนนแจ้งวัฒนะ ตรงข้ามบริษัท โทรคมนาคมแห่งชาติ จำกัด (มหาชน) | 100.57613 | 13.88748
+  tag: VERIFIED
+- seq: 29
+  location: ถนนช่างอากาศอุทิศ ซอยช่างอากาศอุทิศ 15
+  district: ดอนเมือง
+  lat: 13.91841
+  lon: 100.57861
+  printed_under_Latitude_header: '100.57861'
+  printed_under_Longitude_header: '13.91841'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 29 | ถนนช่างอากาศอุทิศ ซอยช่างอากาศอุทิศ 15 | 100.57861 | 13.91841
+  tag: VERIFIED
+- seq: 30
+  location: ถนนวิภาวดีขาออก ช่วงแยก ถนนกำแพงเพชร 6
+  district: ดอนเมือง
+  lat: 13.91066
+  lon: 100.59551
+  printed_under_Latitude_header: '100.59551'
+  printed_under_Longitude_header: '13.91066'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 30 | ถนนวิภาวดีขาออก ช่วงแยก ถนนกำแพงเพชร 6 | 100.59551 | 13.91066
+  tag: VERIFIED
+- seq: 31
+  location: ถนนช่างอากาศอุทิศ หน้ำ ซีเจ มินิมาร์ท สาขาเคหะดอนเมือง
+  district: ดอนเมือง
+  lat: 13.91796
+  lon: 100.57959
+  printed_under_Latitude_header: '100.57959'
+  printed_under_Longitude_header: '13.91796'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 31 | ถนนช่างอากาศอุทิศ หน้า ซีเจ มินิมาร์ท สาขาเคหะดอนเมือง | 100.57959 | 13.91796
+  tag: VERIFIED
+- seq: 32
+  location: ถนนช่างอากาศอุทิศ ปากซอยช่างอากาศอุทิศ 7
+  district: ดอนเมือง
+  lat: 13.91455
+  lon: 100.58721
+  printed_under_Latitude_header: '100.58721'
+  printed_under_Longitude_header: '13.91455'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 32 | ถนนช่างอากาศอุทิศ ปากซอยช่างอากาศอุทิศ 7 | 100.58721 | 13.91455
+  tag: VERIFIED
+- seq: 33
+  location: ถนนช่างอากาศอุทิศ ซอยช่างอากาศอุทิศ 12- 16
+  district: ดอนเมือง
+  lat: 13.91757
+  lon: 100.58107
+  printed_under_Latitude_header: '100.58107'
+  printed_under_Longitude_header: '13.91757'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (47 จุด)
+  page: 117
+  printed_page: null
+  raw: 33 | ถนนช่างอากาศอุทิศ ซอยช่างอากาศอุทิศ 12- 16 | 100.58107 | 13.91757
+  tag: VERIFIED
+- seq: 34
+  location: ถนนพหลโยธิน ช่วงซอยพหลโยธิน 60/1
+  district: สายไหม
+  lat: 13.93999
+  lon: 100.62433
+  printed_under_Latitude_header: '100.62433'
+  printed_under_Longitude_header: '13.93999'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (ต่อ)
+  page: 118
+  printed_page: ค-2
+  raw: 34 | ถนนพหลโยธิน ช่วงซอยพหลโยธิน 60/1 | 100.62433 | 13.93999
+  tag: VERIFIED
+- seq: 35
+  location: ถนนวัชรพล ซอยวัชรพล 8
+  district: สายไหม
+  lat: 13.89241
+  lon: 100.64139
+  printed_under_Latitude_header: '100.64139'
+  printed_under_Longitude_header: '13.89241'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (ต่อ)
+  page: 118
+  printed_page: ค-2
+  raw: 35 | ถนนวัชรพล ซอยวัชรพล 8 | 100.64139 | 13.89241
+  tag: VERIFIED
+- seq: 36
+  location: ถนนจันทรุเบกษา ช่วงแยก คปอ.
+  district: สายไหม
+  lat: 13.92341
+  lon: 100.62514
+  printed_under_Latitude_header: '100.62514'
+  printed_under_Longitude_header: '13.92341'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (ต่อ)
+  page: 118
+  printed_page: ค-2
+  raw: 36 | ถนนจันทรุเบกษา ช่วงแยก คปอ. | 100.62514 | 13.92341
+  tag: VERIFIED
+- seq: 37
+  location: ถนนสุขาภิบาล ๕ ช่วงหน้ำตลาดสดออเงิน
+  district: สายไหม
+  lat: 13.89621
+  lon: 100.66074
+  printed_under_Latitude_header: '100.66074'
+  printed_under_Longitude_header: '13.89621'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (ต่อ)
+  page: 118
+  printed_page: ค-2
+  raw: 37 | ถนนสุขาภิบาล ๕ ช่วงหน้าตลาดสดออเงิน | 100.66074 | 13.89621
+  tag: VERIFIED
+- seq: 38
+  location: ถนนแจ้งวัฒนะ ช่วงหน้ำมหาวิทยาลัยราชภัฏพระนคร
+  district: บางเขน
+  lat: 13.87781
+  lon: 100.59291
+  printed_under_Latitude_header: '100.59291'
+  printed_under_Longitude_header: '13.87781'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (ต่อ)
+  page: 118
+  printed_page: ค-2
+  raw: 38 | ถนนแจ้งวัฒนะ ช่วงหน้ามหาวิทยาลัยราชภัฏพระนคร | 100.59291 | 13.87781
+  tag: VERIFIED
+- seq: 39
+  location: ถนนรามอินทรา ช่วงวงเวียนบางเขนถึงซอยรามอินทรา5
+  district: บางเขน
+  lat: 13.87169
+  lon: 100.60135
+  printed_under_Latitude_header: '100.60135'
+  printed_under_Longitude_header: '13.87169'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (ต่อ)
+  page: 118
+  printed_page: ค-2
+  raw: 39 | ถนนรามอินทรา ช่วงวงเวียนบางเขนถึงซอยรามอินทรา5 | 100.60135 | 13.87169
+  tag: VERIFIED
+- seq: 40
+  location: ถนนพหลโยธิน หน้ำโลตัสหลักสี่
+  district: บางเขน
+  lat: 13.87978
+  lon: 100.5993
+  printed_under_Latitude_header: '100.59930'
+  printed_under_Longitude_header: '13.87978'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (ต่อ)
+  page: 118
+  printed_page: ค-2
+  raw: 40 | ถนนพหลโยธิน หน้าโลตัสหลักสี่ | 100.59930 | 13.87978
+  tag: VERIFIED
+- seq: 41
+  location: ถนนรามอินทรา ปากซอยรามอินทรา 5
+  district: บางเขน
+  lat: 13.87017
+  lon: 100.60414
+  printed_under_Latitude_header: '100.60414'
+  printed_under_Longitude_header: '13.87017'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (ต่อ)
+  page: 118
+  printed_page: ค-2
+  raw: 41 | ถนนรามอินทรา ปากซอยรามอินทรา 5 | 100.60414 | 13.87017
+  tag: VERIFIED
+- seq: 42
+  location: วงเวียนบางเขน ช่วงหน้ำสถานีตารวจบางเขน
+  district: บางเขน
+  lat: 13.87534
+  lon: 100.59749
+  printed_under_Latitude_header: '100.59749'
+  printed_under_Longitude_header: '13.87534'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (ต่อ)
+  page: 118
+  printed_page: ค-2
+  raw: 42 | วงเวียนบางเขน ช่วงหน้าสถานีตำรวจบางเขน | 100.59749 | 13.87534
+  tag: VERIFIED
+- seq: 43
+  location: ถนนวัชรพล ซอยวัชรพล 1/9
+  district: บางเขน
+  lat: 13.87824
+  lon: 100.64318
+  printed_under_Latitude_header: '100.64318'
+  printed_under_Longitude_header: '13.87824'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (ต่อ)
+  page: 118
+  printed_page: ค-2
+  raw: 43 | ถนนวัชรพล ซอยวัชรพล 1/9 | 100.64318 | 13.87824
+  tag: VERIFIED
+- seq: 44
+  location: ถนนพหลโยธิน ซอยพหลโยธิน 55/1
+  district: บางเขน
+  lat: 13.8711
+  lon: 100.59398
+  printed_under_Latitude_header: '100.59398'
+  printed_under_Longitude_header: '13.87110'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (ต่อ)
+  page: 118
+  printed_page: ค-2
+  raw: 44 | ถนนพหลโยธิน ซอยพหลโยธิน 55/1 | 100.59398 | 13.87110
+  tag: VERIFIED
+- seq: 45
+  location: ถนนแจ้งวัฒนะ ขาเข้า วงเวียนบางเขน
+  district: บางเขน
+  lat: 13.8764
+  lon: 100.59564
+  printed_under_Latitude_header: '100.59564'
+  printed_under_Longitude_header: '13.87640'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (ต่อ)
+  page: 118
+  printed_page: ค-2
+  raw: 45 | ถนนแจ้งวัฒนะ ขาเข้า วงเวียนบางเขน | 100.59564 | 13.87640
+  tag: VERIFIED
+- seq: 46
+  location: ถนนพหลโยธิน วงหน้ำกรมทหารราบที่ 11
+  district: บางเขน
+  lat: 13.86502
+  lon: 100.59058
+  printed_under_Latitude_header: '100.59058'
+  printed_under_Longitude_header: '13.86502'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (ต่อ)
+  page: 118
+  printed_page: ค-2
+  raw: 46 | ถนนพหลโยธิน วงหน้ากรมทหารราบที่ 11 | 100.59058 | 13.86502
+  tag: VERIFIED
+- seq: 47
+  location: ถนนแจ้งวัฒนะ ซอยแจ้งวัฒนะ 2
+  district: บางเขน
+  lat: 13.87616
+  lon: 100.59603
+  printed_under_Latitude_header: '100.59603'
+  printed_under_Longitude_header: '13.87616'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพเหนือ (ต่อ)
+  page: 118
+  printed_page: ค-2
+  raw: 47 | ถนนแจ้งวัฒนะ ซอยแจ้งวัฒนะ 2 | 100.59603 | 13.87616
+  tag: VERIFIED
+- seq: 48
+  location: ถนนสนามไชยตลอดสาย
+  district: พระนคร
+  lat: 13.7484
+  lon: 100.49419
+  printed_under_Latitude_header: '100.49419'
+  printed_under_Longitude_header: '13.74840'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (51 จุด)
+  page: 118
+  printed_page: ค-2
+  raw: 48 | ถนนสนามไชยตลอดสาย | 100.49419 | 13.74840
+  tag: VERIFIED
+- seq: 49
+  location: ถนนท้ายวัง หน้ำวัดโพธิ์
+  district: พระนคร
+  lat: 13.74725
+  lon: 100.49265
+  printed_under_Latitude_header: '100.49265'
+  printed_under_Longitude_header: '13.74725'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (51 จุด)
+  page: 118
+  printed_page: ค-2
+  raw: 49 | ถนนท้ายวัง หน้าวัดโพธิ์ | 100.49265 | 13.74725
+  tag: VERIFIED
+- seq: 50
+  location: อนุสาวรีย์ประชาธิปไตย - สะพานผ่านฟ้า (ทั้ง 2 ฝั่ง)
+  district: พระนคร
+  lat: 13.7564
+  lon: 100.50564
+  printed_under_Latitude_header: '100.50564'
+  printed_under_Longitude_header: '13.75640'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (51 จุด)
+  page: 118
+  printed_page: ค-2
+  raw: 50 | อนุสาวรีย์ประชาธิปไตย - สะพานผ่านฟ้า (ทั้ง 2 ฝั่ง) | 100.50564 | 13.75640
+  tag: VERIFIED
+- seq: 51
+  location: ถนนราชวิถี เชิงสะพานกรุงธนบุรี
+  district: ดุสิต
+  lat: 13.7803
+  lon: 100.50404
+  printed_under_Latitude_header: '100.50404'
+  printed_under_Longitude_header: '13.78030'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (51 จุด)
+  page: 118
+  printed_page: ค-2
+  raw: 51 | ถนนราชวิถี เชิงสะพานกรุงธนบุรี | 100.50404 | 13.78030
+  tag: VERIFIED
+- seq: 52
+  location: ถนนราชวิถี หน้ำมหาวิทยาลัยราชภัฏสวนสุนันทา
+  district: ดุสิต
+  lat: 13.77765
+  lon: 100.50999
+  printed_under_Latitude_header: '100.50999'
+  printed_under_Longitude_header: '13.77765'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (51 จุด)
+  page: 118
+  printed_page: ค-2
+  raw: 52 | ถนนราชวิถี หน้ามหาวิทยาลัยราชภัฏสวนสุนันทา | 100.50999 | 13.77765
+  tag: VERIFIED
+- seq: 53
+  location: ถนนหลวง หน้ำธนาคารกรุงไทย ซอยสวนมะลิ 1
+  district: ป้อมปราบศัตรูพ่าย
+  lat: 13.74763
+  lon: 100.50895
+  printed_under_Latitude_header: '100.50895'
+  printed_under_Longitude_header: '13.74763'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (51 จุด)
+  page: 118
+  printed_page: ค-2
+  raw: 53 | ถนนหลวง หน้าธนาคารกรุงไทย ซอยสวนมะลิ 1 | 100.50895 | 13.74763
+  tag: VERIFIED
+- seq: 54
+  location: ถนนเจริญกรุง ช่วงแยกแปลงนาม
+  district: สัมพันธวงศ์
+  lat: 13.74183
+  lon: 100.51046
+  printed_under_Latitude_header: '100.51046'
+  printed_under_Longitude_header: '13.74183'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (51 จุด)
+  page: 118
+  printed_page: ค-2
+  raw: 54 | ถนนเจริญกรุง ช่วงแยกแปลงนาม | 100.51046 | 13.74183
+  tag: VERIFIED
+- seq: 55
+  location: ถนนเยาวราช ช่วงแยกราชวงศ์
+  district: สัมพันธวงศ์
+  lat: 13.74235
+  lon: 100.50699
+  printed_under_Latitude_header: '100.50699'
+  printed_under_Longitude_header: '13.74235'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (51 จุด)
+  page: 118
+  printed_page: ค-2
+  raw: 55 | ถนนเยาวราช ช่วงแยกราชวงศ์ | 100.50699 | 13.74235
+  tag: VERIFIED
+- seq: 56
+  location: ถนนเยาวราช ช่วงหน้ำโรงแรมแกรนด์ ไชน่า
+  district: สัมพันธวงศ์
+  lat: 13.74252
+  lon: 100.50683
+  printed_under_Latitude_header: '100.50683'
+  printed_under_Longitude_header: '13.74252'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (51 จุด)
+  page: 118
+  printed_page: ค-2
+  raw: 56 | ถนนเยาวราช ช่วงหน้าโรงแรมแกรนด์ ไชน่า | 100.50683 | 13.74252
+  tag: VERIFIED
+- seq: 57
+  location: ถนนประชาสงเคราะห์ ช่วงซอยเปรมสมบัติ 33
+  district: ดินแดง
+  lat: 13.77534
+  lon: 100.56603
+  printed_under_Latitude_header: '100.56603'
+  printed_under_Longitude_header: '13.77534'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (51 จุด)
+  page: 118
+  printed_page: ค-2
+  raw: 57 | ถนนประชาสงเคราะห์ ช่วงซอยเปรมสมบัติ 33 | 100.56603 | 13.77534
+  tag: VERIFIED
+- seq: 58
+  location: ถนนประชาสุข ช่วงซอยอินทามระ34
+  district: ดินแดง
+  lat: 13.78617
+  lon: 100.56709
+  printed_under_Latitude_header: '100.56709'
+  printed_under_Longitude_header: '13.78617'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (51 จุด)
+  page: 118
+  printed_page: ค-2
+  raw: 58 | ถนนประชาสุข ช่วงซอยอินทามระ34 | 100.56709 | 13.78617
+  tag: VERIFIED
+- seq: 59
+  location: ถนนรัชดาภิเษก ช่วงอุโมงค์ห้วยขวาง (ขาเข้า)
+  district: ดินแดง
+  lat: 13.77889
+  lon: 100.5737
+  printed_under_Latitude_header: '100.57370'
+  printed_under_Longitude_header: '13.77889'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (51 จุด)
+  page: 118
+  printed_page: ค-2
+  raw: 59 | ถนนรัชดาภิเษก ช่วงอุโมงค์ห้วยขวาง (ขาเข้า) | 100.57370 | 13.77889
+  tag: VERIFIED
+- seq: 60
+  location: ถนนประชาสงเคราะห์ ช่วงซอยประชาสงเคราะห์ 9
+  district: ดินแดง
+  lat: 13.76537
+  lon: 100.55688
+  printed_under_Latitude_header: '100.55688'
+  printed_under_Longitude_header: '13.76537'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (51 จุด)
+  page: 118
+  printed_page: ค-2
+  raw: 60 | ถนนประชาสงเคราะห์ ช่วงซอยประชาสงเคราะห์ 9 | 100.55688 | 13.76537
+  tag: VERIFIED
+- seq: 61
+  location: ถนนประชาสุข ช่วงซอยอินทามาระ 45-53
+  district: ดินแดง
+  lat: 13.78583
+  lon: 100.56711
+  printed_under_Latitude_header: '100.56711'
+  printed_under_Longitude_header: '13.78583'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (51 จุด)
+  page: 118
+  printed_page: ค-2
+  raw: 61 | ถนนประชาสุข ช่วงซอยอินทามาระ 45-53 | 100.56711 | 13.78583
+  tag: VERIFIED
+- seq: 62
+  location: ถนนประชาสงเคราะห์ ช่วงซอยประชาสงเคราะห์ 1 ถึงแยกองค์พระ
+  district: ดินแดง
+  lat: 13.76305
+  lon: 100.55594
+  printed_under_Latitude_header: '100.55594'
+  printed_under_Longitude_header: '13.76305'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (51 จุด)
+  page: 118
+  printed_page: ค-2
+  raw: 62 | ถนนประชาสงเคราะห์ ช่วงซอยประชาสงเคราะห์ 1 ถึงแยกองค์พระ | 100.55594 | 13.76305
+  tag: VERIFIED
+- seq: 63
+  location: ถนนดินแดง ช่วงโรงเรียนพิบูลประชาสรรค์
+  district: ดินแดง
+  lat: 13.76279
+  lon: 100.55037
+  printed_under_Latitude_header: '100.55037'
+  printed_under_Longitude_header: '13.76279'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (51 จุด)
+  page: 118
+  printed_page: ค-2
+  raw: 63 | ถนนดินแดง ช่วงโรงเรียนพิบูลประชาสรรค์ | 100.55037 | 13.76279
+  tag: VERIFIED
+- seq: 64
+  location: ถนนประชาสงเคราะห์ ช่วงตลาดห้วยขวาง
+  district: ดินแดง
+  lat: 13.77829
+  lon: 100.56888
+  printed_under_Latitude_header: '100.56888'
+  printed_under_Longitude_header: '13.77829'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (51 จุด)
+  page: 118
+  printed_page: ค-2
+  raw: 64 | ถนนประชาสงเคราะห์ ช่วงตลาดห้วยขวาง | 100.56888 | 13.77829
+  tag: VERIFIED
+- seq: 65
+  location: ถนนรัชดาภิเษก หน้ำสถานฑูตจีน
+  district: ดินแดง
+  lat: 13.76298
+  lon: 100.56764
+  printed_under_Latitude_header: '100.56764'
+  printed_under_Longitude_header: '13.76298'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (51 จุด)
+  page: 118
+  printed_page: ค-2
+  raw: 65 | ถนนรัชดาภิเษก หน้าสถานฑูตจีน | 100.56764 | 13.76298
+  tag: VERIFIED
+- seq: 66
+  location: ถนนรัชดาภิเษก ช่วงสี่แยกห้วยขวาง
+  district: ดินแดง
+  lat: 13.7783
+  lon: 100.57358
+  printed_under_Latitude_header: '100.57358'
+  printed_under_Longitude_header: '13.77830'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (51 จุด)
+  page: 118
+  printed_page: ค-2
+  raw: 66 | ถนนรัชดาภิเษก ช่วงสี่แยกห้วยขวาง | 100.57358 | 13.77830
+  tag: VERIFIED
+- seq: 67
+  location: ถนนประชาราษฎร์บำเพ็ญ ช่วงซอยประชาราษฎร์บำเพ็ญ 14
+  district: ห้วยขวาง
+  lat: 13.7775
+  lon: 100.57922
+  printed_under_Latitude_header: '100.57922'
+  printed_under_Longitude_header: '13.77750'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 67 | ถนนประชาราษฎร์บำเพ็ญ ช่วงซอยประชาราษฎร์บำเพ็ญ 14 | 100.57922 | 13.77750
+  tag: VERIFIED
+- seq: 68
+  location: ถนนรัชดาภิเษก ช่วงแยกเทียมร่วมมิตร
+  district: ห้วยขวาง
+  lat: 13.76963
+  lon: 100.57307
+  printed_under_Latitude_header: '100.57307'
+  printed_under_Longitude_header: '13.76963'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 68 | ถนนรัชดาภิเษก ช่วงแยกเทียมร่วมมิตร | 100.57307 | 13.76963
+  tag: VERIFIED
+- seq: 69
+  location: ถนนเพชรบุรี หน้ำอาคารสิงห์คอมเพล็กซ์
+  district: ห้วยขวาง
+  lat: 13.74875
+  lon: 100.5649
+  printed_under_Latitude_header: '100.56490'
+  printed_under_Longitude_header: '13.74875'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 69 | ถนนเพชรบุรี หน้าอาคารสิงห์คอมเพล็กซ์ | 100.56490 | 13.74875
+  tag: VERIFIED
+- seq: 70
+  location: ถนนประชาอุทิศ สำนักงานเขตห้วยขวาง
+  district: ห้วยขวาง
+  lat: 13.77645
+  lon: 100.57961
+  printed_under_Latitude_header: '100.57961'
+  printed_under_Longitude_header: '13.77645'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 70 | ถนนประชาอุทิศ สำนักงานเขตห้วยขวาง | 100.57961 | 13.77645
+  tag: VERIFIED
+- seq: 71
+  location: ถนนพหลโยธิน ช่วงบิ๊กซีสะพานควาย
+  district: พญาไท
+  lat: 13.79139
+  lon: 100.54889
+  printed_under_Latitude_header: '100.54889'
+  printed_under_Longitude_header: '13.79139'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 71 | ถนนพหลโยธิน ช่วงบิ๊กซีสะพานควาย | 100.54889 | 13.79139
+  tag: VERIFIED
+- seq: 72
+  location: ถนนพหลโยธิน ช่วงซอยสายลม
+  district: พญาไท
+  lat: 13.78339
+  lon: 100.54609
+  printed_under_Latitude_header: '100.54609'
+  printed_under_Longitude_header: '13.78339'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 72 | ถนนพหลโยธิน ช่วงซอยสายลม | 100.54609 | 13.78339
+  tag: VERIFIED
+- seq: 73
+  location: ถนนพหลโยธิน ช่วงแยกสะพานควาย
+  district: พญาไท
+  lat: 13.78982
+  lon: 100.5481
+  printed_under_Latitude_header: '100.54810'
+  printed_under_Longitude_header: '13.78982'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 73 | ถนนพหลโยธิน ช่วงแยกสะพานควาย | 100.54810 | 13.78982
+  tag: VERIFIED
+- seq: 74
+  location: ถนนสุทธิสารวินิจฉัย ซอยอินทามระ 19
+  district: พญาไท
+  lat: 13.78911
+  lon: 100.55648
+  printed_under_Latitude_header: '100.55648'
+  printed_under_Longitude_header: '13.78911'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 74 | ถนนสุทธิสารวินิจฉัย ซอยอินทามระ 19 | 100.55648 | 13.78911
+  tag: VERIFIED
+- seq: 75
+  location: ถนนพหลโยธิน ช่วงทางด่วนอนุเสาวรีย์ชัยสมรภูมิ
+  district: พญาไท
+  lat: 13.76693
+  lon: 100.53945
+  printed_under_Latitude_header: '100.53945'
+  printed_under_Longitude_header: '13.76693'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 75 | ถนนพหลโยธิน ช่วงทางด่วนอนุเสาวรีย์ชัยสมรภูมิ | 100.53945 | 13.76693
+  tag: VERIFIED
+- seq: 76
+  location: ถนนพหลโยธิน ช่วงหน้ำสนามเป้า
+  district: พญาไท
+  lat: 13.77314
+  lon: 100.54225
+  printed_under_Latitude_header: '100.54225'
+  printed_under_Longitude_header: '13.77314'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 76 | ถนนพหลโยธิน ช่วงหน้าสนามเป้า | 100.54225 | 13.77314
+  tag: VERIFIED
+- seq: 77
+  location: ถนนนิคมมักกะสัน แยกราชปรารภ
+  district: ราชเทวี
+  lat: 13.75477
+  lon: 100.54263
+  printed_under_Latitude_header: '100.54263'
+  printed_under_Longitude_header: '13.75477'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 77 | ถนนนิคมมักกะสัน แยกราชปรารภ | 100.54263 | 13.75477
+  tag: VERIFIED
+- seq: 78
+  location: ถนนศรีอยุธยา แยกพญาไท
+  district: ราชเทวี
+  lat: 13.75785
+  lon: 100.5347
+  printed_under_Latitude_header: '100.53470'
+  printed_under_Longitude_header: '13.75785'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 78 | ถนนศรีอยุธยา แยกพญาไท | 100.53470 | 13.75785
+  tag: VERIFIED
+- seq: 79
+  location: ถนนเพชรบุรี ช่วงโรงแรมอโศกะ
+  district: ราชเทวี
+  lat: 13.74934
+  lon: 100.56039
+  printed_under_Latitude_header: '100.56039'
+  printed_under_Longitude_header: '13.74934'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 79 | ถนนเพชรบุรี ช่วงโรงแรมอโศกะ | 100.56039 | 13.74934
+  tag: VERIFIED
+- seq: 80
+  location: ถนนเพชรบุรี หน้ำวิทยาลัยเทคโนโลยีดอนบอสโก
+  district: ราชเทวี
+  lat: 13.74939
+  lon: 100.55939
+  printed_under_Latitude_header: '100.55939'
+  printed_under_Longitude_header: '13.74939'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 80 | ถนนเพชรบุรี หน้าวิทยาลัยเทคโนโลยีดอนบอสโก | 100.55939 | 13.74939
+  tag: VERIFIED
+- seq: 81
+  location: ถนนศรีอยุธยา ช่วงโรงเรียนสันติราษฎร์วิทยาลัย
+  district: ราชเทวี
+  lat: 13.75874
+  lon: 100.53233
+  printed_under_Latitude_header: '100.53233'
+  printed_under_Longitude_header: '13.75874'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 81 | ถนนศรีอยุธยา ช่วงโรงเรียนสันติราษฎร์วิทยาลัย | 100.53233 | 13.75874
+  tag: VERIFIED
+- seq: 82
+  location: ถนนราชเทวี ช่วงกรมปศุสัตว์
+  district: ราชเทวี
+  lat: 13.75571
+  lon: 100.5332
+  printed_under_Latitude_header: '100.53320'
+  printed_under_Longitude_header: '13.75571'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 82 | ถนนราชเทวี ช่วงกรมปศุสัตว์ | 100.53320 | 13.75571
+  tag: VERIFIED
+- seq: 83
+  location: ถนนศรีอยุธยา หน้ำโรงเรียนสันติราษฎร์วิทยาลัย
+  district: ราชเทวี
+  lat: 13.75861
+  lon: 100.53259
+  printed_under_Latitude_header: '100.53259'
+  printed_under_Longitude_header: '13.75861'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 83 | ถนนศรีอยุธยา หน้าโรงเรียนสันติราษฎร์วิทยาลัย | 100.53259 | 13.75861
+  tag: VERIFIED
+- seq: 84
+  location: ถนนพระรามที่ 6 ช่วงพิพิธภัณฑ์กรมทางหลวง
+  district: ราชเทวี
+  lat: 13.76021
+  lon: 100.52524
+  printed_under_Latitude_header: '100.52524'
+  printed_under_Longitude_header: '13.76021'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 84 | ถนนพระรามที่ 6 ช่วงพิพิธภัณฑ์กรมทางหลวง | 100.52524 | 13.76021
+  tag: VERIFIED
+- seq: 85
+  location: ถนนพระรามที่ 6 ช่วงตลาดประแจจีน
+  district: ราชเทวี
+  lat: 13.75657
+  lon: 100.52368
+  printed_under_Latitude_header: '100.52368'
+  printed_under_Longitude_header: '13.75657'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 85 | ถนนพระรามที่ 6 ช่วงตลาดประแจจีน | 100.52368 | 13.75657
+  tag: VERIFIED
+- seq: 86
+  location: ถนนศรีอยุธยา หน้ำกรมทางหลวง
+  district: ราชเทวี
+  lat: 13.76229
+  lon: 100.52461
+  printed_under_Latitude_header: '100.52461'
+  printed_under_Longitude_header: '13.76229'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 86 | ถนนศรีอยุธยา หน้ากรมทางหลวง | 100.52461 | 13.76229
+  tag: VERIFIED
+- seq: 87
+  location: ถนนบรรทัดทอง ช่วงถนนเพชรบุรี (แยกเพชรพระราม)
+  district: ราชเทวี
+  lat: 13.75486
+  lon: 100.52687
+  printed_under_Latitude_header: '100.52687'
+  printed_under_Longitude_header: '13.75486'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 87 | ถนนบรรทัดทอง ช่วงถนนเพชรบุรี (แยกเพชรพระราม) | 100.52687 | 13.75486
+  tag: VERIFIED
+- seq: 88
+  location: ถนนมิตรสัมพันธ์ - แยกอโศก
+  district: ราชเทวี
+  lat: 13.74917
+  lon: 100.56352
+  printed_under_Latitude_header: '100.56352'
+  printed_under_Longitude_header: '13.74917'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 88 | ถนนมิตรสัมพันธ์ - แยกอโศก | 100.56352 | 13.74917
+  tag: VERIFIED
+- seq: 89
+  location: ถนนศรีวรา หน้ำทาวน์อินทาวน์
+  district: วังทองหลาง
+  lat: 13.77314
+  lon: 100.60976
+  printed_under_Latitude_header: '100.60976'
+  printed_under_Longitude_header: '13.77314'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 89 | ถนนศรีวรา หน้าทาวน์อินทาวน์ | 100.60976 | 13.77314
+  tag: VERIFIED
+- seq: 90
+  location: ถนนประดิษฐ์มนุญธรรม ศูนย์แพทย์พัฒนา
+  district: วังทองหลาง
+  lat: 13.76177
+  lon: 100.59755
+  printed_under_Latitude_header: '100.59755'
+  printed_under_Longitude_header: '13.76177'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 90 | ถนนประดิษฐ์มนุญธรรม ศูนย์แพทย์พัฒนา | 100.59755 | 13.76177
+  tag: VERIFIED
+- seq: 91
+  location: ถนนลาดพร้าว ช่วงซอยลาดพร้าว 110 -112
+  district: วังทองหลาง
+  lat: 13.78147
+  lon: 100.6175
+  printed_under_Latitude_header: '100.61750'
+  printed_under_Longitude_header: '13.78147'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 91 | ถนนลาดพร้าว ช่วงซอยลาดพร้าว 110 -112 | 100.61750 | 13.78147
+  tag: VERIFIED
+- seq: 92
+  location: ซอยจำเนียรเสริม หน้ำศูนย์แพทย์พัฒนา
+  district: วังทองหลาง
+  lat: 13.76247
+  lon: 100.59585
+  printed_under_Latitude_header: '100.59585'
+  printed_under_Longitude_header: '13.76247'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 92 | ซอยจำเนียรเสริม หน้าศูนย์แพทย์พัฒนา | 100.59585 | 13.76247
+  tag: VERIFIED
+- seq: 93
+  location: ซอยรามคำแหง 65 (ซอยมหาดไทย)
+  district: วังทองหลาง
+  lat: 13.77141
+  lon: 100.62234
+  printed_under_Latitude_header: '100.62234'
+  printed_under_Longitude_header: '13.77141'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 93 | ซอยรามคำแหง 65 (ซอยมหาดไทย) | 100.62234 | 13.77141
+  tag: VERIFIED
+- seq: 94
+  location: ถนนลาดพร้าว ซอยลาดพร้าว 110
+  district: วังทองหลาง
+  lat: 13.78184
+  lon: 100.61682
+  printed_under_Latitude_header: '100.61682'
+  printed_under_Longitude_header: '13.78184'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 94 | ถนนลาดพร้าว ซอยลาดพร้าว 110 | 100.61682 | 13.78184
+  tag: VERIFIED
+- seq: 95
+  location: ถนนลาดพร้าว แยกประดิษฐ์มนูญธรรม - ตลาดโชคชัย 4
+  district: วังทองหลาง
+  lat: 13.79491
+  lon: 100.59383
+  printed_under_Latitude_header: '100.59383'
+  printed_under_Longitude_header: '13.79491'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 95 | ถนนลาดพร้าว แยกประดิษฐ์มนูญธรรม - ตลาดโชคชัย 4 | 100.59383 | 13.79491
+  tag: VERIFIED
+- seq: 96
+  location: ถนนลาดพร้าว ซอยลาดพร้าวซอย 64 ตลอดซอย
+  district: วังทองหลาง
+  lat: 13.78808
+  lon: 100.59972
+  printed_under_Latitude_header: '100.59972'
+  printed_under_Longitude_header: '13.78808'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 96 | ถนนลาดพร้าว ซอยลาดพร้าวซอย 64 ตลอดซอย | 100.59972 | 13.78808
+  tag: VERIFIED
+- seq: 97
+  location: ถนนลาดพร้าว ซอยลาดพร้าว 80 แยก 22
+  district: วังทองหลาง
+  lat: 13.78277
+  lon: 100.60371
+  printed_under_Latitude_header: '100.60371'
+  printed_under_Longitude_header: '13.78277'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 97 | ถนนลาดพร้าว ซอยลาดพร้าว 80 แยก 22 | 100.60371 | 13.78277
+  tag: VERIFIED
+- seq: 98
+  location: ถนนลาดพร้าว ช่วงปากซอยลาดพร้าว 89
+  district: วังทองหลาง
+  lat: 13.78064
+  lon: 100.61932
+  printed_under_Latitude_header: '100.61932'
+  printed_under_Longitude_header: '13.78064'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพกลาง (ต่อ)
+  page: 119
+  printed_page: ค-3
+  raw: 98 | ถนนลาดพร้าว ช่วงปากซอยลาดพร้าว 89 | 100.61932 | 13.78064
+  tag: VERIFIED
+- seq: 99
+  location: ถนนพระรามที่ 1 หน้ำโรงพยาบาลตารวจ
+  district: ปทุมวัน
+  lat: 13.74489
+  lon: 100.53808
+  printed_under_Latitude_header: '100.53808'
+  printed_under_Longitude_header: '13.74489'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 99 | ถนนพระรามที่ 1 หน้าโรงพยาบาลตำรวจ | 100.53808 | 13.74489
+  tag: VERIFIED
+- seq: 100
+  location: ถนนพระรามที่ 1 ช่วงสนามกีฬาแห่งชาติ
+  district: ปทุมวัน
+  lat: 13.74679
+  lon: 100.52735
+  printed_under_Latitude_header: '100.52735'
+  printed_under_Longitude_header: '13.74679'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 100 | ถนนพระรามที่ 1 ช่วงสนามกีฬาแห่งชาติ | 100.52735 | 13.74679
+  tag: VERIFIED
+- seq: 101
+  location: ถนนศาลาแดง ช่วงซอยศาลาแดง 1/1
+  district: บางรัก
+  lat: 13.72436
+  lon: 100.53788
+  printed_under_Latitude_header: '100.53788'
+  printed_under_Longitude_header: '13.72436'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 101 | ถนนศาลาแดง ช่วงซอยศาลาแดง 1/1 | 100.53788 | 13.72436
+  tag: VERIFIED
+- seq: 102
+  location: ถนนสุรวงศ์ ใต้ทางพิเศษศรีรัช
+  district: บางรัก
+  lat: 13.726
+  lon: 100.51736
+  printed_under_Latitude_header: '100.51736'
+  printed_under_Longitude_header: '13.72600'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 102 | ถนนสุรวงศ์ ใต้ทางพิเศษศรีรัช | 100.51736 | 13.72600
+  tag: VERIFIED
+- seq: 103
+  location: ถนนสวนพลูตลอดสาย
+  district: สาทร
+  lat: 13.7211
+  lon: 100.5376
+  printed_under_Latitude_header: '100.53760'
+  printed_under_Longitude_header: '13.72110'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 103 | ถนนสวนพลูตลอดสาย | 100.53760 | 13.72110
+  tag: VERIFIED
+- seq: 104
+  location: ถนนสาทร ซอยสาทร 11 ถึงชุมชนกุศลทอง
+  district: สาทร
+  lat: 13.71349
+  lon: 100.52772
+  printed_under_Latitude_header: '100.52772'
+  printed_under_Longitude_header: '13.71349'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 104 | ถนนสาทร ซอยสาทร 11 ถึงชุมชนกุศลทอง | 100.52772 | 13.71349
+  tag: VERIFIED
+- seq: 105
+  location: ถนนจันทน์ ซอยจันทน์ 28/2
+  district: สาทร
+  lat: 13.70745
+  lon: 100.52091
+  printed_under_Latitude_header: '100.52091'
+  printed_under_Longitude_header: '13.70745'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 105 | ถนนจันทน์ ซอยจันทน์ 28/2 | 100.52091 | 13.70745
+  tag: VERIFIED
+- seq: 106
+  location: ถนนจันทน์ ซอยจันทน์ 29
+  district: สาทร
+  lat: 13.7064
+  lon: 100.52628
+  printed_under_Latitude_header: '100.52628'
+  printed_under_Longitude_header: '13.70640'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 106 | ถนนจันทน์ ซอยจันทน์ 29 | 100.52628 | 13.70640
+  tag: VERIFIED
+- seq: 107
+  location: ถนนสาทรใต้ ปากซอยสาทร 3 (สวนพลู)
+  district: สาทร
+  lat: 13.7236
+  lon: 100.53663
+  printed_under_Latitude_header: '100.53663'
+  printed_under_Longitude_header: '13.72360'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 107 | ถนนสาทรใต้ ปากซอยสาทร 3 (สวนพลู) | 100.53663 | 13.72360
+  tag: VERIFIED
+- seq: 108
+  location: ถนนสวนพลู ซอยพระพินิจ
+  district: สาทร
+  lat: 13.72267
+  lon: 100.53698
+  printed_under_Latitude_header: '100.53698'
+  printed_under_Longitude_header: '13.72267'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 108 | ถนนสวนพลู ซอยพระพินิจ | 100.53698 | 13.72267
+  tag: VERIFIED
+- seq: 109
+  location: ถนนสาทร ซอยสาทร 11 ตัดกับซอยจันทน์ 18/7
+  district: สาทร
+  lat: 13.71325
+  lon: 100.52728
+  printed_under_Latitude_header: '100.52728'
+  printed_under_Longitude_header: '13.71325'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 109 | ถนนสาทร ซอยสาทร 11 ตัดกับซอยจันทน์ 18/7 | 100.52728 | 13.71325
+  tag: VERIFIED
+- seq: 110
+  location: ถนนสาธุประดิษฐ์ ซอยสาธุประดิษฐ์ 15
+  district: บางคอแหลม
+  lat: 13.70014
+  lon: 100.53096
+  printed_under_Latitude_header: '100.53096'
+  printed_under_Longitude_header: '13.70014'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 110 | ถนนสาธุประดิษฐ์ ซอยสาธุประดิษฐ์ 15 | 100.53096 | 13.70014
+  tag: VERIFIED
+- seq: 111
+  location: ถนนสาธุประดิษฐ์ ช่วงซอยสาธุประดิษฐ์ 14-16
+  district: บางคอแหลม
+  lat: 13.70128
+  lon: 100.52922
+  printed_under_Latitude_header: '100.52922'
+  printed_under_Longitude_header: '13.70128'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 111 | ถนนสาธุประดิษฐ์ ช่วงซอยสาธุประดิษฐ์ 14-16 | 100.52922 | 13.70128
+  tag: VERIFIED
+- seq: 112
+  location: ถนนเจริญกรุง แยกถนนตก
+  district: บางคอแหลม
+  lat: 13.69736
+  lon: 100.49719
+  printed_under_Latitude_header: '100.49719'
+  printed_under_Longitude_header: '13.69736'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 112 | ถนนเจริญกรุง แยกถนนตก | 100.49719 | 13.69736
+  tag: VERIFIED
+- seq: 113
+  location: ถนนจันทร์ ช่วงแยกถนนนราธิวาสราชนครินทร์
+  district: ยานนาวา
+  lat: 13.70712
+  lon: 100.53751
+  printed_under_Latitude_header: '100.53751'
+  printed_under_Longitude_header: '13.70712'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 113 | ถนนจันทร์ ช่วงแยกถนนนราธิวาสราชนครินทร์ | 100.53751 | 13.70712
+  tag: VERIFIED
+- seq: 114
+  location: ถนนเย็นอากาศ ช่วงแยกใกล้หมู่บ้านสิริสาทร
+  district: ยานนาวา
+  lat: 13.71532
+  lon: 100.54633
+  printed_under_Latitude_header: '100.54633'
+  printed_under_Longitude_header: '13.71532'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 114 | ถนนเย็นอากาศ ช่วงแยกใกล้หมู่บ้านสิริสาทร | 100.54633 | 13.71532
+  tag: VERIFIED
+- seq: 115
+  location: ถนนสาธุประดิษฐ์ ซอยสาธุประดิษฐ์ 2
+  district: ยานนาวา
+  lat: 13.70534
+  lon: 100.52888
+  printed_under_Latitude_header: '100.52888'
+  printed_under_Longitude_header: '13.70534'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 115 | ถนนสาธุประดิษฐ์ ซอยสาธุประดิษฐ์ 2 | 100.52888 | 13.70534
+  tag: VERIFIED
+- seq: 116
+  location: ถนนสุนทรโกษา แยก ณ ระนอง ฝั่งสนามกีฬา
+  district: คลองเตย
+  lat: 13.71675
+  lon: 100.56024
+  printed_under_Latitude_header: '100.56024'
+  printed_under_Longitude_header: '13.71675'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 116 | ถนนสุนทรโกษา แยก ณ ระนอง ฝั่งสนามกีฬา | 100.56024 | 13.71675
+  tag: VERIFIED
+- seq: 117
+  location: ถนนสุนทรโกษา กรมศุลกากร - สนามกีฬา
+  district: คลองเตย
+  lat: 13.71547
+  lon: 100.56323
+  printed_under_Latitude_header: '100.56323'
+  printed_under_Longitude_header: '13.71547'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 117 | ถนนสุนทรโกษา กรมศุลกากร - สนามกีฬา | 100.56323 | 13.71547
+  tag: VERIFIED
+- seq: 118
+  location: ถนนสุขุมวิท ช่วงสถานีรถไฟฟ้าพร้อมพงษ์
+  district: คลองเตย
+  lat: 13.73039
+  lon: 100.56975
+  printed_under_Latitude_header: '100.56975'
+  printed_under_Longitude_header: '13.73039'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 118 | ถนนสุขุมวิท ช่วงสถานีรถไฟฟ้าพร้อมพงษ์ | 100.56975 | 13.73039
+  tag: VERIFIED
+- seq: 119
+  location: ถนนพระรามที่ 4 หน้ำช่อง 3
+  district: คลองเตย
+  lat: 13.71705
+  lon: 100.57193
+  printed_under_Latitude_header: '100.57193'
+  printed_under_Longitude_header: '13.71705'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 119 | ถนนพระรามที่ 4 หน้าช่อง 3 | 100.57193 | 13.71705
+  tag: VERIFIED
+- seq: 120
+  location: ถนนสุขุมวิท ซอยสุขุมวิท 22
+  district: คลองเตย
+  lat: 13.72767
+  lon: 100.56521
+  printed_under_Latitude_header: '100.56521'
+  printed_under_Longitude_header: '13.72767'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 120 | ถนนสุขุมวิท ซอยสุขุมวิท 22 | 100.56521 | 13.72767
+  tag: VERIFIED
+- seq: 121
+  location: ถนนพระรามที่ 4 จากแยกสุขุมวิท - แยกเกษมราษฎร์
+  district: คลองเตย
+  lat: 13.71277
+  lon: 100.58877
+  printed_under_Latitude_header: '100.58877'
+  printed_under_Longitude_header: '13.71277'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 121 | ถนนพระรามที่ 4 จากแยกสุขุมวิท - แยกเกษมราษฎร์ | 100.58877 | 13.71277
+  tag: VERIFIED
+- seq: 122
+  location: ถนนสุขุมวิท ซอยสุขุมวิท 26 ช่วงซอยอรรถกวี 3
+  district: คลองเตย
+  lat: 13.72495
+  lon: 100.56909
+  printed_under_Latitude_header: '100.56909'
+  printed_under_Longitude_header: '13.72495'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 122 | ถนนสุขุมวิท ซอยสุขุมวิท 26 ช่วงซอยอรรถกวี 3 | 100.56909 | 13.72495
+  tag: VERIFIED
+- seq: 123
+  location: ถนนสุนทรโกษา ฝั่งหน้ำตลาดคลองเตย
+  district: คลองเตย
+  lat: 13.71719
+  lon: 100.55936
+  printed_under_Latitude_header: '100.55936'
+  printed_under_Longitude_header: '13.71719'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 123 | ถนนสุนทรโกษา ฝั่งหน้าตลาดคลองเตย | 100.55936 | 13.71719
+  tag: VERIFIED
+- seq: 124
+  location: ถนนพระรามที่ 4 ช่วงกล้วยน้ำไทย
+  district: คลองเตย
+  lat: 13.71275
+  lon: 100.58419
+  printed_under_Latitude_header: '100.58419'
+  printed_under_Longitude_header: '13.71275'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 124 | ถนนพระรามที่ 4 ช่วงกล้วยน้ำไทย | 100.58419 | 13.71275
+  tag: VERIFIED
+- seq: 125
+  location: ถนนสุขุมวิท ซอยพร้อมใจ
+  district: วัฒนา
+  lat: 13.73443
+  lon: 100.57153
+  printed_under_Latitude_header: '100.57153'
+  printed_under_Longitude_header: '13.73443'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 125 | ถนนสุขุมวิท ซอยพร้อมใจ | 100.57153 | 13.73443
+  tag: VERIFIED
+- seq: 126
+  location: ถนนสุขุมวิท 71 ช่วงซอยปรีดีพนมยงค์ 9 - คลองบางมะเขือ
+  district: วัฒนา
+  lat: 13.71885
+  lon: 100.59569
+  printed_under_Latitude_header: '100.59569'
+  printed_under_Longitude_header: '13.71885'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 126 | ถนนสุขุมวิท 71 ช่วงซอยปรีดีพนมยงค์ 9 - คลองบางมะเขือ | 100.59569 | 13.71885
+  tag: VERIFIED
+- seq: 127
+  location: ถนนสุขุมวิท 71 ช่วงหน้ำซีเจถึงสุเหร่าสามอิน
+  district: วัฒนา
+  lat: 13.72721
+  lon: 100.59595
+  printed_under_Latitude_header: '100.59595'
+  printed_under_Longitude_header: '13.72721'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 127 | ถนนสุขุมวิท 71 ช่วงหน้าซีเจถึงสุเหร่าสามอิน | 100.59595 | 13.72721
+  tag: VERIFIED
+- seq: 128
+  location: ถนนสุขุมวิท 71 ช่วงซอยปรีดีพนมยงค์ 10 -20 (ทั้งสองฝั่ง)
+  district: วัฒนา
+  lat: 13.7183
+  lon: 100.59576
+  printed_under_Latitude_header: '100.59576'
+  printed_under_Longitude_header: '13.71830'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 128 | ถนนสุขุมวิท 71 ช่วงซอยปรีดีพนมยงค์ 10 -20 (ทั้งสองฝั่ง) | 100.59576 | 13.71830
+  tag: VERIFIED
+- seq: 129
+  location: ถนนสุขุมวิท ช่วงซอยพร้อมมิตร
+  district: วัฒนา
+  lat: 13.73351
+  lon: 100.57344
+  printed_under_Latitude_header: '100.57344'
+  printed_under_Longitude_header: '13.73351'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 129 | ถนนสุขุมวิท ช่วงซอยพร้อมมิตร | 100.57344 | 13.73351
+  tag: VERIFIED
+- seq: 130
+  location: ถนนเอกมัย ปากซอยเอกมัย 3 - บ่อสูบเอกมัย
+  district: วัฒนา
+  lat: 13.73042
+  lon: 100.58634
+  printed_under_Latitude_header: '100.58634'
+  printed_under_Longitude_header: '13.73042'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 130 | ถนนเอกมัย ปากซอยเอกมัย 3 - บ่อสูบเอกมัย | 100.58634 | 13.73042
+  tag: VERIFIED
+- seq: 131
+  location: ถนนอโศกมตรี ช่วงตรงข้ามตึกแกรมมี่
+  district: วัฒนา
+  lat: 13.7437
+  lon: 100.5622
+  printed_under_Latitude_header: '100.56220'
+  printed_under_Longitude_header: '13.74370'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 131 | ถนนอโศกมตรี ช่วงตรงข้ามตึกแกรมมี่ | 100.56220 | 13.74370
+  tag: VERIFIED
+- seq: 132
+  location: ถนนสุขุมวิท ซอยสุขุมวิท 31 (หน้ำโรงเรียนสวัสดี)
+  district: วัฒนา
+  lat: 13.73989
+  lon: 100.56736
+  printed_under_Latitude_header: '100.56736'
+  printed_under_Longitude_header: '13.73989'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (54 จุด)
+  page: 120
+  printed_page: ค-4
+  raw: 132 | ถนนสุขุมวิท ซอยสุขุมวิท 31 (หน้าโรงเรียนสวัสดี) | 100.56736 | 13.73989
+  tag: VERIFIED
+- seq: 133
+  location: ถนนวชิรธรรมสาธิต ช่วง 3 แยกซอยวัดทุ่ง
+  district: พระโขนง
+  lat: 13.68692
+  lon: 100.63527
+  printed_under_Latitude_header: '100.63527'
+  printed_under_Longitude_header: '13.68692'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (ต่อ)
+  page: 121
+  printed_page: null
+  raw: 133 | ถนนวชิรธรรมสาธิต ช่วง 3 แยกซอยวัดทุ่ง | 100.63527 | 13.68692
+  tag: VERIFIED
+- seq: 134
+  location: ถนนวชิรธรรมสาธิต ช่วงซอยวชิรธรรมสาธิต 34
+  district: พระโขนง
+  lat: 13.68449
+  lon: 100.62444
+  printed_under_Latitude_header: '100.62444'
+  printed_under_Longitude_header: '13.68449'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (ต่อ)
+  page: 121
+  printed_page: null
+  raw: 134 | ถนนวชิรธรรมสาธิต ช่วงซอยวชิรธรรมสาธิต 34 | 100.62444 | 13.68449
+  tag: VERIFIED
+- seq: 135
+  location: ถนนพัฒนาการ หน้ำธนาคารกรุงไทย สาขาพัฒนาการ
+  district: สวนหลวง
+  lat: 13.73713
+  lon: 100.61041
+  printed_under_Latitude_header: '100.61041'
+  printed_under_Longitude_header: '13.73713'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (ต่อ)
+  page: 121
+  printed_page: null
+  raw: 135 | ถนนพัฒนาการ หน้าธนาคารกรุงไทย สาขาพัฒนาการ | 100.61041 | 13.73713
+  tag: VERIFIED
+- seq: 136
+  location: ถนนศรีนครินทร์ ใต้สะพานมอเตอร์เวย์ พระราม9
+  district: สวนหลวง
+  lat: 13.74133
+  lon: 100.64235
+  printed_under_Latitude_header: '100.64235'
+  printed_under_Longitude_header: '13.74133'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (ต่อ)
+  page: 121
+  printed_page: null
+  raw: 136 | ถนนศรีนครินทร์ ใต้สะพานมอเตอร์เวย์ พระราม9 | 100.64235 | 13.74133
+  tag: VERIFIED
+- seq: 137
+  location: ถนนกำแพงเพชร7 ฝั่งถนนพัฒนาการ
+  district: สวนหลวง
+  lat: 13.74059
+  lon: 100.62021
+  printed_under_Latitude_header: '100.62021'
+  printed_under_Longitude_header: '13.74059'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (ต่อ)
+  page: 121
+  printed_page: null
+  raw: 137 | ถนนกำแพงเพชร7 ฝั่งถนนพัฒนาการ | 100.62021 | 13.74059
+  tag: VERIFIED
+- seq: 138
+  location: ถนนศรีนครินทร์ แยกศรีนครินทร์
+  district: สวนหลวง
+  lat: 13.74065
+  lon: 100.64238
+  printed_under_Latitude_header: '100.64238'
+  printed_under_Longitude_header: '13.74065'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (ต่อ)
+  page: 121
+  printed_page: null
+  raw: 138 | ถนนศรีนครินทร์ แยกศรีนครินทร์ | 100.64238 | 13.74065
+  tag: VERIFIED
+- seq: 139
+  location: ถนนศรีนครินทร์ แยกพัฒนาการ - สถานีรถไฟหัวหมาก
+  district: สวนหลวง
+  lat: 13.73726
+  lon: 100.64126
+  printed_under_Latitude_header: '100.64126'
+  printed_under_Longitude_header: '13.73726'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (ต่อ)
+  page: 121
+  printed_page: null
+  raw: 139 | ถนนศรีนครินทร์ แยกพัฒนาการ - สถานีรถไฟหัวหมาก | 100.64126 | 13.73726
+  tag: VERIFIED
+- seq: 140
+  location: ถนนศรีนครินทร์ ฝั่งขาเข้าแยกศรีนครินทร์ - แยกอนามัย
+  district: สวนหลวง
+  lat: 13.72058
+  lon: 100.64204
+  printed_under_Latitude_header: '100.64204'
+  printed_under_Longitude_header: '13.72058'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (ต่อ)
+  page: 121
+  printed_page: null
+  raw: 140 | ถนนศรีนครินทร์ ฝั่งขาเข้าแยกศรีนครินทร์ - แยกอนามัย | 100.64204 | 13.72058
+  tag: VERIFIED
+- seq: 141
+  location: ถนนพัฒนาการ ฝั่งขาออกโลตัส - ศูนย์เบนซ์
+  district: สวนหลวง
+  lat: 13.73638
+  lon: 100.63605
+  printed_under_Latitude_header: '100.63605'
+  printed_under_Longitude_header: '13.73638'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (ต่อ)
+  page: 121
+  printed_page: null
+  raw: 141 | ถนนพัฒนาการ ฝั่งขาออกโลตัส - ศูนย์เบนซ์ | 100.63605 | 13.73638
+  tag: VERIFIED
+- seq: 142
+  location: ถนนรามคำแหง ช่วงแยกคลองตัน
+  district: สวนหลวง
+  lat: 13.74116
+  lon: 100.60051
+  printed_under_Latitude_header: '100.60051'
+  printed_under_Longitude_header: '13.74116'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (ต่อ)
+  page: 121
+  printed_page: null
+  raw: 142 | ถนนรามคำแหง ช่วงแยกคลองตัน | 100.60051 | 13.74116
+  tag: VERIFIED
+- seq: 143
+  location: ถนนพัฒนาการ ช่วงโรงเรียนเตรียมอุดมศึกษาพัฒนาการ
+  district: สวนหลวง
+  lat: 13.72994
+  lon: 100.64771
+  printed_under_Latitude_header: '100.64771'
+  printed_under_Longitude_header: '13.72994'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (ต่อ)
+  page: 121
+  printed_page: null
+  raw: 143 | ถนนพัฒนาการ ช่วงโรงเรียนเตรียมอุดมศึกษาพัฒนาการ | 100.64771 | 13.72994
+  tag: VERIFIED
+- seq: 144
+  location: ถนนพัฒนาการ อุโมงค์พัฒนาการ (ขาเข้า)
+  district: สวนหลวง
+  lat: 13.73673
+  lon: 100.63063
+  printed_under_Latitude_header: '100.63063'
+  printed_under_Longitude_header: '13.73673'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (ต่อ)
+  page: 121
+  printed_page: null
+  raw: 144 | ถนนพัฒนาการ อุโมงค์พัฒนาการ (ขาเข้า) | 100.63063 | 13.73673
+  tag: VERIFIED
+- seq: 145
+  location: ถนนบางนา-ตราด ช่วงแยกบางนา
+  district: บางนา
+  lat: 13.67355
+  lon: 100.60716
+  printed_under_Latitude_header: '100.60716'
+  printed_under_Longitude_header: '13.67355'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (ต่อ)
+  page: 121
+  printed_page: null
+  raw: 145 | ถนนบางนา-ตราด ช่วงแยกบางนา | 100.60716 | 13.67355
+  tag: VERIFIED
+- seq: 146
+  location: ถนนศรีนครินทร์ ช่วงวัดศรีเอี่ยม
+  district: บางนา
+  lat: 13.66939
+  lon: 100.64434
+  printed_under_Latitude_header: '100.64434'
+  printed_under_Longitude_header: '13.66939'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (ต่อ)
+  page: 121
+  printed_page: null
+  raw: 146 | ถนนศรีนครินทร์ ช่วงวัดศรีเอี่ยม | 100.64434 | 13.66939
+  tag: VERIFIED
+- seq: 147
+  location: ถนนสุขมวิท ช่วงถนนแบริ่ง
+  district: บางนา
+  lat: 13.6589
+  lon: 100.60095
+  printed_under_Latitude_header: '100.60095'
+  printed_under_Longitude_header: '13.65890'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (ต่อ)
+  page: 121
+  printed_page: null
+  raw: 147 | ถนนสุขมวิท ช่วงถนนแบริ่ง | 100.60095 | 13.65890
+  tag: VERIFIED
+- seq: 148
+  location: ถนนวชิรธรรมสาธิต ซอยวชิรธรรมสาธิต 32
+  district: บางนา
+  lat: 13.68439
+  lon: 100.62037
+  printed_under_Latitude_header: '100.62037'
+  printed_under_Longitude_header: '13.68439'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (ต่อ)
+  page: 121
+  printed_page: null
+  raw: 148 | ถนนวชิรธรรมสาธิต ซอยวชิรธรรมสาธิต 32 | 100.62037 | 13.68439
+  tag: VERIFIED
+- seq: 149
+  location: ถนนบางนา-ตราด หน้ำห้างบิ๊กซี (ขาเข้าคลองเคล็ด)
+  district: บางนา
+  lat: 13.6679
+  lon: 100.63559
+  printed_under_Latitude_header: '100.63559'
+  printed_under_Longitude_header: '13.66790'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (ต่อ)
+  page: 121
+  printed_page: null
+  raw: 149 | ถนนบางนา-ตราด หน้าห้างบิ๊กซี (ขาเข้าคลองเคล็ด) | 100.63559 | 13.66790
+  tag: VERIFIED
+- seq: 150
+  location: ถนนสุขมวิท ช่วงซอยสุขุมวิท 70
+  district: บางนา
+  lat: 13.67654
+  lon: 100.60795
+  printed_under_Latitude_header: '100.60795'
+  printed_under_Longitude_header: '13.67654'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (ต่อ)
+  page: 121
+  printed_page: null
+  raw: 150 | ถนนสุขมวิท ช่วงซอยสุขุมวิท 70 | 100.60795 | 13.67654
+  tag: VERIFIED
+- seq: 151
+  location: ถนนสรรพาวุธตลอดแนว
+  district: บางนา
+  lat: 13.67507
+  lon: 100.5967
+  printed_under_Latitude_header: '100.59670'
+  printed_under_Longitude_header: '13.67507'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (ต่อ)
+  page: 121
+  printed_page: null
+  raw: 151 | ถนนสรรพาวุธตลอดแนว | 100.59670 | 13.67507
+  tag: VERIFIED
+- seq: 152
+  location: ถนนสุขมวิท ช่วงถนนอุดมสุข
+  district: บางนา
+  lat: 13.67884
+  lon: 100.60925
+  printed_under_Latitude_header: '100.60925'
+  printed_under_Longitude_header: '13.67884'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพใต้ (ต่อ)
+  page: 121
+  printed_page: null
+  raw: 152 | ถนนสุขมวิท ช่วงถนนอุดมสุข | 100.60925 | 13.67884
+  tag: VERIFIED
+- seq: 153
+  location: ถนนรามคำแหง ช่วงตรงข้ามซอยรามคำแหง 43
+  district: บางกะปิ
+  lat: 13.7586
+  lon: 100.61663
+  printed_under_Latitude_header: '100.61663'
+  printed_under_Longitude_header: '13.75860'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (39 จุด)
+  page: 121
+  printed_page: null
+  raw: 153 | ถนนรามคำแหง ช่วงตรงข้ามซอยรามคำแหง 43 | 100.61663 | 13.75860
+  tag: VERIFIED
+- seq: 154
+  location: ถนนรามคำแหง ช่วงตรงข้ามซอยรามคำแหง 53
+  district: บางกะปิ
+  lat: 13.75977
+  lon: 100.62029
+  printed_under_Latitude_header: '100.62029'
+  printed_under_Longitude_header: '13.75977'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (39 จุด)
+  page: 121
+  printed_page: null
+  raw: 154 | ถนนรามคำแหง ช่วงตรงข้ามซอยรามคำแหง 53 | 100.62029 | 13.75977
+  tag: VERIFIED
+- seq: 155
+  location: ถนนรามคำแหง ช่วงซอยรามคำแหง 33
+  district: บางกะปิ
+  lat: 13.75618
+  lon: 100.61425
+  printed_under_Latitude_header: '100.61425'
+  printed_under_Longitude_header: '13.75618'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (39 จุด)
+  page: 121
+  printed_page: null
+  raw: 155 | ถนนรามคำแหง ช่วงซอยรามคำแหง 33 | 100.61425 | 13.75618
+  tag: VERIFIED
+- seq: 156
+  location: ถนนรามคำแหง ช่วงซอยรามคำแหง 20
+  district: บางกะปิ
+  lat: 13.75427
+  lon: 100.61253
+  printed_under_Latitude_header: '100.61253'
+  printed_under_Longitude_header: '13.75427'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (39 จุด)
+  page: 121
+  printed_page: null
+  raw: 156 | ถนนรามคำแหง ช่วงซอยรามคำแหง 20 | 100.61253 | 13.75427
+  tag: VERIFIED
+- seq: 157
+  location: ถนนหัวหมาก ช่วงซอยรามคำแหง 24 แยก 18
+  district: บางกะปิ
+  lat: 13.75343
+  lon: 100.62143
+  printed_under_Latitude_header: '100.62143'
+  printed_under_Longitude_header: '13.75343'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (39 จุด)
+  page: 121
+  printed_page: null
+  raw: 157 | ถนนหัวหมาก ช่วงซอยรามคำแหง 24 แยก 18 | 100.62143 | 13.75343
+  tag: VERIFIED
+- seq: 158
+  location: ถนนรามคำแหง ช่วงซอยรามคำแหง 33
+  district: บางกะปิ
+  lat: 13.75704
+  lon: 100.61345
+  printed_under_Latitude_header: '100.61345'
+  printed_under_Longitude_header: '13.75704'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (39 จุด)
+  page: 121
+  printed_page: null
+  raw: 158 | ถนนรามคำแหง ช่วงซอยรามคำแหง 33 | 100.61345 | 13.75704
+  tag: VERIFIED
+- seq: 159
+  location: ถนนนวมินทร์ ช่วงซอยตรงข้ามสถานีตารวจนครบาลลาดพร้าว
+  district: บางกะปิ
+  lat: 13.76754
+  lon: 100.64769
+  printed_under_Latitude_header: '100.64769'
+  printed_under_Longitude_header: '13.76754'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (39 จุด)
+  page: 121
+  printed_page: null
+  raw: 159 | ถนนนวมินทร์ ช่วงซอยตรงข้ามสถานีตำรวจนครบาลลาดพร้าว | 100.64769 | 13.76754
+  tag: VERIFIED
+- seq: 160
+  location: ถนนศรีนครินทร์ หน้ำบริษัทกรีนสปอร์ต
+  district: บางกะปิ
+  lat: 13.75544
+  lon: 100.64585
+  printed_under_Latitude_header: '100.64585'
+  printed_under_Longitude_header: '13.75544'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (39 จุด)
+  page: 121
+  printed_page: null
+  raw: 160 | ถนนศรีนครินทร์ หน้าบริษัทกรีนสปอร์ต | 100.64585 | 13.75544
+  tag: VERIFIED
+- seq: 161
+  location: ถนนรามคำแหง ซอยรามคำแหง24 หน้ำหอพักบ้านเรือทอง
+  district: บางกะปิ
+  lat: 13.75406
+  lon: 100.61495
+  printed_under_Latitude_header: '100.61495'
+  printed_under_Longitude_header: '13.75406'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (39 จุด)
+  page: 121
+  printed_page: null
+  raw: 161 | ถนนรามคำแหง ซอยรามคำแหง24 หน้าหอพักบ้านเรือทอง | 100.61495 | 13.75406
+  tag: VERIFIED
+- seq: 162
+  location: ถนนเสรีไทย ช่วงแยกบางกะปิ
+  district: บางกะปิ
+  lat: 13.76619
+  lon: 100.64808
+  printed_under_Latitude_header: '100.64808'
+  printed_under_Longitude_header: '13.76619'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (39 จุด)
+  page: 121
+  printed_page: null
+  raw: 162 | ถนนเสรีไทย ช่วงแยกบางกะปิ | 100.64808 | 13.76619
+  tag: VERIFIED
+- seq: 163
+  location: ถนนศรีนครินทร์ ช่วงแยกลำสาลี
+  district: บางกะปิ
+  lat: 13.76243
+  lon: 100.64559
+  printed_under_Latitude_header: '100.64559'
+  printed_under_Longitude_header: '13.76243'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (39 จุด)
+  page: 121
+  printed_page: null
+  raw: 163 | ถนนศรีนครินทร์ ช่วงแยกลำสาลี | 100.64559 | 13.76243
+  tag: VERIFIED
+- seq: 164
+  location: ถนนรามคำแหง ช่วงซอยรามคำแหง 19/1
+  district: บางกะปิ
+  lat: 13.75344
+  lon: 100.61137
+  printed_under_Latitude_header: '100.61137'
+  printed_under_Longitude_header: '13.75344'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (39 จุด)
+  page: 121
+  printed_page: null
+  raw: 164 | ถนนรามคำแหง ช่วงซอยรามคำแหง 19/1 | 100.61137 | 13.75344
+  tag: VERIFIED
+- seq: 165
+  location: ถนนนวมินทร์ ซอยนวมินทร์ 46 (สันติอโศก)
+  district: บึงกุ่ม
+  lat: 13.7962
+  lon: 100.65092
+  printed_under_Latitude_header: '100.65092'
+  printed_under_Longitude_header: '13.79620'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 165 | ถนนนวมินทร์ ซอยนวมินทร์ 46 (สันติอโศก) | 100.65092 | 13.79620
+  tag: VERIFIED
+- seq: 166
+  location: ถนนนวมินทร์ ช่วงซอยนวมินทร์ 38
+  district: บึงกุ่ม
+  lat: 13.79446
+  lon: 100.65199
+  printed_under_Latitude_header: '100.65199'
+  printed_under_Longitude_header: '13.79446'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 166 | ถนนนวมินทร์ ช่วงซอยนวมินทร์ 38 | 100.65199 | 13.79446
+  tag: VERIFIED
+- seq: 167
+  location: ถนนนวมินทร์ ซอยนวมินทร์ 36 (นวมินทร์ขาเข้า)
+  district: บึงกุ่ม
+  lat: 13.80176
+  lon: 100.64823
+  printed_under_Latitude_header: '100.64823'
+  printed_under_Longitude_header: '13.80176'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 167 | ถนนนวมินทร์ ซอยนวมินทร์ 36 (นวมินทร์ขาเข้า) | 100.64823 | 13.80176
+  tag: VERIFIED
+- seq: 168
+  location: ถนนนวมินทร์ ช่วงซอยนวมินทร์ 105
+  district: บึงกุ่ม
+  lat: 13.80533
+  lon: 100.64787
+  printed_under_Latitude_header: '100.64787'
+  printed_under_Longitude_header: '13.80533'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 168 | ถนนนวมินทร์ ช่วงซอยนวมินทร์ 105 | 100.64787 | 13.80533
+  tag: VERIFIED
+- seq: 169
+  location: ถนนนวมินทร์ ซอยนวมินทร์ 75 (นวมินทร์ขาออก)
+  district: บึงกุ่ม
+  lat: 13.80219
+  lon: 100.6482
+  printed_under_Latitude_header: '100.64820'
+  printed_under_Longitude_header: '13.80219'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 169 | ถนนนวมินทร์ ซอยนวมินทร์ 75 (นวมินทร์ขาออก) | 100.64820 | 13.80219
+  tag: VERIFIED
+- seq: 170
+  location: ถนนนวมินทร์ ช่วงซอยนวมินทร์ 135
+  district: บึงกุ่ม
+  lat: 13.82053
+  lon: 100.65466
+  printed_under_Latitude_header: '100.65466'
+  printed_under_Longitude_header: '13.82053'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 170 | ถนนนวมินทร์ ช่วงซอยนวมินทร์ 135 | 100.65466 | 13.82053
+  tag: VERIFIED
+- seq: 171
+  location: ถนนนวมินทร์ใกล้แยกถนนประเสริฐมนูกิจ
+  district: บึงกุ่ม
+  lat: 13.80945
+  lon: 100.65
+  printed_under_Latitude_header: '100.65000'
+  printed_under_Longitude_header: '13.80945'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 171 | ถนนนวมินทร์ใกล้แยกถนนประเสริฐมนูกิจ | 100.65000 | 13.80945
+  tag: VERIFIED
+- seq: 172
+  location: ถนนนวมินทร์ ช่วงซอยนวมินทร์ 155
+  district: บึงกุ่ม
+  lat: 13.82945
+  lon: 100.65848
+  printed_under_Latitude_header: '100.65848'
+  printed_under_Longitude_header: '13.82945'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 172 | ถนนนวมินทร์ ช่วงซอยนวมินทร์ 155 | 100.65848 | 13.82945
+  tag: VERIFIED
+- seq: 173
+  location: ถนนเสรีไทย หน้ำนิคมฯ บางชัน
+  district: คันนายาว
+  lat: 13.79856
+  lon: 100.69878
+  printed_under_Latitude_header: '100.69878'
+  printed_under_Longitude_header: '13.79856'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 173 | ถนนเสรีไทย หน้านิคมฯ บางชัน | 100.69878 | 13.79856
+  tag: VERIFIED
+- seq: 174
+  location: ถนนลาดกระบัง แยกสุวรรณภูมิ
+  district: ลาดกระบัง
+  lat: 13.72185
+  lon: 100.77573
+  printed_under_Latitude_header: '100.77573'
+  printed_under_Longitude_header: '13.72185'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 174 | ถนนลาดกระบัง แยกสุวรรณภูมิ | 100.77573 | 13.72185
+  tag: VERIFIED
+- seq: 175
+  location: ถนนลาดกระบัง ช่วงแยกกิ่งแก้ว
+  district: ลาดกระบัง
+  lat: 13.72237
+  lon: 100.73898
+  printed_under_Latitude_header: '100.73898'
+  printed_under_Longitude_header: '13.72237'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 175 | ถนนลาดกระบัง ช่วงแยกกิ่งแก้ว | 100.73898 | 13.72237
+  tag: VERIFIED
+- seq: 176
+  location: ถนนลาดกระบัง ฝั่งตรงข้ามตลาดสุวรรณภูมิ
+  district: ลาดกระบัง
+  lat: 13.72194
+  lon: 100.77841
+  printed_under_Latitude_header: '100.77841'
+  printed_under_Longitude_header: '13.72194'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 176 | ถนนลาดกระบัง ฝั่งตรงข้ามตลาดสุวรรณภูมิ | 100.77841 | 13.72194
+  tag: VERIFIED
+- seq: 177
+  location: ถนนลาดกระบัง ซอยลาดกระบัง 30/1
+  district: ลาดกระบัง
+  lat: 13.72243
+  lon: 100.73745
+  printed_under_Latitude_header: '100.73745'
+  printed_under_Longitude_header: '13.72243'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 177 | ถนนลาดกระบัง ซอยลาดกระบัง 30/1 | 100.73745 | 13.72243
+  tag: VERIFIED
+- seq: 178
+  location: ถนนลาดกระบัง ช่วงโลตัสลาดกระบัง
+  district: ลาดกระบัง
+  lat: 13.72078
+  lon: 100.79335
+  printed_under_Latitude_header: '100.79335'
+  printed_under_Longitude_header: '13.72078'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 178 | ถนนลาดกระบัง ช่วงโลตัสลาดกระบัง | 100.79335 | 13.72078
+  tag: VERIFIED
+- seq: 179
+  location: ถนนลาดกระบัง แยกสุขสมาน
+  district: ลาดกระบัง
+  lat: 13.72176
+  lon: 100.77644
+  printed_under_Latitude_header: '100.77644'
+  printed_under_Longitude_header: '13.72176'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 179 | ถนนลาดกระบัง แยกสุขสมาน | 100.77644 | 13.72176
+  tag: VERIFIED
+- seq: 180
+  location: ถนนลาดกระบัง ตลาดนำชัย
+  district: ลาดกระบัง
+  lat: 13.72221
+  lon: 100.71216
+  printed_under_Latitude_header: '100.71216'
+  printed_under_Longitude_header: '13.72221'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 180 | ถนนลาดกระบัง ตลาดนำชัย | 100.71216 | 13.72221
+  tag: VERIFIED
+- seq: 181
+  location: ถนนมอเตอร์เวย์สาย 7 ช่วงสถาบันเทคโนโลยีพระจอมเกล้า
+  district: ลาดกระบัง
+  lat: 13.73191
+  lon: 100.78234
+  printed_under_Latitude_header: '100.78234'
+  printed_under_Longitude_header: '13.73191'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 181 | ถนนมอเตอร์เวย์สาย 7 ช่วงสถาบันเทคโนโลยีพระจอมเกล้า | 100.78234 | 13.73191
+  tag: VERIFIED
+- seq: 182
+  location: ถนนหลวงแพ่ง หน้ำโลตัสหลวงแพ่ง
+  district: ลาดกระบัง
+  lat: 13.70976
+  lon: 100.82401
+  printed_under_Latitude_header: '100.82401'
+  printed_under_Longitude_header: '13.70976'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 182 | ถนนหลวงแพ่ง หน้าโลตัสหลวงแพ่ง | 100.82401 | 13.70976
+  tag: VERIFIED
+- seq: 183
+  location: ถนนลาดกระบัง คลองบัวลอย - คลองบัวเกราะ
+  district: ลาดกระบัง
+  lat: 13.72213
+  lon: 100.72691
+  printed_under_Latitude_header: '100.72691'
+  printed_under_Longitude_header: '13.72213'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 183 | ถนนลาดกระบัง คลองบัวลอย - คลองบัวเกราะ | 100.72691 | 13.72213
+  tag: VERIFIED
+- seq: 184
+  location: ถนนสุวินทวงศ์ ช่วงแยกถนนหทัยราษฎร์
+  district: มีนบุรี
+  lat: 13.81678
+  lon: 100.72205
+  printed_under_Latitude_header: '100.72205'
+  printed_under_Longitude_header: '13.81678'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 184 | ถนนสุวินทวงศ์ ช่วงแยกถนนหทัยราษฎร์ | 100.72205 | 13.81678
+  tag: VERIFIED
+- seq: 185
+  location: ถนนสีหบุรานุกจิ ช่วงซอยสีหบุรานุกิจ 14
+  district: มีนบุรี
+  lat: 13.81247
+  lon: 100.72393
+  printed_under_Latitude_header: '100.72393'
+  printed_under_Longitude_header: '13.81247'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 185 | ถนนสีหบุรานุกจิ ช่วงซอยสีหบุรานุกิจ 14 | 100.72393 | 13.81247
+  tag: VERIFIED
+- seq: 186
+  location: ถนนอ่อนนุช ซอยอ่อนนุช 35 หมู่บ้านเสรี-อ่อนนุช
+  district: ประเวศ
+  lat: 13.70843
+  lon: 100.66065
+  printed_under_Latitude_header: '100.66065'
+  printed_under_Longitude_header: '13.70843'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 186 | ถนนอ่อนนุช ซอยอ่อนนุช 35 หมู่บ้านเสรี-อ่อนนุช | 100.66065 | 13.70843
+  tag: VERIFIED
+- seq: 187
+  location: ถนนอุดมสุข ช่วงแยกศรีอุดม
+  district: ประเวศ
+  lat: 13.67789
+  lon: 100.64672
+  printed_under_Latitude_header: '100.64672'
+  printed_under_Longitude_header: '13.67789'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 187 | ถนนอุดมสุข ช่วงแยกศรีอุดม | 100.64672 | 13.67789
+  tag: VERIFIED
+- seq: 188
+  location: ถนนเฉลิมพระเกียรติ ร.9 ช่วงซอยเฉลิมพระเกียรติ ร.9 40
+  district: ประเวศ
+  lat: 13.69019
+  lon: 100.67005
+  printed_under_Latitude_header: '100.67005'
+  printed_under_Longitude_header: '13.69019'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 188 | ถนนเฉลิมพระเกียรติ ร.9 ช่วงซอยเฉลิมพระเกียรติ ร.9 40 | 100.67005 | 13.69019
+  tag: VERIFIED
+- seq: 189
+  location: ถนนสุขุมวิท 77 ช่วง ซ.อ่อนนุช 59
+  district: ประเวศ
+  lat: 13.71969
+  lon: 100.67394
+  printed_under_Latitude_header: '100.67394'
+  printed_under_Longitude_header: '13.71969'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 189 | ถนนสุขุมวิท 77 ช่วง ซ.อ่อนนุช 59 | 100.67394 | 13.71969
+  tag: VERIFIED
+- seq: 190
+  location: ถนนเฉลิมพระเกียรติ ร.9 คลองปลัดเปรียง-บึงหนองบอน
+  district: ประเวศ
+  lat: 13.69172
+  lon: 100.67088
+  printed_under_Latitude_header: '100.67088'
+  printed_under_Longitude_header: '13.69172'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 190 | ถนนเฉลิมพระเกียรติ ร.9 คลองปลัดเปรียง-บึงหนองบอน | 100.67088 | 13.69172
+  tag: VERIFIED
+- seq: 191
+  location: ถนนศรีนครินทร์ หน้ำห้างซีคอน สาขาศรีนครินทร์
+  district: ประเวศ
+  lat: 13.69456
+  lon: 100.64754
+  printed_under_Latitude_header: '100.64754'
+  printed_under_Longitude_header: '13.69456'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (ต่อ)
+  page: 122
+  printed_page: ค-6
+  raw: 191 | ถนนศรีนครินทร์ หน้าห้างซีคอน สาขาศรีนครินทร์ | 100.64754 | 13.69456
+  tag: VERIFIED
+- seq: 192
+  location: ถนนลาดหญ้า หน้ำโรบินสัน
+  district: คลองสาน
+  lat: 13.72739
+  lon: 100.49734
+  printed_under_Latitude_header: '100.49734'
+  printed_under_Longitude_header: '13.72739'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนเหนือ (5 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 192 | ถนนลาดหญ้า หน้าโรบินสัน | 100.49734 | 13.72739
+  tag: VERIFIED
+- seq: 193
+  location: ถนนท่าดินแดง แยกท่าดินแดงถึงคลองสมเด็จเจ้าพระยา
+  district: คลองสาน
+  lat: 13.73186
+  lon: 100.50208
+  printed_under_Latitude_header: '100.50208'
+  printed_under_Longitude_header: '13.73186'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนเหนือ (5 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 193 | ถนนท่าดินแดง แยกท่าดินแดงถึงคลองสมเด็จเจ้าพระยา | 100.50208 | 13.73186
+  tag: VERIFIED
+- seq: 194
+  location: ถนนลาดหญ้า วงเวียนใหญ่
+  district: คลองสาน
+  lat: 13.72667
+  lon: 100.49372
+  printed_under_Latitude_header: '100.49372'
+  printed_under_Longitude_header: '13.72667'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนเหนือ (5 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 194 | ถนนลาดหญ้า วงเวียนใหญ่ | 100.49372 | 13.72667
+  tag: VERIFIED
+- seq: 195
+  location: ถนนจอมทอง ช่วงแยกจอมทอง
+  district: จอมทอง
+  lat: 13.69911
+  lon: 100.46726
+  printed_under_Latitude_header: '100.46726'
+  printed_under_Longitude_header: '13.69911'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนเหนือ (5 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 195 | ถนนจอมทอง ช่วงแยกจอมทอง | 100.46726 | 13.69911
+  tag: VERIFIED
+- seq: 197
+  location: ถนนเพชรเกษม ช่วงซอยเพชรเกษม 31/4
+  district: ภาษีเจริญ
+  lat: 13.71534
+  lon: 100.44521
+  printed_under_Latitude_header: '100.44521'
+  printed_under_Longitude_header: '13.71534'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนใต้ (20 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 197 | ถนนเพชรเกษม ช่วงซอยเพชรเกษม 31/4 | 100.44521 | 13.71534
+  tag: VERIFIED
+- seq: 198
+  location: ถนนเพชรเกษม ซอยเพชรเกษม 42 - 46
+  district: ภาษีเจริญ
+  lat: 13.71708
+  lon: 100.45002
+  printed_under_Latitude_header: '100.45002'
+  printed_under_Longitude_header: '13.71708'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนใต้ (20 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 198 | ถนนเพชรเกษม ซอยเพชรเกษม 42 - 46 | 100.45002 | 13.71708
+  tag: VERIFIED
+- seq: 199
+  location: ถนนเพชรเกษม ช่วงซอยเพชรเกษม 31
+  district: ภาษีเจริญ
+  lat: 13.71536
+  lon: 100.44527
+  printed_under_Latitude_header: '100.44527'
+  printed_under_Longitude_header: '13.71536'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนใต้ (20 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 199 | ถนนเพชรเกษม ช่วงซอยเพชรเกษม 31 | 100.44527 | 13.71536
+  tag: VERIFIED
+- seq: 200
+  location: ถนนเพชรเกษม ช่วงหน้ำโรงพยาบาลมิตรประชา
+  district: ภาษีเจริญ
+  lat: 13.7126
+  lon: 100.43175
+  printed_under_Latitude_header: '100.43175'
+  printed_under_Longitude_header: '13.71260'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนใต้ (20 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 200 | ถนนเพชรเกษม ช่วงหน้าโรงพยาบาลมิตรประชา | 100.43175 | 13.71260
+  tag: VERIFIED
+- seq: 201
+  location: ถนนเพชรเกษม แยกวงแหวนกาญจนาภิเษก
+  district: บางแค
+  lat: 13.71054
+  lon: 100.40674
+  printed_under_Latitude_header: '100.40674'
+  printed_under_Longitude_header: '13.71054'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนใต้ (20 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 201 | ถนนเพชรเกษม แยกวงแหวนกาญจนาภิเษก | 100.40674 | 13.71054
+  tag: VERIFIED
+- seq: 202
+  location: ถนนเพชรเกษม ช่วงซอยเศรษฐกิจ 5
+  district: บางแค
+  lat: 13.7138
+  lon: 100.37776
+  printed_under_Latitude_header: '100.37776'
+  printed_under_Longitude_header: '13.71380'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนใต้ (20 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 202 | ถนนเพชรเกษม ช่วงซอยเศรษฐกิจ 5 | 100.37776 | 13.71380
+  tag: VERIFIED
+- seq: 203
+  location: ถนนเพชรเกษม ช่วงซอยเพชรเกษม 62/1
+  district: บางแค
+  lat: 13.71214
+  lon: 100.42425
+  printed_under_Latitude_header: '100.42425'
+  printed_under_Longitude_header: '13.71214'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนใต้ (20 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 203 | ถนนเพชรเกษม ช่วงซอยเพชรเกษม 62/1 | 100.42425 | 13.71214
+  tag: VERIFIED
+- seq: 204
+  location: ถนนเพชรเกษม 69 ช่วงซอยอินทปัจ 13
+  district: บางแค
+  lat: 13.69325
+  lon: 100.38077
+  printed_under_Latitude_header: '100.38077'
+  printed_under_Longitude_header: '13.69325'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนใต้ (20 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 204 | ถนนเพชรเกษม 69 ช่วงซอยอินทปัจ 13 | 100.38077 | 13.69325
+  tag: VERIFIED
+- seq: 205
+  location: ถนนบางบอน 3 ช่วงซอยวัดม่วง - ลำรางสาธารณะ
+  district: บางแค
+  lat: 13.69613
+  lon: 100.3887
+  printed_under_Latitude_header: '100.38870'
+  printed_under_Longitude_header: '13.69613'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนใต้ (20 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 205 | ถนนบางบอน 3 ช่วงซอยวัดม่วง - ลารางสาธารณะ | 100.38870 | 13.69613
+  tag: VERIFIED
+- seq: 207
+  location: ถนนบางกระดี่ ช่วงซอยบางกระดี่ 8
+  district: บางขุนเทียน
+  lat: 13.62313
+  lon: 100.40065
+  printed_under_Latitude_header: '100.40065'
+  printed_under_Longitude_header: '13.62313'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนใต้ (20 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 207 | ถนนบางกระดี่ ช่วงซอยบางกระดี่ 8 | 100.40065 | 13.62313
+  tag: VERIFIED
+- seq: 208
+  location: ถนนบางกระดี่ หน้ำตลาดบางกระดี่
+  district: บางขุนเทียน
+  lat: 13.61879
+  lon: 100.40169
+  printed_under_Latitude_header: '100.40169'
+  printed_under_Longitude_header: '13.61879'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนใต้ (20 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 208 | ถนนบางกระดี่ หน้าตลาดบางกระดี่ | 100.40169 | 13.61879
+  tag: VERIFIED
+- seq: 209
+  location: ถนนท่าข้าม ช่วงซอยท่าข้าม 3
+  district: บางขุนเทียน
+  lat: 13.65743
+  lon: 100.44237
+  printed_under_Latitude_header: '100.44237'
+  printed_under_Longitude_header: '13.65743'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนใต้ (20 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 209 | ถนนท่าข้าม ช่วงซอยท่าข้าม 3 | 100.44237 | 13.65743
+  tag: VERIFIED
+- seq: 210
+  location: ถนนเอกชัย ช่วงซอยเอกชัย 87/1
+  district: บางบอน
+  lat: 13.67259
+  lon: 100.42329
+  printed_under_Latitude_header: '100.42329'
+  printed_under_Longitude_header: '13.67259'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนใต้ (20 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 210 | ถนนเอกชัย ช่วงซอยเอกชัย 87/1 | 100.42329 | 13.67259
+  tag: VERIFIED
+- seq: 211
+  location: ถนนเอกชัย ซอยเอกชัย 62/1
+  district: บางบอน
+  lat: 13.67766
+  lon: 100.43231
+  printed_under_Latitude_header: '100.43231'
+  printed_under_Longitude_header: '13.67766'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนใต้ (20 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 211 | ถนนเอกชัย ซอยเอกชัย 62/1 | 100.43231 | 13.67766
+  tag: VERIFIED
+- seq: 212
+  location: ถนนเอกชัย หน้ำโรงพยาบาลสหวิทยาการมะลิ
+  district: บางบอน
+  lat: 13.67312
+  lon: 100.42416
+  printed_under_Latitude_header: '100.42416'
+  printed_under_Longitude_header: '13.67312'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนใต้ (20 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 212 | ถนนเอกชัย หน้าโรงพยาบาลสหวิทยาการมะลิ | 100.42416 | 13.67312
+  tag: VERIFIED
+- seq: 213
+  location: ถนนเอกชัย ช่วง BIG C บางบอน
+  district: บางบอน
+  lat: 13.6793
+  lon: 100.43537
+  printed_under_Latitude_header: '100.43537'
+  printed_under_Longitude_header: '13.67930'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนใต้ (20 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 213 | ถนนเอกชัย ช่วง BIG C บางบอน | 100.43537 | 13.67930
+  tag: VERIFIED
+- seq: 214
+  location: ถนนเอกชัย ซอยเอกชัย 60
+  district: บางบอน
+  lat: 13.67814
+  lon: 100.43308
+  printed_under_Latitude_header: '100.43308'
+  printed_under_Longitude_header: '13.67814'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนใต้ (20 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 214 | ถนนเอกชัย ซอยเอกชัย 60 | 100.43308 | 13.67814
+  tag: VERIFIED
+- seq: 215
+  location: ถนนบางบอน ช่วงซอยบางบอน 1 ตลาดเอกชัยบางบอน
+  district: บางบอน
+  lat: 13.67599
+  lon: 100.42634
+  printed_under_Latitude_header: '100.42634'
+  printed_under_Longitude_header: '13.67599'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนใต้ (20 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 215 | ถนนบางบอน ช่วงซอยบางบอน 1 ตลาดเอกชัยบางบอน | 100.42634 | 13.67599
+  tag: VERIFIED
+- seq: 216
+  location: ถนนบางบอน ช่วงตรงข้ามซอยบางขุนเทียน 10
+  district: บางบอน
+  lat: 13.6666
+  lon: 100.42846
+  printed_under_Latitude_header: '100.42846'
+  printed_under_Longitude_header: '13.66660'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งธนบุรี (25 จุด)
+  district_group: กลุ่มเขตกรุงธนใต้ (20 จุด)
+  page: 123
+  printed_page: ค-7
+  raw: 216 | ถนนบางบอน ช่วงตรงข้ามซอยบางขุนเทียน 10 | 100.42846 | 13.66660
+  tag: VERIFIED

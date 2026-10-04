@@ -1,0 +1,296 @@
+# statement_contradictions_2026-09-27.yaml -- "statement vs gauge" contradiction rows.
+#
+# tools/reconcile.py (read before writing this file) only reconciles TWO SOURCES against
+# EACH OTHER for the SAME station_code (bma_watermap vs thaiwater_canal_waterlevel) -- it
+# has no mechanism for comparing a narrative agency STATEMENT against this repo's own
+# gauge readings. This file fills that gap with a new, small, append-only ledger rather
+# than editing reconcile.py (out of this check's write scope; other workers active in this
+# worktree). Never averages/prefers a side -- both the statement and the gauge readings are
+# kept, tagged, and left OPEN.
+#
+# Check performed: official BMA Facebook post (site visit 2026-09-27T14:55:00+07:00 =
+# 2026-09-27T07:55:00Z) states "ระดับน้ำในคลองแสนแสบเริ่มลดลง" (Saen Saep canal water level
+# is starting to fall). Compared against every WL.SSB.* gauge in data/observations.sqlite
+# with a reading in the window 2026-09-27T07:00Z-13:00Z, EXCLUDING WL.SSB.08 (flagged
+# `suspect: true` by site/build_data.py's neighbour_consistency_check/
+# saensaeb_suspect_check -- see docs/SAMMAKORN_STANDING_WATER_2026-09-27.md §3's own
+# retraction box for why SSB.08 is excluded here, per this check's own instruction).
+#
+# Query used (VERIFIED, run this check directly against data/observations.sqlite):
+#   SELECT source_id, station_code, observed_at_utc, value FROM observations
+#   WHERE station_code IN ('WL.SSB.01','WL.SSB.03','WL.SSB.04','WL.SSB.06','WL.SSB.07',
+#     'WL.SSB.09','WL.SSB.10','WL.SSB.12')
+#   AND observed_at_utc BETWEEN '2026-09-27T07:00:00' AND '2026-09-27T13:00:00'
+#   ORDER BY station_code, observed_at_utc;
+# (WL.SSB.02/05/11 have asset rows but were not returned by this query in this window --
+# no reading found for them in that range; not claimed as evidence either way, OPEN.)
+
+statement_vs_gauge:
+  - id: "stmt_vs_gauge:2026-09-27T1455+07_saensaeb_declining"
+    statement:
+      text_th: "ระดับน้ำในคลองแสนแสบเริ่มลดลง"
+      text_en: "Saen Saep canal water level is starting to fall"
+      source: "official BMA Facebook page post, site visit 2026-09-27T14:55:00+07:00"
+      tag: RELAYED
+    gauge_comparison_window_utc: "2026-09-27T07:00:00 to 2026-09-27T13:00:00"
+    excluded: ["WL.SSB.08 (suspect: true, per site/build_data.py neighbour-consistency
+      check -- see docs/SAMMAKORN_STANDING_WATER_2026-09-27.md §3 retraction box)"]
+    gauges_checked_verified_query_results:
+      - station: "WL.SSB.01"
+        name_th: "ค.แสนแสบ-โบ๊เบ๊"
+        warning_m: 0.6
+        critical_m: 0.7
+        readings_m: [-0.09, -0.09, -0.13, -0.15, -0.15, -0.16, -0.15, -0.15, -0.14, -0.14,
+          -0.14, -0.14, -0.13, -0.14]
+        trend: "mild decline (~0.07 m over the window), below warning throughout -- the
+          ONLY station in this set showing a clear downward trend"
+        tag: MEASURED
+      - station: "WL.SSB.03"
+        name_th: "ค.แสนแสบ-อโศก"
+        warning_m: 0.0
+        critical_m: 0.15
+        readings_m: [0.34, 0.33, 0.3, 0.27, 0.26, 0.28, 0.26, 0.27, 0.26, 0.25, 0.25, 0.26,
+          0.24, 0.23]
+        trend: "mild decline (~0.1 m), still ABOVE critical (0.15 m) throughout the window"
+        tag: MEASURED
+      - station: "WL.SSB.04"
+        name_th: "ส.แสนแสบ-คลองตัน"
+        warning_m: 0.0
+        critical_m: 0.2
+        readings_m: [0.32, 0.32, 0.29, 0.28, 0.28, 0.29, 0.29, 0.29, 0.28, 0.28, 0.28, 0.28,
+          0.26, 0.26]
+        trend: "mild decline (~0.06 m), still ABOVE critical (0.2 m) throughout"
+        tag: MEASURED
+      - station: "WL.SSB.06"
+        name_th: "ค.แสนแสบ-เจ้าคุณสิงห์"
+        warning_m: 0.2
+        critical_m: 0.35
+        readings_m: [0.52, 0.52, 0.48, 0.51, 0.49, 0.5, 0.5, 0.48, 0.48, 0.47, 0.49, 0.47,
+          0.46, 0.47]
+        trend: "roughly flat, noisy (±0.05 m), still ABOVE critical (0.35 m) throughout --
+          no clear directional trend"
+        tag: MEASURED
+      - station: "WL.SSB.07"
+        name_th: "ค.แสนแสบ-สนข.บางกะปิ (nearest Sammakorn-side gauge in this set)"
+        warning_m: 0.35
+        critical_m: 0.45
+        readings_m: [0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4]
+        trend: "COMPLETELY FLAT at 0.40 m for the entire window (between warning 0.35 and
+          critical 0.45) -- zero movement, no decline"
+        tag: MEASURED
+      - station: "WL.SSB.09"
+        name_th: "ปตร.คลองแสนแสบ-บางชัน (gate, bottleneck_nodes rank 3)"
+        warning_m: null
+        critical_m: null
+        readings_m: [0.95, 0.95, 0.95, 0.94, 0.94, 0.94, 0.94, 0.94, 0.95, 0.95, 0.95, 0.95,
+          0.95, 0.94]
+        trend: "flat at 0.94-0.95 m for the entire window -- no decline"
+        tag: MEASURED
+      - station: "WL.SSB.10"
+        name_th: "ปตร.คลองแสนแสบ-มีนบุรี (gate, bottleneck_nodes rank 2)"
+        warning_m: null
+        critical_m: null
+        readings_m: [1.02, 1.02, 1.02, 1.01, 1.02, 1.01, 1.01, 1.01, 1.01, 1.01, 1.01, 1.01,
+          1.01, 1.01]
+        trend: "flat at 1.01-1.02 m for the entire window -- no decline"
+        tag: MEASURED
+      - station: "WL.SSB.12"
+        name_th: "ส.คลองแสนแสบ หนองจอก"
+        warning_m: 1.0
+        critical_m: 1.1
+        readings_m: [1.22, 1.22, 1.24, 1.23, 1.23, 1.24, 1.22, 1.23, 1.23, 1.23, 1.22, 1.23,
+          1.24, 1.23]
+        trend: "flat/noisy at 1.22-1.24 m for the entire window -- WELL ABOVE critical
+          (1.1 m), no decline"
+        tag: MEASURED
+    verdict:
+      status: "OPEN -- CONTRADICTION, both kept, neither preferred"
+      summary_th: >
+        คำแถลงทางการระบุว่า "ระดับน้ำในคลองแสนแสบเริ่มลดลง" ณ 14:55 น. (07:55Z) 27 ก.ย. 2569
+        แต่เกจของคลังนี้เอง (ไม่รวม WL.SSB.08 ซึ่งถูกตั้ง suspect) ในช่วง 07:00-13:00Z วันเดียวกัน
+        แสดงว่า **5 ใน 8 สถานี** (WL.SSB.04/06/07/09/10/12) แทบไม่ขยับเลยหรือแกว่งแบบ noise
+        โดยเฉพาะสถานีที่ใกล้สัมมากร/มีนบุรีที่สุด (WL.SSB.07 บางกะปิ, WL.SSB.09/10 gate,
+        WL.SSB.12 หนองจอก) ซึ่ง**ราบเรียบสนิท ไม่ลดเลยตลอดหน้าต่างเวลาที่ตรวจ** และทั้งหมดยังอยู่
+        เหนือเกณฑ์วิกฤตของตัวเอง (ที่มีเกณฑ์) มีเพียง **2 สถานี** (WL.SSB.01 โบ๊เบ๊, WL.SSB.03
+        อโศก) ที่แสดงแนวโน้มลดลงจริงแบบอ่อนๆ (~0.06-0.1 ม.) แต่ทั้งคู่อยู่คนละช่วงคลองจากพื้นที่
+        สัมมากร (โบ๊เบ๊/อโศกอยู่ต้นน้ำ/กลางน้ำ ไม่ใช่ช่วงบางกะปิ-มีนบุรีที่คำแถลงพูดถึงในบริบท
+        เดียวกัน). ไม่ตัดสินว่าฝ่ายใดผิด -- คำแถลงอาจหมายถึงจุดที่ทีมลงพื้นที่จริง (เพชรบุรีตัดใหม่-
+        เอกมัย ซึ่งอยู่คนละช่วงคลองจากเกจที่ตรวจได้ทั้งหมดข้างต้น) ขณะที่เกจของคลังนี้ครอบคลุมช่วง
+        บางกะปิ-มีนบุรี-หนองจอกเป็นหลัก -- ทั้งสองข้อมูลเก็บไว้คู่กัน ไม่เฉลี่ย ไม่ตัดออกฝั่งใด
+        ฝั่งหนึ่ง, ตาม AGENTS.md §2 "never prune".
+      confidence_note: >
+        This is NOT proof the official statement is false -- it may describe a
+        DIFFERENT, more localized reach (near the เพชรบุรีตัดใหม่-เอกมัย site visit
+        itself, which has no gauge in this repo at all) than any of the 8 stations
+        checked here (all Sammakorn/east-zone/บางกะปิ-มีนบุรี-หนองจอก reaches). Recorded
+        as OPEN, not REFUSED, because both sides of the comparison are real MEASURED/
+        RELAYED data -- see AGENTS.md §2's REFUSED-vs-OPEN distinction.
+    tag: OPEN
+
+# Second contradiction class: THREE of this repo's own/cited sources disagree on the same
+# named capacity figure -- not a statement-vs-gauge check, so kept as its own top-level
+# list rather than forced into statement_vs_gauge's schema. Same rule applies: never
+# average/prefer a side, all three values kept, tagged, left OPEN. Found while reviewing
+# a third-party east-outlets analysis (docs/knowledge/
+# card_thirdparty_east_outlets_multi_outlet_2026-09-27.md §1 row 5) that itself surfaced
+# the mismatch by comparing this repo's own capacity_ledger.yaml against two independently
+# fetched (VERIFIED, live WebFetch that same review) agency pages.
+document_vs_document:
+  - id: "doc_vs_doc:2026-09-27_phra_khanong_capacity_three_way"
+    element_th: "จุดออกพระโขนง (สถานีสูบน้ำพระโขนง + อุโมงค์พระโขนง)"
+    sources_compared:
+      - value_m3s: 49
+        source: "sources/capacity_ledger.yaml id outfall:phra_khanong (45 + 4, sum of
+          pump_station:water_station:1 + pump_station:water_station:2)"
+        tag: MEASURED
+      - value_m3s: 155
+        source: "BMA project page, monitor.bangkok.go.th/mobile/myproject.php?pid=11000000-7171
+          -- states \"กำลังสูบรวม 155 ลูกบาศก์เมตรต่อวินาที\", fetched live (WebFetch) during
+          the 2026-09-27 third-party east-outlets review"
+        tag: VERIFIED
+      - value_m3s: 173
+        source: "RID plan50 PDF, page 40 map label \"ส.พระโขนง 173 cms\", fetched live
+          during the same 2026-09-27 review"
+        tag: VERIFIED
+      - value_m3s: 158
+        source: "แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. 2569, p.170, สถานีสูบน้ำพระโขนง
+          -- 43 เครื่อง (ปรับปรุง 20 เครื่อง 2568-69), see
+          docs/knowledge/bma_plan2569_control_structures.yaml. A FOURTH value, added
+          2026-09-27 (TODO #51/#65) -- does not match 155 (p.90, same document family)
+          either, and 49/173 remain as originally recorded. Never averaged/preferred;
+          all four values kept, tag stays OPEN."
+        tag: VERIFIED
+    supporting_sources:
+      - value_m3s: 173
+        source: "ThaiPublica, \"สำรวจคลองลาดพร้าว...สภาพจริงเมื่อคลองไม่ใช่ทางระบายน้ำ\"
+          (investigative journalism, quoting infrastructure advisor, June 2019) -- names
+          the Phra Khanong pump station \"the largest in Bangkok\" with capacity 173 cms
+          discharging to the Chao Phraya. Fetched and read directly (VERIFIED) during the
+          2026-09-27 literature review (docs/knowledge/
+          LITREVIEW_EAST_BKK_TO_CHAO_PHRAYA_2026-09-27.md, source table row 3). A THIRD,
+          independent source landing on 173 -- matches the RID plan50 figure exactly,
+          raising 173's relative weight (2 of 3 independent sources agree) -- but this
+          does NOT resolve the contradiction: scope difference between the three numbers
+          (single station vs. station group vs. differing reference year) is still
+          unconfirmed. All three original values stay, tag stays OPEN."
+        tag: VERIFIED
+    verdict:
+      status: "OPEN -- CONTRADICTION, all four kept, none preferred"
+      summary_th: >
+        สี่แหล่งให้ตัวเลขความจุจุดออกพระโขนงต่างกันทั้งหมด (49 / 155 / 158 / 173 ลบ.ม./วินาที
+        -- 158 เพิ่มเข้ามา 2026-09-27 จากแผน กทม. 2569 หน้า 170) ไม่มีแหล่งใดถูกลบหรือแก้ให้ตรงกับ
+        อีกสาม -- ทั้งสี่คือค่าจริงจากเอกสาร/หน้าเว็บของหน่วยงานคนละชุด อาจต่างกันเพราะ scope
+        ต่างกัน (สถานีเดียว vs. กลุ่มสถานี vs. ปีที่ประกาศต่างกัน vs. จำนวนเครื่องที่ปรับปรุงแล้ว)
+        ยังไม่มีใครสอบถามหน่วยงานเจ้าของโดยตรงว่าต่างกันเพราะเหตุใด -- ดู FOUNDER_TASKS #22-30
+        แถวที่เกี่ยวข้อง (mismatch #ไม่มีเลขเฉพาะ ระบุใน card §4 ข้อ 4) สำหรับ next step.
+    tag: OPEN
+
+  - id: "doc_vs_doc:2026-09-27_bkk_total_pumping_six_way"
+    element_th: "กำลังสูบน้ำรวมทั้งเมืองของ กทม."
+    sources_compared:
+      - value_m3s: 2229.16
+        source: "docs/CAPACITY.md §3 (แผนปฏิบัติราชการ 2561, B via card_research_2026-09-27_chula_retention_mcda_2564.md)"
+        tag: RELAYED
+      - value_m3s: 2510.24
+        source: "card_official_2026-09-27_dds_action_plan_2567.md (D, แผนปฏิบัติราชการ 2565-67 vintage)"
+        tag: VERIFIED
+      - value_m3s: 2467.69
+        source: "sources/capacity_ledger.yaml (this repo's own ledger total)"
+        tag: MEASURED
+      - value_m3s: "1,200-1,300"
+        source: "docs/CAPACITY.md §3 (one-bank / ฝั่งพระนครเดียว subset figures, existing repo range)"
+        tag: RELAYED
+    verdict:
+      status: "OPEN -- CONTRADICTION, all values kept, none preferred"
+      summary_th: >
+        อย่างน้อย 6 ตัวเลขต่างกันสำหรับ "กำลังสูบรวมทั้งเมือง" ข้ามเอกสาร/ไฟล์ในคลังนี้ (2,229.16 /
+        2,510.24 / 2,467.69 / 2,467.69 subset 718.0 / ฝั่งพระนครเดียว 1,200-1,300) -- หน่วยเดียวกัน
+        (ลบ.ม./วินาที) แต่ขอบเขตต่างกัน (ฝั่งพระนครฝั่งเดียว vs ทั้งเมืองทฤษฎี vs subset ที่มีตัวเลข
+        ตีพิมพ์จริง vs ปีที่ประกาศต่างกัน 2561/2565-67/repo-current) ไม่มีค่าใดถูกลบหรือแก้ให้ตรงกับอีก
+        ค่า -- ห้ามพูดลอยๆ ว่า "กทม. สูบได้ N ลบ.ม./วินาที" โดยไม่ระบุขอบเขต ดู
+        sources/units_datum_crosswalk.yaml known_unit_errors_in_sources แถว
+        bkk_total_pumping_three_disagreeing_totals และ docs/UNITS_AND_DATUMS.md §3 ข้อ 2.
+    tag: OPEN
+
+# Third contradiction class: an official planning document's per-station figure applied
+# to the WRONG station in this repo's own registry -- a location/datum mismatch, not a
+# disagreement between two documents. Kept as its own top-level list (`station_vs_plan`)
+# for the same reason `document_vs_document` got its own list above: different shape
+# than `statement_vs_gauge`. Never averages/prefers a side -- both the plan's own
+# (station, coords, value) row and the repo's misapplication are kept, tagged, OPEN on
+# the one item (datum) genuinely unresolved.
+station_vs_plan:
+  - id: "station_vs_plan:2026-09-27_wl_bma_02_vs_st_sps_01"
+    element_th: "เพดานควบคุม +0.40/+0.50 ม.รทก. (แผน กทม. 2569 ตาราง ง p.191)"
+    plan_row:
+      station: "สถานีสูบน้ำคลองบ้านม้า 2 / ST.SPS.01 (สถานีสูบน้ำ)"
+      lat: 13.7763
+      lon: 100.6713
+      warning_m_msl: 0.40
+      critical_m_msl: 0.50
+      control_plan_A_m: -1.00
+      control_plan_B_m: -0.50
+      control_plan_C_m: 0.40
+      source: "แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. 2569, ตาราง ง, p.191 (พิมพ์ ง-25)"
+      tag: VERIFIED
+    misapplied_to:
+      station: "WL.BMA.02 (จุดวัดคลองบ้านม้า ตอนถนนรามคำแหง -- เกจวัดระดับ, คนละสถานีจาก ST.SPS.01)"
+      lat: 13.77273
+      lon: 100.66595
+      source: "docs/knowledge/bma_plan2569_stations.yaml seq 39"
+      own_feed_warning_m: 2.14
+      own_feed_critical_m: 2.68
+      own_feed_source: "bma_watermap (thaiwater.net), sources/units_datum_crosswalk.yaml line ~1019"
+      tag: VERIFIED
+    distance_check:
+      haversine_m_approx: 630
+      tolerance_m: 100
+      result: "OVER tolerance -- different station, not a rounding difference"
+    datum_check:
+      plan_value_line: "0.40 / 0.50 m MSL (ม.รทก.)"
+      wl_bma_02_own_line: "2.14 / 2.68 m (bma_watermap warning/critical, unconfirmed datum)"
+      difference_m_approx: 1.7
+      result: "OPEN -- consistent with a datum difference (local staff gauge vs MSL), never
+        confirmed either way; rule R4 (sources/rain_alert_thresholds_crosswalk.yaml)
+        applies: compare only same station, same datum -- unknown = REFUSE"
+    fix_applied:
+      what: "sources/canal_normal_levels.yaml row re-keyed from station_code WL.BMA.02 to
+        ST.SPS.01 (append-only -- row kept, not deleted); site/build_data.py's
+        load_canal_normal_levels() and tools/heromap/sammakorn_map.py's
+        load_normal_levels() both gained a general admissibility guard that refuses any
+        `basis: official_threshold` row with station_distance_m > 100 or an unconfirmed
+        datum, independent of this specific re-key"
+      result: "WL.BMA.02 now resolves to NO_NORMAL_BASIS (\"ยังไม่มีเกณฑ์ปกติ\") again --
+        never \"ปกติ\", never \"สูงกว่าปกติ\" until its OWN confirmed normal level (or a
+        datum-confirmed same-station official threshold) is on record"
+    verdict:
+      status: "OPEN -- location mismatch RESOLVED (row re-keyed + guarded); datum
+        mismatch between WL.BMA.02's own feed and the BMA plan's MSL figures stays OPEN"
+      summary_th: >
+        แถวเพดานควบคุม +0.40/+0.50 ม.รทก. ในแผน กทม. 2569 (ตาราง ง p.191) เป็นของสถานีสูบน้ำ
+        คลองบ้านม้า 2 (ST.SPS.01) ไม่ใช่ WL.BMA.02 (เกจวัดระดับที่ "จุดวัดคลองบ้านม้า ตอนถนน
+        รามคำแหง") -- สองสถานีนี้ห่างกัน ~630 ม. เกินเกณฑ์ 100 ม. ที่ถือว่าเป็นสถานีเดียวกัน และ
+        เส้นเตือน/วิกฤตของ WL.BMA.02 เอง (2.14/2.68 ม.) ต่างจากเพดานแผน (~1.7 ม.) สอดคล้องกับ
+        การเป็นคนละ datum (ยังไม่ยืนยัน, OPEN) แก้ไขแล้วโดยเปลี่ยน station_code ของแถวเดิมเป็น
+        ST.SPS.01 (append-only ไม่ลบแถว) และเพิ่มบันไดปฏิเสธทั่วไปในทั้งสอง loader (page +
+        hero map) สำหรับแถว official_threshold ใดๆ ที่ห่างเกิน 100 ม. หรือ datum ไม่ยืนยัน.
+    tag: OPEN
+
+  - id: "doc_vs_doc:2026-09-27_river_bank_outlet_capacity"
+    element_th: "ความจุรวมของสถานีสูบน้ำริมแม่น้ำ/คลองสายหลักลงแม่น้ำเจ้าพระยา"
+    sources_compared:
+      - value_m3s: 903.23
+        source: "docs/CAPACITY.md (existing repo figure, river-bank outlet stations total)"
+        tag: RELAYED
+      - value_m3s: 1276.49
+        source: "card_official_2026-09-27_dds_action_plan_2567.md (D, แผนปฏิบัติราชการ 2567, river-bank outlet total as stated in that document)"
+        tag: VERIFIED
+    verdict:
+      status: "OPEN -- CONTRADICTION, both values kept, neither preferred"
+      summary_th: >
+        ความจุรวมสถานีสูบริมแม่น้ำ/คลองสายหลักลงเจ้าพระยาต่างกัน (903.23 vs 1,276.49 ลบ.ม./วินาที)
+        ระหว่างค่าเดิมในคลังนี้กับค่าที่ D (แผนปฏิบัติราชการ 2567) ระบุ -- ทั้งสองค่าคงไว้ ไม่มีค่าใดถูก
+        เลือกเป็นค่าจริง ยังไม่ทราบว่าต่างกันเพราะขอบเขตสถานี (ชุดสถานีคนละชุด) หรือปีสถิติต่างกัน
+        (ดู D เอง มีปีสถิติกำกวมอยู่แล้ว ปก 2567/ท้ายหน้า 2565/ตาราง 28 ต.ค. 2565 -- ดู FOUNDER_TASKS
+        #49).
+    tag: OPEN

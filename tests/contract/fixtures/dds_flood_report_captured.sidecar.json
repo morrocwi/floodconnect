@@ -1,0 +1,15 @@
+{
+ "source_id": "dds_flood_report",
+ "url": "https://dds.bangkok.go.th/flood_report.php",
+ "captured_at": "2026-10-02T11:32:24Z",
+ "sha256": "2ca48fa7752fabdc0bdf6e5bd1437a6c3ac5e38630404b9f5ea6af40ad63391c",
+ "http_status": 200,
+ "content_type": "text/html",
+ "fixture_ext": "html",
+ "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "4c54e36df4d9ad0c81ebfc933009fc999bab820a3dd143dee562ff9ff61fe2ad",
+ "trimmed_note": "one staff email address redacted (publish-safety finding); otherwise same body; otherwise same body",
+ "trimmed_at": "2026-10-03T18:10:36Z"
+}

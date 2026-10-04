@@ -1,0 +1,20 @@
+# typology/edges/flows_to_paakklongbangtalad_2026-09-28.yaml -- edge_kind=flows_to for
+# the ปากคลองบางตลาด INTAKE_STARVED pattern.
+schema_version: 1
+doc_kind: typology_edge_registry
+edge_kind: flows_to
+status_th: >
+  ทางน้ำจาก zone -> คลอง -> ช่วงสะพานติวานนท์ (มีสิ่งกีดขวาง) -> สถานีสูบ.
+rows:
+  - from: SOI.BANGTALAD.SAMAKKEE
+    to: WATER.canal_bangtalad
+    tag: OPEN
+    source: "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md §1 -- ทิศทาง/อัตราไม่ระบุ"
+  - from: WATER.canal_bangtalad
+    to: WATER.bangtalad_tiwanon_bridge
+    tag: RELAYED
+    source: "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md §1"
+  - from: WATER.bangtalad_tiwanon_bridge
+    to: ST.BANGTALAD.01
+    tag: RELAYED
+    source: "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md §1"

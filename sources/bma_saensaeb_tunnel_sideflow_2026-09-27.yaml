@@ -1,0 +1,246 @@
+# bma_saensaeb_tunnel_sideflow_2026-09-27.yaml -- topology edges/attributes extracted from
+# the official BMA Facebook page post (site visit 27 ก.ย. 2569, 14:55 น., เพชรบุรีตัดใหม่-
+# เอกมัย), per founder instruction (verbatim): "สกัดข้อมูลที่เป็นประโยชน์มาเสริมโครงสร้าง
+# typology ของเรา". Pasted post archived at the scratchpad path this check read from; not
+# re-pasted here (no local filesystem path in any tracked file, per AGENTS.md §2).
+#
+# Trust tier for EVERY row below: RELAYED (official agency statement, via a screenshot/
+# paste of the agency's own Facebook post -- not independently measured by this repo, not
+# a primary document opened directly). Officials referred to by ROLE only (ผู้ว่าฯ กทม.,
+# รองผู้ว่าฯ), never personal name, per the founder's own instruction pasting this post.
+#
+# statement_datetime: "2026-09-27T14:55:00+07:00" (= 2026-09-27T07:55:00Z) for every row
+# unless a row states otherwise.
+#
+# THIS FILE WRITES NEW DATA ONLY -- it does not edit tools/kg/build_kg.py,
+# site/inputs/canals/east_chain.yaml, sources/capacity_ledger.yaml, or
+# sources/drainage_mode.yaml (out of this check's write scope; other workers are active in
+# this worktree, see the founder's instructions' do-not-touch list). Ids reuse existing east_chain.yaml
+# node ids / DAG asset ids wherever a real match exists (checked this check by grep, not
+# assumed); a new id is minted only where neither exists, prefixed `sideflow:`.
+#
+# Toledo: no equation anywhere in this file -- every row is a verbatim relay of the post's
+# own wording, or a direct id/coordinate lookup already in this repo. No new formula.
+
+schema_note: >
+  Each edge row: id, edge_kind (conditional_pump_relief | diversion | mobile_capacity |
+  upstream_dependency), from, to, via (optional), mechanism_th, enable_condition (present
+  only for conditionally-active edges -- an attribute, not a computed formula, per this
+  task's instruction "do not invent a formula"), tag, source, notes. Each node-attribute
+  row: node_id (existing east_chain.yaml/DAG id where one exists, else a bare place name
+  with node_id: null and a note explaining why), attribute, value, tag, source, notes.
+
+edges:
+  # ---- (a) low-spot เพชรบุรีตัดใหม่-เอกมัย: mobile pump -> pipe -> retention pond ----
+  #      (สวนสมเด็จฯ) -> คลองแสนแสบ, ENABLE CONDITION explicit per task instruction.
+  - id: sideflow:phetburitatmai_ekkamai_reliefpump
+    edge_kind: conditional_pump_relief
+    from: "จุดแอ่งต่ำถนนเพชรบุรีตัดใหม่-เอกมัย"
+    from_node_id: null
+    via: "Mobile Pump -> ท่อเชื่อม -> แก้มลิงภายในสวนสมเด็จฯ (retention pond)"
+    via_node_id: null
+    to: "คลองแสนแสบ"
+    to_node_id: "ssb01"
+    to_node_id_note: >
+      No east_chain.yaml node sits exactly at the เพชรบุรีตัดใหม่-เอกมัย reach of แสนแสบ;
+      `ssb01` (canal_oldcode WL.SSB.01, source_name_th "ค.แสนแสบ-โบ๊เบ๊") is the nearest
+      declared east_chain node upstream of this reach by name/geography, kept only as a
+      directional reference, NOT claimed to be the exact discharge point (post gives no
+      coordinate) -- see notes.
+    mechanism_th: >
+      "เร่งใช้ Mobile Pump สูบน้ำท่วมขังในจุดแอ่งต่ำผ่านท่อเชื่อมแก้มลิงภายในสวนสมเด็จฯ
+      ลงคลองแสนแสบ"
+    enable_condition: >
+      "หลังระดับน้ำในคลองเริ่มลดลง" (verbatim, post's own wording) -- modeled as an
+      EDGE ATTRIBUTE (a stated precondition for this relief path to be active), not a
+      formula or threshold value: the post gives no numeric water-level trigger, only the
+      qualitative condition itself. Do not compute or infer a threshold from this.
+    tag: RELAYED
+    source: "official BMA Facebook post, site visit 2026-09-27T14:55+07:00"
+    notes: >
+      "สวนสมเด็จฯ" (retention pond) has no asset_id/coordinate in this repo's registry
+      (checked: not in sources/assets_registry.yaml, not in east_chain.yaml, not in
+      capacity_ledger.yaml's retention_basin rows) -- recorded here as a named node with
+      `node_id: null`, OPEN for geocoding, per this repo's never-geocode-without-approval
+      rule (AGENTS.md §2, FLOODCONNECT_TOPOLOGY.md's own "สิ่งที่ยังไม่ทำ"). "ส่วนเส้นทาง
+      จากอโศกเข้ามาเริ่มแห้งแล้ว" (Asoke-direction route reported drying) is a separate,
+      unlinked observational note from the same post -- no node/edge minted for it (no
+      structure named, only a road-direction description).
+
+  # ---- (b) tunnel operating state: 5/5 pumps at full power ----
+  - id: sideflow:saensaeb_ladprao_tunnel_state
+    edge_kind: null
+    node_attribute: true
+    node_id: "tunnel:bma_dds:saensaeb_ladprao"
+    node_id_basis: >
+      Existing id from sources/capacity_ledger.yaml / bottleneck_nodes_2026-09-27.yaml
+      (rank 6, capacity_m3s: 60, RELAYED design capacity). The post's own name for this
+      structure is "อุโมงค์แสนเลิศ" -- this does NOT match any tunnel name in
+      capacity_ledger.yaml's 13-tunnel list (checked: sukhumvit26/36/42, khlong_prem_
+      diversion, phayathai, saensaeb_ladprao, bangsue, nongbon, makkasan, prem_bangbua,
+      saensaeb_ext, taweewatthana, phraya_ratchamontri, hand_declared rama9_ramkhamhaeng
+      -- no "แสนเลิศ" anywhere). Per this check's instruction, treated as an ALIAS of
+      `tunnel:bma_dds:saensaeb_ladprao` (the only tunnel whose name/function matches --
+      "อุโมงค์ระบายน้ำคลองแสนแสบและคลองลาดพร้าวลงสู่แม่น้ำเจ้าพระยา", i.e. the
+      Saen Saep + Lat Phrao joint drainage tunnel the post itself describes in the same
+      sentence: "เดินเครื่องสูบน้ำอุโมงค์แสนเลิศเต็มกำลัง ... ดึงน้ำ[แสนแสบ/ลาดพร้าว/
+      ประเวศฯ/เปรมประชากร]ลงใต้ดินออกสู่แม่น้ำเจ้าพระยา") -- NOT confirmed identical by an
+      official document naming both terms together; a second, distinct tunnel node was
+      NOT invented, per this check's explicit instruction.
+    attribute: "operating_state_2026_09_27"
+    value: "5/5 pumps running, full power (เดินเครื่องสูบน้ำ...เต็มกำลัง 5 เครื่อง)"
+    value_kind: "capacity_ledger readout row (status, not a new m3/s figure)"
+    tag: RELAYED
+    source: "official BMA Facebook post, site visit 2026-09-27T14:55+07:00"
+    alias:
+      posted_name_th: "อุโมงค์แสนเลิศ"
+      canonical_id: "tunnel:bma_dds:saensaeb_ladprao"
+      canonical_name_th: "อุโมงค์ระบายน้ำคลองแสนแสบและคลองลาดพร้าวลงสู่แม่น้ำเจ้าพระยา"
+      match_confidence: "OPEN -- name does not match exactly; treated as the same
+        structure by function/scope match only (this is the tunnel the post itself
+        pairs with the 4-canal drawdown list: แสนแสบ/ลาดพร้าว/ประเวศฯ/เปรมประชากร)."
+    notes: >
+      This row also carries the post's 4-canal drawdown statement itself: "เร่งระบาย 4
+      คลองสายหลัก (แสนแสบ, ลาดพร้าว, ประเวศฯ, เปรมประชากร)" -- a status statement about
+      canal-level management effort, not a new capacity/flow number for any of the 4
+      canals (led:bkk_east_canals_summary in capacity_ledger.yaml already records that no
+      canal-reach-level m3/s capacity exists in any source this repo has read; unchanged
+      by this post).
+
+  # ---- (c) diversion edge แสนแสบ -> คลองสามเสน ----
+  - id: sideflow:saensaeb_to_samsen_diversion
+    edge_kind: diversion
+    from: "คลองแสนแสบ"
+    from_node_id: null
+    from_node_id_note: >
+      Post does not name a specific gauged reach; the diversion is described near
+      เสนานิคม (north-central Bangkok, Chatuchak/Bang Sue direction), which is NOT the
+      same east-zone stretch this repo's `east_chain.yaml` graph (ssb07-ssb12,
+      Sammakorn-side) tracks -- no east_chain node id applies here, kept OPEN rather than
+      mis-assigned to a Sammakorn-side node.
+    to: "คลองสามเสน"
+    to_node_id: null
+    to_node_id_note: >
+      No `คลองสามเสน` node exists anywhere in this repo (checked east_chain.yaml,
+      capacity_ledger.yaml, assets_registry.yaml, water_system_dag.mmd) -- recorded with
+      node_id: null, OPEN.
+    mechanism_th: "ผันน้ำแสนแสบบางส่วนเข้าคลองสามเสน"
+    control: "operator_controlled_partial"
+    control_basis: >
+      "ผันน้ำ...บางส่วน" (verbatim) -- explicitly a partial, operator-directed diversion,
+      not a passive/gravity split; no proportion or m3/s figure given by the post.
+    tag: RELAYED
+    source: "official BMA Facebook post, site visit 2026-09-27T14:55+07:00"
+    notes: >
+      Stated reason (same post): "พื้นที่เสนานิคมยังท่วมหนักจากระดับน้ำคลองลาดพร้าวสูง" --
+      เสนานิคม itself has no node/asset_id in this repo (a new place name, not previously
+      tracked; this repo's scope is Sammakorn/Ramkhamhaeng-53, so เสนานิคม is recorded
+      here as context for the diversion's purpose, not minted as a new tracked area).
+
+  # ---- (d) "boats pushing water" mobile-capacity intervention on คลองลาดพร้าว ----
+  - id: sideflow:ladprao_boat_push
+    edge_kind: mobile_capacity
+    node_id: null
+    area_or_structure: "คลองลาดพร้าว (เสนานิคม reach)"
+    mechanism_th: "เตรียมใช้เรือช่วยดันน้ำคลองลาดพร้าว"
+    intervention_status: "เตรียมใช้ (prepared/about to deploy, per post's own tense --
+      not yet confirmed deployed at the 14:55 statement time)"
+    tag: RELAYED
+    source: "official BMA Facebook post, site visit 2026-09-27T14:55+07:00"
+    notes: >
+      Modeled as a mobile-capacity intervention ATTRIBUTE on the ลาดพร้าว reach near
+      เสนานิคม, analogous to `sources/drainage_mode.yaml`'s `mode` field but for a
+      temporary human-operated intervention rather than a structural drainage mode --
+      no existing east_chain.yaml node covers this reach of คลองลาดพร้าว (that graph's
+      ลาดพร้าว-adjacent nodes are ssb10/ssb09 on แสนแสบ itself, not the ลาดพร้าว
+      mainstem north of it) -- OPEN for a future ลาดพร้าว-mainstem node.
+
+  # ---- (e) side-flow dependency: มีนบุรี-หนองจอก -> แสนแสบ -> เจ้าพระยา, and the ----
+  #      รามคำแหง-บางกะปิ / Sammakorn recovery-chain upstream dependency.
+  - id: sideflow:minburi_nongjok_saensaeb_chaophraya
+    edge_kind: upstream_dependency
+    from: "ทุ่งมีนบุรี-หนองจอก (side flow / ทุ่งรับน้ำนอกเมือง)"
+    from_node_id: null
+    via: "คลองแสนแสบ"
+    via_node_id: "ssb10"
+    via_node_id_note: >
+      `ssb10` (ปตร.แสนแสบ-มีนบุรี, canal_oldcode WL.SSB.10) is the existing east_chain.yaml
+      /bottleneck_nodes_2026-09-27.yaml (rank 2) node at exactly this มีนบุรี confluence
+      point -- direct reuse, not a new mint.
+    to: "แม่น้ำเจ้าพระยา"
+    to_node_id: "outfall:chao_phraya_boundary"
+    to_node_id_note: "existing capacity_ledger.yaml outfall row, direct reuse."
+    mechanism_th: >
+      "เร่งดึงน้ำแสนแสบออกเจ้าพระยา เพื่อรองรับน้ำทุ่งจากมีนบุรี-หนองจอก และช่วยดึงน้ำ
+      ท่วมขังในย่านรามคำแหง-บางกะปิ"
+    tag: RELAYED
+    source: "official BMA Facebook post, site visit 2026-09-27T14:55+07:00"
+    notes: >
+      This is the post's own explicit statement that แสนแสบ drawdown capacity is being
+      allocated across THREE demands at once: (i) the มีนบุรี-หนองจอก side-flow inflow,
+      (ii) รามคำแหง-บางกะปิ standing water, and (iii) (per row `sideflow:
+      saensaeb_ladprao_tunnel_state` above) the tunnel's own drawdown of 4 canals
+      including แสนแสบ. This directly supports the STATED upstream dependency for the
+      Sammakorn recovery chain per this check's instruction: Sammakorn -> บ้านม้า 2 ->
+      แสนแสบ -> tunnel/pumps -> เจ้าพระยา -- every one of those hops already exists in
+      this repo (see docs/FLOODCONNECT_TOPOLOGY.md / docs/SAMMAKORN_STANDING_WATER_
+      2026-09-27.md's own flow diagram: บึงสัมมากร -> WL.SMK.01 -> ST.SPS.01-04 ->
+      คลองบ้านม้า 2 (WL.BMA.02) -> คลองแสนแสบ (WL.SSB.07/08/09)) -- this post row adds
+      the NEW fact that แสนแสบ's own drawdown-to-เจ้าพระยา capacity is shared with
+      มีนบุรี-หนองจอก and รามคำแหง-บางกะปิ, i.e. Sammakorn's recovery is contingent not
+      only on its OWN 4 dead pumps (ST.SPS.01-04, already MEASURED "ขัดข้อง") but also on
+      how much of the shared แสนแสบ->tunnel->river capacity those other two demands
+      consume -- a compounding-bottleneck fact not previously recorded in this repo.
+    upstream_dependency_chain:
+      - "sammakorn_pond (บึงสัมมากร, node_id null per east_chain.yaml)"
+      - "ST.SPS.01-04 (asset_id pump_station:pumphistory:ST.SPS.01..04, MEASURED ขัดข้อง)"
+      - "banma (คลองบ้านม้า 2, WL.BMA.02, MEASURED ปกติ)"
+      - "ssb07 / ssb08 / ssb09 / ssb10 (คลองแสนแสบ ช่วงบางกะปิ-มีนบุรี)"
+      - "tunnel:bma_dds:saensaeb_ladprao (5/5 pumps, per row above)"
+      - "outfall:chao_phraya_boundary"
+    ramkhamhaeng_bangkapi_note: >
+      "รามคำแหง-บางกะปิ" as an area has no single node id in this repo -- nearest
+      existing gauged nodes covering that name are `hmk01` (คลองหัวหมาก, ถ.ศรีนครินทร์)
+      and `lbk03` (คลองลาดบัวขาว, ซ.กาญจนาภิเษก 24) in east_chain.yaml, both already
+      MEASURED วิกฤต per docs/SAMMAKORN_STANDING_WATER_2026-09-27.md §2 (WL.HMK.01
+      0.59-0.60 m, WL.LBK.03 not in that table but same catchment) -- consistent with the
+      post's own claim that this area is still ท่วมขัง (standing water) as of 14:55.
+
+# ===================== node attribute rows =====================
+node_attributes:
+  # ---- (f) official recovery-time estimate ~1 week for ร่มเกล้า/ลาดกระบัง and คลองจั่น ----
+  - node_id: "ladkrabang"
+    node_id_basis: >
+      Existing east_chain.yaml node (canal_oldcode: null, no asset_id/coordinate --
+      recorded there as OPEN already). ชุมชนร่มเกล้า is the specific community the post
+      names within ลาดกระบัง district; no separate node exists for ร่มเกล้า itself
+      (checked bma_drain_pipes.yaml -- ถนนร่มเกล้า/ถนนเคหะร่มเกล้า appear only as
+      drain_junction PIPE_FROM/PIPE_TO road names, not as a canal/community node) --
+      attribute attached to the district-level `ladkrabang` canal-chain node with a note
+      naming the community-level source, not silently upgraded to a new node this check.
+    attribute: "official_drain_eta_2026_09_27"
+    value: "ราว 1 สัปดาห์ (ชุมชนร่มเกล้า, ลาดกระบัง) -- ทยอยระบาย, พร้อมจัดศูนย์พักพิงรองรับ"
+    tag: RELAYED
+    source: "official BMA Facebook post, site visit 2026-09-27T14:55+07:00"
+    notes: "Community-level (ร่มเกล้า) estimate, not the whole ลาดกระบัง district."
+
+  - node_id: "kjn01"
+    node_id_basis: >
+      Existing east_chain.yaml node (canal_oldcode WL.KJN.01, asset_id
+      gauge:thaiwater_bma:WL.KJN.01, ค.จั่น ถ.ลาดพร้าว) -- direct reuse, gauged node.
+    attribute: "official_drain_eta_2026_09_27"
+    value: "ราว 1 สัปดาห์ (คลองจั่น) -- ทยอยระบาย, พร้อมจัดศูนย์พักพิงรองรับ"
+    tag: RELAYED
+    source: "official BMA Facebook post, site visit 2026-09-27T14:55+07:00"
+    notes: >
+      Post groups ลาดกระบัง(ร่มเกล้า) and คลองจั่น together under one "เฝ้าระวังชุมชน"
+      heading with one shared ~1-week estimate -- attached identically to both node ids
+      rather than guessing a per-node split.
+
+kg_attachment_note: >
+  Proposed attachment, same convention as bottleneck_nodes_2026-09-27.yaml's own
+  `kg_attachment_note`: these edges/attributes are NOT wired into
+  tools/kg/build_kg.py by this file (out of this check's write scope -- another worker is
+  the sole committer for build_river_kg.py changes on this branch, and this check's RAM budget
+  explicitly excludes a full KG rebuild). Left as an explicit next step for a future
+  sync-build pass (see AGENTS.md §7 handoff convention).

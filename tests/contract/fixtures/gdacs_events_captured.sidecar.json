@@ -1,0 +1,13 @@
+{
+ "source_id": "gdacs_events",
+ "url": "https://www.gdacs.org/gdacsapi/api/events/geteventlist/EVENTS4APP?country=Thailand&fromdate=2026-09-01&todate=2026-10-02",
+ "captured_at": "2026-10-02T07:20:27Z",
+ "sha256": "c07a8ac8772ea7b3a2dcbb369e7862d66eea940e0c1cfc39ddc86149f72b4e77",
+ "http_status": 200,
+ "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "539afd4853d8614c9026bdf88da74112fa8f4ec53eb9560809e974bf58138235",
+ "trimmed_note": "Further trimmed 2026-10-03 (release pass, publish-safety finding: 300KB total budget for tests/contract/fixtures/ in the public tree) to a minimal real excerpt (header + few real rows, or a real byte-prefix for HTML) -- see the corresponding contract test's own comment for the exact row-count change.",
+ "trimmed_at": "2026-10-03T18:10:36Z"
+}

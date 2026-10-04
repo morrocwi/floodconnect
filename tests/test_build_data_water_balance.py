@@ -1,5 +1,6 @@
 """Tests for site/build_data.py's Toledo PROP-FLOOD-03 wiring (build_village_water_balance,
 build_bangkok_east_upper_bound). No network calls."""
+import json
 import sys
 from pathlib import Path
 
@@ -82,12 +83,30 @@ def test_load_briefing_returns_declared_facts():
 def test_build_briefing_summary_hero_line():
     briefing = bd.load_briefing()
     summary = bd.build_briefing_summary(briefing)
-    # 2026-09-26 16:15 briefing supersedes the 13:00 one on the hero wording.
-    assert "16:15" in summary["hero_line_th"]
+    # 2026-09-27 governor media interview supersedes the two 26 ก.ย. official_report
+    # briefings (13:00, 16:15) on the hero wording -- both older files stay on disk
+    # (never deleted) and remain in readout_log history.
     assert "27 ก.ย." in summary["hero_line_th"]
+    assert "2 สัปดาห์" in summary["hero_line_th"]
+    assert summary["trust_tier"] == "official_report-via-media"
+    assert "Traffy Fondue" in summary["hotlines"]
+    assert summary["timeframe"]["main_roads_days"] == "2–3"
+    assert summary["timeframe"]["communities_dry_weeks"] == "2"
+    assert summary["ops"]["bkk_schools_closed_28sep_count"] == 437
+    assert summary["evacuation"]["affected_approx"] == 30000
+    assert summary["contradiction_th"]
+    assert summary["deaths_note_th"]
+
+
+def test_build_briefing_summary_older_shape_still_loads():
+    """The 26 ก.ย. 16:15 briefing file (superseded, kept on disk for history) must still
+    parse under build_briefing_summary()'s fallback hero-line wording -- it never carried
+    its own declared_facts.hero_line_th field."""
+    older = json.loads(bd.BRIEFING_1615_PATH.read_text(encoding="utf-8"))
+    summary = bd.build_briefing_summary(older)
+    assert "16:15" in summary["hero_line_th"]
     assert summary["shelters"]["count"] == 233
     assert summary["shelters"]["in_use"] == 4200
-    assert "Traffy Fondue" in summary["hotlines"]
     assert summary["tmd_forecast_note_th"]
 
 
@@ -129,6 +148,31 @@ def test_build_drain_timeline_uses_multimodel_median_when_available(monkeypatch)
     assert dt["scenarios"]["d_jma"]["c"] == 0.5
     # forecast_coverage_hours reflects the full 96h since the multimodel rows cover it
     assert dt["forecast_coverage_hours"] == dt["horizon_hours"]
+    # MUST-FIX #1 (independent review, 2026-09-27): the note must reflect the actual
+    # per-hour model count seen (6 here), never a hardcoded "6" regardless of input.
+    assert "6 แบบจำลองเปิด" in dt["rain_source_note_th"]
+
+
+def test_build_drain_timeline_rain_source_note_reflects_partial_model_count(monkeypatch):
+    """A run where only 3 of the 6 openmeteo_<model>.json files were fetched must say
+    '3 แบบจำลองเปิด', not silently keep claiming 6."""
+    rows = [{"time_local": f"h{i}", "median_mm": 1.0, "min_mm": 0.5, "max_mm": 2.0,
+             "jma_mm": None, "n": 3} for i in range(100)]
+    monkeypatch.setattr(bd, "load_multimodel_hourly", lambda: rows)
+    dt = bd.build_drain_timeline({"mm_1h": 1}, {"available": True, "hourly_full": []},
+                                  "2026-09-26T13:00:00+00:00")
+    assert "3 แบบจำลองเปิด" in dt["rain_source_note_th"]
+    assert "6" not in dt["rain_source_note_th"]
+
+
+def test_build_drain_timeline_rain_source_note_fallback_path(monkeypatch):
+    """The single-station fallback path (no multimodel files at all) must say so, never
+    claim any model count."""
+    monkeypatch.setattr(bd, "load_multimodel_hourly", lambda: [])
+    forecast = {"available": True, "hourly_full": [{"time_local": "x", "mm": 0.0}] * 60}
+    dt = bd.build_drain_timeline({"mm_1h": 0}, forecast, "2026-09-26T13:00:00+00:00")
+    assert "แบบจำลองเปิด" not in dt["rain_source_note_th"] or "หลายตัว" in dt["rain_source_note_th"]
+    assert "สถานีเดียว" in dt["rain_source_note_th"]
 
 
 def test_build_drain_timeline_none_without_briefing(monkeypatch):

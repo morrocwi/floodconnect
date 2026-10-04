@@ -1,0 +1,4 @@
+No,DISTRICT_NAME,ROADCL_NAME,PIPE_FROM,PIPE_TO,R_DIMENSION,R_LENGTH,R_TYPE,L_DIMENSION,L_LENGTH,L_TYPE,ROAD_DIMENSION,ROAD_LENGTH,ROAD_TYPE,PJ_DIMENSION,PJ_LENGTH,PJ_TYPE,PIPE_LENGTH
+1,ดุสิต,ถนนทดสอบ,ถนนเอ,คลองทดสอบ,1,100,ท่อกลม,1,100,ท่อกลม,,-,-,,-,-,200
+2,ดุสิต,,,,,,,,,,,,,,,,300
+3,สะพานสูง,ถนนบี,คลองทดสอบ,คลองปลายทาง,0.5,50,ท่อกลม,,-,-,,-,-,,-,-,50

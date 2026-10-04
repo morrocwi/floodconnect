@@ -1,0 +1,69 @@
+# Small fixture for tools/kg/build_kg.py's capacity_ledger.yaml loader (build 4,
+# 2026-09-27). Deliberately tiny and self-contained -- never the real 68-row ledger.
+rows:
+  # row whose id already exists as a live sqlite asset_id in the test graph fixture --
+  # must ATTACH onto that node, never create a duplicate.
+  - id: pump_station:test_fixture:1
+    element_th: "สถานีสูบทดสอบ"
+    kind: pump_station
+    location: {order_index: 11, province: "กรุงเทพมหานคร", district: "ทดสอบ"}
+    capacity_value: 12
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: null
+    source: "test fixture"
+    tag: MEASURED
+    current_value_this_week: null
+    observed_at: null
+    notes: "fixture row for the ATTACH-onto-existing-node path"
+
+  # brand-new node -- no existing asset_id/DAG node with this id.
+  - id: led:test_fixture_reach
+    element_th: "ลำน้ำทดสอบ"
+    kind: river_reach
+    location: {order_index: 8, province: "กรุงเทพมหานคร", district: null}
+    capacity_value: 500
+    unit: "m3s"
+    capacity_basis: theoretical_sum
+    year_of_statement: 2026
+    source: "test fixture"
+    tag: RELAYED
+    current_value_this_week: 200
+    observed_at: "2026-09-27"
+    notes: "fixture row for the CREATE-new-node path, and the CAPACITY_OF target below"
+
+  # a row of kind tunnel that discharges into the outfall row below -- referenced by
+  # the outfall row's own `source` field (explicit text reference, never geometric).
+  - id: led:test_fixture_tunnel
+    element_th: "อุโมงค์ทดสอบ"
+    kind: tunnel
+    location: {order_index: 10, province: "กรุงเทพมหานคร", district: "ทดสอบ"}
+    capacity_value: 20
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: null
+    source: "test fixture"
+    tag: RELAYED
+    current_value_this_week: null
+    observed_at: null
+    discharges_to: "ลำน้ำทดสอบ"
+    notes: "fixture row for the OUTFALL-edge path"
+
+  # outfall row -- its own `source` field names led:test_fixture_tunnel (OUTFALL edge)
+  # and led:test_fixture_reach (CAPACITY_OF edge, since that row's kind is river_reach).
+  - id: outfall:test_fixture
+    element_th: "ทางออกทดสอบ"
+    kind: outfall
+    location: {order_index: 13, province: "กรุงเทพมหานคร", district: null}
+    capacity_value: 20
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: null
+    source: "sum of led:test_fixture_tunnel (20) above; same reach as led:test_fixture_reach"
+    tag: RELAYED
+    current_value_this_week: null
+    observed_at: null
+    discharges_to: "ทะเลทดสอบ"
+    bank: "ทดสอบ"
+    gravity_threshold: OPEN
+    notes: "fixture outfall row"

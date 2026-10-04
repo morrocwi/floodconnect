@@ -1,0 +1,289 @@
+# typology/nodes/private_sector_relief_2026-09-28.yaml -- private-sector relief network
+# (docs/knowledge/card_private_sector_relief_2026-09-28.md, RELAYED text pasted by
+# founder from THE STANDARD WEALTH 28.09.2026, not fetched by this build). Network and
+# process only -- no counts/depths, no personal names, no company call-centre numbers.
+# Company/brand names are organisation names (`actor_type: private_sector`), never
+# promotional wording. AG_KMITL/AS_SHELTER_KMITL/AS_SHELTER_SCHOOL/AS_SANDBAGS ids reused
+# verbatim from docs/knowledge/water_system_dag.mmd (first typology registration, same
+# reuse-first pattern as AG_MHESI/AG_MSDHS in an earlier commit). AG_DIST_NEIGH was
+# referenced as an owner_agency attribute value in typology/nodes/resources.yaml but had
+# never been registered as a node row itself until this file.
+schema_version: 1
+doc_kind: typology_node_registry
+status_th: >
+  เครือข่ายเอกชนช่วยน้ำท่วม -- โทรคมนาคม, gig platform, ค้าปลีก, developer war room, ทหาร,
+  ช่องทางกระจายสู่รัฐ -- ไม่มีตัวเลข ไม่มีชื่อบุคคล.
+rows:
+  # ---- reused ids, first typology registration ----
+  - id: AG_DIST_NEIGH
+    kind: agency
+    layer: power
+    label_th: "สำนักงานเขตข้างเคียง (บางกะปิ/ประเวศ/ลาดกระบัง)"
+    agency_class: state
+    tag: VERIFIED
+    source: "docs/knowledge/water_system_dag.mmd (existing AG_DIST_NEIGH id -- referenced as owner_agency attribute in resources.yaml since an earlier commit, registered as a node here for the first time)"
+  - id: AG_KMITL
+    kind: agency
+    layer: power
+    label_th: "สจล. (สถานที่รับผู้อพยพลาดกระบัง)"
+    agency_class: state
+    tag: VERIFIED
+    source: "docs/knowledge/water_system_dag.mmd (existing AG_KMITL node, reused verbatim, first typology registration)"
+  - id: AS_SHELTER_KMITL
+    kind: resource
+    layer: resource
+    label_th: "ศูนย์พักพิง สจล."
+    resource_type: shelter
+    owner_agency: AG_KMITL
+    infra_class: soft
+    infra_class_tag: INSTINCT
+    phase: incident
+    phase_tag: INSTINCT
+    tag: VERIFIED
+    source: "docs/knowledge/water_system_dag.mmd (existing AS_SHELTER_KMITL node, reused verbatim, first typology registration)"
+  - id: AS_SHELTER_SCHOOL
+    kind: resource
+    layer: resource
+    label_th: "โรงเรียน กทม. เป็นที่พักพิง"
+    resource_type: shelter
+    infra_class: soft
+    infra_class_tag: INSTINCT
+    phase: incident
+    phase_tag: INSTINCT
+    tag: VERIFIED
+    source: "docs/knowledge/water_system_dag.mmd (existing AS_SHELTER_SCHOOL node, reused verbatim, first typology registration)"
+  - id: AS_SANDBAGS
+    kind: resource
+    layer: resource
+    label_th: "กระสอบทราย (ขอที่สำนักงานเขต)"
+    resource_type: tool
+    tool_class: sandbag
+    infra_class: soft
+    infra_class_tag: INSTINCT
+    phase: normal
+    phase_tag: INSTINCT
+    tag: VERIFIED
+    source: "docs/knowledge/water_system_dag.mmd (existing AS_SANDBAGS node, reused verbatim, first typology registration)"
+
+  # ---- new agencies (actor_type: private_sector where applicable) ----
+  - id: AG_NBTC
+    kind: agency
+    layer: power
+    label_th: "กสทช. (หน่วยงานกำกับดูแลโทรคมนาคม)"
+    agency_class: state
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §1"
+  - id: AG_TELCO_AIS
+    kind: agency
+    layer: civil
+    label_th: "AIS"
+    agency_class: commercial_operator
+    actor_type: private_sector
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §1"
+  - id: AG_TELCO_TRUE
+    kind: agency
+    layer: civil
+    label_th: "True"
+    agency_class: commercial_operator
+    actor_type: private_sector
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §1"
+  - id: AG_LINEMAN
+    kind: agency
+    layer: civil
+    label_th: "LINE MAN (gig platform)"
+    agency_class: commercial_operator
+    actor_type: private_sector
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §2"
+  - id: AG_CENTRALPATTANA
+    kind: agency
+    layer: civil
+    label_th: "Central Pattana"
+    agency_class: commercial_operator
+    actor_type: private_sector
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §3"
+  - id: AG_ROBINSON
+    kind: agency
+    layer: civil
+    label_th: "Robinson"
+    agency_class: commercial_operator
+    actor_type: private_sector
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §3"
+  - id: AG_WHOLESALE_SUPPLIER
+    kind: agency
+    layer: civil
+    label_th: "ผู้ค้าส่งวัตถุดิบ (generic, ไม่ระบุชื่อร้าน)"
+    agency_class: commercial_operator
+    actor_type: private_sector
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §4"
+  - id: AG_SANSIRI
+    kind: agency
+    layer: civil
+    label_th: "Sansiri"
+    agency_class: commercial_operator
+    actor_type: private_sector
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §5"
+  - id: AG_SENA
+    kind: agency
+    layer: civil
+    label_th: "SENA"
+    agency_class: commercial_operator
+    actor_type: private_sector
+    case_status_pattern_th: >
+      RED=RESCUE -> YELLOW=RECOVER -> GREEN=RESTORE, ปิดเคสเมื่อผู้อยู่อาศัยกลับสู่ชีวิตปกติ
+      ไม่ใช่เมื่อน้ำลด (ข้อความอ้างอิง, ไม่ใช่ state machine ใหม่ -- ดูการ์ดความรู้ §5)
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §5"
+  - id: AG_RESTAURANT_NETWORK
+    kind: agency
+    layer: civil
+    label_th: "เครือข่ายร้านอาหาร (generic, ไม่ระบุชื่อร้าน)"
+    agency_class: commercial_operator
+    actor_type: private_sector
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §7"
+  - id: AG_RTA
+    kind: agency
+    layer: power
+    label_th: "กองทัพบก (ทบ.)"
+    agency_class: state
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §6"
+  - id: AG_RTAF_CIVIL
+    kind: agency
+    layer: power
+    label_th: "หน่วยกิจการพลเรือน กองทัพอากาศ (กร.ทอ.)"
+    agency_class: state
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §7"
+
+  # ---- resource/tool nodes ----
+  - id: RES.TOOL.COW
+    kind: resource
+    layer: resource
+    label_th: "สถานีฐานเคลื่อนที่ (cell-on-wheels)"
+    resource_type: tool
+    resource_class: communications
+    tool_class: mobile_base_station
+    infra_class: soft
+    infra_class_tag: INSTINCT
+    mode: vehicle
+    power_dependency: true
+    phase: normal
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §1"
+  - id: RES.COW.SHELTER_KMITL_01
+    kind: resource
+    layer: resource
+    label_th: "สถานีฐานเคลื่อนที่ ที่ศูนย์พักพิง สจล."
+    resource_type: tool
+    resource_class: communications
+    tool_class: mobile_base_station
+    generic_tool_ref: RES.TOOL.COW
+    power_dependency: true
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §1"
+  - id: RES.TOOL.CHARGING_POINT
+    kind: resource
+    layer: resource
+    label_th: "จุดชาร์จมือถือ (เครื่องมือทั่วไป)"
+    resource_type: tool
+    resource_class: communications
+    tool_class: charging_point
+    infra_class: soft
+    infra_class_tag: INSTINCT
+    phase: normal
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §1"
+  - id: RES.CHARGING.SHELTER_KMITL_01
+    kind: resource
+    layer: resource
+    label_th: "จุดชาร์จมือถือ ที่ศูนย์พักพิง สจล."
+    resource_type: tool
+    resource_class: communications
+    tool_class: charging_point
+    generic_tool_ref: RES.TOOL.CHARGING_POINT
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §1"
+  - id: RES.TOOL.VEHICLE_REFUGE_PARKING
+    kind: resource
+    layer: resource
+    label_th: "ที่จอดรถพื้นที่สูงเป็นที่หลบภัยยานพาหนะ (เครื่องมือทั่วไป)"
+    resource_type: vehicle_refuge_parking
+    infra_class: soft
+    infra_class_tag: INSTINCT
+    phase: normal
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §3"
+  - id: RES.PARKING.CENTRALPATTANA_01
+    kind: resource
+    layer: resource
+    label_th: "ที่จอดรถศูนย์การค้า (ให้ใช้ฟรีเป็นที่หลบภัยยานพาหนะ)"
+    resource_type: vehicle_refuge_parking
+    generic_tool_ref: RES.TOOL.VEHICLE_REFUGE_PARKING
+    owner_agency: AG_CENTRALPATTANA
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §3"
+  - id: RES.DONATION_INTAKE.CENTRALPATTANA.01
+    kind: resource
+    layer: resource
+    label_th: "จุดรับบริจาค ศูนย์การค้า Central Pattana"
+    resource_type: donation_intake_point
+    owner_agency: AG_CENTRALPATTANA
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §3"
+  - id: RES.DONATION_INTAKE.ROBINSON.01
+    kind: resource
+    layer: resource
+    label_th: "จุดรับบริจาค ห้างโรบินสัน"
+    resource_type: donation_intake_point
+    owner_agency: AG_ROBINSON
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §3"
+  - id: RES.MEAL_BOX.PRIVATE_RESTAURANTS.KMITL.01
+    kind: resource
+    layer: resource
+    label_th: "อาหารปรุงสุกจากเครือข่ายร้านอาหาร ส่งศูนย์พักพิง สจล."
+    resource_type: food
+    owner_agency: AG_RESTAURANT_NETWORK
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §7"
+  - id: RES.RELIEF_DELIVERY.PRIVATE_KHLONGCHAN_01
+    kind: resource
+    layer: resource
+    label_th: "การส่งของบริจาคเอกชนเข้าชุมชนแฟลตคลองจั่น (คุ้มกันโดยทหาร)"
+    resource_type: relief_delivery
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §6"
+  - id: WCH.LINEMAN_INAPP_RISK
+    kind: warning_channel
+    layer: civil
+    label_th: "ช่องทางเตือนความเสี่ยงน้ำท่วมรายวันในแอป LINE MAN"
+    channel_type: app
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §2"

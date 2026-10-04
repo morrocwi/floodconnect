@@ -1,0 +1,744 @@
+# coping_thresholds.yaml -- one row per unit x variable: an observed value, its outcome
+# (flooded | coped), the event/date it belongs to, and its source file + epistemic tag.
+#
+# Founder instruction (verbatim, 2026-09-27): "ซึ่งค่ารับมือพวกนี้อ่านจากประวัติได้ เรามีประวัติศาสตร์
+# และงานวิจัยเยอะ" -- these coping numbers can be read from history; this repo already has a lot
+# of history and research. This file mines every historical/research source already in the repo
+# (case_*.md, card_research_*.md, capacity_ledger(+additions).yaml, DATA_SWEEP_2026-09-27.md,
+# docs/CAPACITY.md, raw/backtest/events.yaml, community_reports_2026-09-26.md) for stated
+# "flooded at X" / "coped up to X" values and derives, per unit x variable:
+#   threshold_flooded_min := smallest recorded value with outcome=flooded
+#   threshold_coped_max   := largest recorded value with outcome=coped (a day/event that did
+#                             NOT flood at that reading) -- NEVER a design figure alone; a
+#                             design/rated capacity is filed separately (kind: design) and is
+#                             not substituted for a real observed non-flood reading.
+#   gap := threshold_flooded_min - threshold_coped_max, when both sides exist -- this is the
+#          honestly-unknown band ("ไม่รู้"), not a computed risk score. A unit with only one
+#          side of the band is marked one_sided: true and the missing side stays OPEN.
+#
+# WRITES NEW DATA ONLY. Toledo: no equation here -- every value is copied verbatim from a
+# cited repo source, or is a plain min/max over already-tagged rows (arithmetic, not a
+# registered formula). This file maps to PROP-FLOOD-06's own capacity/threshold notion
+# (see docs/LAYER0_IN_OUT_CAPACITY.md), it does not define a new one.
+
+schema_note: >
+  Each row under `rows`: unit, variable, value, unit_of_value, outcome (flooded | coped |
+  design_only | official_threshold), cause (rain | river_flow | canal_backflow |
+  unspecified), event, date, source, tag. `official_threshold` added 2026-09-27 (TODO
+  #54, bma_plan2569 extraction) -- an agency-declared operating/alert threshold (e.g. a
+  printed rain-intensity band edge or river-level ladder step), distinct from an
+  observed flooded/coped reading and from a design/rated capacity figure (design_only).
+  `derived` (below `rows`, one block per unit x variable) holds the min/max/gap computed
+  from those rows plus `one_sided` and `notes`.
+
+rows:
+  # ===================== bangkok_east (rain_24h_mm) =====================
+  - unit: bangkok_east
+    variable: rain_24h_mm
+    value: 203.0
+    unit_of_value: mm/24h
+    outcome: flooded
+    cause: rain
+    event: bkk_2569
+    date: "2026-09-26"
+    station: "พญาไท"
+    source: "docs/CAPACITY.md §5 (รายงาน DDS 269/69)"
+    tag: VERIFIED
+  - unit: bangkok_east
+    variable: rain_24h_mm
+    value: 203.5
+    unit_of_value: mm/24h
+    outcome: flooded
+    cause: rain
+    event: bkk_2569
+    date: "2026-09-26"
+    station: "สะพานสูง"
+    source: "docs/CAPACITY.md §5 (รายงาน DDS 269/69)"
+    tag: VERIFIED
+  - unit: bangkok_east
+    variable: rain_24h_mm
+    value: 205.0
+    unit_of_value: mm/24h
+    outcome: flooded
+    cause: rain
+    event: bkk_2569
+    date: "2026-09-26"
+    station: "วังทองหลาง"
+    source: "docs/CAPACITY.md §5 (รายงาน DDS 269/69)"
+    tag: VERIFIED
+  - unit: bangkok_east
+    variable: rain_24h_mm
+    value: 80.0
+    unit_of_value: mm/24h
+    outcome: design_only
+    cause: rain
+    event: null
+    date: null
+    station: null
+    source: "docs/CAPACITY.md §1 (แผนปฏิบัติราชการ 2569 สนน. กทม., 58.7 mm/h เฉลี่ย 3h -> 80mm/day)"
+    tag: VERIFIED
+    note: >
+      Design/rated capacity, NOT an observed non-flood day -- kept as a separate `design`
+      kind, never averaged into threshold_coped_max. See derived.bangkok_east.rain_24h_mm.
+
+  # ===================== sammakorn (rain_24h_mm + canal_backflow) =====================
+  - unit: sammakorn
+    variable: rain_24h_mm
+    value: 196.6
+    unit_of_value: mm/24h
+    outcome: flooded
+    cause: rain
+    event: bkk_2569
+    date: "2026-09-26"
+    station: "บางกะปิ (สถานีใกล้สัมมากรที่สุดในข้อมูลชุมชน)"
+    source: "site/inputs/community/community_reports_2026-09-26.md §E.4 (อ้างอิงตัวเลข กทม.)"
+    tag: RELAYED
+    note: "Relayed via the community-report summary, not independently re-read from the DDS PDF itself for this station."
+  - unit: sammakorn
+    variable: canal_backflow
+    value: null
+    unit_of_value: state
+    outcome: flooded
+    cause: canal_backflow
+    event: bkk_2569
+    date: "2026-09-26"
+    station: "ซอย 59 (สุดซอย/ปากซอย)"
+    source: "site/inputs/community/community_reports_2026-09-26.md §A"
+    tag: MEASURED-community
+    note: "\"ขึ้นโรงรถ/หลังบ้าน จากท่อน้ำคลอง\" 06:00-10:00 -- community_report trust tier, no instrument reading, but a direct eyewitness statement of the mechanism (canal water via pipe), not merely rain."
+  - unit: sammakorn
+    variable: canal_backflow
+    value: null
+    unit_of_value: state
+    outcome: flooded
+    cause: canal_backflow
+    event: bkk_2569
+    date: "2026-09-26"
+    station: "ซอย 17"
+    source: "site/inputs/community/community_reports_2026-09-26.md §A, §D"
+    tag: MEASURED-community
+    note: "\"เข้าโรงรถ + ย้อนขึ้นท่อ/ห้องน้ำชั้นล่าง\" 11:10; §D reads this as \"ระบบท่อในหมู่บ้านเต็ม/ระดับคลองสูงกว่าท่อ\" (INSTINCT interpretation, kept separate from the MEASURED-community eyewitness line itself)."
+  - unit: sammakorn
+    variable: canal_level_wl_bma_02_m
+    value: 0.73
+    unit_of_value: m (local datum)
+    outcome: unspecified
+    cause: canal_backflow
+    event: bkk_2569
+    date: "2026-09-27"
+    station: "WL.BMA.02 คลองบ้านม้า ตอนถนนรามคำแหง"
+    source: "docs/knowledge/BMA_WATER_MAP_PROBE.md (probe ~16:55-17:00, 2026-09-27)"
+    tag: MEASURED
+    note: >
+      warning=2.14, critical=2.68 at this station -- flagged in that doc as a likely
+      mismatched/legacy threshold (warning far above the live reading); water_control
+      (the "normal target level" field) is null for all 312 records in that snapshot,
+      so no confirmed control/normal level exists for this canal yet -- OPEN.
+  - unit: sammakorn
+    variable: pump_station_banmha2_running
+    value: 0
+    unit_of_value: "pumps running / total"
+    outcome: unspecified
+    cause: unspecified
+    event: bkk_2569
+    date: "2026-09-26"
+    station: "สถานีสูบคลองบ้านม้า 2"
+    source: "site/inputs/community/community_reports_2026-09-26.md §E.3 (อ้างอิงข้อมูล กทม.)"
+    tag: RELAYED
+    note: "\"ขัดข้อง 0/4\" per the community summary's own reading of a BMA report; sammakorn's own private pumps ST.SPS.01-04 remain separately OPEN (docs/CAPACITY.md §2)."
+
+  # ===================== chao_phraya_bkk_reach (river_flow_m3s, at C.13) =====================
+  - unit: chao_phraya_bkk_reach
+    variable: river_flow_m3s
+    value: 2800.0
+    unit_of_value: m3/s
+    outcome: coped
+    cause: river_flow
+    event: null
+    date: null
+    station: "C.13 ท้ายเขื่อนเจ้าพระยา ชัยนาท"
+    source: "docs/knowledge/CHAO_PHRAYA_CAPACITY_AND_DISCHARGE.md §2 (naewna.com/local/58365, อ้างปี 2554)"
+    tag: RELAYED
+    note: "\"รับได้สูงสุดก่อนล้นตลิ่ง\" -- a stated bank-overflow ceiling, the closest thing to a real coped_max this reach has; a second, higher figure (3,100 m3/s, the 2565 operational-management limit) exists on a different basis (managed release limit, not bank-overflow ceiling) and is NOT used as coped_max here to avoid conflating the two bases -- see derived notes."
+  - unit: chao_phraya_bkk_reach
+    variable: river_flow_m3s
+    value: 3100.0
+    unit_of_value: m3/s
+    outcome: design_only
+    cause: river_flow
+    event: null
+    date: "2022"
+    station: "C.13 ท้ายเขื่อนเจ้าพระยา ชัยนาท"
+    source: "docs/knowledge/CHAO_PHRAYA_CAPACITY_AND_DISCHARGE.md §2/§3 (thaipbs.or.th/news/content/320348)"
+    tag: RELAYED
+    note: "Operational downstream-release management limit as of 2565 -- filed as design_only (an operating rule, not an observed non-flood ceiling), never averaged with the 2,800 bank-overflow figure above."
+  - unit: chao_phraya_bkk_reach
+    variable: river_flow_m3s
+    value: 3721.0
+    unit_of_value: m3/s
+    outcome: flooded
+    cause: river_flow
+    event: flood_2554
+    date: "2011-09-21"
+    station: "C.13 ท้ายเขื่อนเจ้าพระยา ชัยนาท"
+    source: "docs/knowledge/CHAO_PHRAYA_CAPACITY_AND_DISCHARGE.md §1 (thaipbs.or.th/news/content/320348, trueid.net)"
+    tag: RELAYED
+  - unit: chao_phraya_bkk_reach
+    variable: river_flow_m3s
+    value: 3930.0
+    unit_of_value: m3/s
+    outcome: flooded
+    cause: river_flow
+    event: flood_2554
+    date: "2011-10-06"
+    station: "C.29 บางไทร อยุธยา (downstream reach, same event)"
+    source: "docs/knowledge/CHAO_PHRAYA_CAPACITY_AND_DISCHARGE.md §1 (trueid.net)"
+    tag: RELAYED
+    note: "Different station (C.29, downstream of C.13) -- kept as a separate row, not merged into the C.13 min, so the C.13-only derived band below uses only the C.13 rows."
+
+  # ===================== nan_town (river_flow_m3s at N.1 -- historical demonstration, NOT live) ==
+  - unit: nan_town
+    variable: river_flow_m3s
+    value: 1066.0
+    unit_of_value: m3/s
+    outcome: coped
+    cause: river_flow
+    event: null
+    date: null
+    station: "N.1 (หน้าสำนักงานป่าไม้, อ.เมืองน่าน; HII station id 3219)"
+    source: "sources/capacity_ledger_additions.yaml (HII/thaiwater station metadata field qmax)"
+    tag: RELAYED
+    note: "qmax is HII's own bankfull/design proxy, not itself an observed non-flood reading -- used here as the best available coped-side anchor per founder instruction to mine every existing source, but flagged as a proxy, not a measured non-flood day."
+  - unit: nan_town
+    variable: river_flow_m3s
+    value: 1463.6
+    unit_of_value: m3/s
+    outcome: flooded
+    cause: river_flow
+    event: nan_2567
+    date: "2024-08-22T20:00"
+    station: "N.1 (HII station id 3219)"
+    source: "docs/knowledge/DATA_SWEEP_2026-09-27.md (HII history pull, raw/backtest/hii_history)"
+    tag: MEASURED-history
+    note: "This repo's own pull of HII's real telemetry archive; 37% over the qmax proxy above. Event: น้ำท่วมน่าน 2567 (docs/knowledge/case_nan_2567.md), 32,434 households affected."
+  - unit: nan_town
+    variable: river_flow_m3s
+    value: 1028.0
+    unit_of_value: m3/s
+    outcome: coped
+    cause: river_flow
+    event: null
+    date: null
+    station: "N.64 (บ้านผาขวาง, อ.ท่าวังผา, upstream of N.1; HII station id 3246)"
+    source: "sources/capacity_ledger_additions.yaml"
+    tag: RELAYED
+    note: "qmax proxy for the upstream gauge -- separate unit-variable key from N.1; not merged."
+  - unit: nan_town
+    variable: river_flow_m3s
+    value: 1426.5
+    unit_of_value: m3/s
+    outcome: flooded
+    cause: river_flow
+    event: nan_2567
+    date: "2024-08-22T10:00"
+    station: "N.64 (HII station id 3246)"
+    source: "docs/knowledge/DATA_SWEEP_2026-09-27.md"
+    tag: MEASURED-history
+    note: "~10h before N.1's own peak on the same event -- consistent with N.64 being upstream of N.1."
+
+  # ===================== chiangmai_town (river_flow_m3s + river_level_m at P.1) =====================
+  - unit: chiangmai_town
+    variable: river_flow_m3s
+    value: 425.0
+    unit_of_value: m3/s
+    outcome: coped
+    cause: river_flow
+    event: null
+    date: null
+    station: "P.1 (สะพานนวรัฐ, อ.เมืองเชียงใหม่; HII station id 3226)"
+    source: "sources/capacity_ledger_additions.yaml"
+    tag: RELAYED
+    note: "qmax proxy, same caveat as nan_town above."
+  - unit: chiangmai_town
+    variable: river_flow_m3s
+    value: 656.0
+    unit_of_value: m3/s
+    outcome: flooded
+    cause: river_flow
+    event: chiangmai_2567
+    date: "2024-10-05T12:00"
+    station: "P.1 (HII station id 3226)"
+    source: "docs/knowledge/DATA_SWEEP_2026-09-27.md"
+    tag: MEASURED-history
+    note: "Date matches the '5 ต.ค.' new-record-level day already flagged in case_chiangmai_2567.md -- cross-check, not independently re-verified beyond the date match."
+  - unit: chiangmai_town
+    variable: river_level_m
+    value: 4.90
+    unit_of_value: m
+    outcome: flooded
+    cause: river_flow
+    event: flood_2554
+    date: "2011"
+    station: "แม่น้ำปิง เชียงใหม่"
+    source: "docs/knowledge/case_chiangmai_2567.md (level compared against the 2567 event)"
+    tag: RELAYED
+  - unit: chiangmai_town
+    variable: river_level_m
+    value: 4.93
+    unit_of_value: m
+    outcome: flooded
+    cause: river_flow
+    event: chiangmai_2567
+    date: "2024-09-25T03:00"
+    station: "แม่น้ำปิง เชียงใหม่"
+    source: "docs/knowledge/case_chiangmai_2567.md"
+    tag: RELAYED
+  - unit: chiangmai_town
+    variable: river_level_m
+    value: 5.28
+    unit_of_value: m
+    outcome: flooded
+    cause: river_flow
+    event: chiangmai_2567
+    date: "2024-10-05"
+    station: "แม่น้ำปิง เชียงใหม่"
+    source: "docs/knowledge/case_chiangmai_2567.md"
+    tag: RELAYED
+    note: "New record high, second peak of the same event -- see also the river_flow_m3s row on the same date above."
+
+  # ===================== hatyai (river_flow_m3s at X.44 + canal_level_m) =====================
+  - unit: hatyai
+    variable: river_flow_m3s
+    value: 481.0
+    unit_of_value: m3/s
+    outcome: coped
+    cause: river_flow
+    event: null
+    date: null
+    station: "X.44 (บ้านหาดใหญ่ใน, HII station id 2591)"
+    source: "sources/capacity_ledger_additions.yaml"
+    tag: RELAYED
+    note: "qmax proxy. The 2565 measured event window at this same station did NOT show a clean flood-day discharge peak (measured 38.8-58.4 m3/s during 2022-11-29..12-03, vs a later 168.6 m3/s on 2022-12-10, AFTER the reported flood) -- so no reliable flooded_min in m3/s exists at this station; see the level-based rows below instead. Kept OPEN/unreliable, not fabricated."
+  - unit: hatyai
+    variable: canal_level_m
+    value: 10.25
+    unit_of_value: m
+    outcome: flooded
+    cause: river_flow
+    event: hatyai_2553
+    date: "2010-11-01"
+    station: "คลองอู่ตะเภา หาดใหญ่"
+    source: "docs/knowledge/case_hatyai_2553_2565.md"
+    tag: RELAYED
+  - unit: hatyai
+    variable: canal_level_m
+    value: 11.66
+    unit_of_value: m
+    outcome: flooded
+    cause: river_flow
+    event: hatyai_2565
+    date: "2022-11"
+    station: "คลองอู่ตะเภา หาดใหญ่"
+    source: "docs/knowledge/case_hatyai_2553_2565.md"
+    tag: RELAYED
+  - unit: hatyai
+    variable: design_river_flow_m3s
+    value: 1200.0
+    unit_of_value: m3/s
+    outcome: design_only
+    cause: river_flow
+    event: null
+    date: null
+    station: "คลอง ร.1 (โครงการบรรเทาอุทกภัยหาดใหญ่ตามพระราชดำริ, ออกแบบรับฝนรอบ 50 ปี)"
+    source: "docs/knowledge/case_hatyai_2553_2565.md"
+    tag: RELAYED
+    note: "Design capacity of the flood-diversion canal itself, not an observed non-flood city-level reading -- filed design_only."
+
+# ------------------------------------------------------------------------------------------
+# derived: min(outcome=flooded) -> threshold_flooded_min ; max(outcome=coped) -> threshold_coped_max
+# gap = flooded_min - coped_max when both exist. one_sided: true when only one side has data.
+# Computed by hand from the `rows` above (plain min/max, not a registered equation) --
+# tools/layer0/in_out_capacity.py re-derives the same numbers at runtime from this same file
+# so the two never drift; this block is the human-readable mirror.
+
+  # -------------------------------------------------------------------------------
+  # MERGED 2026-09-27 (TODO #54, bma_plan2569 extraction) -- 21 rows from
+  # docs/knowledge/coping_thresholds_additions_bma_plan2569.yaml, official BMA plan
+  # 2569 thresholds/design figures. New outcome value `official_threshold` accepted
+  # into this file's vocabulary (agency-declared operating/alert threshold, distinct
+  # from an observed flooded/coped reading and from a design_only capacity figure --
+  # no code in tools/layer0 or tests/test_layer0.py enforces an `outcome` enum, so
+  # this is a documentary schema extension, not a breaking change). See
+  # docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md for the full
+  # extraction context and docs/knowledge/coping_thresholds_additions_bma_plan2569.yaml
+  # for the original agreements_and_contradictions notes (kept there, not duplicated
+  # here).
+  # -------------------------------------------------------------------------------
+  - unit: bangkok_east
+    variable: rain_intensity_mm_h
+    value: 60.0
+    unit_of_value: mm/h
+    outcome: official_threshold
+    cause: rain
+    event: null
+    date: null
+    station: กทม. ทั้งระบบ (§5.1 ช่วงปฏิบัติการที่ 1 ต้นฤดูฝน พ.ค.-ก.ค.)
+    source: docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. ประจำปี 2569, สนน.), PDF p22
+    tag: VERIFIED
+    note: 'upper edge of period-1 band; lower edge 10 | quote: "ความเข้มของฝน โดยทั่วไปไม่สูงนัก (10 - 60 มิลลิเมตรต่อชั่วโมง)"'
+  - unit: bangkok_east
+    variable: rain_intensity_mm_h
+    value: 90.0
+    unit_of_value: mm/h
+    outcome: official_threshold
+    cause: rain
+    event: null
+    date: null
+    station: กทม. ทั้งระบบ (§5.1 ช่วงที่ 2 ปลายฤดูฝน ส.ค.-ต.ค.)
+    source: docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. ประจำปี 2569, สนน.), PDF p22
+    tag: VERIFIED
+    note: 'upper edge of period-2 band; ''>90 mm/h OR several consecutive days of rain'' = abnormal-weather trigger | quote: "ความเข้มของฝนสูงขึ้น (60 - 90 มิลลิเมตรต่อชั่วโมง) ... ลักษณะอากาศผิดปกติ เช่น มีพายุหมุนเข้ามา (ปริมาณฝนเกิน
+      90 มิลลิเมตรต่อชั่วโมง หรือตกติดต่อกันหลายวัน)"'
+  - unit: bangkok_east
+    variable: rain_intensity_mm_h
+    value: 90.0
+    unit_of_value: mm/h
+    outcome: official_threshold
+    cause: rain
+    event: null
+    date: null
+    station: กทม. ทั้งระบบ (§5.1 ช่วงที่ 3 น้ำเหนือไหลบ่าและน้ำทะเลหนุนสูง ต.ค.-ธ.ค.)
+    source: docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. ประจำปี 2569, สนน.), PDF p22
+    tag: VERIFIED
+    note: 'period-3 lower edge (>90); plus the runoff-inflow trigger | quote: "ความเข้มของฝนสูงในช่วงต้นเดือนตุลาคม (มากกว่า 90 มิลลิเมตรต่อชั่วโมง) - น้ำทุ่งจากพื้นที่ด้านเหนือและตะวันออกไหลเข้าพื้นที่"'
+  - unit: bangkok_east
+    variable: rain_intensity_mm_h
+    value: 58.7
+    unit_of_value: mm/h
+    outcome: design_only
+    cause: rain
+    event: null
+    date: null
+    station: ระบบระบายน้ำ กทม. (ก-9)
+    source: docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. ประจำปี 2569, สนน.), PDF p63
+    tag: VERIFIED
+    note: 'AGREES with existing bangkok_east design 80 mm/24h row; 58.7 mm/h = 2-yr 1-h intensity in the p18 IDF table | quote: "ขีดความสามารถของระบบระบายน้ำสามารถรองรับปริมาณฝนตกสะสมรวมได้ไม่เกิน 80 มิลลิเมตร ใน 1 วัน (ใน 1
+      วัน โดยเฉลี่ยแล้วฝนตกประมาณ 3 ชั่วโมง) หรือแปลงเป็นความเข้มของฝนไม่เกิน 58.7 มิลลิเมตรต่อชั่วโมง"'
+  - unit: bangkok_east
+    variable: rain_24h_mm
+    value: 80.0
+    unit_of_value: mm/24h
+    outcome: design_only
+    cause: rain
+    event: null
+    date: null
+    station: ระบบระบายน้ำ กทม. (ก-9)
+    source: docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. ประจำปี 2569, สนน.), PDF p63
+    tag: VERIFIED
+    note: 'duplicate confirmation of the existing row (source is this plan itself, different page) -- do not double count | quote: "ไม่เกิน 80 มิลลิเมตร ใน 1 วัน"'
+  - unit: bangkok_east
+    variable: rain_intensity_mm_h
+    value: 60.0
+    unit_of_value: mm/h
+    outcome: design_only
+    cause: rain
+    event: null
+    date: null
+    station: เป้าหมาย §4.1.3
+    source: docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. ประจำปี 2569, สนน.), PDF p21
+    tag: VERIFIED
+    note: 'RESOLVES the repo''s ''60 vs 80'' OPEN: 80 is mm/DAY, 60 is mm/HOUR; the plan''s own conversion is 80 mm/day = 58.7 mm/h, so ''60 mm/h'' and ''80 mm/day'' are the SAME design basis rounded | quote: "โดยกำหนดรายละเอียดตามปริมาณน้ำฝนที่ตกต่อชั่วโมง
+      ที่ปริมาณ 60 มิลลิเมตร"'
+    correction_2026-09-28: "The 'RESOLVES ... SAME design basis' framing above overstates
+      this: checking the plan's own official Bangkok IDF table
+      (docs/knowledge/bma_plan2569_assets.yaml -> design_storm_table_p18, VERIFIED) shows
+      58.7 mm/h IS the T=2yr/1h intensity exactly (VERIFIED), but the T=2yr/24h depth at
+      that SAME return period is 93.6 mm, NOT 80 mm. So '80 mm/day = 58.7 mm/h' is NOT an
+      IDF same-return-period identity -- it is a BMA-quoted pair (both numbers appear
+      together in the plan's own text) whose physical equivalence is OPEN, not resolved.
+      Full worked check: docs/knowledge/RAIN_ALERT_THRESHOLDS_CROSS_AGENCY_2026-09-27.md
+      R2 section; sources/rain_alert_thresholds_crosswalk.yaml R2 rule block. This
+      correction is appended, not a rewrite -- the note above stays as originally written."
+  - unit: bangkok_east
+    variable: rain_24h_mm
+    value: 104.0
+    unit_of_value: mm/24h
+    outcome: design_only
+    cause: rain
+    event: null
+    date: null
+    station: เป้าหมายอนาคต (ก-10)
+    source: docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. ประจำปี 2569, สนน.), PDF p64
+    tag: VERIFIED
+    note: 'FUTURE target, not current capacity -- explains the ''76 mm/hr'' figure the ledger flagged as conflicting | quote: "ให้สามารถรับปริมาณฝนตกสะสมได้ไม่เกิน 104 มิลลิเมตร ใน 1 วัน (ฝนตกประมาณ 3 ชั่วโมง) หรือเป็นความเข้มของฝนที่
+      76 มิลลิเมตรต่อชั่วโมง"'
+  - unit: chao_phraya_bkk_reach
+    variable: river_level_m_msl
+    value: 1.2
+    unit_of_value: m MSL (ม.รทก.)
+    outcome: official_threshold
+    cause: river_flow
+    event: null
+    date: null
+    station: แม่น้ำเจ้าพระยา (§5.1 ช่วงที่ 1)
+    source: docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. ประจำปี 2569, สนน.), PDF p22
+    tag: VERIFIED
+    note: 'quote: "ระดับน้ำแม่น้ำเจ้าพระยา ที่ระดับ +1.20 ม.รทก."'
+  - unit: chao_phraya_bkk_reach
+    variable: river_level_m_msl
+    value: 1.5
+    unit_of_value: m MSL
+    outcome: official_threshold
+    cause: river_flow
+    event: null
+    date: null
+    station: แม่น้ำเจ้าพระยา (§5.1 ช่วงที่ 2, lower edge)
+    source: docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. ประจำปี 2569, สนน.), PDF p22
+    tag: VERIFIED
+    note: 'quote: "ระดับน้ำแม่น้ำเจ้าพระยา ที่ระดับ +1.50 ถึง +1.80 ม.รทก."'
+  - unit: chao_phraya_bkk_reach
+    variable: river_level_m_msl
+    value: 1.8
+    unit_of_value: m MSL
+    outcome: official_threshold
+    cause: river_flow
+    event: null
+    date: null
+    station: แม่น้ำเจ้าพระยา (§5.1 ช่วงที่ 2 upper / ช่วงที่ 3 lower)
+    source: docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. ประจำปี 2569, สนน.), PDF p22
+    tag: VERIFIED
+    note: 'quote: "ระดับน้ำแม่น้ำเจ้าพระยาสูงมากกว่า +1.80 ม.รทก."'
+  - unit: chao_phraya_bkk_reach
+    variable: river_level_m_msl
+    value: 2.0
+    unit_of_value: m MSL
+    outcome: official_threshold
+    cause: river_flow
+    event: null
+    date: null
+    station: แม่น้ำเจ้าพระยา (§9.2.1 ปัญหาและอุปสรรค)
+    source: docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. ประจำปี 2569, สนน.), PDF p47
+    tag: VERIFIED
+    note: 'plan-admitted failure threshold for the flood-defence line | quote: "ในกรณีที่ระดับน้ำในแม่น้ำเจ้าพระยาที่สูงเกินกว่า +2.00 ม.รทก. ตามที่คาดหมายไว้อาจทำให้การป้องกันน้ำท่วมไม่ได้ผล"'
+  - unit: chao_phraya_bkk_reach
+    variable: river_level_m_msl
+    value: 2.53
+    unit_of_value: m MSL
+    outcome: flooded
+    cause: river_flow
+    event: 2554 flood
+    date: '2011'
+    station: ปากคลองตลาด ใกล้สะพานพระพุทธยอดฟ้าจุฬาโลก
+    source: docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. ประจำปี 2569, สนน.), PDF p19
+    tag: VERIFIED
+    note: 'max annual level; other years as printed: 2526 2.13, 2538* 2.27, 2539 2.14, 2545 2.12, 2549 2.22, 2551 2.17, 2553 2.10, 2560 2.10, 2564 2.32, 2565 2.32, 2568 2.25 | quote: "ตารางค่าระดับน้ำสูงสุดที่ปากคลองตลาด ...
+      2554* 2.53 ... *ตารางแสดงปีที่เกิดอุทกภัยน้ำท่วมใหญ่ในพื้นที่กรุงเทพมหานคร"'
+  - unit: chao_phraya_bkk_reach
+    variable: river_level_m_msl
+    value: 2.25
+    unit_of_value: m MSL
+    outcome: unspecified
+    cause: river_flow
+    event: '2568'
+    date: '2025'
+    station: ปากคลองตลาด
+    source: docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. ประจำปี 2569, สนน.), PDF p19
+    tag: VERIFIED
+    note: '2568 is not starred as a major-flood year in the table -> a COPED-side candidate for river level (+2.25 without citywide river flood), pending confirmation that 2568 had no river-overtopping in BKK | quote: "2568
+      2.25"'
+  - unit: chao_phraya_bkk_reach
+    variable: river_flow_m3s
+    value: 3500.0
+    unit_of_value: m3/s
+    outcome: official_threshold
+    cause: river_flow
+    event: null
+    date: null
+    station: C.29B อ.สามโคก
+    source: docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. ประจำปี 2569, สนน.), PDF p22
+    tag: VERIFIED
+    note: 'unit printed as ''ล้านลบ.ม./วินาที'' (source typo; the sentence and p19 make it m3/s). Consistent with existing chao_phraya_bkk_reach flooded_min 3,721 (C.13) and 3,930 (C.29) -- different stations (C.29B is Sam Khok,
+      downstream of C.29 Bang Sai); no contradiction | quote: "ปริมาณน้ำที่ไหลผ่านแม่น้ำเจ้าพระยา ที่จุดวัด อ.สามโคก (C.29B) ระดับวิกฤติไม่เกิน 3,500 ล้านลบ.ม./วินาที"'
+  - unit: chao_phraya_bkk_reach
+    variable: river_flow_m3s
+    value: 3500.0
+    unit_of_value: m3/s
+    outcome: coped
+    cause: river_flow
+    event: null
+    date: null
+    station: แม่น้ำเจ้าพระยาบริเวณ กทม. (§2.1.3)
+    source: docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. ประจำปี 2569, สนน.), PDF p19
+    tag: VERIFIED
+    note: 'stated no-overbank ceiling for the BKK reach itself (2,500-3,500); higher than the existing coped_max 2,800 at C.13 because it is a different reach -- do NOT merge into the C.13 band; candidate coped_max for a new
+      unit ''chao_phraya_bkk_city_reach'' | quote: "ขนาดของแม่น้ำเจ้าพระยาบริเวณกรุงเทพมหานคร สามารถรองรับปริมาณน้ำเหนือได้ประมาณ 2,500 - 3,500 ลบ.ม./วินาที โดยไม่มีน้ำล้นตลิ่งโดยทั่วไป"'
+  - unit: chao_phraya_bkk_reach
+    variable: river_flow_m3s
+    value: 5500.0
+    unit_of_value: m3/s
+    outcome: unspecified
+    cause: river_flow
+    event: null
+    date: null
+    station: แม่น้ำเจ้าพระยาผ่าน กทม. (§2.1.3)
+    source: docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. ประจำปี 2569, สนน.), PDF p19
+    tag: VERIFIED
+    note: 'range statement, not a threshold | quote: "ปริมาณน้ำเหนือจากลุ่มแม่น้ำเจ้าพระยาไหลผ่านกรุงเทพมหานคร ในปีน้ำเหนือน้อยประมาณ 1,000 - 2,000 ลบ.ม./วินาที ในปีน้ำเหนือมากประมาณ 4,000 - 5,500 ลบ.ม./วินาที"'
+  - unit: sammakorn
+    variable: pond_storage_m3
+    value: 227200.0
+    unit_of_value: m3
+    outcome: design_only
+    cause: unspecified
+    event: null
+    date: null
+    station: บึงรับน้ำหมู่บ้านสัมมากร (แก้มลิงลำดับที่ 25 ฝั่งพระนคร)
+    source: docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. ประจำปี 2569, สนน.), PDF p79
+    tag: VERIFIED
+    note: 'storage anchor for the sammakorn unit (FOUNDER_TASKS #19 C_H); see sammakorn_unit_from_bma_plan2569.yaml | quote: "25 บึงรับน้ำหมู่บ้านสัมมากร 227,200"'
+  - unit: sammakorn
+    variable: pump_capacity_m3s
+    value: 4.0
+    unit_of_value: m3/s
+    outcome: design_only
+    cause: unspecified
+    event: null
+    date: null
+    station: สถานีสูบน้ำคลองบ้านม้า 2 (ง-25 row 28; = ST.SPS.01)
+    source: docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. ประจำปี 2569, สนน.), PDF p191
+    tag: VERIFIED
+    note: 'เตือนภัย +0.40 วิกฤติ +0.50 แผน ก -1.00 ข -0.50 ค +0.40 ม.รทก. | quote: "สถานีสูบน้ำคลองบ้านม้า 2 | 4 | +0.40 | +0.50 | -1.00 | -0.50 | +0.40 | 13.7763,100.6713 | 4(1)"'
+  - unit: sammakorn
+    variable: pump_capacity_m3s
+    value: 0.75
+    unit_of_value: m3/s
+    outcome: design_only
+    cause: unspecified
+    event: null
+    date: null
+    station: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2 (ง-25 row 30; = ST.SPS.03)
+    source: docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. ประจำปี 2569, สนน.), PDF p191
+    tag: VERIFIED
+    note: 'quote: "สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2 | 0.75 | ประตูระบายน้ำ เปิด - ปิด ตามสภาพน้ำและระดับน้ำ | 13.7670,100.6771 | 3(0.25)"'
+  - unit: sammakorn
+    variable: pump_capacity_m3s
+    value: 1.0
+    unit_of_value: m3/s
+    outcome: design_only
+    cause: unspecified
+    event: null
+    date: null
+    station: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง (ง-25 row 29; = ST.SPS.04)
+    source: docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. ประจำปี 2569, สนน.), PDF p191
+    tag: VERIFIED
+    note: 'quote: "สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง | 1 | ... | 13.7706,100.6798 | 2(0.5)"'
+  - unit: sammakorn
+    variable: pump_capacity_m3s
+    value: 2.0
+    unit_of_value: m3/s
+    outcome: design_only
+    cause: unspecified
+    event: null
+    date: null
+    station: สถานีสูบน้ำบึงที่ 4 ตอนคลองวังใหญ่ (ง-25 row 31; = ST.SPS.02)
+    source: docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. ประจำปี 2569, สนน.), PDF p191
+    tag: VERIFIED
+    note: 'quote: "สถานีสูบน้ำบึงที่ 4 ตอนคลองวังใหญ่ | 2 | ... | 13.7555,100.6795 | 2(1)"'
+
+derived:
+  bangkok_east:
+    rain_24h_mm:
+      threshold_flooded_min: {value: 203.0, tag: VERIFIED, station: "พญาไท", date: "2026-09-26"}
+      threshold_coped_max: {value: null, tag: OPEN}
+      design: {value: 80.0, tag: VERIFIED}
+      gap: null
+      one_sided: true
+      note: "No historical non-flood daily-rain reading recorded anywhere in this repo for a BKK-east station -- only the design figure (80mm/day) and flood-day readings (203-205mm) exist. Do not substitute the design figure for threshold_coped_max."
+  sammakorn:
+    rain_24h_mm:
+      threshold_flooded_min: {value: 196.6, tag: RELAYED, station: "บางกะปิ", date: "2026-09-26"}
+      threshold_coped_max: {value: null, tag: OPEN}
+      gap: null
+      one_sided: true
+    canal_backflow:
+      threshold_flooded_min: null
+      threshold_coped_max: null
+      note: "canal_backflow is a state variable (active/not_active/unknown), not a scalar threshold -- see tools/layer0/in_out_capacity.py compute_backflow_state(); the two MEASURED-community rows above are evidence for outcome=flooded with cause=canal_backflow, kept as historical evidence, not collapsed into a number."
+  chao_phraya_bkk_reach:
+    river_flow_m3s:
+      threshold_flooded_min: {value: 3721.0, tag: RELAYED, station: "C.13", date: "2011-09-21"}
+      threshold_coped_max: {value: 2800.0, tag: RELAYED, station: "C.13", basis: "bank-overflow ceiling"}
+      design: {value: 3100.0, tag: RELAYED, basis: "2565 operational release-management limit"}
+      gap: 921.0
+      one_sided: false
+  nan_town:
+    river_flow_m3s_n1:
+      threshold_flooded_min: {value: 1463.6, tag: MEASURED-history, date: "2024-08-22T20:00"}
+      threshold_coped_max: {value: 1066.0, tag: RELAYED, basis: "HII qmax bankfull proxy"}
+      gap: 397.6
+      one_sided: false
+    river_flow_m3s_n64:
+      threshold_flooded_min: {value: 1426.5, tag: MEASURED-history, date: "2024-08-22T10:00"}
+      threshold_coped_max: {value: 1028.0, tag: RELAYED, basis: "HII qmax bankfull proxy"}
+      gap: 398.5
+      one_sided: false
+  chiangmai_town:
+    river_flow_m3s_p1:
+      threshold_flooded_min: {value: 656.0, tag: MEASURED-history, date: "2024-10-05T12:00"}
+      threshold_coped_max: {value: 425.0, tag: RELAYED, basis: "HII qmax bankfull proxy"}
+      gap: 231.0
+      one_sided: false
+    river_level_m:
+      threshold_flooded_min: {value: 4.90, tag: RELAYED, date: "2011"}
+      threshold_coped_max: {value: null, tag: OPEN}
+      gap: null
+      one_sided: true
+  hatyai:
+    river_flow_m3s:
+      threshold_flooded_min: {value: null, tag: OPEN, note: "no clean flood-day discharge peak at X.44 -- see row note"}
+      threshold_coped_max: {value: 481.0, tag: RELAYED, basis: "HII qmax proxy, X.44"}
+      gap: null
+      one_sided: true
+    canal_level_m:
+      threshold_flooded_min: {value: 10.25, tag: RELAYED, date: "2010-11-01"}
+      threshold_coped_max: {value: null, tag: OPEN}
+      design: {value: 1200.0, tag: RELAYED, unit: m3s, basis: "คลอง ร.1 design capacity, 50-yr return"}
+      gap: null
+      one_sided: true
+  bangkok:
+    rain_24h_mm_ladder:
+      threshold_coped_max: {value: null, tag: OPEN, note: "no BKK-wide day with high rain AND a confirmed no-significant-flooding outcome found in this repo -- design figures (58.7mm/h VERIFIED, 80mm/day VERIFIED) are engineering statements, not observed non-flood days, so NOT substituted here."}
+      threshold_danger_min: {value: null, tag: OPEN, note: "no repo evidence isolates a rain value that produced street-flooding-only (ท่วมขังถนน) distinct from the house-flooding event below -- OPEN, not guessed."}
+      threshold_crisis_min: {value: 203.0, tag: VERIFIED, station: "พญาไท", date: "2026-09-26", basis: "smallest of the three 203-205mm/24h readings on the day BMA later declared all 50 districts a disaster area (27 ก.ย. 2569, RELAYED pptvhd36.com via case_bkk_2569.md)"}
+      catastrophe_note: >
+        2554 is explicitly NOT a rain-only threshold on this ladder -- it was driven by
+        cumulative UPSTREAM dam-release volume over months (เขื่อนภูมิพล/สิริกิติ์ >100%
+        เก็บกัก ก.ค.-ส.ค. 2554, RELAYED) plus river discharge (C.13 peak 3,721 m3/s, C.29
+        peak 3,930 m3/s, both RELAYED, docs/knowledge/CHAO_PHRAYA_CAPACITY_AND_DISCHARGE.md),
+        not a single BKK-city daily-rain figure comparable to 203mm/24h -- no such single-day
+        BKK figure for 2554 was found in this repo; annual total 1,826 mm/year (+25% vs
+        normal, RELAYED, docs/CAPACITY.md §5) is the closest analogue, at a different
+        (annual, not daily) timescale. Kept as a separate class, never placed on the same
+        mm/24h axis as coped/danger/crisis above.
+    rain_month_mm:
+      note: >
+        Monthly-accumulation axis (30-yr mean = "ปกติ" baseline), from the official BMA
+        DDS chart (source: สนน. chart via founder, transcribed 2026-09-27,
+        tag VERIFIED-transcription, ±5mm on crowded labels per the transcription's own note).
+      thirty_year_mean_sep_full_month: {value: 322.6, tag: VERIFIED-transcription}
+      thirty_year_mean_sep_prorated_25d: {value: 268.8, tag: VERIFIED-transcription, note: "322.6 * 25/30 = 268.83, matches the chart callout's own 268.8 -- resolves an apparent mismatch between the callout and the full-month table row, not a data error."}
+      sep_2566_full_month: {value: 400.5, tag: VERIFIED-transcription, outcome: OPEN, note: "no BKK-flooding news card found in this repo for Sep 2566 -- not fetched externally this check, marked OPEN rather than assumed either way."}
+      sep_2567_full_month: {value: 234.0, tag: VERIFIED-transcription, outcome: OPEN, note: "below the 30-yr mean; no repo evidence either way -- OPEN, not assumed ไม่ท่วม."}
+      sep_2568_full_month: {value: 356.5, tag: VERIFIED-transcription, outcome: OPEN, note: "no repo evidence either way -- OPEN."}
+      sep_2569_partial_1_25: {value: 487.0, tag: VERIFIED-transcription, outcome: "ท่วมบ้าน-หลายเขต (crisis)", event: bkk_2569, source: "docs/knowledge/case_bkk_2569.md + 26 ก.ย. 203-205mm/24h rows above + 50-district disaster declaration 27 ก.ย."}
+    tmd_intensity_classes_reference:
+      note: >
+        Thailand Meteorological Department's own general rain-intensity classes (NOT
+        BKK-specific, and NOT independently re-verified against tmd.go.th primary --
+        docs/knowledge/TIER_THRESHOLDS_RATIONALE.md records that a direct WebFetch to
+        tmd.go.th failed with a certificate error; these class boundaries are carried as
+        RELAYED-not-primary-verified, a classification reference only, not an "outcome"
+        row on the same footing as the observed BKK rows above.
+      light_moderate_max_mm_24h: {value: 35.0, tag: RELAYED, note: "not-primary-verified"}
+      heavy_range_mm_24h: {value_low: 35.1, value_high: 90.0, tag: RELAYED, note: "not-primary-verified"}
+      very_heavy_min_mm_24h: {value: 90.0, tag: RELAYED, note: "not-primary-verified"}

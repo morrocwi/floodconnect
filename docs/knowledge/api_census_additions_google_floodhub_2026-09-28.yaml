@@ -1,0 +1,85 @@
+# api_census_additions_google_floodhub_2026-09-28.yaml
+#
+# LIST-ONLY candidate source census -- companion to
+# docs/knowledge/card_thirdparty_google_urban_flash_flood_2026-09-28.md (part E TODO rows).
+# This file does NOT modify sources/registry.yaml. It records candidate rows a future worker
+# would add to that registry ONLY after the matching TODO closes. No collector wired here,
+# no collect.py touched, no tracked file edited. Every row below is a proposal, not a live source.
+#
+# Tag legend: VERIFIED (this check's own fetch) / RELAYED (secondary, WebSearch snippet) /
+# OPEN (unresolved this check) -- see the card file for full quotes and fetch log.
+
+_meta:
+  generated: "2026-09-28"
+  written_by_task: "founder request re: social post on Google urban flash flood + resident tools"
+  status: "PROPOSAL ONLY -- not registered in sources/registry.yaml"
+  web_fetch_budget_used_this_task: 6
+  web_fetch_failures_not_retried:
+    - {url: "https://www.khaosodenglish.com/featured/2026/09/26/bangkok-declares-all-50-districts-disaster-affected-as-flood-warning-issued/",
+       reason: "HTTP 403", retried: false}
+    - {url: "https://www.gistda.or.th/ewtadmin/ewt/gistda_web/news_view.php?n_id=7170&lang=TH",
+       reason: "TLS cert error (unable to verify first certificate)", retried: false}
+
+candidates:
+  - candidate_id: google_flood_hub_urban_flash_flood_api
+    status: NOT_WIRED
+    reason: "Flood Forecasting API requires an access request (waitlist/pilot), same posture
+      already recorded for the river-gauge Flood Hub API in
+      docs/knowledge/GLOBAL_FREE_HAZARD_APIS.md -- this census confirms the URBAN flash-flood
+      model (separate product from river gauges, verified via
+      support.google.com/flood-hub/answer/16811681) has no stated public no-key data feed either."
+    would_add: "20x20km binary flash-flood-probability grid, 24h lead time -- a regional
+      wide-area screen this repo does not otherwise have."
+    tag: VERIFIED (limitation statement, help page fetch) + OPEN (current API access status,
+      not re-checked this check -- see TODO-GFH-03)
+    manual_crosscheck_only: "Until wired: use sites.research.google/floods/ as a resident-facing
+      link only. Never copy Google's own numbers into this repo's data as if measured here."
+
+  - candidate_id: bma_ai_nowcast_weathernews_radar
+    status: UNCLEAR_IF_ALREADY_PARTIALLY_REGISTERED
+    existing_related_registry_id: dds_nowcast_gif
+    reason: "sources/registry.yaml already has id 'dds_nowcast_gif' pointing at
+      https://dds.bangkok.go.th/Line_data/picture/radar_rain.gif (registered, but
+      last_status.http is null -- never actually fetched by collect.py yet). This check could NOT
+      confirm whether that image IS the Weathernews Inc. (Japan) AI Nowcast product BMA announced
+      2024-03-14 (bangkokbiznews.com/news/news-update/1117716, VERIFIED via direct fetch this
+      task) reading the Nong Khaem / Nong Chok radar stations, or a different/older BMA radar
+      feed. See TODO-GFH-01."
+    would_add_if_confirmed_same: "3-hour rain-cell-movement nowcast imagery -- this repo currently
+      only has point-value rain_24h/rain_1h (thaiwater_rain_24h), no areal nowcast."
+    tag: RELAYED (news description) + OPEN (identity of the existing dds_nowcast_gif image)
+
+  - candidate_id: gistda_check_nam_1km_grid
+    status: NOT_PROBED_SUCCESSFULLY
+    reason: "gistda.or.th news page fetch failed (TLS cert error, not retried per host budget
+      rule). No public JSON/WMS/API endpoint confirmed or ruled out this check."
+    claimed_spec: "AI + satellite imagery + CCTV-based street water depth, 1km x 1km hourly risk
+      grid (RELAYED, provider's own claim via WebSearch snippet only -- not independently
+      verified by this check's own primary fetch)."
+    would_add_if_wired: "Finer-grain areal risk grid (1km vs this repo's point-sensor network) +
+      a second CCTV-inferred water-depth signal alongside the already-seen-but-unwired HII
+      analyst/cctv endpoint (docs/knowledge/card_api_2026-09-27_hii_waterchart_basin.md)."
+    tag: OPEN -- see TODO-GFH-02
+
+  - candidate_id: hii_analyst_cctv
+    status: SEEN_NOT_WIRED
+    reason: "Already documented in docs/knowledge/card_api_2026-09-27_hii_waterchart_basin.md
+      as a brand-new, unconnected endpoint (106 cameras nationwide, still-image metadata + link,
+      each cctv_url pointing at a different owning agency's own host). This census only notes it
+      belongs in the same 'resident/CCTV layer' conversation as GISTDA's CCTV-depth claim --
+      it does not change that file's existing NOT-WIRED status."
+    would_add_if_wired: "Still-image CCTV metadata+links -- NOT water-depth values (this repo
+      would still need its own or a third-party depth-inference model to turn images into cm)."
+    tag: RELAYED (per the existing card, not re-verified this check)
+
+resident_facing_link_list_no_ingest:
+  # Links only, no endorsement wording beyond stated facts -- for the redesigned page's
+  # "who to call / where to check" resident card (per founder instruction, part (e)).
+  - {label_th: "Google Flood Hub (แผนที่น้ำท่วม 24 ชม. ล่วงหน้า)", url: "https://sites.research.google/floods/",
+     free: true, key_required: false}
+  - {label_th: "กทม. สนน. — จุดน้ำท่วม/เรดาร์ฝน (DDS)", url: "https://dds.bangkok.go.th",
+     free: true, key_required: false}
+  - {label_th: "GISTDA แอป \"เช็คน้ำ\"", url: "แอป iOS/Android, ไม่มี URL เว็บโดยตรงที่ยืนยันได้รอบนี้ (OPEN)",
+     free: true, key_required: false}
+  - {label_th: "แจ้งเหตุ Traffy Fondue", url: "LINE @TraffyFondue", free: true, key_required: false}
+  - {label_th: "สายด่วน 1555 (กทม.)", url: "โทร 1555", free: true, key_required: false}

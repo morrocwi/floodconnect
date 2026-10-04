@@ -1,0 +1,74 @@
+# typology/nodes/mdes_climate_comms_2026-09-28.yaml -- MDES (กระทรวงดีอี) climate-comms
+# centre, per ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569 (RELAYED, outlet not named in the paste --
+# cited as "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569" per founder instruction). Network structure
+# only, agencies/organisations only, no officials' personal names anywhere -- see
+# docs/knowledge/card_climate_comms_centre_2026-09-28.md for the full narrative.
+schema_version: 1
+doc_kind: typology_node_registry
+status_th: >
+  node ศูนย์ความร่วมมือด้านการสื่อสารข้อมูลสภาพภูมิอากาศ (ดีอี) + หน่วยงานพันธมิตรช่องทาง
+  (พีอาร์ดี/อสมท/โฆษกสำนักนายกฯ) + ศูนย์ต่อต้านข่าวปลอม -- ไม่มีชื่อบุคคล.
+rows:
+  - id: AG_CLIMATE_COMMS_CENTRE
+    kind: agency
+    layer: power
+    label_th: "ศูนย์ความร่วมมือด้านการสื่อสารข้อมูลสภาพภูมิอากาศ (ที่ศูนย์พยากรณ์อากาศและเตือนภัย กรมอุตุฯ)"
+    agency_class: state
+    permanence: established_by_cabinet_resolution
+    level: national
+    tag: RELAYED
+    source: "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569 (outlet not named in the paste)"
+  - id: AG_PRD
+    kind: agency
+    layer: power
+    label_th: "กรมประชาสัมพันธ์ (พีอาร์ดี)"
+    agency_class: state
+    tag: RELAYED
+    source: "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569"
+  - id: AG_MCOT
+    kind: agency
+    layer: power
+    label_th: "บมจ. อสมท (MCOT)"
+    agency_class: state_enterprise
+    tag: RELAYED
+    source: "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569"
+    note_th: >
+      ไม่อยู่ใน 4 รัฐวิสาหกิจของเอกสาร กพร. Joint KPI ที่คลังนี้บันทึกไว้ก่อนงานนี้ (CATEGORY.
+      STATE_ENTERPRISE) -- จึงไม่ใส่ part_of edge ไปยังหมวดนั้น (จะเกินแหล่งที่มา) ใส่แค่
+      agency_class เป็น attribute แทน
+  - id: AG_PM_SPOKES
+    kind: agency
+    layer: power
+    label_th: "โฆษกประจำสำนักนายกรัฐมนตรี"
+    agency_class: state
+    tag: RELAYED
+    source: "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569"
+  - id: AG_AFNC
+    kind: agency
+    layer: power
+    label_th: "ศูนย์ต่อต้านข่าวปลอม (Anti-Fake News Center, AFNC)"
+    agency_class: state
+    channel_function: disinformation_monitoring
+    tag: RELAYED
+    source: "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569"
+    note_th: >
+      บันทึกเป็นช่องทางเฝ้าระวังเท่านั้น -- ไม่มีการตัดสิน/อ้างสิทธิ์ใด ๆ ในคลังนี้ว่าอะไรคือข่าวปลอม
+      (neutral note, ดูการ์ดความรู้ §4)
+  - id: WCH.TV_RADIO_PRD_MCOT
+    kind: warning_channel
+    layer: power
+    label_th: "ทีวี/วิทยุ ผ่าน พีอาร์ดี + อสมท"
+    channel_type: tv_radio
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569"
+  - id: WCH.GOV_SOCIAL
+    kind: warning_channel
+    layer: power
+    label_th: "โซเชียลมีเดีย/ช่องทางทำเนียบรัฐบาล"
+    channel_type: social_media
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569"
