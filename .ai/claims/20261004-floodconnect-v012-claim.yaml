@@ -1,0 +1,45 @@
+claim_id: "20261004-floodconnect-v012-claim"
+status: ACTIVE
+writer: "ai-worker"
+branch: "agent/ai-worker/floodconnect-v0.1.2"
+base_sha: "c41bc013af57073e4cc86bc8d2934e182add2caf"
+nodes:
+  - FC_ROOT
+  - KB
+  - CI
+artifacts:
+  - docs/INDICATORS.md
+  - model_spec.json
+  - system_capabilities.json
+  - README.md
+  - llms.txt
+  - docs/AI_TIERS.md
+  - docs/EQUATIONS_FOR_AI.md
+  - tests/test_floodconnect_model.py
+intent: >
+  v0.1.2, scoped per founder ruling 2026-10-04 ("ที่สำคัญคือให้ ตัวชี้วัดนี้น้ำน้ำท่วมต้องชัด"
+  -- the flood indicators must be clear): a single closed indicators dictionary
+  (docs/INDICATORS.md, English + plain Thai) naming, for each indicator already computed
+  by this repository's v0.1.1 compute path, its one-line meaning, exact definition,
+  unit, input source, agency-published thresholds (never invented), colour/level
+  mapping, freshness rule, confidence rule, resolution label, a worked example, and
+  what it does NOT mean -- plus a machine-readable "indicators" array added to
+  model_spec.json (single source) and mirrored into system_capabilities.json, with a
+  test asserting the two match and that README/llms.txt/AI_TIERS/EQUATIONS_FOR_AI link
+  docs/INDICATORS.md. No new equation, no new agency threshold, no invented number --
+  every indicator cites its existing v0.1.1 source (floodconnect_model.py,
+  model_spec.json, kb.py). water_debt is listed with status "planned (v0.2+)" only, no
+  value. Does NOT attempt the separate founder ruling in the same message about a
+  nationwide coarse-zoom (basin/province) generic read path across
+  parsers.py/collect.py/readout.py/kb.py with 5-region fixtures and live CLI runs --
+  that is materially larger surgery on the live decision path (parser field additions,
+  a new normalise/classify loop, new ANSWER_SOURCES wiring, agency-legend
+  verification, nationwide regression) that this pass does not have the scope to do
+  safely in one sitting; it is left for a dedicated follow-up pass and is not claimed
+  as done here. File-level change only, no history rewrite, stops before any public
+  push per the local/public split rule.
+created_at: "2026-10-04T20:40:00+07:00"
+expires_at: null
+reviewers: []
+supersedes: null
+note: null
