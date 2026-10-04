@@ -1,0 +1,170 @@
+# sources/province_agency_crosswalk.yaml -- explicit, reviewable crosswalk from
+# docs/knowledge/water_system_dag.mmd's governance `AG_*` nodes to the area nodes
+# (province:<2-digit DOPA code>, district:<4-digit code>, basin:onwr:<N>) a KG builder
+# wires via a `RESPONSIBLE_FOR` edge. Same pattern as sources/owner_agency_crosswalk.yaml
+# -- no regex/fuzzy matching, every row read off an existing, already-committed source.
+#
+# Row shape:
+#   agency_id: <AG_* node id in docs/knowledge/water_system_dag.mmd -- verbatim>
+#   area_id: <province:NN | district:NNNN | basin:onwr:N>
+#   role_template: false  -- a per-province/per-district AG_ node already exists and
+#                             names this exact area (checked against the DAG label).
+#                role_template: true  -- no per-province/per-district AG_ node exists;
+#                             this row points the GENERIC role node (AG_PROV_GOV /
+#                             AG_PROV_RID / AG_PROV_PAO / AG_BASIN_CMT) at the area under
+#                             the documented legal basis (LAW_DISASTER2550 names the
+#                             provincial governor as ผอ.จังหวัด in every province; the
+#                             Water Resources Act 2561 names a lum-nam committee for
+#                             every one of the 22 ONWR river basins -- read from the
+#                             live KG's own `basin:onwr:*` nodes, see the correction
+#                             note below, not the commonly-misquoted "36"). No new AG_
+#                             node is invented here for the provinces/basins without one.
+#   tag: VERIFIED (role_template: false rows -- the DAG label names this province/
+#        basin by name, read directly, not inferred) | RELAYED-GENERAL (role_template:
+#        true rows -- the role is legally general, the specific office is not yet its
+#        own DAG node)
+#   evidence: why
+#
+# Coverage as of this file's creation (2026-10-04): the 9 provinces with a per-province
+# AG_PROV_GOV_*/AG_PROV_RID_*/AG_PROV_PAO_* triple in the DAG (checked against
+# docs/knowledge/water_system_dag.mmd directly, not guessed): อ่างทอง (ATG),
+# พระนครศรีอยุธยา (AYA), ชัยนาท (CNT), ลพบุรี (LPB), นครสวรรค์ (NSW), นนทบุรี (NTB),
+# ปทุมธานี (PTT), สิงห์บุรี (SBR), สระบุรี (SRB) -- province codes are the standard DOPA
+# 2-digit codes (same codes already observed in sources/hii_station_geocode.yaml's
+# geocode rows, e.g. Pathum Thani=13, Chai Nat=18 -- cross-checked, not reinvented).
+# Bangkok (province:10) is handled separately by its own per-province node
+# (bangkok_rows below, AG_BMA_GOV), so 77 provinces − 9 named − 1 Bangkok = the other
+# 67 provinces, which use the role_template rows below, kept small and explicit
+# rather than invented per-province.
+#
+# Basin-count correction (2026-10-04, post-review): this file originally said "36
+# basins" for the Water Resources Act 2561 committee -- that number was unsourced and
+# contradicted the KG's own data. The live KG (tools/kg/build_kg.py output) carries 23
+# distinct `basin:onwr:*` ids: 22 numbered ONWR river basins (1-22) plus
+# `basin:onwr:88`, which is "นอกประเทศไทย" (outside Thailand) -- a sentinel the HII/
+# ONWR source itself uses for cross-border readings, not a 23rd Thai basin with its
+# own committee. The role_template basin row below is applied to all 22 numbered
+# basins not already covered by basin_rows; `basin:onwr:88` is explicitly excluded by
+# the KG builder (no Thai lum-nam committee governs "outside Thailand").
+#
+# A KG builder consumes this file to add RESPONSIBLE_FOR edges
+# (agency -RESPONSIBLE_FOR-> area, {role_template, tag}) -- wired into
+# tools/kg/build_kg.py's build_responsible_for_edges() (build 7, 2026-10-04).
+
+province_rows:
+  - province_code: "15"
+    province_name_th: "อ่างทอง"
+    gov: AG_PROV_GOV_ATG
+    rid: AG_PROV_RID_ATG
+    pao: AG_PROV_PAO_ATG
+    tag: VERIFIED
+    evidence: "DAG labels AG_PROV_GOV_ATG/AG_PROV_RID_ATG/AG_PROV_PAO_ATG name อ่างทอง exactly"
+  - province_code: "14"
+    province_name_th: "พระนครศรีอยุธยา"
+    gov: AG_PROV_GOV_AYA
+    rid: AG_PROV_RID_AYA
+    pao: AG_PROV_PAO_AYA
+    tag: VERIFIED
+    evidence: "DAG labels name พระนครศรีอยุธยา exactly"
+  - province_code: "18"
+    province_name_th: "ชัยนาท"
+    gov: AG_PROV_GOV_CNT
+    rid: AG_PROV_RID_CNT
+    pao: AG_PROV_PAO_CNT
+    tag: VERIFIED
+    evidence: "DAG labels name ชัยนาท exactly"
+  - province_code: "16"
+    province_name_th: "ลพบุรี"
+    gov: AG_PROV_GOV_LPB
+    rid: AG_PROV_RID_LPB
+    pao: AG_PROV_PAO_LPB
+    tag: VERIFIED
+    evidence: "DAG labels name ลพบุรี exactly"
+  - province_code: "60"
+    province_name_th: "นครสวรรค์"
+    gov: AG_PROV_GOV_NSW
+    rid: AG_PROV_RID_NSW
+    pao: AG_PROV_PAO_NSW
+    tag: VERIFIED
+    evidence: "DAG labels name นครสวรรค์ exactly"
+  - province_code: "12"
+    province_name_th: "นนทบุรี"
+    gov: AG_PROV_GOV_NTB
+    rid: AG_PROV_RID_NTB
+    pao: AG_PROV_PAO_NTB
+    tag: VERIFIED
+    evidence: "DAG labels name นนทบุรี exactly"
+  - province_code: "13"
+    province_name_th: "ปทุมธานี"
+    gov: AG_PROV_GOV_PTT
+    rid: AG_PROV_RID_PTT
+    pao: AG_PROV_PAO_PTT
+    tag: VERIFIED
+    evidence: "DAG labels name ปทุมธานี exactly; cross-checked against province_code=13 in sources/hii_station_geocode.yaml"
+  - province_code: "17"
+    province_name_th: "สิงห์บุรี"
+    gov: AG_PROV_GOV_SBR
+    rid: AG_PROV_RID_SBR
+    pao: AG_PROV_PAO_SBR
+    tag: VERIFIED
+    evidence: "DAG labels name สิงห์บุรี exactly"
+  - province_code: "19"
+    province_name_th: "สระบุรี"
+    gov: AG_PROV_GOV_SRB
+    rid: AG_PROV_RID_SRB
+    pao: AG_PROV_PAO_SRB
+    tag: VERIFIED
+    evidence: "DAG labels name สระบุรี exactly"
+
+bangkok_rows:
+  - area_id: "province:10"
+    agency_id: AG_BMA_GOV
+    role_template: false
+    tag: VERIFIED
+    evidence: "AG_BMA_GOV label \"ผู้ว่าฯ กทม. = ผู้อำนวยการ กทม.\" -- the BMA governor is province:10's own governance node, not a role template"
+  - area_id: "district:1044"
+    agency_id: AG_DIST_SS
+    role_template: false
+    tag: VERIFIED
+    evidence: "AG_DIST_SS label \"ผอ.เขตสะพานสูง\" = Saphan Sung; district_code 1044 read from sources/bkk_district_elevation.yaml (district_th: สะพานสูง), not guessed -- the 2026-10-04 design note's OPEN on this code is resolved"
+
+basin_rows:
+  - basin_id: "basin:onwr:10"
+    agency_id: AG_BASIN_CHAOPHRAYA
+    role_template: false
+    tag: VERIFIED
+    evidence: "DAG label \"คณะกรรมการลุ่มน้ำเจ้าพระยา (basin:onwr:10)\" -- basin id is the label's own token"
+  - basin_id: "basin:onwr:12"
+    agency_id: AG_BASIN_PASAK
+    role_template: false
+    tag: VERIFIED
+    evidence: "DAG label \"คณะกรรมการลุ่มน้ำป่าสัก (basin:onwr:12)\" -- basin id is the label's own token"
+
+role_template_rows:
+  - applies_to: "every province:NN not listed in province_rows or bangkok_rows above"
+    gov: AG_PROV_GOV
+    rid: AG_PROV_RID
+    pao: AG_PROV_PAO
+    role_template: true
+    tag: RELAYED-GENERAL
+    evidence: >
+      LAW_DISASTER2550 (Disaster Prevention and Mitigation Act 2550) names the
+      provincial governor ผอ.จังหวัด (= AG_PROV_GOV's role) in every province; the
+      generic AG_PROV_RID/AG_PROV_PAO role nodes exist in the DAG with the same
+      template labels ("โครงการชลประทานจังหวัด / สำนักงานชลประทานที่ N",
+      "อบจ. (องค์การบริหารส่วนจังหวัด)") for every province, but the DAG has not (yet)
+      been given a per-province AG_ node for the other 67 provinces (77 total − 9
+      named − 1 Bangkok, which has its own bangkok_rows entry). This row lets a
+      consumer answer "who is accountable here" with the correct ROLE and an explicit
+      role_template flag, without this file inventing a new per-province DAG node.
+  - applies_to: "every basin:onwr:N not listed in basin_rows above (excluding basin:onwr:88, the HII/ONWR 'outside Thailand' sentinel, never a real basin committee target)"
+    cmt: AG_BASIN_CMT
+    role_template: true
+    tag: RELAYED-GENERAL
+    evidence: >
+      Water Resources Act 2561 establishes a คณะกรรมการลุ่มน้ำ (basin committee) for
+      every one of the 22 numbered ONWR river basins (read from the live KG's own
+      `basin:onwr:*` nodes -- see the basin-count correction note above, not the
+      commonly-misquoted "36"); the DAG's generic AG_BASIN_CMT role node carries this
+      template label, but only 2 of the 22 basins (Chao Phraya=onwr:10,
+      Pasak=onwr:12) have their own named AG_BASIN_* node today.

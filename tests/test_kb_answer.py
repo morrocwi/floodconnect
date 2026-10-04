@@ -1094,7 +1094,8 @@ def test_dual_state_unknown_with_active_hazard_reserves_a_slot_before_selfhelp()
 
 def test_answer_accountability_catches_both_refusal_shapes(monkeypatch):
     monkeypatch.setattr(
-        acct, "build_result", lambda at, radius_km=acct.DEFAULT_RADIUS_KM: {
+        acct, "build_result",
+        lambda at, radius_km=acct.DEFAULT_RADIUS_KM, use_shipped_kg=True: {
             "at": at, "Q1": {"refused": "synthetic: unresolvable point"},
         })
     out = kb._answer_accountability("not_a_real_asset_id_xyz")

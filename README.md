@@ -387,6 +387,24 @@ Machine-readable version of this map: `system_capabilities.json`.
 ไฟล์ใน `examples/` เป็นตัวอย่างระบุวันที่ ไฟล์ใน `site/inputs/**`/`output/**` เป็นข้อมูลสร้างหน้าเว็บ
 แบบ static ที่ระบุวันที่เก็บ
 
+## 3b. The nationwide knowledge graph — read it from git first
+
+**Mandate (founder ruling 2026-10-04): any AI session working on anything basin/province/
+amphoe/river/station/gate/agency-shaped in this repo reads `output/thailand_water_kg.graphml`
+(+ `.jsonld`) FIRST, straight from this git checkout — never re-derives, re-geocodes, or asks
+an external map/geocoding service for something this file already answers.** Both files are
+committed directly in git (no Git LFS, each well under the 95 MB cap this repo works to) — a
+plain `git clone` gets you both, no download/build step needed to read them. Extracting a
+smaller sub-graph for your own task is your own job; locating the data is not. Full recipes
+(upstream/downstream walk, province/amphoe lookup, who's accountable, main-stem vs.
+tributary): **`docs/KG_QUERY.md`**.
+
+**คำสั่งก่อตั้ง (founder ruling 2026-10-04): เอไอทุกตัวที่ทำงานเกี่ยวกับลุ่มน้ำ/จังหวัด/อำเภอ/
+แม่น้ำ/สถานี/ประตูน้ำ/หน่วยงานในเรโปนี้ ต้องอ่าน `output/thailand_water_kg.graphml` (+ `.jsonld`)
+จาก git ก่อนเสมอ — ห้ามคำนวณ/geocode ใหม่ หรือถามบริการแผนที่ภายนอกในสิ่งที่ไฟล์นี้ตอบได้อยู่แล้ว.**
+ไฟล์ทั้งสองอยู่ใน git ตรง ไม่ใช้ LFS (ขนาดไม่เกิน 95 MB) — `git clone` ได้เลย ไม่ต้องดาวน์โหลด/build
+เพิ่มเพื่ออ่าน วิธีสกัดกราฟย่อยเป็นหน้าที่ของเอไอแต่ละตัวเอง สูตรเต็ม: **`docs/KG_QUERY.md`**
+
 ## 4. Install
 
 ```bash

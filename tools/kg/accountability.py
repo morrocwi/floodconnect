@@ -579,12 +579,24 @@ def q4_self_help(assets: list, area_id: str | None) -> dict:
 # top-level
 # ---------------------------------------------------------------------------
 
-def build_result(at: str, radius_km: float = DEFAULT_RADIUS_KM) -> dict:
+def build_result(at: str, radius_km: float = DEFAULT_RADIUS_KM,
+                  use_shipped_kg: bool = True) -> dict:
     """Build the Q0-Q4 accountability dict without printing -- extracted 2026-10-02
     so `kb.py answer`/the MCP `floodconnect_get_accountability` tool can
     reuse this exact logic instead of re-deriving or shelling out to `run()`'s stdout.
-    `run()` below is now a thin print wrapper over this function; behaviour unchanged."""
-    G = load_graph()
+    `run()` below is now a thin print wrapper over this function; behaviour unchanged.
+
+    `use_shipped_kg`: shipping the nationwide
+    output/thailand_water_kg.graphml must not silently change what kb.py's own
+    answer path (`_answer_accountability`/`_answer_next_action`) returns for
+    sammakorn/ram53, or the token-budget-tested shape of that answer -- kb.py's call
+    site passes `use_shipped_kg=False` by default (see kb.py's own guard), which
+    makes this function behave exactly as it did before the graph ever shipped (an
+    empty graph -> the same `refused` -> MVP fallback path already covered by
+    tests/test_kb_answer.py). Direct CLI use (`python3 -m tools.kg.accountability
+    --at ...`) is the explicit request this guard is about, so `main()` below always
+    passes the default `True` -- unaffected."""
+    G = load_graph() if use_shipped_kg else nx.MultiDiGraph()
     if G.number_of_nodes() == 0:
         return {"at": at,
                 "refused": "output/thailand_water_kg.graphml not found or empty -- run "

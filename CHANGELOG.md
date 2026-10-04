@@ -4,6 +4,70 @@ All notable changes to FloodConnect. Dates are Asia/Bangkok local. This file sta
 only what actually shipped and is tested in this repository — never a plan (see
 `ROADMAP.md` for plans).
 
+## v0.1.3 — 2026-10-05
+
+**Nationwide knowledge graph shipped in git, KG-first mandate (founder ruling
+2026-10-04, verbatim "อย่างแรกให้เอไอต้องอ่านแผนที่กราฟของเราได้จาก git ก่อนและบังคับว่าต้องหาจาก
+kggraph นี้") — milestone M2a of the founder-approved "แบ่ง M2a/M2b" split.**
+
+### Added
+- `output/thailand_water_kg.graphml` + `.jsonld` committed directly in git (build 7,
+  2026-10-04) — **26,727 nodes, 64,441 edges**, readable with a plain `git clone`, no
+  rebuild/network call required. Headline edge counts: `IN_SUBBASIN` 9,307 edges
+  (`VERIFIED-geometric`, real point-in-polygon against the archived DWR Sub_Basin
+  polygons), `ON_REACH` 785 edges (`DERIVED-snap`, nearest-centroid-point heuristic,
+  never the snapped asset's own tag — per-class coverage: dam 4/86, gate 315/2,279,
+  gauge 251/1,231, pump_station 117/297, reservoir_medium 69/862, weir 29/102, every
+  other class 0; `rain_gauge` excluded by design). 79 `province` nodes + 735 `amphoe`
+  nodes (both `VERIFIED`, from the HII geocode harvest).
+- `main_stem` (bool) on every `river_reach` node — one branch per HydroRIVERS river
+  system (`main_river_id` group) by discharge, including the Mekong group (restarted
+  2026-10-04 after its own group was found split into two fragments, 983 + remainder,
+  by the Thailand bbox clip — fixed so the in-Thailand portion is never silently left
+  untagged). This is the HydroRIVERS-system sense, not the Thai administrative
+  "สายหลัก" per-ONWR-basin sense — see `docs/KG_QUERY.md` section on `main_stem` and
+  "Known gaps" below. `output/thailand_river_flow.graphml` (+ `.jsonld`) was
+  regenerated without a GISTDA flood snapshot: `flood_status` is now `unknown` on
+  all 2,250 reaches and `flood_source_node` / `eta_from_flood_hr` are `"null"`
+  everywhere (the keys remain). `main_stem` is not in this file; it is only in
+  `output/thailand_water_kg.*`.
+- `docs/KG_QUERY.md` — the recipe page every AI session reads first for anything
+  basin/province/amphoe/river/station/gate/agency-shaped, with measured (not
+  aspirational) coverage numbers and runnable Python snippets against the shipped
+  graph.
+- **KG-first mandate** wired into `AGENTS.md` and `docs/AI_TIERS.md`: before locating
+  or reasoning about any place outside Sammakorn/Ram53, a file-reading AI session
+  reads the shipped graph from git first, never re-derives/re-geocodes it. A new
+  `docs/knowledge/INDEX.yaml` entry (`KG_QUERY`) points at the same page.
+- `FLOODCONNECT_USE_SHIPPED_KG` environment guard in `kb.py` — the shipped nationwide
+  graph is only consulted for a bare lat,lon's accountability answer when this guard
+  is set; the default (unset) answer path is unchanged from v0.1.2 (nationwide coarse
+  station/basin reading + `_nationwide_accountability_fallback`'s text-only
+  province/agency fallback), so shipping the KG does not silently change what a
+  default `floodconnect answer` call returns.
+
+### KNOWN GAPS → M2b (not closed by this build, stated here rather than papered over)
+- **Pathum Thani: 0 of 15 Pathum assets have an `ON_REACH` edge** (4 water-level
+  gauges + 11 rain gauges, the latter excluded from `ON_REACH` by design); 13 of the
+  28 HII-geocoded Pathum ids ARE nodes in the shipped graph (as `gate:hii_watergate:<id>`)
+  but carry no `IN_PROVINCE` edge, because the geocode join misses them on an id-prefix
+  mismatch (see the geocode file's own `known_limitation`) — a join/crosswalk gap, not a
+  missing-node gap. The "0 `ON_REACH` for Pathum" figure holds either way, these 13 included.
+- **Canal snapping**: the `ON_REACH` heuristic never snaps to a declared canal-chain
+  reach — a canal-sited asset still snaps to the nearest HydroRIVERS river reach
+  regardless, often far away (250 of the 785 edges are from an asset whose name_th
+  contains คลอง; among those 250 canal-sited edges: median snap 1.58 km, 34 over 5 km,
+  15 over 10 km, max 15.71 km). True point-to-polyline snapping across river AND canal
+  reaches together is M2b.
+- **Point → province/accountability resolution is not wired** for a bare lat,lon
+  outside Sammakorn/Ram53: `province`/`amphoe` nodes carry no geometry, and
+  `tools/kg/accountability.py`'s `nearest_assets()` never reads `RESPONSIBLE_FOR` or
+  walks to a province/basin node. Wiring this, plus a real id crosswalk for
+  unmatched gates/dams, is M2b.
+- **Per-basin main river**: `main_stem` is per HydroRIVERS system, not per ONWR
+  basin — a second, explicit `basin_main_river` flag (or a crosswalk to the Thai
+  "สายหลัก" sense) is M2b.
+
 ## v0.1.2 — 2026-10-04
 
 **Nationwide coarse (station/basin) coverage — founder ruling 2026-10-04, verbatim

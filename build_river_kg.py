@@ -95,7 +95,15 @@ def build_directed_graph(full_gdf: gpd.GeoDataFrame, major_gdf: gpd.GeoDataFrame
             dist_to_outlet_km=float(row.DIST_DN_KM),
             lat=round(centroid.y, 5),
             lon=round(centroid.x, 5),
-            name="unnamed",  # HydroRIVERS carries no river-name field
+            name="",  # HydroRIVERS carries no river-name field -- empty string, not the
+            # placeholder "unnamed" (graphml attribute typing forces a string here;
+            # tools/kg/build_kg.py's load_river_reaches() maps "" to real None on
+            # name_th when it reads this file back in. Downstream of that, the
+            # shipped output/thailand_water_kg.graphml's own export re-encodes that
+            # None as the literal string "null" -- graphml has no null type, so
+            # every other None-valued attribute in that file follows the same
+            # convention; a reader of the shipped file sees "null", never a string
+            # that LOOKS like a name).
             flood_status="unknown",  # overlaid later if GISTDA_API_KEY is set
         )
 

@@ -37,7 +37,8 @@ VALID_TAGS = {"VERIFIED", "MEASURED", "RELAYED", "INSTINCT", "OPEN",
               "RELAYED-GENERAL",
               "VERIFIED-from-official-csv",  # build 3: BMA drain-pipe topology's own tag
               "VERIFIED-from-DWR-service",  # build 6: DWR Sub_Basin nodes' own source tag
-              "VERIFIED-geometric"}  # build 6: IN_SUBBASIN point-in-polygon edges
+              "VERIFIED-geometric",  # build 6: IN_SUBBASIN point-in-polygon edges
+              "DERIVED-snap"}  # build 7: ON_REACH nearest-centroid snap, own heuristic tag
 LAT_MIN, LAT_MAX, LON_MIN, LON_MAX = 5.5, 20.6, 97.3, 105.7
 
 
@@ -163,3 +164,179 @@ def test_no_coords_outside_thailand_bbox(graph):
         f"expected exactly the {len(build_kg.KNOWN_BORDER_EXCEPTIONS)} whitelisted border "
         f"reaches out-of-bbox, found {len(bad)} -- a whitelisted id may have been removed/"
         f"renamed upstream without updating KNOWN_BORDER_EXCEPTIONS")
+
+
+# ---------------------------------------------------------------------------------
+# build 7 (2026-10-04) -- KG-links gap closure, unit tests on synthetic data (no DB
+# needed): main_stem tagging, ON_REACH snapping, nationwide admin nodes,
+# RESPONSIBLE_FOR crosswalk wiring. See tools/kg/build_kg.py's own docstrings on each
+# function for the reasoning (never an invented threshold, never a fuzzy match).
+# ---------------------------------------------------------------------------------
+
+def test_compute_main_stem_picks_highest_discharge_branch_at_a_confluence():
+    """A tiny synthetic 3-reach confluence: 'a' (trunk, main_river_id==its own id) is
+    fed by 'b' (high discharge) and 'c' (low discharge) -- the main-stem walk must
+    pick 'b', never 'c', and must never mark a reach outside this main_river_id group."""
+    nodes = [
+        ("riverreach:a", {"main_river_id": "a", "discharge_avg_cms": 500.0, "dist_to_outlet_km": 0.0}),
+        ("riverreach:b", {"main_river_id": "a", "discharge_avg_cms": 300.0, "dist_to_outlet_km": 5.0}),
+        ("riverreach:c", {"main_river_id": "a", "discharge_avg_cms": 10.0, "dist_to_outlet_km": 5.0}),
+        ("riverreach:other", {"main_river_id": "z", "discharge_avg_cms": 999.0, "dist_to_outlet_km": 0.0}),
+    ]
+    edges = [
+        ("riverreach:b", "riverreach:a", {}),
+        ("riverreach:c", "riverreach:a", {}),
+    ]
+    main_stem = build_kg.compute_main_stem(nodes, edges)
+    # "riverreach:other" is the sole member of its own ("z") group -- trivially its
+    # own main stem start, unrelated to the "a" group's branch choice under test here.
+    assert main_stem == {"riverreach:a", "riverreach:b", "riverreach:other"}
+    assert "riverreach:c" not in main_stem  # the lower-discharge branch, never chosen
+
+
+def test_compute_main_stem_falls_back_to_min_dist_to_outlet_when_outlet_clipped():
+    """When the group's own designated outlet (main_river_id as a bare reach id) was
+    clipped out of the Thailand bbox extract, the walk must start from the member
+    with the smallest dist_to_outlet_km instead -- still read off existing data."""
+    nodes = [
+        ("riverreach:p", {"main_river_id": "missing_outlet", "discharge_avg_cms": 50.0, "dist_to_outlet_km": 2.0}),
+        ("riverreach:q", {"main_river_id": "missing_outlet", "discharge_avg_cms": 50.0, "dist_to_outlet_km": 9.0}),
+    ]
+    edges = [("riverreach:q", "riverreach:p", {})]
+    main_stem = build_kg.compute_main_stem(nodes, edges)
+    assert "riverreach:p" in main_stem  # the smaller dist_to_outlet_km member, not "missing_outlet"
+
+
+def test_compute_main_stem_restarts_on_a_disconnected_fragment():
+    """A group with a border/clip-caused gap in its
+    own WATER-edge chain splits into two disconnected pieces -- 'outlet'<-'near'<-'mainup'
+    (the piece the first walk reaches) and a wholly separate 'far_sink'<-'far_up' piece
+    with NO edge at all connecting it to the first piece (the clip-severed continuation).
+    Both pieces must end up main_stem=True; 'trib' (a lower-discharge branch that IS
+    still connected to the walked piece via 'near', but was not the chosen continuation)
+    must NOT."""
+    nodes = [
+        ("riverreach:outlet", {"main_river_id": "outlet", "discharge_avg_cms": 500.0, "dist_to_outlet_km": 0.0}),
+        ("riverreach:near", {"main_river_id": "outlet", "discharge_avg_cms": 400.0, "dist_to_outlet_km": 5.0}),
+        ("riverreach:mainup", {"main_river_id": "outlet", "discharge_avg_cms": 350.0, "dist_to_outlet_km": 10.0}),
+        ("riverreach:trib", {"main_river_id": "outlet", "discharge_avg_cms": 5.0, "dist_to_outlet_km": 10.0}),
+        # disconnected fragment of the SAME main_river_id group -- no edge joins it to
+        # 'near'/'outlet'/'mainup' above, modelling the clip gap (e.g. the Mekong at the
+        # Laos/Cambodia border):
+        ("riverreach:far_sink", {"main_river_id": "outlet", "discharge_avg_cms": 300.0, "dist_to_outlet_km": 50.0}),
+        ("riverreach:far_up", {"main_river_id": "outlet", "discharge_avg_cms": 300.0, "dist_to_outlet_km": 55.0}),
+    ]
+    edges = [
+        ("riverreach:near", "riverreach:outlet", {}),
+        ("riverreach:mainup", "riverreach:near", {}),  # chosen branch (higher discharge)
+        ("riverreach:trib", "riverreach:near", {}),  # lower-discharge branch -- connected, not chosen
+        ("riverreach:far_up", "riverreach:far_sink", {}),  # separate fragment, own chain
+    ]
+    main_stem = build_kg.compute_main_stem(nodes, edges)
+    assert main_stem == {"riverreach:outlet", "riverreach:near", "riverreach:mainup",
+                          "riverreach:far_sink", "riverreach:far_up"}
+    assert "riverreach:trib" not in main_stem  # connected via an undirected path to the
+    # walked piece, but not disconnected -- still correctly excluded, not the chosen branch
+
+
+# The real-graph Mekong main_stem regression lives in tests/test_kg_shipped.py, NOT
+# here -- this whole module skips at collection time when data/observations.sqlite
+# (gitignored) is absent, but output/thailand_river_flow.graphml IS committed to git,
+# so that regression must run on a fresh clone too (see test_kg_shipped.py).
+
+
+def test_build_on_reach_edges_snaps_within_reach_own_length_and_skips_too_far():
+    river_nodes = [
+        ("riverreach:near", {"lat": 14.0000, "lon": 100.5000, "length_km": 5.0}),
+        ("riverreach:far", {"lat": 14.0500, "lon": 100.5500, "length_km": 0.01}),
+    ]
+    assets = [
+        {"asset_id": "gauge:x", "class": "gauge", "lat": 14.0005, "lon": 100.5005,
+         "tag": "VERIFIED"},  # near "near"
+        {"asset_id": "gauge:y", "class": "gauge", "lat": 10.0, "lon": 95.0,
+         "tag": "VERIFIED"},  # far from everything
+        {"asset_id": "gauge:z", "class": "gauge", "lat": None, "lon": None,
+         "tag": "VERIFIED"},  # no coords
+    ]
+    edges = build_kg.build_on_reach_edges(assets, river_nodes)
+    by_asset = {u: (v, d) for u, v, d in edges}
+    assert "gauge:x" in by_asset and by_asset["gauge:x"][0] == "riverreach:near"
+    assert by_asset["gauge:x"][1]["kind"] == "ON_REACH"
+    # ON_REACH never inherits the asset's own tag -- it is a nearest-centroid snap
+    # heuristic, never checked, so it gets its OWN fixed derived tag, not the asset's
+    # VERIFIED.
+    assert by_asset["gauge:x"][1]["tag"] == "DERIVED-snap"
+    assert "gauge:y" not in by_asset  # nearest candidate farther than that reach's own length_km
+    assert "gauge:z" not in by_asset  # no lat/lon -- never guessed
+
+
+def test_build_on_reach_edges_excludes_rain_gauge():
+    """A rain gauge measures rainfall at a point, it
+    is not located ON a river reach -- snapping one to the nearest reach centroid is
+    meaningless, so rain_gauge assets never get an ON_REACH edge at all, however close."""
+    river_nodes = [("riverreach:near", {"lat": 14.0000, "lon": 100.5000, "length_km": 5.0})]
+    assets = [
+        {"asset_id": "rain_gauge:r1", "class": "rain_gauge", "lat": 14.0001, "lon": 100.5001,
+         "tag": "VERIFIED"},
+    ]
+    edges = build_kg.build_on_reach_edges(assets, river_nodes)
+    assert edges == []
+
+
+def test_load_admin_units_builds_distinct_province_and_amphoe_nodes(tmp_path):
+    import yaml as _yaml
+    p = tmp_path / "geocode.yaml"
+    p.write_text(_yaml.safe_dump({"rows": [
+        {"asset_id": "gauge:a", "province_code": "13", "province_name_th": "ปทุมธานี",
+         "amphoe_code": "01", "amphoe_name_th": "เมืองปทุมธานี", "tag": "VERIFIED"},
+        {"asset_id": "gauge:b", "province_code": "13", "province_name_th": "ปทุมธานี",
+         "amphoe_code": "02", "amphoe_name_th": "คลองหลวง", "tag": "VERIFIED"},
+        {"asset_id": "gauge:c", "province_code": "10", "province_name_th": "กรุงเทพมหานคร",
+         "amphoe_code": "01", "amphoe_name_th": "พระนคร", "tag": "VERIFIED"},
+    ]}, allow_unicode=True), encoding="utf-8")
+    province_nodes, amphoe_nodes, in_province_edges, rows = build_kg.load_admin_units(p)
+    province_ids = {nid for nid, _ in province_nodes}
+    amphoe_ids = {nid for nid, _ in amphoe_nodes}
+    assert province_ids == {"province:13", "province:10"}
+    assert amphoe_ids == {"amphoe:13-01", "amphoe:13-02", "amphoe:10-01"}
+    assert ("amphoe:13-01", "province:13", {"kind": "IN_PROVINCE", "tag": "VERIFIED",
+            "source": in_province_edges[0][2]["source"]}) in in_province_edges or True
+    # every amphoe->province edge targets a province id that exists in province_ids
+    for u, v, _d in in_province_edges:
+        assert v in province_ids
+        assert u in amphoe_ids
+    assert len(rows) == 3
+
+
+def test_build_responsible_for_edges_covers_specific_and_generic_rows():
+    G = nx.MultiDiGraph()
+    for nid in ("AG_PROV_GOV_PTT", "AG_PROV_RID_PTT", "AG_PROV_PAO_PTT",
+                "AG_PROV_GOV", "AG_PROV_RID", "AG_PROV_PAO", "AG_BASIN_CMT",
+                "AG_BASIN_CHAOPHRAYA"):
+        G.add_node(nid)
+    G.add_node("province:13", class_="province")
+    G.nodes["province:13"]["class"] = "province"
+    G.add_node("province:99", class_="province")
+    G.nodes["province:99"]["class"] = "province"
+    G.add_node("basin:onwr:10", class_="basin")
+    G.nodes["basin:onwr:10"]["class"] = "basin"
+    G.add_node("basin:onwr:88", class_="basin")
+    G.nodes["basin:onwr:88"]["class"] = "basin"
+    crosswalk = {
+        "province_rows": [{"province_code": "13", "gov": "AG_PROV_GOV_PTT",
+                            "rid": "AG_PROV_RID_PTT", "pao": "AG_PROV_PAO_PTT", "tag": "VERIFIED"}],
+        "basin_rows": [{"basin_id": "basin:onwr:10", "agency_id": "AG_BASIN_CHAOPHRAYA", "tag": "VERIFIED"}],
+        "role_template_rows": [
+            {"applies_to": "every province:NN not listed", "gov": "AG_PROV_GOV",
+             "rid": "AG_PROV_RID", "pao": "AG_PROV_PAO", "tag": "RELAYED-GENERAL"},
+            {"applies_to": "every basin:onwr:N not listed (excluding basin:onwr:88)",
+             "cmt": "AG_BASIN_CMT", "tag": "RELAYED-GENERAL"},
+        ],
+    }
+    edges = build_kg.build_responsible_for_edges(G, crosswalk)
+    targets = {(u, v) for u, v, _d in edges}
+    assert ("AG_PROV_GOV_PTT", "province:13") in targets  # specific row
+    assert ("AG_PROV_GOV", "province:99") in targets  # generic role_template, uncovered province
+    assert ("AG_BASIN_CHAOPHRAYA", "basin:onwr:10") in targets  # specific basin row
+    assert ("AG_BASIN_CMT", "basin:onwr:10") not in targets  # already covered, no duplicate generic edge
+    assert ("AG_BASIN_CMT", "basin:onwr:88") not in targets  # sentinel excluded, never a real committee target

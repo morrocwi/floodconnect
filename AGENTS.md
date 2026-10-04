@@ -21,6 +21,11 @@ source justifies is a regression, not an improvement.
 
 ## 2. Non-negotiable rules
 
+- **Nationwide KG-first (founder ruling 2026-10-04)**: before locating or reasoning about
+  any basin/province/amphoe/river/station/gate/agency, read `output/thailand_water_kg.graphml`
+  (+ `.jsonld`) from THIS git checkout first — committed directly, no LFS, no download step.
+  Never re-derive/re-geocode/ask an external map service for something it already answers;
+  extracting a sub-graph for your own task is your own job. Recipes: `docs/KG_QUERY.md`.
 - **Epistemic tags on every claim**: `VERIFIED` (checked yourself) / `MEASURED` (read from
   this repo's own data) / `RELAYED` (from another source, not independently checked) /
   `INSTINCT` (a judgment call) / `OPEN` (unresolved/contradictory). No untagged claim in

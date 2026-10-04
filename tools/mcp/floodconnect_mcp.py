@@ -782,7 +782,7 @@ except ImportError:
             result = {
                 "protocolVersion": _PROTOCOL_VERSION,
                 "capabilities": {"tools": {}},
-                "serverInfo": {"name": "floodconnect", "version": "0.1.2"},
+                "serverInfo": {"name": "floodconnect", "version": "0.1.3"},
             }
         elif method == "notifications/initialized":
             return None  # notification: no response, by JSON-RPC 2.0 rule

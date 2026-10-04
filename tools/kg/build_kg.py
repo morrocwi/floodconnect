@@ -31,6 +31,7 @@ before the next one is loaded, so peak RSS stays well under the 1.5 GB budget.
 import argparse
 import gc
 import json
+import math
 import re
 import sys
 from collections import Counter
@@ -52,7 +53,7 @@ TAG_CHAR = {"V": "VERIFIED", "R": "RELAYED", "G": "RELAYED-GENERAL", "O": "OPEN"
 # same discipline as RELAYED-GENERAL's existing extension of the AGENTS.md 5-tag core set.
 VALID_TAGS = {"VERIFIED", "MEASURED", "RELAYED", "INSTINCT", "OPEN", "RELAYED-GENERAL",
               "VERIFIED-from-official-csv", "VERIFIED-from-DWR-service",
-              "VERIFIED-geometric"}
+              "VERIFIED-geometric", "DERIVED-snap"}
 
 
 def normalize_canal_name(name: str | None) -> str:
@@ -159,9 +160,133 @@ def build_latest_readout_index(conn, chain_key_to_asset: dict) -> dict:
 # (b)/(c) river + canal graphml files
 # ---------------------------------------------------------------------------------
 
+def compute_main_stem(nodes: list, edges: list) -> set:
+    """Flags which river_reach ids lie on the main-stem path of their own HydroRIVERS
+    MAIN_RIV group -- a deterministic graph walk over data ALREADY in
+    output/thailand_river_flow.graphml (`main_river_id`, `discharge_avg_cms`,
+    `dist_to_outlet_km`), never an invented distance/order threshold.
+
+    For every group of reaches sharing the same `main_river_id` (HydroRIVERS' own
+    MAIN_RIV field -- the id of that river system's designated outlet reach), start
+    at the reach whose own numeric id equals the group's main_river_id (falling back
+    to the member with the smallest `dist_to_outlet_km` only when the outlet reach
+    itself was clipped out at the Thailand bbox edge -- still a value already in the
+    data, not invented) and walk upstream one WATER-edge hop at a time. At a
+    confluence (more than one upstream inflow within the same group), the walk
+    continues onto the inflow with the greatest `discharge_avg_cms` -- the single
+    largest-volume path at every branch, ties broken by the smaller numeric reach id
+    for a deterministic result. Every reach visited by this walk is the main stem of
+    its own river system; every other reach in the group is a tributary that
+    discharges INTO the main stem but was not chosen as its continuation.
+
+    RESTART ON BREAK: a river that crosses
+    Thailand's border (the Mekong is the real case: its true HydroRIVERS outlet is in
+    Vietnam, outside the Thailand bbox clip, and the clip edge also severs the in-group
+    WATER-edge chain -- MEASURED on the real data: `main_river_id` group 41392598 splits
+    into exactly 2 undirected weakly-connected components, 983 + 302 members, not one
+    connected river). The first walk above can only ever reach the ONE component that
+    contains its own start node; every OTHER weakly-connected component of the SAME
+    main_river_id group is a separate clipped fragment of the same river system (never a
+    mere lower-discharge tributary branch -- those stay correctly excluded, still
+    reachable undirected from the visited path, just not the chosen branch) and must
+    still be walked, or the segment of the Mekong (or any other border river) still
+    inside Thailand never gets `main_stem=True` at all. So: find the group's weakly-
+    connected components (undirected, over its own WATER edges only); the first walk
+    covers the component holding its start node; for every remaining component, restart
+    the SAME upstream walk from ITS OWN local sink -- the member with no downstream
+    neighbour inside that component, highest `discharge_avg_cms` first if more than one,
+    ties broken by the smaller numeric id (same rule as a confluence branch). This is
+    still only ever reading `main_river_id`/`discharge_avg_cms`/the WATER edges already
+    in the data; no new threshold or distance is invented."""
+    attrs_by_id = {nid: a for nid, a in nodes}
+    groups: dict[str, list] = {}
+    for nid, a in nodes:
+        mid = a.get("main_river_id")
+        if mid is None:
+            continue
+        groups.setdefault(str(mid), []).append(nid)
+    upstream: dict[str, list] = {}
+    downstream: dict[str, list] = {}
+    for u, v, _ in edges:
+        upstream.setdefault(v, []).append(u)
+        downstream.setdefault(u, []).append(v)
+
+    def _branch_key(nid, _attrs_by_id=attrs_by_id):
+        d = _attrs_by_id[nid].get("discharge_avg_cms")
+        return (-(d if d is not None else -1.0), nid)
+
+    def _walk_upstream(start: str, member_set: set) -> set:
+        cur, visited = start, set()
+        while cur is not None and cur not in visited:
+            visited.add(cur)
+            cands = [u for u in upstream.get(cur, []) if u in member_set and u not in visited]
+            if not cands:
+                break
+            cands.sort(key=_branch_key)
+            cur = cands[0]
+        return visited
+
+    def _weak_components(member_set: set) -> list:
+        """Weakly-connected components of member_set, over edges with BOTH ends inside
+        member_set (undirected adjacency), via plain BFS -- no networkx Graph object
+        needed for this small per-group computation."""
+        adj: dict[str, set] = {n: set() for n in member_set}
+        for u, v, _ in edges:
+            if u in member_set and v in member_set:
+                adj[u].add(v)
+                adj[v].add(u)
+        seen: set = set()
+        comps = []
+        for n in member_set:
+            if n in seen:
+                continue
+            comp, stack = set(), [n]
+            while stack:
+                cur = stack.pop()
+                if cur in comp:
+                    continue
+                comp.add(cur)
+                stack.extend(nb for nb in adj[cur] if nb not in comp)
+            comps.append(comp)
+            seen |= comp
+        return comps
+
+    main_stem_ids: set = set()
+    for mid, members in groups.items():
+        outlet_id = f"riverreach:{mid}"
+        member_set = set(members)
+        start = outlet_id if outlet_id in member_set else None
+        if start is None:
+            with_dist = [
+                (attrs_by_id[n].get("dist_to_outlet_km"), n) for n in members
+                if attrs_by_id[n].get("dist_to_outlet_km") is not None
+            ]
+            if not with_dist:
+                continue
+            start = min(with_dist)[1]
+        visited = _walk_upstream(start, member_set)
+
+        for comp in _weak_components(member_set):
+            if start in comp:
+                continue  # the component the first walk already covered
+            local_sinks = [
+                n for n in comp
+                if not any(v in comp for v in downstream.get(n, []))
+            ]
+            if not local_sinks:
+                continue  # defensive: a non-empty component always has >=1 sink
+                # over a finite edge set, but never loop forever if data says otherwise
+            local_sinks.sort(key=_branch_key)
+            visited |= _walk_upstream(local_sinks[0], comp)
+        main_stem_ids |= visited
+    return main_stem_ids
+
+
 def load_river_reaches(path: Path):
     """Returns (nodes: list[(id, attrs)], edges: list[(u, v, attrs)]). Frees the
-    networkx graph object before returning control to the caller."""
+    networkx graph object before returning control to the caller. Every node also
+    carries `main_stem` (bool) + `main_stem_basis`, from `compute_main_stem()` above --
+    gives every reach an explicit main-stem tag."""
     if not path.exists():
         return [], []
     G = nx.read_graphml(path)
@@ -171,12 +296,15 @@ def load_river_reaches(path: Path):
         nodes.append((nid, {
             "kind": "river_reach",
             "class": "river_reach",
-            "name_th": None,
+            "name_th": none_if_nullstr(d.get("name")),
             "lat": _to_float(d.get("lat")),
             "lon": _to_float(d.get("lon")),
             "strahler_order": none_if_nullstr(d.get("strahler_order")),
             "discharge_avg_cms": none_if_nullstr(d.get("discharge_avg_cms")),
             "basin_proxy_id": none_if_nullstr(d.get("basin_proxy_id")),
+            "main_river_id": none_if_nullstr(d.get("main_river_id")),
+            "dist_to_outlet_km": none_if_nullstr(d.get("dist_to_outlet_km")),
+            "length_km": none_if_nullstr(d.get("length_km")),
             "tag": "RELAYED",
             "source": "HydroRIVERS v1.0 (output/thailand_river_flow.graphml)",
         }))
@@ -193,7 +321,16 @@ def load_river_reaches(path: Path):
     n_count, e_count = G.number_of_nodes(), G.number_of_edges()
     del G
     gc.collect()
-    print(f"  loaded {n_count} river reach nodes, {e_count} WATER edges from {path.name}")
+    main_stem_ids = compute_main_stem(nodes, edges)
+    for nid, attrs in nodes:
+        attrs["main_stem"] = nid in main_stem_ids
+        attrs["main_stem_basis"] = (
+            "derived: max-discharge_avg_cms upstream walk from the HydroRIVERS "
+            "MAIN_RIV outlet reach, within this reach's own main_river_id group "
+            "(thailand_river_flow.graphml) -- no invented distance/order threshold"
+        )
+    print(f"  loaded {n_count} river reach nodes ({len(main_stem_ids)} tagged main_stem), "
+          f"{e_count} WATER edges from {path.name}")
     return nodes, edges
 
 
@@ -254,6 +391,94 @@ def _to_float(v):
         return float(v)
     except (TypeError, ValueError):
         return None
+
+
+def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    r = 6371.0088  # IUGG mean Earth radius, km
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlambda = math.radians(lon2 - lon1)
+    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
+    return 2 * r * math.asin(math.sqrt(a))
+
+
+# ---------------------------------------------------------------------------------
+# ON_REACH edges: asset (gauge/gate/dam/weir/...) -> its nearest river_reach node
+# (build 7, 2026-10-04): gives the river_reach subgraph edges to assets, so a caller
+# can walk upstream/downstream from a station or a point.
+# Snap tolerance is NEVER a fixed/invented number: an edge is created only when the
+# nearest reach is within THAT REACH'S OWN length_km (already in
+# thailand_river_flow.graphml, read in load_river_reaches above) -- a short reach
+# gets a tight tolerance, a long one a loose one, scaled to its own physical extent,
+# not a constant picked in advance. An asset with no lat/lon, or whose nearest reach
+# carries no length_km, gets no edge (never guessed).
+# ---------------------------------------------------------------------------------
+
+def build_on_reach_edges(assets: list, river_nodes: list) -> list:
+    """Nearest-centroid snap heuristic: the result is
+    NEVER tagged with the asset's own tag (that would launder an unchecked nearest-point
+    guess into VERIFIED/MEASURED). Every ON_REACH edge carries its own fixed derived tag
+    `DERIVED-snap`, defined in tools/kg/README.md's tag table as a heuristic, never
+    upgraded. `rain_gauge` assets are excluded entirely -- a rain gauge measures rainfall
+    at a point, it is not located ON a river reach, so snapping one to the nearest reach
+    centroid is meaningless. Coverage is reported per asset class
+    so a reader sees which classes this heuristic actually reaches (most do not, see
+    KG_QUERY.md -- true line-geometry snapping is M2b)."""
+    reach_list = [
+        (nid, a["lat"], a["lon"], a.get("length_km"))
+        for nid, a in river_nodes if a.get("lat") is not None and a.get("lon") is not None
+    ]
+    edges = []
+    n_no_coord = n_matched = n_too_far = n_no_length = n_excluded_class = 0
+    class_total: Counter = Counter()
+    class_matched: Counter = Counter()
+    for a in assets:
+        klass = a.get("class")
+        if klass == "rain_gauge":
+            n_excluded_class += 1
+            continue
+        class_total[klass] += 1
+        lat, lon = a.get("lat"), a.get("lon")
+        if lat is None or lon is None:
+            n_no_coord += 1
+            continue
+        best_nid = best_rlat = best_rlon = best_len = None
+        best_d2 = None
+        for nid, rlat, rlon, rlen in reach_list:
+            d2 = (lat - rlat) ** 2 + (lon - rlon) ** 2
+            if best_d2 is None or d2 < best_d2:
+                best_d2, best_nid, best_rlat, best_rlon, best_len = d2, nid, rlat, rlon, rlen
+        if best_nid is None:
+            n_no_coord += 1
+            continue
+        dist_km = _haversine_km(lat, lon, best_rlat, best_rlon)
+        if best_len is None:
+            n_no_length += 1
+            continue
+        if dist_km <= best_len:
+            edges.append((a["asset_id"], best_nid, {
+                "kind": "ON_REACH",
+                "tag": "DERIVED-snap",
+                "source": "tools/kg/build_kg.py (HEURISTIC: nearest river_reach centroid by "
+                          "haversine distance; snap tolerance = that reach's own HydroRIVERS "
+                          "length_km, never an invented fixed threshold -- not a point-to-"
+                          "polyline distance, see tools/kg/README.md tag table)",
+                "distance_km": round(dist_km, 3),
+            }))
+            n_matched += 1
+            class_matched[klass] += 1
+        else:
+            n_too_far += 1
+    print(f"  ON_REACH: {n_matched} asset(s) snapped to their nearest river_reach "
+          f"(within that reach's own length_km), {n_too_far} nearest-reach candidate "
+          f"too far (beyond that reach's own length), {n_no_length} nearest reach had "
+          f"no length_km, {n_no_coord} asset(s) had no lat/lon, {n_excluded_class} "
+          f"rain_gauge asset(s) excluded entirely -- no edge in any of those cases "
+          f"(never guessed)")
+    print("  ON_REACH coverage per class (matched/total, rain_gauge excluded):")
+    for klass in sorted(class_total):
+        print(f"    {klass}: {class_matched.get(klass, 0)}/{class_total[klass]}")
+    return edges
 
 
 # ---------------------------------------------------------------------------------
@@ -1315,10 +1540,213 @@ def apply_drainage_unit_candidate(G: nx.MultiDiGraph) -> int:
 
 
 # ---------------------------------------------------------------------------------
+# (m) Nationwide province/amphoe admin-area nodes (build 7, 2026-10-04): gives admin
+# nodes beyond just the 50 Bangkok districts. Source is
+# sources/hii_station_geocode.yaml's own already-harvested province_code/
+# province_name_th/amphoe_code/amphoe_name_th fields (official HII thaiwater geocode
+# block, tag VERIFIED per that file's own header) -- every DISTINCT (province_code,
+# name) and (province_code, amphoe_code, name) pair observed there becomes one node,
+# nothing geocoded/invented here. Two codes are NOT a real province and are kept as
+# their own distinct nodes rather than silently dropped or merged into a real
+# province: "99" (อื่นๆ / "other", HII's own catch-all) and "10499" (สาธารณรัฐแห่งสหภาพเมียนมา /
+# Myanmar -- a cross-border station) -- both read verbatim off the source, not decided
+# here. IN_PROVINCE edges link amphoe -> its province, and asset -> province/amphoe
+# wherever that row's own `asset_id` already matches an asset node already in the
+# graph (an hii_watergate:/hii_dam:-prefixed id that does not match the live KG's own
+# gate:/weir:/pump_station:/dam:/reservoir_*: ids -- see this source file's own
+# `known_limitation` -- correctly gets no edge, never guessed).
+# ---------------------------------------------------------------------------------
+
+def load_admin_units(path: Path):
+    """Returns (province_nodes, amphoe_nodes, in_province_edges (amphoe->province),
+    rows: list) -- `rows` is returned too so build_graph() can wire asset-level
+    IN_PROVINCE/IN_AMPHOE edges once every other node family is already in G."""
+    if not path.exists():
+        return [], [], [], []
+    doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    rows = doc.get("rows") or []
+    province_nodes, amphoe_nodes, in_province_edges = [], [], []
+    seen_province, seen_amphoe = set(), set()
+    for r in rows:
+        pc = r.get("province_code")
+        pn = r.get("province_name_th")
+        if not pc or not pn:
+            continue
+        pid = f"province:{pc}"
+        if pid not in seen_province:
+            seen_province.add(pid)
+            province_nodes.append((pid, {
+                "kind": "province",
+                "class": "province",
+                "name_th": pn,
+                "province_code": pc,
+                "lat": None, "lon": None,
+                "tag": "VERIFIED",
+                "source": "sources/hii_station_geocode.yaml (HII thaiwater geocode "
+                          "province_code/province_name_th, distinct values)",
+            }))
+        ac = r.get("amphoe_code")
+        an = r.get("amphoe_name_th")
+        if not ac or not an:
+            continue
+        aid = f"amphoe:{pc}-{ac}"
+        if aid not in seen_amphoe:
+            seen_amphoe.add(aid)
+            amphoe_nodes.append((aid, {
+                "kind": "amphoe",
+                "class": "amphoe",
+                "name_th": an,
+                "province_code": pc,
+                "amphoe_code": ac,
+                "lat": None, "lon": None,
+                "tag": "VERIFIED",
+                "source": "sources/hii_station_geocode.yaml (HII thaiwater geocode "
+                          "amphoe_code/amphoe_name_th, distinct values)",
+            }))
+            in_province_edges.append((aid, pid, {
+                "kind": "IN_PROVINCE", "tag": "VERIFIED",
+                "source": "sources/hii_station_geocode.yaml (amphoe row's own province_code)",
+            }))
+    print(f"  loaded {len(province_nodes)} province nodes, {len(amphoe_nodes)} amphoe "
+          f"nodes, {len(in_province_edges)} amphoe->province IN_PROVINCE edges from "
+          f"{path.name} ({len(rows)} source rows)")
+    return province_nodes, amphoe_nodes, in_province_edges, rows
+
+
+def build_asset_admin_edges(G: nx.MultiDiGraph, admin_rows: list) -> list:
+    """IN_PROVINCE / IN_AMPHOE edges from an asset already in G to the province/amphoe
+    node its own hii_station_geocode.yaml row names -- only where that row's asset_id
+    is ALSO a node already in G (direct id match only, never fuzzy/reclassified)."""
+    edges = []
+    n_matched_province = n_matched_amphoe = n_unmatched = 0
+    for r in admin_rows:
+        asset_id = r.get("asset_id")
+        pc, ac = r.get("province_code"), r.get("amphoe_code")
+        if not asset_id or not G.has_node(asset_id):
+            n_unmatched += 1
+            continue
+        tag = r.get("tag") if r.get("tag") in VALID_TAGS else "OPEN"
+        if pc:
+            pid = f"province:{pc}"
+            if G.has_node(pid):
+                edges.append((asset_id, pid, {
+                    "kind": "IN_PROVINCE", "tag": tag,
+                    "source": "sources/hii_station_geocode.yaml (asset row's own province_code)",
+                }))
+                n_matched_province += 1
+        if pc and ac:
+            aid = f"amphoe:{pc}-{ac}"
+            if G.has_node(aid):
+                edges.append((asset_id, aid, {
+                    "kind": "IN_AMPHOE", "tag": tag,
+                    "source": "sources/hii_station_geocode.yaml (asset row's own amphoe_code)",
+                }))
+                n_matched_amphoe += 1
+    print(f"  asset admin edges: {n_matched_province} IN_PROVINCE, {n_matched_amphoe} "
+          f"IN_AMPHOE ({n_unmatched} source row(s) whose asset_id does not match any "
+          f"node already in the graph -- hii_watergate:/hii_dam:-prefixed rows per this "
+          f"source file's own known_limitation, no edge created)")
+    return edges
+
+
+# ---------------------------------------------------------------------------------
+# (n) RESPONSIBLE_FOR edges from sources/province_agency_crosswalk.yaml (build 7,
+# 2026-10-04): connects the governance DAG to assets/areas, which it was previously
+# disconnected from. Wires that crosswalk's 4 row families onto area nodes already in G
+# (province:*/amphoe:* from load_admin_units above, basin:onwr:* from the live assets
+# table, district:* from sources/bkk_district_elevation.yaml) -- never invents a new
+# AG_ node, never edits the crosswalk file's own meaning. role_template rows apply
+# their GENERIC role node to every province/basin area node already in G that the
+# specific province_rows/bangkok_rows/basin_rows did not already cover -- basin:onwr:88
+# ("นอกประเทศไทย" / outside Thailand, a sentinel, not a real ONWR basin) is excluded
+# from the generic basin-committee role, since no Thai lum-nam committee governs it.
+# ---------------------------------------------------------------------------------
+
+def load_province_agency_crosswalk(path: Path) -> dict:
+    if not path.exists():
+        return {}
+    return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+
+
+def build_responsible_for_edges(G: nx.MultiDiGraph, crosswalk: dict) -> list:
+    edges = []
+    province_ids_in_g = {n for n, d in G.nodes(data=True) if d.get("class") == "province"}
+    basin_ids_in_g = {n for n, d in G.nodes(data=True) if d.get("class") == "basin"}
+    covered_province_ids, covered_basin_ids = set(), set()
+
+    for row in crosswalk.get("province_rows") or []:
+        pid = f"province:{row.get('province_code')}"
+        covered_province_ids.add(pid)
+        if not G.has_node(pid):
+            continue
+        tag = row.get("tag") if row.get("tag") in VALID_TAGS else "OPEN"
+        for role_key in ("gov", "rid", "pao"):
+            agency_id = row.get(role_key)
+            if agency_id and G.has_node(agency_id):
+                edges.append((agency_id, pid, {
+                    "kind": "RESPONSIBLE_FOR", "tag": tag,
+                    "source": "sources/province_agency_crosswalk.yaml (province_rows)",
+                }))
+
+    for row in crosswalk.get("bangkok_rows") or []:
+        aid = row.get("area_id")
+        agency_id = row.get("agency_id")
+        covered_province_ids.add(aid)
+        if aid and agency_id and G.has_node(aid) and G.has_node(agency_id):
+            tag = row.get("tag") if row.get("tag") in VALID_TAGS else "OPEN"
+            edges.append((agency_id, aid, {
+                "kind": "RESPONSIBLE_FOR", "tag": tag,
+                "source": "sources/province_agency_crosswalk.yaml (bangkok_rows)",
+            }))
+
+    for row in crosswalk.get("basin_rows") or []:
+        bid = row.get("basin_id")
+        agency_id = row.get("agency_id")
+        covered_basin_ids.add(bid)
+        if bid and agency_id and G.has_node(bid) and G.has_node(agency_id):
+            tag = row.get("tag") if row.get("tag") in VALID_TAGS else "OPEN"
+            edges.append((agency_id, bid, {
+                "kind": "RESPONSIBLE_FOR", "tag": tag,
+                "source": "sources/province_agency_crosswalk.yaml (basin_rows)",
+            }))
+
+    for row in crosswalk.get("role_template_rows") or []:
+        applies_to = row.get("applies_to") or ""
+        tag = row.get("tag") if row.get("tag") in VALID_TAGS else "RELAYED-GENERAL"
+        if "province" in applies_to:
+            for pid in sorted(province_ids_in_g - covered_province_ids):
+                for role_key in ("gov", "rid", "pao"):
+                    agency_id = row.get(role_key)
+                    if agency_id and G.has_node(agency_id):
+                        edges.append((agency_id, pid, {
+                            "kind": "RESPONSIBLE_FOR", "tag": tag,
+                            "source": "sources/province_agency_crosswalk.yaml "
+                                      "(role_template_rows, generic province role)",
+                        }))
+        elif "basin" in applies_to:
+            agency_id = row.get("cmt")
+            if agency_id and G.has_node(agency_id):
+                for bid in sorted(basin_ids_in_g - covered_basin_ids):
+                    if bid == "basin:onwr:88":
+                        continue  # "นอกประเทศไทย" sentinel, not a real ONWR basin
+                    edges.append((agency_id, bid, {
+                        "kind": "RESPONSIBLE_FOR", "tag": tag,
+                        "source": "sources/province_agency_crosswalk.yaml "
+                                  "(role_template_rows, generic basin-committee role)",
+                    }))
+
+    print(f"  RESPONSIBLE_FOR: {len(edges)} edge(s) from "
+          f"sources/province_agency_crosswalk.yaml ({len(covered_province_ids)} "
+          f"province/BMA area(s) with a specific row, {len(covered_basin_ids)} "
+          f"basin(s) with a specific row -- the rest get the generic role_template)")
+    return edges
+
+
+# ---------------------------------------------------------------------------------
 # assembly
 # ---------------------------------------------------------------------------------
 
-def build_graph(repo_root: Path, conn) -> nx.MultiDiGraph:
+def build_graph(repo_root: Path, conn, allow_missing_subbasin: bool = False) -> nx.MultiDiGraph:
     G = nx.MultiDiGraph()
 
     print("Loading declared canal chain (reach nodes + LOCATED_ON resolution)...")
@@ -1381,8 +1809,26 @@ def build_graph(repo_root: Path, conn) -> nx.MultiDiGraph:
     subbasin_nodes = load_dwr_subbasins(repo_root / "sources" / "dwr_subbasins.yaml")
     for nid, attrs in subbasin_nodes:
         G.add_node(nid, **attrs)
+    subbasin_geojson_dir = repo_root / "raw" / "gis" / "dwr_subbasin"
+    subbasin_archive_present = subbasin_geojson_dir.exists() and any(
+        subbasin_geojson_dir.glob("page_*.geojson"))
+    if not subbasin_archive_present and not allow_missing_subbasin:
+        sys.exit(
+            "FATAL: raw/gis/dwr_subbasin/*.geojson is missing -- building now would "
+            "silently ship a KG with ZERO IN_SUBBASIN edges (the asset -> sub-basin -> "
+            "basin link the upstream/accountability walk depends on). Run "
+            "`python3 -m tools.harvest.dwr_subbasin` "
+            "first to populate raw/gis/dwr_subbasin/, or pass --allow-missing-subbasin "
+            "to build a degraded graph on purpose."
+        )
     print("Building IN_SUBBASIN edges (point-in-polygon vs. real DWR polygons)...")
-    for u, v, attrs in build_in_subbasin_edges(assets, subbasin_nodes):
+    if subbasin_archive_present:
+        in_subbasin_edges = build_in_subbasin_edges(assets, subbasin_nodes)
+    else:
+        print("  IN_SUBBASIN: --allow-missing-subbasin set and archive absent -- "
+              "skipping, 0 edges built (degraded graph, built on purpose)")
+        in_subbasin_edges = []
+    for u, v, attrs in in_subbasin_edges:
         G.add_edge(u, v, **attrs)
 
     print("Loading river reaches (HydroRIVERS, thailand_river_flow.graphml)...")
@@ -1390,6 +1836,10 @@ def build_graph(repo_root: Path, conn) -> nx.MultiDiGraph:
     for nid, attrs in river_nodes:
         G.add_node(nid, **attrs)
     for u, v, attrs in river_edges:
+        G.add_edge(u, v, **attrs)
+
+    print("Building ON_REACH edges (asset -> nearest river_reach, build 7)...")
+    for u, v, attrs in build_on_reach_edges(assets, river_nodes):
         G.add_edge(u, v, **attrs)
 
     print("Loading OSM canal reaches (bangkok_canals.graphml)...")
@@ -1407,12 +1857,29 @@ def build_graph(repo_root: Path, conn) -> nx.MultiDiGraph:
     for u, v, attrs in dag_edges:
         G.add_edge(u, v, **attrs)
 
+    print("Loading nationwide province/amphoe admin nodes (sources/hii_station_geocode.yaml, build 7)...")
+    province_nodes, amphoe_nodes, in_province_edges, admin_rows = load_admin_units(
+        repo_root / "sources" / "hii_station_geocode.yaml")
+    for nid, attrs in province_nodes + amphoe_nodes:
+        G.add_node(nid, **attrs)
+    for u, v, attrs in in_province_edges:
+        G.add_edge(u, v, **attrs)
+    print("Building asset -> province/amphoe IN_PROVINCE/IN_AMPHOE edges (build 7)...")
+    for u, v, attrs in build_asset_admin_edges(G, admin_rows):
+        G.add_edge(u, v, **attrs)
+
     print("Applying node_attributes.yaml (de_facto_authority)...")
     apply_node_attributes(G, repo_root / "docs" / "knowledge" / "node_attributes.yaml")
 
     print("Building OWNED_BY_AGENCY edges (sources/owner_agency_crosswalk.yaml)...")
     crosswalk = load_owner_agency_crosswalk(repo_root / "sources" / "owner_agency_crosswalk.yaml")
     for u, v, attrs in build_owned_by_agency_edges(G, assets, crosswalk):
+        G.add_edge(u, v, **attrs)
+
+    print("Building RESPONSIBLE_FOR edges (sources/province_agency_crosswalk.yaml, build 7)...")
+    province_agency_crosswalk = load_province_agency_crosswalk(
+        repo_root / "sources" / "province_agency_crosswalk.yaml")
+    for u, v, attrs in build_responsible_for_edges(G, province_agency_crosswalk):
         G.add_edge(u, v, **attrs)
 
     print("Loading feed/DATA edges (sources/api_census.yaml)...")
@@ -1546,6 +2013,10 @@ def export_jsonld(G: nx.MultiDiGraph, path: Path) -> None:
         "IN_BASIN": "kwg:inBasin",
         "SAME_AS_CANDIDATE": "kwg:sameAsCandidate",
         "OWNED_BY_AGENCY": "kwg:ownedByAgency",
+        "ON_REACH": "kwg:onReach",
+        "IN_PROVINCE": "kwg:inProvince",
+        "IN_AMPHOE": "kwg:inAmphoe",
+        "RESPONSIBLE_FOR": "kwg:responsibleFor",
     }
     nodes = []
     for n, d in G.nodes(data=True):
@@ -1579,12 +2050,17 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--out", default=str(HERE / "output" / "thailand_water_kg"),
                      help="output path prefix (writes <out>.graphml and <out>.jsonld)")
+    ap.add_argument("--allow-missing-subbasin", action="store_true",
+                     help="build anyway (0 IN_SUBBASIN edges) when raw/gis/dwr_subbasin/ "
+                          "is absent, instead of exiting non-zero. Never pass this for a "
+                          "graph that will be committed/shipped.")
     args = ap.parse_args()
 
     conn = store.connect()
     store.ensure_assets_schema(conn)
 
-    G, drain_report, build4_report = build_graph(HERE, conn)
+    G, drain_report, build4_report = build_graph(
+        HERE, conn, allow_missing_subbasin=args.allow_missing_subbasin)
 
     n_counts = counts_by_node_class_tag(G)
     e_counts = counts_by_edge_kind_tag(G)
