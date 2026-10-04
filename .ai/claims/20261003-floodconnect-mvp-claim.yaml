@@ -1,0 +1,68 @@
+claim_id: "20261003-floodconnect-mvp-claim"
+status: ACTIVE
+writer: "ai-worker"
+branch: "agent/ai-worker/floodconnect-mvp-port-v2"
+base_sha: "17b9c3a275fbbcfa5ea377a9404977c703a12adb"
+nodes:
+  - CI
+  - SITE
+  - SOURCE_REGISTRY
+  - GOVERNANCE
+  - REPO_KG
+  - AGENT_COORDINATION
+  # KB, HARVEST, RISKMAP, HEROMAP, RECONCILE, LAYER0, BACKTEST, ASSETS_REGISTRY do not
+  # exist yet at this claim's base_sha -- the validator rejects a claim naming a node
+  # that isn't canonical yet. Per the canonical-extension rule (docs/MULTI_AGENT_PROTOCOL.md
+  # section 6, "update the RKG in the same implementation PR when architecture changes"),
+  # these 8 are registered as new nodes IN the implementation PR itself, which is also
+  # where ownership of each starts (nothing else can conflict with a node that doesn't
+  # exist yet).
+artifacts:
+  - kb.py
+  - collect.py
+  - readout.py
+  - parsers.py
+  - store.py
+  - live_water_level.py
+  - community_dag.py
+  - tag_vocabulary.py
+  - assets_registry.py
+  - check_doc_links.py
+  - experience_log.py
+  - readout_history.py
+  - build_river_kg.py
+  - AI.md
+  - START_HERE.md
+  - pyproject.toml
+  - requirements-ci.txt
+  - README.md
+  - AGENTS.md
+  - docs/MULTI_AGENT_PROTOCOL.md
+  - .github/workflows/floodconnect.yml
+  - docs/AI_ENTRYPOINT.md
+  - docs/AI_INTERFACE.md
+  - site/inputs/meta/floodconnect_repo_kg.yaml
+  - sources/
+  - tools/
+  - typology/
+  - skills/floodconnect/
+  - tests/
+intent: >
+  File-level MVP port of the self-install closure of `kb.py answer`
+  (collect/parsers/store, tag_vocabulary, accountability, the typology/
+  community-DAG files it reads), tools/mcp + tools/api/export_api.py (the
+  LOCAL export tool only -- no hosted/pre-computed site/dist/api/v1 snapshot
+  is shipped or tracked, per the project's no-hosted-access decision
+  2026-10-04), skills/floodconnect, and the floodconnect.yml CI workflow (no
+  schedule, no server-side collect, no deploy/Pages job) from the
+  maintainer's private working tree into this already-public repo's main.
+  File-level content move only -- histories stay separate (dsva-redteam
+  skill section 9); nothing in this claim redefines any node's canonical
+  meaning, it ports existing artifacts for these nodes from the private tree
+  that already defines them, keeping every existing public DSVA artifact and
+  test green.
+created_at: "2026-10-03T21:21:00+07:00"
+expires_at: null
+reviewers: []
+supersedes: null
+note: null
