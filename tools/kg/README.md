@@ -1,4 +1,4 @@
-# Nationwide water knowledge graph (PHASE 3, build 4 as of 2026-09-27)
+# Nationwide water knowledge graph (PHASE 3, build 7 as of 2026-10-04)
 
 One combined graph over everything this repo already knows, with no new geocoding,
 no new equations, and no geometric inference added by this step.
@@ -9,8 +9,13 @@ no new equations, and no geometric inference added by this step.
 python3 -m tools.kg.build_kg --out output/thailand_water_kg
 ```
 
-Writes `output/thailand_water_kg.graphml` and `output/thailand_water_kg.jsonld`. Reads
-from (never writes to, except its two output files):
+Writes `output/thailand_water_kg.graphml` and `output/thailand_water_kg.jsonld`. **Requires
+`raw/gis/dwr_subbasin/page_*.geojson`** (the archived DWR Sub_Basin polygons, gitignored --
+run `python3 -m tools.harvest.dwr_subbasin` first, or copy/symlink an existing archive) --
+the builder **exits non-zero** when that archive is absent, rather than silently shipping a
+graph with zero `IN_SUBBASIN` edges (review finding HIGH-1, 2026-10-04); pass
+`--allow-missing-subbasin` only for a deliberately degraded build, and never commit one.
+Reads from (never writes to, except its two output files):
 
 - `data/observations.sqlite` (`assets`, `readout_log` tables via `store.py` -- now 9,403
   asset rows across all classes, nationwide, see counts below)
@@ -71,12 +76,12 @@ this build: ~170 MB (well under the 1.5 GB budget); each graphml is dropped
 
 | field | meaning |
 |---|---|
-| `kind` | `asset` / `river_reach` / `canal_node` / `canal` / `agency` / `data_feed` / `asset_class` / `governance_dag` / `dag_asset` / `decision` / `channel` / `affected_people` / `law` / `drain_segment` / `drain_junction` / `district` (build 3) / `capacity_ledger_node` / `sump_well` (last two added build 4) |
+| `kind` | `asset` / `river_reach` / `canal_node` / `canal` / `agency` / `data_feed` / `asset_class` / `governance_dag` / `dag_asset` / `decision` / `channel` / `affected_people` / `law` / `drain_segment` / `drain_junction` / `district` (build 3) / `capacity_ledger_node` / `sump_well` (last two added build 4) / `sub_basin` (build 6) / `province` / `amphoe` (build 7) |
 | `class` | asset class (`gauge`, `gate`, `pump_station`, `dam`, `tunnel`, `pond`, `culvert`, `rain_gauge`, `basin`, `retention_basin`, `levee`, `diversion_channel`, `tide_gate`) for asset nodes; `canal` for Wikipedia-sourced canal nodes (a separate node family from `canal_node`, which is the OSM/declared-chain family); `governance_dag` for every DAG-sourced node (agency/decision/channel/law/etc, which the DAG's own prefix already distinguishes via `kind`); `drain_segment` / `drain_junction` (build 3, BMA drain-pipe CSV -- one segment node per (CSV row, R/L/ROAD/PJ side), one junction node per distinct PIPE_FROM/PIPE_TO street/canal name); `district` (build 3, geography -- distinct from the governance-DAG's `AG_DIST_SS` office/authority node, see `docs/FLOODCONNECT_TOPOLOGY.md`); for `capacity_ledger_node` (build 4, only on a brand-new node with no existing asset_id/DAG id), `class` is the ledger's own `kind` string verbatim (e.g. `dam_spillway`/`diversion`/`floodway_canal`/`outfall`) -- not remapped to the asset-class vocabulary; `sump_well` (build 4) |
 | `name_th` | Thai label, where the source has one |
 | `lat`/`lon` | may be `null` for `OPEN` rows -- never geocoded, never inferred (`drain_segment`/`drain_junction`/`district`/`capacity_ledger_node` nodes are always `null` here -- no coordinate anywhere in their source; `sump_well` nodes DO carry real WGS84 coordinates, converted from the source's own UTM47N numbers in build 3's harvester, first wired as graph nodes in build 4) |
 | `owner` | asset nodes only, verbatim from the assets table |
-| `tag` | `VERIFIED` / `RELAYED` / `RELAYED-GENERAL` / `OPEN` / `VERIFIED-from-official-csv` (build 3 -- fetched directly from an official agency CSV, independently checked, but carries no coordinate at all; kept distinct from plain `VERIFIED` so a reader never conflates "official source" with "has a real lat/lon"), exactly as the source states -- **never upgraded**. A `capacity_ledger_node` created in build 4 carries the ledger row's own tag as its ONE tag (it has no other source); an EXISTING node that a build-4 ledger row attaches onto keeps its own original `tag` unchanged -- the ledger row's tag is stored separately as `capacity_tag` (see below), never overwriting the node's own provenance tag |
+| `tag` | `VERIFIED` / `RELAYED` / `RELAYED-GENERAL` / `OPEN` / `VERIFIED-from-official-csv` (build 3 -- fetched directly from an official agency CSV, independently checked, but carries no coordinate at all; kept distinct from plain `VERIFIED` so a reader never conflates "official source" with "has a real lat/lon") / `VERIFIED-from-DWR-service` (build 6, `sub_basin` nodes) / `VERIFIED-geometric` (build 6, `IN_SUBBASIN` edges -- real point-in-polygon against an official DWR polygon) / `DERIVED-snap` (build 7, `ON_REACH` edges ONLY -- a nearest-centroid-point heuristic, never checked, so it is NEVER the snapped asset's own tag, see "Edge schema" below), exactly as the source states -- **never upgraded**. A `capacity_ledger_node` created in build 4 carries the ledger row's own tag as its ONE tag (it has no other source); an EXISTING node that a build-4 ledger row attaches onto keeps its own original `tag` unchanged -- the ledger row's tag is stored separately as `capacity_tag` (see below), never overwriting the node's own provenance tag |
 | `source` | which file/table produced this node |
 | `latest_value`/`latest_ts`/`latest_run_id` | asset nodes only; see "Latest-readout linkage" below |
 | `capacity_value` / `capacity_unit` / `capacity_m3s` / `capacity_basis` / `capacity_tag` / `capacity_year_of_statement` / `capacity_source` / `capacity_current_value_this_week` / `capacity_observed_at` | build 4, from `sources/capacity_ledger.yaml` -- attached onto ANY node whose id matches a ledger row's `id` (existing or newly created); `capacity_m3s` is populated only when the ledger row's `unit` is `m3s`, else `null` (raw value/unit are still kept in `capacity_value`/`capacity_unit`, e.g. the design-rainfall row's `mm_per_day`) |
@@ -108,6 +113,9 @@ Every edge carries `kind`, `source`, `tag`.
 | `OUTFALL` | a pump/tunnel/gate structure discharges into a named outfall/boundary node | `sources/capacity_ledger.yaml` -- build 4, added 2026-09-27; derived by regexing an outfall-kind row's own `source` text for another ledger id whose kind is `pump_station`/`tunnel`/`gate`, never geometric |
 | `CAPACITY_OF` | a row's capacity pertains to a named `river_reach`-kind row | `sources/capacity_ledger.yaml` -- build 4, added 2026-09-27; derived the same way as `OUTFALL`, target restricted to rows of kind `river_reach` |
 | `IN_SUBBASIN` | an asset's real lat/lon falls inside a DWR Sub_Basin polygon | `sources/dwr_subbasins.yaml` + `tools/kg/unit_resolver.py` (point-in-polygon against the real archived DWR polygon, build 6, added 2026-09-27) -- tag `VERIFIED-geometric` (its own family, distinct from `IN_BASIN`/`IN_DISTRICT`'s exact-field-match family: this is a computed geometric containment fact against an official polygon, not a plain field read); an asset with no lat/lon, or one outside every archived polygon, gets no edge |
+| `ON_REACH` | an asset's nearest `river_reach` node, by HEURISTIC nearest-centroid snap | `tools/kg/build_kg.py` `build_on_reach_edges()` (build 7, added 2026-10-04) -- snap tolerance = that reach's OWN HydroRIVERS `length_km`, never a fixed/invented distance, but this measures distance to the reach's representative POINT, not to its line geometry (true point-to-polyline snapping is M2b); tag is always `DERIVED-snap` (its own fixed heuristic tag, NEVER the snapped asset's own tag -- a nearest-point guess must never be laundered into VERIFIED/MEASURED); `rain_gauge` assets are excluded entirely (not located ON a reach); coverage is partial and reported per asset class in `docs/KG_QUERY.md` |
+| `IN_PROVINCE` / `IN_AMPHOE` | an asset's `asset_id` already matches a row in the HII geocode harvest | `sources/hii_station_geocode.yaml` (build 7, added 2026-10-04) -- id-matched only, never geocoded/snapped; `hii_watergate:`/`hii_dam:`-prefixed source rows do not match any existing asset node id, no edge for those (known id-crosswalk gap) |
+| `RESPONSIBLE_FOR` | an `AG_*` governance-DAG node is accountable for a named `province:*`/`basin:onwr:*` area node | `sources/province_agency_crosswalk.yaml` (build 7, added 2026-10-04) -- `VERIFIED` only for the crosswalk's own named per-area rows; every other province/basin gets the generic role template, tag `RELAYED-GENERAL`. Resolving a bare lat,lon (not a named area id) to this edge is NOT wired (M2b, see "Known gaps") |
 
 `FUNDS`/`INFORMS`/`POWER` are outside the five kinds named in the task's edge-kind list,
 but the DAG file already tags and sources them like every other edge, and dropping them
@@ -127,23 +135,11 @@ This schema has no separate `run_id` column, so `run_at_utc` is reused as
 `latest_run_id` -- a surrogate, not a distinct identifier, documented here rather than
 silently invented.
 
-## Counts (build 3, 2026-09-27 -- see `docs/KG_VERIFY_2026-09-27.md` "Build 3" section
-for the full report, including the BMA drain-pipe topology report and Sammakorn findings)
+## Counts (build 7, 2026-10-04 -- fresh measured totals, this exact shipped build;
+regenerate with `python3 -m tools.kg.build_kg --out output/thailand_water_kg`, printed to
+stdout on every run, never hand-edit this table)
 
-**Build 4 (same day) adds +59 nodes / +16 edges on top of the totals below** (46
-`capacity_ledger_node` + 13 `sump_well` nodes; 7 `OUTFALL` + 4 `CAPACITY_OF` + 5
-`sump_well` `IN_DISTRICT` edges) -- new total **25,522 nodes / 47,292 edges**. The
-per-class/per-kind table below is left as build 3's own snapshot; see
-`docs/KG_VERIFY_2026-09-27.md`'s "Build 4" section for the full build-4 breakdown
-(attach-vs-create counts, sump-well district-match detail, hashes).
-
-**Total: 25,463 nodes (+4,558 vs build 2's 20,905), 47,276 edges (+10,496 vs build 2's
-36,780).** Node delta is `drain_segment` (+3,406), `drain_junction` (+1,077), `district`
-(+50), and +25 governance_dag (feed/asset-class nodes churn from the drainage census
-being folded into `sources/api_census.yaml`-adjacent counts -- see edge_problems row
-growth below). Edge delta is dominated by `DRAINS_TO` (new kind, +7,149 total across both
-tags) and `IN_DISTRICT` (new kind, +3,275), plus +65 Wikipedia-canal `WATER` edges now
-resolved by the new normalised-name matching (7 -> 72 resolved, see "Known gaps").
+**Total: 26,727 nodes, 64,441 edges.**
 
 ### Nodes by class x tag
 
@@ -153,38 +149,54 @@ resolved by the new normalised-name matching (7 -> 72 resolved, see "Known gaps"
 | rain_gauge | VERIFIED | 4,428 |
 | drain_segment | VERIFIED-from-official-csv | 3,406 |
 | gate | VERIFIED | 2,266 |
-| river_reach | RELAYED | 2,250 |
+| river_reach | RELAYED | 2,254 |
 | gauge | VERIFIED | 1,231 |
 | drain_junction | VERIFIED-from-official-csv | 1,077 |
 | reservoir_medium | VERIFIED | 857 |
-| pump_station | VERIFIED | 297 |
+| amphoe | VERIFIED | 735 |
+| sub_basin | VERIFIED-from-DWR-service | 359 |
+| pump_station | VERIFIED | 299 |
 | governance_dag | (none -- DAG tags edges only) | 240 |
 | canal | RELAYED | 190 |
-| data_feed | RELAYED | 104 |
 | weir | VERIFIED | 102 |
+| data_feed | VERIFIED | 94 |
 | dam | VERIFIED | 86 |
+| province | VERIFIED | 79 |
 | reservoir_small | VERIFIED | 60 |
+| data_feed | RELAYED | 52 |
 | district | OPEN | 50 |
 | basin | VERIFIED | 23 |
-| data_feed | VERIFIED | 21 |
-| asset_class | RELAYED-GENERAL | 19 |
-| retention_basin | RELAYED | 14 |
+| asset_class | RELAYED-GENERAL | 21 |
+| retention_basin | RELAYED | 15 |
+| data_feed | OPEN | 13 |
 | gate | OPEN | 13 |
+| sump_well | VERIFIED-from-official-csv | 13 |
 | tunnel | OPEN | 13 |
-| data_feed | OPEN | 8 |
+| diversion | OPEN | 8 |
+| dam_spillway | OPEN | 7 |
 | canal_node | OPEN | 6 |
+| outfall | OPEN | 5 |
 | reservoir_medium | OPEN | 5 |
+| data_feed | MEASURED | 4 |
+| outfall | MEASURED | 4 |
+| river_reach | OPEN | 4 |
 | diversion_channel | OPEN | 3 |
 | agency | VERIFIED | 2 |
+| bkk_canal | OPEN | 2 |
+| floodway_canal | RELAYED | 2 |
 | levee | OPEN | 2 |
+| outfall | RELAYED | 2 |
+| pump_station | RELAYED | 2 |
 | agency | OPEN | 1 |
 | agency | RELAYED | 1 |
+| bkk_canal | VERIFIED | 1 |
 | culvert | OPEN | 1 |
-| data_feed | MEASURED | 1 |
+| gate | MEASURED | 1 |
 | pond | OPEN | 1 |
+| pump_station | OPEN | 1 |
 | tide_gate | RELAYED | 1 |
-| sub_basin | VERIFIED-from-DWR-service | 359 |
-| **total** | | **25,463** (+359 sub_basin, build 6, 2026-09-27 -- other rows in this table not re-verified this build, see docs/KG_VERIFY_2026-09-27.md's build-6 entry for the actual live count, 25,883 nodes) |
+| tunnel | RELAYED | 1 |
+| **total** | | **26,727** |
 
 Note: the `district` class's 50 rows are all `OPEN` at the node-tag level because
 `load_bkk_districts()` uses the row's own `elevation_tag` as the node tag (25 districts
@@ -197,17 +209,22 @@ have a real RTSD-map elevation reading tagged `VERIFIED-from-map` upstream in
 
 | kind | tag | count |
 |---|---|---:|
-| WATER | RELAYED | 12,334 |
+| WATER | RELAYED | 12,339 |
+| IN_SUBBASIN | VERIFIED-geometric | 9,307 |
 | OWNS | VERIFIED | 9,106 |
 | OWNED_BY_AGENCY | VERIFIED | 7,903 |
 | IN_BASIN | VERIFIED | 6,773 |
+| IN_PROVINCE | VERIFIED | 5,967 |
 | DRAINS_TO | VERIFIED-from-official-csv | 5,885 |
-| IN_DISTRICT | VERIFIED-from-official-csv | 3,179 |
+| IN_DISTRICT | VERIFIED-from-official-csv | 3,184 |
 | DRAINS_TO | RELAYED | 1,264 |
-| DATA | RELAYED | 125 |
+| IN_AMPHOE | VERIFIED | 801 |
+| ON_REACH | DERIVED-snap | 785 |
+| RESPONSIBLE_FOR | RELAYED-GENERAL | 227 |
+| DATA | VERIFIED | 141 |
 | IN_DISTRICT | VERIFIED | 96 |
 | COMMANDS | RELAYED-GENERAL | 94 |
-| DATA | VERIFIED | 53 |
+| DATA | RELAYED | 57 |
 | OWNS | OPEN | 52 |
 | OWNS | RELAYED-GENERAL | 46 |
 | COMMANDS | OPEN | 39 |
@@ -215,30 +232,35 @@ have a real RTSD-map elevation reading tagged `VERIFIED-from-map` upstream in
 | SAME_AS_CANDIDATE | RELAYED | 37 |
 | WATER | RELAYED-GENERAL | 34 |
 | AUTHORIZES | RELAYED-GENERAL | 32 |
+| RESPONSIBLE_FOR | VERIFIED | 30 |
 | DATA | RELAYED-GENERAL | 29 |
 | OWNS | RELAYED | 24 |
+| DATA | OPEN | 15 |
 | WATER | OPEN | 15 |
 | INFORMS | RELAYED | 13 |
 | INFORMS | RELAYED-GENERAL | 12 |
 | LOCATED_ON | RELAYED | 12 |
 | AUTHORIZES | RELAYED | 11 |
-| DATA | OPEN | 11 |
 | WATER | VERIFIED | 11 |
 | INFORMS | OPEN | 9 |
 | INFORMS | VERIFIED | 8 |
+| OUTFALL | MEASURED | 6 |
 | SHARES | RELAYED-GENERAL | 6 |
 | FUNDS | RELAYED-GENERAL | 5 |
 | SHARES | OPEN | 4 |
 | CONSTRAINS | OPEN | 3 |
+| DATA | MEASURED | 3 |
 | POWER | OPEN | 3 |
 | SHARES | RELAYED | 3 |
+| CAPACITY_OF | OPEN | 2 |
+| CAPACITY_OF | RELAYED | 2 |
 | FUNDS | OPEN | 2 |
 | FUNDS | RELAYED | 2 |
 | AUTHORIZES | OPEN | 1 |
 | CONSTRAINS | RELAYED-GENERAL | 1 |
+| OUTFALL | RELAYED | 1 |
 | POWER | RELAYED-GENERAL | 1 |
-| IN_SUBBASIN | VERIFIED-geometric | 9,307 |
-| **total** | | **47,276** (+9,307 IN_SUBBASIN, build 6, 2026-09-27 -- other rows not re-verified this build, see docs/KG_VERIFY_2026-09-27.md's build-6 entry for the actual live count, 56,603 edges) |
+| **total** | | **64,441** |
 
 `DRAINS_TO / RELAYED` (1,264) is every junction->canal match (segment/junction-internal
 `DRAINS_TO` edges are tagged with the segment's own row tag,
@@ -246,11 +268,42 @@ have a real RTSD-map elevation reading tagged `VERIFIED-from-map` upstream in
 because the MATCH is a name-string heuristic even though the underlying segment data is
 official -- same discipline as `SAME_AS_CANDIDATE`).
 
+`ON_REACH / DERIVED-snap` (785) is a nearest-centroid heuristic, never the snapped asset's
+own tag (see "Node schema"/"Edge schema" above) -- **785 of 4,899 geolocated non-rain_gauge
+assets (16%) is a PARTIAL result, not a closed gap**; per-class coverage is in
+`docs/KG_QUERY.md` section 1.
+
 Re-run `python3 -m tools.kg.build_kg --out output/thailand_water_kg` to regenerate this
 table (printed to stdout on every run) if any upstream source changes.
 
 ## Known gaps
 
+- **`ON_REACH` coverage is PARTIAL -- 785 edges nationwide, most asset classes barely
+  reached** (build 7, 2026-10-04): dam 4/86, gate 315/2,279, gauge 251/1,231,
+  pump_station 117/297, reservoir_medium 69/862, weir 29/102; every other class (basin,
+  culvert, diversion_channel, levee, pond, reservoir_small, retention_basin, tide_gate,
+  tunnel) is 0. `rain_gauge` (4,428 assets) is excluded entirely, by design. The snap
+  heuristic measures distance to a reach's representative POINT, not its line geometry,
+  and never snaps to a `canal_node`/declared canal-chain reach -- every Pathum Thani
+  station (province:13), sited on a canal, is unsnapped as a direct result. True
+  point-to-polyline snapping across river AND canal reaches together is **M2b**. See
+  `docs/KG_QUERY.md` section 1 for the full per-class table.
+- **`main_stem` is per HydroRIVERS river system (`main_river_id` group), not the Thai
+  administrative "แม่น้ำสายหลัก" (the one designated main river per ONWR basin)** -- under
+  this build's definition several of Thailand's own tributary rivers (Ping/Yom/Mun/Chi)
+  are each their own "main stem" because each is its own HydroRIVERS system, which is NOT
+  the Thai per-basin sense a reader may expect. A second, explicit per-ONWR-basin
+  `basin_main_river` flag (or a crosswalk to the Thai sense) is **M2b**.
+- **Point -> province/accountability resolution is not wired for a bare lat,lon outside
+  Sammakorn/Ram53** -- `province:*`/`amphoe:*` nodes carry no geometry (`lat`/`lon` both
+  `null`), and `tools/kg/accountability.py`'s own Q1 (`nearest_assets()`) never reads
+  `RESPONSIBLE_FOR` or walks to a province/basin node, so
+  `python3 -m tools.kg.accountability --at "14.0208,100.5343"` (Pathum Thani) still
+  refuses unless a geolocated asset happens to be nearby. Only gates/dams whose
+  `hii_watergate:`/`hii_dam:`-prefixed id matches an existing asset node get an
+  `IN_PROVINCE` edge at all -- most do not (see "Counts" above, the 3,232 unmatched
+  source rows). Wiring point -> province resolution into `accountability.py`'s Q1, plus a
+  real id crosswalk for gates/dams, is **M2b**.
 - **Governance-DAG nodes carry no tag.** `water_system_dag.mmd` only tags edges. A node
   like `AG_BMA_GOV` has `tag: null` in this graph -- readers must look at the edges
   touching it, not the node itself, for an evidence tag.

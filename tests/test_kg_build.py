@@ -37,7 +37,8 @@ VALID_TAGS = {"VERIFIED", "MEASURED", "RELAYED", "INSTINCT", "OPEN",
               "RELAYED-GENERAL",
               "VERIFIED-from-official-csv",  # build 3: BMA drain-pipe topology's own tag
               "VERIFIED-from-DWR-service",  # build 6: DWR Sub_Basin nodes' own source tag
-              "VERIFIED-geometric"}  # build 6: IN_SUBBASIN point-in-polygon edges
+              "VERIFIED-geometric",  # build 6: IN_SUBBASIN point-in-polygon edges
+              "DERIVED-snap"}  # build 7: ON_REACH nearest-centroid snap, own heuristic tag
 LAT_MIN, LAT_MAX, LON_MIN, LON_MAX = 5.5, 20.6, 97.3, 105.7
 
 
@@ -206,22 +207,80 @@ def test_compute_main_stem_falls_back_to_min_dist_to_outlet_when_outlet_clipped(
     assert "riverreach:p" in main_stem  # the smaller dist_to_outlet_km member, not "missing_outlet"
 
 
+def test_compute_main_stem_restarts_on_a_disconnected_fragment():
+    """review finding HIGH-4 (2026-10-04): a group with a border/clip-caused gap in its
+    own WATER-edge chain splits into two disconnected pieces -- 'outlet'<-'near'<-'mainup'
+    (the piece the first walk reaches) and a wholly separate 'far_sink'<-'far_up' piece
+    with NO edge at all connecting it to the first piece (the clip-severed continuation).
+    Both pieces must end up main_stem=True; 'trib' (a lower-discharge branch that IS
+    still connected to the walked piece via 'near', but was not the chosen continuation)
+    must NOT."""
+    nodes = [
+        ("riverreach:outlet", {"main_river_id": "outlet", "discharge_avg_cms": 500.0, "dist_to_outlet_km": 0.0}),
+        ("riverreach:near", {"main_river_id": "outlet", "discharge_avg_cms": 400.0, "dist_to_outlet_km": 5.0}),
+        ("riverreach:mainup", {"main_river_id": "outlet", "discharge_avg_cms": 350.0, "dist_to_outlet_km": 10.0}),
+        ("riverreach:trib", {"main_river_id": "outlet", "discharge_avg_cms": 5.0, "dist_to_outlet_km": 10.0}),
+        # disconnected fragment of the SAME main_river_id group -- no edge joins it to
+        # 'near'/'outlet'/'mainup' above, modelling the clip gap (e.g. the Mekong at the
+        # Laos/Cambodia border):
+        ("riverreach:far_sink", {"main_river_id": "outlet", "discharge_avg_cms": 300.0, "dist_to_outlet_km": 50.0}),
+        ("riverreach:far_up", {"main_river_id": "outlet", "discharge_avg_cms": 300.0, "dist_to_outlet_km": 55.0}),
+    ]
+    edges = [
+        ("riverreach:near", "riverreach:outlet", {}),
+        ("riverreach:mainup", "riverreach:near", {}),  # chosen branch (higher discharge)
+        ("riverreach:trib", "riverreach:near", {}),  # lower-discharge branch -- connected, not chosen
+        ("riverreach:far_up", "riverreach:far_sink", {}),  # separate fragment, own chain
+    ]
+    main_stem = build_kg.compute_main_stem(nodes, edges)
+    assert main_stem == {"riverreach:outlet", "riverreach:near", "riverreach:mainup",
+                          "riverreach:far_sink", "riverreach:far_up"}
+    assert "riverreach:trib" not in main_stem  # connected via an undirected path to the
+    # walked piece, but not disconnected -- still correctly excluded, not the chosen branch
+
+
+# The real-graph Mekong main_stem regression lives in tests/test_kg_shipped.py, NOT
+# here -- this whole module skips at collection time when data/observations.sqlite
+# (gitignored) is absent, but output/thailand_river_flow.graphml IS committed to git,
+# so that regression must run on a fresh clone too (see test_kg_shipped.py).
+
+
 def test_build_on_reach_edges_snaps_within_reach_own_length_and_skips_too_far():
     river_nodes = [
         ("riverreach:near", {"lat": 14.0000, "lon": 100.5000, "length_km": 5.0}),
         ("riverreach:far", {"lat": 14.0500, "lon": 100.5500, "length_km": 0.01}),
     ]
     assets = [
-        {"asset_id": "gauge:x", "lat": 14.0005, "lon": 100.5005, "tag": "VERIFIED"},  # near "near"
-        {"asset_id": "gauge:y", "lat": 10.0, "lon": 95.0, "tag": "VERIFIED"},  # far from everything
-        {"asset_id": "gauge:z", "lat": None, "lon": None, "tag": "VERIFIED"},  # no coords
+        {"asset_id": "gauge:x", "class": "gauge", "lat": 14.0005, "lon": 100.5005,
+         "tag": "VERIFIED"},  # near "near"
+        {"asset_id": "gauge:y", "class": "gauge", "lat": 10.0, "lon": 95.0,
+         "tag": "VERIFIED"},  # far from everything
+        {"asset_id": "gauge:z", "class": "gauge", "lat": None, "lon": None,
+         "tag": "VERIFIED"},  # no coords
     ]
     edges = build_kg.build_on_reach_edges(assets, river_nodes)
     by_asset = {u: (v, d) for u, v, d in edges}
     assert "gauge:x" in by_asset and by_asset["gauge:x"][0] == "riverreach:near"
     assert by_asset["gauge:x"][1]["kind"] == "ON_REACH"
+    # review finding HIGH-3 (2026-10-04): ON_REACH never inherits the asset's own tag --
+    # it is a nearest-centroid snap heuristic, never checked, so it gets its OWN fixed
+    # derived tag, not the asset's VERIFIED.
+    assert by_asset["gauge:x"][1]["tag"] == "DERIVED-snap"
     assert "gauge:y" not in by_asset  # nearest candidate farther than that reach's own length_km
     assert "gauge:z" not in by_asset  # no lat/lon -- never guessed
+
+
+def test_build_on_reach_edges_excludes_rain_gauge():
+    """review finding HIGH-3 (2026-10-04): a rain gauge measures rainfall at a point, it
+    is not located ON a river reach -- snapping one to the nearest reach centroid is
+    meaningless, so rain_gauge assets never get an ON_REACH edge at all, however close."""
+    river_nodes = [("riverreach:near", {"lat": 14.0000, "lon": 100.5000, "length_km": 5.0})]
+    assets = [
+        {"asset_id": "rain_gauge:r1", "class": "rain_gauge", "lat": 14.0001, "lon": 100.5001,
+         "tag": "VERIFIED"},
+    ]
+    edges = build_kg.build_on_reach_edges(assets, river_nodes)
+    assert edges == []
 
 
 def test_load_admin_units_builds_distinct_province_and_amphoe_nodes(tmp_path):

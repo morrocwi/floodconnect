@@ -13,12 +13,20 @@ artifacts:
   - sources/hii_station_geocode.yaml
   - sources/province_agency_crosswalk.yaml
   - tools/kg/build_kg.py
+  - tools/kg/accountability.py
+  - tools/kg/README.md
+  - build_river_kg.py
+  - kb.py
   - docs/KG_QUERY.md
   - llms.txt
   - README.md
   - AGENTS.md
   - docs/knowledge/INDEX.yaml
   - tests/test_kg_build.py
+  - tests/test_kg_shipped.py
+  - tests/test_kb_answer.py
+  - tests/test_hii_station_geocode.py
+  - tests/test_province_agency_crosswalk.py
   - output/thailand_water_kg.graphml
   - output/thailand_water_kg.jsonld
 intent: >
@@ -70,3 +78,51 @@ note: >
   revision replaces that plan text with what build 7 actually built and
   shipped -- see `intent` above and the rebuilt output/thailand_water_kg.*
   for the real result.
+
+  Second revision, same day, after a RE-CHECK of this same branch (verdict
+  FAIL, 10 findings) against the build-7 state above. M2a fixes applied
+  (defects 1, 3, 4, 5, 7, 8, 9, 10 fixed in code; 2 and 6 made honest in
+  docs only, their implementation stays M2b backlog per the founder's own
+  M2a/M2b split):
+  (1) the shipped graph had ZERO IN_SUBBASIN edges (raw/gis/dwr_subbasin/
+  was absent from that build) -- `tools/kg/build_kg.py` now exits non-zero
+  when the DWR polygon archive is missing, unless `--allow-missing-subbasin`
+  is passed; rebuilt here with the archive present (sub-basin counts restored);
+  (3) `ON_REACH` no longer inherits the snapped asset's own tag -- it carries
+  its own fixed heuristic tag `DERIVED-snap` (documented in
+  `tools/kg/README.md`'s tag table), and `rain_gauge` assets are excluded
+  from `ON_REACH` entirely (a rain gauge is not located on a river reach);
+  (4) `compute_main_stem()` now finds every weakly-connected component of a
+  `main_river_id` group (not only the one its start node sits in) and
+  restarts the same upstream walk from each remaining component's own local
+  sink -- the Mekong reach near 17.88N,102.74E (riverreach:41246335) is
+  main_stem=True again (a border-clip gap had split that group into 2
+  disconnected pieces, 983+302 members; the pre-fix walk only ever reached
+  one); docs now say main_stem is per HydroRIVERS river system, never the
+  Thai per-basin "แม่น้ำสายหลัก" (that mapping is M2b);
+  (5) kb.py's own accountability answer path (`_answer_accountability`) no
+  longer reads the shipped nationwide graph by default -- it only does so
+  when `FLOODCONNECT_USE_SHIPPED_KG` is explicitly set truthy -- so shipping
+  output/thailand_water_kg.graphml changes NOTHING about what
+  `kb.py answer --at sammakorn/ram53` returns; the standalone
+  `tools.kg.accountability` CLI/MCP path is unaffected (still reads the
+  graph by default, that IS the explicit request);
+  (7)/(9) `output/thailand_river_flow.graphml`'s river-reach `name` field is
+  no longer the literal string "unnamed" -- it is now genuinely absent, so
+  `river_reach.name_th` is `null` in the shipped KG, never a placeholder
+  that reads like a real name;
+  (8) `tools/kg/README.md`'s node/edge count tables and `docs/KG_QUERY.md`
+  are rewritten against this build's actual measured counts, replacing the
+  stale "closed"-style headings with the real measured coverage per gap
+  (gap 1 ON_REACH coverage is partial and reported per asset class; gap 3
+  accountability wiring for a non-Bangkok point stays an M2b gap, said
+  plainly, not papered over);
+  (10) the unrelated `docs/knowledge/INDEX.yaml` date-bump churn (211
+  entries, none of them this branch's own work) is reverted back to its
+  pre-branch content; only the `KG_QUERY` entry (the one doc this branch
+  itself adds) is kept.
+  Defects 2 (true point-to-polyline/canal-node snapping) and 6 (point ->
+  province resolution wired into `accountability.py` Q1, gate/dam id
+  crosswalk) are OUT OF SCOPE for M2a by the founder's own split -- this
+  revision only makes the docs say so honestly, it does not implement
+  either.

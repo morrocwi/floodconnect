@@ -53,7 +53,7 @@ TAG_CHAR = {"V": "VERIFIED", "R": "RELAYED", "G": "RELAYED-GENERAL", "O": "OPEN"
 # same discipline as RELAYED-GENERAL's existing extension of the AGENTS.md 5-tag core set.
 VALID_TAGS = {"VERIFIED", "MEASURED", "RELAYED", "INSTINCT", "OPEN", "RELAYED-GENERAL",
               "VERIFIED-from-official-csv", "VERIFIED-from-DWR-service",
-              "VERIFIED-geometric"}
+              "VERIFIED-geometric", "DERIVED-snap"}
 
 
 def normalize_canal_name(name: str | None) -> str:
@@ -178,7 +178,27 @@ def compute_main_stem(nodes: list, edges: list) -> set:
     largest-volume path at every branch, ties broken by the smaller numeric reach id
     for a deterministic result. Every reach visited by this walk is the main stem of
     its own river system; every other reach in the group is a tributary that
-    discharges INTO the main stem but was not chosen as its continuation."""
+    discharges INTO the main stem but was not chosen as its continuation.
+
+    RESTART ON BREAK (review finding HIGH-4, 2026-10-04, fixed): a river that crosses
+    Thailand's border (the Mekong is the real case: its true HydroRIVERS outlet is in
+    Vietnam, outside the Thailand bbox clip, and the clip edge also severs the in-group
+    WATER-edge chain -- MEASURED on the real data: `main_river_id` group 41392598 splits
+    into exactly 2 undirected weakly-connected components, 983 + 302 members, not one
+    connected river). The first walk above can only ever reach the ONE component that
+    contains its own start node; every OTHER weakly-connected component of the SAME
+    main_river_id group is a separate clipped fragment of the same river system (never a
+    mere lower-discharge tributary branch -- those stay correctly excluded, still
+    reachable undirected from the visited path, just not the chosen branch) and must
+    still be walked, or the segment of the Mekong (or any other border river) still
+    inside Thailand never gets `main_stem=True` at all. So: find the group's weakly-
+    connected components (undirected, over its own WATER edges only); the first walk
+    covers the component holding its start node; for every remaining component, restart
+    the SAME upstream walk from ITS OWN local sink -- the member with no downstream
+    neighbour inside that component, highest `discharge_avg_cms` first if more than one,
+    ties broken by the smaller numeric id (same rule as a confluence branch). This is
+    still only ever reading `main_river_id`/`discharge_avg_cms`/the WATER edges already
+    in the data; no new threshold or distance is invented."""
     attrs_by_id = {nid: a for nid, a in nodes}
     groups: dict[str, list] = {}
     for nid, a in nodes:
@@ -187,8 +207,51 @@ def compute_main_stem(nodes: list, edges: list) -> set:
             continue
         groups.setdefault(str(mid), []).append(nid)
     upstream: dict[str, list] = {}
+    downstream: dict[str, list] = {}
     for u, v, _ in edges:
         upstream.setdefault(v, []).append(u)
+        downstream.setdefault(u, []).append(v)
+
+    def _branch_key(nid, _attrs_by_id=attrs_by_id):
+        d = _attrs_by_id[nid].get("discharge_avg_cms")
+        return (-(d if d is not None else -1.0), nid)
+
+    def _walk_upstream(start: str, member_set: set) -> set:
+        cur, visited = start, set()
+        while cur is not None and cur not in visited:
+            visited.add(cur)
+            cands = [u for u in upstream.get(cur, []) if u in member_set and u not in visited]
+            if not cands:
+                break
+            cands.sort(key=_branch_key)
+            cur = cands[0]
+        return visited
+
+    def _weak_components(member_set: set) -> list:
+        """Weakly-connected components of member_set, over edges with BOTH ends inside
+        member_set (undirected adjacency), via plain BFS -- no networkx Graph object
+        needed for this small per-group computation."""
+        adj: dict[str, set] = {n: set() for n in member_set}
+        for u, v, _ in edges:
+            if u in member_set and v in member_set:
+                adj[u].add(v)
+                adj[v].add(u)
+        seen: set = set()
+        comps = []
+        for n in member_set:
+            if n in seen:
+                continue
+            comp, stack = set(), [n]
+            while stack:
+                cur = stack.pop()
+                if cur in comp:
+                    continue
+                comp.add(cur)
+                stack.extend(nb for nb in adj[cur] if nb not in comp)
+            comps.append(comp)
+            seen |= comp
+        return comps
+
     main_stem_ids: set = set()
     for mid, members in groups.items():
         outlet_id = f"riverreach:{mid}"
@@ -202,17 +265,20 @@ def compute_main_stem(nodes: list, edges: list) -> set:
             if not with_dist:
                 continue
             start = min(with_dist)[1]
-        cur, visited = start, set()
-        while cur is not None and cur not in visited:
-            visited.add(cur)
-            cands = [u for u in upstream.get(cur, []) if u in member_set and u not in visited]
-            if not cands:
-                break
-            def _branch_key(nid, _attrs_by_id=attrs_by_id):
-                d = _attrs_by_id[nid].get("discharge_avg_cms")
-                return (-(d if d is not None else -1.0), nid)
-            cands.sort(key=_branch_key)
-            cur = cands[0]
+        visited = _walk_upstream(start, member_set)
+
+        for comp in _weak_components(member_set):
+            if start in comp:
+                continue  # the component the first walk already covered
+            local_sinks = [
+                n for n in comp
+                if not any(v in comp for v in downstream.get(n, []))
+            ]
+            if not local_sinks:
+                continue  # defensive: a non-empty component always has >=1 sink
+                # over a finite edge set, but never loop forever if data says otherwise
+            local_sinks.sort(key=_branch_key)
+            visited |= _walk_upstream(local_sinks[0], comp)
         main_stem_ids |= visited
     return main_stem_ids
 
@@ -350,13 +416,29 @@ def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 # ---------------------------------------------------------------------------------
 
 def build_on_reach_edges(assets: list, river_nodes: list) -> list:
+    """Nearest-centroid snap heuristic (review finding HIGH-3, 2026-10-04): the result is
+    NEVER tagged with the asset's own tag (that would launder an unchecked nearest-point
+    guess into VERIFIED/MEASURED). Every ON_REACH edge carries its own fixed derived tag
+    `DERIVED-snap`, defined in tools/kg/README.md's tag table as a heuristic, never
+    upgraded. `rain_gauge` assets are excluded entirely -- a rain gauge measures rainfall
+    at a point, it is not located ON a river reach, so snapping one to the nearest reach
+    centroid is meaningless (review finding HIGH-3). Coverage is reported per asset class
+    so a reader sees which classes this heuristic actually reaches (most do not, see
+    KG_QUERY.md -- true line-geometry snapping is M2b)."""
     reach_list = [
         (nid, a["lat"], a["lon"], a.get("length_km"))
         for nid, a in river_nodes if a.get("lat") is not None and a.get("lon") is not None
     ]
     edges = []
-    n_no_coord = n_matched = n_too_far = n_no_length = 0
+    n_no_coord = n_matched = n_too_far = n_no_length = n_excluded_class = 0
+    class_total: Counter = Counter()
+    class_matched: Counter = Counter()
     for a in assets:
+        klass = a.get("class")
+        if klass == "rain_gauge":
+            n_excluded_class += 1
+            continue
+        class_total[klass] += 1
         lat, lon = a.get("lat"), a.get("lon")
         if lat is None or lon is None:
             n_no_coord += 1
@@ -375,23 +457,28 @@ def build_on_reach_edges(assets: list, river_nodes: list) -> list:
             n_no_length += 1
             continue
         if dist_km <= best_len:
-            tag = a["tag"] if a["tag"] in VALID_TAGS else "OPEN"
             edges.append((a["asset_id"], best_nid, {
                 "kind": "ON_REACH",
-                "tag": tag,
-                "source": "tools/kg/build_kg.py (nearest river_reach by haversine distance; "
-                          "snap tolerance = that reach's own HydroRIVERS length_km, never an "
-                          "invented fixed threshold)",
+                "tag": "DERIVED-snap",
+                "source": "tools/kg/build_kg.py (HEURISTIC: nearest river_reach centroid by "
+                          "haversine distance; snap tolerance = that reach's own HydroRIVERS "
+                          "length_km, never an invented fixed threshold -- not a point-to-"
+                          "polyline distance, see tools/kg/README.md tag table)",
                 "distance_km": round(dist_km, 3),
             }))
             n_matched += 1
+            class_matched[klass] += 1
         else:
             n_too_far += 1
     print(f"  ON_REACH: {n_matched} asset(s) snapped to their nearest river_reach "
           f"(within that reach's own length_km), {n_too_far} nearest-reach candidate "
           f"too far (beyond that reach's own length), {n_no_length} nearest reach had "
-          f"no length_km, {n_no_coord} asset(s) had no lat/lon -- no edge in any of "
-          f"those 3 cases (never guessed)")
+          f"no length_km, {n_no_coord} asset(s) had no lat/lon, {n_excluded_class} "
+          f"rain_gauge asset(s) excluded entirely -- no edge in any of those cases "
+          f"(never guessed)")
+    print("  ON_REACH coverage per class (matched/total, rain_gauge excluded):")
+    for klass in sorted(class_total):
+        print(f"    {klass}: {class_matched.get(klass, 0)}/{class_total[klass]}")
     return edges
 
 
@@ -1660,7 +1747,7 @@ def build_responsible_for_edges(G: nx.MultiDiGraph, crosswalk: dict) -> list:
 # assembly
 # ---------------------------------------------------------------------------------
 
-def build_graph(repo_root: Path, conn) -> nx.MultiDiGraph:
+def build_graph(repo_root: Path, conn, allow_missing_subbasin: bool = False) -> nx.MultiDiGraph:
     G = nx.MultiDiGraph()
 
     print("Loading declared canal chain (reach nodes + LOCATED_ON resolution)...")
@@ -1723,8 +1810,26 @@ def build_graph(repo_root: Path, conn) -> nx.MultiDiGraph:
     subbasin_nodes = load_dwr_subbasins(repo_root / "sources" / "dwr_subbasins.yaml")
     for nid, attrs in subbasin_nodes:
         G.add_node(nid, **attrs)
+    subbasin_geojson_dir = repo_root / "raw" / "gis" / "dwr_subbasin"
+    subbasin_archive_present = subbasin_geojson_dir.exists() and any(
+        subbasin_geojson_dir.glob("page_*.geojson"))
+    if not subbasin_archive_present and not allow_missing_subbasin:
+        sys.exit(
+            "FATAL: raw/gis/dwr_subbasin/*.geojson is missing -- building now would "
+            "silently ship a KG with ZERO IN_SUBBASIN edges (the asset -> sub-basin -> "
+            "basin link the upstream/accountability walk depends on; see review finding "
+            "HIGH-1 / gap 1, 2026-10-04). Run `python3 -m tools.harvest.dwr_subbasin` "
+            "first to populate raw/gis/dwr_subbasin/, or pass --allow-missing-subbasin "
+            "to build a degraded graph on purpose."
+        )
     print("Building IN_SUBBASIN edges (point-in-polygon vs. real DWR polygons)...")
-    for u, v, attrs in build_in_subbasin_edges(assets, subbasin_nodes):
+    if subbasin_archive_present:
+        in_subbasin_edges = build_in_subbasin_edges(assets, subbasin_nodes)
+    else:
+        print("  IN_SUBBASIN: --allow-missing-subbasin set and archive absent -- "
+              "skipping, 0 edges built (degraded graph, built on purpose)")
+        in_subbasin_edges = []
+    for u, v, attrs in in_subbasin_edges:
         G.add_edge(u, v, **attrs)
 
     print("Loading river reaches (HydroRIVERS, thailand_river_flow.graphml)...")
@@ -1946,12 +2051,17 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--out", default=str(HERE / "output" / "thailand_water_kg"),
                      help="output path prefix (writes <out>.graphml and <out>.jsonld)")
+    ap.add_argument("--allow-missing-subbasin", action="store_true",
+                     help="build anyway (0 IN_SUBBASIN edges) when raw/gis/dwr_subbasin/ "
+                          "is absent, instead of exiting non-zero. Never pass this for a "
+                          "graph that will be committed/shipped.")
     args = ap.parse_args()
 
     conn = store.connect()
     store.ensure_assets_schema(conn)
 
-    G, drain_report, build4_report = build_graph(HERE, conn)
+    G, drain_report, build4_report = build_graph(
+        HERE, conn, allow_missing_subbasin=args.allow_missing_subbasin)
 
     n_counts = counts_by_node_class_tag(G)
     e_counts = counts_by_edge_kind_tag(G)

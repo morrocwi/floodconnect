@@ -95,7 +95,10 @@ def build_directed_graph(full_gdf: gpd.GeoDataFrame, major_gdf: gpd.GeoDataFrame
             dist_to_outlet_km=float(row.DIST_DN_KM),
             lat=round(centroid.y, 5),
             lon=round(centroid.x, 5),
-            name="unnamed",  # HydroRIVERS carries no river-name field
+            name="",  # HydroRIVERS carries no river-name field -- empty string, not the
+            # placeholder "unnamed" (graphml attribute typing forces a string here; the
+            # consumer in tools/kg/build_kg.py's load_river_reaches() maps "" to real
+            # None on name_th, never a string that LOOKS like a name).
             flood_status="unknown",  # overlaid later if GISTDA_API_KEY is set
         )
 

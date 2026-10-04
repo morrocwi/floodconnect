@@ -1547,7 +1547,15 @@ def _answer_accountability(at: str, verbose: bool = True) -> dict:
         from tools.kg import accountability
     except Exception as e:  # pragma: no cover - defensive
         return {"tag": "OPEN", "note": f"accountability module unavailable: {e}"}
-    full = accountability.build_result(at)
+    # review finding HIGH-5 (2026-10-04): shipping output/thailand_water_kg.graphml must
+    # never silently change this answer path's own behaviour (Sammakorn/Ram53 next-action
+    # + every token-budget test is pinned to the pre-ship MVP fallback shape). The
+    # nationwide graph is only consulted here when FLOODCONNECT_USE_SHIPPED_KG is
+    # explicitly set truthy -- direct accountability CLI/MCP use is unaffected (that
+    # module's own default stays True, see tools/kg/accountability.py).
+    use_shipped_kg = os.environ.get("FLOODCONNECT_USE_SHIPPED_KG", "").strip().lower() in (
+        "1", "true", "yes", "on")
+    full = accountability.build_result(at, use_shipped_kg=use_shipped_kg)
     if "refused" in full:
         return _accountability_fallback(at, full["refused"], verbose=verbose) or {"tag": "OPEN", "refused": full["refused"]}
     # `build_result` has TWO distinct early-refusal
