@@ -1,5 +1,5 @@
 claim_id: "20261003-floodconnect-mvp-claim"
-status: ACTIVE
+status: RELEASED
 writer: "ai-worker"
 branch: "agent/ai-worker/floodconnect-mvp-port-v2"
 base_sha: "17b9c3a275fbbcfa5ea377a9404977c703a12adb"
