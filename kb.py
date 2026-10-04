@@ -1605,16 +1605,43 @@ def _answer_accountability(at: str, verbose: bool = True) -> dict:
 # elsewhere; see each function's own docstring for the exact citation.
 # ---------------------------------------------------------------------------
 
-# Resident-facing hotline list -- the SAME four numbers+labels `cmd_answer`'s own printed
+# Resident-facing hotline list -- the SAME numbers+labels `cmd_answer`'s own printed
 # footer already uses (below), kept as one constant so both places stay in sync. Labels
 # match AI.md's rule-5 wording (1130 routes to MEA/electrical,
-# never "DDPM flood").
-HOTLINES = (
+# never "DDPM flood"). The first two are nationwide; the last two name a
+# Bangkok-specific city hotline (1555) and Bangkok's own electricity authority (กฟน./MEA,
+# 1130) -- `_who_to_call` below only includes them when the queried point actually falls
+# inside `collect.BANGKOK_METRO_BBOX` (the same bbox this repo already uses to scope the
+# BMA/dds.bangkok.go.th sources), never nationwide (fix: a Chiang Mai/Hat Yai answer
+# previously listed Bangkok-only numbers, which misleads once the product is presented
+# as covering all of Thailand).
+HOTLINES_NATIONWIDE = (
     {"number": "1669", "label_th": "เหตุฉุกเฉินทางการแพทย์ (สพฉ.)"},
     {"number": "1784", "label_th": "ภัยพิบัติ เกินกำลังพื้นที่ (ปภ.)"},
+)
+HOTLINES_BANGKOK_ONLY = (
     {"number": "1555", "label_th": "สายด่วน กทม."},
     {"number": "1130", "label_th": "ไฟฟ้าช็อตจากน้ำท่วม (กฟน./MEA)"},
 )
+# Kept for any caller still importing the old flat name -- same four entries, same order,
+# nationwide first.
+HOTLINES = HOTLINES_NATIONWIDE + HOTLINES_BANGKOK_ONLY
+
+
+def _is_bangkok_metro(lat: "float | None", lon: "float | None") -> bool:
+    """True only when (lat, lon) falls inside `collect.BANGKOK_METRO_BBOX` -- the same
+    bbox this repo already uses to scope BMA/dds.bangkok.go.th sources
+    (`collect.SOURCE_BBOX`), reused here rather than inventing a second geofence.
+    `lat`/`lon` missing/None -> False (never guess Bangkok when the point is unknown)."""
+    if lat is None or lon is None:
+        return False
+    try:
+        import collect as collect_mod
+        bbox = collect_mod.BANGKOK_METRO_BBOX
+    except Exception:  # pragma: no cover - defensive
+        return False
+    return (bbox["lat_min"] <= lat <= bbox["lat_max"]
+            and bbox["lon_min"] <= lon <= bbox["lon_max"])
 
 # The one allowed action when current state is UNKNOWN (floodconnect-agent skill rule 2,
 # "UNKNOWN is never SAFE" -- AI.md's same rule). Never rephrase this into "ปลอดภัย"/"ปกติ".
@@ -1947,8 +1974,15 @@ def _route_mode_degradation(doc: dict, path: list[str]) -> list[dict]:
     return out
 
 
-def _who_to_call(accountability_answer: dict | None) -> dict:
-    """This file's own fixed `HOTLINES` -- no new agency/number is added here.
+def _who_to_call(accountability_answer: dict | None,
+                  lat: "float | None" = None, lon: "float | None" = None) -> dict:
+    """This file's own fixed `HOTLINES_NATIONWIDE` + (Bangkok-only) `HOTLINES_BANGKOK_ONLY`
+    -- no new agency/number is added here.
+
+    `lat`/`lon` (fix, 2026-10-04): the two Bangkok-only numbers (1555 กทม., 1130 กฟน./MEA)
+    are now included only when `_is_bangkok_metro(lat, lon)` is true for the point this
+    answer is for; every other point gets the nationwide pair only. Before this fix every
+    answer, anywhere in Thailand, listed the Bangkok numbers unconditionally.
     FIX C (2026-10-04, token budget): `owner_agencies` used to be repeated here
     verbatim, a byte-for-byte duplicate of `accountability.owner_agencies` at the
     payload's top level (unreferenced by any test, doc or the CLI printer --
@@ -1963,7 +1997,8 @@ def _who_to_call(accountability_answer: dict | None) -> dict:
     `HOTLINES` constant carries, unchanged, nothing dropped), no key names repeated 4
     times in every single answer. Still unreferenced by any test/doc (checked above),
     so this shape change is safe."""
-    return {"hotlines": [f"{h['number']} {h['label_th']}" for h in HOTLINES]}
+    hotlines = HOTLINES_NATIONWIDE + (HOTLINES_BANGKOK_ONLY if _is_bangkok_metro(lat, lon) else ())
+    return {"hotlines": [f"{h['number']} {h['label_th']}" for h in hotlines]}
 
 
 def _answer_next_action(
@@ -1972,6 +2007,8 @@ def _answer_next_action(
     state_answer: dict | None = None,
     hazard_answer: dict | None = None,
     accountability_answer: dict | None = None,
+    lat: "float | None" = None,
+    lon: "float | None" = None,
     now_utc: "datetime.datetime | None" = None,
     verbose: bool = True,
     refresh_ran: bool = True,
@@ -2103,8 +2140,7 @@ def _answer_next_action(
             else:
                 action_text = (
                     f"ลองรันใหม่โดยไม่ใส่ `--offline` (`floodconnect answer --at "
-                    f"{area_label}` / MCP offline=false) -- รอบนี้ไม่ได้ refresh เลย "
-                    "(ใส่ --offline ไว้)")
+                    f"{area_label}` / MCP offline=false) -- รอบนี้ไม่ได้ refresh เลย")
             actions.append({
                 "action": action_text,
                 "source": "state.refresh_suggested / hazard.stale (offline/stale "
@@ -2426,7 +2462,7 @@ def _answer_next_action(
         capped_actions = [{k: v for k, v in act.items() if k not in ("why", "source")}
                            for act in capped_actions]
     out["actions"] = capped_actions
-    out["who_to_call"] = _who_to_call(accountability_answer)
+    out["who_to_call"] = _who_to_call(accountability_answer, lat=lat, lon=lon)
     if notes:
         out["notes"] = notes
     return out
@@ -2518,8 +2554,8 @@ def _compact_hazard_for_display(hazard_answer: dict, cap: int = 3) -> dict:
             seen_models.add(highest_total["model"])
     out = dict(hazard_answer)
     out["per_model"] = deduped
-    note = (f"min/median/max by tomorrow_mm of {len(per_model)} models shown "
-            f"(+{len(per_model) - len(deduped)} more -- see --verbose for every model)")
+    note = (f"min/median/max tomorrow_mm, {len(per_model)} models "
+            f"(+{len(per_model) - len(deduped)} more, see --verbose)")
     if unknown_count:
         note += f"; {unknown_count} model(s) have no tomorrow_mm figure this check"
     out["per_model_note"] = note
@@ -2760,6 +2796,7 @@ def build_answer(at: str, refresh: bool = False, on_refresh_progress=None,
             "accountability": unknown_accountability,
             "next_action": next_action_answer,
             "source_tags": [],
+            "indicators_doc": "docs/INDICATORS.md",
         }
     refresh_report = None
     if refresh:
@@ -2778,7 +2815,7 @@ def build_answer(at: str, refresh: bool = False, on_refresh_progress=None,
     # capping can never change what ACTIVE/NONE means.
     next_action_answer = _answer_next_action(
         area_id, state_answer=state_answer, hazard_answer=hazard_answer,
-        accountability_answer=accountability_answer, verbose=verbose,
+        accountability_answer=accountability_answer, lat=lat, lon=lon, verbose=verbose,
         refresh_ran=refresh, raw_at=at)
     # Finding: the "state" source_tag's epistemic_class
     # (LIVE_DATA_SYSTEM -> "LIVE_OBSERVATION" in the RKG) describes what KIND of system
@@ -2817,6 +2854,11 @@ def build_answer(at: str, refresh: bool = False, on_refresh_progress=None,
         "accountability": accountability_answer,
         "next_action": next_action_answer,
         "source_tags": source_tags if verbose else _compact_source_tags(source_tags),
+        # Fix (2026-10-04, review finding #5): every answer now names the one place
+        # that defines every field above -- docs/INDICATORS.md -- rather than only
+        # README/llms.txt/AI_TIERS/EQUATIONS_FOR_AI carrying that pointer. A caller
+        # reading just this JSON (no doc open) still gets told where the dictionary is.
+        "indicators_doc": "docs/INDICATORS.md",
     }
     # F8 (2026-10-04): `cctv` carries the full `{kind, radius_km, cameras}` shape when
     # there is at least one camera (token-budget measurement; a full wrapper on every

@@ -55,9 +55,27 @@ UNKNOWN = no fresh basis — **UNKNOWN is never SAFE.**
 สีเหลือง=เฝ้าระวังหรือกำลังขึ้นเข้าใกล้ค่าที่ตั้งไว้ สีเขียว=ปกติ **ต้องมีค่าสดรองรับ**
 ไม่ทราบ=ไม่มีค่าสดพอฟันธง **ไม่ทราบ ไม่เท่ากับ ปลอดภัย**
 
+**FloodConnect is the method, not a data service (founder ruling 2026-10-04): we give
+you WHICH sources to read, how to pick the nearest station, the equations/thresholds,
+and the honesty rules — never a hosted place/POI lookup.** Geocoding a place name and
+finding nearby points of interest are **your own AI's job**; FloodConnect never
+geocodes and holds no place/POI database. Have lat,lon already? The CLI/MCP tool is an
+**optional** deterministic helper that applies this same method for you. No tool
+access at all (a browsing-only chat AI)? Follow
+**[docs/NEAREST_STATION_RECIPE.md](docs/NEAREST_STATION_RECIPE.md)** step by step —
+same official sources, same rules, done by hand.
+
+**FloodConnect คือ "วิธีคิด" ไม่ใช่บริการข้อมูล (founder ruling 2026-10-04):** เราบอกว่าควร
+อ่านแหล่งไหน เลือกสถานีใกล้ที่สุดอย่างไร สมการ/เกณฑ์อะไร และกฎความซื่อตรง — ไม่ใช่ฐานข้อมูล
+สถานที่ที่โฮสต์ไว้ การหาพิกัดจากชื่อสถานที่และสถานที่ใกล้เคียงเป็นหน้าที่ของ **เอไอของคุณเอง**
+FloodConnect ไม่หาพิกัดเองและไม่มีฐานข้อมูลสถานที่ มีพิกัดแล้ว? ใช้ CLI/MCP เป็นตัวช่วย
+**ทางเลือก** ที่ใช้วิธีคิดเดียวกันนี้ให้อัตโนมัติ ไม่มีเครื่องมือเลย (แชทที่เข้าเว็บได้เท่านั้น)? ทำตาม
+**[docs/NEAREST_STATION_RECIPE.md](docs/NEAREST_STATION_RECIPE.md)** ทีละขั้น
+
 Start here → **[START_HERE.md](START_HERE.md)** (human-facing, 5-minute read, Thai) ·
 **[AGENTS.md](AGENTS.md)** (AI-facing rules, bilingual) · **[AI.md](AI.md)** (the single
-AI compute entrypoint).
+AI compute entrypoint) · **[docs/NEAREST_STATION_RECIPE.md](docs/NEAREST_STATION_RECIPE.md)**
+(the method, for an AI with no tool access).
 
 **AI readers: read [llms.txt](llms.txt) first, especially if you cannot run code** —
 it has a "If you cannot run code" section with the exact thing to tell your user, and

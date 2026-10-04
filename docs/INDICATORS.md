@@ -8,11 +8,21 @@ freshness rule, resolution label, a worked example, and what it does **not** mea
 
 The same list, as data, lives in `model_spec.json`'s `"indicators"` array and is mirrored
 into `system_capabilities.json`'s `"indicators"` field — a test
-(`tests/test_floodconnect_model.py`) checks the two match and that every name below also
+(`tests/test_floodconnect_model.py`) checks the two match, that every name below also
 appears in README.md's top section, `llms.txt`, `docs/AI_TIERS.md` and
-`docs/EQUATIONS_FOR_AI.md`.
+`docs/EQUATIONS_FOR_AI.md`, AND that a real, offline answer actually only ever emits a
+value inside that indicator's own declared `levels` (never an undeclared word). Every
+`kb.py`-level answer also carries `"indicators_doc": "docs/INDICATORS.md"` at its top
+level, so a caller reading only the JSON still gets pointed here. Each indicator's own
+section below states its exact `levels` and its real `json_path` inside that answer (or
+says plainly that it is by-hand-only / not yet wired) — **never assume the
+RED/YELLOW/GREEN/UNKNOWN contract applies to a field whose own section does not say so.**
 
-**Colour contract, every indicator, no exceptions:**
+**Colour contract — scope (fix, 2026-10-04, review finding #3): RED/YELLOW/GREEN/UNKNOWN
+below applies ONLY to `current_local_state` (§1) and `one_decision.level` (§9). Every
+other indicator in this dictionary has its OWN closed vocabulary — stated in that
+section's own "Levels" line and in `model_spec.json`'s per-indicator `levels` field —
+and is never silently re-expressed as RED/YELLOW/GREEN/UNKNOWN.**
 
 | Colour | Means |
 |---|---|
@@ -42,6 +52,9 @@ appears in README.md's top section, `llms.txt`, `docs/AI_TIERS.md` and
   `NO_THRESHOLD`, or the BMA DDS Thai keys `ระดับน้ำวิกฤติ`/`ระดับน้ำปกติ`) for the stations
   feeding this answer, with sensor-fault rows (`ขัดข้อง`) excluded first.
 - **Unit:** none (categorical).
+- **Levels:** `RED` / `YELLOW` / `GREEN` / `UNKNOWN` (the colour contract above).
+- **JSON path:** `next_action.dual_state.current_local_state` in `kb.py`'s `answer`
+  output (CLI `--json` / MCP `floodconnect_answer`).
 - **Input source:** `readout.FLOOD_LIKE_STATUS` / `NORMAL_LIKE_STATUS` /
   `CRITICAL_LIKE_STATUS` and `site/build_data.py`'s `_DDS_STATUS_TH`, fed by
   `live_water_level.py` station rows and the BMA DDS bulletin.
@@ -76,9 +89,12 @@ appears in README.md's top section, `llms.txt`, `docs/AI_TIERS.md` and
 - **ความหมายสั้น:** มีสัญญาณพยากรณ์ฝนล่วงหน้าที่อาจทำให้สถานการณ์เปลี่ยนหรือไม่ แยกจากค่าปัจจุบัน
 - **Exact definition:** `_classify_forward_hazard` over the per-model 7-day rain forecast
   rows (`kb.py::cmd_forecast`), never averaged into a single flood-depth number.
-- **Unit:** none (categorical: `ACTIVE` / `NONE` / `UNKNOWN`, re-expressed here as
-  RED/YELLOW/GREEN/UNKNOWN per the colour contract — see `kb.py` for the exact mapping
-  it currently applies in `_answer_next_action`'s dual-state text).
+- **Unit:** none (categorical).
+- **Levels:** `ACTIVE` / `NONE` / `UNKNOWN` — this field's own closed vocabulary. It is
+  **not** re-expressed as RED/YELLOW/GREEN/UNKNOWN anywhere (fix, 2026-10-04, review
+  finding #3: an earlier draft of this line claimed such a mapping existed in `kb.py`;
+  it does not — removed rather than left pointing at code that isn't there).
+- **JSON path:** `next_action.dual_state.forward_hazard`.
 - **Input source:** Open-Meteo/ECMWF/GFS/JMA/CMA/GEM/MET Norway and sibling public
   weather models, fetched at the queried coordinate.
 - **Thresholds:** none published by any agency for "hazardous rain" — this field reports
@@ -103,6 +119,11 @@ appears in README.md's top section, `llms.txt`, `docs/AI_TIERS.md` and
   proposal-tier, not promoted to `CANONICAL.json`).
 - **Unit:** m per k ticks (caller declares what one tick is — e.g. 1 reading or 1 hour —
   before computing, never after).
+- **Levels:** `RISING` / `FALLING` / `FLAT` / `NO_READOUT` — this field's own closed
+  vocabulary, never RED/YELLOW/GREEN/UNKNOWN.
+- **JSON path:** not in `kb.py`'s `answer` JSON — this is computed by the by-hand
+  companion module only: `floodconnect_model.delta_k(...)["trend"]`
+  (`docs/EQUATIONS_FOR_AI.md` §5 shows how to run it against a reading pair by hand).
 - **Input source:** two readings of the same station, `h(t)` and `h(t−k)`.
 - **Thresholds:** the station's own declared sensor resolution `epsilon` — if the source
   states none, `epsilon` is `INSTINCT` (a judgment call), never `MEASURED`.
@@ -124,6 +145,11 @@ appears in README.md's top section, `llms.txt`, `docs/AI_TIERS.md` and
   `Δk(t) > epsilon` (genuinely rising) and `h(t) < θ`.
   **PROPOSAL, same Toledo PR/tier/code as §3** — `PROP-FLOOD-02`.
 - **Unit:** ticks (the same tick §3 declared, e.g. "~53 minutes at k=1 h").
+- **Levels:** a numeric tick value, or the refusal pair `REFUSED/UNRESOLVED` /
+  `REFUSED/NOT_APPLICABLE` — this field's own closed vocabulary, never
+  RED/YELLOW/GREEN/UNKNOWN.
+- **JSON path:** not in `kb.py`'s `answer` JSON — by-hand companion module only:
+  `floodconnect_model.time_to_threshold(...)`.
 - **Input source:** §3's `Δk` plus `θ`.
 - **Thresholds:** `θ` is the station's own declared warning/critical/bank value — never a
   number this project chooses.
@@ -146,6 +172,10 @@ appears in README.md's top section, `llms.txt`, `docs/AI_TIERS.md` and
 - **Exact definition:** the `rain_24h_mm` variable rows from the DDS bulletin
   (`readout.py`'s `dds_obs` filter), no new arithmetic.
 - **Unit:** mm.
+- **Levels:** a numeric value only — this indicator has no colour/level vocabulary of
+  its own and is never re-expressed as RED/YELLOW/GREEN/UNKNOWN.
+- **JSON path:** not in `kb.py`'s `answer` JSON — a separate entrypoint,
+  `readout.build_readout(...)["factors"]["1"]["measured"][*]["value"]`.
 - **Input source:** BMA DDS bulletin (`readout.py` factor 1).
 - **Thresholds:** none applied here — this is a relayed reading, it does not by itself
   drive §1's colour.
@@ -165,6 +195,10 @@ appears in README.md's top section, `llms.txt`, `docs/AI_TIERS.md` and
   one row per public weather model (today 10 models: Open-Meteo/ECMWF/GFS/JMA/CMA/GEM/MET
   Norway and siblings).
 - **Unit:** mm per model, per day/total.
+- **Levels:** a numeric value per model only — no colour/level vocabulary of its own,
+  never re-expressed as RED/YELLOW/GREEN/UNKNOWN.
+- **JSON path:** `hazard.per_model[*]["7day_total_mm"]` (each row also carries
+  `tomorrow_mm` and the model's own name).
 - **Input source:** each model's own public forecast API, fetched at the queried
   coordinate.
 - **Thresholds:** none — a relayed forecast, not a flood-depth prediction.
@@ -183,6 +217,10 @@ appears in README.md's top section, `llms.txt`, `docs/AI_TIERS.md` and
   from the agency's own `diff_wl_bank_text` — "ล้นตลิ่ง"/overflow vs "ต่ำกว่าตลิ่ง"/below
   bank) — no new equation, a direct relay of the agency's own field.
 - **Unit:** m.
+- **Levels:** a numeric value where wired, otherwise `OPEN` — no colour/level vocabulary
+  of its own, never re-expressed as RED/YELLOW/GREEN/UNKNOWN.
+- **JSON path:** not yet wired into any field of `kb.py`'s `answer` JSON — see "Status"
+  below.
 - **Input source:** the nationwide `thaiwater_waterlevel` feed's `station.min_bank` and
   `diff_wl_bank` fields.
 - **Status in this release: NOT YET WIRED into the decision path.** This project's
@@ -201,11 +239,21 @@ appears in README.md's top section, `llms.txt`, `docs/AI_TIERS.md` and
 - **One line:** what percent of the gap between the riverbed/canal floor and the bank the
   current reading has filled.
 - **ความหมายสั้น:** ระดับน้ำปัจจุบันเติมเต็มช่องว่างระหว่างพื้นคลอง/แม่น้ำกับตลิ่งไปกี่เปอร์เซ็นต์
-- **Exact definition / formula:** the agency's own `storage_percent` field,
-  `(wl − ground_level) / (min_bank − ground_level) · 100` — a relay of the agency's own
-  computed field, not a new equation (verified against the feed's own numbers, 0
-  mismatches on checkable records in one capture — see the v0.1.2 design review).
+- **Exact definition / formula:** the agency's own `storage_percent` field — relayed as
+  the agency publishes it, `(wl − ground_level) / (min_bank − ground_level) · 100` is
+  the agency's own stated definition of that field (relayed here for the reader's
+  benefit, **not a Toledo-registered equation** — it is cited, not derived, and is not
+  in `registry/CANONICAL.json` or `registry/proposals/*.json`; treat the written-out
+  formula as `RELAYED`, the same tag as the field itself).
+  (Fix, 2026-10-04, review finding #6: an earlier draft of this section claimed "verified
+  against the feed's own numbers, 0 mismatches ... see the v0.1.2 design review" — no
+  such review is committed anywhere in this repository, so that sentence is removed
+  rather than left as an unverifiable claim.)
 - **Unit:** %.
+- **Levels:** a numeric value where wired, otherwise `OPEN` — no colour/level vocabulary
+  of its own, never re-expressed as RED/YELLOW/GREEN/UNKNOWN.
+- **JSON path:** not yet wired into any field of `kb.py`'s `answer` JSON — see "Status"
+  below.
 - **Input source:** the nationwide `thaiwater_waterlevel` feed's `storage_percent`,
   `min_bank`, `ground_level` fields.
 - **Status in this release: NOT YET WIRED**, same status as §7 — see §11.
@@ -221,6 +269,13 @@ appears in README.md's top section, `llms.txt`, `docs/AI_TIERS.md` and
   outranks the trend computed from §3/§4; without one, `RISING` alone is at least
   `YELLOW`, never `GREEN`.
 - **Unit:** none (categorical `level` + free text `decision`/`why`).
+- **Levels:** `level` — `RED` / `YELLOW` / `GREEN` / `UNKNOWN` (the colour contract
+  above, the only other field it applies to besides §1). `confidence` — `HIGH` /
+  `MEDIUM` / `LOW` / `NONE` (its own closed vocabulary, never the colour contract).
+  `gate` — `LICENSED_WITHIN_ENVELOPE` / `REFUSED`.
+- **JSON path:** not in `kb.py`'s `answer` JSON — by-hand companion module only:
+  `floodconnect_model.one_decision(inputs)` returns
+  `{"decision", "confidence", "level", "checks", "gate", "why"}`.
 - **Input source:** §1 (`official_status`), §3/§4 (`h_t`, `h_t_minus_k`, `epsilon`, `θ`).
 - **Confidence rule (this project's own judgment call, `INSTINCT`, not an agency
   figure):**

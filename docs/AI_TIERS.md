@@ -56,6 +56,17 @@ not a live data endpoint and must never be treated as one.
   cached doc.
 - **Expected output:** a plain explanation + official numbers + the exact
   next step (install, or ask a shell-capable AI) — never a made-up reading.
+- **If this T1 session CAN browse the open web** (most online chat AIs can):
+  you do not have to stop at "explain only". FloodConnect is a **method**, not
+  a hosted data service — it never geocodes and holds no place/POI database,
+  so finding the user's coordinate is your own job (ask for a pin, or use
+  your own map tool), but once you have lat,lon you can follow
+  `docs/NEAREST_STATION_RECIPE.md` yourself: fetch the nationwide
+  `api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel` JSON (no key)
+  or the BMA Bangkok pages, pick the nearest station within ~3 km on the same
+  water body, read the agency's own status word, check freshness, classify
+  per `docs/INDICATORS.md` §1. **Never invent a station, a coordinate, or a
+  number not actually on the page you fetched.**
 - **If this T1 session also has a code sandbox** (no shell/no repo clone,
   but CAN run a little Python): fetch the two raw files below and use
   `floodconnect_model.py`'s `delta_k`/`time_to_threshold`/`classify`/

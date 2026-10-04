@@ -9,13 +9,16 @@ nodes:
   - CI
 artifacts:
   - docs/INDICATORS.md
+  - docs/NEAREST_STATION_RECIPE.md
   - model_spec.json
   - system_capabilities.json
   - README.md
   - llms.txt
   - docs/AI_TIERS.md
   - docs/EQUATIONS_FOR_AI.md
+  - kb.py
   - tests/test_floodconnect_model.py
+  - tests/test_kb_answer.py
 intent: >
   v0.1.2, scoped per founder ruling 2026-10-04 ("ที่สำคัญคือให้ ตัวชี้วัดนี้น้ำน้ำท่วมต้องชัด"
   -- the flood indicators must be clear): a single closed indicators dictionary
@@ -29,15 +32,37 @@ intent: >
   docs/INDICATORS.md. No new equation, no new agency threshold, no invented number --
   every indicator cites its existing v0.1.1 source (floodconnect_model.py,
   model_spec.json, kb.py). water_debt is listed with status "planned (v0.2+)" only, no
-  value. Does NOT attempt the separate founder ruling in the same message about a
+  value.
+
+  Second pass on this same branch, after an independent review: the colour contract
+  is now scoped to current_local_state and one_decision.level only -- every other
+  indicator carries its own closed "levels" list and real "json_path" in both
+  model_spec.json/system_capabilities.json and docs/INDICATORS.md, and the unverified
+  "0 mismatches ... design review" sentence under bank_fill_percent is removed (the
+  agency's own storage_percent formula is now marked relayed, not a Toledo theorem).
+  A new offline output test (tests/test_floodconnect_model.py) runs kb.build_answer
+  and floodconnect_model.one_decision against real fixture/offline data and asserts
+  every emitted value is one of that indicator's own declared levels. Every answer
+  now carries "indicators_doc": "docs/INDICATORS.md" at its top level. The
+  Bangkok-only hotlines (1555, 1130) are now included only for a point actually
+  inside the existing BANGKOK_METRO_BBOX, never nationwide. A new
+  docs/NEAREST_STATION_RECIPE.md gives the step-by-step "find the nearest station
+  yourself" recipe (which official sources, how to pick within radius on the same
+  water body, how to read agency status) for an AI with no FloodConnect tool access,
+  per the founder's "ให้การหาพิกัด ... เป็นหน้าที่ของเอไอของใครของมันแทน" ruling; README,
+  llms.txt, docs/AI_TIERS.md, docs/EQUATIONS_FOR_AI.md and system_capabilities.json
+  all now frame FloodConnect as the method (never a hosted geocoding/POI service) and
+  link that recipe.
+
+  Still does NOT attempt the separate founder ruling in the same message about a
   nationwide coarse-zoom (basin/province) generic read path across
   parsers.py/collect.py/readout.py/kb.py with 5-region fixtures and live CLI runs --
   that is materially larger surgery on the live decision path (parser field additions,
   a new normalise/classify loop, new ANSWER_SOURCES wiring, agency-legend
-  verification, nationwide regression) that this pass does not have the scope to do
-  safely in one sitting; it is left for a dedicated follow-up pass and is not claimed
-  as done here. File-level change only, no history rewrite, stops before any public
-  push per the local/public split rule.
+  verification, nationwide regression) than either pass on this branch has had scope
+  to do safely; it stays a dedicated follow-up and is not claimed as done here.
+  File-level change only, no history rewrite, stops before any public push per the
+  local/public split rule.
 created_at: "2026-10-04T20:40:00+07:00"
 expires_at: null
 reviewers: []

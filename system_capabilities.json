@@ -10,6 +10,13 @@
     "github_pages": "serves ONLY site/landing/ (a static explainer page, no data), via .github/workflows/pages-landing.yml, push-to-site/landing or manual dispatch only, no cron; must never serve site/dist or api/v1. A prior 30-minute scheduled Actions job that fetched live data existed from first public commit (2026-09-26) until its removal from the workflow file on 2026-10-04 -- any cached description/page/search snippet claiming '30 min auto-update' is stale",
     "statement": "Nothing in this repository computes a flood answer except by a caller (human or AI) running it on their own machine, with their own network and their own API keys. There is no server of ours in the loop at any point."
   },
+  "method_not_data_service": {
+    "_purpose": "Founder ruling 2026-10-04, verbatim: 'ให้การหาพิกัด และ สิ่งต่างๆที่ใกล้ๆ เป็นหน้าที่ของเอไอของใครของมันแทนดีไหม' + 'เราแค่ให้เป็นแนวทาง' + 'เอาเลย' -- FloodConnect gives the METHOD (which sources to read, how to pick the nearest station, the equations/thresholds, the honesty rules), never a hosted place/POI lookup.",
+    "we_never_do": ["geocoding (place name -> lat,lon)", "nearby-POI lookup (shelters, hospitals, routes)", "hold a place/POI database"],
+    "your_ai_does": ["geocode the place yourself before calling us", "find nearby POIs yourself", "with no tool access at all, follow the recipe doc below by hand against the same official sources"],
+    "cli_mcp_role": "an OPTIONAL deterministic helper: given lat,lon, it applies this same method for you (nearest station -> agency thresholds -> freshness -> classification)",
+    "recipe_for_chat_ai_with_no_tool": "docs/NEAREST_STATION_RECIPE.md"
+  },
   "entry_points": {
     "cli": {
       "binary": "floodconnect",
@@ -188,18 +195,22 @@
   "indicators": {
     "_purpose": "Closed dictionary of every flood indicator this repository (or its by-hand companion floodconnect_model.py) names -- full prose, worked examples and the bilingual (EN+Thai) one-line meanings live in docs/INDICATORS.md; this array is the same names/levels/status as data, mirrored verbatim into system_capabilities.json's own 'indicators' field (tests/test_floodconnect_model.py checks the two match). Founder ruling 2026-10-04, verbatim: 'ที่สำคัญคือให้ ตัวชี้วัดนี้น้ำน้ำท่วมต้องชัด' -- the flood indicators must be crystal clear.",
     "doc": "docs/INDICATORS.md",
-    "levels": ["RED", "YELLOW", "GREEN", "UNKNOWN"],
+    "color_contract": {
+      "_purpose": "RED/YELLOW/GREEN/UNKNOWN is NOT a universal rule over every indicator below -- fix (2026-10-04, review finding #3): it applies ONLY to the two fields named here. Every other indicator has its own closed 'levels' list on its own entry below; read that entry's 'levels', never assume RED/YELLOW/GREEN/UNKNOWN.",
+      "applies_to": ["next_action.dual_state.current_local_state", "one_decision.level (floodconnect_model.py, by-hand only)"],
+      "levels": ["RED", "YELLOW", "GREEN", "UNKNOWN"]
+    },
     "names": [
-      {"name": "current_local_state", "unit": "categorical", "status": "implemented", "resolution": "station", "doc_section": "1"},
-      {"name": "forward_hazard", "unit": "categorical", "status": "implemented", "resolution": "coordinate", "doc_section": "2"},
-      {"name": "rise_rate_dk", "unit": "m per k ticks", "status": "implemented", "resolution": "station", "toledo_id": "PROP-FLOOD-01", "doc_section": "3"},
-      {"name": "time_to_threshold_tk", "unit": "ticks", "status": "implemented", "resolution": "station", "toledo_id": "PROP-FLOOD-02", "doc_section": "4"},
-      {"name": "rain_24h_mm", "unit": "mm", "status": "implemented", "resolution": "area/bulletin", "doc_section": "5"},
-      {"name": "rain_7day_per_model_mm", "unit": "mm per model", "status": "implemented", "resolution": "coordinate", "doc_section": "6"},
-      {"name": "distance_to_bank_m", "unit": "m", "status": "NOT_YET_WIRED -- source field exists in the nationwide feed, not yet carried into observations.bank/collect.ANSWER_SOURCES", "resolution": "station (where wired)", "doc_section": "7"},
-      {"name": "bank_fill_percent", "unit": "%", "status": "NOT_YET_WIRED -- same gap as distance_to_bank_m", "resolution": "station (where wired)", "doc_section": "8"},
-      {"name": "one_decision", "unit": "categorical (decision text) + confidence", "status": "implemented_in_by_hand_module_only -- kb.py's own answer has no separate confidence field yet", "resolution": "station", "doc_section": "9"},
-      {"name": "water_debt", "unit": "none", "status": "planned (v0.2+)", "resolution": "n/a", "toledo_ids": ["PROP-FLOOD-03", "PROP-FLOOD-06", "PROP-FLOOD-07"], "doc_section": "10"}
+      {"name": "current_local_state", "unit": "categorical", "levels": ["RED", "YELLOW", "GREEN", "UNKNOWN"], "status": "implemented", "resolution": "station", "json_path": "next_action.dual_state.current_local_state", "doc_section": "1"},
+      {"name": "forward_hazard", "unit": "categorical", "levels": ["ACTIVE", "NONE", "UNKNOWN"], "status": "implemented", "resolution": "coordinate", "json_path": "next_action.dual_state.forward_hazard", "doc_section": "2"},
+      {"name": "rise_rate_dk", "unit": "m per k ticks", "levels": ["RISING", "FALLING", "FLAT", "NO_READOUT"], "status": "implemented_in_by_hand_module_only -- not in kb.py's answer JSON", "resolution": "station", "toledo_id": "PROP-FLOOD-01", "json_path": "floodconnect_model.delta_k(...).trend (by-hand only)", "doc_section": "3"},
+      {"name": "time_to_threshold_tk", "unit": "ticks", "levels": ["<numeric value>", "REFUSED/UNRESOLVED", "REFUSED/NOT_APPLICABLE"], "status": "implemented_in_by_hand_module_only -- not in kb.py's answer JSON", "resolution": "station", "toledo_id": "PROP-FLOOD-02", "json_path": "floodconnect_model.time_to_threshold(...) (by-hand only)", "doc_section": "4"},
+      {"name": "rain_24h_mm", "unit": "mm", "levels": ["<numeric value>"], "status": "implemented_in_readout_py_only -- not in kb.py's answer JSON", "resolution": "area/bulletin", "json_path": "readout.build_readout(...).factors['1'].measured[*].value (by-hand/readout.py only)", "doc_section": "5"},
+      {"name": "rain_7day_per_model_mm", "unit": "mm per model", "levels": ["<numeric value per model>"], "status": "implemented", "resolution": "coordinate", "json_path": "hazard.per_model[*]['7day_total_mm']", "doc_section": "6"},
+      {"name": "distance_to_bank_m", "unit": "m", "levels": ["<numeric value>", "OPEN"], "status": "NOT_YET_WIRED -- source field exists in the nationwide feed, not yet carried into observations.bank/collect.ANSWER_SOURCES", "resolution": "station (where wired)", "json_path": "not yet wired into any answer field -- OPEN", "doc_section": "7"},
+      {"name": "bank_fill_percent", "unit": "%", "levels": ["<numeric value>", "OPEN"], "status": "NOT_YET_WIRED -- same gap as distance_to_bank_m", "resolution": "station (where wired)", "json_path": "not yet wired into any answer field -- OPEN", "doc_section": "8"},
+      {"name": "one_decision", "unit": "categorical (decision text) + confidence", "levels": {"level": ["RED", "YELLOW", "GREEN", "UNKNOWN"], "confidence": ["HIGH", "MEDIUM", "LOW", "NONE"], "gate": ["LICENSED_WITHIN_ENVELOPE", "REFUSED"]}, "status": "implemented_in_by_hand_module_only -- kb.py's own answer has no separate confidence field yet", "resolution": "station", "json_path": "floodconnect_model.one_decision(inputs) -> {level, confidence, gate, ...} (by-hand only)", "doc_section": "9"},
+      {"name": "water_debt", "unit": "none", "levels": [], "status": "planned (v0.2+)", "resolution": "n/a", "toledo_ids": ["PROP-FLOOD-03", "PROP-FLOOD-06", "PROP-FLOOD-07"], "json_path": "not implemented -- no field, v0.2+", "doc_section": "10"}
     ]
   },
   "primary_sources_for_this_file": [

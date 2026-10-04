@@ -212,8 +212,13 @@ def test_indicators_block_has_every_closed_name():
 
 
 def test_indicators_levels_are_the_closed_vocabulary():
+    """Fix (2026-10-04, review finding #3): the bare RED/YELLOW/GREEN/UNKNOWN list is
+    scoped under 'color_contract', not a top-level 'levels' claimed to apply to every
+    indicator -- see test_every_indicator_entry_declares_its_own_levels for the
+    per-indicator check."""
     spec = _load_json("model_spec.json")
-    assert spec["indicators"]["levels"] == ["RED", "YELLOW", "GREEN", "UNKNOWN"]
+    assert spec["indicators"]["color_contract"]["levels"] == ["RED", "YELLOW", "GREEN", "UNKNOWN"]
+    assert "current_local_state" in spec["indicators"]["color_contract"]["applies_to"][0]
 
 
 def test_model_spec_and_system_capabilities_indicators_match():
@@ -237,3 +242,97 @@ def test_readme_llms_tiers_equations_link_and_name_indicators():
         assert "docs/INDICATORS.md" in text, f"{path} does not link docs/INDICATORS.md"
         for name in INDICATOR_NAMES:
             assert name in text, f"{name} missing from {path}"
+
+
+def test_every_indicator_entry_declares_its_own_levels():
+    """Fix (2026-10-04, review finding #3): the colour contract (RED/YELLOW/GREEN/
+    UNKNOWN) is not a universal rule -- every indicator must carry its own 'levels'
+    key in model_spec.json, and only current_local_state/one_decision may use the
+    shared colour-contract vocabulary."""
+    spec = _load_json("model_spec.json")
+    rows = {row["name"]: row for row in spec["indicators"]["names"]}
+    assert set(rows) == set(INDICATOR_NAMES)
+    for name, row in rows.items():
+        assert "levels" in row, f"{name} has no 'levels' key"
+    colour = ["RED", "YELLOW", "GREEN", "UNKNOWN"]
+    assert rows["current_local_state"]["levels"] == colour
+    assert rows["one_decision"]["levels"]["level"] == colour
+    # every other indicator's levels must NOT silently reuse the bare colour contract
+    # list as if it were the closed vocabulary (forward_hazard's real vocabulary is
+    # ACTIVE/NONE/UNKNOWN, not RED/YELLOW/GREEN/UNKNOWN).
+    assert rows["forward_hazard"]["levels"] == ["ACTIVE", "NONE", "UNKNOWN"]
+    assert rows["forward_hazard"]["levels"] != colour
+
+
+# Real, offline answer -- the output test review finding #4 asked for: every value this
+# repository's own compute path (kb.build_answer, against "sammakorn", real recorded
+# fixture data already in the repo's data/ store -- see tests/conftest.py's real-data
+# guard) and its by-hand companion (floodconnect_model.one_decision) actually EMITS must
+# be a name/value this dictionary declares, never an undeclared word.
+_DUAL_STATE_LEVELS = {
+    "current_local_state": ["RED", "YELLOW", "GREEN", "UNKNOWN"],
+    "forward_hazard": ["ACTIVE", "NONE", "UNKNOWN"],
+}
+
+
+def test_offline_answer_dual_state_matches_declared_levels():
+    payload = kb.build_answer("sammakorn", refresh=False)
+    dual_state = payload["next_action"]["dual_state"]
+    for key, declared in _DUAL_STATE_LEVELS.items():
+        assert key in dual_state, f"next_action.dual_state missing {key!r}"
+        assert dual_state[key] in declared, (
+            f"next_action.dual_state[{key!r}] = {dual_state[key]!r} is not one of "
+            f"the declared levels {declared!r} in docs/INDICATORS.md / model_spec.json"
+        )
+    assert payload.get("indicators_doc") == "docs/INDICATORS.md"
+
+
+def test_offline_answer_names_an_unresolvable_point_outside_thailand_still_declared():
+    """The outside-Thailand branch (`_outside_thailand`) returns UNKNOWN/UNKNOWN for
+    both dual_state fields and must still carry `indicators_doc` -- never a shape only
+    this one branch produces."""
+    payload = kb.build_answer("999,999", refresh=False)
+    dual_state = payload["next_action"]["dual_state"]
+    for key, declared in _DUAL_STATE_LEVELS.items():
+        assert dual_state[key] in declared
+    assert payload.get("indicators_doc") == "docs/INDICATORS.md"
+
+
+def test_method_not_data_service_framing_present(): # review finding #2
+    """Founder ruling 2026-10-04: FloodConnect gives the METHOD (which sources, how
+    to pick the nearest station, the equations/thresholds, the honesty rules); your
+    own AI geocodes and finds nearby POIs; the CLI/MCP is an OPTIONAL helper. Every
+    first-contact doc + system_capabilities.json must say so and point at the
+    nearest-station recipe for a tool-less chat AI."""
+    recipe = _HERE / "docs" / "NEAREST_STATION_RECIPE.md"
+    assert recipe.is_file(), "docs/NEAREST_STATION_RECIPE.md is missing"
+    recipe_text = recipe.read_text(encoding="utf-8")
+    for marker in ("geocod", "nearest station", "radius", "UNKNOWN"):
+        assert marker.lower() in recipe_text.lower(), f"{marker!r} missing from recipe doc"
+
+    caps = _load_json("system_capabilities.json")
+    assert caps["method_not_data_service"]["recipe_for_chat_ai_with_no_tool"] == (
+        "docs/NEAREST_STATION_RECIPE.md")
+
+    for path in ("README.md", "llms.txt", "docs/AI_TIERS.md", "docs/EQUATIONS_FOR_AI.md"):
+        text = (_HERE / path).read_text(encoding="utf-8")
+        assert "NEAREST_STATION_RECIPE.md" in text, f"{path} does not link the recipe doc"
+        assert ("geocod" in text.lower() or "พิกัด" in text), (
+            f"{path} does not frame geocoding as the caller's own job")
+
+
+def test_one_decision_level_and_confidence_match_declared_levels():
+    spec = _load_json("model_spec.json")
+    rows = {row["name"]: row for row in spec["indicators"]["names"]}
+    declared = rows["one_decision"]["levels"]
+    cases = [
+        {"h_t": 0.38, "h_t_minus_k": 0.30, "epsilon": 0.01, "station_id": "X", "k": 1},
+        {"h_t": 0.30, "h_t_minus_k": 0.38, "epsilon": 0.01, "station_id": "X"},
+        {"h_t": None, "station_id": "X"},
+        {"h_t": 0.30, "official_status": "WATCH", "station_id": "X"},
+    ]
+    for inputs in cases:
+        r = fm.one_decision(inputs)
+        assert r["level"] in declared["level"], r
+        assert r["confidence"] in declared["confidence"], r
+        assert r["gate"] in declared["gate"], r

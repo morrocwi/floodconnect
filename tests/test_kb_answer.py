@@ -403,10 +403,13 @@ def test_answer_json_envelope_keys(real_forecast_db, capsys):
     payload = _json.loads(capsys.readouterr().out)
     # fix (2026-10-04): `cctv` is now ALWAYS present (compact
     # {tag: OPEN, next_action} when no camera is in range, instead of omitted).
+    # fix (2026-10-04, review finding #5): every answer now also carries
+    # `indicators_doc`, pointing at docs/INDICATORS.md.
     assert set(payload) == {
         "generated_at", "at", "refresh", "state", "hazard", "accountability",
-        "next_action", "source_tags", "cctv",
+        "next_action", "source_tags", "cctv", "indicators_doc",
     }
+    assert payload["indicators_doc"] == "docs/INDICATORS.md"
     assert payload["cctv"]["tag"] == "OPEN"
     assert payload["refresh"] is None  # no --refresh passed in this test
     assert len(payload["source_tags"]) == 4
