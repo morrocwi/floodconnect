@@ -1,0 +1,61 @@
+claim_id: "20261004-floodconnect-kg-links-claim"
+status: ACTIVE
+writer: "ai-worker"
+branch: "agent/ai-worker/floodconnect-kg-links"
+base_sha: "c41bc013af57073e4cc86bc8d2934e182add2caf"
+nodes:
+  - RIVER_KG
+  - GOVERNANCE
+  - HARVEST
+  - REPO_KG
+artifacts:
+  - tools/harvest/hii_station_geocode.py
+  - tools/harvest/dwr_admin.py
+  - sources/hii_station_geocode.yaml
+  - sources/admin_units.yaml
+  - sources/province_agency_crosswalk.yaml
+  - build_river_kg.py
+  - tools/kg/build_kg.py
+  - tools/kg/accountability.py
+  - kb.py
+  - docs/KG_QUERY.md
+  - llms.txt
+  - README.md
+  - docs/AI_TIERS.md
+  - AGENTS.md
+  - .gitignore
+  - tests/test_kg_build.py
+  - tests/test_kg_query.py
+  - output/thailand_water_kg.graphml
+  - output/thailand_water_kg.jsonld
+  - output/thailand_river_network.graphml
+  - site/inputs/meta/floodconnect_repo_kg.yaml
+intent: >
+  Close 4 KG gaps found testing Pathum Thani against the shipped
+  thailand_water_kg (25,883 nodes / 56,603 edges): (1) river reaches have
+  no edges to gauges/gates/dams so upstream/downstream walks from a
+  station are impossible; (2) admin-area nodes exist only for the 50
+  Bangkok districts, no province/amphoe nodes elsewhere; (3) the
+  governance DAG (provincial governor/RID/PAO, basin committees) is
+  disconnected from assets/areas so accountability for a non-Bangkok
+  point returns only AG_HII; (4) reaches carry no explicit main-stem tag.
+  Fix: raise the river layer to Strahler>=4 in a new
+  output/thailand_river_network.graphml (build_river_kg.py, existing
+  thailand_river_flow.graphml untouched since build_bangkok_canals.py and
+  klongmap_local_prior_experiment.py read it); add ON_REACH edges
+  (asset->reach, nearest-line within 1km, RELAYED) and IN_SUBBASIN/
+  IN_BASIN edges; add province/amphoe nodes nationwide from HII geocode
+  fields (VERIFIED) and DWR Province_2556/Amphoe_2556 boundaries
+  (VERIFIED-from-DWR-service) or OSM admin_level RELAYED fallback per
+  founder gate; add province_agency_crosswalk.yaml linking the 9
+  provincial governance triples + basin committees to province/basin
+  nodes via RESPONSIBLE_FOR (role_template flag for the generic-template
+  edges that cover the other provinces); tag main_stem from HydroRIVERS
+  ORD_CLAS==1 and a documented basin_main_stem walk. No invented
+  equations, no new DAG office nodes, no change to DSVA/Toledo objects.
+  Sammakorn MVP path (Q0/Q1, kb.py answer) stays byte-identical.
+created_at: "2026-10-04T21:30:00+07:00"
+expires_at: null
+reviewers: []
+supersedes: null
+note: null
