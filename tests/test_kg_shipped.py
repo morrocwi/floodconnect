@@ -1,6 +1,6 @@
 """Regression tests over the SHIPPED committed graph, output/thailand_water_kg.graphml --
 never a fresh build. Guards the actual artifact that ships, not just the builder code
-(review finding HIGH-1, 2026-10-04: a committed KG once silently shipped with ZERO
+(a committed KG once silently shipped with ZERO
 IN_SUBBASIN edges even though the builder code itself was fine -- the DWR polygon
 archive was simply missing from that build environment). Skips cleanly (never fails)
 when the shipped file is absent from a given checkout, matching every other
@@ -27,7 +27,7 @@ def shipped_graph():
 
 
 def test_mekong_reach_near_nong_khai_is_main_stem_on_the_real_graph():
-    """Regression for review finding HIGH-4 (2026-10-04): the Mekong reach near
+    """Regression for a fixed restart-on-break bug: the Mekong reach near
     17.88N,102.74E (riverreach:41246335, the Nong Khai area, main_river_id 41392598,
     discharge 4504.2 cms) sits in a weakly-connected component of its own
     main_river_id group that the pre-fix single walk never reached at all (the walk
@@ -46,7 +46,7 @@ def test_mekong_reach_near_nong_khai_is_main_stem_on_the_real_graph():
 
 
 def test_shipped_graph_has_in_subbasin_edges(shipped_graph):
-    """review finding HIGH-1 (2026-10-04): the shipped graph must never ship with zero
+    """The shipped graph must never ship with zero
     IN_SUBBASIN edges -- that silently drops the asset -> sub-basin -> basin link the
     upstream/accountability walk depends on. Not an exact count (the real DWR polygon
     coverage can shift a little build to build), just > 0, which the pre-fix regression

@@ -13,7 +13,7 @@ Writes `output/thailand_water_kg.graphml` and `output/thailand_water_kg.jsonld`.
 `raw/gis/dwr_subbasin/page_*.geojson`** (the archived DWR Sub_Basin polygons, gitignored --
 run `python3 -m tools.harvest.dwr_subbasin` first, or copy/symlink an existing archive) --
 the builder **exits non-zero** when that archive is absent, rather than silently shipping a
-graph with zero `IN_SUBBASIN` edges (review finding HIGH-1, 2026-10-04); pass
+graph with zero `IN_SUBBASIN` edges; pass
 `--allow-missing-subbasin` only for a deliberately degraded build, and never commit one.
 Reads from (never writes to, except its two output files):
 
@@ -286,15 +286,19 @@ table (printed to stdout on every run) if any upstream source changes.
   heuristic measures distance to a reach's representative POINT, not its line geometry,
   and never snaps to a `canal_node`/declared canal-chain reach -- but it DOES snap a
   canal-sited asset to the nearest HydroRIVERS `river_reach` regardless, often far away:
-  250 of the 785 edges are from an asset whose own name_th contains คลอง (canal) (median snap
-  1.71 km, 100 over 5 km, 34 over 10 km, max 15.71 km) -- an upstream/downstream walk
-  from such an edge is not reliable. True point-to-polyline snapping across river AND
-  canal reaches together is **M2b**. See `docs/KG_QUERY.md` section 1 for the full
-  per-class table and the snap-distance numbers.
+  250 of the 785 edges are from an asset whose own name_th contains คลอง (canal); among
+  those 250 canal-sited edges: median snap 1.58 km, 34 over 5 km, 15 over 10 km, max
+  15.71 km -- an upstream/downstream walk from such an edge is not reliable. True
+  point-to-polyline snapping across river AND canal reaches together is **M2b**. See
+  `docs/KG_QUERY.md` section 1 for the full per-class table and the (nationwide) snap-distance
+  numbers.
   **MEASURED: no Pathum Thani asset has an `ON_REACH` edge — 0 of 15 Pathum assets in the
   graph (4 water-level gauges BKK002, BKK013, BKK015, CAN001 + 11 rain gauges, the latter
-  excluded from ON_REACH by design); 13 of the 28 HII-geocoded Pathum ids are not nodes in
-  the shipped graph. Fixing this is M2b.**
+  excluded from ON_REACH by design); 13 of the 28 HII-geocoded Pathum ids ARE nodes in the
+  shipped graph (as `gate:hii_watergate:<id>`) but carry no `IN_PROVINCE` edge -- the
+  geocode join misses them on an id-prefix mismatch (see the geocode file's own
+  `known_limitation`), a join/crosswalk gap rather than a missing-node gap. The "0
+  `ON_REACH` for Pathum" figure holds either way, these 13 included. Fixing this is **M2b**.**
 - **`main_stem` is per HydroRIVERS river system (`main_river_id` group), not the Thai
   administrative "แม่น้ำสายหลัก" (the one designated main river per ONWR basin)** -- under
   this build's definition Ping, Mun and Chi are `main_stem=False` because each is a

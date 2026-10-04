@@ -164,8 +164,7 @@ def compute_main_stem(nodes: list, edges: list) -> set:
     """Flags which river_reach ids lie on the main-stem path of their own HydroRIVERS
     MAIN_RIV group -- a deterministic graph walk over data ALREADY in
     output/thailand_river_flow.graphml (`main_river_id`, `discharge_avg_cms`,
-    `dist_to_outlet_km`), never an invented distance/order threshold (per
-    agent/ai-worker/floodconnect-kg-links review finding HIGH-1 / gap 4).
+    `dist_to_outlet_km`), never an invented distance/order threshold.
 
     For every group of reaches sharing the same `main_river_id` (HydroRIVERS' own
     MAIN_RIV field -- the id of that river system's designated outlet reach), start
@@ -180,7 +179,7 @@ def compute_main_stem(nodes: list, edges: list) -> set:
     its own river system; every other reach in the group is a tributary that
     discharges INTO the main stem but was not chosen as its continuation.
 
-    RESTART ON BREAK (review finding HIGH-4, 2026-10-04, fixed): a river that crosses
+    RESTART ON BREAK: a river that crosses
     Thailand's border (the Mekong is the real case: its true HydroRIVERS outlet is in
     Vietnam, outside the Thailand bbox clip, and the clip edge also severs the in-group
     WATER-edge chain -- MEASURED on the real data: `main_river_id` group 41392598 splits
@@ -287,7 +286,7 @@ def load_river_reaches(path: Path):
     """Returns (nodes: list[(id, attrs)], edges: list[(u, v, attrs)]). Frees the
     networkx graph object before returning control to the caller. Every node also
     carries `main_stem` (bool) + `main_stem_basis`, from `compute_main_stem()` above --
-    closes review finding HIGH-1 / gap 4 ("no explicit main-stem tag on reaches")."""
+    gives every reach an explicit main-stem tag."""
     if not path.exists():
         return [], []
     G = nx.read_graphml(path)
@@ -405,8 +404,8 @@ def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 
 # ---------------------------------------------------------------------------------
 # ON_REACH edges: asset (gauge/gate/dam/weir/...) -> its nearest river_reach node
-# (build 7, 2026-10-04, review finding HIGH-1 / gap 1: "river_reach subgraph has no
-# edges to assets ... cannot walk upstream/downstream from a station or a point").
+# (build 7, 2026-10-04): gives the river_reach subgraph edges to assets, so a caller
+# can walk upstream/downstream from a station or a point.
 # Snap tolerance is NEVER a fixed/invented number: an edge is created only when the
 # nearest reach is within THAT REACH'S OWN length_km (already in
 # thailand_river_flow.graphml, read in load_river_reaches above) -- a short reach
@@ -416,13 +415,13 @@ def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 # ---------------------------------------------------------------------------------
 
 def build_on_reach_edges(assets: list, river_nodes: list) -> list:
-    """Nearest-centroid snap heuristic (review finding HIGH-3, 2026-10-04): the result is
+    """Nearest-centroid snap heuristic: the result is
     NEVER tagged with the asset's own tag (that would launder an unchecked nearest-point
     guess into VERIFIED/MEASURED). Every ON_REACH edge carries its own fixed derived tag
     `DERIVED-snap`, defined in tools/kg/README.md's tag table as a heuristic, never
     upgraded. `rain_gauge` assets are excluded entirely -- a rain gauge measures rainfall
     at a point, it is not located ON a river reach, so snapping one to the nearest reach
-    centroid is meaningless (review finding HIGH-3). Coverage is reported per asset class
+    centroid is meaningless. Coverage is reported per asset class
     so a reader sees which classes this heuristic actually reaches (most do not, see
     KG_QUERY.md -- true line-geometry snapping is M2b)."""
     reach_list = [
@@ -1541,8 +1540,8 @@ def apply_drainage_unit_candidate(G: nx.MultiDiGraph) -> int:
 
 
 # ---------------------------------------------------------------------------------
-# (m) Nationwide province/amphoe admin-area nodes (build 7, 2026-10-04, review finding
-# HIGH-1 / gap 2: "admin nodes exist only for the 50 Bangkok districts"). Source is
+# (m) Nationwide province/amphoe admin-area nodes (build 7, 2026-10-04): gives admin
+# nodes beyond just the 50 Bangkok districts. Source is
 # sources/hii_station_geocode.yaml's own already-harvested province_code/
 # province_name_th/amphoe_code/amphoe_name_th fields (official HII thaiwater geocode
 # block, tag VERIFIED per that file's own header) -- every DISTINCT (province_code,
@@ -1652,8 +1651,8 @@ def build_asset_admin_edges(G: nx.MultiDiGraph, admin_rows: list) -> list:
 
 # ---------------------------------------------------------------------------------
 # (n) RESPONSIBLE_FOR edges from sources/province_agency_crosswalk.yaml (build 7,
-# 2026-10-04, review finding HIGH-1 / gap 3: "governance DAG disconnected from
-# assets/areas"). Wires that crosswalk's 4 row families onto area nodes already in G
+# 2026-10-04): connects the governance DAG to assets/areas, which it was previously
+# disconnected from. Wires that crosswalk's 4 row families onto area nodes already in G
 # (province:*/amphoe:* from load_admin_units above, basin:onwr:* from the live assets
 # table, district:* from sources/bkk_district_elevation.yaml) -- never invents a new
 # AG_ node, never edits the crosswalk file's own meaning. role_template rows apply
@@ -1817,8 +1816,8 @@ def build_graph(repo_root: Path, conn, allow_missing_subbasin: bool = False) -> 
         sys.exit(
             "FATAL: raw/gis/dwr_subbasin/*.geojson is missing -- building now would "
             "silently ship a KG with ZERO IN_SUBBASIN edges (the asset -> sub-basin -> "
-            "basin link the upstream/accountability walk depends on; see review finding "
-            "HIGH-1 / gap 1, 2026-10-04). Run `python3 -m tools.harvest.dwr_subbasin` "
+            "basin link the upstream/accountability walk depends on). Run "
+            "`python3 -m tools.harvest.dwr_subbasin` "
             "first to populate raw/gis/dwr_subbasin/, or pass --allow-missing-subbasin "
             "to build a degraded graph on purpose."
         )

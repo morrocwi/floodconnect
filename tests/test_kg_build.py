@@ -208,7 +208,7 @@ def test_compute_main_stem_falls_back_to_min_dist_to_outlet_when_outlet_clipped(
 
 
 def test_compute_main_stem_restarts_on_a_disconnected_fragment():
-    """review finding HIGH-4 (2026-10-04): a group with a border/clip-caused gap in its
+    """A group with a border/clip-caused gap in its
     own WATER-edge chain splits into two disconnected pieces -- 'outlet'<-'near'<-'mainup'
     (the piece the first walk reaches) and a wholly separate 'far_sink'<-'far_up' piece
     with NO edge at all connecting it to the first piece (the clip-severed continuation).
@@ -262,16 +262,16 @@ def test_build_on_reach_edges_snaps_within_reach_own_length_and_skips_too_far():
     by_asset = {u: (v, d) for u, v, d in edges}
     assert "gauge:x" in by_asset and by_asset["gauge:x"][0] == "riverreach:near"
     assert by_asset["gauge:x"][1]["kind"] == "ON_REACH"
-    # review finding HIGH-3 (2026-10-04): ON_REACH never inherits the asset's own tag --
-    # it is a nearest-centroid snap heuristic, never checked, so it gets its OWN fixed
-    # derived tag, not the asset's VERIFIED.
+    # ON_REACH never inherits the asset's own tag -- it is a nearest-centroid snap
+    # heuristic, never checked, so it gets its OWN fixed derived tag, not the asset's
+    # VERIFIED.
     assert by_asset["gauge:x"][1]["tag"] == "DERIVED-snap"
     assert "gauge:y" not in by_asset  # nearest candidate farther than that reach's own length_km
     assert "gauge:z" not in by_asset  # no lat/lon -- never guessed
 
 
 def test_build_on_reach_edges_excludes_rain_gauge():
-    """review finding HIGH-3 (2026-10-04): a rain gauge measures rainfall at a point, it
+    """A rain gauge measures rainfall at a point, it
     is not located ON a river reach -- snapping one to the nearest reach centroid is
     meaningless, so rain_gauge assets never get an ON_REACH edge at all, however close."""
     river_nodes = [("riverreach:near", {"lat": 14.0000, "lon": 100.5000, "length_km": 5.0})]

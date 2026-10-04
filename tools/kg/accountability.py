@@ -586,7 +586,7 @@ def build_result(at: str, radius_km: float = DEFAULT_RADIUS_KM,
     reuse this exact logic instead of re-deriving or shelling out to `run()`'s stdout.
     `run()` below is now a thin print wrapper over this function; behaviour unchanged.
 
-    `use_shipped_kg` (review finding HIGH-5, 2026-10-04): shipping the nationwide
+    `use_shipped_kg`: shipping the nationwide
     output/thailand_water_kg.graphml must not silently change what kb.py's own
     answer path (`_answer_accountability`/`_answer_next_action`) returns for
     sammakorn/ram53, or the token-budget-tested shape of that answer -- kb.py's call

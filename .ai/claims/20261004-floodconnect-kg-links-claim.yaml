@@ -132,11 +132,25 @@ note: >
   crosswalk) are OUT OF SCOPE for M2a by the founder's own split -- this
   revision only makes the docs say so honestly, it does not implement
   either.
-  Third revision, same day, after a second independent re-check (verdict FAIL, 3 MED + 9 LOW). MED defects fixed: (MED-1) `tools/kg/README.md` and `docs/KG_QUERY.md` both claimed Ping/Yom/Mun/Chi and Nan are main_stem because each is its own HydroRIVERS system -- false, measured against the shipped graph (Ping/Mun/Chi are tributary pieces inside the Chao Phraya/Mekong groups; Nan is main_stem because it is the highest-discharge branch within the same Chao Phraya group as the Chao Phraya reach itself) -- both docs rewritten to say the same, correct thing; (MED-2) both docs also claimed canal-sited stations never get an ON_REACH edge -- false, measured 250 of 785 ON_REACH edges are from a คลอง-named asset, snapping up to 15.71 km away (median 1.71 km) -- both docs now give the real numbers and say such an edge is unreliable for an upstream/downstream walk; (MED-3) this claim's own `artifacts` list was missing `output/thailand_river_flow.graphml`/`.jsonld` (both changed by the main_stem restart fix) and its `intent` text still said kb.py was untouched -- both fixed above. The 9 LOW findings from that same re-check are left as-is, per the task's own "fix HIGH and MED only" scope.
+  Third revision, same day, after a second independent re-check found 3 defects worth
+  fixing now plus 9 smaller ones. Defects fixed: `tools/kg/README.md` and
+  `docs/KG_QUERY.md` both claimed Ping/Yom/Mun/Chi and Nan are main_stem because each
+  is its own HydroRIVERS system -- false, measured against the shipped graph
+  (Ping/Mun/Chi are tributary pieces inside the Chao Phraya/Mekong groups; Nan is
+  main_stem because it is the highest-discharge branch within the same Chao Phraya
+  group as the Chao Phraya reach itself) -- both docs rewritten to say the same,
+  correct thing; both docs also claimed canal-sited stations never get an ON_REACH
+  edge -- false, measured 250 of 785 ON_REACH edges are from a คลอง-named asset,
+  snapping up to 15.71 km away (median 1.71 km) -- both docs now give the real numbers
+  and say such an edge is unreliable for an upstream/downstream walk; this claim's own
+  `artifacts` list was missing `output/thailand_river_flow.graphml`/`.jsonld` (both
+  changed by the main_stem restart fix) and its `intent` text still said kb.py was
+  untouched -- both fixed above. The 9 smaller findings from that same re-check are
+  left as-is, per the task's own "fix the significant ones only" scope.
 
   M2a doc-only fix, same day, after a reviewer re-measured the canal-snap count directly
   against the shipped `output/thailand_water_kg.graphml` and got 250, not the 288 this
-  claim's own MED-2 note previously stated -- this claim's count is corrected above to
+  claim's own note previously stated -- this claim's count is corrected above to
   match the measured 250. Also re-measured and fixed: `docs/KG_QUERY.md` section 1's
   "other asset classes" ON_REACH denominator was wrong (191; re-measured against the
   shipped graph gives 118, counting `kind=="asset"` nodes only, excluding

@@ -55,8 +55,7 @@ LICENCE_NOTE = (
     "harvest that finds an explicit terms page should update this field, never assume."
 )
 
-# review finding LOW-6 (agent/ai-worker/floodconnect-kg-links, 2026-10-04): a bare
-# leading-zero code like amphoe_code "08" is read back as the string "08" by PyYAML
+# A bare leading-zero code like amphoe_code "08" is read back as the string "08" by PyYAML
 # (YAML 1.1 -- "08" is not valid octal, so it falls back to string) but as the
 # INTEGER 8 by a YAML 1.2-compliant parser, silently dropping the leading zero for
 # any consumer that isn't PyYAML. Force double-quoted style on every bare numeric

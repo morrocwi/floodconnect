@@ -26,7 +26,9 @@ kggraph นี้") — milestone M2a of the founder-approved "แบ่ง M2a/
   by the Thailand bbox clip — fixed so the in-Thailand portion is never silently left
   untagged). This is the HydroRIVERS-system sense, not the Thai administrative
   "สายหลัก" per-ONWR-basin sense — see `docs/KG_QUERY.md` section on `main_stem` and
-  "Known gaps" below.
+  "Known gaps" below. `output/thailand_river_flow.graphml` (+ `.jsonld`) was
+  regenerated to add `main_stem`/`main_stem_basis`; its older GISTDA flood-snapshot
+  fields (`flood_source_node`, `eta_from_flood_hr`) are no longer included.
 - `docs/KG_QUERY.md` — the recipe page every AI session reads first for anything
   basin/province/amphoe/river/station/gate/agency-shaped, with measured (not
   aspirational) coverage numbers and runnable Python snippets against the shipped
@@ -45,12 +47,16 @@ kggraph นี้") — milestone M2a of the founder-approved "แบ่ง M2a/
 ### KNOWN GAPS → M2b (not closed by this build, stated here rather than papered over)
 - **Pathum Thani: 0 of 15 Pathum assets have an `ON_REACH` edge** (4 water-level
   gauges + 11 rain gauges, the latter excluded from `ON_REACH` by design); 13 of the
-  28 HII-geocoded Pathum ids are not nodes in the shipped graph at all.
+  28 HII-geocoded Pathum ids ARE nodes in the shipped graph (as `gate:hii_watergate:<id>`)
+  but carry no `IN_PROVINCE` edge, because the geocode join misses them on an id-prefix
+  mismatch (see the geocode file's own `known_limitation`) — a join/crosswalk gap, not a
+  missing-node gap. The "0 `ON_REACH` for Pathum" figure holds either way, these 13 included.
 - **Canal snapping**: the `ON_REACH` heuristic never snaps to a declared canal-chain
   reach — a canal-sited asset still snaps to the nearest HydroRIVERS river reach
   regardless, often far away (250 of the 785 edges are from an asset whose name_th
-  contains คลอง; median snap 1.71 km, 100 over 5 km, 34 over 10 km, max 15.71 km).
-  True point-to-polyline snapping across river AND canal reaches together is M2b.
+  contains คลอง; among those 250 canal-sited edges: median snap 1.58 km, 34 over 5 km,
+  15 over 10 km, max 15.71 km). True point-to-polyline snapping across river AND canal
+  reaches together is M2b.
 - **Point → province/accountability resolution is not wired** for a bare lat,lon
   outside Sammakorn/Ram53: `province`/`amphoe` nodes carry no geometry, and
   `tools/kg/accountability.py`'s `nearest_assets()` never reads `RESPONSIBLE_FOR` or

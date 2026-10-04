@@ -14,7 +14,7 @@ required to READ them. `output/` is rebuilt from already-committed sources by
 `python3 -m tools.kg.build_kg` (see `tools/kg/README.md`) whenever those sources change; this
 page is about reading the shipped result, not rebuilding it.
 
-**Honesty note (2026-10-04 regate revision):** every section below states what is MEASURED —
+**Honesty note (2026-10-04 revision):** every section below states what is MEASURED —
 actual coverage numbers from this build, not an aspirational "closed" claim. Several gaps are
 genuinely PARTIAL; where they are, this page says so and points at the M2b backlog item that
 would close them further, instead of papering over the gap.
@@ -71,8 +71,11 @@ together is **M2b** (out of scope for this build — see `tools/kg/README.md` "K
 
 **MEASURED: no Pathum Thani asset has an `ON_REACH` edge — 0 of 15 Pathum assets in the graph
 (4 water-level gauges BKK002, BKK013, BKK015, CAN001 + 11 rain gauges, the latter excluded
-from ON_REACH by design); 13 of the 28 HII-geocoded Pathum ids are not nodes in the shipped
-graph. Fixing this is M2b.**
+from ON_REACH by design); 13 of the 28 HII-geocoded Pathum ids ARE nodes in the shipped graph
+(as `gate:hii_watergate:<id>`) but carry no `IN_PROVINCE` edge — the geocode join misses them
+on an id-prefix mismatch (see the geocode file's own `known_limitation`), a join/crosswalk gap
+rather than a missing-node gap. The "0 `ON_REACH` for Pathum" figure holds either way, these 13
+included. Fixing this is M2b.**
 
 ```python
 # which reach is this gauge on, and what's downstream of it?
