@@ -1,5 +1,5 @@
 claim_id: "20261004-floodconnect-kg-links-claim"
-status: ACTIVE
+status: RELEASED
 writer: "ai-worker"
 branch: "agent/ai-worker/floodconnect-kg-links"
 base_sha: "c41bc013af57073e4cc86bc8d2934e182add2caf"
