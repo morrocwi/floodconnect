@@ -210,6 +210,10 @@ landed yet, fall back to cloning the repo or re-reading this page as prose):
 
 ## Strong AI: go deeper
 
+- `docs/KG_QUERY.md` — **read first for anything basin/province/amphoe/river/station/
+  gate/agency-shaped.** `output/thailand_water_kg.graphml` (+ `.jsonld`) is committed
+  directly in git (no LFS, no download step) — read it from this checkout before
+  re-deriving or re-geocoding anything it already answers (founder ruling 2026-10-04).
 - `docs/AI_TIERS.md` — the full capability-tier breakdown (T0–T5): what each tier
   can/must-not do, its first step, and its expected output.
 - `ARCHITECTURE.md` — the Water-Debt Core design, the D1–D8 decision protocol, the
