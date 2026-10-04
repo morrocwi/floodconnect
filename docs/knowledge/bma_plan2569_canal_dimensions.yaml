@@ -1,0 +1,4967 @@
+# New file only, added 2026-09-27 (BMA flood plan 2569 extraction). Not merged into
+# any registry. (Note: this comment used to say "not
+# committed as part of this change" -- stale, this file IS committed and shipped
+# in the public MVP tree.)
+meta:
+  document: แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วมกรุงเทพมหานคร เนื่องจากน้ำฝนและน้ำหนุน ประจำปี 2569 (ในส่วนความรับผิดชอบของสำนักการระบายน้ำ กรุงเทพมหานคร)
+  issuer: สำนักการระบายน้ำ กรุงเทพมหานคร (BMA Department of Drainage and Sewerage)
+  source_file_public: dds.bangkok.go.th public_content 0011290_1.pdf (322 pages; print stamp on p1 dated 23 พ.ค. 2569)
+  page_convention: '`page` = PDF page number (1-based, physical). Printed appendix page labels (ก-1, ข-5, ง-25, จ-3, ฉ-13 ...) are given in `printed_page` where the parser could read them.'
+  extraction_method: pdftotext -layout text layer, regex row parser (no OCR). `raw` is the verbatim text-layer line(s) the row came from; values are copied as printed, no unit conversion.
+  glyph_note: 'The text layer renders some Thai glyphs inconsistently: in ch.1/appendix ง ''ำ'' often appears as ''า'' (น้า = น้ำ, ลาดับ = ลำดับ), in appendix ข ''า'' often appears as ''ำ'' (บำงกะปิ = บางกะปิ). `raw` keeps
+    the layer as-is; `name`/`district` are lightly normalised only where the mapping is unambiguous (see `normalise()` in the extractor).'
+  tag_default: MEASURED  # note: was "VERIFIED" -- a value read
+  # by regex from a PDF text layer with known-damaged glyphs is a MEASURED read of
+  # that file, not an independently-checked VERIFIED fact; parser-mapped fields
+  # carry their own parse_confidence on top of this
+  table: ภาคผนวก ข งานระบบคลอง -- ภารกิจเปิดทางน้ำไหล/ขุดลอก/รักษาความสะอาดคูคลอง ประจำปี 2569 (กลุ่มงานบำรุงรักษาคลอง 1-4) PDF p93-112 (printed ข-1..ข-20)
+  columns_as_printed: ลำดับ | รายชื่อคลอง | จาก | ถึง | ขนาด กว้าง/ม. | ยาว/ม. | ระดับขุดลอก (ม.รทก.) | พื้นที่เขต | Latitude | Longitude   (p108-112 Thonburi tables omit จาก/ถึง)
+  what_these_numbers_are: 'Maintenance-plan reaches: printed width RANGE (m), reach length (m) and DREDGE level (m MSL) of the reach scheduled for 2569 maintenance. They are not a hydraulic design-capacity table: NO design_capacity_m3s
+    and NO depth column exists anywhere in this plan for canals (grep of the full text layer for ''ลบ.ม./วินาที'' near canal names finds only pump/tunnel/intake capacities). design_capacity_m3s is therefore absent on every
+    row, not zero.'
+  canal_totals_p63_quote: คู คลองระบายน้ำ จำนวนทั้งสิ้น 1,980 คลอง ความยาวรวม ประมาณ 2,744 กิโลเมตร แบ่งเป็น สำนักการระบายน้ำจำนวน 233 คลอง ความยาวประมาณ 1,002 กิโลเมตร สำนักงานเขตจำนวน 1,747 คลอง ความยาวประมาณ 1,742 กิโลเมตร
+    (PDF p63, ก-9)
+  drain_pipes_p63_quote: ท่อระบายน้ำ ความยาวประมาณ 6,854 กิโลเมตร แบ่งเป็นถนนสายหลัก 2,149 กิโลเมตร ในตรอก ซอย ยาวประมาณ 4,705 กิโลเมตร (PDF p63)
+  cannot_widen_quote_p55: การระบายน้ำออกจากพื้นที่โดยขีดความสามารถของสถานีสูบน้ำและคลองระบายน้ำจึงมีความจำเป็น แต่ก็มีขีดจำกัดจากการที่ไม่สามารถปรับปรุงขยายความกว้างของคลองได้ จึงทำให้เพิ่มขีดความสามารถการระบายน้ำไม่ได้ เนื่องจากปัญหาการรุกล้ำคู
+    คลองสาธารณะ (PDF p55, ก-1; text-layer line 1633)
+  cannot_dredge_quote_p20: คู คลองถูกรุกล้ำจนแคบไม่สามารถขุดลอกได้ลึกเพียงพอ จึงจำเป็นต้องสร้างเขื่อนคอนกรีตเสริมเหล็กริมคลองก่อนเท่านั้น (PDF p20, §2.2.2)
+  comparison_with_repo:
+    capacity_ledger_led:bkk_east_canals_summary: 'capacity_value null / OPEN -- ''No single stated m3/s conveyance capacity exists for the canal reaches''. This plan CONFIRMS that finding: it too states no canal conveyance
+      capacity, only widths/lengths/dredge levels. Not a contradiction.'
+    docs/DRAINAGE_CAPACITY_MAP.md: file not present in the worktree at extraction time (docs/knowledge/DRAINAGE_CAPACITY_MAP.md exists; not compared -- OPEN)
+    priority_canal_rows_found: 44
+  extracted_rows: 269
+  parse_confidence_counts:
+    high: 244
+    medium: 23
+    low: 2
+priority_canals:
+- &id001
+  seq: 1
+  name: คลองบ้านใหม่ คลองเปรมประชากร คลองประปา
+  from_to: null
+  width_m_as_printed: 10 - 20
+  length_m_as_printed: 4,379
+  dredge_level_m_msl_as_printed: '- 1.50'
+  district: ดอนเมือง
+  lat: 13.944073
+  lon: 100.605601
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 93
+  printed_page: ข-1
+  raw: 1 | คลองบ้ำนใหม่ คลองเปรมประชำกร คลองประปำ | 10 - 20 4,379 - 1.50 ดอนเมือง | 13.944073 100.605601
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4379.0
+- &id002
+  seq: 2
+  name: คลองตาอูฐ คลองเปรมประชากร คลองประปา
+  from_to: null
+  width_m_as_printed: 2 - 8
+  length_m_as_printed: 3,517
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: หลักสี่
+  lat: 13.899371
+  lon: 100.587472
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 93
+  printed_page: ข-1
+  raw: 2 | คลองตำอูฐ คลองเปรมประชำกร คลองประปำ | 2 - 8 3,517 -1.50 | หลักสี่ | 13.899371 100.587472
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3517.0
+- &id003
+  seq: 3
+  name: คลองวัดหลักสี่ คลองเปรมประชากร คลองสอง
+  from_to: null
+  width_m_as_printed: 6 - 9
+  length_m_as_printed: 1,329
+  dredge_level_m_msl_as_printed: '-3.00'
+  district: หลักสี่
+  lat: 13.890602
+  lon: 100.582919
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 93
+  printed_page: ข-1
+  raw: 3 | คลองวัดหลักสี่ คลองเปรมประชำกร คลองสอง | 6 - 9 1,329 -3.00 | หลักสี่ | 13.890602 100.582919
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1329.0
+- &id004
+  seq: 4
+  name: คลองบางตลาด คลองเปรมประชากร คลองประปา
+  from_to: null
+  width_m_as_printed: 5.5 - 14
+  length_m_as_printed: 2,789
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: หลักสี่
+  lat: 13.877619
+  lon: 100.550553
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 93
+  printed_page: ข-1
+  raw: 4 | คลองบำงตลำด คลองเปรมประชำกร คลองประปำ | 5.5 - 14 2,789 -2.00 | หลักสี่ | 13.877619 100.550553
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2789.0
+- &id005
+  seq: 7
+  name: คลองน้ำแก้ว คลองลาดพร้าว คลองพญาเวิก
+  from_to: null
+  width_m_as_printed: 7.5 - 12
+  length_m_as_printed: 2,330
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: ห้วยขวาง
+  lat: 13.803051
+  lon: 100.588265
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 93
+  printed_page: ข-1
+  raw: 7 | คลองน้ำแก้ว คลองลำดพร้ำว คลองพญำเวิก | 7.5 - 12 2,330 -2.50 | ห้วยขวำง | 13.803051 100.588265
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2330.0
+- &id006
+  seq: null
+  name: ถนนรัชดาภิเษก คลองสามเสน
+  from_to: null
+  width_m_as_printed: 3-7
+  length_m_as_printed: '960'
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ห้วยขวาง
+  lat: 13.763426
+  lon: 100.568296
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 93
+  printed_page: ข-1
+  raw: ถนนรัชดำภิเษก คลองสำมเสน | 3-7 | 960 -1.50 | ห้วยขวำง | 13.763426 | 100.568296
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 960.0
+- &id007
+  seq: 1
+  name: คลองชวดใหญ่ คลองลาดพร้าว คลองสามเสน
+  from_to: null
+  width_m_as_printed: 8 - 25
+  length_m_as_printed: 2,300
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ห้วยขวาง
+  lat: 13.763912
+  lon: 100.594554
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 94
+  printed_page: ข-2
+  raw: 1 | คลองชวดใหญ่ คลองลำดพร้ำว คลองสำมเสน | 8 - 25 2,300 -2.00 | ห้วยขวำง 13.763912 100.594554
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2300.0
+- &id008
+  seq: null
+  name: ถนนประชาชื่น คลองลาดพร้าว
+  from_to: null
+  width_m_as_printed: 9 - 30
+  length_m_as_printed: 4,776
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: จตุจักร
+  lat: 13.84982
+  lon: 100.543926
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 94
+  printed_page: ข-2
+  raw: ถนนประชำชื่น คลองลำดพร้ำว | 9 - 30 4,776 | -2.00 | จตุจักร | 13.849820 100.543926
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 4776.0
+- &id009
+  seq: null
+  name: ถนนรัชดาภิเษก คลองลาดพร้าว
+  from_to: null
+  width_m_as_printed: 9 - 18
+  length_m_as_printed: 1,600
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ห้วยขวาง
+  lat: 13.796311
+  lon: 100.574737
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 94
+  printed_page: ข-2
+  raw: ถนนรัชดำภิเษก คลองลำดพร้ำว | 9 - 18 1,600 | -2.00 | ห้วยขวำง | 13.796311 | 100.574737
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 1600.0
+- &id010
+  seq: null
+  name: เปรมประชากร คลองบางเขน
+  from_to: คลองตาอูฐ
+  width_m_as_printed: 14 - 26
+  length_m_as_printed: 5,565
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: จตุจักร
+  lat: 13.85511
+  lon: 100.56333
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 94
+  printed_page: ข-2
+  raw: เปรมประชำกร คลองบำงเขน | คลองตำอูฐ | 14 - 26 5,565 | -2.00 | จตุจักร | 13.85511 | 100.56333
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 5565.0
+- &id011
+  seq: 6
+  name: คลองลาดพร้าว คลองแสนแสบ คลองน้ำแก้ว
+  from_to: null
+  width_m_as_printed: 12.5 - 35
+  length_m_as_printed: 6,250
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ห้วยขวาง
+  lat: 13.751149
+  lon: 100.60396
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 94
+  printed_page: ข-2
+  raw: 6 คลองลำดพร้ำว คลองแสนแสบ คลองน้ำแก้ว | 12.5 - 35 6,250 | -2.00 | ห้วยขวำง | 13.751149 | 100.603960
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 6250.0
+- &id012
+  seq: 8
+  name: คลองสามเสน ทางรถไฟสายเหนือ ถนนอโศก-ดินแดง
+  from_to: null
+  width_m_as_printed: 3.5 - 25
+  length_m_as_printed: 4,853
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ราชเทวี
+  lat: 13.77425
+  lon: 100.527822
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 94
+  printed_page: ข-2
+  raw: 8 คลองสำมเสน ทำงรถไฟสำยเหนือ ถนนอโศก-ดินแดง 3.5 - 25 4,853 | -2.00 | รำชเทวี | 13.774250 | 100.527822
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4853.0
+- &id013
+  seq: null
+  name: ถนนอโศก-ดินแดง คลองแสนแสบ
+  from_to: null
+  width_m_as_printed: 9.5 - 24
+  length_m_as_printed: 4,000
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ห้วยขวาง
+  lat: 13.755083
+  lon: 100.564945
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 94
+  printed_page: ข-2
+  raw: ถนนอโศก-ดินแดง คลองแสนแสบ | 9.5 - 24 4,000 | -2.00 | ห้วยขวำง | 13.755083 | 100.564945
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 4000.0
+- &id014
+  seq: 9
+  name: คลองบางกะปิ คลองสามเสน
+  from_to: คลองแสนแสบ
+  width_m_as_printed: 6.5 - 15
+  length_m_as_printed: '820'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ห้วยขวาง
+  lat: 13.784481
+  lon: 100.571586
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 94
+  printed_page: ข-2
+  raw: 9 คลองบำงกะปิ คลองสำมเสน | คลองแสนแสบ | 6.5 - 15 820 | -2.00 | ห้วยขวำง | 13.784481 | 100.571586
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 820.0
+- &id015
+  seq: 10
+  name: คูน้ำข้างโบสถ์ คลองสามเสน
+  from_to: สุดเขตคลอง
+  width_m_as_printed: 3-5
+  length_m_as_printed: '593'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ดินแดง
+  lat: 13.756064
+  lon: 100.554925
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 94
+  printed_page: ข-2
+  raw: 10 คูน้ำข้ำงโบสถ์ คลองสำมเสน | สุดเขตคลอง | 3-5 | 593 | -2.00 | ดินแดง | 13.756064 | 100.554925
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 593.0
+- &id016
+  seq: 11
+  name: คลองนาซอง คลองสามเสน
+  from_to: คลองห้วยขวาง
+  width_m_as_printed: 3 - 6.5
+  length_m_as_printed: 3,498
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ดินแดง
+  lat: 13.755677
+  lon: 100.560438
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 94
+  printed_page: ข-2
+  raw: 11 คลองนำซอง คลองสำมเสน | คลองห้วยขวำง | 3 - 6.5 3,498 | -2.00 | ดินแดง | 13.755677 100.560438
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3498.0
+- &id017
+  seq: null
+  name: เปรมประชากร
+  from_to: ทางรถไฟสายใต้ คลองประปา
+  width_m_as_printed: 10 - 25
+  length_m_as_printed: 2,527
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: บางซื่อ
+  lat: 13.820129
+  lon: 100.54426
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2
+  page: 95
+  printed_page: ข-3
+  raw: เปรมประชำกร | ทำงรถไฟสำยใต้ คลองประปำ | 10 - 25 | 2,527 | -2.50 | บำงซื่อ | 13.820129 100.544260
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 2527.0
+- &id018
+  seq: 18
+  name: คลองแสนแสบ คลองผดุงกรุงเกษม ทางด่วนพิเศษ
+  from_to: null
+  width_m_as_printed: 15 - 25
+  length_m_as_printed: 3,671
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: ปทุมวัน
+  lat: 13.753105
+  lon: 100.517386
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2 (ต่อ)
+  page: 96
+  printed_page: ข-4
+  raw: 18 คลองแสนแสบ คลองผดุงกรุงเกษม ทำงด่วนพิเศษ | 15 - 25 3,671 | -2.50 | ปทุมวัน 13.753105 100.517386
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3671.0
+- &id019
+  seq: 1
+  name: คลองพระโขนง แม่น้ำเจ้าพระยา
+  from_to: ถนนสุขุมวิท
+  width_m_as_printed: 30 - 40
+  length_m_as_printed: 2,831
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: คลองเตย
+  lat: 13.701211
+  lon: 100.580752
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3
+  page: 96
+  printed_page: ข-4
+  raw: 1 คลองพระโขนง แม่น้ำเจ้ำพระยำ | ถนนสุขุมวิท | 30 - 40 2,831 -2.50 | คลองเตย | 13.701211 | 100.580752
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2831.0
+- &id020
+  seq: 3
+  name: คลองแสนแสบ ทางด่วนมหานคร
+  from_to: คลองตัน
+  width_m_as_printed: 20 - 30
+  length_m_as_printed: 5,260
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: วัฒนา
+  lat: 13.748287
+  lon: 100.54983
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3
+  page: 96
+  printed_page: ข-4
+  raw: 3 คลองแสนแสบ ทำงด่วนมหำนคร | คลองตัน | 20 - 30 5,260 -2.50 | วัฒนำ | 13.748287 | 100.54983
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 5260.0
+- &id021
+  seq: 16
+  name: คลองบางมะเขือ โรงเรียนพิบูลย์เวศน์ คลองพระโขนง
+  from_to: null
+  width_m_as_printed: 2 - 6
+  length_m_as_printed: 1,742
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: วัฒนา
+  lat: 13.720324
+  lon: 100.592381
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: 16 คลองบำงมะเขือ โรงเรียนพิบูลย์เวศน์ คลองพระโขนง | 2 - 6 1,742 | -1.50 | วัฒนำ 13.720324 100.592381
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1742.0
+- &id022
+  seq: 1
+  name: คลองแสนแสบ คลองลาดพร้าว
+  from_to: คลองบ้านม้า
+  width_m_as_printed: 20 - 35
+  length_m_as_printed: 7,815
+  dredge_level_m_msl_as_printed: '-4.50'
+  district: บางกะปิ
+  lat: 13.751042
+  lon: 100.604061
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2
+  page: 101
+  printed_page: ข-9
+  raw: 1 | คลองแสนแสบ คลองลาดพร้าว | คลองบ้านม้า 20 - 35 7,815 | -4.50 บางกะปิ 13.751042 100.604061
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 7815.0
+- &id023
+  seq: 2
+  name: คลองพระโขนง คลองตัน
+  from_to: คลองหนองบอน
+  width_m_as_printed: 30 - 40
+  length_m_as_printed: 6,522
+  dredge_level_m_msl_as_printed: '-4.50'
+  district: สวนหลวง
+  lat: 13.715425
+  lon: 100.606435
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2
+  page: 101
+  printed_page: ข-9
+  raw: 2 | คลองพระโขนง คลองตัน | คลองหนองบอน 30 - 40 6,522 | -4.50 สวนหลวง 13.715425 100.606435
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 6522.0
+- &id024
+  seq: 1
+  name: คลองหัวหมาก
+  from_to: คลองกะจะ / คลองพระโขนง
+  width_m_as_printed: 6 - 12
+  length_m_as_printed: 5,040
+  dredge_level_m_msl_as_printed: '-3.00'
+  district: สวนหลวง
+  lat: 13.744482
+  lon: 100.648023
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2
+  page: 102
+  printed_page: ข-10
+  raw: 1 | คลองหัวหมาก | คลองกะจะ | คลองพระโขนง | 6 - 12 | 5,040 -3.00 สวนหลวง 13.744482 100.648023
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 5040.0
+- &id025
+  seq: 4
+  name: คลองศาลเจ้า คลองพระโขนง
+  from_to: ซอยผ่องโสภา
+  width_m_as_printed: 6 - 12
+  length_m_as_printed: '839'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: สวนหลวง
+  lat: 13.714505
+  lon: 100.635975
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2
+  page: 102
+  printed_page: ข-10
+  raw: 4 | คลองศาลเจ้า คลองพระโขนง | ซอยผ่องโสภา | 6 - 12 | 839 | -2.00 | สวนหลวง 13.714505 100.635975
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 839.0
+- &id026
+  seq: 5
+  name: คลองบ้านหลาย คลองพระโขนง
+  from_to: ซอยวชิรธรรม-
+  width_m_as_printed: 7 - 10
+  length_m_as_printed: 3,640
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: สวนหลวง
+  lat: 13.710152
+  lon: 100.621481
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2
+  page: 102
+  printed_page: ข-10
+  raw: 5 | คลองบ้านหลาย คลองพระโขนง | ซอยวชิรธรรม- | 7 - 10 | 3,640 | -2.50 | สวนหลวง 13.710152 100.621481
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3640.0
+- &id027
+  seq: 14
+  name: คลองบ้านม้า
+  from_to: คลองแสนแสบ / คลองลำบึงบ้านม้า
+  width_m_as_printed: 7 - 25
+  length_m_as_printed: 5,930
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางกะปิ
+  lat: 13.775187
+  lon: 100.66475
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2 (ต่อ)
+  page: 103
+  printed_page: ข-11
+  raw: 14 | คลองบ้านม้า | คลองแสนแสบ | คลองลาบึงบ้านม้า | 7 - 25 | 5,930 | -2.00 | บางกะปิ | 13.775187 100.66475
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 5930.0
+- &id028
+  seq: 15
+  name: คลองหัวหมาก
+  from_to: คลองแสนแสบ / คลองกะจะ
+  width_m_as_printed: 7 - 25
+  length_m_as_printed: 3,460
+  dredge_level_m_msl_as_printed: '-3.00'
+  district: บางกะปิ
+  lat: 13.770414
+  lon: 100.65597
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2 (ต่อ)
+  page: 103
+  printed_page: ข-11
+  raw: 15 | คลองหัวหมาก | คลองแสนแสบ | คลองกะจะ | 7 - 25 | 3,460 | -3.00 | บางกะปิ | 13.770414 100.65597
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3460.0
+- &id029
+  seq: 2
+  name: คลองลำบึงขวาง คลองสี่ประเวศ
+  from_to: คลองลาดบัว
+  width_m_as_printed: 8 - 40
+  length_m_as_printed: 6,830
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: มีนบุรี
+  lat: 13.806879
+  lon: 100.768481
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 104
+  printed_page: ข-12
+  raw: 2 | คลองลาบึงขวาง คลองสี่ประเวศ | คลองลาดบัว | 8 - 40 | 6,830 | -2.50 | มีนบุรี | 13.806879 100.768481
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 6830.0
+- &id030
+  seq: 9
+  name: คลองลำบึงใหญ่ คลองแสนแสบ
+  from_to: ลำรางตา
+  width_m_as_printed: 15 - 25
+  length_m_as_printed: 4,300
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: มีนบุรี
+  lat: 13.834333
+  lon: 100.772167
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 104
+  printed_page: ข-12
+  raw: 9 | คลองลาบึงใหญ่ คลองแสนแสบ | ลารางตา | 15 - 25 | 4,300 | -2.00 | มีนบุรี 13.834333 100.772167
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4300.0
+- &id031
+  seq: null
+  name: คลองบ้านม้า
+  from_to: null
+  width_m_as_printed: 6-8
+  length_m_as_printed: 1,886
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: สะพานสูง
+  lat: 13.754889
+  lon: 100.693667
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 105
+  printed_page: null
+  raw: คลองบ้านม้า | 6-8 | 1,886 -2.00 | สะพานสูง | 13.754889 | 100.693667
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 1886.0
+- &id032
+  seq: 4
+  name: คลองทับช้างบน
+  from_to: คลองลำต้นอ้อคลองประเวศ
+  width_m_as_printed: 8 - 24
+  length_m_as_printed: 4,801
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: สะพานสูง
+  lat: 13.756694
+  lon: 100.706528
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 105
+  printed_page: null
+  raw: 4 | คลองทับช้างบน | คลองลาต้นอ้อคลองประเวศ | 8 - 24 | 4,801 -2.00 | สะพานสูง | 13.756694 | 100.706528
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4801.0
+- &id033
+  seq: 8
+  name: คลองบ้านม้า
+  from_to: คลองลำบึง / คลองประเวศ
+  width_m_as_printed: 8 - 10
+  length_m_as_printed: 2,209
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: สะพานสูง
+  lat: 13.739944
+  lon: 100.664194
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 105
+  printed_page: null
+  raw: 8 | คลองบ้านม้า | คลองลาบึง | คลองประเวศ 8 - 10 | 2,209 | -2.00 | สะพานสูง | 13.739944 100.664194
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2209.0
+- &id034
+  seq: 16
+  name: คลองลาบ้านม้า สารองแบ่งเขต คลองจวน
+  from_to: null
+  width_m_as_printed: 10 - 30
+  length_m_as_printed: 3,675
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: สวนหลวง
+  lat: 13.7288
+  lon: 100.649467
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 105
+  printed_page: null
+  raw: 16 | คลองลาบ้านม้า สารองแบ่งเขต คลองจวน | 10 - 30 | 3,675 | -2.00 | สวนหลวง 13.728800 100.649467
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3675.0
+- &id035
+  seq: 23
+  name: คลองศาลาลอยล่าง คลองประเวศบุรีรมย์ คลองมะขามเทศ
+  from_to: null
+  width_m_as_printed: 5 - 9
+  length_m_as_printed: 3,520
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ประเวศ
+  lat: 13.719528
+  lon: 100.657778
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2 (ต่อ)
+  page: 106
+  printed_page: null
+  raw: 23 คลองศาลาลอยล่าง คลองประเวศบุรีรมย์ คลองมะขามเทศ 5 - 9 3,520 -2.00 | ประเวศ 13.719528 | 100.657778
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3520.0
+- &id036
+  seq: 1
+  name: คลองสองต้นนุ่น คลองแสนแสบ คลองลำนายโส
+  from_to: null
+  width_m_as_printed: 7 - 24
+  length_m_as_printed: 3,900
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: มีนบุรี
+  lat: 13.811083
+  lon: 100.72975
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 106
+  printed_page: null
+  raw: 1 | คลองสองต้นนุ่น คลองแสนแสบ คลองลานายโส 7 - 24 | 3,900 | -2.50 | มีนบุรี | 13.811083 100.729750
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3900.0
+- &id037
+  seq: 3
+  name: คลองแสนแสบ
+  from_to: คลองลาดบัวขาว คลองสิบสี่
+  width_m_as_printed: 20 - 35
+  length_m_as_printed: 22,920
+  dredge_level_m_msl_as_printed: '-3.00'
+  district: มีนบุรี
+  lat: 13.797694
+  lon: 100.704833
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 106
+  printed_page: null
+  raw: 3 | คลองแสนแสบ | คลองลาดบัวขาว คลองสิบสี่ | 20 - 35 | 22,920 | -3.00 | มีนบุรี 13.797694 100.704833
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 22920.0
+- &id038
+  seq: 6
+  name: คลองสามประเวศ คลองลำบึงขวาง ลำรางศาล
+  from_to: null
+  width_m_as_printed: 8 - 15
+  length_m_as_printed: 2,500
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: มีนบุรี
+  lat: 13.800333
+  lon: 100.753806
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 106
+  printed_page: null
+  raw: 6 | คลองสามประเวศ คลองลาบึงขวาง ลารางศาล | 8 - 15 | 2,500 | -2.00 | มีนบุรี | 13.800333 100.753806
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2500.0
+- &id039
+  seq: 7
+  name: คลองสี่ประเวศ คลองแสนแสบ ลำรางศาลเจ้า
+  from_to: null
+  width_m_as_printed: 8 - 15
+  length_m_as_printed: 5,400
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: มีนบุรี
+  lat: 13.828444
+  lon: 100.761556
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 106
+  printed_page: null
+  raw: 7 | คลองสี่ประเวศ คลองแสนแสบ ลารางศาลเจ้า 8 - 15 | 5,400 | -2.00 | มีนบุรี | 13.828444 100.761556
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 5400.0
+- &id040
+  seq: 8
+  name: คลองสองต้นนุ่น คลองลำนายโส คลองประเวศ
+  from_to: null
+  width_m_as_printed: 8 - 20
+  length_m_as_printed: 5,937
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: ลาดกระบัง
+  lat: 13.777361
+  lon: 100.738806
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 106
+  printed_page: null
+  raw: 8 | คลองสองต้นนุ่น คลองลานายโส คลองประเวศ 8 - 20 | 5,937 | -2.50 | ลาดกระบัง 13.777361 100.738806
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 5937.0
+- &id041
+  seq: 10
+  name: คลองสี่ประเวศ ลำรางศาล
+  from_to: คลองประเวศ
+  width_m_as_printed: 8 - 15
+  length_m_as_printed: 6,489
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ลาดกระบัง
+  lat: 13.782028
+  lon: 100.7685
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 106
+  printed_page: null
+  raw: 10 | คลองสี่ประเวศ ลารางศาล | คลองประเวศ 8 - 15 | 6,489 | -2.00 | ลาดกระบัง 13.782028 100.768500
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 6489.0
+- &id042
+  seq: 1
+  name: คลองแสนแสบ คลองบ้านม้า คลองลาดบัวขาว
+  from_to: null
+  width_m_as_printed: 20 - 35
+  length_m_as_printed: 5,150
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: สะพานสูง
+  lat: 13.775333
+  lon: 100.664722
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 107
+  printed_page: null
+  raw: 1 คลองแสนแสบ คลองบ้านม้า คลองลาดบัวขาว 20 - 35 5,150 -2.50 สะพานสูง 13.775333 100.664722
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 5150.0
+- &id043
+  seq: 2
+  name: คลองประเวศ คลองหนองบอน สุดเขต กทม.
+  from_to: null
+  width_m_as_printed: 24 - 44
+  length_m_as_printed: 23,245
+  dredge_level_m_msl_as_printed: '-3.50'
+  district: ประเวศ
+  lat: 13.718083
+  lon: 100.651472
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 107
+  printed_page: null
+  raw: 2 คลองประเวศ คลองหนองบอน สุดเขต กทม. | 24 - 44 23,245 -3.50 | ประเวศ 13.718083 100.651472
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 23245.0
+- &id044
+  seq: 3
+  name: คลองหลวงแพ่ง คลองลำตาอิน คลองประเวศ
+  from_to: null
+  width_m_as_printed: 20 - 25
+  length_m_as_printed: 4,988
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ลาดกระบัง
+  lat: 13.740056
+  lon: 100.880361
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 107
+  printed_page: null
+  raw: 3 คลองหลวงแพ่ง คลองลาตาอิน คลองประเวศ 20 - 25 4,988 -2.00 ลาดกระบัง 13.740056 100.880361
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4988.0
+rows:
+- *id001
+- *id002
+- *id003
+- *id004
+- seq: 6
+  name: คลองพญาเวิก คลองบางซื่อ
+  from_to: สุดเขตคลอง
+  width_m_as_printed: 3 - 8
+  length_m_as_printed: 1,847
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: จตุจักร
+  lat: 13.794968
+  lon: 100.566942
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 93
+  printed_page: ข-1
+  raw: 6 | คลองพญาเวิก คลองบางซื่อ | สุดเขตคลอง | 3 - 8 1,847 -2.50 | จตุจักร | 13.794968 100.566942
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1847.0
+- *id005
+- seq: 8
+  name: คลองยายสุ่น ถนนรัชดาภิเษก ศรีวราแมนชั่น
+  from_to: null
+  width_m_as_printed: 3-7
+  length_m_as_printed: '751'
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ดินแดง
+  lat: 13.764217
+  lon: 100.568529
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 93
+  printed_page: ข-1
+  raw: 8 | คลองยำยสุ่น ถนนรัชดำภิเษก ศรีวรำแมนชั่น | 3-7 | 751 -1.50 | ดินแดง | 13.764217 | 100.568529
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 751.0
+- *id006
+- seq: 9
+  name: คลองห้วยขวาง คลองบางซื่อ
+  from_to: ถนนรัชดาภิเษก
+  width_m_as_printed: 4.5 - 13
+  length_m_as_printed: 2,567
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ดินแดง
+  lat: 13.794627
+  lon: 100.566849
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 93
+  printed_page: ข-1
+  raw: 9 | คลองห้วยขวำง คลองบำงซื่อ | ถนนรัชดำภิเษก 4.5 - 13 2,567 -2.00 | ดินแดง | 13.794627 | 100.566849
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2567.0
+- seq: null
+  name: ถนนรัชดาภิเษก คลองชวดใหญ่
+  from_to: null
+  width_m_as_printed: 6.5 - 24
+  length_m_as_printed: 2,000
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ห้วยขวาง
+  lat: 13.773828
+  lon: 100.573713
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 93
+  printed_page: ข-1
+  raw: ถนนรัชดำภิเษก คลองชวดใหญ่ | 6.5 - 24 2,000 -2.00 | ห้วยขวำง | 13.773828 | 100.573713
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 2000.0
+- seq: 1
+  name: คลองส้มปอย
+  from_to: สถานีสูบน้ำตอน คลองแยก
+  width_m_as_printed: 2 - 12
+  length_m_as_printed: 1,269
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางซื่อ
+  lat: 13.814295
+  lon: 100.516076
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2
+  page: 93
+  printed_page: ข-1
+  raw: 1 คลองส้มปอย | สถำนีสูบน้ำตอน คลองแยก | 2 - 12 1,269 -2.00 | บำงซื่อ | 13.814295 100.516076
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1269.0
+- *id007
+- seq: 2
+  name: คลองบางเขน คลองบางเขนเก่า ถนนประชาชื่น
+  from_to: null
+  width_m_as_printed: 8 - 22
+  length_m_as_printed: 6,245
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: บางซื่อ
+  lat: 13.817685
+  lon: 100.506788
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 94
+  printed_page: ข-2
+  raw: 2 คลองบำงเขน คลองบำงเขนเก่ำ ถนนประชำชื่น | 8 - 22 6,245 | -2.50 | บำงซื่อ | 13.817685 100.506788
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 6245.0
+- *id008
+- seq: 3
+  name: คลอง
+  from_to: แม่น้ำเจ้าพระยา คลองบางเขน
+  width_m_as_printed: 12 - 20
+  length_m_as_printed: 1,567
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางซื่อ
+  lat: 13.816662
+  lon: 100.510274
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 94
+  printed_page: ข-2
+  raw: 3 คลอง | แม่น้ำเจ้ำพระยำ คลองบำงเขน | 12 - 20 1,567 | -2.00 | บำงซื่อ | 13.816662 100.510274
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1567.0
+- seq: 4
+  name: คลองบางซื่อ ทางรถไฟสายเหนือ ถนนวิภาวดีรังสิต
+  from_to: null
+  width_m_as_printed: 7.5 - 29
+  length_m_as_printed: 2,642
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: พญาไท
+  lat: 13.797792
+  lon: 100.537357
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 94
+  printed_page: ข-2
+  raw: 4 คลองบำงซื่อ ทำงรถไฟสำยเหนือ ถนนวิภำวดีรังสิต 7.5 - 29 2,642 | -2.00 | พญำไท | 13.797792 | 100.537357
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2642.0
+- seq: null
+  name: ถนนวิภาวดีรังสิต ถนนรัชดาภิเษก
+  from_to: null
+  width_m_as_printed: 9 - 21
+  length_m_as_printed: 1,444
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ดินแดง
+  lat: 13.794899
+  lon: 100.561641
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 94
+  printed_page: ข-2
+  raw: ถนนวิภำวดีรังสิต ถนนรัชดำภิเษก | 9 - 21 1,444 | -2.00 | ดินแดง | 13.794899 | 100.561641
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 1444.0
+- *id009
+- seq: 5
+  name: คลอง
+  from_to: ทางรถไฟสายใต้ คลองบางเขน
+  width_m_as_printed: 15 - 40
+  length_m_as_printed: 4,427
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: จตุจักร
+  lat: 13.80477
+  lon: 100.53596
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 94
+  printed_page: ข-2
+  raw: 5 คลอง | ทำงรถไฟสำยใต้ คลองบำงเขน | 15 - 40 4,427 | -2.00 | จตุจักร | 13.80477 | 100.53596
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4427.0
+- *id010
+- seq: null
+  name: คลองตาอูฐ
+  from_to: คลองบ้านใหม่
+  width_m_as_printed: 15 - 27
+  length_m_as_printed: 5,480
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ดอนเมือง
+  lat: 13.899342
+  lon: 100.587518
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 94
+  printed_page: ข-2
+  raw: คลองตำอูฐ | คลองบ้ำนใหม่ | 15 - 27 5,480 | -2.00 | ดอนเมือง | 13.899342 | 100.587518
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 5480.0
+- *id011
+- seq: null
+  name: คลองน้ำแก้ว
+  from_to: คลองบางเขน
+  width_m_as_printed: 12 - 30
+  length_m_as_printed: 6,344
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: จตุจักร
+  lat: 13.803052
+  lon: 100.588245
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 94
+  printed_page: ข-2
+  raw: คลองน้ำแก้ว | คลองบำงเขน | 12 - 30 6,344 | -2.00 | จตุจักร | 13.803052 | 100.588245
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 6344.0
+- seq: 7
+  name: คลองสอง
+  from_to: คลองบางเขน / คลองวัดหลักสี่
+  width_m_as_printed: 19 - 35
+  length_m_as_printed: 3,446
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: หลักสี่
+  lat: 13.858855
+  lon: 100.586417
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 94
+  printed_page: ข-2
+  raw: 7 คลองสอง | คลองบำงเขน | คลองวัดหลักสี่ | 19 - 35 3,446 | -2.00 | หลักสี่ | 13.858855 | 100.586417
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3446.0
+- seq: null
+  name: คลองวัดหลักสี่ ถนนพหลโยธิน
+  from_to: null
+  width_m_as_printed: 15 - 42
+  length_m_as_printed: 2,293
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ดอนเมือง
+  lat: 13.887607
+  lon: 100.594642
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 94
+  printed_page: ข-2
+  raw: คลองวัดหลักสี่ ถนนพหลโยธิน | 15 - 42 2,293 | -2.00 | ดอนเมือง | 13.887607 | 100.594642
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 2293.0
+- seq: null
+  name: ถนนพหลโยธิน ปตร.คลองสองสายใต้
+  from_to: null
+  width_m_as_printed: 14 - 42
+  length_m_as_printed: 4,943
+  dredge_level_m_msl_as_printed: '-3.00'
+  district: สายไหม
+  lat: 13.89973
+  lon: 100.61095
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 94
+  printed_page: ข-2
+  raw: ถนนพหลโยธิน ปตร.คลองสองสำยใต้ 14 - 42 4,943 | -3.00 | สำยไหม | 13.89973 | 100.61095
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 4943.0
+- *id012
+- *id013
+- *id014
+- *id015
+- *id016
+- seq: 12
+  name: คูข้าง
+  from_to: คลองแสนแสบ บึงมักกะสัน
+  width_m_as_printed: 4 - 18
+  length_m_as_printed: '900'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ราชเทวี
+  lat: 13.748357
+  lon: 100.551317
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 94
+  printed_page: ข-2
+  raw: 12 คูข้ำง | คลองแสนแสบ บึงมักกะสัน | 4 - 18 900 | -2.00 | รำชเทวี | 13.748357 100.551317
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 900.0
+- seq: 1
+  name: คลองบางซื่อ
+  from_to: แม่น้ำเจ้าพระยา / ทางรถไฟสายเหนือ
+  width_m_as_printed: 13.5 - 20
+  length_m_as_printed: 2,297
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: ดุสิต
+  lat: 13.800135
+  lon: 100.518412
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2
+  page: 95
+  printed_page: ข-3
+  raw: 1 คลองบำงซื่อ | แม่น้ำเจ้ำพระยำ | ทำงรถไฟสำยเหนือ 13.5 - 20 2,297 -2.50 | ดุสิต 13.800135 100.518412
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2297.0
+- seq: 2
+  name: คลอง
+  from_to: คลองประปา / คลองผดุงกรุงเกษม
+  width_m_as_printed: 12 - 25
+  length_m_as_printed: 4,684
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: ดุสิต
+  lat: 13.799568
+  lon: 100.533136
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2
+  page: 95
+  printed_page: ข-3
+  raw: 2 คลอง | คลองประปำ | คลองผดุงกรุงเกษม 12 - 25 | 4,684 | -2.50 | ดุสิต | 13.799568 100.533136
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4684.0
+- *id017
+- seq: 5
+  name: คลองคูเมืองเดิม
+  from_to: แม่น้ำเจ้าพระยา / แม่น้ำเจ้าพระยา
+  width_m_as_printed: 10 - 18
+  length_m_as_printed: 2,386
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: พระนคร
+  lat: 13.741592
+  lon: 100.494219
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2
+  page: 95
+  printed_page: ข-3
+  raw: 5 คลองคูเมืองเดิม | แม่น้ำเจ้ำพระยำ | แม่น้ำเจ้ำพระยำ | 10 - 18 | 2,386 | -2.00 | พระนคร 13.741592 100.494219
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2386.0
+- seq: 6
+  name: คลองรอบกรุง
+  from_to: แม่น้ำเจ้าพระยา / คลองมหานาค
+  width_m_as_printed: 8 - 12
+  length_m_as_printed: 1,900
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: พระนคร
+  lat: 13.739558
+  lon: 100.500155
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2
+  page: 95
+  printed_page: ข-3
+  raw: 6 คลองรอบกรุง | แม่น้ำเจ้ำพระยำ | คลองมหำนำค | 8 - 12 | 1,900 | -2.00 | พระนคร 13.739558 100.500155
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1900.0
+- seq: 7
+  name: คลองรอบกรุง
+  from_to: คลองมหานาค / แม่น้ำเจ้าพระยา
+  width_m_as_printed: 20 - 22
+  length_m_as_printed: 1,550
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: พระนคร
+  lat: 13.755457
+  lon: 100.505995
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2
+  page: 95
+  printed_page: ข-3
+  raw: 7 คลองรอบกรุง | คลองมหำนำค | แม่น้ำเจ้ำพระยำ | 20 - 22 | 1,550 | -2.50 | พระนคร 13.755457 100.505995
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1550.0
+- seq: 8
+  name: คลอง
+  from_to: แม่น้ำเจ้าพระยา / สะพานเจริญสวัสดิ์
+  width_m_as_printed: 20 - 22
+  length_m_as_printed: 1,356
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: สัมพันธวงศ์
+  lat: 13.72934
+  lon: 100.513017
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2
+  page: 95
+  printed_page: ข-3
+  raw: 8 คลอง | แม่น้ำเจ้ำพระยำ | สะพำนเจริญสวัสดิ์ 20 - 22 | 1,356 | -2.50 | สัมพันธวงศ์ 13.729340 100.513017
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1356.0
+- seq: null
+  name: ผดุงกรุงเกษม
+  from_to: สะพานมัฆวานรังสรรค์ แม่น้ำเจ้าพระยา
+  width_m_as_printed: '20'
+  length_m_as_printed: 1,000
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: พระนคร
+  lat: 13.763623
+  lon: 100.509421
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2
+  page: 95
+  printed_page: ข-3
+  raw: ผดุงกรุงเกษม | สะพำนมัฆวำนรังสรรค์ แม่น้ำเจ้ำพระยำ | 20 | 1,000 | -2.50 | พระนคร 13.763623 100.509421
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 1000.0
+- seq: null
+  name: สะพานเจริญสวัสดิ์ สะพานมัฆวานรังสรรค์
+  from_to: null
+  width_m_as_printed: 20 - 22
+  length_m_as_printed: 3,193
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: ป้อมปราบศัตรูพ่าย
+  lat: 13.738114
+  lon: 100.51566
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2
+  page: 95
+  printed_page: ข-3
+  raw: สะพำนเจริญสวัสดิ์ สะพำนมัฆวำนรังสรรค์ 20 - 22 | 3,193 | -2.50 | ป้อมปรำบฯ 13.738114 100.51566
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 3193.0
+- seq: 9
+  name: คลองมหานาค
+  from_to: คลองรอบกรุง / คลองผดุงกรุงเกษม
+  width_m_as_printed: 20 - 25
+  length_m_as_printed: 1,250
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: ป้อมปราบศัตรูพ่าย
+  lat: 13.755473
+  lon: 100.50599
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2
+  page: 95
+  printed_page: ข-3
+  raw: 9 คลองมหำนำค | คลองรอบกรุง | คลองผดุงกรุงเกษม 20 - 25 | 1,250 | -2.50 | ป้อมปรำบฯ 13.755473 100.505990
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1250.0
+- seq: 10
+  name: คลองหลอด
+  from_to: คลองคูเมืองเดิม / คลองรอบกรุง
+  width_m_as_printed: 10 - 12
+  length_m_as_printed: 1,162
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: พระนคร
+  lat: 13.756565
+  lon: 100.495382
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2
+  page: 95
+  printed_page: ข-3
+  raw: 10 คลองหลอด | คลองคูเมืองเดิม | คลองรอบกรุง | 10 - 12 | 1,162 | -2.00 | พระนคร 13.756565 100.495382
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1162.0
+- seq: 11
+  name: คลองหลอด
+  from_to: คลองคูเมืองเดิม / คลองรอบกรุง
+  width_m_as_printed: 8 - 12
+  length_m_as_printed: '847'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: พระนคร
+  lat: 13.748557
+  lon: 100.496387
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2
+  page: 95
+  printed_page: ข-3
+  raw: 11 คลองหลอด | คลองคูเมืองเดิม | คลองรอบกรุง | 8 - 12 | 847 | -2.00 | พระนคร 13.748557 100.496387
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 847.0
+- seq: 12
+  name: คลองอรชร
+  from_to: คลองแสนแสบ / ถนนพระราม
+  width_m_as_printed: 5-6
+  length_m_as_printed: '454'
+  dredge_level_m_msl_as_printed: '-1.00'
+  district: ปทุมวัน
+  lat: 13.74953
+  lon: 100.536388
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2
+  page: 95
+  printed_page: ข-3
+  raw: 12 คลองอรชร | คลองแสนแสบ | ถนนพระรำม | 5-6 | 454 | -1.00 | ปทุมวัน | 13.749530 100.536388
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 454.0
+- seq: 13
+  name: คูน้ำซอยต้นสน
+  from_to: ถนนเพลินจิต / สุดเขตคลอง
+  width_m_as_printed: 7-8
+  length_m_as_printed: 1,001
+  dredge_level_m_msl_as_printed: '-1.00'
+  district: ปทุมวัน
+  lat: 13.743665
+  lon: 100.545509
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2
+  page: 95
+  printed_page: ข-3
+  raw: 13 คูน้ำซอยต้นสน | ถนนเพลินจิต | สุดเขตคลอง | 7-8 | 1,001 | -1.00 | ปทุมวัน | 13.743665 100.545509
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1001.0
+- seq: 14
+  name: คลองสวนหลวง
+  from_to: คลองแสนแสบ / ถนนพระรามที่ 4
+  width_m_as_printed: 6-9
+  length_m_as_printed: 1,598
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ปทุมวัน
+  lat: 13.74919
+  lon: 100.525151
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2
+  page: 95
+  printed_page: ข-3
+  raw: 14 | คลองสวนหลวง | คลองแสนแสบ | ถนนพระรำมที่ 4 | 6-9 | 1,598 | -1.50 | ปทุมวัน | 13.749190 100.525151
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1598.0
+- seq: 15
+  name: คลองนางหงษ์
+  from_to: คลองแสนแสบ / คลองสวนหลวง
+  width_m_as_printed: 2-5
+  length_m_as_printed: '916'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ปทุมวัน
+  lat: 13.752088
+  lon: 100.520375
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2
+  page: 95
+  printed_page: ข-3
+  raw: 15 | คลองนำงหงษ์ | คลองแสนแสบ | คลองสวนหลวง | 2-5 | 916 | -2.00 | ปทุมวัน | 13.752088 100.520375
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 916.0
+- seq: 16
+  name: คลองไผ่สิงห์โต
+  from_to: ถนนวิทยุ / ทางด่วนมหานคร
+  width_m_as_printed: 5 - 7
+  length_m_as_printed: '577'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ปทุมวัน
+  lat: 13.734101
+  lon: 100.546066
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2
+  page: 95
+  printed_page: ข-3
+  raw: 16 | คลองไผ่สิงห์โต | ถนนวิทยุ | ทำงด่วนมหำนคร 5 - 7 | 577 | -2.00 | ปทุมวัน | 13.734101 100.546066
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 577.0
+- seq: 17
+  name: คูน้ำซอยสมคิด
+  from_to: ถนนเพลินจิต / คลองแสนแสบ
+  width_m_as_printed: 6-8
+  length_m_as_printed: '526'
+  dredge_level_m_msl_as_printed: '-1.00'
+  district: ปทุมวัน
+  lat: 13.743666
+  lon: 100.545507
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2
+  page: 95
+  printed_page: ข-3
+  raw: 17 | คูน้ำซอยสมคิด | ถนนเพลินจิต | คลองแสนแสบ | 6-8 | 526 | -1.00 | ปทุมวัน | 13.743666 100.545507
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 526.0
+- *id018
+- seq: 19
+  name: คลองบางโพ แม่น้ำเจ้าพระยา ถนนกรุงเทพ-นนทบุรี
+  from_to: null
+  width_m_as_printed: 1 - 7
+  length_m_as_printed: 1,399
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางซื่อ
+  lat: 13.808097
+  lon: 100.518732
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2 (ต่อ)
+  page: 96
+  printed_page: ข-4
+  raw: 19 คลองบำงโพ แม่น้ำเจ้ำพระยำ ถนนกรุงเทพ-นนทบุรี 1 - 7 1,399 | -2.00 | บำงซื่อ | 13.808097 | 100.518732
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1399.0
+- seq: 20
+  name: คลองขรัวตาแก่น สถานีสูบน้ำตอน ซอยสะพานขวา
+  from_to: null
+  width_m_as_printed: 3 - 8
+  length_m_as_printed: 1,232
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางซื่อ
+  lat: 13.8003
+  lon: 100.51838
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2 (ต่อ)
+  page: 96
+  printed_page: ข-4
+  raw: 20 คลองขรัวตำแก่น สถำนีสูบน้ำตอน ซอยสะพำนขวำ | 3 - 8 1,232 | -2.00 | บำงซื่อ | 13.80030 | 100.51838
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1232.0
+- seq: 21
+  name: คลองบางซ่อน แม่น้ำเจ้าพระยา คลองแยก
+  from_to: null
+  width_m_as_printed: 6 - 17
+  length_m_as_printed: '998'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางซื่อ
+  lat: 13.81195
+  lon: 100.51768
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2 (ต่อ)
+  page: 96
+  printed_page: ข-4
+  raw: 21 คลองบำงซ่อน แม่น้ำเจ้ำพระยำ คลองแยก | 6 - 17 998 | -2.00 | บำงซื่อ | 13.81195 | 100.51768
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 998.0
+- seq: 22
+  name: คลองแยก
+  from_to: คลองส้มป่อย / คลองบางซ่อน
+  width_m_as_printed: 6 - 25
+  length_m_as_printed: '776'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางซื่อ
+  lat: 13.821156
+  lon: 100.524106
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2 (ต่อ)
+  page: 96
+  printed_page: ข-4
+  raw: 22 คลองแยก | คลองส้มป่อย | คลองบำงซ่อน | 6 - 25 776 | -2.00 | บำงซื่อ | 13.821156 | 100.524106
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 776.0
+- seq: 23
+  name: คลองกระดาษ คลองแยก
+  from_to: ซอยสะพานสอง
+  width_m_as_printed: 1-5
+  length_m_as_printed: '865'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางซื่อ
+  lat: 13.814646
+  lon: 100.526412
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2 (ต่อ)
+  page: 96
+  printed_page: ข-4
+  raw: 23 คลองกระดำษ คลองแยก | ซอยสะพำนสอง | 1-5 | 865 | -2.00 | บำงซื่อ | 13.814646 | 100.526412
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 865.0
+- seq: 24
+  name: คลองบางโพขวาง แม่น้ำเจ้าพระยา คลองขวางบางโพ
+  from_to: null
+  width_m_as_printed: 2 - 5
+  length_m_as_printed: 1,009
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางซื่อ
+  lat: 13.809755
+  lon: 100.518446
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2 (ต่อ)
+  page: 96
+  printed_page: ข-4
+  raw: 24 คลองบำงโพขวำง แม่น้าเจ้ำพระยำ คลองขวำงบำงโพ | 2 - 5 1,009 | -2.00 | บำงซื่อ | 13.809755 | 100.518446
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1009.0
+- seq: 25
+  name: คลองขวางบางโพ คลองบางซ่อน สุดเขตคลอง
+  from_to: null
+  width_m_as_printed: 3-8
+  length_m_as_printed: '462'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางซื่อ
+  lat: 13.810722
+  lon: 100.527747
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2 (ต่อ)
+  page: 96
+  printed_page: ข-4
+  raw: 25 คลองขวำงบำงโพ คลองบำงซ่อน สุดเขตคลอง | 3-8 | 462 | -2.00 | บำงซื่อ | 13.810722 | 100.527747
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 462.0
+- seq: 26
+  name: คลองซุง
+  from_to: สถานีสูบน้ำตอน คลองแยก
+  width_m_as_printed: 15 - 43
+  length_m_as_printed: '414'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางซื่อ
+  lat: 13.81376
+  lon: 100.51697
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 2 (ต่อ)
+  page: 96
+  printed_page: ข-4
+  raw: 26 คลองซุง | สถานีสูบน้าตอน คลองแยก | 15 - 43 414 | -2.00 | บำงซื่อ | 13.81376 | 100.51697
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 414.0
+- *id019
+- seq: null
+  name: ถนนสุขุมวิท
+  from_to: คลองบางนางจีน
+  width_m_as_printed: 20 - 40
+  length_m_as_printed: 1,400
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: วัฒนา
+  lat: 13.710915
+  lon: 100.59722
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3
+  page: 96
+  printed_page: ข-4
+  raw: ถนนสุขุมวิท | คลองบำงนำงจีน | 20 - 40 1,400 -2.50 | วัฒนำ | 13.710915 | 100.59722
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 1400.0
+- seq: null
+  name: คลองบางนางจีน
+  from_to: คลองตัน
+  width_m_as_printed: 20 - 40
+  length_m_as_printed: 1,345
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: วัฒนา
+  lat: 13.711924
+  lon: 100.601807
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3
+  page: 96
+  printed_page: ข-4
+  raw: คลองบำงนำงจีน | คลองตัน | 20 - 40 1,345 -2.50 | วัฒนำ | 13.711924 | 100.601807
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 1345.0
+- seq: 2
+  name: คลองเตย
+  from_to: คลองพระโขนง / คลองไผ่สิงห์โต
+  width_m_as_printed: 8 - 48
+  length_m_as_printed: 3,449
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: คลองเตย
+  lat: 13.705336
+  lon: 100.588116
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3
+  page: 96
+  printed_page: ข-4
+  raw: 2 คลองเตย | คลองพระโขนง | คลองไผ่สิงห์โต | 8 - 48 3,449 -2.50 | คลองเตย | 13.705336 | 100.588116
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3449.0
+- *id020
+- seq: 4
+  name: คลองตัน
+  from_to: คลองแสนแสบ / คลองพระโขนง
+  width_m_as_printed: 25 - 30
+  length_m_as_printed: 3,754
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: วัฒนา
+  lat: 13.746349
+  lon: 100.560957
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3
+  page: 96
+  printed_page: ข-4
+  raw: 4 คลองตัน | คลองแสนแสบ | คลองพระโขนง | 25 - 30 3,754 -2.50 | วัฒนำ | 13.746349 | 100.560957
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3754.0
+- seq: 5
+  name: คลองเสาหิน แม่น้ำเจ้าพระยา
+  from_to: ถนนนางลิ้นจี่
+  width_m_as_printed: 2 - 4
+  length_m_as_printed: 3,722
+  dredge_level_m_msl_as_printed: '-1.00'
+  district: ยานนาวา
+  lat: 13.683608
+  lon: 100.519314
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3
+  page: 96
+  printed_page: ข-4
+  raw: 5 คลองเสำหิน แม่น้ำเจ้ำพระยำ | ถนนนำงลิ้นจี่ | 2 - 4 3,722 -1.00 ยำนนำวำ | 13.683608 | 100.519314
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3722.0
+- seq: 6
+  name: คลองมะนาว แม่น้ำเจ้าพระยา
+  from_to: ถนนนราธิวาส
+  width_m_as_printed: 4 – 12
+  length_m_as_printed: 1,478
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางคอแหลม
+  lat: 13.684577
+  lon: 100.518301
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3
+  page: 96
+  printed_page: ข-4
+  raw: 6 คลองมะนำว แม่น้ำเจ้ำพระยำ | ถนนนรำธิวำส | 4 – 12 1,478 -2.00 บำงคอแหลม | 13.684577 | 100.518301
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1478.0
+- seq: null
+  name: ทางด่วนศรีรัช
+  from_to: ถนนนางลิ้นจี่
+  width_m_as_printed: 2 - 4
+  length_m_as_printed: 2,352
+  dredge_level_m_msl_as_printed: '-1.00'
+  district: ยานนาวา
+  lat: 13.693413
+  lon: 100.525713
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3
+  page: 96
+  printed_page: ข-4
+  raw: ทำงด่วนศรีรัช | ถนนนำงลิ้นจี่ | 2 - 4 2,352 | -1.00 | ยำนนำวำ | 13.693413 100.525713
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 2352.0
+- seq: 7
+  name: คลองวัดไทร แม่น้ำเจ้าพระยา คลองขวาง 3
+  from_to: null
+  width_m_as_printed: 4 - 7
+  length_m_as_printed: 1,234
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางคอแหลม
+  lat: 13.68586
+  lon: 100.515814
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3
+  page: 96
+  printed_page: ข-4
+  raw: 7 คลองวัดไทร แม่น้ำเจ้ำพระยำ คลองขวำง 3 | 4 - 7 1,234 | -2.00 | บำงคอแหลม 13.685860 100.515814
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1234.0
+- seq: 8
+  name: คลองบางโคล่วัด แม่น้ำเจ้าพระยา คลองขวาง 3
+  from_to: null
+  width_m_as_printed: 4 - 10
+  length_m_as_printed: 1,360
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางคอแหลม
+  lat: 13.68737
+  lon: 100.507793
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3
+  page: 96
+  printed_page: ข-4
+  raw: 8 คลองบำงโคล่วัด แม่น้ำเจ้ำพระยำ คลองขวำง 3 | 4 - 10 1,360 | -2.00 | บำงคอแหลม 13.687370 | 100.507793
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1360.0
+- seq: 9
+  name: คลอง
+  from_to: แม่น้ำเจ้าพระยา / หมู่บ้านโอสิริ
+  width_m_as_printed: 3 - 6
+  length_m_as_printed: 1,363
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางคอแหลม
+  lat: 13.68778
+  lon: 100.504422
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: 9 คลอง | แม่น้ำเจ้ำพระยำ | หมู่บ้ำนโอสิริ | 3 - 6 1,363 -2.00 บำงคอแหลม 13.687780 100.504422
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1363.0
+- seq: 10
+  name: คลอง
+  from_to: แม่น้ำเจ้าพระยา / ถนนเจริญราษฎร์
+  width_m_as_printed: 4-7
+  length_m_as_printed: 1,403
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางคอแหลม
+  lat: 13.687954
+  lon: 100.502878
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: 10 คลอง | แม่น้ำเจ้ำพระยำ | ถนนเจริญรำษฎร์ | 4-7 | 1,403 | -2.00 | บำงคอแหลม 13.687954 | 100.502878
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1403.0
+- seq: 11
+  name: คลอง
+  from_to: แม่น้ำเจ้าพระยา / ถนนแฉล้มนิมิตร
+  width_m_as_printed: 2.5 - 10
+  length_m_as_printed: 1,519
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางคอแหลม
+  lat: 13.688292
+  lon: 100.500478
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: 11 คลอง | แม่น้ำเจ้ำพระยำ | ถนนแฉล้มนิมิตร | 2.5 - 10 1,519 | -2.00 | บำงคอแหลม 13.688292 | 100.500478
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1519.0
+- seq: 12
+  name: คลองขวาง 3
+  from_to: ซอยอยู่ดี / คลองมะนาว
+  width_m_as_printed: 2-5
+  length_m_as_printed: 1,668
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางคอแหลม
+  lat: 13.699432
+  lon: 100.51159
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: 12 คลองขวำง 3 | ซอยอยู่ดี | คลองมะนำว | 2-5 | 1,668 | -2.00 | บำงคอแหลม 13.699432 | 100.511590
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1668.0
+- seq: 13
+  name: คลองวัดไผ่เงิน ซอยหน้ำวัดไผ่เงิน
+  from_to: คลองขวาง 3
+  width_m_as_printed: 4-5
+  length_m_as_printed: '725'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางคอแหลม
+  lat: 13.695819
+  lon: 100.520636
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: 13 คลองวัดไผ่เงิน ซอยหน้ำวัดไผ่เงิน | คลองขวำง 3 | 4-5 | 725 | -2.00 | บำงคอแหลม 13.695819 | 100.520636
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 725.0
+- seq: 14
+  name: คลองเกาะ
+  from_to: ถนนนางลิ้นจี่ / ทางด่วนศรีรัช
+  width_m_as_printed: 8 - 10
+  length_m_as_printed: 6,202
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ยานนาวา
+  lat: 13.70185
+  lon: 100.54565
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: 14 คลองเกำะ | ถนนนำงลิ้นจี่ | ทำงด่วนศรีรัช | 8 - 10 6,202 | -2.00 | ยำนนำวำ 13.70185 | 100.54565
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 6202.0
+- seq: null
+  name: พระราม 3
+  from_to: ทางด่วนศรีรัช / คลองบางคอแหลม
+  width_m_as_printed: 8 - 10
+  length_m_as_printed: 2,600
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางคอแหลม
+  lat: 13.68585
+  lon: 100.52033
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: พระรำม 3 | ทำงด่วนศรีรัช | คลองบำงคอแหลม 8 - 10 2,600 | -2.00 | บำงคอแหลม 13.68585 100.52033
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 2600.0
+- seq: 15
+  name: คลองไผ่สิงห์โต ถนนรัชดาภิเษก
+  from_to: คลองเตย
+  width_m_as_printed: 4 - 20
+  length_m_as_printed: '772'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: คลองเตย
+  lat: 13.725357
+  lon: 100.560654
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: 15 คลองไผ่สิงห์โต ถนนรัชดำภิเษก | คลองเตย | 4 - 20 772 | -2.00 | คลองเตย 13.725357 100.560654
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 772.0
+- seq: null
+  name: ถนนรัชดาภิเษก ทางด่วนมหานคร
+  from_to: null
+  width_m_as_printed: 20 - 44
+  length_m_as_printed: '800'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: คลองเตย
+  lat: 13.733652
+  lon: 100.559837
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: ถนนรัชดำภิเษก ทางด่วนมหานคร 20 - 44 800 | -2.00 | คลองเตย 13.733652 100.559837
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 800.0
+- *id021
+- seq: 17
+  name: คลองกรวย
+  from_to: แม่น้ำเจ้าพระยา / บ่อสูบซอยบาเพ็ญกุศล
+  width_m_as_printed: 3 - 6
+  length_m_as_printed: 1,281
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: สาทร
+  lat: 13.711648
+  lon: 100.509046
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: 17 คลองกรวย | แม่น้ำเจ้ำพระยำ | บ่อสูบซอยบำเพ็ญกุศล 3 - 6 | 1,281 | -2.00 | สำทร | 13.711648 100.509046
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1281.0
+- seq: 18
+  name: คลองวัดยานนาวา แม่น้ำเจ้าพระยา
+  from_to: ซอยโรงน้ำแข็ง
+  width_m_as_printed: 3-6
+  length_m_as_printed: '976'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: สาทร
+  lat: 13.717121
+  lon: 100.51246
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: 18 คลองวัดยำนนำวำ แม่น้ำเจ้ำพระยำ | ซอยโรงน้ำแข็ง | 3-6 | 976 | -2.00 | สำทร | 13.717121 100.51246
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 976.0
+- seq: 19
+  name: คลองขวาง
+  from_to: เจริญกรุง 85 / แม่น้ำเจ้าพระยา
+  width_m_as_printed: 2-4
+  length_m_as_printed: '262'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางคอแหลม
+  lat: 13.70697
+  lon: 100.50774
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: 19 คลองขวำง | เจริญกรุง 85 | แม่น้ำเจ้ำพระยำ | 2-4 | 262 | -2.00 | บำงคอแหลม 13.70697 100.50774
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 262.0
+- seq: 20
+  name: คลองขวาง
+  from_to: แม่น้ำเจ้าพระยา / ถนนเจริญราษฎร์
+  width_m_as_printed: 3-6
+  length_m_as_printed: 1,297
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางคอแหลม
+  lat: 13.709755
+  lon: 100.507325
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: 20 คลองขวำง | แม่น้ำเจ้ำพระยำ | ถนนเจริญรำษฎร์ | 3-6 | 1,297 | -2.00 | บำงคอแหลม 13.709755 | 100.507325
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1297.0
+- seq: 21
+  name: คลองช่องนนทรี ถนนสุรวงศ์
+  from_to: ถนนสาทร
+  width_m_as_printed: 3 - 17
+  length_m_as_printed: '819'
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: บางรัก
+  lat: 13.728446
+  lon: 100.526996
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: 21 คลองช่องนนทรี ถนนสุรวงศ์ | ถนนสำทร | 3 - 17 819 | -1.50 | บำงรัก | 13.728446 100.526996
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 819.0
+- seq: null
+  name: ถนนสาทร
+  from_to: ถนนจันทน์
+  width_m_as_printed: '15'
+  length_m_as_printed: 1,808
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: สาทร
+  lat: 13.721894
+  lon: 100.530267
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: ถนนสำทร | ถนนจันทน์ | 15 1,808 | -2.00 | สำทร | 13.721894 100.530267
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 1808.0
+- seq: null
+  name: ถนนจันทน์
+  from_to: แม่น้ำเจ้าพระยา
+  width_m_as_printed: 15 - 16
+  length_m_as_printed: 1,954
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ยานนาวา
+  lat: 13.721894
+  lon: 100.530267
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: ถนนจันทน์ | แม่น้ำเจ้ำพระยำ | 15 - 16 1,954 | -2.00 | ยำนนำวำ 13.721894 100.530267
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 1954.0
+- seq: 22
+  name: คลองสาทร
+  from_to: แม่น้ำเจ้าพระยา / ถนนพระรามที่ 4
+  width_m_as_printed: 8 – 8.5
+  length_m_as_printed: 3,539
+  dredge_level_m_msl_as_printed: -.2.00
+  district: สาทร
+  lat: 13.719165
+  lon: 100.512865
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: 22 คลองสำทร | แม่น้ำเจ้ำพระยำ | ถนนพระรำมที่ 4 | 8 – 8.5 3,539 | -.2.00 | สำทร | 13.719165 100.512865
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3539.0
+- seq: 23
+  name: คลอง
+  from_to: แม่น้ำเจ้าพระยา / ซอยเจริญกรุง 85
+  width_m_as_printed: 4-8
+  length_m_as_printed: 1,643
+  dredge_level_m_msl_as_printed: -.2.00
+  district: บางคอแหลม
+  lat: 13.703346
+  lon: 100.499483
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: 23 คลอง | แม่น้ำเจ้ำพระยำ | ซอยเจริญกรุง 85 | 4-8 | 1,643 | -.2.00 | บำงคอแหลม 13.703346 | 100.499483
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1643.0
+- seq: 24
+  name: คลองขวาง
+  from_to: วิทยุการบิน / ถนนเย็นอากาศ
+  width_m_as_printed: 4-8
+  length_m_as_printed: '424'
+  dredge_level_m_msl_as_printed: '-1.00'
+  district: สาทร
+  lat: 13.718394
+  lon: 100.543806
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: 24 คลองขวำง | วิทยุกำรบิน | ถนนเย็นอำกำศ | 4-8 | 424 | -1.00 | สำทร | 13.718394 100.543806
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 424.0
+- seq: 25
+  name: คลองขวาง
+  from_to: ถนนเย็นอากาศ / คลองขุด
+  width_m_as_printed: 3 - 6
+  length_m_as_printed: 1,250
+  dredge_level_m_msl_as_printed: '-1.00'
+  district: ยานนาวา
+  lat: 13.714066
+  lon: 100.545488
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: 25 คลองขวำง | ถนนเย็นอำกำศ | คลองขุด | 3 - 6 1,250 | -1.00 | ยำนนำวำ 13.714066 100.545488
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1250.0
+- seq: 26
+  name: คลองขุด
+  from_to: คลองขวาง / แม่น้ำเจ้าพระยา
+  width_m_as_printed: 10 - 30
+  length_m_as_printed: '784'
+  dredge_level_m_msl_as_printed: '-1.00'
+  district: ยานนาวา
+  lat: 13.705708
+  lon: 100.549899
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 97
+  printed_page: ข-5
+  raw: 26 คลองขุด | คลองขวำง | แม่น้ำเจ้ำพระยำ | 10 - 30 784 | -1.00 | ยำนนำวำ 13.705708 100.549899
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 784.0
+- seq: 27
+  name: คลอง
+  from_to: ถนนสุขุมวิท / คลองเตย
+  width_m_as_printed: 4 - 8
+  length_m_as_printed: 1,500
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: คลองเตย
+  lat: 13.722369
+  lon: 100.580889
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 98
+  printed_page: ข-6
+  raw: 27 คลอง | ถนนสุขุมวิท | คลองเตย | 4 - 8 1,500 -2.00 | คลองเตย 13.722369 100.580889
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1500.0
+- seq: 28
+  name: คลอง
+  from_to: คลองพระโขนง / คลองบางอ้อใหญ่
+  width_m_as_printed: 4 - 10
+  length_m_as_printed: '844'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: วัฒนา
+  lat: 13.711911
+  lon: 100.601864
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 98
+  printed_page: ข-6
+  raw: 28 คลอง | คลองพระโขนง | คลองบำงอ้อใหญ่ | 4 - 10 | 844 | -2.00 | วัฒนำ | 13.711911 100.601864
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 844.0
+- seq: 29
+  name: คลองเป้ง
+  from_to: คลองแสนแสบ / ซอยเจริญสุข
+  width_m_as_printed: 4 - 8
+  length_m_as_printed: 1,441
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางซื่อ
+  lat: 13.742417
+  lon: 100.589118
+  mission: ภารกิจรักษาความสะอาดคู คลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 3 (ต่อ)
+  page: 98
+  printed_page: ข-6
+  raw: 29 คลองเป้ง | คลองแสนแสบ | ซอยเจริญสุข | 4 - 8 1,441 | -2.00 | บำงซื่อ | 13.742417 100.589118
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1441.0
+- seq: 1
+  name: คูระบายน้ำ ถนนดินแดง
+  from_to: สุดเขต กทม.
+  width_m_as_printed: 2 - 14
+  length_m_as_printed: 23,000
+  dredge_level_m_msl_as_printed: -2.50 – 2.00
+  district: ดินแดง
+  lat: 13.76408
+  lon: 100.548219
+  mission: ภารกิจบำรุงรักษาคูระบายน้ำถนนวิภาวดีรังสิตทั้งสองฝั่ง
+  group: กลุ่มงานบำรุงรักษาคลอง 1
+  area: พื้นที่บำรุงรักษา 1
+  page: 99
+  printed_page: ข-7
+  raw: 1 | คูระบำยน้ำ ถนนดินแดง | สุดเขต กทม. 2 - 14 23,000 -2.50 – 2.00 | ดินแดง | 13.764080 100.548219
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 23000.0
+- seq: 1
+  name: คลองครุ
+  from_to: คลองลาเกร็ด / คลองแสนแสบ
+  width_m_as_printed: 5 - 19
+  length_m_as_printed: 6,493
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: คันนายาว
+  lat: 13.83796
+  lon: 100.668738
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1
+  page: 99
+  printed_page: ข-7
+  raw: 1 | คลองครุ | คลองลาเกร็ด | คลองแสนแสบ | 5 - 19 | 6,493 -2.50 คันนายาว 13.83796 100.668738
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 6493.0
+- seq: 2
+  name: คลองลำชะล่า
+  from_to: คลองตาเร่ง / คลองหลวงวิจิตร
+  width_m_as_printed: 5-8
+  length_m_as_printed: 1,919
+  dredge_level_m_msl_as_printed: '-3.00'
+  district: คันนายาว
+  lat: 13.847699
+  lon: 100.658644
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1
+  page: 99
+  printed_page: ข-7
+  raw: 2 | คลองลาชะล่า | คลองตาเร่ง | คลองหลวงวิจิตร | 5-8 | 1,919 -3.00 คันนายาว 13.847699 100.658644
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1919.0
+- seq: 3
+  name: คลองลาเกร็ด
+  from_to: ลำรางแยกคลอง / คลองบางชัน
+  width_m_as_printed: 5 - 11
+  length_m_as_printed: 5,508
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: คันนายาว
+  lat: 13.847699
+  lon: 100.658644
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1
+  page: 99
+  printed_page: ข-7
+  raw: 3 | คลองลาเกร็ด | ลารางแยกคลอง | คลองบางชัน | 5 - 11 | 5,508 | -2.00 | คันนายาว 13.847699 100.658644
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 5508.0
+- seq: 4
+  name: คลองระหัส
+  from_to: คลองกุ่ม / คลองแสนแสบ
+  width_m_as_printed: 8 - 14
+  length_m_as_printed: 2,989
+  dredge_level_m_msl_as_printed: '-3.00'
+  district: คันนายาว
+  lat: 13.804704
+  lon: 100.665642
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1
+  page: 99
+  printed_page: ข-7
+  raw: 4 | คลองระหัส | คลองกุ่ม | คลองแสนแสบ | 8 - 14 | 2,989 | -3.00 | คันนายาว 13.804704 100.665642
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2989.0
+- seq: 5
+  name: คลองหนองแขม คลองหลวงวิจิตร คลองกุ่ม
+  from_to: null
+  width_m_as_printed: 5-9
+  length_m_as_printed: 3,498
+  dredge_level_m_msl_as_printed: '-3.00'
+  district: บึงกุ่ม
+  lat: 13.830867
+  lon: 100.661508
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1 (ต่อ)
+  page: 100
+  printed_page: null
+  raw: 5 | คลองหนองแขม คลองหลวงวิจิตร คลองกุ่ม | 5-9 | 3,498 -3.00 | บึงกุ่ม | 13.830867 100.661508
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3498.0
+- seq: 6
+  name: คลองลำเจียก 1 คลองขี้เสือใหญ่ คลองลำเจียก 2
+  from_to: null
+  width_m_as_printed: 6 - 15
+  length_m_as_printed: '1.479'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บึงกุ่ม
+  lat: 13.819241
+  lon: 100.625984
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1 (ต่อ)
+  page: 100
+  printed_page: null
+  raw: 6 | คลองลาเจียก 1 คลองขี้เสือใหญ่ คลองลาเจียก 2 | 6 - 15 | 1.479 -2.00 | บึงกุ่ม | 13.819241 100.625984
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1.479
+- seq: 7
+  name: คลองลำเจียก 2 คลองลำเจียก 1
+  from_to: คลองบางเตย
+  width_m_as_printed: 6 - 15
+  length_m_as_printed: '1.282'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บึงกุ่ม
+  lat: 13.818979
+  lon: 100.63976
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1 (ต่อ)
+  page: 100
+  printed_page: null
+  raw: 7 | คลองลาเจียก 2 คลองลาเจียก 1 | คลองบางเตย | 6 - 15 | 1.282 -2.00 | บึงกุ่ม | 13.818979 100.63976
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1.282
+- seq: 8
+  name: คลองบางขวด ถนนประดิษฐ์
+  from_to: คลองบางเตย
+  width_m_as_printed: 10 - 15
+  length_m_as_printed: 4,592
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บึงกุ่ม
+  lat: 13.843902
+  lon: 100.636091
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1 (ต่อ)
+  page: 100
+  printed_page: null
+  raw: 8 | คลองบางขวด ถนนประดิษฐ์ | คลองบางเตย | 10 - 15 | 4,592 -2.00 | บึงกุ่ม | 13.843902 100.636091
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4592.0
+- seq: 9
+  name: คลองลำพังพวย ถนนนวมินทร์
+  from_to: ซอยลาดพร้าว 101
+  width_m_as_printed: 3 - 45
+  length_m_as_printed: 2,510
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางกะปิ
+  lat: 13.784784
+  lon: 100.647806
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1 (ต่อ)
+  page: 100
+  printed_page: null
+  raw: 9 | คลองลาพังพวย ถนนนวมินทร์ | ซอยลาดพร้าว 101 3 - 45 | 2,510 | -2.00 | บางกะปิ | 13.784784 100.647806
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2510.0
+- seq: null
+  name: คลองลำพังพวย ถนนศรีบูรพา
+  from_to: คลองแสนแสบ
+  width_m_as_printed: 12 - 36
+  length_m_as_printed: 1,344
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางกะปิ
+  lat: 13.776975
+  lon: 100.652548
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1 (ต่อ)
+  page: 100
+  printed_page: null
+  raw: คลองลาพังพวย ถนนศรีบูรพา | คลองแสนแสบ | 12 - 36 | 1,344 | -2.00 | บางกะปิ | 13.776975 100.652548
+  tag: VERIFIED
+  parse_confidence: medium
+  length_m: 1344.0
+- seq: 10
+  name: คลองวัดตึก
+  from_to: ถนนลาดพร้าว / คลองแสนแสบ
+  width_m_as_printed: 4 - 10
+  length_m_as_printed: 3,754
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: วังทองหลาง
+  lat: 13.78664
+  lon: 100.608031
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1 (ต่อ)
+  page: 100
+  printed_page: null
+  raw: 10 | คลองวัดตึก | ถนนลาดพร้าว | คลองแสนแสบ | 4 - 10 | 3,754 | -1.50 | วังทองหลาง 13.78664 | 100.608031
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3754.0
+- seq: 11
+  name: คลองเจ้าคุณสิงห์ คลอง
+  from_to: คลองแสนแสบ
+  width_m_as_printed: 4-8
+  length_m_as_printed: 4,834
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: วังทองหลาง
+  lat: 13.800045
+  lon: 100.610303
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1 (ต่อ)
+  page: 100
+  printed_page: null
+  raw: 11 | คลองเจ้าคุณสิงห์ คลอง | คลองแสนแสบ | 4-8 | 4,834 | -2.00 | วังทองหลาง 13.800045 100.610303
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4834.0
+- seq: 1
+  name: คลองกะจะ
+  from_to: คลองแสนแสบ / คลองหัวหมาก
+  width_m_as_printed: 8 - 12
+  length_m_as_printed: 5,744
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: สวนหลวง
+  lat: 13.748013
+  lon: 100.601177
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2
+  page: 100
+  printed_page: null
+  raw: 1 | คลองกะจะ | คลองแสนแสบ | คลองหัวหมาก | 8 - 12 | 5,744 -2.00 สวนหลวง 13.748013 100.601177
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 5744.0
+- seq: 2
+  name: คลอง
+  from_to: คลองประเวศ / คลองตาสาด
+  width_m_as_printed: 8 - 15
+  length_m_as_printed: 1,823
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: สวนหลวง
+  lat: 13.718009
+  lon: 100.651479
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2
+  page: 100
+  printed_page: null
+  raw: 2 | คลอง | คลองประเวศ | คลองตาสาด | 8 - 15 | 1,823 -2.00 สวนหลวง 13.718009 100.651479
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1823.0
+- seq: 3
+  name: คลองสะแก
+  from_to: คลองกะจะ / คลองตัน
+  width_m_as_printed: 4 - 12
+  length_m_as_printed: 1,893
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: สวนหลวง
+  lat: 13.743692
+  lon: 100.610455
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2
+  page: 100
+  printed_page: null
+  raw: 3 | คลองสะแก | คลองกะจะ | คลองตัน | 4 - 12 | 1,893 | -2.00 | สวนหลวง 13.743692 100.610455
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1893.0
+- seq: 4
+  name: คลองบ้านป่า
+  from_to: คลองลาว / คลองตัน
+  width_m_as_printed: 4 - 15
+  length_m_as_printed: 3,108
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: สวนหลวง
+  lat: 13.735305
+  lon: 100.625612
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2
+  page: 100
+  printed_page: null
+  raw: 4 | คลองบ้านป่า | คลองลาว | คลองตัน | 4 - 15 | 3,108 | -2.00 | สวนหลวง 13.735305 100.625612
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3108.0
+- seq: 5
+  name: คลองลาว
+  from_to: คลองกะจะ / คลองหัวหมาก
+  width_m_as_printed: 6-8
+  length_m_as_printed: 2,276
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: สวนหลวง
+  lat: 13.746407
+  lon: 100.621894
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2
+  page: 100
+  printed_page: null
+  raw: 5 | คลองลาว | คลองกะจะ | คลองหัวหมาก | 6-8 | 2,276 | -2.00 | สวนหลวง 13.746407 100.621894
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2276.0
+- seq: 1
+  name: คลองพระยา
+  from_to: คลองหกวา / คลองบางชัน
+  width_m_as_printed: 14 - 27
+  length_m_as_printed: 9,876
+  dredge_level_m_msl_as_printed: '-3.00'
+  district: บางเขน
+  lat: 13.930895
+  lon: 100.689744
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1
+  page: 101
+  printed_page: ข-9
+  raw: 1 | คลองพระยา | คลองหกวา | คลองบางชัน | 14 - 27 9,876 -3.00 | บางเขน | 13.930895 100.689744
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 9876.0
+- seq: 3
+  name: คลองสอง
+  from_to: คลองหกวา / ถนนพหลโยธิน
+  width_m_as_printed: 14 - 42
+  length_m_as_printed: 4,943
+  dredge_level_m_msl_as_printed: '-3.00'
+  district: สายไหม
+  lat: 13.93755
+  lon: 100.63977
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1
+  page: 101
+  printed_page: ข-9
+  raw: 3 | คลองสอง | คลองหกวา | ถนนพหลโยธิน | 14 - 42 | 4,943 | -3.00 | สายไหม 13.93755 | 100.63977
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4943.0
+- *id022
+- *id023
+- seq: 3
+  name: คลองบางนา แม่น้ำเจ้าพระยา
+  from_to: คลองเคล็ด
+  width_m_as_printed: 10 - 20
+  length_m_as_printed: 8,457
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: บางนา
+  lat: 13.675366
+  lon: 100.586578
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2
+  page: 101
+  printed_page: ข-9
+  raw: 3 | คลองบางนา แม่น้าเจ้าพระยา | คลองเคล็ด | 10 - 20 8,457 | -2.50 | บางนา 13.675366 100.586578
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 8457.0
+- seq: 1
+  name: คลองหลุมไผ่
+  from_to: คลองลาดพร้าว / คลองไผ่เขียว
+  width_m_as_printed: 7 - 15
+  length_m_as_printed: 3,281
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: ลาดพร้าว
+  lat: 13.843863
+  lon: 100.589828
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1
+  page: 101
+  printed_page: ข-9
+  raw: 1 | คลองหลุมไผ่ | คลองลาดพร้าว | คลองไผ่เขียว | 7 - 15 | 3,281 -2.50 ลาดพร้าว | 13.843863 100.589828
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3281.0
+- seq: 2
+  name: คลองโครกคราม คลองไผ่เขียว
+  from_to: ถนนประดิษฐ์มนูธรรม
+  width_m_as_printed: 7 - 12
+  length_m_as_printed: 2,256
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ลาดพร้าว
+  lat: 13.848467
+  lon: 100.618912
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1
+  page: 101
+  printed_page: ข-9
+  raw: 2 | คลองโครกคราม คลองไผ่เขียว | ถนนประดิษฐ์มนูธรรม | 7 - 12 | 2,256 | -1.50 | ลาดพร้าว | 13.848467 100.618912
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2256.0
+- seq: 3
+  name: คลอง
+  from_to: คลองลาดพร้าว / คลองจั่น
+  width_m_as_printed: 4 - 12
+  length_m_as_printed: 3,887
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ลาดพร้าว
+  lat: 13.802835
+  lon: 100.588306
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1 (ต่อ)
+  page: 102
+  printed_page: ข-10
+  raw: 3 | คลอง | คลองลาดพร้าว | คลองจั่น | 4 - 12 | 3,887 -2.00 ลาดพร้าว | 13.802835 100.588306
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3887.0
+- seq: 4
+  name: คลองพลับพลา
+  from_to: คลองลาดพร้าว / คลองแสนแสบ
+  width_m_as_printed: 8 - 10
+  length_m_as_printed: 1,753
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: วังทองหลาง
+  lat: 13.764097
+  lon: 100.594689
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1 (ต่อ)
+  page: 102
+  printed_page: ข-10
+  raw: 4 | คลองพลับพลา | คลองลาดพร้าว | คลองแสนแสบ | 8 - 10 | 1,753 | -2.00 | วังทองหลาง 13.764097 100.594689
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1753.0
+- seq: 5
+  name: คลองยายเผื่อน
+  from_to: คลองตาหนัง / คลองแสนแสบ
+  width_m_as_printed: 4 - 12
+  length_m_as_printed: 1,973
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางกะปิ
+  lat: 13.779948
+  lon: 100.642253
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1 (ต่อ)
+  page: 102
+  printed_page: ข-10
+  raw: 5 | คลองยายเผื่อน | คลองตาหนัง | คลองแสนแสบ | 4 - 12 | 1,973 | -2.00 | บางกะปิ | 13.779948 | 100.642253
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1973.0
+- seq: 6
+  name: คลองหลอแหล
+  from_to: คลองบางชัน / คลองแสนแสบ
+  width_m_as_printed: 16 - 20
+  length_m_as_printed: 1,384
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: คันนายาว
+  lat: 13.80349
+  lon: 100.701033
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1 (ต่อ)
+  page: 102
+  printed_page: ข-10
+  raw: 6 | คลองหลอแหล | คลองบางชัน | คลองแสนแสบ | 16 - 20 | 1,384 | -2.00 | คันนายาว | 13.80349 | 100.701033
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1384.0
+- seq: 7
+  name: คลองตาหนัง
+  from_to: คลองลำเจียก 1 / คลองแสนแสบ
+  width_m_as_printed: 5 - 11
+  length_m_as_printed: 6,526
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางกะปิ
+  lat: 13.819171
+  lon: 100.63133
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1 (ต่อ)
+  page: 102
+  printed_page: ข-10
+  raw: 7 | คลองตาหนัง | คลองลาเจียก 1 | คลองแสนแสบ | 5 - 11 | 6,526 | -2.00 | บางกะปิ | 13.819171 | 100.63133
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 6526.0
+- seq: 8
+  name: คลองจั่น
+  from_to: คลองเกรียง / คลองแสนแสบ
+  width_m_as_printed: 3 - 14
+  length_m_as_printed: 6,163
+  dredge_level_m_msl_as_printed: '-4.00'
+  district: บางกะปิ
+  lat: 13.806863
+  lon: 100.62243
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1 (ต่อ)
+  page: 102
+  printed_page: ข-10
+  raw: 8 | คลองจั่น | คลองเกรียง | คลองแสนแสบ | 3 - 14 | 6,163 | -4.00 | บางกะปิ | 13.806863 | 100.62243
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 6163.0
+- seq: 9
+  name: คลองจิตรมิตร-
+  from_to: คลองจั่น / คลองแสนแสบ
+  width_m_as_printed: 5 - 10
+  length_m_as_printed: 2,061
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: วังทองหลาง
+  lat: 13.774696
+  lon: 100.62835
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1 (ต่อ)
+  page: 102
+  printed_page: ข-10
+  raw: 9 | คลองจิตรมิตร- | คลองจั่น | คลองแสนแสบ | 5 - 10 | 2,061 | -1.50 วังทองหลาง | 13.774696 100.62835
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2061.0
+- seq: 10
+  name: คลองบางเตย
+  from_to: คลองบางขวด / คลองแสนแสบ
+  width_m_as_printed: 8 - 15
+  length_m_as_printed: 4,519
+  dredge_level_m_msl_as_printed: '-3.00'
+  district: บึงกุ่ม
+  lat: 13.809502
+  lon: 100.64603
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 1 (ต่อ)
+  page: 102
+  printed_page: ข-10
+  raw: 10 | คลองบางเตย | คลองบางขวด | คลองแสนแสบ | 8 - 15 | 4,519 | -3.00 | บึงกุ่ม | 13.809502 100.64603
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4519.0
+- *id024
+- seq: 2
+  name: คลอง
+  from_to: ลำรางแบ่ง / คลองจวน
+  width_m_as_printed: 10 - 30
+  length_m_as_printed: '3.675'
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: สวนหลวง
+  lat: 13.7288
+  lon: 100.649467
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2
+  page: 102
+  printed_page: ข-10
+  raw: 2 | คลอง | ลารางแบ่ง | คลองจวน | 10 - 30 | 3.675 -2.50 สวนหลวง 13.7288 100.649467
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3.675
+- seq: 3
+  name: คลองขุนสกล
+  from_to: คลองพระโขนงเก่า / คลองตาสาด
+  width_m_as_printed: 4 - 20
+  length_m_as_printed: 1,525
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: สวนหลวง
+  lat: 13.714847
+  lon: 100.639289
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2
+  page: 102
+  printed_page: ข-10
+  raw: 3 | คลองขุนสกล | คลองพระโขนงเก่า | คลองตาสาด | 4 - 20 | 1,525 | -2.00 | สวนหลวง 13.714847 100.639289
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1525.0
+- *id025
+- *id026
+- seq: 6
+  name: คลองสวนอ้อย
+  from_to: คลองพระโขนง / ซอยทวีสุข
+  width_m_as_printed: 2- 6
+  length_m_as_printed: '998'
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: สวนหลวง
+  lat: 13.709748
+  lon: 100.61658
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2
+  page: 102
+  printed_page: ข-10
+  raw: 6 | คลองสวนอ้อย | คลองพระโขนง | ซอยทวีสุข | 2- 6 | 998 | -1.50 | สวนหลวง 13.709748 100.61658
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 998.0
+- seq: 7
+  name: คลอง
+  from_to: ซอยสุขุมวิท 81 คลอง
+  width_m_as_printed: 4 - 10
+  length_m_as_printed: 2,514
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: พระโขนง
+  lat: 13.706522
+  lon: 100.605696
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2
+  page: 102
+  printed_page: ข-10
+  raw: 7 | คลอง | ซอยสุขุมวิท 81 คลอง | 4 - 10 | 2,514 | -2.00 | พระโขนง 13.706522 100.605696
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2514.0
+- seq: 8
+  name: คลองเจ็ก
+  from_to: แม่น้ำเจ้าพระยา ซอยสุขุมวิท 60/1
+  width_m_as_printed: 4 - 8
+  length_m_as_printed: 1,663
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: พระโขนง
+  lat: 13.692067
+  lon: 100.589584
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2
+  page: 102
+  printed_page: ข-10
+  raw: 8 | คลองเจ็ก | แม่น้าเจ้าพระยา ซอยสุขุมวิท 60/1 4 - 8 | 1,663 | -2.00 | พระโขนง | 13.692067 100.589584
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1663.0
+- seq: 9
+  name: คลองบางจาก
+  from_to: แม่น้ำเจ้าพระยา คลอง
+  width_m_as_printed: 6 - 12
+  length_m_as_printed: 2,352
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: พระโขนง
+  lat: 13.689193
+  lon: 100.590436
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2 (ต่อ)
+  page: 103
+  printed_page: ข-11
+  raw: 9 | คลองบางจาก | แม่น้าเจ้าพระยา คลอง | 6 - 12 | 2,352 -2.00 พระโขนง | 13.689193 100.590436
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2352.0
+- seq: 10
+  name: คลองเคล็ด
+  from_to: คลองพระโขนง คลองบางนา
+  width_m_as_printed: 6 - 20
+  length_m_as_printed: 6,393
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: สวนหลวง
+  lat: 13.713544
+  lon: 100.627174
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2 (ต่อ)
+  page: 103
+  printed_page: ข-11
+  raw: 10 | คลองเคล็ด | คลองพระโขนง คลองบางนา | 6 - 20 | 6,393 | -2.00 | สวนหลวง 13.713544 100.627174
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 6393.0
+- seq: 12
+  name: คลองบางอ้อใหญ่ แม่น้ำเจ้าพระยา คลองบางนางจีน
+  from_to: null
+  width_m_as_printed: 6 - 20
+  length_m_as_printed: 2,873
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: พระโขนง
+  lat: 13.682525
+  lon: 100.590418
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2 (ต่อ)
+  page: 103
+  printed_page: ข-11
+  raw: 12 | คลองบางอ้อใหญ่ แม่น้าเจ้าพระยา คลองบางนางจีน | 6 - 20 | 2,873 | -2.00 | พระโขนง | 13.682525 100.590418
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2873.0
+- seq: 13
+  name: คลองจิก
+  from_to: คลองกะจะ / คลองแสนแสบ
+  width_m_as_printed: 6-9
+  length_m_as_printed: 1,636
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: บางกะปิ
+  lat: 13.750093
+  lon: 100.63574
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 2
+  area: พื้นที่บำรุงรักษา 2 (ต่อ)
+  page: 103
+  printed_page: ข-11
+  raw: 13 | คลองจิก | คลองกะจะ | คลองแสนแสบ | 6-9 | 1,636 | -2.50 | บางกะปิ | 13.750093 100.63574
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1636.0
+- *id027
+- *id028
+- seq: 1
+  name: คลองลำบ่อยาว คลองซอย 9
+  from_to: คลองลำหิน
+  width_m_as_printed: 8 - 19
+  length_m_as_printed: 1,850
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: หนองจอก
+  lat: 13.893862
+  lon: 100.792238
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 104
+  printed_page: ข-12
+  raw: 1 | คลองลาบ่อยาว คลองซอย 9 | คลองลาหิน | 8 - 19 | 1,850 -2.00 หนองจอก 13.893862 100.792238
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1850.0
+- *id029
+- seq: 3
+  name: คลองซอยที่ 8
+  from_to: คลองสี่ / สุดเขต กทม.
+  width_m_as_printed: '34'
+  length_m_as_printed: 2,100
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: คลองสามวา
+  lat: 13.905778
+  lon: 100.769639
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 104
+  printed_page: ข-12
+  raw: 3 | คลองซอยที่ 8 | คลองสี่ | สุดเขต กทม. | 34 | 2,100 | -2.00 | คลองสามวา 13.905778 100.769639
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2100.0
+- seq: 4
+  name: คลองซอยที่ 9 คลองลำบ่อยาว
+  from_to: สุดเขต กทม.
+  width_m_as_printed: '34'
+  length_m_as_printed: 4,800
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: หนองจอก
+  lat: 13.893889
+  lon: 100.792778
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 104
+  printed_page: ข-12
+  raw: 4 | คลองซอยที่ 9 คลองลาบ่อยาว | สุดเขต กทม. | 34 | 4,800 | -2.00 | หนองจอก 13.893889 100.792778
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4800.0
+- seq: 5
+  name: คลองซอยที่ 10 คลอง
+  from_to: สุดเขต กทม.
+  width_m_as_printed: '34'
+  length_m_as_printed: 4,800
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: หนองจอก
+  lat: 13.948472
+  lon: 100.815806
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 104
+  printed_page: ข-12
+  raw: 5 | คลองซอยที่ 10 คลอง | สุดเขต กทม. | 34 | 4,800 | -2.00 | หนองจอก 13.948472 100.815806
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4800.0
+- seq: 6
+  name: คลองซอยที่ 11 คลองสนาม
+  from_to: สุดเขต กทม.
+  width_m_as_printed: '34'
+  length_m_as_printed: 4,850
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: หนองจอก
+  lat: 13.906778
+  lon: 100.83825
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 104
+  printed_page: ข-12
+  raw: 6 | คลองซอยที่ 11 คลองสนาม | สุดเขต กทม. | 34 | 4,850 | -2.00 | หนองจอก 13.906778 100.838250
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4850.0
+- seq: 7
+  name: คลอง
+  from_to: คลองแสนแสบ / คลองสอง
+  width_m_as_printed: 15 - 20
+  length_m_as_printed: 5,300
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: หนองจอก
+  lat: 13.822
+  lon: 100.749222
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 104
+  printed_page: ข-12
+  raw: 7 | คลอง | คลองแสนแสบ | คลองสอง | 15 - 20 | 5,300 | -2.00 | หนองจอก 13.822000 100.749222
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 5300.0
+- seq: 8
+  name: คลอง
+  from_to: คลองแสนแสบ / คลองสี่
+  width_m_as_printed: 15 - 20
+  length_m_as_printed: 8,250
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: null
+  lat: 13.825806
+  lon: 100.756028
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 104
+  printed_page: ข-12
+  raw: 8 | คลอง | คลองแสนแสบ | คลองสี่ | 15 - 20 | 8,250 | -2.00 | คลองสาม 13.825806 100.756028
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 8250.0
+- *id030
+- seq: 10
+  name: คลอง
+  from_to: คลองลำต้นไทร คลองลำบึง
+  width_m_as_printed: 15 - 25
+  length_m_as_printed: 2,100
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: มีนบุรี
+  lat: 13.807972
+  lon: 100.807611
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 104
+  printed_page: ข-12
+  raw: 10 | คลอง | คลองลาต้นไทร คลองลาบึง | 15 - 25 | 2,100 | -2.00 | มีนบุรี | 13.807972 100.807611
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2100.0
+- seq: 11
+  name: คลองลำต้นไทร คลองนาตับ
+  from_to: คลองลำนก
+  width_m_as_printed: 20 - 30
+  length_m_as_printed: 3,400
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: มีนบุรี
+  lat: 13.818413
+  lon: 100.838094
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 104
+  printed_page: ข-12
+  raw: 11 | คลองลาต้นไทร คลองนาตับ | คลองลานก | 20 - 30 | 3,400 | -2.00 | มีนบุรี | 13.818413 100.838094
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3400.0
+- seq: 12
+  name: คลอง
+  from_to: คลองแสนแสบ คลองลำต้น
+  width_m_as_printed: 12 - 18
+  length_m_as_printed: 3,100
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: หนองจอก
+  lat: 13.853274
+  lon: 100.808176
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 104
+  printed_page: ข-12
+  raw: 12 | คลอง | คลองแสนแสบ คลองลาต้น | 12 - 18 | 3,100 | -2.50 | หนองจอก 13.853274 100.808176
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3100.0
+- seq: 13
+  name: คลอง
+  from_to: คลองแสนแสบ คลองลำต้น
+  width_m_as_printed: 8 - 15
+  length_m_as_printed: 4,600
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: หนองจอก
+  lat: 13.855083
+  lon: 100.827472
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 104
+  printed_page: ข-12
+  raw: 13 | คลอง | คลองแสนแสบ คลองลาต้น | 8 - 15 | 4,600 | -2.00 | หนองจอก 13.855083 100.827472
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4600.0
+- seq: 14
+  name: คลอง
+  from_to: คลองแสนแสบ คลองลำบ่อ
+  width_m_as_printed: 12 - 15
+  length_m_as_printed: 4,200
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: หนองจอก
+  lat: 13.853063
+  lon: 100.80573
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 104
+  printed_page: ข-12
+  raw: 14 | คลอง | คลองแสนแสบ คลองลาบ่อ | 12 - 15 | 4,200 | -2.50 | หนองจอก 13.853063 100.805730
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4200.0
+- seq: 15
+  name: คลอง
+  from_to: คลองซอยที่ 11 คลองลำหิน
+  width_m_as_printed: 7 - 26
+  length_m_as_printed: 2,300
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: หนองจอก
+  lat: 13.906902
+  lon: 100.838215
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 104
+  printed_page: ข-12
+  raw: 15 | คลอง | คลองซอยที่ 11 คลองลาหิน | 7 - 26 | 2,300 | -2.00 | หนองจอก 13.906902 100.838215
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2300.0
+- seq: 1
+  name: คลองหลอแหล
+  from_to: คลองแสนแสบ / คลองบัวคลี่
+  width_m_as_printed: 8 - 20
+  length_m_as_printed: 3,074
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: สะพานสูง
+  lat: 13.792667
+  lon: 100.696167
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 105
+  printed_page: null
+  raw: 1 | คลองหลอแหล | คลองแสนแสบ | คลองบัวคลี่ | 8 - 20 | 3,074 -2.00 | สะพานสูง | 13.792667 | 100.696167
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3074.0
+- seq: 2
+  name: คลองลาดบัวขาว
+  from_to: คลองแสนแสบ / คลองลำต้นอ้อ
+  width_m_as_printed: 8 - 20
+  length_m_as_printed: 5,177
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: สะพานสูง
+  lat: 13.798139
+  lon: 100.706139
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 105
+  printed_page: null
+  raw: 2 | คลองลาดบัวขาว | คลองแสนแสบ | คลองลาต้นอ้อ | 8 - 20 | 5,177 -2.00 | สะพานสูง | 13.798139 | 100.706139
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 5177.0
+- *id031
+- *id032
+- seq: 6
+  name: คลองแม่จันทร์
+  from_to: คลองลำต้นอ้อ คลองประเวศ
+  width_m_as_printed: 8 - 10
+  length_m_as_printed: 3,594
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: สะพานสูง
+  lat: 13.756417
+  lon: 100.709722
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 105
+  printed_page: null
+  raw: 6 | คลองแม่จันทร์ | คลองลาต้นอ้อ คลองประเวศ 8 - 10 | 3,594 | -2.50 | สะพานสูง | 13.756417 100.709722
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3594.0
+- seq: 7
+  name: คลองต้นตาล
+  from_to: คลองปลัดเปรียง สุดเขต กทม.
+  width_m_as_printed: 6-8
+  length_m_as_printed: 3,173
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ประเวศ
+  lat: 13.667139
+  lon: 100.666444
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 105
+  printed_page: null
+  raw: 7 | คลองต้นตาล | คลองปลัดเปรียง สุดเขต กทม. | 6-8 | 3,173 | -2.00 | ประเวศ | 13.667139 100.666444
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3173.0
+- *id033
+- seq: 9
+  name: คลองตาพุก
+  from_to: คลองประเวศ คลองขันแตก
+  width_m_as_printed: 6 - 20
+  length_m_as_printed: 3,386
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ประเวศ
+  lat: 13.723889
+  lon: 100.708889
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 105
+  printed_page: null
+  raw: 9 | คลองตาพุก | คลองประเวศ คลองขันแตก | 6 - 20 | 3,386 | -2.00 | ประเวศ | 13.723889 100.708889
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3386.0
+- seq: 10
+  name: คลองปากน้ำ
+  from_to: คลองปักหลัก คลองสิงห์โต
+  width_m_as_printed: 8 - 10
+  length_m_as_printed: '924'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ประเวศ
+  lat: 13.6805
+  lon: 100.698083
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 105
+  printed_page: null
+  raw: 10 | คลองปากน้า | คลองปักหลัก คลองสิงห์โต | 8 - 10 | 924 | -2.00 | ประเวศ | 13.680500 | 100.698083
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 924.0
+- seq: 11
+  name: คลองสิงห์โต
+  from_to: คลองขันแตก คลองปากน้ำ
+  width_m_as_printed: 6 - 12
+  length_m_as_printed: 1,893
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ประเวศ
+  lat: 13.695056
+  lon: 100.710167
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 105
+  printed_page: null
+  raw: 11 | คลองสิงห์โต | คลองขันแตก คลองปากน้า | 6 - 12 | 1,893 | -2.00 | ประเวศ | 13.695056 | 100.710167
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1893.0
+- seq: 12
+  name: คลองขันแตก
+  from_to: คลองปักหลัก คลองสิงห์โต
+  width_m_as_printed: 8 - 12
+  length_m_as_printed: 1,151
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ประเวศ
+  lat: 13.695472
+  lon: 100.700417
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 105
+  printed_page: null
+  raw: 12 | คลองขันแตก | คลองปักหลัก คลองสิงห์โต | 8 - 12 | 1,151 | -2.00 | ประเวศ | 13.695472 | 100.700417
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1151.0
+- seq: 13
+  name: คลองหนึ่ง
+  from_to: คลองลำนายโส คลองประเวศ
+  width_m_as_printed: 8 - 20
+  length_m_as_printed: 5,923
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: ลาดกระบัง
+  lat: 13.775028
+  lon: 100.731111
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 105
+  printed_page: null
+  raw: 13 | คลองหนึ่ง | คลองลานายโส คลองประเวศ 8 - 20 | 5,923 | -2.50 | ลาดกระบัง | 13.775028 | 100.731111
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 5923.0
+- seq: 14
+  name: คลองทับยาว
+  from_to: คลองลัดทับยาว สุดเขต กทม.
+  width_m_as_printed: 15 - 20
+  length_m_as_printed: 6,200
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ลาดกระบัง
+  lat: 13.7538
+  lon: 100.841824
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 105
+  printed_page: null
+  raw: 14 | คลองทับยาว | คลองลัดทับยาว สุดเขต กทม. 15 - 20 | 6,200 | -2.00 | ลาดกระบัง 13.753800 100.841824
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 6200.0
+- seq: 15
+  name: คลองลำบึงใหญ่ ลำรางตาทรัพย์ คลองลำนกแขวก
+  from_to: null
+  width_m_as_printed: 15 - 25
+  length_m_as_printed: 1,022
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ลาดกระบัง
+  lat: 13.793583
+  lon: 100.795167
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 105
+  printed_page: null
+  raw: 15 | คลองลาบึงใหญ่ ลารางตาทรัพย์ คลองลานกแขวก 15 - 25 | 1,022 | -2.00 | ลาดกระบัง 13.793583 100.795167
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1022.0
+- *id034
+- seq: 17
+  name: คลองขันแตก
+  from_to: คลองปักหลัก คลองสิงห์โต
+  width_m_as_printed: 8 - 12
+  length_m_as_printed: 1,151
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ประเวศ
+  lat: 13.695535
+  lon: 100.700349
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 105
+  printed_page: null
+  raw: 17 | คลองขันแตก | คลองปักหลัก คลองสิงห์โต | 8 - 12 | 1,151 | -2.00 | ประเวศ | 13.695535 100.700349
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1151.0
+- seq: 18
+  name: คลองจรเข้ขบ
+  from_to: คลองประเวศ คลองมะขามเทศ
+  width_m_as_printed: 5 - 12
+  length_m_as_printed: 3,487
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ประเวศ
+  lat: 13.724
+  lon: 100.700861
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 105
+  printed_page: null
+  raw: 18 | คลองจรเข้ขบ | คลองประเวศ คลองมะขามเทศ 5 - 12 | 3,487 | -2.00 | ประเวศ | 13.724000 100.700861
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3487.0
+- seq: 19
+  name: คลองปลัดเปรียง คลองมะขามเทศ คลองต้นตาล
+  from_to: null
+  width_m_as_printed: 5-8
+  length_m_as_printed: 4,065
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ประเวศ
+  lat: 13.700361
+  lon: 100.674611
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 105
+  printed_page: null
+  raw: 19 | คลองปลัดเปรียง คลองมะขามเทศ คลองต้นตาล | 5-8 | 4,065 | -2.00 | ประเวศ | 13.700361 | 100.674611
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4065.0
+- seq: 20
+  name: คลองปักหลัก
+  from_to: คลองจรเข้ขบ คลองปากน้ำ
+  width_m_as_printed: 7-8
+  length_m_as_printed: 3,335
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ประเวศ
+  lat: 13.704667
+  lon: 100.693917
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 105
+  printed_page: null
+  raw: 20 | คลองปักหลัก | คลองจรเข้ขบ คลองปากน้า | 7-8 | 3,335 | -2.00 | ประเวศ | 13.704667 | 100.693917
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3335.0
+- seq: 21
+  name: คลองมะขามเทศ คลองจรเข้ขบ คลองหนองบอน
+  from_to: null
+  width_m_as_printed: 6 - 9
+  length_m_as_printed: 4,088
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ประเวศ
+  lat: 13.705222
+  lon: 100.687194
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 105
+  printed_page: null
+  raw: 21 | คลองมะขามเทศ คลองจรเข้ขบ คลองหนองบอน 6 - 9 | 4,088 | -2.00 | ประเวศ | 13.705222 | 100.687194
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4088.0
+- seq: 22
+  name: คลองศาลาลอยบน คลองสองห้อง คลองศาลา
+  from_to: null
+  width_m_as_printed: 6–8
+  length_m_as_printed: 1,420
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ประเวศ
+  lat: 13.717111
+  lon: 100.678889
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2
+  page: 105
+  printed_page: null
+  raw: 22 | คลองศาลาลอยบน คลองสองห้อง คลองศาลา | 6–8 | 1,420 | -2.00 | ประเวศ | 13.717111 | 100.678889
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1420.0
+- *id035
+- seq: 24
+  name: คลองสาหร่าย
+  from_to: คลองปลัดเปรียง / คลองเคล็ด
+  width_m_as_printed: 6 - 8
+  length_m_as_printed: 1,923
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ประเวศ
+  lat: 13.667139
+  lon: 100.666444
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2 (ต่อ)
+  page: 106
+  printed_page: null
+  raw: 24 คลองสาหร่าย | คลองปลัดเปรียง | คลองเคล็ด | 6 - 8 1,923 -2.00 | ประเวศ 13.667139 | 100.666444
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1923.0
+- seq: 25
+  name: คลองหนองบอน คลองตาสาด (คู้)
+  from_to: คลองปลัดเปรียง
+  width_m_as_printed: 8 - 12
+  length_m_as_printed: 4,304
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ประเวศ
+  lat: 13.702833
+  lon: 100.651028
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 2 (ต่อ)
+  page: 106
+  printed_page: null
+  raw: 25 คลองหนองบอน คลองตาสาด (คู้) | คลองปลัดเปรียง 8 - 12 4,304 -2.00 | ประเวศ 13.702833 | 100.651028
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4304.0
+- *id036
+- seq: 2
+  name: คลองสามวา
+  from_to: คลองแสนแสบ สุดเขต กทม.
+  width_m_as_printed: 14 - 25
+  length_m_as_printed: 11,800
+  dredge_level_m_msl_as_printed: '-3.50'
+  district: มีนบุรี
+  lat: 13.811361
+  lon: 100.729778
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 106
+  printed_page: null
+  raw: 2 | คลองสามวา | คลองแสนแสบ สุดเขต กทม. 14 - 25 | 11,800 -3.50 | มีนบุรี | 13.811361 100.729778
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 11800.0
+- *id037
+- seq: 20
+  name: null
+  from_to: null
+  width_m_as_printed: 20 - 25
+  length_m_as_printed: 6,450
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: หนองจอก
+  lat: 13.850694
+  lon: 100.8915
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 106
+  printed_page: null
+  raw: 20 - 25 | 6,450 | -2.00 | หนองจอก 13.850694 100.891500
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 6450.0
+- seq: 5
+  name: คลองหลวงแพ่ง คลองนคร
+  from_to: คลองลำตาอิน
+  width_m_as_printed: 20 - 25
+  length_m_as_printed: 10,200
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: หนองจอก
+  lat: 13.814389
+  lon: 100.9385
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 106
+  printed_page: null
+  raw: 5 | คลองหลวงแพ่ง คลองนคร | คลองลาตาอิน 20 - 25 | 10,200 | -2.00 | หนองจอก | 13.814389 100.938500
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 10200.0
+- *id038
+- *id039
+- *id040
+- seq: 9
+  name: คลองสาม
+  from_to: ลำรางศาล / คลองประเวศ
+  width_m_as_printed: 8 - 15
+  length_m_as_printed: 5,978
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ลาดกระบัง
+  lat: 13.777889
+  lon: 100.753861
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 3
+  area: พื้นที่บำรุงรักษา 1
+  page: 106
+  printed_page: null
+  raw: 9 | คลองสาม | ลารางศาล | คลองประเวศ 8 - 15 | 5,978 | -2.00 | ลาดกระบัง 13.777889 100.753861
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 5978.0
+- *id041
+- *id042
+- *id043
+- *id044
+- seq: 1
+  name: คลองยายเทียบ
+  from_to: null
+  width_m_as_printed: 3-6
+  length_m_as_printed: '886'
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: บางแค
+  lat: 13.7078
+  lon: 100.418022
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 108
+  printed_page: ข-16
+  raw: 1 | คลองยายเทียบ | 3-6 | 886 | -1.50 | บางแค | 13.707800 | 100.418022
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 886.0
+- seq: 2
+  name: คลองโรงยาว
+  from_to: null
+  width_m_as_printed: 3-7
+  length_m_as_printed: '734'
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ภาษีเจริญ
+  lat: 13.715261
+  lon: 100.448683
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 108
+  printed_page: ข-16
+  raw: 2 | คลองโรงยาว | 3-7 | 734 | -1.50 | ภาษีเจริญ | 13.715261 | 100.448683
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 734.0
+- seq: 3
+  name: คลองยายเพียร
+  from_to: null
+  width_m_as_printed: 4-6
+  length_m_as_printed: '719'
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ภาษีเจริญ
+  lat: 13.709342
+  lon: 100.431837
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 108
+  printed_page: ข-16
+  raw: 3 | คลองยายเพียร | 4-6 | 719 | -1.50 | ภาษีเจริญ | 13.709342 | 100.431837
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 719.0
+- seq: 4
+  name: คลองบางขุนนนท์
+  from_to: null
+  width_m_as_printed: 3-9
+  length_m_as_printed: 1,738
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: บางกอกน้อย
+  lat: 13.758411
+  lon: 100.474238
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 108
+  printed_page: ข-16
+  raw: 4 | คลองบางขุนนนท์ | 3-9 | 1,738 | -1.50 | บางกอกน้อย | 13.758411 | 100.474238
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1738.0
+- seq: 5
+  name: คลองบางไผ่
+  from_to: null
+  width_m_as_printed: 4 - 12
+  length_m_as_printed: 2,376
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: หนองแขม
+  lat: 13.736092
+  lon: 100.337454
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 108
+  printed_page: ข-16
+  raw: 5 | คลองบางไผ่ | 4 - 12 | 2,376 | -1.50 | หนองแขม | 13.736092 | 100.337454
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2376.0
+- seq: 6
+  name: คลองมหาศร
+  from_to: null
+  width_m_as_printed: 5 - 10
+  length_m_as_printed: 6,371
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: หนองแขม
+  lat: 13.681431
+  lon: 100.350493
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 108
+  printed_page: ข-16
+  raw: 6 | คลองมหาศร | 5 - 10 | 6,371 | -1.50 | หนองแขม | 13.681431 | 100.350493
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 6371.0
+- seq: 7
+  name: คลองบางจาก
+  from_to: null
+  width_m_as_printed: 5 - 15
+  length_m_as_printed: 1,384
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: หนองแขม
+  lat: 13.70798
+  lon: 100.357273
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 108
+  printed_page: ข-16
+  raw: 7 | คลองบางจาก | 5 - 15 | 1,384 | -1.50 | หนองแขม | 13.707980 | 100.357273
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1384.0
+- seq: 8
+  name: คลองราษฎร์สามัคคี
+  from_to: null
+  width_m_as_printed: 4-6
+  length_m_as_printed: 3,425
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: บางแค
+  lat: 13.699466
+  lon: 100.346216
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 108
+  printed_page: ข-16
+  raw: 8 | คลองราษฎร์สามัคคี | 4-6 | 3,425 | -1.50 | บางแค | 13.699466 | 100.346216
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3425.0
+- seq: 9
+  name: คลองบางแค
+  from_to: null
+  width_m_as_printed: 5 - 10
+  length_m_as_printed: 5,389
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: บางแค
+  lat: 13.708638
+  lon: 100.426162
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 108
+  printed_page: ข-16
+  raw: 9 | คลองบางแค | 5 - 10 | 5,389 | -1.50 | บางแค | 13.708638 | 100.426162
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 5389.0
+- seq: 10
+  name: คลองบางอ้าย
+  from_to: 4-6 / 5,437 / บางแค
+  width_m_as_printed: null
+  length_m_as_printed: null
+  dredge_level_m_msl_as_printed: null
+  district: บางแค
+  lat: 13.679119
+  lon: 100.381762
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 108
+  printed_page: ข-16
+  raw: 10 | คลองบางอ้าย | 4-6 | 5,437 | บางแค | 13.679119 | 100.381762
+  tag: VERIFIED
+  parse_confidence: low
+- seq: 11
+  name: คลองหนองใหญ่
+  from_to: null
+  width_m_as_printed: 8 - 10
+  length_m_as_printed: 3,942
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: บางแค
+  lat: 13.679119
+  lon: 100.381762
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 108
+  printed_page: ข-16
+  raw: 11 | คลองหนองใหญ่ | 8 - 10 | 3,942 | -1.50 | บางแค | 13.679119 | 100.381762
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3942.0
+- seq: 12
+  name: คลองวัดใหม่
+  from_to: null
+  width_m_as_printed: 3-7
+  length_m_as_printed: 1,881
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: บางกอกน้อย
+  lat: 13.778025
+  lon: 100.469897
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 108
+  printed_page: ข-16
+  raw: 12 | คลองวัดใหม่ | 3-7 | 1,881 | -1.50 | บางกอกน้อย | 13.778025 | 100.469897
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1881.0
+- seq: 13
+  name: คลองวัดพิกุล
+  from_to: null
+  width_m_as_printed: 3-7
+  length_m_as_printed: 1,881
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: บางกอกน้อย
+  lat: 13.778025
+  lon: 100.469897
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 108
+  printed_page: ข-16
+  raw: 13 | คลองวัดพิกุล | 3-7 | 1,881 | -1.50 | บางกอกน้อย | 13.778025 | 100.469897
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1881.0
+- seq: 14
+  name: คลองแยกวัดพิกุล
+  from_to: null
+  width_m_as_printed: 3-8
+  length_m_as_printed: 1,264
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: บางพลัด
+  lat: 13.78485
+  lon: 100.47428
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 108
+  printed_page: ข-16
+  raw: 14 | คลองแยกวัดพิกุล | 3-8 | 1,264 | -1.50 | บางพลัด | 13.78485 | 100.47428
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1264.0
+- seq: 15
+  name: คลองผักหนาม
+  from_to: null
+  width_m_as_printed: 3-8
+  length_m_as_printed: 1,221
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: บางกอกน้อย
+  lat: 13.771315
+  lon: 100.472091
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 108
+  printed_page: ข-16
+  raw: 15 | คลองผักหนาม | 3-8 | 1,221 | -1.50 | บางกอกน้อย | 13.771315 | 100.472091
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1221.0
+- seq: 16
+  name: คลองวัดเจ้าอาม
+  from_to: null
+  width_m_as_printed: 4-8
+  length_m_as_printed: '758'
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: บางกอกน้อย
+  lat: 13.773565
+  lon: 100.466938
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 108
+  printed_page: ข-16
+  raw: 16 | คลองวัดเจ้าอาม | 4-8 | 758 | -1.50 | บางกอกน้อย | 13.773565 | 100.466938
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 758.0
+- seq: 17
+  name: คลองศาลเจ้า
+  from_to: null
+  width_m_as_printed: 4-9
+  length_m_as_printed: 3,363
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ตลิ่งชัน
+  lat: 13.780949
+  lon: 100.455934
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 108
+  printed_page: ข-16
+  raw: 17 | คลองศาลเจ้า | 4-9 | 3,363 | -1.50 | ตลิ่งชัน | 13.780949 | 100.455934
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3363.0
+- seq: 18
+  name: คลองวัดไก่เตี้ย
+  from_to: null
+  width_m_as_printed: 4-9
+  length_m_as_printed: 1,326
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ตลิ่งชัน
+  lat: 13.780909
+  lon: 100.456007
+  mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 108
+  printed_page: ข-16
+  raw: 18 | คลองวัดไก่เตี้ย | 4-9 | 1,326 | -1.50 | ตลิ่งชัน | 13.780909 | 100.456007
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1326.0
+- seq: 1
+  name: คลองสะแกงาม
+  from_to: null
+  width_m_as_printed: 8 - 20
+  length_m_as_printed: 5,459
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางขุนเทียน
+  lat: 13.623447
+  lon: 100.435842
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลียนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 109
+  printed_page: ข-17
+  raw: 1 | คลองสะแกงาม | 8 - 20 | 5,459 | -2.00 | บางขุนเทียน | 13.623447 | 100.435842
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 5459.0
+- seq: 2
+  name: คลองเลนเปน
+  from_to: null
+  width_m_as_printed: 7 - 15
+  length_m_as_printed: 6,000
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางขุนเทียน
+  lat: 13.606342
+  lon: 100.413658
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลียนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 109
+  printed_page: ข-17
+  raw: 2 | คลองเลนเปน | 7 - 15 | 6,000 | -2.00 | บางขุนเทียน | 13.606342 | 100.413658
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 6000.0
+- seq: 3
+  name: คลองระหาญ
+  from_to: null
+  width_m_as_printed: 6-7
+  length_m_as_printed: 4,206
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางขุนเทียน
+  lat: 13.59681
+  lon: 100.399756
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลียนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 109
+  printed_page: ข-17
+  raw: 3 | คลองระหาญ | 6-7 | 4,206 | -2.00 | บางขุนเทียน | 13.596810 | 100.399756
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4206.0
+- seq: 4
+  name: คลองแยกคลองสะแกงาม
+  from_to: null
+  width_m_as_printed: 2-6
+  length_m_as_printed: '697'
+  dredge_level_m_msl_as_printed: '-1.00'
+  district: บางขุนเทียน
+  lat: 13.629092
+  lon: 100.438784
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลียนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 109
+  printed_page: ข-17
+  raw: 4 | คลองแยกคลองสะแกงาม | 2-6 | 697 | -1.00 | บางขุนเทียน | 13.629092 | 100.438784
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 697.0
+- seq: 6
+  name: คลองบางมด
+  from_to: null
+  width_m_as_printed: 12 - 20
+  length_m_as_printed: 11,401
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: จอมทอง
+  lat: 13.603067
+  lon: 100.47691
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลียนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 109
+  printed_page: ข-17
+  raw: 6 | คลองบางมด | 12 - 20 | 11,401 | -2.50 | จอมทอง | 13.603067 | 100.476910
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 11401.0
+- seq: 7
+  name: คลองบางลำภูล่าง
+  from_to: null
+  width_m_as_printed: 2-6
+  length_m_as_printed: 1,915
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: คลองสาน
+  lat: 13.71329
+  lon: 100.507447
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลียนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 109
+  printed_page: ข-17
+  raw: 7 | คลองบางลำภูล่าง | 2-6 | 1,915 | -1.50 | คลองสาน | 13.713290 | 100.507447
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1915.0
+- seq: 8
+  name: คลองหนามแดง
+  from_to: null
+  width_m_as_printed: 7 - 20
+  length_m_as_printed: 5,468
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางบอน
+  lat: 13.654991
+  lon: 100.339497
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลียนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 109
+  printed_page: ข-17
+  raw: 8 | คลองหนามแดง | 7 - 20 | 5,468 | -2.00 | บางบอน | 13.654991 | 100.339497
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 5468.0
+- seq: 9
+  name: คลองบางโคลัด
+  from_to: null
+  width_m_as_printed: 6 - 20
+  length_m_as_printed: 8,121
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางบอน
+  lat: 13.695987
+  lon: 100.44095
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลียนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 109
+  printed_page: ข-17
+  raw: 9 | คลองบางโคลัด | 6 - 20 | 8,121 | -2.00 | บางบอน | 13.695987 | 100.440950
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 8121.0
+- seq: 10
+  name: คลองบางระแนะ
+  from_to: null
+  width_m_as_printed: 4 - 12
+  length_m_as_printed: 3,797
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ภาษีเจริญ
+  lat: 13.68724
+  lon: 100.455355
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลียนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 109
+  printed_page: ข-17
+  raw: 10 | คลองบางระแนะ | 4 - 12 | 3,797 | -2.00 | ภาษีเจริญ | 13.687240 | 100.455355
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3797.0
+- seq: 11
+  name: คลองบางประทุน
+  from_to: null
+  width_m_as_printed: 5 - 15
+  length_m_as_printed: '3.623'
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ภาษีเจริญ
+  lat: 13.706387
+  lon: 100.430079
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลียนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 109
+  printed_page: ข-17
+  raw: 11 | คลองบางประทุน | 5 - 15 | 3.623 | -2.00 | ภาษีเจริญ | 13.706387 | 100.430079
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3.623
+- seq: 12
+  name: คลองบางหว้า
+  from_to: null
+  width_m_as_printed: 5 - 10
+  length_m_as_printed: 3,172
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: จอมทอง
+  lat: 13.717755
+  lon: 100.441129
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลียนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 109
+  printed_page: ข-17
+  raw: 12 | คลองบางหว้า | 5 - 10 | 3,172 | -1.50 | จอมทอง | 13.717755 | 100.441129
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3172.0
+- seq: 13
+  name: คลองแจงร้อน
+  from_to: null
+  width_m_as_printed: 4 - 15
+  length_m_as_printed: 4,199
+  dredge_level_m_msl_as_printed: '-3.00'
+  district: ราษฎร์บูรณะ
+  lat: 13.650561
+  lon: 100.501046
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลียนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 109
+  printed_page: ข-17
+  raw: 13 | คลองแจงร้อน | 4 - 15 | 4,199 | -3.00 | ราษฎร์บูรณะ | 13.650561 | 100.501046
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4199.0
+- seq: 14
+  name: คลองราษฎร์บูรณะ
+  from_to: null
+  width_m_as_printed: 4 - 15
+  length_m_as_printed: 4,279
+  dredge_level_m_msl_as_printed: '-3.00'
+  district: ราษฎร์บูรณะ
+  lat: 13.653471
+  lon: 100.493773
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลียนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 109
+  printed_page: ข-17
+  raw: 14 | คลองราษฎร์บูรณะ | 4 - 15 | 4,279 | -3.00 | ราษฎร์บูรณะ | 13.653471 | 100.493773
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4279.0
+- seq: 15
+  name: คลองบางปะกอก
+  from_to: null
+  width_m_as_printed: 5 - 25
+  length_m_as_printed: 2,326
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ราษฎร์บูรณะ
+  lat: 13.672822
+  lon: 100.486679
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลียนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 109
+  printed_page: ข-17
+  raw: 15 | คลองบางปะกอก | 5 - 25 | 2,326 | -1.50 | ราษฎร์บูรณะ | 13.672822 | 100.486679
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2326.0
+- seq: 16
+  name: คลองบางปะแก้ว
+  from_to: null
+  width_m_as_printed: 15 - 25
+  length_m_as_printed: 2,831
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ราษฎร์บูรณะ
+  lat: 13.669224
+  lon: 100.480079
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลียนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 109
+  printed_page: ข-17
+  raw: 16 | คลองบางปะแก้ว | 15 - 25 | 2,831 | -1.50 | ราษฎร์บูรณะ | 13.669224 | 100.480079
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2831.0
+- seq: 1
+  name: คลองภาษีเจริญ
+  from_to: null
+  width_m_as_printed: 15 - 30
+  length_m_as_printed: 15,380
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: บางแค
+  lat: 13.677332
+  lon: 100.337609
+  mission: ภารกิจรักษาความสะอาด คูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 110
+  printed_page: ข-18
+  raw: 1 | คลองภาษีเจริญ | 15 - 30 | 15,380 | -2.50 | บางแค | 13.677332 | 100.337609
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 15380.0
+- seq: 2
+  name: คลองชักพระ
+  from_to: null
+  width_m_as_printed: 10 - 42
+  length_m_as_printed: 5,184
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: ตลิ่งชัน
+  lat: 13.74439
+  lon: 100.462082
+  mission: ภารกิจรักษาความสะอาด คูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 110
+  printed_page: ข-18
+  raw: 2 | คลองชักพระ | 10 - 42 | 5,184 | -2.50 | ตลิ่งชัน | 13.744390 | 100.462082
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 5184.0
+- seq: 3
+  name: คลองมอญ
+  from_to: null
+  width_m_as_printed: 13 - 14
+  length_m_as_printed: 3,020
+  dredge_level_m_msl_as_printed: '-3.00'
+  district: บางกอกใหญ่
+  lat: 13.744384
+  lon: 100.462211
+  mission: ภารกิจรักษาความสะอาด คูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 110
+  printed_page: ข-18
+  raw: 3 | คลองมอญ | 13 - 14 | 3,020 | -3.00 | บางกอกใหญ่ | 13.744384 | 100.462211
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3020.0
+- seq: 4
+  name: คลองทวีวัฒนา
+  from_to: null
+  width_m_as_printed: 10 - 41
+  length_m_as_printed: 13,749
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: ทวีวัฒนา
+  lat: 13.6917
+  lon: 100.381224
+  mission: ภารกิจรักษาความสะอาด คูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 110
+  printed_page: ข-18
+  raw: 4 | คลองทวีวัฒนา | 10 - 41 | 13,749 | -2.50 | ทวีวัฒนา | 13.691700 | 100.381224
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 13749.0
+- seq: 5
+  name: คลองควาย
+  from_to: null
+  width_m_as_printed: 10 - 18
+  length_m_as_printed: 3,608
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ทวีวัฒนา
+  lat: 13.77073
+  lon: 100.38332
+  mission: ภารกิจรักษาความสะอาด คูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 110
+  printed_page: ข-18
+  raw: 5 | คลองควาย | 10 - 18 | 3,608 | -1.50 | ทวีวัฒนา | 13.770730 | 100.383320
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3608.0
+- seq: 6
+  name: คลองซอย
+  from_to: null
+  width_m_as_printed: 8 - 16
+  length_m_as_printed: 4,174
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ทวีวัฒนา
+  lat: 13.768878
+  lon: 100.359194
+  mission: ภารกิจรักษาความสะอาด คูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 110
+  printed_page: ข-18
+  raw: 6 | คลองซอย | 8 - 16 | 4,174 | -1.50 | ทวีวัฒนา | 13.768878 | 100.359194
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4174.0
+- seq: 7
+  name: คลองบางคูเวียง
+  from_to: null
+  width_m_as_printed: 5 - 14
+  length_m_as_printed: 4,128
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ทวีวัฒนา
+  lat: 13.792968
+  lon: 100.331196
+  mission: ภารกิจรักษาความสะอาด คูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 110
+  printed_page: ข-18
+  raw: 7 | คลองบางคูเวียง | 5 - 14 | 4,128 | -1.50 | ทวีวัฒนา | 13.792968 | 100.331196
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4128.0
+- seq: 8
+  name: คลองขุนศรีบุรีรักษ์
+  from_to: null
+  width_m_as_printed: 7 - 18
+  length_m_as_printed: 4,268
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ทวีวัฒนา
+  lat: 13.766852
+  lon: 100.375184
+  mission: ภารกิจรักษาความสะอาด คูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 110
+  printed_page: ข-18
+  raw: 8 | คลองขุนศรีบุรีรักษ์ | 7 - 18 | 4,268 | -1.50 | ทวีวัฒนา | 13.766852 | 100.375184
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4268.0
+- seq: 9
+  name: คลองบางจาก
+  from_to: null
+  width_m_as_printed: 5 - 15
+  length_m_as_printed: 12,365
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ภาษีเจริญ
+  lat: 13.71108
+  lon: 100.372128
+  mission: ภารกิจรักษาความสะอาด คูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 110
+  printed_page: ข-18
+  raw: 9 | คลองบางจาก | 5 - 15 | 12,365 | -1.50 | ภาษีเจริญ | 13.711080 | 100.372128
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 12365.0
+- seq: 10
+  name: คลองบางแวก
+  from_to: null
+  width_m_as_printed: 7 - 23
+  length_m_as_printed: 10,602
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ภาษีเจริญ
+  lat: 13.726268
+  lon: 100.364939
+  mission: ภารกิจรักษาความสะอาด คูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 110
+  printed_page: ข-18
+  raw: 10 | คลองบางแวก | 7 - 23 | 10,602 | -1.50 | ภาษีเจริญ | 13.726268 | 100.364939
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 10602.0
+- seq: 11
+  name: คลองบางไผ่
+  from_to: null
+  width_m_as_printed: 5 - 12
+  length_m_as_printed: 9,569
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ภาษีเจริญ
+  lat: 13.740431
+  lon: 100.424345
+  mission: ภารกิจรักษาความสะอาด คูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 110
+  printed_page: ข-18
+  raw: 11 | คลองบางไผ่ | 5 - 12 | 9,569 | -1.50 | ภาษีเจริญ | 13.740431 | 100.424345
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 9569.0
+- seq: 12
+  name: คลองบางขี้แก้ง
+  from_to: null
+  width_m_as_printed: 4-8
+  length_m_as_printed: 7,105
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ภาษีเจริญ
+  lat: 13.720538
+  lon: 100.367635
+  mission: ภารกิจรักษาความสะอาด คูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 110
+  printed_page: ข-18
+  raw: 12 | คลองบางขี้แก้ง | 4-8 | 7,105 | -1.50 | ภาษีเจริญ | 13.720538 | 100.367635
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 7105.0
+- seq: 13
+  name: คลองบางเชือกหนัง
+  from_to: null
+  width_m_as_printed: 9 - 25
+  length_m_as_printed: 12,526
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ภาษีเจริญ
+  lat: 13.752111
+  lon: 100.352682
+  mission: ภารกิจรักษาความสะอาด คูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 110
+  printed_page: ข-18
+  raw: 13 | คลองบางเชือกหนัง | 9 - 25 | 12,526 | -2.00 | ภาษีเจริญ | 13.752111 | 100.352682
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 12526.0
+- seq: 14
+  name: คลองบัว
+  from_to: null
+  width_m_as_printed: 6 - 15
+  length_m_as_printed: 3,580
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ตลิ่งชัน
+  lat: 13.777298
+  lon: 100.428057
+  mission: ภารกิจรักษาความสะอาด คูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 110
+  printed_page: ข-18
+  raw: 14 | คลองบัว | 6 - 15 | 3,580 | -1.50 | ตลิ่งชัน | 13.777298 | 100.428057
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3580.0
+- seq: 15
+  name: คลองโพธิ์ (ทวีวัฒนา)
+  from_to: null
+  width_m_as_printed: 6 - 12
+  length_m_as_printed: 2,580
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ทวีวัฒนา
+  lat: 13.791422
+  lon: 100.38318
+  mission: ภารกิจรักษาความสะอาด คูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 110
+  printed_page: ข-18
+  raw: 15 | คลองโพธิ์ (ทวีวัฒนา) | 6 - 12 | 2,580 | -1.50 | ทวีวัฒนา | 13.791422 | 100.383180
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2580.0
+- seq: 16
+  name: คลองบางระมาด
+  from_to: null
+  width_m_as_printed: 7 - 20
+  length_m_as_printed: 9,450
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ตลิ่งชัน
+  lat: 13.771252
+  lon: 100.37493
+  mission: ภารกิจรักษาความสะอาด คูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 110
+  printed_page: ข-18
+  raw: 16 | คลองบางระมาด | 7 - 20 | 9,450 | -1.50 | ตลิ่งชัน | 13.771252 | 100.374930
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 9450.0
+- seq: 17
+  name: คลองพระยาราชมนตรี
+  from_to: null
+  width_m_as_printed: 8 - 15
+  length_m_as_printed: 4,000
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: ตลิ่งชัน
+  lat: 13.707349
+  lon: 100.426213
+  mission: ภารกิจรักษาความสะอาด คูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 110
+  printed_page: ข-18
+  raw: 17 | คลองพระยาราชมนตรี | 8 - 15 | 4,000 | -2.00 | ตลิ่งชัน | 13.707349 | 100.426213
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 4000.0
+- seq: 1
+  name: คลองบางกอกใหญ่
+  from_to: null
+  width_m_as_printed: 10 - 40
+  length_m_as_printed: 6,338
+  dredge_level_m_msl_as_printed: '-3.00'
+  district: ภาษีเจริญ
+  lat: 13.741771
+  lon: 100.491255
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลี่ยนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 111
+  printed_page: ข-19
+  raw: 1 | คลองบางกอกใหญ่ | 10 - 40 | 6,338 | -3.00 | ภาษีเจริญ | 13.741771 | 100.491255
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 6338.0
+- seq: 2
+  name: คลองด่าน
+  from_to: null
+  width_m_as_printed: 16 - 30
+  length_m_as_printed: 2,931
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: ภาษีเจริญ
+  lat: 13.698407
+  lon: 100.46371
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลี่ยนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 111
+  printed_page: ข-19
+  raw: 2 | คลองด่าน | 16 - 30 | 2,931 | -2.50 | ภาษีเจริญ | 13.698407 | 100.463710
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2931.0
+- seq: 5
+  name: คลองสนามชัย
+  from_to: null
+  width_m_as_printed: 15 - 40
+  length_m_as_printed: 19,610
+  dredge_level_m_msl_as_printed: '-3.00'
+  district: จอมทอง
+  lat: 13.588876
+  lon: 100.384309
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลี่ยนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 111
+  printed_page: ข-19
+  raw: 5 | คลองสนามชัย | 15 - 40 | 19,610 | -3.00 | จอมทอง | 13.588876 | 100.384309
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 19610.0
+- seq: 6
+  name: คลองสาน
+  from_to: null
+  width_m_as_printed: 3 - 13
+  length_m_as_printed: '919'
+  dredge_level_m_msl_as_printed: '-1.70'
+  district: คลองสาน
+  lat: 13.727801
+  lon: 100.503731
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลี่ยนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 111
+  printed_page: ข-19
+  raw: 6 | คลองสาน | 3 - 13 | 919 | -1.70 | คลองสาน | 13.727801 | 100.503731
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 919.0
+- seq: 7
+  name: คลองสมเด็จเจ้าพระยา
+  from_to: null
+  width_m_as_printed: 4 - 11
+  length_m_as_printed: 2,510
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ธนบุรี
+  lat: 13.729442
+  lon: 100.507967
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลี่ยนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 111
+  printed_page: ข-19
+  raw: 7 | คลองสมเด็จเจ้าพระยา | 4 - 11 | 2,510 | -1.50 | ธนบุรี | 13.729442 | 100.507967
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2510.0
+- seq: 8
+  name: คลองบางสะแก
+  from_to: null
+  width_m_as_printed: 4 - 10
+  length_m_as_printed: 3,347
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: จอมทอง
+  lat: 13.722358
+  lon: 100.473066
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลี่ยนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 111
+  printed_page: ข-19
+  raw: 8 | คลองบางสะแก | 4 - 10 | 3,347 | -1.50 | จอมทอง | 13.722358 | 100.473066
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3347.0
+- seq: 9
+  name: คลองบางน้ำชน
+  from_to: null
+  width_m_as_printed: 4 - 14
+  length_m_as_printed: 2,966
+  dredge_level_m_msl_as_printed: '-1.70'
+  district: ธนบุรี
+  lat: 13.722602
+  lon: 100.478576
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลี่ยนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 111
+  printed_page: ข-19
+  raw: 9 | คลองบางน้าชน | 4 - 14 | 2,966 | -1.70 | ธนบุรี | 13.722602 | 100.478576
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2966.0
+- seq: 10
+  name: คลองสาเหร่
+  from_to: null
+  width_m_as_printed: 8 - 16
+  length_m_as_printed: 2,752
+  dredge_level_m_msl_as_printed: '-1.70'
+  district: ธนบุรี
+  lat: 13.706514
+  lon: 100.496632
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลี่ยนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 111
+  printed_page: ข-19
+  raw: 10 | คลองสาเหร่ | 8 - 16 | 2,752 | -1.70 | ธนบุรี | 13.706514 | 100.496632
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2752.0
+- seq: 11
+  name: คลองบางไส้ไก่
+  from_to: null
+  width_m_as_printed: 5-9
+  length_m_as_printed: 3,212
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: ธนบุรี
+  lat: 13.706796
+  lon: 100.49746
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลี่ยนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 111
+  printed_page: ข-19
+  raw: 11 | คลองบางไส้ไก่ | 5-9 | 3,212 | -1.50 | ธนบุรี | 13.706796 | 100.497460
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 3212.0
+- seq: 12
+  name: คลองบุปผาราม
+  from_to: null
+  width_m_as_printed: 6-8
+  length_m_as_printed: '609'
+  dredge_level_m_msl_as_printed: '-1.00'
+  district: ธนบุรี
+  lat: 13.733766
+  lon: 100.492495
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลี่ยนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 111
+  printed_page: ข-19
+  raw: 12 | คลองบุปผาราม | 6-8 | 609 | -1.00 | ธนบุรี | 13.733766 | 100.492495
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 609.0
+- seq: 13
+  name: คลองพระยาราชมนตรี
+  from_to: null
+  width_m_as_printed: 8 - 15
+  length_m_as_printed: 7,918
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: บางแค
+  lat: 13.624806
+  lon: 100.439865
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลี่ยนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 111
+  printed_page: ข-19
+  raw: 13 | คลองพระยาราชมนตรี | 8 - 15 | 7,918 | -2.50 | บางแค | 13.624806 | 100.439865
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 7918.0
+- seq: 14
+  name: คลองขุนราชพินิจใจ
+  from_to: 8 - 15 / 12,155 / -300 / บางขุนเทียน
+  width_m_as_printed: null
+  length_m_as_printed: null
+  dredge_level_m_msl_as_printed: null
+  district: บางขุนเทียน
+  lat: 13.497664
+  lon: 100.454221
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลี่ยนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 111
+  printed_page: ข-19
+  raw: 14 | คลองขุนราชพินิจใจ | 8 - 15 | 12,155 | -300 | บางขุนเทียน | 13.497664 | 100.454221
+  tag: VERIFIED
+  parse_confidence: low
+- seq: 1
+  name: คลองบางละมุด
+  from_to: null
+  width_m_as_printed: 4-8
+  length_m_as_printed: '624'
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: บางพลัด
+  lat: 13.808736
+  lon: 100.510821
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 112
+  printed_page: ข-20
+  raw: 1 | คลองบางละมุด | 4-8 | 624 | -1.50 | บางพลัด | 13.808736 | 100.510821
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 624.0
+- seq: 2
+  name: คลองบางจาก
+  from_to: null
+  width_m_as_printed: 4 - 12
+  length_m_as_printed: 1,456
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: บางพลัด
+  lat: 13.784824
+  lon: 100.493434
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 112
+  printed_page: ข-20
+  raw: 2 | คลองบางจาก | 4 - 12 | 1,456 | -1.50 | บางพลัด | 13.784824 | 100.493434
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1456.0
+- seq: 3
+  name: คลองบางอ้อ
+  from_to: null
+  width_m_as_printed: 4 - 12
+  length_m_as_printed: 1,192
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: บางพลัด
+  lat: 13.798103
+  lon: 100.494226
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 112
+  printed_page: ข-20
+  raw: 3 | คลองบางอ้อ | 4 - 12 | 1,192 | -1.50 | บางพลัด | 13.798103 | 100.494226
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1192.0
+- seq: 4
+  name: คลองบางพลัด
+  from_to: null
+  width_m_as_printed: 3 - 10
+  length_m_as_printed: 1,685
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: บางพลัด
+  lat: 13.798103
+  lon: 100.494226
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 112
+  printed_page: ข-20
+  raw: 4 | คลองบางพลัด | 3 - 10 | 1,685 | -1.50 | บางพลัด | 13.798103 | 100.494226
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1685.0
+- seq: 5
+  name: คลองบางยี่ขัน
+  from_to: null
+  width_m_as_printed: 3 - 15
+  length_m_as_printed: 2,518
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: บางพลัด
+  lat: 13.780182
+  lon: 100.476583
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 112
+  printed_page: ข-20
+  raw: 5 | คลองบางยี่ขัน | 3 - 15 | 2,518 | -1.50 | บางพลัด | 13.780182 | 100.476583
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2518.0
+- seq: 6
+  name: คลองวัดทอง
+  from_to: null
+  width_m_as_printed: 4-8
+  length_m_as_printed: 2,538
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: บางกอกน้อย
+  lat: 13.754867
+  lon: 100.460244
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 112
+  printed_page: ข-20
+  raw: 6 | คลองวัดทอง | 4-8 | 2,538 | -1.50 | บางกอกน้อย | 13.754867 | 100.460244
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2538.0
+- seq: 7
+  name: คลองบางบาหรุ
+  from_to: null
+  width_m_as_printed: 6 - 12
+  length_m_as_printed: 2,808
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: บางพลัด
+  lat: 13.773651
+  lon: 100.471379
+  mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 1
+  page: 112
+  printed_page: ข-20
+  raw: 7 | คลองบางบาหรุ | 6 - 12 | 2,808 | -1.50 | บางพลัด | 13.773651 | 100.471379
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2808.0
+- seq: 1
+  name: คลองหัวกระบือ
+  from_to: null
+  width_m_as_printed: 5 - 35
+  length_m_as_printed: 2,134
+  dredge_level_m_msl_as_printed: '-2.00'
+  district: บางขุนเทียน
+  lat: 13.60593
+  lon: 100.453925
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลียนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 112
+  printed_page: ข-20
+  raw: 1 | คลองหัวกระบือ | 5 - 35 | 2,134 | -2.00 | บางขุนเทียน | 13.605930 | 100.453925
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2134.0
+- seq: 2
+  name: คลองเฉลิมชัยพัฒนา
+  from_to: null
+  width_m_as_printed: 30 - 50
+  length_m_as_printed: 2,150
+  dredge_level_m_msl_as_printed: '-2.50'
+  district: บางขุนเทียน
+  lat: 13.611744
+  lon: 100.451551
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลียนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 112
+  printed_page: ข-20
+  raw: 2 | คลองเฉลิมชัยพัฒนา 30 - 50 | 2,150 | -2.50 | บางขุนเทียน | 13.611744 | 100.451551
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 2150.0
+- seq: 3
+  name: คลองต้นไทร
+  from_to: null
+  width_m_as_printed: 4-6
+  length_m_as_printed: 1,278
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: จอมทอง
+  lat: 13.709407
+  lon: 100.466103
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลียนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 112
+  printed_page: ข-20
+  raw: 3 | คลองต้นไทร | 4-6 | 1,278 | -1.50 | จอมทอง | 13.709407 | 100.466103
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1278.0
+- seq: 4
+  name: คลองบางค้อ
+  from_to: null
+  width_m_as_printed: 4-8
+  length_m_as_printed: 1,737
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: จอมทอง
+  lat: 13.701788
+  lon: 100.465303
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลียนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 112
+  printed_page: ข-20
+  raw: 4 | คลองบางค้อ | 4-8 | 1,737 | -1.50 | จอมทอง | 13.701788 | 100.465303
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 1737.0
+- seq: 5
+  name: คลองข้างวัดอนงคาราม
+  from_to: null
+  width_m_as_printed: 9 - 14
+  length_m_as_printed: '500'
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: คลองสาน
+  lat: 13.737957
+  lon: 100.498764
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลียนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 112
+  printed_page: ข-20
+  raw: 5 | คลองข้างวัดอนงคาราม 9 - 14 | 500 | -1.50 | คลองสาน | 13.737957 | 100.498764
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 500.0
+- seq: 6
+  name: คลองบ้านหม้อ
+  from_to: null
+  width_m_as_printed: 4 - 10
+  length_m_as_printed: '957'
+  dredge_level_m_msl_as_printed: '-1.50'
+  district: บางกอกใหญ่
+  lat: 13.746749
+  lon: 100.484421
+  mission: หมายเหตุ แผนการปฏิบัติงานอาจมีการเปลียนแปลงหรือเพิ่มเติมได้ตามสถานการณ์หรือภารกิจเร่งด่วนตามความเหมาะสม
+  group: กลุ่มงานบำรุงรักษาคลอง 4
+  area: พื้นที่บำรุงรักษา 2
+  page: 112
+  printed_page: ข-20
+  raw: 6 | คลองบ้านหม้อ | 4 - 10 | 957 | -1.50 | บางกอกใหญ่ | 13.746749 | 100.484421
+  tag: VERIFIED
+  parse_confidence: high
+  length_m: 957.0

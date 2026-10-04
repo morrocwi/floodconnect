@@ -1,0 +1,141 @@
+schema_version: 1
+doc_kind: proposal_not_yet_toledo
+status_th: >
+  ข้อเสนอ — ยังไม่ลง Toledo / รอผู้ก่อตั้งตัดสิน. ไม่มีสมการใหม่ในไฟล์นี้ (ไม่มีอะไรถูก "derive"),
+  เป็นเพียงการเสนอ hazard class ใหม่ + การ map เข้ากับ unified_ladder ที่มีอยู่แล้วใน
+  sources/rain_alert_thresholds_crosswalk.yaml -- ไม่แก้ไฟล์ track ใด ๆ ในงานนี้.
+trigger_event:
+  source_card: docs/knowledge/card_news_2026-09-28_khlong_raok_khaochuk_dam_alert.md
+  summary_th: >
+    อ่างเก็บน้ำคลองระโอก (เขื่อนเขาจุก) อ.แกลง จ.ระยอง ประกาศอพยพด่วนภายใน 1 ชั่วโมง เหตุ
+    "หูสปิลเวย์พัง" และ "ผนังมีรอยร้าว" (RELAYED) -- การอพยพนี้ถูกสั่งเพราะความเสียหายเชิงโครงสร้าง
+    ของตัวเขื่อน ไม่ใช่เพราะปริมาณฝนสะสมเทียบขีดความสามารถออกแบบ (D_design) แบบที่ PROP-FLOOD-06
+    ใช้อยู่ในปัจจุบัน.
+  mvp_status: >
+    NEXT VERSION -- ระยองอยู่นอกขอบเขต Bangkok/MVP ของคลังนี้ตอนนี้ แต่ hazard class ที่เหตุการณ์นี้
+    ชี้ให้เห็นเกี่ยวข้องกับโมเดลโดยตรง (ไม่ผูกกับพื้นที่ใดพื้นที่หนึ่ง).
+
+precedent_in_repo:
+  - pointer: "docs/knowledge/FOUNDER_TASKS_2026-09-27.md line ~134, TODOLIST row #7"
+    quote_th: "no structural-failure vs high-water class | split hazard class on egress/internal_safe | committer | medium"
+    reading: >
+      ช่องว่างนี้ถูกบันทึกไว้แล้วก่อนเหตุการณ์นี้ 1 วัน -- เหตุการณ์คลองระโอกเป็นตัวอย่างสดที่ยืนยันว่า
+      ช่องว่างนี้เป็นของจริง ไม่ใช่สมมติฐาน.
+  - pointer: "sources/rain_alert_thresholds_crosswalk.yaml, rung L5/LR, quantity_families.canal_river_level"
+    quote_th: "Rangsit level 4 รุนแรง -- structural failure, not a water-level number (VERIFIED)"
+    reading: >
+      คลังนี้เคยบันทึกไว้แล้วว่า Rangsit (เทศบาลนครรังสิต) มีระดับ "รุนแรง" ที่นิยามด้วย structural
+      failure ไม่ใช่ตัวเลขระดับน้ำ -- เป็นบรรทัดฐานเดียวกับที่ข้อเสนอนี้ต้องการทำให้เป็น class ทั่วไป
+      แทนที่จะฝังอยู่ในหน่วยเดียว (Rangsit) เท่านั้น.
+  - pointer: "docs/knowledge/card_thirdparty_hatyai_redteam_2025-11_review_2026-09-27.md, PROP-FLOOD-06 v6 persisted_v6"
+    quote_th: "raise into T_L5/T_LR bypasses the p-consecutive-hour requirement... lowering -- including a lowering out of T_L5/T_LR -- is unchanged: still requires p consecutive lower-tier hours"
+    reading: >
+      L5/LR มี "immediate-bypass" semantics สำหรับการขึ้น tier (ไม่ต้องรอ p ชั่วโมงสะสม) ตาม
+      PROP-FLOOD-06 v6's persisted_v6 -- แต่ยังเป็น SPEC-ONLY, ไม่มีในโค้ดจริง (ไม่มี persistence
+      step ใน compute()/apply_persistence(), ดู ENGINE_VERSION_DELTA_ITEMS ใน
+      tools/backtest/compute_prop_flood_06_sammakorn.py) เหมือนที่ bypass_semantics ด้านล่างระบุไว้.
+      ข้อเสนอนี้อาศัย mechanism ที่เสนอไว้นี้ตรง ๆ: structural_failure_imminent ควรบังคับขึ้น L5/LR
+      ทันทีโดยไม่ผ่านการสะสม promoter แบบปกติ, ไม่ใช่ mechanism ใหม่ -- แต่ก็ยังเป็น proposal เหมือนกัน
+      จนกว่าจะขึ้นทะเบียน.
+
+proposed_hazard_class:
+  class_id: structural_failure_imminent
+  status: PROPOSAL -- not registered, not a PROP-FLOOD-xx code, no equation attached
+  definition_th: >
+    เหตุการณ์ที่แหล่งข้อมูล (ทางการหรือ RELAYED) รายงานความเสียหายเชิงโครงสร้างของสิ่งกีดขวางน้ำ
+    (เขื่อน/อ่างเก็บน้ำ/พนัง/กำแพงกันน้ำ) ที่อาจนำไปสู่การแตก/ทะลัก -- เช่น "สปิลเวย์พัง", "ผนังมีรอยร้าว",
+    "คันดินทรุด" -- โดยไม่ขึ้นกับว่าปริมาณฝนหรือระดับน้ำปัจจุบันอยู่ในเกณฑ์ใด.
+  scope: "dam | levee | flood_wall | spillway (โครงสร้างกั้น/กักน้ำใด ๆ)"
+  maps_to_rung: "L5 / LR (RESPONSE)"
+  rationale_th: >
+    ระบบ unified_ladder ปัจจุบัน (sources/rain_alert_thresholds_crosswalk.yaml) map action rung ผ่าน
+    quantity_families ที่เป็นตัวเลขต่อเนื่อง (rain_mm_24h, canal_river_level, discharge_vs_bankfull,
+    reservoir_percent, official_declaration) -- ไม่มี family ใดรองรับ "สถานะโครงสร้างพัง" เป็น input
+    ตรง ๆ. ข้อเสนอนี้คือให้ structural_failure_imminent เป็น**ธงตรง (direct flag)** ที่บังคับ tier
+    ขั้นต่ำ = L5/LR ทันที (max(band_tier, promoter_max) แบบเดียวกับ PROP-FLOOD-06 v4's base_tier
+    mechanism ที่มีอยู่แล้ว -- ไม่ใช่สมการใหม่, อาศัย mechanism เดิม) -- **regardless of rain**,
+    เพราะความเสี่ยงมาจากตัวโครงสร้างเอง ไม่ใช่จากปริมาณน้ำฝนที่กำลังตกอยู่.
+  cap_mapping:
+    severity: Extreme
+    urgency: Immediate
+    certainty_by_source:
+      agency_confirmed: Observed
+      relayed_unconfirmed: Likely
+      single_social_post_unconfirmed: Possible
+    certainty_note_th: >
+      certainty ขึ้นกับชั้นของแหล่งข้อมูล ไม่ใช่ค่าคงที่เดียว -- เหตุการณ์คลองระโอกนี้เอง อยู่ที่
+      Likely (มีสื่อ 2 แหล่ง + ประกาศระดับจังหวัดยืนยันบริบทวิกฤต แต่ไม่มีแถลงการณ์ RID เฉพาะเหตุการณ์
+      ที่พบในงานนี้ -- ดู OPEN ในการ์ดต้นทาง §2).
+  bypass_semantics: >
+    เมื่อ structural_failure_imminent = true สำหรับหน่วยใดหน่วยหนึ่ง, tier ของหน่วยนั้นขึ้นเป็น
+    L5/LR ทันที โดยไม่ต้องรอ p-consecutive-hour ตาม persisted_v6 mechanism ที่ PROP-FLOOD-06 v6
+    SPEC-ONLY (registered in the PROP-FLOOD-06 v6 proposal; NOT implemented: no persistence
+    step in compute()/apply_persistence(), see ENGINE_VERSION_DELTA_ITEMS in
+    tools/backtest/compute_prop_flood_06_sammakorn.py -- the mechanism described here is
+    the proposal's semantics, not something this repo's code currently runs) สำหรับการขึ้น
+    tier (ดู precedent_in_repo แถวที่ 3 ด้านบน) -- การลง tier กลับยังต้องผ่าน
+    การยืนยันแยกต่างหาก (โครงสร้างซ่อมแล้ว/ทางการยกเลิกประกาศ) ไม่ใช่แค่ p ชั่วโมงที่ระดับน้ำลดลง.
+    -- a safety fix 2026-10-02 defect 2
+  toledo_note: >
+    ไม่มีการเสนอสมการหรือค่าคงที่ใหม่ในไฟล์นี้ -- นี่คือการเสนอ "ธง"/class label + การ map เข้ากับ
+    tier ที่มีอยู่แล้ว ตามแนวเดียวกับที่ unified_ladder ของคลังนี้ทำกับ quantity_families อื่น ๆ ทุก
+    ตัว (§ "numbers_source" ใน rain_alert_thresholds_crosswalk.yaml). หากในอนาคตมีการ derive
+    threshold เชิงตัวเลข (เช่น "รอยร้าวกว้างกี่ ซม. ถึงนับเป็น imminent") จะต้องผ่าน Toledo-first
+    pipeline แยกต่างหาก (registry/CANONICAL.json lookup ก่อน) -- ยังไม่ทำในงานนี้.
+
+egress_internal_safe_split_note: >
+  ประเด็นเดียวกับ FOUNDER_TASKS row #7 ("split hazard class on egress/internal_safe") ยังเปิดอยู่ --
+  structural_failure_imminent ควรบังคับ "egress" (ออกจากพื้นที่) เสมอ ไม่ใช่ "internal_safe" (อยู่ใน
+  บ้าน/ที่สูง) เพราะความเสี่ยงคือโครงสร้างพังทั้งหมด ไม่ใช่แค่น้ำท่วมสูงในพื้นที่เดิม -- ต่างจาก
+  L5/LR ทั่วไปที่บางกรณี (เช่น Hat Yai แดง "ไม่มีการอพยพ" ต่อ unified_ladder ด้านบน) อาจยังพอ
+  internal_safe ได้. ข้อเสนอนี้ทำเครื่องหมายไว้ ไม่ได้ปิดประเด็นนี้ (ต้องรอ founder ตัดสิน row #7 เอง).
+
+ledger_row_proposed:
+  note_th: >
+    แถวนี้เขียนไว้ในไฟล์นี้เท่านั้น ตามรูปแบบ sources/urban_flood_event_ledger.yaml -- ไม่ได้เขียนลง
+    ledger จริง (คำสั่งงาน: "write it into the new YAML, not into the ledger").
+  event_id: khlong_raok_khaochuk_2026-09-28
+  unit_scope: node
+  unit: "อ่างเก็บน้ำคลองระโอก (เขื่อนเขาจุก), อ.แกลง จ.ระยอง -- นอก MVP scope ปัจจุบัน (Bangkok), บันทึกไว้เป็นตัวอย่าง hazard-class เท่านั้น"
+  t_onset_observed: "2026-09-28T00:58:00+00:00"
+  t_onset_official: null
+  evidence:
+    - class: media
+      source: pptvhd36.com/news/284238
+      detail: "แจ้งอพยพด่วนภายใน 1 ชม., หูสปิลเวย์พัง, ผนังมีรอยร้าว, ผู้ออกประกาศ อบต.ทุ่งควายกิน + สนง.เกษตร อ.แกลง"
+      observed_at_utc: "2026-09-28T00:58:00+00:00"
+      tag: RELAYED
+    - class: media
+      source: thethaiger.com/th/news/1614165
+      detail: "23.506 ล้าน ลบ.ม. (117%) ณ 27 ก.ย. 15:00 น., เปิดประตูระบาย 100% ตั้งแต่ 17:00 น., คาดระบาย 2.00-2.70 ล้าน ลบ.ม./วัน"
+      observed_at_utc: "2026-09-28T01:09:00+00:00"
+      tag: RELAYED
+    - class: community_reports_consistent
+      source: dailynews.co.th/news/6225780
+      detail: "ผู้ว่าฯ ระยอง ประกาศพื้นที่ภัยพิบัติ 4 อำเภอ (แกลง 15 ตำบล, ต.ตะพง อ.เมืองระยอง, เขาชะเมา, วังจันทร์); กล่าวถึง 'อ่างเก็บน้ำละโอก' เต็มความจุ + อ่างประแสร์แยกต่างหาก"
+      observed_at_utc: "2026-09-27T07:05:00+00:00"
+      tag: RELAYED
+  urban_flood_observed: UNCERTAIN
+  official_disaster_declared: OPEN
+  declaring_agency: "ผู้ว่าราชการจังหวัดระยอง (ระดับจังหวัด, ยืนยันบริบทวิกฤตกว้าง) -- ไม่พบแถลงการณ์ RID/สชป.9 เฉพาะอ่างนี้"
+  warnings:
+    - issuer: "อบต.ทุ่งควายกิน + สำนักงานเกษตรอำเภอแกลง"
+      issued_at: "2026-09-28T00:58:00+00:00"
+      scope: node_specific
+      text: "ขอให้ประชาชนบริเวณนั้นอพยพออกด่วน ขอให้อพยพภายใน 1 ชั่วโมงนี้"
+      lead_time_h: 1.0
+      lead_time_note: "เวลาที่ประกาศเองระบุ -- ไม่ใช่เวลาที่คลังนี้คำนวณ, เก็บตามข้อความต้นทาง"
+      tag: RELAYED
+  notes: >
+    เหตุการณ์นี้ไม่มีแถวในคลังนี้มาก่อน (checked: ไม่มีแถวสำหรับคลองระโอกหรือประแสร์ใน DB ของคลังนี้)
+    -- บันทึกไว้ที่นี่เป็นตัวอย่าง trigger สำหรับ structural_failure_imminent class เท่านั้น ไม่ใช่การ
+    เพิ่มเข้า urban_flood_event_ledger.yaml จริงในงานนี้.
+  contradictions:
+    - description: "ชื่ออ่างสะกดต่างกัน 'คลองระโอก' (PPTV/Thaiger) vs 'ละโอก' (เดลินิวส์) -- ยังไม่ยืนยันว่าเป็นชื่อเดียวกัน 100%"
+      tag: OPEN
+  tag: RELAYED
+
+todo:
+  - ["1", "ไม่มี collector สำหรับสถานะโครงสร้างเขื่อน/พนัง (dam/levee structural-status feed) ในคลังนี้", "เพิ่ม collector ใหม่ ingest ประกาศ/API สถานะโครงสร้างจากแหล่งทางการ เมื่อมี", "committer", "high"]
+  - ["2", "ไม่มีตารางอ่างเก็บน้ำของสำนักงานชลประทานที่ 9 (ครอบคลุมระยอง) ใน registry", "เพิ่มแถวอ่างเก็บน้ำระยองจาก app.rid.go.th/reservoir/ เมื่อยืนยันเข้าถึงได้จริง", "committer", "medium"]
+  - ["3", "ยังไม่ทราบว่าคันกั้นน้ำ/กำแพงกันน้ำของ กทม. เอง จะเข้า class นี้อย่างไร", "ทบทวนคันกั้นน้ำฝั่งตะวันออก (คลองรังสิตใต้ +3.95 m MSL) ว่ามี structural-status feed ของตัวเองหรือไม่", "committer", "medium"]

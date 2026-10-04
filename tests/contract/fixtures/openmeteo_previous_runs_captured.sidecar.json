@@ -1,0 +1,11 @@
+{
+  "source_id": "openmeteo_previous_runs",
+  "url": "https://previous-runs-api.open-meteo.com/v1/forecast?latitude=13.758235&longitude=100.676084&hourly=precipitation,precipitation_previous_day1,precipitation_previous_day3&past_days=5&forecast_days=1&models=gfs_seamless",
+  "captured_at": "2026-10-02T07:45:23Z",
+  "sha256": "e924dd3b93362e268c3d236d2b4c40154aaf8f410e5a51692b185440487d3b6b",
+  "http_status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "fixture_ext": "json",
+  "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+  "parser_version": "v1"
+}

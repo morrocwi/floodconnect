@@ -1,0 +1,97 @@
+version: "0.2-test"
+status: "proposal_operational_schema"
+layers:
+  0: "household"
+  1: "buddy_cell"
+  5: "external_safe"
+nodes:
+  household_a:
+    kind: household
+    layer: 0
+    area_id: sammakorn
+    status: UNKNOWN
+    fresh: false
+    capacity_persons: 4
+    occupied_persons: 4
+    services: []
+  buddy_cell_a:
+    kind: buddy_cell
+    layer: 1
+    area_id: sammakorn
+    status: SAFE
+    fresh: true
+    capacity_persons: null
+    occupied_persons: null
+    services: [comms]
+  external_safe_good:
+    kind: external_safe
+    layer: 5
+    area_id: sammakorn
+    status: SAFE
+    fresh: true
+    verified_safe: true
+    capacity_persons: 50
+    occupied_persons: 0
+    services: []
+  household_b:
+    kind: household
+    layer: 0
+    area_id: sammakorn
+    status: UNKNOWN
+    fresh: false
+    capacity_persons: 4
+    occupied_persons: 4
+    services: []
+  buddy_cell_b:
+    kind: buddy_cell
+    layer: 1
+    area_id: sammakorn
+    status: SAFE
+    fresh: true
+    capacity_persons: null
+    occupied_persons: null
+    services: []
+  # Regression fixture (MCP route tool must call
+  # community_dag.find_safe_route, never re-implement its own walk): this node declares
+  # status=UNSAFE, fresh=true -- a canonical find_safe_route() must reject it as a
+  # target/transit, even though the superseded local walk (`_dag_node_ok`) would have
+  # accepted it (it only checked status not in (None, "UNKNOWN") and fresh truthy).
+  external_safe_unsafe:
+    kind: external_safe
+    layer: 5
+    area_id: sammakorn
+    status: UNSAFE
+    fresh: true
+    verified_safe: true
+    capacity_persons: 50
+    occupied_persons: 0
+    services: []
+edges:
+  - from: household_a
+    to: buddy_cell_a
+    field_verified: true
+    fresh: true
+    status: OPEN
+    safety: CLEAR
+    modes: [walk]
+  - from: buddy_cell_a
+    to: external_safe_good
+    field_verified: true
+    fresh: true
+    status: OPEN
+    safety: CLEAR
+    modes: [walk]
+  - from: household_b
+    to: buddy_cell_b
+    field_verified: true
+    fresh: true
+    status: OPEN
+    safety: CLEAR
+    modes: [walk]
+  - from: buddy_cell_b
+    to: external_safe_unsafe
+    field_verified: true
+    fresh: true
+    status: OPEN
+    safety: CLEAR
+    modes: [walk]

@@ -2,7 +2,7 @@
 
 ## What this is NOT — read this first
 
-**Most of this graph's edges have NO reliable direction.** Unlike `build_kg.py`'s
+**Most of this graph's edges have NO reliable direction.** Unlike `build_river_kg.py`'s
 major-river graph (direction = HydroRIVERS' own `NEXT_DOWN` field, `finite_diagnostic`
 tier), this canal graph's direction comes from a `Dr`-tier (INSTINCT) heuristic: only
 canal-network components that happen to have a major-river graph node within 3km of one of
@@ -17,7 +17,7 @@ were used. Do not treat any edge's direction here as verified fact.
 
 A junction-graph of Bangkok-area canals/ditches/streams/drains from OpenStreetMap
 (HOTOSM Thailand waterways export), with BMA floodgate/pump-station locations overlaid as
-node context. It exists to answer, at least partially, the question `build_kg.py`'s
+node context. It exists to answer, at least partially, the question `build_river_kg.py`'s
 major-river graph structurally cannot: what's the local drainage network near an
 inner-Bangkok point like เขตสะพานสูง (Saphan Sung), whose nearest **major** river node is
 ~14km away and therefore useless for local risk assessment.
@@ -32,7 +32,7 @@ inner-Bangkok point like เขตสะพานสูง (Saphan Sung), whose 
    Parallel OSM ways between the same two junctions: keep the shorter one only (networkx
    `Graph` can't hold parallel edges; shorter is the more conservative pick against
    digitization artifacts).
-3. Load `build_kg.py`'s major-river graph nodes that fall within Bangkok's bbox + 0.3°
+3. Load `build_river_kg.py`'s major-river graph nodes that fall within Bangkok's bbox + 0.3°
    padding, as candidate "sinks" (points a canal could plausibly discharge into).
 4. For each connected component of the canal graph: find its junction closest to any sink.
    If that distance is ≤ 3km, orient the whole component as a BFS tree pointing toward that
@@ -58,13 +58,13 @@ unzip raw/bangkok/hotosm_waterways_lines.gpkg.zip -d raw/bangkok/hotosm_lines/
 curl -o raw/bangkok/floodgate.csv \
   "https://data.bangkok.go.th/dataset/83ae5639-a37f-4e19-bd37-e1c97930f39d/resource/42948cf7-0759-4719-a32f-8eeabd89b8ee/download/floodgate.csv"
 
-# build_kg.py must have already been run at least once (this script reads its
+# build_river_kg.py must have already been run at least once (this script reads its
 # output/thailand_river_flow.jsonld for sink candidates; runs fine without it too,
 # but then every component is direction=unknown)
 python3 build_bangkok_canals.py
 ```
 
-## Confirmed run (this session)
+## Confirmed run (this check)
 
 - 6,714 OSM waterway lines in the Bangkok bbox (canal 4,052 / ditch 1,087 / river 951 /
   drain 506 / stream 118, before further filtering)
@@ -76,21 +76,21 @@ python3 build_bangkok_canals.py
   fabricating confidence the data doesn't support — see that section for what was tried
   and why each avenue was a dead end.
 - 230 of 237 BMA floodgate points had valid coordinates and were loaded
-- **New this session**: 6/10 BMA water-level station names fuzzy-matched onto
+- **New this check**: 6/10 BMA water-level station names fuzzy-matched onto
   `floodgate.csv` coordinates (see "Station name↔coordinate join" below) — water level
   context only, does not affect direction coverage.
-- **Also new this session**: the per-canal 1D arc-length bridge idea (below) was implemented
+- **Also new this check**: the per-canal 1D arc-length bridge idea (below) was implemented
   and actually run against the pipeline — 0/21 eligible canals cleared its own trust
   threshold, 0 edges integrated. Direction coverage remains 380/2,595 components,
   2,170/6,155 edges (identical before/after — confirmed from the executed run, not assumed).
-- **Also new this session**: Delaunay-triangulation rubber-sheeting (below), a third and
+- **Also new this check**: Delaunay-triangulation rubber-sheeting (below), a third and
   literature-standard attempt at the whole-panel georeferencing problem, was implemented
   and leave-one-out validated on all 199 control points — median LOO error 867 m
   (mean 1,362 m, max 16.5 km), 6/199 stations under the 150 m trust bar, 0/241 arrows
   passed the per-triangle local-trust gate. **Zero edges integrated.** Direction coverage
   remains 380/2,595 components, 2,170/6,155 edges — identical before/after, confirmed from
   the executed run.
-- **Also new this session**: a 4th attempt — using KlongMap arrow directions as a much
+- **Also new this check**: a 4th attempt — using KlongMap arrow directions as a much
   weaker "local bearing corroboration" soft prior instead of precise snapping — was
   implemented and calibrated against real ground truth (major-river `NEXT_DOWN` direction).
   Measured agreement rate sat at or below the 50% chance baseline in 22/24 tested parameter
@@ -110,9 +110,9 @@ real downloaded data or a real fetch, not assumed.
 | **DEM-based flow inference (Copernicus GLO-30)** | **Access is easier than assumed (public, no key needed via AWS Open Data mirror), but the elevation signal itself is a dead end** | Downloaded tile `Copernicus_DSM_COG_10_N13_00_E100_00_DEM` anonymously from `copernicus-dem-30m.s3.amazonaws.com` (no CCM registration required — that gate only applies to ESA's own Copernicus Data Space Ecosystem, a different access path). Sampled elevation at all 8,672 canal-graph junctions and computed `\|Δz\|` across all 6,155 edges: **median 0.77 m overall, 0.88 m even restricted to edges ≥200 m long**. GLO-30 is a DSM (rooftops/canopy, not bare earth) with a quoted vertical accuracy on the order of a few meters in easy terrain and materially worse local noise in dense urban terrain — a ~0.8 m signal sits at/below that noise floor. **Not wired into direction inference** — doing so would present noise as a directional claim. Reproducible via `dem_signal_check.py`. |
 | **BMA canal-management/zone data** (คันกั้นน้ำ, inner/outer zone boundaries, pump discharge direction) | **Dead end** | `data.bangkok.go.th`'s own "ข้อมูลคลองในพื้นที่กรุงเทพมหานคร" (`canal.csv`, downloaded and inspected) is **water-quality** data (temperature/pH/DO/BOD/COD/SS/TKN/NH3N/NO2/NO3/T-P by canal name) — no geometry, no coordinates, no direction. `floodgate.csv`'s `water_control`/`gate` columns (re-inspected against all 237 rows) are **operating water-level thresholds** ("open when level exceeds X"), not discharge direction. Web search for an explicit เขตควบคุมน้ำ/คันกั้นน้ำ boundary dataset with a machine-readable geometry turned up organizational descriptions only, no dataset. |
 | **BMA water-level station name↔coordinate join** (explicit prior next-step) | **Partially unblocked** | See dedicated section below. |
-| **Academic/government canal-network study of Bangkok with directionality** | **Dead end — nothing found** | Searched ThaiJO/TCI and general web for a Bangkok-specific equivalent of the Chanthaburi centrality paper already cited in `build_kg.py`'s README. Nothing on record with directional canal-flow analysis for Bangkok specifically. |
-| **The "2013" HII chart** (`tiwrm.hii.or.th/DATA/REPORT/php/chart/chaopraya/2013/chaopraya.php`) | **Confirmed dead end, not worth integrating** | Direct fetch confirms it is purely a static chart image (`<img>` of a PNG) plus a "small" variant link — no `<script src>`, no `.json`/`.csv`, no query-parameterized API in the page source of either variant. Swapping `2013` → `2026` in the URL returns a plain **404** — this is not a live year-parameterized endpoint; the directory is effectively archival/frozen (oddly, the cached chart image itself was last regenerated 2024-10-04, suggesting this specific path gets occasionally refreshed by the source system rather than truly abandoned, but there is still no queryable backend behind it). Even if it were live, it is a **basin-level Chao Phraya water-situation chart** (dam levels, trend bands) — the wrong spatial resolution for inner-Bangkok canal direction regardless. The live/current equivalent lives at a different URL scheme entirely on the same `tiwrm.hii.or.th` host (`/v3/sealevel`, `/thaiwater_l5/public/...`), part of HII's newer dashboard generation — not integrated here, out of scope for this task (national/basin telemetry, not Bangkok canal geometry). |
-| `standard.thaiwater.net` documented water-level API (found during the sweep, not part of the original candidate list) | **Noted, not pursued** | `standard.thaiwater.net` does document a real water-level/rainfall API service (JSON, station-based) — this exists and is more than the earlier "no accessible API" read gave it credit for. However, its stations are HII/RID's *national* telemetry network, a different station set from BMA's *municipal* floodgate network — even fully explored, it would not resolve the BMA station-name join (different institution, different stations). Time-boxed out of this pass; flagged as a possible future lead for a *separate* national-river-gauge integration, not this canal-direction gap. |
+| **Academic/government canal-network study of Bangkok with directionality** | **Dead end — nothing found** | Searched ThaiJO/TCI and general web for a Bangkok-specific equivalent of the Chanthaburi centrality paper already cited in `build_river_kg.py`'s README. Nothing on record with directional canal-flow analysis for Bangkok specifically. |
+| **The "2013" HII chart** (`tiwrm.hii.or.th/DATA/REPORT/php/chart/chaopraya/2013/chaopraya.php`) | **Confirmed dead end, not worth integrating** | Direct fetch confirms it is purely a static chart image (`<img>` of a PNG) plus a "small" variant link — no `<script src>`, no `.json`/`.csv`, no query-parameterized API in the page source of either variant. Swapping `2013` → `2026` in the URL returns a plain **404** — this is not a live year-parameterized endpoint; the directory is effectively archival/frozen (oddly, the cached chart image itself was last regenerated 2024-10-04, suggesting this specific path gets occasionally refreshed by the source system rather than truly abandoned, but there is still no queryable backend behind it). Even if it were live, it is a **basin-level Chao Phraya water-situation chart** (dam levels, trend bands) — the wrong spatial resolution for inner-Bangkok canal direction regardless. The live/current equivalent lives at a different URL scheme entirely on the same `tiwrm.hii.or.th` host (`/v3/sealevel`, `/thaiwater_l5/public/...`), part of HII's newer dashboard generation — not integrated here, out of scope for this check (national/basin telemetry, not Bangkok canal geometry). |
+| `standard.thaiwater.net` documented water-level API (found during the sweep, not part of the original candidate list) | **Noted, not pursued** | `standard.thaiwater.net` does document a real water-level/rainfall API service (JSON, station-based) — this exists and is more than the earlier "no accessible API" read gave it credit for. However, its stations are HII/RID's *national* telemetry network, a different station set from BMA's *municipal* floodgate network — even fully explored, it would not resolve the BMA station-name join (different institution, different stations). Time-boxed out of this check; flagged as a possible future lead for a *separate* national-river-gauge integration, not this canal-direction gap. |
 
 **Bottom line: no avenue in this sweep produced a legitimate way to raise the 15% direction
 coverage.** The 85% gap is reported as genuinely unresolved (`OPEN`), not narrowed by force.
@@ -121,7 +121,7 @@ coverage.** The 85% gap is reported as genuinely unresolved (`OPEN`), not narrow
 
 Maintainer lead: BMA's own water-management map app, claimed to have detailed direction info
 (มีทิศละเอียดเลย). A plain `WebFetch` earlier only saw a thin JS-app shell (canal/station
-dropdowns) and could not find a backend API. This session did a real browser inspection
+dropdowns) and could not find a backend API. This check did a real browser inspection
 (Playwright: page load + `browser_network_requests` + in-page `fetch()` calls against the
 live API) instead of guessing from the HTML alone.
 
@@ -176,11 +176,11 @@ pipeline's discipline (see epistemic tiering table) does not allow.
 found and is a legitimate `finite_diagnostic`-tier *existence* fact (BMA's own app does
 encode a directional bearing at 241 points), but it is unusable for this graph's purpose
 without a proper geographic calibration BMA has not published. **Not integrated. Direction
-coverage is unchanged this session: still 380/2,595 components (≈15%).** Cached raw response
+coverage is unchanged this check: still 380/2,595 components (≈15%).** Cached raw response
 kept at `raw/bangkok/klongmap_data.json` for reproducibility of the numbers above; no new
 code path was added to `build_bangkok_canals.py`, since there is nothing honest to wire in.
 Flagged as a possible future lead only if BMA (or a third party) ever publishes true
-lat/lon-referenced canal geometry to calibrate against — not pursued further this session.
+lat/lon-referenced canal geometry to calibrate against — not pursued further this check.
 
 ## 2026-09-23 per-canal 1D arc-length bridge — tested, also a dead end (different failure mode)
 
@@ -260,7 +260,7 @@ name-matching step rejected 6 canals (including คลองแสนแสบ, 
 via a simple centroid-distance sanity check that is a poor fit for very long, non-compact
 canals (แสนแสบ's own anchors span ~36 km east–west, so its OSM-geometry centroid sits ~9.7 km
 from its anchors' centroid even though the name match is almost certainly correct) — this is a
-methodology limitation of this pass's spatial check, not a demonstrated accuracy failure for
+methodology limitation of this check's spatial check, not a demonstrated accuracy failure for
 those specific 6 canals, since they were never actually fit. However, given that the 9 canals
 that *did* match cleanly (ratio 1.00, real anchors projecting onto the matched geometry within
 meters) still failed by 1–5 km median error from the compression-nonuniformity problem alone,
@@ -273,7 +273,7 @@ the nearest same-name graph edge, orients via the arrow's rotation angle convert
 `rotate()` screen convention) but with 0/21 canals passing the trust gate, it integrated
 **zero edges** this run — confirmed in the actual pipeline output, not just reasoned about.
 The code path is real and will activate automatically if a future, better-calibrated schematic
-or a tighter anchor set ever clears the threshold; it did not this session.
+or a tighter anchor set ever clears the threshold; it did not this check.
 
 **Bottom line: direction coverage is UNCHANGED by this idea.** Still 380/2,595 connected
 components (≈15%) with any claimed direction, 2,170/6,155 edges (both counts identical
@@ -374,7 +374,7 @@ smarter interpolation method.
 the pipeline exactly as described above; it ran against all 241 arrows and integrated **zero
 edges** because zero triangles cleared the local-trust gate. The code path is real, will
 activate automatically if a denser/better-calibrated control-point set is ever supplied, and
-did not activate this session. New tier for this specific (unused) direction source, for
+did not activate this check. New tier for this specific (unused) direction source, for
 completeness: `direction_basis="klongmap_delaunay_rubber_sheet"` would be `Dr`
 (calibrated/derived) — but no edge in the exported graph currently carries this basis.
 
@@ -405,7 +405,7 @@ functions):
    assumption, only "this station's immediate neighborhood isn't wildly re-rotated relative
    to itself."
 3. `real_world_bearing_estimate = local_schematic_bearing_trend + local_rotation_offset`.
-4. **Ground truth for calibration**: `build_kg.py`'s major-river graph, whose direction is
+4. **Ground truth for calibration**: `build_river_kg.py`'s major-river graph, whose direction is
    the real `finite_diagnostic`-tier HydroRIVERS `NEXT_DOWN` field (not a heuristic) — exactly
    the "canal segments where the major-river side's direction is authoritative" ground-truth
    category the brief named. For each station with a local KlongMap bearing estimate, the
@@ -485,8 +485,8 @@ modify `build_bangkok_canals.py` or its three existing unused georeferencing fun
 | BMA floodgate/pump locations | `finite_diagnostic` | Official BMA opendata (`data.bangkok.go.th`), lat/long as published, last updated 2024-06-08 per the portal's metadata — not independently field-verified here. |
 | `water_level_outer_daily.csv` / `water_level_inner_daily.csv` raw readings | `finite_diagnostic` (source) | Real 2026 daily max water-level-by-station-name data, BMA opendata. The pipeline does not independently verify these values. |
 | Water-level station ↔ `floodgate.csv` coordinate match (`nearby_water_level_stations`) | `Dr` (fuzzy name match, see below) | 6/10 stations matched at SequenceMatcher ratio ≥ 0.55; ratio is stored per node as `water_level_match_confidence` so a consumer can raise the bar. **This is a location join for water-level context, not a direction source** — one scalar reading at one point cannot establish flow direction. |
-| KlongMap per-canal 1D arc-length bridge (`direction_basis="klongmap_1d_arc_length_bridge"`) | `Dr` (defined but **unused** — 0 edges carry this basis) | Implemented and leave-one-out tested against real data this session; 0/21 eligible canals cleared the 150m LOO-median trust gate (actual errors 1.1–5.1 km on the 9 cleanly-matched canals). See "2026-09-23 per-canal 1D arc-length bridge" section above. |
-| KlongMap Delaunay rubber-sheeting (`direction_basis="klongmap_delaunay_rubber_sheet"`) | `Dr` (defined but **unused** — 0 edges carry this basis) | Literature-standard piecewise-affine conflation, implemented and leave-one-out tested against all 199 control points this session; median LOO error 867m (6/199 stations under the 150m trust gate), 0/241 arrows cleared the per-triangle local-trust gate. See "2026-09-23 Delaunay-triangulation rubber-sheeting" section above. |
+| KlongMap per-canal 1D arc-length bridge (`direction_basis="klongmap_1d_arc_length_bridge"`) | `Dr` (defined but **unused** — 0 edges carry this basis) | Implemented and leave-one-out tested against real data this check; 0/21 eligible canals cleared the 150m LOO-median trust gate (actual errors 1.1–5.1 km on the 9 cleanly-matched canals). See "2026-09-23 per-canal 1D arc-length bridge" section above. |
+| KlongMap Delaunay rubber-sheeting (`direction_basis="klongmap_delaunay_rubber_sheet"`) | `Dr` (defined but **unused** — 0 edges carry this basis) | Literature-standard piecewise-affine conflation, implemented and leave-one-out tested against all 199 control points this check; median LOO error 867m (6/199 stations under the 150m trust gate), 0/241 arrows cleared the per-triangle local-trust gate. See "2026-09-23 Delaunay-triangulation rubber-sheeting" section above. |
 
 ## Station name↔coordinate join (2026-09-23, partially unblocked)
 
@@ -522,10 +522,10 @@ wired in purely as location context (`nearby_water_level_stations`,
 
 ## Known limitations
 
-- **~85% of canal segments have no claimed flow direction — unchanged this session.** This
+- **~85% of canal segments have no claimed flow direction — unchanged this check.** This
   is the single biggest limitation — most of inner Bangkok's canal network (including
   everything found near the เขตสะพานสูง demo below) falls in this bucket. Four independent
-  attempts this session — the 2026-09-23 global research sweep, the per-canal 1D arc-length
+  attempts this check — the 2026-09-23 global research sweep, the per-canal 1D arc-length
   bridge, the Delaunay-triangulation rubber-sheeting, and the KlongMap local-bearing
   weak-prior/corroboration experiment (all above, all real and separately tested against
   real ground truth, not assumed) — all found no honest way to close this gap; it remains
@@ -535,7 +535,7 @@ wired in purely as location context (`nearby_water_level_stations`,
   baseline in 22/24 tested parameter configurations — not usable even as a low-confidence
   tie-breaker.
 - No hydraulic/discharge data on canal edges (OSM doesn't carry it); no connection to
-  `build_kg.py`'s `travel_time_hr`/ETA propagation machinery for canals.
+  `build_river_kg.py`'s `travel_time_hr`/ETA propagation machinery for canals.
 - Floodgate join radius (300m) and sink-anchor radius (3km) are both `Dr`-tier judgment
   calls, not tuned or validated.
 - OSM waterway completeness in Bangkok is unverified — HDX's own caveat applies (crowd

@@ -1,0 +1,88 @@
+{
+  "id": "bma_governor_briefing_2026-09-27-1100",
+  "agency_th": "ผู้ว่าราชการกรุงเทพมหานคร — ให้สัมภาษณ์สื่อ 27 ก.ย. 2569 (ถ่ายทอดโดย The Reporters)",
+  "trust_tier": "official_report-via-media",
+  "tag": "RELAYED",
+  "briefing_time_bkk": "2026-09-27T11:00:00+07:00",
+  "briefing_time_approximate": true,
+  "briefing_time_note_th": "เวลาสัมภาษณ์จริงไม่ทราบแน่ชัด (สื่อไม่ระบุนาที) — บันทึกเป็นช่วงเช้า 27 ก.ย. โดยประมาณ",
+  "url": null,
+  "url_status": "OPEN",
+  "url_search_note": "ให้สัมภาษณ์สด/relay ผ่านสื่อ The Reporters เมื่อ 27 ก.ย. 2569 -- ยังไม่พบลิงก์ทางการของ กทม./บัญชีทางการที่โพสต์เนื้อหาเดียวกันตรง ๆ. เนื้อหานี้จึงเป็นคำให้สัมภาษณ์ของผู้ว่าฯ ที่ถ่ายทอดผ่านสื่อ (RELAYED) ไม่ใช่เอกสารแถลงการณ์ทางการที่ กทม. เผยแพร่เอง เหมือน 2 ฉบับ 26 ก.ย. (13:00, 16:15) จึงติด trust_tier แยกเป็น official_report-via-media แทน official_report ตรง ๆ.",
+  "declared_facts": {
+    "backlog_volume_phra_nakhon_side": {
+      "value": 223000000,
+      "unit": "m^3",
+      "tag": "official_report",
+      "note": "Carried forward unchanged from the 26 ก.ย. 16:15 briefing (bma_briefing_2026-09-26_1615.json) -- the governor did not restate an exact figure in this 27 ก.ย. interview (he gave a range instead, see rain_total_note_th: 200-300 million m^3 still to drain). Kept here only so build_data.py's drain-time arithmetic (which always reads the newest BRIEFING_PATH) keeps working off a real declared value rather than a hole; never presented as a NEW number from this interview."
+    },
+    "total_bma_pumping_capacity": {
+      "value": 1200,
+      "unit": "m^3/s",
+      "tag": "official_report",
+      "note": "Carried forward unchanged from the 26 ก.ย. 16:15 briefing -- not restated in this 27 ก.ย. interview."
+    },
+    "estimated_drain_time_if_no_new_rain": {
+      "value": "2-3 days",
+      "tag": "official_report",
+      "note": "Carried forward unchanged from the 26 ก.ย. 16:15 briefing -- distinct from this interview's own timeframe.main_roads_days (\"2–3 days\" for main roads specifically) and timeframe.communities_dry_weeks (\"2 weeks\" for fully-dry communities)."
+    },
+    "hero_line_th": {
+      "value": "ผู้ว่าฯ กทม. 27 ก.ย.: ฝนลดแล้ว แต่พื้นที่ริมคลองแสนแสบ รามคำแหง บางกะปิ ยังหนัก — ถนนหลักดีขึ้นใน 2–3 วัน ในชุมชนแห้งสนิทอาจใช้ถึง 2 สัปดาห์",
+      "tag": "RELAYED"
+    },
+    "rain_total_note_th": {
+      "value": "ฝน 2–3 วันที่ผ่านมา ~320 มม. น้ำค้างต้องระบาย 200–300 ล้าน ลบ.ม. วันนี้คาดฝนเพิ่มเพียง 10–20 มม.",
+      "tag": "RELAYED"
+    },
+    "drain_explanation_th": {
+      "value": "ดึงน้ำในคลองออกแล้วน้ำข้างเคียงไหลมาเติมตลอด คลองจึงยังไม่ลดชัด บางจุดเริ่มทยอยลด",
+      "tag": "RELAYED"
+    },
+    "pump_power_note_th": {
+      "value": "กทม. ระบุว่าประสานการไฟฟ้านครหลวงตลอด โดยเฉพาะจุดสถานีสูบน้ำ; มีการดับไฟบางจุดที่เคหะลาดกระบังเมื่อ 26 ก.ย. เพื่อความปลอดภัย",
+      "tag": "RELAYED",
+      "note": "เป็นบริบททั่วไปเรื่องไฟฟ้า/สถานีสูบน้ำที่ผู้ว่าฯ ให้สัมภาษณ์ -- ไม่ใช่คำอธิบายสาเหตุของสถานีสูบ 4 จุดที่หน้าเว็บนี้รายงานว่าขัดข้อง (สาเหตุที่สถานีของหมู่บ้านยังไม่ทราบ)"
+    },
+    "cause_of_local_pump_faults_note_th": {
+      "value": "สาเหตุที่สถานีของหมู่บ้านยังไม่ทราบ",
+      "tag": "OPEN"
+    },
+    "timeframe": {
+      "value": {"main_roads_days": "2–3", "communities_dry_weeks": "2"},
+      "tag": "RELAYED"
+    },
+    "ops": {
+      "value": {
+        "wfh_bkk_28sep": true,
+        "bkk_schools_closed_28sep": true,
+        "bkk_schools_closed_28sep_count": 437,
+        "tollway_free": true
+      },
+      "tag": "RELAYED"
+    },
+    "evacuation": {
+      "value": {
+        "area_th": "ร่มเกล้า/ลาดกระบัง",
+        "affected_approx": 30000,
+        "shelter_moved_to_th": "สถาบันเทคโนโลยีพระจอมเกล้าเจ้าคุณทหารลาดกระบัง (สจล.)",
+        "bedridden_moved_low": 40,
+        "bedridden_moved_high": 50,
+        "hotlines": [
+          {"number": "1669", "purpose_th": "ผู้ป่วยติดเตียง"},
+          {"number": "1555", "purpose_th": "อาหาร/น้ำ/แจ้งน้ำท่วม"},
+          {"number": "Traffy Fondue", "purpose_th": "แจ้งปัญหา/ขอความช่วยเหลือ"}
+        ]
+      },
+      "tag": "RELAYED"
+    },
+    "deaths_note_th": {
+      "value": "ผู้ว่าฯ ระบุ 27 ก.ย. ยังไม่มีรายงานผู้เสียชีวิต",
+      "tag": "RELAYED"
+    },
+    "contradiction_th": {
+      "value": "ขัดแย้งกับข่าว 26 ก.ย. เรื่องผู้เสียชีวิตจากไฟฟ้าดูดในน้ำท่วมที่แฟลตคลองจั่น (ยังไม่ยืนยันจากทางการทั้งสองฝั่ง) -- ทั้งสองแหล่งเก็บไว้บนหน้าเว็บ ไม่ตัดออกฝั่งใดฝั่งหนึ่ง",
+      "tag": "OPEN"
+    }
+  }
+}

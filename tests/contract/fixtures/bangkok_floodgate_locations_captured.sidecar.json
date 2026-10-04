@@ -1,0 +1,13 @@
+{
+ "source_id": "bangkok_floodgate_locations",
+ "url": "https://data.bangkok.go.th/dataset/83ae5639-a37f-4e19-bd37-e1c97930f39d/resource/42948cf7-0759-4719-a32f-8eeabd89b8ee/download/floodgate.csv",
+ "captured_at": "2026-10-03T13:45:00Z",
+ "sha256": "5a0617c4cc57cb7dcba5576d7604c0f159c227dd5043e2f3dbde621a37c001cc",
+ "http_status": 200,
+ "fixture_ext": "csv",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "a3ebf50e2eb7f35921328fb14cdd9bee58b088b7572a4d7e54c8ace641c98025",
+ "trimmed_note": "Further trimmed 2026-10-03 (release pass, publish-safety finding: 300KB total budget for tests/contract/fixtures/ in the public tree) to a minimal real excerpt (header + few real rows, or a real byte-prefix for HTML) -- see the corresponding contract test's own comment for the exact row-count change.",
+ "trimmed_at": "2026-10-03T18:10:36Z"
+}

@@ -212,13 +212,58 @@ def test_classify_level_missing_bank_still_classifies_critical():
 
 
 def test_classify_level_non_numeric_threshold_never_raises():
-    # Red-team fix MEDIUM-4 (2026-09-26): a station publishing "N/A"/"" instead of a
+    # Fix MEDIUM-4 (2026-09-26): a station publishing "N/A"/"" instead of a
     # number used to raise deep inside the >= comparison; it must now degrade to
     # NO_THRESHOLD, never crash the whole classification pass.
     assert lwl.classify_level(2.5, warning="N/A", critical="", bank=None) == "NO_THRESHOLD"
     assert lwl.classify_level("N/A", warning=2.0, critical=2.5, bank=3.0) == "NO_THRESHOLD"
     # numeric strings still classify correctly (safe_float coerces, doesn't just reject)
     assert lwl.classify_level("2.5", warning="2.0", critical="2.5", bank="3.0") == "CRITICAL"
+
+
+# ---- classify_level normal-level ladder (founder rule, verbatim, 2026-09-27:
+# "ไม่ปกติ ต้องต่ำกว่าเกณฑ์ปกติหรือเปล่า แค่นี้ยังไม่เรียกปกติ") ----
+
+def test_classify_level_without_normal_level_unchanged():
+    # the old 4-arg call (normal_level omitted) must classify EXACTLY as before --
+    # backward compatibility for every call site not yet upgraded to the ladder.
+    assert lwl.classify_level(1.0, warning=2.0, critical=2.5, bank=3.0) == "NORMAL"
+    assert lwl.classify_level(1.5, None, None, None) == "NO_THRESHOLD"
+
+
+def test_classify_level_normal_at_or_below_normal_level():
+    assert lwl.classify_level(1.0, warning=2.0, critical=2.5, bank=3.0, normal_level=1.0) == "NORMAL"
+    assert lwl.classify_level(0.5, warning=2.0, critical=2.5, bank=3.0, normal_level=1.0) == "NORMAL"
+
+
+def test_classify_level_above_normal_between_normal_and_warning():
+    # 1.5 is below warning (2.0) but ABOVE normal_level (1.0) -- must NOT be "NORMAL".
+    assert lwl.classify_level(1.5, warning=2.0, critical=2.5, bank=3.0, normal_level=1.0) == "ABOVE_NORMAL"
+
+
+def test_classify_level_watch_critical_overbank_unaffected_by_normal_level():
+    assert lwl.classify_level(2.0, warning=2.0, critical=2.5, bank=3.0, normal_level=1.0) == "WATCH"
+    assert lwl.classify_level(2.5, warning=2.0, critical=2.5, bank=3.0, normal_level=1.0) == "CRITICAL"
+    assert lwl.classify_level(3.0, warning=2.0, critical=2.5, bank=3.0, normal_level=1.0) == "OVERBANK"
+
+
+def test_classify_level_no_normal_basis_sentinel_never_normal():
+    # opted into the ladder (sentinel), but no normal_level resolved for this station --
+    # grey "ยังไม่มีเกณฑ์ปกติ", never green "ปกติ", even though 1.0 is below every
+    # published danger threshold.
+    assert lwl.classify_level(1.0, warning=2.0, critical=2.5, bank=3.0,
+                               normal_level=lwl.NO_NORMAL_LEVEL) == "NO_NORMAL_BASIS"
+    # danger thresholds still take priority over the missing-normal-basis state.
+    assert lwl.classify_level(2.5, warning=2.0, critical=2.5, bank=3.0,
+                               normal_level=lwl.NO_NORMAL_LEVEL) == "CRITICAL"
+
+
+def test_classify_level_no_normal_basis_even_with_no_danger_thresholds():
+    # opted in, no normal_level, AND no warning/critical/bank either -- still the grey
+    # "no normal basis" state (never silently falls back to the old NO_THRESHOLD/NORMAL
+    # split once the caller has opted into the ladder).
+    assert lwl.classify_level(1.0, None, None, None,
+                               normal_level=lwl.NO_NORMAL_LEVEL) == "NO_NORMAL_BASIS"
 
 
 def test_safe_float_coerces_or_returns_none():
@@ -238,6 +283,67 @@ def test_age_hours_basic():
 def test_age_hours_none_when_missing():
     assert lwl.age_hours(None, "2026-09-26T00:00:00+00:00") is None
     assert lwl.age_hours("2026-09-25T00:00:00+00:00", None) is None
+
+
+def test_is_fresh_within_bound():
+    fresh, age_h = lwl.is_fresh("2026-09-26T00:00:00+00:00", "2026-09-26T12:00:00+00:00", 24.0)
+    assert fresh is True
+    assert age_h == pytest.approx(12.0)
+
+
+def test_is_fresh_past_max_age():
+    fresh, age_h = lwl.is_fresh("2026-09-20T00:00:00+00:00", "2026-09-26T00:00:00+00:00", 24.0)
+    assert fresh is False
+    assert age_h == pytest.approx(144.0)
+
+
+def test_is_fresh_missing_timestamp_never_fresh():
+    fresh, age_h = lwl.is_fresh(None, "2026-09-26T00:00:00+00:00", 24.0)
+    assert fresh is False
+    assert age_h is None
+
+
+def test_is_fresh_small_negative_age_still_fresh_for_day_truncated_reference():
+    """Fix (2026-10-04): `is_fresh` no longer accepts an UNBOUNDED
+    negative age -- a day-pinned caller (`readout.py`'s `as_of_date` path) must now pass
+    its own wider `future_tolerance_h` explicitly (readout.py passes -24.0) to keep this
+    legitimate same-day case fresh; the function's own default (-1.0, for a REAL
+    wall-clock reference) would reject it."""
+    fresh, age_h = lwl.is_fresh("2026-09-28T06:20:00+00:00", "2026-09-28T00:00:00+00:00", 24.0,
+                                future_tolerance_h=-24.0)
+    assert age_h == pytest.approx(-6.333333, rel=1e-3)
+    assert fresh is True
+    # The function's own default (no `future_tolerance_h` override) is for a real
+    # wall-clock reference and must reject this same row.
+    fresh_default, _ = lwl.is_fresh("2026-09-28T06:20:00+00:00", "2026-09-28T00:00:00+00:00", 24.0)
+    assert fresh_default is False
+
+
+def test_is_fresh_large_negative_age_now_rejected_by_default():
+    """Fix (2026-10-04): this used to be the DOCUMENTED known limit
+    (any negative age passed, unbounded) -- a real incident (a Buddhist-year PDF date
+    misparsed into the far future, MEASURED `age_h = -4,759,715.5`) showed that limit
+    reached production. `is_fresh`'s default `future_tolerance_h` (-1.0) now rejects any
+    row more than 1h "in the future" of a REAL wall-clock reference, closing it."""
+    fresh, age_h = lwl.is_fresh("2026-09-27T00:00:00+00:00", "2026-09-26T00:00:00+00:00", 24.0)
+    assert age_h == pytest.approx(-24.0)
+    assert fresh is False
+    # A day-pinned caller that explicitly widens the tolerance still gets this row as
+    # fresh (unchanged legitimate behaviour for that one caller).
+    fresh_pinned, _ = lwl.is_fresh("2026-09-27T00:00:00+00:00", "2026-09-26T00:00:00+00:00", 24.0,
+                                   future_tolerance_h=-24.0)
+    assert fresh_pinned is True
+
+
+def test_max_age_hours_for_reads_registry_field():
+    registry = {"some_source": {"max_age_hours": 6}}
+    assert lwl.max_age_hours_for("some_source", registry) == 6.0
+
+
+def test_max_age_hours_for_falls_back_when_field_absent():
+    registry = {"some_source": {}}
+    assert lwl.max_age_hours_for("some_source", registry) == lwl.STALE_HOURS
+    assert lwl.max_age_hours_for("unknown_source", registry) == lwl.STALE_HOURS
 
 
 def test_attach_live_water_level_skips_stale_stations():
@@ -297,7 +403,12 @@ def test_parse_pumphistory_html_fields():
     s1 = by_code["ST.SPS.01"]
     assert s1["name_th"] == "สถานีสูบน้ำคลองบ้านม้า 2"
     assert s1["district"] == "สะพานสูง"
-    assert s1["level_m"] == pytest.approx(0.0)
+    # ST.SPS.01's own status_th is ขัดข้อง (fault) in this fixture -- its level_m must be
+    # None (untrusted sensor), never the raw 0.0 the page happens to show (see
+    # test_parse_pumphistory_html_fault_status_nulls_level below for the direct check).
+    assert s1["level_m"] is None
+    assert s1["status_th"] == "ขัดข้อง"
+    assert s1["sensor_status"] == "fault"
     assert s1["pumps_total"] == 4
     assert s1["pumps_on"] == 0  # all 4 pump cells say "รอทำงาน" (standby)
     assert s1["gate_open"] == pytest.approx(0.0)
@@ -309,6 +420,21 @@ def test_parse_pumphistory_html_fields():
     assert s3["pumps_total"] == 3
     assert s3["pumps_on"] == 1  # exactly one cell says "ทำงาน" (running)
     assert s3["gate_open"] is None  # all gate cells blank for this station
+    assert s3["status_th"] == "ปกติ"
+    assert s3["sensor_status"] == "ok"
+    assert s3["level_m"] is not None  # normal-status station keeps its real reading
+
+
+def test_parse_pumphistory_html_fault_status_nulls_level():
+    # Direct, isolated check of the fault guard (2026-09-27 data-hygiene fix): a station
+    # whose status_th is ขัดข้อง must never carry a numeric level_m, regardless of what
+    # the page's raw ระดับน้ำ cell shows.
+    rows = lwl.parse_pumphistory_html(load_pumphistory_fixture_text())
+    faulted = [r for r in rows if r["status_th"] == "ขัดข้อง"]
+    assert faulted, "fixture must contain at least one faulted station to exercise this"
+    for r in faulted:
+        assert r["level_m"] is None
+        assert r["sensor_status"] == "fault"
 
 
 def test_parse_pumphistory_html_pump_running_vs_standby_distinct():

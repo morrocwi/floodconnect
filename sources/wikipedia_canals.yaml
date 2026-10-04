@@ -1,0 +1,3485 @@
+generated_at_utc: '2026-09-27T07:47:30.309296+00:00'
+source: th.wikipedia.org, หมวดหมู่:คลองในประเทศไทย
+licence: CC BY-SA 4.0
+tag_default: RELAYED
+canals:
+- canal_id: wp:1374463
+  name_th: คลองกะเปอร์
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 11287869
+  revision_timestamp: '2024-01-21T06:36:48Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%81%E0%B8%B0%E0%B9%80%E0%B8%9B%E0%B8%AD%E0%B8%A3%E0%B9%8C
+  subcat_path: &id001
+  - หมวดหมู่:คลองในประเทศไทย
+  matches: []
+- canal_id: wp:1552277
+  name_th: คลองกุยบุรี
+  provinces: []
+  lat: 12.03333333
+  lon: 99.9
+  coord_source: page
+  length_km: 60.0
+  upstream_name: ทิวเขาตะนาวศรี
+  downstream_name: null
+  operator: null
+  revid: 13282343
+  revision_timestamp: '2026-09-19T03:01:31Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%81%E0%B8%B8%E0%B8%A2%E0%B8%9A%E0%B8%B8%E0%B8%A3%E0%B8%B5
+  subcat_path: *id001
+  matches: []
+- canal_id: wp:301119
+  name_th: คลองไทย
+  provinces: []
+  lat: 10.18333333
+  lon: 98.88333333
+  coord_source: page
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13112761
+  revision_timestamp: '2026-07-11T11:41:31Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%84%E0%B8%97%E0%B8%A2
+  subcat_path: *id001
+  matches: []
+- canal_id: wp:1554341
+  name_th: คลองนางน้อย
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 44.0
+  upstream_name: เขาบรรทัด
+  downstream_name: null
+  operator: null
+  revid: 13127154
+  revision_timestamp: '2026-07-18T05:36:01Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%99%E0%B8%B2%E0%B8%87%E0%B8%99%E0%B9%89%E0%B8%AD%E0%B8%A2
+  subcat_path: *id001
+  matches:
+  - gate:hii_watergate:12480
+  - gauge:thaiwater_waterlevel:TNG003
+  - rain_gauge:thaiwater_rain_24h:12480
+- canal_id: wp:1274994
+  name_th: คลองบางใหญ่ (จังหวัดภูเก็ต)
+  provinces: []
+  lat: 7.875
+  lon: 98.40416667
+  coord_source: page
+  length_km: 20.0
+  upstream_name: อำเภอกะทู้
+  downstream_name: null
+  operator: null
+  revid: 13127190
+  revision_timestamp: '2026-07-18T05:53:14Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B9%83%E0%B8%AB%E0%B8%8D%E0%B9%88_%28%E0%B8%88%E0%B8%B1%E0%B8%87%E0%B8%AB%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%A0%E0%B8%B9%E0%B9%80%E0%B8%81%E0%B9%87%E0%B8%95%29
+  subcat_path: *id001
+  matches: []
+- canal_id: wp:1570170
+  name_th: คลองปะเหลียน
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 75.0
+  upstream_name: เขาช่องประตู
+  downstream_name: ปากน้ำปะเหลียน
+  operator: null
+  revid: 13276420
+  revision_timestamp: '2026-09-16T11:43:36Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9B%E0%B8%B0%E0%B9%80%E0%B8%AB%E0%B8%A5%E0%B8%B5%E0%B8%A2%E0%B8%99
+  subcat_path: *id001
+  matches:
+  - gate:hii_watergate:12475
+  - gauge:thaiwater_waterlevel:TNG004
+  - rain_gauge:thaiwater_rain_24h:12475
+- canal_id: wp:1374469
+  name_th: คลองปากประ
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 11397389
+  revision_timestamp: '2024-03-23T08:08:02Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9B%E0%B8%B2%E0%B8%81%E0%B8%9B%E0%B8%A3%E0%B8%B0
+  subcat_path: *id001
+  matches: []
+- canal_id: wp:1425491
+  name_th: คลองปากพยิง
+  provinces: []
+  lat: 8.59027778
+  lon: 99.97166667
+  coord_source: page
+  length_km: 46.0
+  upstream_name: เขาหลวง
+  downstream_name: null
+  operator: null
+  revid: 13272090
+  revision_timestamp: '2026-09-14T12:10:10Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9B%E0%B8%B2%E0%B8%81%E0%B8%9E%E0%B8%A2%E0%B8%B4%E0%B8%87
+  subcat_path: *id001
+  matches: []
+- canal_id: wp:1476765
+  name_th: คลองแม่รำพัน
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13282409
+  revision_timestamp: '2026-09-19T03:58:30Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%81%E0%B8%A1%E0%B9%88%E0%B8%A3%E0%B8%B3%E0%B8%9E%E0%B8%B1%E0%B8%99
+  subcat_path: *id001
+  matches:
+  - gauge:thaiwater_waterlevel:SKT003
+  - rain_gauge:thaiwater_rain_24h:11648257
+- canal_id: wp:774815
+  name_th: เรือโดยสารคลองในประเทศไทย
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12508193
+  revision_timestamp: '2025-08-31T21:08:30Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B9%80%E0%B8%A3%E0%B8%B7%E0%B8%AD%E0%B9%82%E0%B8%94%E0%B8%A2%E0%B8%AA%E0%B8%B2%E0%B8%A3%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%83%E0%B8%99%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B9%80%E0%B8%97%E0%B8%A8%E0%B9%84%E0%B8%97%E0%B8%A2
+  subcat_path: *id001
+  matches: []
+- canal_id: wp:1444114
+  name_th: คลองละลม (จังหวัดบุรีรัมย์)
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12265139
+  revision_timestamp: '2025-04-20T03:50:52Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A5%E0%B8%B0%E0%B8%A5%E0%B8%A1_%28%E0%B8%88%E0%B8%B1%E0%B8%87%E0%B8%AB%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%9A%E0%B8%B8%E0%B8%A3%E0%B8%B5%E0%B8%A3%E0%B8%B1%E0%B8%A1%E0%B8%A2%E0%B9%8C%29
+  subcat_path: *id001
+  matches: []
+- canal_id: wp:1437915
+  name_th: คลองลำปำ
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 11923058
+  revision_timestamp: '2024-11-11T15:02:56Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A5%E0%B8%B3%E0%B8%9B%E0%B8%B3
+  subcat_path: *id001
+  matches: []
+- canal_id: wp:1552289
+  name_th: ห้วยแม่ประจัน
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13106628
+  revision_timestamp: '2026-07-08T04:35:55Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%AB%E0%B9%89%E0%B8%A7%E0%B8%A2%E0%B9%81%E0%B8%A1%E0%B9%88%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%88%E0%B8%B1%E0%B8%99
+  subcat_path: *id001
+  matches: []
+- canal_id: wp:669364
+  name_th: รายชื่อคลองในกรุงเทพมหานคร
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13190645
+  revision_timestamp: '2026-08-14T11:05:20Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%A3%E0%B8%B2%E0%B8%A2%E0%B8%8A%E0%B8%B7%E0%B9%88%E0%B8%AD%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%83%E0%B8%99%E0%B8%81%E0%B8%A3%E0%B8%B8%E0%B8%87%E0%B9%80%E0%B8%97%E0%B8%9E%E0%B8%A1%E0%B8%AB%E0%B8%B2%E0%B8%99%E0%B8%84%E0%B8%A3
+  subcat_path: &id002
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  matches: []
+- canal_id: wp:665418
+  name_th: คลองบางคูเวียง
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: คลองบางกอกน้อย
+  downstream_name: คลองทวีวัฒนา
+  operator: null
+  revid: 13189878
+  revision_timestamp: '2026-08-14T04:52:12Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%84%E0%B8%B9%E0%B9%80%E0%B8%A7%E0%B8%B5%E0%B8%A2%E0%B8%87
+  subcat_path: *id002
+  matches: []
+- canal_id: wp:667205
+  name_th: คลองบางนา
+  provinces: []
+  lat: 13.67538056
+  lon: 100.58656944
+  coord_source: page
+  length_km: 7.9
+  upstream_name: แม่น้ำเจ้าพระยา
+  downstream_name: null
+  operator: null
+  revid: 13189895
+  revision_timestamp: '2026-08-14T05:02:09Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%99%E0%B8%B2
+  subcat_path: *id002
+  matches: []
+- canal_id: wp:1343488
+  name_th: คลองบางบอน (กรุงเทพมหานคร)
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 0.91
+  upstream_name: ทางรถไฟสายวงเวียนใหญ่-มหาชัย
+  downstream_name: คลองสุรศักดิ์
+  operator: null
+  revid: 13282354
+  revision_timestamp: '2026-09-19T03:18:03Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%9A%E0%B8%AD%E0%B8%99_%28%E0%B8%81%E0%B8%A3%E0%B8%B8%E0%B8%87%E0%B9%80%E0%B8%97%E0%B8%9E%E0%B8%A1%E0%B8%AB%E0%B8%B2%E0%B8%99%E0%B8%84%E0%B8%A3%29
+  subcat_path: *id002
+  matches: []
+- canal_id: wp:32586
+  name_th: คลองพระโขนง
+  provinces: []
+  lat: 13.709574
+  lon: 100.59558
+  coord_source: page
+  length_km: 14.5
+  upstream_name: แม่น้ำเจ้าพระยา
+  downstream_name: คลองประเวศบุรีรมย์
+  operator: null
+  revid: 13158508
+  revision_timestamp: '2026-08-01T08:10:10Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B9%82%E0%B8%82%E0%B8%99%E0%B8%87
+  subcat_path: *id002
+  matches: []
+- canal_id: wp:1342086
+  name_th: คลองพระสทึง
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 156.0
+  upstream_name: เขาทึ่งลึ่ง เขาตะกวด และเขากลางในเขตอำเภอเขาคิชฌกูฏ จังหวัดจันทบุรี
+  downstream_name: คลองพระปรง
+  operator: null
+  revid: 12950273
+  revision_timestamp: '2026-04-15T04:05:25Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B8%AA%E0%B8%97%E0%B8%B6%E0%B8%87
+  subcat_path: &id003
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดจันทบุรี
+  matches: []
+- canal_id: wp:849983
+  name_th: คลองภักดีรำไพ
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13228616
+  revision_timestamp: '2026-08-30T14:38:16Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A0%E0%B8%B1%E0%B8%81%E0%B8%94%E0%B8%B5%E0%B8%A3%E0%B8%B3%E0%B9%84%E0%B8%9E
+  subcat_path: *id003
+  matches: []
+- canal_id: wp:32589
+  name_th: คลองประเวศบุรีรมย์
+  provinces: []
+  lat: 13.714722
+  lon: 100.638889
+  coord_source: page
+  length_km: 46.0
+  upstream_name: คลองพระโขนง
+  downstream_name: แม่น้ำบางปะกง จังหวัดฉะเชิงเทรา
+  operator: null
+  revid: 13140162
+  revision_timestamp: '2026-07-24T10:03:27Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B9%80%E0%B8%A7%E0%B8%A8%E0%B8%9A%E0%B8%B8%E0%B8%A3%E0%B8%B5%E0%B8%A3%E0%B8%A1%E0%B8%A2%E0%B9%8C
+  subcat_path: &id004
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดฉะเชิงเทรา
+  matches: []
+- canal_id: wp:1219126
+  name_th: คลองเปร็ง
+  provinces:
+  - จังหวัดฉะเชิงเทรา
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 19.52
+  upstream_name: คลองประเวศบุรีรมย์
+  downstream_name: คลองบางขนาก (คลองแสนแสบ)
+  operator: null
+  revid: 12507461
+  revision_timestamp: '2025-08-31T11:22:26Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%80%E0%B8%9B%E0%B8%A3%E0%B9%87%E0%B8%87
+  subcat_path: *id004
+  matches: []
+- canal_id: wp:1250118
+  name_th: คลองพระองค์เจ้าไชยานุชิต
+  provinces:
+  - จังหวัดฉะเชิงเทราและจังหวัดสมุทรปราการ
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: คลองแสนแสบ
+  downstream_name: คลองสำโรง
+  operator: null
+  revid: 12507385
+  revision_timestamp: '2025-08-31T10:50:49Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B8%AD%E0%B8%87%E0%B8%84%E0%B9%8C%E0%B9%80%E0%B8%88%E0%B9%89%E0%B8%B2%E0%B9%84%E0%B8%8A%E0%B8%A2%E0%B8%B2%E0%B8%99%E0%B8%B8%E0%B8%8A%E0%B8%B4%E0%B8%95
+  subcat_path: *id004
+  matches: []
+- canal_id: wp:1278700
+  name_th: คลองชุมพร
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10888902
+  revision_timestamp: '2023-07-17T19:40:02Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%8A%E0%B8%B8%E0%B8%A1%E0%B8%9E%E0%B8%A3
+  subcat_path: &id005
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดชุมพร
+  matches:
+  - rain_gauge:thaiwater_rain_24h:3731
+- canal_id: wp:1278697
+  name_th: คลองท่าตะเภา
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13282352
+  revision_timestamp: '2026-09-19T03:15:16Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%97%E0%B9%88%E0%B8%B2%E0%B8%95%E0%B8%B0%E0%B9%80%E0%B8%A0%E0%B8%B2
+  subcat_path: *id005
+  matches: []
+- canal_id: wp:280693
+  name_th: คลองมหาราช
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12636082
+  revision_timestamp: '2025-11-02T07:53:14Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A1%E0%B8%AB%E0%B8%B2%E0%B8%A3%E0%B8%B2%E0%B8%8A
+  subcat_path: &id006
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดชัยนาท
+  matches: []
+- canal_id: wp:280676
+  name_th: คลองอนุศาสนนันท์
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12904919
+  revision_timestamp: '2026-03-20T11:30:59Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AD%E0%B8%99%E0%B8%B8%E0%B8%A8%E0%B8%B2%E0%B8%AA%E0%B8%99%E0%B8%99%E0%B8%B1%E0%B8%99%E0%B8%97%E0%B9%8C
+  subcat_path: *id006
+  matches: []
+- canal_id: wp:846894
+  name_th: คลองแม่ข่า
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12550720
+  revision_timestamp: '2025-09-21T04:34:49Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%81%E0%B8%A1%E0%B9%88%E0%B8%82%E0%B9%88%E0%B8%B2
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดเชียงใหม่
+  matches: []
+- canal_id: wp:541012
+  name_th: คลองยี่สิบเอ็ด
+  provinces:
+  - อำเภอบางน้ำเปรี้ยว จังหวัดฉะเชิงเทรา
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: คลองสิบเจ็ด
+  downstream_name: แม่น้ำนครนายก
+  operator: null
+  revid: 12507380
+  revision_timestamp: '2025-08-31T10:44:19Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A2%E0%B8%B5%E0%B9%88%E0%B8%AA%E0%B8%B4%E0%B8%9A%E0%B9%80%E0%B8%AD%E0%B9%87%E0%B8%94
+  subcat_path: &id007
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดนครนายก
+  matches: []
+- canal_id: wp:177501
+  name_th: คลองรังสิต
+  provinces: []
+  lat: 14.01914722
+  lon: 100.73321389
+  coord_source: page
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13190757
+  revision_timestamp: '2026-08-14T12:05:22Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A3%E0%B8%B1%E0%B8%87%E0%B8%AA%E0%B8%B4%E0%B8%95
+  subcat_path: *id007
+  matches: []
+- canal_id: wp:1247200
+  name_th: คลองพระยาบรรลือ
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13282365
+  revision_timestamp: '2026-09-19T03:29:40Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B8%A2%E0%B8%B2%E0%B8%9A%E0%B8%A3%E0%B8%A3%E0%B8%A5%E0%B8%B7%E0%B8%AD
+  subcat_path: &id008
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดนครปฐม
+  matches:
+  - gate:hii_watergate:54
+  - gauge:thaiwater_waterlevel:CPY016
+  - rain_gauge:thaiwater_rain_24h:54
+- canal_id: wp:504546
+  name_th: คลองโยง
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10545385
+  revision_timestamp: '2023-01-22T07:42:00Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%82%E0%B8%A2%E0%B8%87
+  subcat_path: *id008
+  matches: []
+- canal_id: wp:850888
+  name_th: คลองลากค้อน
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10545341
+  revision_timestamp: '2023-01-22T07:24:17Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A5%E0%B8%B2%E0%B8%81%E0%B8%84%E0%B9%89%E0%B8%AD%E0%B8%99
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดปทุมธานี
+  matches: []
+- canal_id: wp:1272621
+  name_th: คลองกือเซะ
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10545913
+  revision_timestamp: '2023-01-22T10:23:46Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%81%E0%B8%B7%E0%B8%AD%E0%B9%80%E0%B8%8B%E0%B8%B0
+  subcat_path: &id009
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดปัตตานี
+  matches: []
+- canal_id: wp:852142
+  name_th: คลองสุไหงบารู
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10842655
+  revision_timestamp: '2023-06-30T19:10:03Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%B8%E0%B9%84%E0%B8%AB%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%A3%E0%B8%B9
+  subcat_path: *id009
+  matches: []
+- canal_id: wp:1449709
+  name_th: คลองบางคี่
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12050137
+  revision_timestamp: '2024-12-29T08:28:57Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%84%E0%B8%B5%E0%B9%88
+  subcat_path: &id010
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดพระนครศรีอยุธยา
+  matches: []
+- canal_id: wp:1416269
+  name_th: คลองระบายน้ำหลากบางบาล–บางไทร
+  provinces:
+  - อำเภอบางบาล อำเภอบางไทร และอำเภอพระนครศรีอยุธยา จังหวัดพระนครศรีอยุธยา
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 22.5
+  upstream_name: แม่น้ำเจ้าพระยา
+  downstream_name: แม่น้ำเจ้าพระยา
+  operator: null
+  revid: 12799182
+  revision_timestamp: '2026-01-21T04:02:10Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A3%E0%B8%B0%E0%B8%9A%E0%B8%B2%E0%B8%A2%E0%B8%99%E0%B9%89%E0%B8%B3%E0%B8%AB%E0%B8%A5%E0%B8%B2%E0%B8%81%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%A5%E2%80%93%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B9%84%E0%B8%97%E0%B8%A3
+  subcat_path: *id010
+  matches: []
+- canal_id: wp:1272432
+  name_th: คลองบางแก้ว (จังหวัดอ่างทองและจังหวัดพระนครศรีอยุธยา)
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13071574
+  revision_timestamp: '2026-06-19T07:15:13Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B9%81%E0%B8%81%E0%B9%89%E0%B8%A7_%28%E0%B8%88%E0%B8%B1%E0%B8%87%E0%B8%AB%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%AD%E0%B9%88%E0%B8%B2%E0%B8%87%E0%B8%97%E0%B8%AD%E0%B8%87%E0%B9%81%E0%B8%A5%E0%B8%B0%E0%B8%88%E0%B8%B1%E0%B8%87%E0%B8%AB%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B8%99%E0%B8%84%E0%B8%A3%E0%B8%A8%E0%B8%A3%E0%B8%B5%E0%B8%AD%E0%B8%A2%E0%B8%B8%E0%B8%98%E0%B8%A2%E0%B8%B2%29
+  subcat_path: *id010
+  matches:
+  - gate:hii_watergate:709673
+- canal_id: wp:32585
+  name_th: คลองเปรมประชากร
+  provinces:
+  - กรุงเทพมหานคร
+  lat: 13.76126
+  lon: 100.51182
+  coord_source: page
+  length_km: 50.846
+  upstream_name: คลองผดุงกรุงเกษม แขวงวัดโสมนัส เขตป้อมปราบศัตรูพ่าย, แขวงสี่แยกมหานาคและแขวงดุสิต
+    เขตดุสิต กรุงเทพมหานคร
+  downstream_name: แม่น้ำเจ้าพระยา ตำบลบางกระสั้น อำเภอบางปะอิน จังหวัดพระนครศรีอยุธยา
+  operator: null
+  revid: 13137916
+  revision_timestamp: '2026-07-23T07:19:49Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%80%E0%B8%9B%E0%B8%A3%E0%B8%A1%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%8A%E0%B8%B2%E0%B8%81%E0%B8%A3
+  subcat_path: *id010
+  matches: []
+- canal_id: wp:1272268
+  name_th: คลองโผงเผง
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10545960
+  revision_timestamp: '2023-01-22T10:46:24Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%82%E0%B8%9C%E0%B8%87%E0%B9%80%E0%B8%9C%E0%B8%87
+  subcat_path: *id010
+  matches: []
+- canal_id: wp:1245706
+  name_th: คลองพระอุดม
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 11631456
+  revision_timestamp: '2024-07-17T09:22:02Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B8%AD%E0%B8%B8%E0%B8%94%E0%B8%A1
+  subcat_path: *id010
+  matches: []
+- canal_id: wp:541026
+  name_th: คลองยี่สิบหก
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10449222
+  revision_timestamp: '2022-11-29T02:26:45Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A2%E0%B8%B5%E0%B9%88%E0%B8%AA%E0%B8%B4%E0%B8%9A%E0%B8%AB%E0%B8%81
+  subcat_path: *id010
+  matches: []
+- canal_id: wp:539489
+  name_th: คลองระพีพัฒน์
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12904922
+  revision_timestamp: '2026-03-20T11:31:32Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A3%E0%B8%B0%E0%B8%9E%E0%B8%B5%E0%B8%9E%E0%B8%B1%E0%B8%92%E0%B8%99%E0%B9%8C
+  subcat_path: *id010
+  matches: []
+- canal_id: wp:140277
+  name_th: คลองตะกั่วป่า
+  provinces: []
+  lat: 8.600281
+  lon: 98.24979
+  coord_source: page
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 11783423
+  revision_timestamp: '2024-09-27T04:11:32Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%95%E0%B8%B0%E0%B8%81%E0%B8%B1%E0%B9%88%E0%B8%A7%E0%B8%9B%E0%B9%88%E0%B8%B2
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดพังงา
+  matches:
+  - gate:hii_watergate:803
+  - rain_gauge:thaiwater_rain_24h:3742
+- canal_id: wp:1317311
+  name_th: คลองขุดยี่สาร
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 11397354
+  revision_timestamp: '2024-03-23T07:46:48Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%82%E0%B8%B8%E0%B8%94%E0%B8%A2%E0%B8%B5%E0%B9%88%E0%B8%AA%E0%B8%B2%E0%B8%A3
+  subcat_path: &id011
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดเพชรบุรี
+  matches: []
+- canal_id: wp:1279405
+  name_th: คลองวัดประดู่ (จังหวัดสมุทรสงคราม)
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 11425551
+  revision_timestamp: '2024-04-07T13:43:19Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%94%E0%B8%B9%E0%B9%88_%28%E0%B8%88%E0%B8%B1%E0%B8%87%E0%B8%AB%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%AA%E0%B8%A1%E0%B8%B8%E0%B8%97%E0%B8%A3%E0%B8%AA%E0%B8%87%E0%B8%84%E0%B8%A3%E0%B8%B2%E0%B8%A1%29
+  subcat_path: *id011
+  matches: []
+- canal_id: wp:1389873
+  name_th: คลองแควอ้อม
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 18.0
+  upstream_name: แม่น้ำแม่กลองฝั่งขวาที่บ้านศาลเจ้า ตำบลคุ้งกระถิน อำเภอเมืองราชบุรี
+    จังหวัดราชบุรี
+  downstream_name: แม่น้ำแม่กลองฝั่งขวา ที่แนวแบ่งเขตตำบลบางกุ้ง อำเภอบางคนที กับตำบลแควอ้อม
+    อำเภออัมพวา
+  operator: null
+  revid: 13140167
+  revision_timestamp: '2026-07-24T10:06:03Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%81%E0%B8%84%E0%B8%A7%E0%B8%AD%E0%B9%89%E0%B8%AD%E0%B8%A1
+  subcat_path: &id012
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดราชบุรี
+  matches: []
+- canal_id: wp:202395
+  name_th: คลองดำเนินสะดวก
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13282351
+  revision_timestamp: '2026-09-19T03:11:46Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%94%E0%B8%B3%E0%B9%80%E0%B8%99%E0%B8%B4%E0%B8%99%E0%B8%AA%E0%B8%B0%E0%B8%94%E0%B8%A7%E0%B8%81
+  subcat_path: *id012
+  matches: []
+- canal_id: wp:1259804
+  name_th: คลองบางแก้ว (จังหวัดนครปฐม)
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13282358
+  revision_timestamp: '2026-09-19T03:21:28Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B9%81%E0%B8%81%E0%B9%89%E0%B8%A7_%28%E0%B8%88%E0%B8%B1%E0%B8%87%E0%B8%AB%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%99%E0%B8%84%E0%B8%A3%E0%B8%9B%E0%B8%90%E0%B8%A1%29
+  subcat_path: *id012
+  matches:
+  - gate:hii_watergate:709673
+- canal_id: wp:939789
+  name_th: คลองเรือก
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 11542772
+  revision_timestamp: '2024-06-01T09:52:30Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%80%E0%B8%A3%E0%B8%B7%E0%B8%AD%E0%B8%81
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดลพบุรี
+  matches: []
+- canal_id: wp:1397310
+  name_th: คลองจะทิ้งหม้อ
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 15.0
+  upstream_name: ตำบลม่วงงาม อำเภอสิงหนคร จังหวัดสงขลา
+  downstream_name: ทะเลสาบสงขลา
+  operator: null
+  revid: 12679872
+  revision_timestamp: '2025-11-26T03:50:23Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%88%E0%B8%B0%E0%B8%97%E0%B8%B4%E0%B9%89%E0%B8%87%E0%B8%AB%E0%B8%A1%E0%B9%89%E0%B8%AD
+  subcat_path: &id013
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดสงขลา
+  matches: []
+- canal_id: wp:1444111
+  name_th: คลองภูมินาถดำริ
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 21.34
+  upstream_name: คลองอู่ตะเภา
+  downstream_name: ทะเลสาบสงขลา
+  operator: null
+  revid: 12679903
+  revision_timestamp: '2025-11-26T04:11:22Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A0%E0%B8%B9%E0%B8%A1%E0%B8%B4%E0%B8%99%E0%B8%B2%E0%B8%96%E0%B8%94%E0%B8%B3%E0%B8%A3%E0%B8%B4
+  subcat_path: *id013
+  matches: []
+- canal_id: wp:1507546
+  name_th: คลองสำโรง (จังหวัดสงขลา)
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 16.0
+  upstream_name: เขาเกาะโมง ในตำบลเกาะแต้ว จังหวัดสงขลา
+  downstream_name: ทะเลสาบสงขลา, อ่าวไทย
+  operator: null
+  revid: 12684911
+  revision_timestamp: '2025-11-28T13:29:35Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%B3%E0%B9%82%E0%B8%A3%E0%B8%87_%28%E0%B8%88%E0%B8%B1%E0%B8%87%E0%B8%AB%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%AA%E0%B8%87%E0%B8%82%E0%B8%A5%E0%B8%B2%29
+  subcat_path: *id013
+  matches: []
+- canal_id: wp:1442798
+  name_th: คลองอู่ตะเภา
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 116.0
+  upstream_name: ตำบลสำนักแต้ว อำเภอสะเดา จังหวัดสงขลา
+  downstream_name: ทะเลสาบสงขลา
+  operator: null
+  revid: 13282405
+  revision_timestamp: '2026-09-19T03:56:00Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AD%E0%B8%B9%E0%B9%88%E0%B8%95%E0%B8%B0%E0%B9%80%E0%B8%A0%E0%B8%B2
+  subcat_path: *id013
+  matches: []
+- canal_id: wp:1336479
+  name_th: คลองท่าแพ (จังหวัดสตูล)
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 11968640
+  revision_timestamp: '2024-11-23T03:51:33Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%97%E0%B9%88%E0%B8%B2%E0%B9%81%E0%B8%9E_%28%E0%B8%88%E0%B8%B1%E0%B8%87%E0%B8%AB%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%AA%E0%B8%95%E0%B8%B9%E0%B8%A5%29
+  subcat_path: &id014
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดสตูล
+  matches: []
+- canal_id: wp:1289356
+  name_th: คลองมำบัง
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12931877
+  revision_timestamp: '2026-04-03T16:25:23Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A1%E0%B8%B3%E0%B8%9A%E0%B8%B1%E0%B8%87
+  subcat_path: *id014
+  matches: []
+- canal_id: wp:1289349
+  name_th: คลองละงู
+  provinces: []
+  lat: 6.94698
+  lon: 99.70587
+  coord_source: page
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12926546
+  revision_timestamp: '2026-03-31T13:33:40Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A5%E0%B8%B0%E0%B8%87%E0%B8%B9
+  subcat_path: *id014
+  matches:
+  - gate:hii_watergate:12481
+  - gauge:thaiwater_waterlevel:STU002
+  - rain_gauge:thaiwater_rain_24h:12481
+- canal_id: wp:1513163
+  name_th: คลองขุนราชพินิจใจ
+  provinces: []
+  lat: 16.51833333
+  lon: 100.32666667
+  coord_source: page
+  length_km: 9.0
+  upstream_name: คลองหัวกระบือ ที่บ้านหัวป่า
+  downstream_name: null
+  operator: null
+  revid: 13282345
+  revision_timestamp: '2026-09-19T03:02:56Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%82%E0%B8%B8%E0%B8%99%E0%B8%A3%E0%B8%B2%E0%B8%8A%E0%B8%9E%E0%B8%B4%E0%B8%99%E0%B8%B4%E0%B8%88%E0%B9%83%E0%B8%88
+  subcat_path: &id015
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดสมุทรปราการ
+  matches: []
+- canal_id: wp:1249255
+  name_th: คลองจระเข้ (จังหวัดสมุทรปราการ)
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: คลองประเวศบุรีรมย์และคลองลำปลาทิว
+  downstream_name: คลองสำโรงในอำเภอบางเสาธง จังหวัดสมุทรปราการ
+  operator: null
+  revid: 13190948
+  revision_timestamp: '2026-08-14T13:35:36Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%88%E0%B8%A3%E0%B8%B0%E0%B9%80%E0%B8%82%E0%B9%89_%28%E0%B8%88%E0%B8%B1%E0%B8%87%E0%B8%AB%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%AA%E0%B8%A1%E0%B8%B8%E0%B8%97%E0%B8%A3%E0%B8%9B%E0%B8%A3%E0%B8%B2%E0%B8%81%E0%B8%B2%E0%B8%A3%29
+  subcat_path: *id015
+  matches: []
+- canal_id: wp:1249035
+  name_th: คลองบางปลากด
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 11493858
+  revision_timestamp: '2024-05-10T14:31:29Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%9B%E0%B8%A5%E0%B8%B2%E0%B8%81%E0%B8%94
+  subcat_path: *id015
+  matches: []
+- canal_id: wp:1255209
+  name_th: คลองมหาวงษ์
+  provinces: []
+  lat: 13.58333333
+  lon: 100.55
+  coord_source: page
+  length_km: null
+  upstream_name: คลองสำโรง
+  downstream_name: null
+  operator: null
+  revid: 13127198
+  revision_timestamp: '2026-07-18T05:57:44Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A1%E0%B8%AB%E0%B8%B2%E0%B8%A7%E0%B8%87%E0%B8%A9%E0%B9%8C
+  subcat_path: *id015
+  matches: []
+- canal_id: wp:1215632
+  name_th: คลองสรรพสามิต
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12990207
+  revision_timestamp: '2026-05-07T09:34:06Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%A3%E0%B8%A3%E0%B8%9E%E0%B8%AA%E0%B8%B2%E0%B8%A1%E0%B8%B4%E0%B8%95
+  subcat_path: *id015
+  matches: []
+- canal_id: wp:175107
+  name_th: คลองสำโรง
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13127075
+  revision_timestamp: '2026-07-18T04:45:27Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%B3%E0%B9%82%E0%B8%A3%E0%B8%87
+  subcat_path: *id015
+  matches: []
+- canal_id: wp:1256070
+  name_th: คลองบางน้อย (จังหวัดสมุทรสงคราม)
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 5.0
+  upstream_name: คลองยายแพง
+  downstream_name: แม่น้ำแม่กลองบริเวณตำบลกระดังงา อำเภอบางคนที จังหวัดสมุทรสงคราม
+  operator: null
+  revid: 12975480
+  revision_timestamp: '2026-04-29T14:52:03Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%99%E0%B9%89%E0%B8%AD%E0%B8%A2_%28%E0%B8%88%E0%B8%B1%E0%B8%87%E0%B8%AB%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%AA%E0%B8%A1%E0%B8%B8%E0%B8%97%E0%B8%A3%E0%B8%AA%E0%B8%87%E0%B8%84%E0%B8%A3%E0%B8%B2%E0%B8%A1%29
+  subcat_path: &id016
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดสมุทรสงคราม
+  matches: []
+- canal_id: wp:1318262
+  name_th: คลองบางบ่อ
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 11067733
+  revision_timestamp: '2023-10-13T19:34:19Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%9A%E0%B9%88%E0%B8%AD
+  subcat_path: *id016
+  matches: []
+- canal_id: wp:1358243
+  name_th: คลองประชาชมชื่น
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 11124967
+  revision_timestamp: '2023-11-08T15:47:09Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%8A%E0%B8%B2%E0%B8%8A%E0%B8%A1%E0%B8%8A%E0%B8%B7%E0%B9%88%E0%B8%99
+  subcat_path: *id016
+  matches: []
+- canal_id: wp:847310
+  name_th: คลองสุนัขหอน
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10816068
+  revision_timestamp: '2023-06-18T19:43:35Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%B8%E0%B8%99%E0%B8%B1%E0%B8%82%E0%B8%AB%E0%B8%AD%E0%B8%99
+  subcat_path: *id016
+  matches: []
+- canal_id: wp:1358266
+  name_th: คลองอัมพวา
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 4.5
+  upstream_name: คลองสำโรงที่แนวแบ่งเขต อำเภอบางคนที อำเภออัมพวาและอำเภอเมืองสมุทรสงคราม
+  downstream_name: แม่น้ำแม่กลองฝั่งซ้ายที่ตำบลอัมพวา
+  operator: null
+  revid: 12975483
+  revision_timestamp: '2026-04-29T14:53:50Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AD%E0%B8%B1%E0%B8%A1%E0%B8%9E%E0%B8%A7%E0%B8%B2
+  subcat_path: *id016
+  matches: []
+- canal_id: wp:1275780
+  name_th: คลองพิทยาลงกรณ์
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 19.86
+  upstream_name: แม่น้ำท่าจีน
+  downstream_name: คลองสรรพสามิต
+  operator: null
+  revid: 13190861
+  revision_timestamp: '2026-08-14T13:01:27Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9E%E0%B8%B4%E0%B8%97%E0%B8%A2%E0%B8%B2%E0%B8%A5%E0%B8%87%E0%B8%81%E0%B8%A3%E0%B8%93%E0%B9%8C
+  subcat_path: &id017
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดสมุทรสาคร
+  matches: []
+- canal_id: wp:220945
+  name_th: คลองภาษีเจริญ
+  provinces: []
+  lat: 13.633333
+  lon: 100.233333
+  coord_source: page
+  length_km: 28.0
+  upstream_name: ปากคลองบางกอกใหญ่และคลองบางขุนศรีมาบรรจบกัน
+  downstream_name: แม่น้ำท่าจีน
+  operator: null
+  revid: 13230550
+  revision_timestamp: '2026-08-31T08:27:45Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A0%E0%B8%B2%E0%B8%A9%E0%B8%B5%E0%B9%80%E0%B8%88%E0%B8%A3%E0%B8%B4%E0%B8%8D
+  subcat_path: *id017
+  matches: []
+- canal_id: wp:254230
+  name_th: คลองสนามชัย
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: คลองด่าน (กรุงเทพมหานคร)
+  downstream_name: แม่น้ำท่าจีนที่อำเภอเมืองสมุทรสาคร จังหวัดสมุทรสาคร
+  operator: null
+  revid: 13159733
+  revision_timestamp: '2026-08-01T15:05:12Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%99%E0%B8%B2%E0%B8%A1%E0%B8%8A%E0%B8%B1%E0%B8%A2
+  subcat_path: *id017
+  matches: []
+- canal_id: wp:1272049
+  name_th: คลองจระเข้สามพัน
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13282347
+  revision_timestamp: '2026-09-19T03:07:21Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%88%E0%B8%A3%E0%B8%B0%E0%B9%80%E0%B8%82%E0%B9%89%E0%B8%AA%E0%B8%B2%E0%B8%A1%E0%B8%9E%E0%B8%B1%E0%B8%99
+  subcat_path: &id018
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดสุพรรณบุรี
+  matches: []
+- canal_id: wp:1272063
+  name_th: คลองสองพี่น้อง
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13282391
+  revision_timestamp: '2026-09-19T03:49:47Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%AD%E0%B8%87%E0%B8%9E%E0%B8%B5%E0%B9%88%E0%B8%99%E0%B9%89%E0%B8%AD%E0%B8%87
+  subcat_path: *id018
+  matches:
+  - gate:hii_watergate:736
+  - gauge:thaiwater_waterlevel:THA010
+  - rain_gauge:thaiwater_rain_24h:736
+- canal_id: wp:1267600
+  name_th: คลองไผ่สิงโต
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13189851
+  revision_timestamp: '2026-08-14T04:46:30Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%84%E0%B8%9C%E0%B9%88%E0%B8%AA%E0%B8%B4%E0%B8%87%E0%B9%82%E0%B8%95
+  subcat_path: &id019
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตคลองเตย
+  matches: []
+- canal_id: wp:648294
+  name_th: คลองหัวลำโพง
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 3.212
+  upstream_name: คลองไผ่สิงโต
+  downstream_name: คลองพระโขนง
+  operator: null
+  revid: 13190015
+  revision_timestamp: '2026-08-14T06:26:34Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AB%E0%B8%B1%E0%B8%A7%E0%B8%A5%E0%B8%B3%E0%B9%82%E0%B8%9E%E0%B8%87
+  subcat_path: *id019
+  matches: []
+- canal_id: wp:648061
+  name_th: คลองบางไส้ไก่
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 3.212
+  upstream_name: แม่น้ำเจ้าพระยาด้านถนนเจริญนคร เขตคลองสาน
+  downstream_name: คลองบางกอกใหญ่
+  operator: null
+  revid: 13158683
+  revision_timestamp: '2026-08-01T09:34:37Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B9%84%E0%B8%AA%E0%B9%89%E0%B9%84%E0%B8%81%E0%B9%88
+  subcat_path: &id020
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตคลองสาน
+  matches: []
+- canal_id: wp:46906
+  name_th: คลองสมเด็จเจ้าพระยา
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 2.5
+  upstream_name: แม่น้ำเจ้าพระยาด้านถนนเจริญนคร เขตคลองสาน
+  downstream_name: คลองบางกอกใหญ่
+  operator: null
+  revid: 13190122
+  revision_timestamp: '2026-08-14T07:00:35Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%A1%E0%B9%80%E0%B8%94%E0%B9%87%E0%B8%88%E0%B9%80%E0%B8%88%E0%B9%89%E0%B8%B2%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B8%A2%E0%B8%B2
+  subcat_path: *id020
+  matches: []
+- canal_id: wp:539548
+  name_th: คลองเก้า
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: คลองระพีพัฒน์แยกตก
+  downstream_name: คลองสนาม
+  operator: null
+  revid: 13190142
+  revision_timestamp: '2026-08-14T07:08:22Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%80%E0%B8%81%E0%B9%89%E0%B8%B2
+  subcat_path: &id021
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตคลองสามวา
+  matches: []
+- canal_id: wp:539542
+  name_th: คลองแปด
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: คลองระพีพัฒน์แยกตก
+  downstream_name: คลองสี่ตะวันออก
+  operator: null
+  revid: 13190144
+  revision_timestamp: '2026-08-14T07:09:56Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%81%E0%B8%9B%E0%B8%94
+  subcat_path: *id021
+  matches: []
+- canal_id: wp:46908
+  name_th: คลองสามวา
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: คลองหกวาสายล่าง และคลองหก
+  downstream_name: คลองแสนแสบ
+  operator: null
+  revid: 13158517
+  revision_timestamp: '2026-08-01T08:21:55Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%B2%E0%B8%A1%E0%B8%A7%E0%B8%B2
+  subcat_path: *id021
+  matches: []
+- canal_id: wp:50018
+  name_th: คลองแสนแสบ
+  provinces: []
+  lat: 13.8741
+  lon: 101.1419
+  coord_source: page
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13299522
+  revision_timestamp: '2026-09-25T18:59:12Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%81%E0%B8%AA%E0%B8%99%E0%B9%81%E0%B8%AA%E0%B8%9A
+  subcat_path: *id021
+  matches: []
+- canal_id: wp:141772
+  name_th: ท่าประตูน้ำ
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13299608
+  revision_timestamp: '2026-09-25T19:30:58Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%97%E0%B9%88%E0%B8%B2%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%95%E0%B8%B9%E0%B8%99%E0%B9%89%E0%B8%B3
+  subcat_path: &id022
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองแสนแสบ
+  matches: []
+- canal_id: wp:1239037
+  name_th: เทศบาลตำบลคลองแสนแสบ
+  provinces:
+  - ฉะเชิงเทรา
+  lat: 13.85777778
+  lon: 101.119
+  coord_source: page
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13264056
+  revision_timestamp: '2026-09-12T00:27:03Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B9%80%E0%B8%97%E0%B8%A8%E0%B8%9A%E0%B8%B2%E0%B8%A5%E0%B8%95%E0%B8%B3%E0%B8%9A%E0%B8%A5%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%81%E0%B8%AA%E0%B8%99%E0%B9%81%E0%B8%AA%E0%B8%9A
+  subcat_path: *id022
+  matches: []
+- canal_id: wp:115049
+  name_th: เรือโดยสารคลองแสนแสบ
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12915408
+  revision_timestamp: '2026-03-25T12:10:34Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B9%80%E0%B8%A3%E0%B8%B7%E0%B8%AD%E0%B9%82%E0%B8%94%E0%B8%A2%E0%B8%AA%E0%B8%B2%E0%B8%A3%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%81%E0%B8%AA%E0%B8%99%E0%B9%81%E0%B8%AA%E0%B8%9A
+  subcat_path: *id022
+  matches: []
+- canal_id: wp:640151
+  name_th: คลองบางเขน
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 11.45
+  upstream_name: แม่น้ำเจ้าพระยา
+  downstream_name: คลองบางบัว
+  operator: null
+  revid: 13190766
+  revision_timestamp: '2026-08-14T12:08:05Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B9%80%E0%B8%82%E0%B8%99
+  subcat_path: &id023
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตจตุจักร
+  matches: []
+- canal_id: wp:669113
+  name_th: คลองบางบัว
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 9.0
+  upstream_name: คลองลาดพร้าว
+  downstream_name: คลองถนน
+  operator: null
+  revid: 13282355
+  revision_timestamp: '2026-09-19T03:18:06Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%9A%E0%B8%B1%E0%B8%A7
+  subcat_path: *id023
+  matches:
+  - gauge:thaiwater_bma:WL.BBU.01
+- canal_id: wp:539499
+  name_th: คลองประปา
+  provinces:
+  - อำเภอเมืองปทุมธานี จังหวัดปทุมธานี
+  - แนวเขตการปกครองจังหวัดนนทบุรีกับกรุงเทพมหานคร เข้าสู่เขตจตุจักร เขตบางซื่อ เขตดุสิต
+    และเขตพญาไท
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: แม่น้ำเจ้าพระยา ที่สถานีสูบน้ำดิบสำแล อำเภอเมืองปทุมธานี จังหวัดปทุมธานี
+  downstream_name: ปากน้ำโจ้โล้
+  operator: การประปานครหลวง
+  revid: 13274013
+  revision_timestamp: '2026-09-15T07:52:42Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%9B%E0%B8%B2
+  subcat_path: *id023
+  matches: []
+- canal_id: wp:646651
+  name_th: คลองลาดพร้าว
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 23.0
+  upstream_name: คลองหกวา
+  downstream_name: คลองแสนแสบ
+  operator: null
+  revid: 13158499
+  revision_timestamp: '2026-08-01T08:05:19Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A5%E0%B8%B2%E0%B8%94%E0%B8%9E%E0%B8%A3%E0%B9%89%E0%B8%B2%E0%B8%A7
+  subcat_path: *id023
+  matches: []
+- canal_id: wp:290830
+  name_th: คลองด่าน (กรุงเทพมหานคร)
+  provinces: []
+  lat: 13.719115
+  lon: 100.470319
+  coord_source: page
+  length_km: 3.0
+  upstream_name: คลองบางกอกใหญ่ บริเวณวัดปากน้ำภาษีเจริญ
+  downstream_name: คลองบางขุนเทียน และคลองสนามชัย
+  operator: null
+  revid: 13158705
+  revision_timestamp: '2026-08-01T09:41:15Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%94%E0%B9%88%E0%B8%B2%E0%B8%99_%28%E0%B8%81%E0%B8%A3%E0%B8%B8%E0%B8%87%E0%B9%80%E0%B8%97%E0%B8%9E%E0%B8%A1%E0%B8%AB%E0%B8%B2%E0%B8%99%E0%B8%84%E0%B8%A3%29
+  subcat_path: &id024
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตจอมทอง
+  matches: []
+- canal_id: wp:111188
+  name_th: คลองดาวคะนอง
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: ปากคลองดาวคะนอง
+  downstream_name: คลองบางขุนเทียน
+  operator: null
+  revid: 13159624
+  revision_timestamp: '2026-08-01T14:32:53Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%94%E0%B8%B2%E0%B8%A7%E0%B8%84%E0%B8%B0%E0%B8%99%E0%B8%AD%E0%B8%87
+  subcat_path: *id024
+  matches: []
+- canal_id: wp:1245568
+  name_th: คลองบางขุนเทียน
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 3.65
+  upstream_name: คลองสนามชัย
+  downstream_name: คลองบางมด
+  operator: null
+  revid: 12950330
+  revision_timestamp: '2026-04-15T04:38:48Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%82%E0%B8%B8%E0%B8%99%E0%B9%80%E0%B8%97%E0%B8%B5%E0%B8%A2%E0%B8%99
+  subcat_path: *id024
+  matches: []
+- canal_id: wp:1214847
+  name_th: คลองบางประทุน
+  provinces: []
+  lat: 13.70638889
+  lon: 100.43
+  coord_source: page
+  length_km: 4.0
+  upstream_name: คลองด่าน
+  downstream_name: คลองบางระแนะ
+  operator: null
+  revid: 13190196
+  revision_timestamp: '2026-08-14T07:25:26Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%97%E0%B8%B8%E0%B8%99
+  subcat_path: *id024
+  matches: []
+- canal_id: wp:1216644
+  name_th: คลองบางมด
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 15.8
+  upstream_name: คลองสนามชัยเยื้องกับวัดไทร
+  downstream_name: คลองข่อยบริเวณวัดบัวผัน
+  operator: null
+  revid: 12960959
+  revision_timestamp: '2026-04-21T08:05:39Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%A1%E0%B8%94
+  subcat_path: *id024
+  matches: []
+- canal_id: wp:1256157
+  name_th: คลองบางสะแก
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 3.5
+  upstream_name: คลองบางกอกใหญ่
+  downstream_name: คลองดาวคะนอง
+  operator: null
+  revid: 13190243
+  revision_timestamp: '2026-08-14T07:33:54Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%AA%E0%B8%B0%E0%B9%81%E0%B8%81
+  subcat_path: *id024
+  matches: []
+- canal_id: wp:539517
+  name_th: คลองสอง
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: คลองระพีพัฒน์แยกตก อำเภอคลองหลวง จังหวัดปทุมธานี
+  downstream_name: คลองถนนระหว่างเส้นแบ่งเขตดอนเมือง และเขตบางเขน กรุงเทพมหานคร
+  operator: null
+  revid: 12950586
+  revision_timestamp: '2026-04-15T07:10:12Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%AD%E0%B8%87
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตดอนเมือง
+  matches: []
+- canal_id: wp:1258417
+  name_th: คลองบางซื่อ (กรุงเทพมหานคร)
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 7.9
+  upstream_name: แม่น้ำเจ้าพระยา
+  downstream_name: คลองลาดพร้าว
+  operator: null
+  revid: 13153960
+  revision_timestamp: '2026-07-30T10:35:00Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%8B%E0%B8%B7%E0%B9%88%E0%B8%AD_%28%E0%B8%81%E0%B8%A3%E0%B8%B8%E0%B8%87%E0%B9%80%E0%B8%97%E0%B8%9E%E0%B8%A1%E0%B8%AB%E0%B8%B2%E0%B8%99%E0%B8%84%E0%B8%A3%29
+  subcat_path: &id025
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตดินแดง
+  matches: []
+- canal_id: wp:649136
+  name_th: คลองสามเสน
+  provinces:
+  - เขตดุสิต แล้วเป็นแนวเขตของเขตพญาไท เขตราชเทวี เขตดินแดง และเข้าสู่เขตห้วยขวาง
+    กรุงเทพมหานคร
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: แม่น้ำเจ้าพระยา ที่บริเวณท่าน้ำสามเสน ในเขตดุสิต กรุงเทพมหานคร
+  downstream_name: คลองแสนแสบ ในเขตห้วยขวาง กรุงเทพมหานคร
+  operator: null
+  revid: 12961034
+  revision_timestamp: '2026-04-21T08:29:50Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%B2%E0%B8%A1%E0%B9%80%E0%B8%AA%E0%B8%99
+  subcat_path: *id025
+  matches: []
+- canal_id: wp:32548
+  name_th: คลองผดุงกรุงเกษม
+  provinces:
+  - กรุงเทพมหานคร
+  lat: 13.747722
+  lon: 100.516663
+  coord_source: page
+  length_km: 5.5
+  upstream_name: แม่น้ำเจ้าพระยา แขวงวัดสามพระยา เขตพระนคร และแขวงวชิรพยาบาล เขตดุสิต
+  downstream_name: แม่น้ำเจ้าพระยา แขวงตลาดน้อย เขตสัมพันธวงศ์ และแขวงบางรัก เขตบางรัก
+  operator: null
+  revid: 13288028
+  revision_timestamp: '2026-09-21T05:19:41Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9C%E0%B8%94%E0%B8%B8%E0%B8%87%E0%B8%81%E0%B8%A3%E0%B8%B8%E0%B8%87%E0%B9%80%E0%B8%81%E0%B8%A9%E0%B8%A1
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตดุสิต
+  matches: []
+- canal_id: wp:359648
+  name_th: คลองทวีวัฒนา
+  provinces: []
+  lat: 13.803889
+  lon: 100.327778
+  coord_source: page
+  length_km: 35.2
+  upstream_name: กรุงเทพมหานคร
+  downstream_name: นครปฐม
+  operator: null
+  revid: 13167204
+  revision_timestamp: '2026-08-05T05:15:28Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%97%E0%B8%A7%E0%B8%B5%E0%B8%A7%E0%B8%B1%E0%B8%92%E0%B8%99%E0%B8%B2
+  subcat_path: &id026
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตทวีวัฒนา
+  matches: []
+- canal_id: wp:1256077
+  name_th: คลองบางน้อย (กรุงเทพมหานคร)
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 10.66
+  upstream_name: คลองบางเชือกหนัง
+  downstream_name: คลองผู้ใหญ่
+  operator: null
+  revid: 13190657
+  revision_timestamp: '2026-08-14T11:10:50Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%99%E0%B9%89%E0%B8%AD%E0%B8%A2_%28%E0%B8%81%E0%B8%A3%E0%B8%B8%E0%B8%87%E0%B9%80%E0%B8%97%E0%B8%9E%E0%B8%A1%E0%B8%AB%E0%B8%B2%E0%B8%99%E0%B8%84%E0%B8%A3%29
+  subcat_path: *id026
+  matches: []
+- canal_id: wp:1255882
+  name_th: คลองบางพรม
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 12.04
+  upstream_name: คลองชักพระ
+  downstream_name: คลองทวีวัฒนา
+  operator: null
+  revid: 13190479
+  revision_timestamp: '2026-08-14T09:27:06Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%9E%E0%B8%A3%E0%B8%A1
+  subcat_path: *id026
+  matches: []
+- canal_id: wp:1255639
+  name_th: คลองบางระมาด
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 7.1
+  upstream_name: คลองชักพระ
+  downstream_name: คลองควาย
+  operator: null
+  revid: 13190567
+  revision_timestamp: '2026-08-14T10:10:52Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%A3%E0%B8%B0%E0%B8%A1%E0%B8%B2%E0%B8%94
+  subcat_path: *id026
+  matches: []
+- canal_id: wp:1254224
+  name_th: คลองบ้านไทร
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 8.54
+  upstream_name: คลองบางระมาด
+  downstream_name: คลองควาย
+  operator: null
+  revid: 13190533
+  revision_timestamp: '2026-08-14T09:50:45Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B9%89%E0%B8%B2%E0%B8%99%E0%B9%84%E0%B8%97%E0%B8%A3
+  subcat_path: *id026
+  matches: []
+- canal_id: wp:358817
+  name_th: คลองมหาสวัสดิ์
+  provinces: []
+  lat: 13.816667
+  lon: 100.233333
+  coord_source: page
+  length_km: 28.0
+  upstream_name: คลองลัดบางกรวยหรือคลองบางกอกน้อย ใกล้วัดชัยพฤกษมาลา
+  downstream_name: แม่น้ำท่าจีนที่ตำบลงิ้วราย อำเภอนครชัยศรี จังหวัดนครปฐม
+  operator: null
+  revid: 13159706
+  revision_timestamp: '2026-08-01T14:59:04Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A1%E0%B8%AB%E0%B8%B2%E0%B8%AA%E0%B8%A7%E0%B8%B1%E0%B8%AA%E0%B8%94%E0%B8%B4%E0%B9%8C
+  subcat_path: *id026
+  matches: []
+- canal_id: wp:1254518
+  name_th: คลองบางน้ำชน
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: แม่น้ำเจ้าพระยา
+  downstream_name: คลองบางกอกใหญ่
+  operator: null
+  revid: 13160720
+  revision_timestamp: '2026-08-02T05:14:01Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%99%E0%B9%89%E0%B8%B3%E0%B8%8A%E0%B8%99
+  subcat_path: &id027
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตธนบุรี
+  matches: []
+- canal_id: wp:651472
+  name_th: คลองสำเหร่
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 3.0
+  upstream_name: คลองบางกอกใหญ่
+  downstream_name: แม่น้ำเจ้าพระยาฝั่งขวาที่แขวงบางลำภูล่าง เขตคลองสาน
+  operator: null
+  revid: 13282392
+  revision_timestamp: '2026-09-19T03:50:12Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%B3%E0%B9%80%E0%B8%AB%E0%B8%A3%E0%B9%88
+  subcat_path: *id027
+  matches: []
+- canal_id: wp:648320
+  name_th: คลองคูเมืองธนบุรีฝั่งตะวันตก
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 4.0
+  upstream_name: คลองบางกอกน้อย
+  downstream_name: คลองบางกอกใหญ่
+  operator: null
+  revid: 13158663
+  revision_timestamp: '2026-08-01T09:25:27Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%84%E0%B8%B9%E0%B9%80%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B8%87%E0%B8%98%E0%B8%99%E0%B8%9A%E0%B8%B8%E0%B8%A3%E0%B8%B5%E0%B8%9D%E0%B8%B1%E0%B9%88%E0%B8%87%E0%B8%95%E0%B8%B0%E0%B8%A7%E0%B8%B1%E0%B8%99%E0%B8%95%E0%B8%81
+  subcat_path: &id028
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตบางกอกน้อย
+  matches: []
+- canal_id: wp:281738
+  name_th: คลองบางกอกน้อย
+  provinces: []
+  lat: 13.763056
+  lon: 100.479167
+  coord_source: page
+  length_km: 3.3
+  upstream_name: แม่น้ำเจ้าพระยา ทางเหนือของสถานีรถไฟธนบุรี
+  downstream_name: คลองชักพระ (คลองบางขุนศรี) และคลองลัดบางกรวย ตรงข้ามวัดสุวรรณคีรี
+  operator: null
+  revid: 13299974
+  revision_timestamp: '2026-09-25T20:51:19Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%81%E0%B8%AD%E0%B8%81%E0%B8%99%E0%B9%89%E0%B8%AD%E0%B8%A2
+  subcat_path: *id028
+  matches: []
+- canal_id: wp:652974
+  name_th: คลองบางบำหรุ
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 3.6
+  upstream_name: คลองพระคุณแม่ ตรงแนวแบ่งเขตระหว่างตำบลบางกรวยกับตำบลวัดชลอ อำเภอบางกรวย
+    จังหวัดนนทบุรี
+  downstream_name: คลองบางกอกน้อยฝั่งซ้าย
+  operator: null
+  revid: 13190759
+  revision_timestamp: '2026-08-14T12:06:10Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%9A%E0%B8%B3%E0%B8%AB%E0%B8%A3%E0%B8%B8
+  subcat_path: *id028
+  matches: []
+- canal_id: wp:180812
+  name_th: คลองมอญ
+  provinces: []
+  lat: 13.745467
+  lon: 100.474642
+  coord_source: page
+  length_km: 3.0
+  upstream_name: แม่น้ำเจ้าพระยาฝั่งตะวันตก
+  downstream_name: คลองบางน้อยและคลองบางเชือกหนังไหลมาบรรจบกัน ในรอยต่อเขตภาษีเจริญและเขตตลิ่งชัน
+  operator: null
+  revid: 13162507
+  revision_timestamp: '2026-08-02T18:53:00Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A1%E0%B8%AD%E0%B8%8D
+  subcat_path: *id028
+  matches: []
+- canal_id: wp:408176
+  name_th: คลองลัดบางกรวย
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: แม่น้ำเจ้าพระยา หน้าวัดชลอ อำเภอบางกรวย จังหวัดนนทบุรี
+  downstream_name: คลองชักพระ บริเวณวัดสุวโรงเรียนณคีรี
+  operator: null
+  revid: 13190599
+  revision_timestamp: '2026-08-14T10:35:04Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A5%E0%B8%B1%E0%B8%94%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%81%E0%B8%A3%E0%B8%A7%E0%B8%A2
+  subcat_path: *id028
+  matches: []
+- canal_id: wp:235339
+  name_th: คลองบางกอกใหญ่
+  provinces: []
+  lat: 13.779235
+  lon: 100.462933
+  coord_source: page
+  length_km: 6.0
+  upstream_name: แม่น้ำเจ้าพระยาทางฝั่งขวาของป้อมวิไชยประสิทธิ์
+  downstream_name: คลองมอญ ตรงข้ามปากคลองชักพระ
+  operator: null
+  revid: 13299905
+  revision_timestamp: '2026-09-25T20:35:57Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%81%E0%B8%AD%E0%B8%81%E0%B9%83%E0%B8%AB%E0%B8%8D%E0%B9%88
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตบางกอกใหญ่
+  matches: []
+- canal_id: wp:717757
+  name_th: คลองราชมนตรี
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 15.0
+  upstream_name: คลองบางเชือกหนัง
+  downstream_name: คลองสนามชัย
+  operator: null
+  revid: 13159672
+  revision_timestamp: '2026-08-01T14:49:16Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A3%E0%B8%B2%E0%B8%8A%E0%B8%A1%E0%B8%99%E0%B8%95%E0%B8%A3%E0%B8%B5
+  subcat_path: &id029
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตบางขุนเทียน
+  matches: []
+- canal_id: wp:1386088
+  name_th: คลองแสนตอ
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: คลองขุนราชพินิจใจ
+  downstream_name: null
+  operator: null
+  revid: 13190795
+  revision_timestamp: '2026-08-14T12:21:48Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%81%E0%B8%AA%E0%B8%99%E0%B8%95%E0%B8%AD
+  subcat_path: *id029
+  matches: []
+- canal_id: wp:1227610
+  name_th: คลองหัวกระบือ
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: 'คลองหัวกระบือ: คลองเฉลิมชัยพัฒนาคลองเฉลิมชัยพัฒนา: คลองสนามชัย'
+  downstream_name: 'คลองหัวกระบือ: จุดตัดระหว่างคลองนากับคลองขุนราชพินิจใจคลองเฉลิมชัยพัฒนา:
+    จุดตัดระหว่างคลองหัวกระบือกับคลองบางขโมย'
+  operator: null
+  revid: 13190786
+  revision_timestamp: '2026-08-14T12:16:39Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AB%E0%B8%B1%E0%B8%A7%E0%B8%81%E0%B8%A3%E0%B8%B0%E0%B8%9A%E0%B8%B7%E0%B8%AD
+  subcat_path: *id029
+  matches: []
+- canal_id: wp:652029
+  name_th: คลองบางจาก (เขตภาษีเจริญ)
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 14.85
+  upstream_name: คลองบางกอกใหญ่ฝั่งซ้ายที่เขตภาษีเจริญ
+  downstream_name: สุดเขตคลองบริเวณมหาวิทยาลัยเอเชียอาคเนย์
+  operator: null
+  revid: 13190827
+  revision_timestamp: '2026-08-14T12:44:06Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%88%E0%B8%B2%E0%B8%81_%28%E0%B9%80%E0%B8%82%E0%B8%95%E0%B8%A0%E0%B8%B2%E0%B8%A9%E0%B8%B5%E0%B9%80%E0%B8%88%E0%B8%A3%E0%B8%B4%E0%B8%8D%29
+  subcat_path: &id030
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตบางแค
+  matches: []
+- canal_id: wp:651913
+  name_th: คลองบางเชือกหนัง
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 12.0
+  upstream_name: วัดเกาะ
+  downstream_name: คลองทวีวัฒนา
+  operator: null
+  revid: 13282357
+  revision_timestamp: '2026-09-19T03:20:52Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B9%80%E0%B8%8A%E0%B8%B7%E0%B8%AD%E0%B8%81%E0%B8%AB%E0%B8%99%E0%B8%B1%E0%B8%87
+  subcat_path: *id030
+  matches: []
+- canal_id: wp:1254232
+  name_th: คลองบางแวก
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 10.5
+  upstream_name: คลองบางกอกใหญ่
+  downstream_name: null
+  operator: null
+  revid: 13190849
+  revision_timestamp: '2026-08-14T12:58:31Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B9%81%E0%B8%A7%E0%B8%81
+  subcat_path: *id030
+  matches: []
+- canal_id: wp:1348083
+  name_th: คลองบางพลัด
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 2.0
+  upstream_name: ท้ายหมู่บ้านศรีบัณฑิต ตรงแนวแบ่งเขตระหว่างหมู่ที่ 6 บ้านวัดจันทร์
+    กับหมู่ที่ 7 บ้านวัดสำโรง ตำบลบางกรวย อำเภอบางกรวย จังหวัดนนทบุรี
+  downstream_name: แม่น้ำเจ้าพระยาฝั่งขวาข้างวัดอาวุธวิกสิตาราม
+  operator: null
+  revid: 13190904
+  revision_timestamp: '2026-08-14T13:15:28Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%9E%E0%B8%A5%E0%B8%B1%E0%B8%94
+  subcat_path: &id031
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตบางพลัด
+  matches: []
+- canal_id: wp:664259
+  name_th: คลองบางยี่ขัน
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 2.5
+  upstream_name: คลองบางบำหรุในแขวงบางบำหรุ
+  downstream_name: แม่น้ำเจ้าพระยาในแขวงบางยี่ขัน
+  operator: null
+  revid: 13190924
+  revision_timestamp: '2026-08-14T13:23:03Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%A2%E0%B8%B5%E0%B9%88%E0%B8%82%E0%B8%B1%E0%B8%99
+  subcat_path: *id031
+  matches: []
+- canal_id: wp:667017
+  name_th: คลองช่องนนทรี
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13158505
+  revision_timestamp: '2026-08-01T08:09:21Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%8A%E0%B9%88%E0%B8%AD%E0%B8%87%E0%B8%99%E0%B8%99%E0%B8%97%E0%B8%A3%E0%B8%B5
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตบางรัก
+  matches: []
+- canal_id: wp:32436
+  name_th: คลองรอบกรุง
+  provinces:
+  - กรุงเทพมหานคร
+  lat: 13.745858
+  lon: 100.503702
+  coord_source: page
+  length_km: 3.426
+  upstream_name: แม่น้ำเจ้าพระยา แขวงชนะสงคราม และแขวงวัดสามพระยา เขตพระนคร
+  downstream_name: แม่น้ำเจ้าพระยา แขวงวังบูรพาภิรมย์ เขตพระนคร และแขวงจักรวรรดิ เขตสัมพันธวงศ์
+  operator: null
+  revid: 13158500
+  revision_timestamp: '2026-08-01T08:05:34Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A3%E0%B8%AD%E0%B8%9A%E0%B8%81%E0%B8%A3%E0%B8%B8%E0%B8%87
+  subcat_path: &id032
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตป้อมปราบศัตรูพ่าย
+  matches: []
+- canal_id: wp:32553
+  name_th: คลองมหานาค
+  provinces:
+  - เขตป้อมปราบศัตรูพ่าย กรุงเทพมหานคร
+  lat: 13.75563889
+  lon: 100.50578889
+  coord_source: page
+  length_km: 1.254
+  upstream_name: คลองรอบกรุง บริเวณเชิงสะพานผ่านฟ้าลีลาศ และสะพานมหาดไทยอุทิศ
+  downstream_name: คลองผดุงกรุงเกษม และคลองแสนแสบ บริเวณเชิงสะพานเจริญราษฎร์ 32
+  operator: null
+  revid: 13075638
+  revision_timestamp: '2026-06-21T08:22:59Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A1%E0%B8%AB%E0%B8%B2%E0%B8%99%E0%B8%B2%E0%B8%84
+  subcat_path: *id032
+  matches: []
+- canal_id: wp:32441
+  name_th: คลองคูเมืองเดิม
+  provinces:
+  - กรุงเทพมหานคร
+  lat: 13.744395
+  lon: 100.496417
+  coord_source: page
+  length_km: null
+  upstream_name: แม่น้ำเจ้าพระยา แขวงชนะสงคราม และแขวงวัดสามพระยา เขตพระนคร
+  downstream_name: แม่น้ำเจ้าพระยา แขวงวังบูรพาภิรมย์ เขตพระนคร และแขวงจักรวรรดิ เขตสัมพันธวงศ์
+  operator: null
+  revid: 13158503
+  revision_timestamp: '2026-08-01T08:06:40Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%84%E0%B8%B9%E0%B9%80%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B8%87%E0%B9%80%E0%B8%94%E0%B8%B4%E0%B8%A1
+  subcat_path: &id033
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตพระนคร
+  matches: []
+- canal_id: wp:39869
+  name_th: คลองบางลำพู
+  provinces:
+  - เขตพระนคร กรุงเทพมหานคร
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 1.6
+  upstream_name: แม่น้ำเจ้าพระยา บริเวณป้อมพระสุเมรุ
+  downstream_name: คลองมหานาค และคลองโอ่งอ่าง บริเวณเชิงสะพานผ่านฟ้าลีลาศ
+  operator: null
+  revid: 12781994
+  revision_timestamp: '2026-01-12T05:57:41Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%A5%E0%B8%B3%E0%B8%9E%E0%B8%B9
+  subcat_path: *id033
+  matches: []
+- canal_id: wp:32439
+  name_th: คลองหลอด
+  provinces:
+  - กรุงเทพมหานคร
+  lat: 13.743458
+  lon: 100.495807
+  coord_source: page
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13119841
+  revision_timestamp: '2026-07-14T13:02:43Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AB%E0%B8%A5%E0%B8%AD%E0%B8%94
+  subcat_path: *id033
+  matches: []
+- canal_id: wp:489652
+  name_th: คลองโอ่งอ่าง
+  provinces:
+  - เขตพระนคร กรุงเทพมหานคร
+  lat: 13.745858
+  lon: 100.503702
+  coord_source: page
+  length_km: 1.826
+  upstream_name: คลองมหานาค และคลองบางลำพู บริเวณเชิงสะพานผ่านฟ้าลีลาศ
+  downstream_name: แม่นำ้เจ้าพระยา บริเวณเชิงสะพานพระปกเกล้า
+  operator: null
+  revid: 13299491
+  revision_timestamp: '2026-09-25T18:47:07Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%82%E0%B8%AD%E0%B9%88%E0%B8%87%E0%B8%AD%E0%B9%88%E0%B8%B2%E0%B8%87
+  subcat_path: *id033
+  matches: []
+- canal_id: wp:1257031
+  name_th: คลองบึงขวาง
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13158576
+  revision_timestamp: '2026-08-01T08:43:26Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B6%E0%B8%87%E0%B8%82%E0%B8%A7%E0%B8%B2%E0%B8%87
+  subcat_path: &id034
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตมีนบุรี
+  matches: []
+- canal_id: wp:1257061
+  name_th: คลองสองต้นนุ่น
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13158523
+  revision_timestamp: '2026-08-01T08:27:50Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%AD%E0%B8%87%E0%B8%95%E0%B9%89%E0%B8%99%E0%B8%99%E0%B8%B8%E0%B9%88%E0%B8%99
+  subcat_path: *id034
+  matches: []
+- canal_id: wp:1358224
+  name_th: คลองบางพลีใหญ่
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 11313014
+  revision_timestamp: '2024-02-04T16:14:28Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%9E%E0%B8%A5%E0%B8%B5%E0%B9%83%E0%B8%AB%E0%B8%8D%E0%B9%88
+  subcat_path: &id035
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตลาดกระบัง
+  matches: []
+- canal_id: wp:1256610
+  name_th: คลองลำปลาทิว
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: คลองแสนแสบ
+  downstream_name: สี่แยกหัวตะเข้; คลองประเวศบุรีรมย์ และคลองหัวตะเข้
+  operator: null
+  revid: 13190963
+  revision_timestamp: '2026-08-14T13:47:28Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A5%E0%B8%B3%E0%B8%9B%E0%B8%A5%E0%B8%B2%E0%B8%97%E0%B8%B4%E0%B8%A7
+  subcat_path: *id035
+  matches: []
+- canal_id: wp:359108
+  name_th: คลองหลวงแพ่ง
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 15.35
+  upstream_name: คลองประเวศบุรีรมย์
+  downstream_name: คลองนครเนื่องเขต
+  operator: null
+  revid: 13192853
+  revision_timestamp: '2026-08-15T10:43:55Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AB%E0%B8%A5%E0%B8%A7%E0%B8%87%E0%B9%81%E0%B8%9E%E0%B9%88%E0%B8%87
+  subcat_path: *id035
+  matches: []
+- canal_id: wp:666654
+  name_th: คลองสาทร
+  provinces: []
+  lat: 13.721088
+  lon: 100.528558
+  coord_source: page
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13277671
+  revision_timestamp: '2026-09-17T02:59:42Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%B2%E0%B8%97%E0%B8%A3
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตสาทร
+  matches: []
+- canal_id: wp:539501
+  name_th: คลองหกวาสายล่าง
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: คลองสอง
+  downstream_name: แม่น้ำนครนายก
+  operator: null
+  revid: 12507347
+  revision_timestamp: '2025-08-31T10:24:42Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AB%E0%B8%81%E0%B8%A7%E0%B8%B2%E0%B8%AA%E0%B8%B2%E0%B8%A2%E0%B8%A5%E0%B9%88%E0%B8%B2%E0%B8%87
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตสายไหม
+  matches: []
+- canal_id: wp:399611
+  name_th: คลองนครเนื่องเขต
+  provinces:
+  - ตั้งแต่ เขตหนองจอก กรุงเทพมหานคร ไปถึง ตำบลคลองนครเนื่องเขต อำเภอเมืองฉะเชิงเทรา
+    จังหวัดฉะเชิงเทรา
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 21.2
+  upstream_name: คลองแสนแสบ
+  downstream_name: คลองท่าไข่
+  operator: null
+  revid: 12507876
+  revision_timestamp: '2025-08-31T15:29:57Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%99%E0%B8%84%E0%B8%A3%E0%B9%80%E0%B8%99%E0%B8%B7%E0%B9%88%E0%B8%AD%E0%B8%87%E0%B9%80%E0%B8%82%E0%B8%95
+  subcat_path: &id036
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตหนองจอก
+  matches: []
+- canal_id: wp:539550
+  name_th: คลองสิบ
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10898995
+  revision_timestamp: '2023-07-23T06:09:27Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%B4%E0%B8%9A
+  subcat_path: *id036
+  matches: []
+- canal_id: wp:539554
+  name_th: คลองสิบสอง
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10898999
+  revision_timestamp: '2023-07-23T06:12:23Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%B4%E0%B8%9A%E0%B8%AA%E0%B8%AD%E0%B8%87
+  subcat_path: *id036
+  matches: []
+- canal_id: wp:539558
+  name_th: คลองสิบสาม
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10899000
+  revision_timestamp: '2023-07-23T06:12:30Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%B4%E0%B8%9A%E0%B8%AA%E0%B8%B2%E0%B8%A1
+  subcat_path: *id036
+  matches: []
+- canal_id: wp:539552
+  name_th: คลองสิบเอ็ด
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10898998
+  revision_timestamp: '2023-07-23T06:11:59Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%B4%E0%B8%9A%E0%B9%80%E0%B8%AD%E0%B9%87%E0%B8%94
+  subcat_path: *id036
+  matches: []
+- canal_id: wp:657795
+  name_th: คลองบางตลาด
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 11397382
+  revision_timestamp: '2024-03-23T08:00:23Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%95%E0%B8%A5%E0%B8%B2%E0%B8%94
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในกรุงเทพมหานคร
+  - หมวดหมู่:คลองในเขตหลักสี่
+  matches: []
+- canal_id: wp:541005
+  name_th: คลองสิบเก้า
+  provinces:
+  - อำเภอบางน้ำเปรี้ยว จังหวัดฉะเชิงเทรา
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 18.75
+  upstream_name: คลองสิบเจ็ด
+  downstream_name: แม่น้ำนครนายก
+  operator: null
+  revid: 12507311
+  revision_timestamp: '2025-08-31T09:49:53Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%B4%E0%B8%9A%E0%B9%80%E0%B8%81%E0%B9%89%E0%B8%B2
+  subcat_path: &id037
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดฉะเชิงเทรา
+  - หมวดหมู่:คลองในอำเภอบางน้ำเปรี้ยว
+  matches: []
+- canal_id: wp:539562
+  name_th: คลองสิบเจ็ด
+  provinces:
+  - อำเภอบางน้ำเปรี้ยว จังหวัดฉะเชิงเทรา
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 14.75
+  upstream_name: คลองหกวาสายล่าง
+  downstream_name: คลองแสนแสบ
+  operator: null
+  revid: 12507371
+  revision_timestamp: '2025-08-31T10:39:07Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%B4%E0%B8%9A%E0%B9%80%E0%B8%88%E0%B9%87%E0%B8%94
+  subcat_path: *id037
+  matches: []
+- canal_id: wp:541003
+  name_th: คลองสิบแปด
+  provinces:
+  - อำเภอบางน้ำเปรี้ยว จังหวัดฉะเชิงเทรา
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 19.0
+  upstream_name: คลองสิบเจ็ด
+  downstream_name: คลองแสนแสบ
+  operator: null
+  revid: 12507317
+  revision_timestamp: '2025-08-31T09:56:35Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%B4%E0%B8%9A%E0%B9%81%E0%B8%9B%E0%B8%94
+  subcat_path: *id037
+  matches: []
+- canal_id: wp:539559
+  name_th: คลองสิบห้า
+  provinces:
+  - อำเภอองครักษ์ จังหวัดนครนายก ไปจนถึง อำเภอบางน้ำเปรี้ยว จังหวัดฉะเชิงเทรา
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 27.55
+  upstream_name: คลองแปดวา
+  downstream_name: คลองแสนแสบ
+  operator: null
+  revid: 12507364
+  revision_timestamp: '2025-08-31T10:33:12Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%B4%E0%B8%9A%E0%B8%AB%E0%B9%89%E0%B8%B2
+  subcat_path: *id037
+  matches: []
+- canal_id: wp:1263514
+  name_th: คลองอุดมชลจร
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12507334
+  revision_timestamp: '2025-08-31T10:07:35Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AD%E0%B8%B8%E0%B8%94%E0%B8%A1%E0%B8%8A%E0%B8%A5%E0%B8%88%E0%B8%A3
+  subcat_path: *id037
+  matches: []
+- canal_id: wp:1250625
+  name_th: คลองชายทะเล
+  provinces:
+  - อำเภอเมืองสมุทรปราการ อำเภอบางบ่อ จังหวัดสมุทรปราการ และ อำเภอบางปะกง จังหวัดฉะเชิงเทรา
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: คลองบางปิ้ง
+  downstream_name: คลองสำโรง
+  operator: null
+  revid: 12507903
+  revision_timestamp: '2025-08-31T15:45:17Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%8A%E0%B8%B2%E0%B8%A2%E0%B8%97%E0%B8%B0%E0%B9%80%E0%B8%A5
+  subcat_path: &id038
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดฉะเชิงเทรา
+  - หมวดหมู่:คลองในอำเภอบางปะกง
+  matches: []
+- canal_id: wp:1263532
+  name_th: คลองพระยาสมุทร
+  provinces:
+  - อำเภอบางบ่อ จังหวัดสมุทรปราการ อำเภอบ้านโพธิ์ และ อำเภอบางปะกง จังหวัดฉะเชิงเทรา
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 7.2
+  upstream_name: คลองประเวศบุรีรมย์
+  downstream_name: คลองฉะบังคลองต้นโพธิ์
+  operator: null
+  revid: 12507925
+  revision_timestamp: '2025-08-31T15:55:03Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B8%A2%E0%B8%B2%E0%B8%AA%E0%B8%A1%E0%B8%B8%E0%B8%97%E0%B8%A3
+  subcat_path: *id038
+  matches: []
+- canal_id: wp:1267750
+  name_th: คลองท่าลาด
+  provinces:
+  - อำเภอพนมสารคาม
+  - อำเภอราชสาส์น และอำเภอบางคล้า จังหวัดฉะเชิงเทรา
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: บ้านปากระบม คลองสียัดและคลองระบมมาบรรจบกัน
+  downstream_name: ปากน้ำโจ้โล้
+  operator: null
+  revid: 12179697
+  revision_timestamp: '2025-03-05T08:49:57Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%97%E0%B9%88%E0%B8%B2%E0%B8%A5%E0%B8%B2%E0%B8%94
+  subcat_path: &id039
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดฉะเชิงเทรา
+  - หมวดหมู่:คลองในอำเภอพนมสารคาม
+  matches: []
+- canal_id: wp:1267758
+  name_th: คลองระบม
+  provinces:
+  - อำเภอสนามชัยเขตและอำเภอพนมสารคาม จังหวัดฉะเชิงเทรา
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: อ่างเก็บน้ำคลองระบม
+  downstream_name: บ้านปากระบม
+  operator: null
+  revid: 12905049
+  revision_timestamp: '2026-03-20T12:13:25Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A3%E0%B8%B0%E0%B8%9A%E0%B8%A1
+  subcat_path: *id039
+  matches: []
+- canal_id: wp:1267759
+  name_th: คลองสียัด
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10638686
+  revision_timestamp: '2023-03-17T17:52:55Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%B5%E0%B8%A2%E0%B8%B1%E0%B8%94
+  subcat_path: *id039
+  matches:
+  - dam:hii_dam:30
+  - dam:rid_res_table:สียัด
+  - gate:hii_watergate:709216
+- canal_id: wp:358955
+  name_th: คลองเจดีย์บูชา
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12798915
+  revision_timestamp: '2026-01-21T01:01:12Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%80%E0%B8%88%E0%B8%94%E0%B8%B5%E0%B8%A2%E0%B9%8C%E0%B8%9A%E0%B8%B9%E0%B8%8A%E0%B8%B2
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดนครปฐม
+  - หมวดหมู่:คลองในอำเภอนครชัยศรี
+  matches: []
+- canal_id: wp:1292339
+  name_th: คลองหม่อมแช่ม
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 11226412
+  revision_timestamp: '2023-12-21T02:57:02Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AB%E0%B8%A1%E0%B9%88%E0%B8%AD%E0%B8%A1%E0%B9%81%E0%B8%8A%E0%B9%88%E0%B8%A1
+  subcat_path: &id040
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดนครปฐม
+  - หมวดหมู่:คลองในอำเภอบางเลน
+  matches: []
+- canal_id: wp:1275793
+  name_th: คลองบางภาษี
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 11771888
+  revision_timestamp: '2024-09-21T14:14:34Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%A0%E0%B8%B2%E0%B8%A9%E0%B8%B5
+  subcat_path: *id040
+  matches: []
+- canal_id: wp:1245675
+  name_th: คลองพระพิมล
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 11174679
+  revision_timestamp: '2023-11-30T11:07:52Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B8%9E%E0%B8%B4%E0%B8%A1%E0%B8%A5
+  subcat_path: *id040
+  matches:
+  - gate:hii_watergate:24
+  - gauge:thaiwater_rain:BKK018
+  - gauge:thaiwater_waterlevel:BKK018
+  - rain_gauge:thaiwater_rain_24h:24
+- canal_id: wp:1292347
+  name_th: คลองขุนศรี
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 11174628
+  revision_timestamp: '2023-11-30T10:51:32Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%82%E0%B8%B8%E0%B8%99%E0%B8%A8%E0%B8%A3%E0%B8%B5
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดนนทบุรี
+  - หมวดหมู่:คลองในอำเภอไทรน้อย
+  matches: []
+- canal_id: wp:408347
+  name_th: คลองบางกรวย
+  provinces: []
+  lat: 13.818611
+  lon: 100.500833
+  coord_source: page
+  length_km: 3.0
+  upstream_name: แม่น้ำเจ้าพระยา
+  downstream_name: คลองบางกอกน้อย
+  operator: null
+  revid: 13190600
+  revision_timestamp: '2026-08-14T10:35:20Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%81%E0%B8%A3%E0%B8%A7%E0%B8%A2
+  subcat_path: &id041
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดนนทบุรี
+  - หมวดหมู่:คลองในอำเภอบางกรวย
+  matches: []
+- canal_id: wp:409012
+  name_th: คลองอ้อมนนท์
+  provinces: []
+  lat: 13.8446573
+  lon: 100.497312
+  coord_source: page
+  length_km: 17.5
+  upstream_name: แม่น้ำเจ้าพระยา อำเภอเมืองนนทบุรี
+  downstream_name: คลองบางกรวย
+  operator: null
+  revid: 13301380
+  revision_timestamp: '2026-09-26T04:13:29Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AD%E0%B9%89%E0%B8%AD%E0%B8%A1%E0%B8%99%E0%B8%99%E0%B8%97%E0%B9%8C
+  subcat_path: *id041
+  matches: []
+- canal_id: wp:1245692
+  name_th: คลองบางบัวทอง
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12033691
+  revision_timestamp: '2024-12-20T15:44:10Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%9A%E0%B8%B1%E0%B8%A7%E0%B8%97%E0%B8%AD%E0%B8%87
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดนนทบุรี
+  - หมวดหมู่:คลองในอำเภอบางบัวทอง
+  matches: []
+- canal_id: wp:1258212
+  name_th: คลองบางใหญ่ (จังหวัดนนทบุรี)
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 13048786
+  revision_timestamp: '2026-06-06T13:20:25Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B9%83%E0%B8%AB%E0%B8%8D%E0%B9%88_%28%E0%B8%88%E0%B8%B1%E0%B8%87%E0%B8%AB%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%99%E0%B8%99%E0%B8%97%E0%B8%9A%E0%B8%B8%E0%B8%A3%E0%B8%B5%29
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดนนทบุรี
+  - หมวดหมู่:คลองในอำเภอบางใหญ่
+  matches: []
+- canal_id: wp:1367524
+  name_th: คลองบางพูด
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 11313018
+  revision_timestamp: '2024-02-04T16:15:41Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%9E%E0%B8%B9%E0%B8%94
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดนนทบุรี
+  - หมวดหมู่:คลองในอำเภอปากเกร็ด
+  matches: []
+- canal_id: wp:1317541
+  name_th: คลองบางตะนาวศรี
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 4.0
+  upstream_name: ตำบลตลาดขวัญ
+  downstream_name: null
+  operator: null
+  revid: 12975430
+  revision_timestamp: '2026-04-29T14:29:36Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%95%E0%B8%B0%E0%B8%99%E0%B8%B2%E0%B8%A7%E0%B8%A8%E0%B8%A3%E0%B8%B5
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดนนทบุรี
+  - หมวดหมู่:คลองในอำเภอเมืองนนทบุรี
+  matches: []
+- canal_id: wp:539538
+  name_th: คลองเจ็ด
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10545244
+  revision_timestamp: '2023-01-22T06:23:58Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%80%E0%B8%88%E0%B9%87%E0%B8%94
+  subcat_path: &id042
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดปทุมธานี
+  - หมวดหมู่:คลองในอำเภอคลองหลวง
+  matches: []
+- canal_id: wp:539492
+  name_th: คลองระพีพัฒน์แยกตก
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10545290
+  revision_timestamp: '2023-01-22T06:56:14Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A3%E0%B8%B0%E0%B8%9E%E0%B8%B5%E0%B8%9E%E0%B8%B1%E0%B8%92%E0%B8%99%E0%B9%8C%E0%B9%81%E0%B8%A2%E0%B8%81%E0%B8%95%E0%B8%81
+  subcat_path: *id042
+  matches:
+  - gate:hii_watergate:29
+  - gauge:thaiwater_waterlevel:CAN001
+  - rain_gauge:thaiwater_rain_24h:29
+- canal_id: wp:539518
+  name_th: คลองสาม
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10545271
+  revision_timestamp: '2023-01-22T06:46:12Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%B2%E0%B8%A1
+  subcat_path: *id042
+  matches: []
+- canal_id: wp:539520
+  name_th: คลองสี่
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10545284
+  revision_timestamp: '2023-01-22T06:50:39Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%B5%E0%B9%88
+  subcat_path: *id042
+  matches: []
+- canal_id: wp:539536
+  name_th: คลองหก
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10545292
+  revision_timestamp: '2023-01-22T06:57:08Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AB%E0%B8%81
+  subcat_path: *id042
+  matches: []
+- canal_id: wp:539493
+  name_th: คลองหกวาสายบน
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10545305
+  revision_timestamp: '2023-01-22T07:06:15Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AB%E0%B8%81%E0%B8%A7%E0%B8%B2%E0%B8%AA%E0%B8%B2%E0%B8%A2%E0%B8%9A%E0%B8%99
+  subcat_path: *id042
+  matches: []
+- canal_id: wp:539514
+  name_th: คลองหนึ่ง
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10545288
+  revision_timestamp: '2023-01-22T06:55:26Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AB%E0%B8%99%E0%B8%B6%E0%B9%88%E0%B8%87
+  subcat_path: *id042
+  matches: []
+- canal_id: wp:539522
+  name_th: คลองห้า
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12190044
+  revision_timestamp: '2025-03-11T13:17:23Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AB%E0%B9%89%E0%B8%B2
+  subcat_path: *id042
+  matches: []
+- canal_id: wp:1253041
+  name_th: คลองบางหลวงเชียงราก
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12012817
+  revision_timestamp: '2024-12-11T20:15:11Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%AB%E0%B8%A5%E0%B8%A7%E0%B8%87%E0%B9%80%E0%B8%8A%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B8%A3%E0%B8%B2%E0%B8%81
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดปทุมธานี
+  - หมวดหมู่:คลองในอำเภอเมืองปทุมธานี
+  matches: []
+- canal_id: wp:539490
+  name_th: คลองระพีพัฒน์แยกใต้
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10545291
+  revision_timestamp: '2023-01-22T06:56:27Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A3%E0%B8%B0%E0%B8%9E%E0%B8%B5%E0%B8%9E%E0%B8%B1%E0%B8%92%E0%B8%99%E0%B9%8C%E0%B9%81%E0%B8%A2%E0%B8%81%E0%B9%83%E0%B8%95%E0%B9%89
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดปทุมธานี
+  - หมวดหมู่:คลองในอำเภอลำลูกกา
+  matches: []
+- canal_id: wp:1448891
+  name_th: คลองบ้านพร้าว
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12041493
+  revision_timestamp: '2024-12-24T17:26:01Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B9%89%E0%B8%B2%E0%B8%99%E0%B8%9E%E0%B8%A3%E0%B9%89%E0%B8%B2%E0%B8%A7
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดปทุมธานี
+  - หมวดหมู่:คลองในอำเภอสามโคก
+  matches:
+  - rain_gauge:thaiwater_rain_24h:501549
+- canal_id: wp:1253047
+  name_th: คลองบางบาล
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12265045
+  revision_timestamp: '2025-04-20T03:06:57Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%A5
+  subcat_path: &id043
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดพระนครศรีอยุธยา
+  - หมวดหมู่:คลองในอำเภอบางบาล
+  matches:
+  - gate:hii_watergate:47
+  - gauge:thaiwater_waterlevel:CPY010
+  - rain_gauge:thaiwater_rain_24h:47
+- canal_id: wp:1272278
+  name_th: คลองมหาพราหมณ์
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10545958
+  revision_timestamp: '2023-01-22T10:45:57Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A1%E0%B8%AB%E0%B8%B2%E0%B8%9E%E0%B8%A3%E0%B8%B2%E0%B8%AB%E0%B8%A1%E0%B8%93%E0%B9%8C
+  subcat_path: *id043
+  matches: []
+- canal_id: wp:847287
+  name_th: คลองกุฎีดาว
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12804713
+  revision_timestamp: '2026-01-24T12:15:24Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%81%E0%B8%B8%E0%B8%8E%E0%B8%B5%E0%B8%94%E0%B8%B2%E0%B8%A7
+  subcat_path: &id044
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดพระนครศรีอยุธยา
+  - หมวดหมู่:คลองในอำเภอพระนครศรีอยุธยา
+  matches: []
+- canal_id: wp:1449711
+  name_th: คลองหันตรา
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12050407
+  revision_timestamp: '2024-12-29T10:46:54Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AB%E0%B8%B1%E0%B8%99%E0%B8%95%E0%B8%A3%E0%B8%B2
+  subcat_path: *id044
+  matches: []
+- canal_id: wp:1271200
+  name_th: คลองคูจาม
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12719467
+  revision_timestamp: '2025-12-15T10:07:48Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%84%E0%B8%B9%E0%B8%88%E0%B8%B2%E0%B8%A1
+  subcat_path: *id044
+  matches: []
+- canal_id: wp:845949
+  name_th: คลองฉะไกรน้อย
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10545937
+  revision_timestamp: '2023-01-22T10:36:22Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%89%E0%B8%B0%E0%B9%84%E0%B8%81%E0%B8%A3%E0%B8%99%E0%B9%89%E0%B8%AD%E0%B8%A2
+  subcat_path: *id044
+  matches: []
+- canal_id: wp:845854
+  name_th: คลองฉะไกรใหญ่
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 11078666
+  revision_timestamp: '2023-10-18T19:05:37Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%89%E0%B8%B0%E0%B9%84%E0%B8%81%E0%B8%A3%E0%B9%83%E0%B8%AB%E0%B8%8D%E0%B9%88
+  subcat_path: *id044
+  matches: []
+- canal_id: wp:1270843
+  name_th: คลองตะเคียน
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12400569
+  revision_timestamp: '2025-07-03T05:24:41Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%95%E0%B8%B0%E0%B9%80%E0%B8%84%E0%B8%B5%E0%B8%A2%E0%B8%99
+  subcat_path: *id044
+  matches: []
+- canal_id: wp:846075
+  name_th: คลองในไก่
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12929559
+  revision_timestamp: '2026-04-02T06:26:29Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B9%83%E0%B8%99%E0%B9%84%E0%B8%81%E0%B9%88
+  subcat_path: *id044
+  matches: []
+- canal_id: wp:846107
+  name_th: คลองประตูข้าวเปลือก
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12299778
+  revision_timestamp: '2025-05-08T08:05:16Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%95%E0%B8%B9%E0%B8%82%E0%B9%89%E0%B8%B2%E0%B8%A7%E0%B9%80%E0%B8%9B%E0%B8%A5%E0%B8%B7%E0%B8%AD%E0%B8%81
+  subcat_path: *id044
+  matches: []
+- canal_id: wp:845931
+  name_th: คลองประตูเทพหมี
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12148707
+  revision_timestamp: '2025-02-15T06:32:42Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%95%E0%B8%B9%E0%B9%80%E0%B8%97%E0%B8%9E%E0%B8%AB%E0%B8%A1%E0%B8%B5
+  subcat_path: *id044
+  matches: []
+- canal_id: wp:848104
+  name_th: คลองวัดกุฎิ
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12614735
+  revision_timestamp: '2025-10-21T14:49:03Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%81%E0%B8%B8%E0%B8%8E%E0%B8%B4
+  subcat_path: *id044
+  matches: []
+- canal_id: wp:847512
+  name_th: คลองสระบัว
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12641958
+  revision_timestamp: '2025-11-05T10:00:46Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%A3%E0%B8%B0%E0%B8%9A%E0%B8%B1%E0%B8%A7
+  subcat_path: *id044
+  matches: []
+- canal_id: wp:847491
+  name_th: คลองสวนพลู
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 10545972
+  revision_timestamp: '2023-01-22T10:48:54Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%AA%E0%B8%A7%E0%B8%99%E0%B8%9E%E0%B8%A5%E0%B8%B9
+  subcat_path: *id044
+  matches: []
+- canal_id: wp:1249320
+  name_th: คลองด่าน (จังหวัดสมุทรปราการ)
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: 14.7
+  upstream_name: อำเภอบางบ่อ จังหวัดสมุทรปราการ
+  downstream_name: อ่าวไทย
+  operator: null
+  revid: 12950354
+  revision_timestamp: '2026-04-15T04:54:14Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%94%E0%B9%88%E0%B8%B2%E0%B8%99_%28%E0%B8%88%E0%B8%B1%E0%B8%87%E0%B8%AB%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%AA%E0%B8%A1%E0%B8%B8%E0%B8%97%E0%B8%A3%E0%B8%9B%E0%B8%A3%E0%B8%B2%E0%B8%81%E0%B8%B2%E0%B8%A3%29
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดสมุทรปราการ
+  - หมวดหมู่:คลองในอำเภอบางบ่อ
+  matches: []
+- canal_id: wp:1252757
+  name_th: คลองทับนาง
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 12808203
+  revision_timestamp: '2026-01-26T14:05:13Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%97%E0%B8%B1%E0%B8%9A%E0%B8%99%E0%B8%B2%E0%B8%87
+  subcat_path: &id045
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดสมุทรปราการ
+  - หมวดหมู่:คลองในอำเภอบางพลี
+  matches: []
+- canal_id: wp:1245655
+  name_th: คลองบางโฉลง
+  provinces: []
+  lat: null
+  lon: null
+  coord_source: none
+  length_km: null
+  upstream_name: null
+  downstream_name: null
+  operator: null
+  revid: 11771894
+  revision_timestamp: '2024-09-21T14:17:20Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B9%82%E0%B8%89%E0%B8%A5%E0%B8%87
+  subcat_path: *id045
+  matches: []
+- canal_id: wp:1250618
+  name_th: คลองบางนางเกรง
+  provinces: []
+  lat: 13.65416667
+  lon: 100.55416667
+  coord_source: page
+  length_km: null
+  upstream_name: แม่น้ำเจ้าพระยา
+  downstream_name: null
+  operator: null
+  revid: 13127195
+  revision_timestamp: '2026-07-18T05:56:27Z'
+  licence: CC BY-SA 4.0
+  tag: RELAYED
+  url: https://th.wikipedia.org/wiki/%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%E0%B8%9A%E0%B8%B2%E0%B8%87%E0%B8%99%E0%B8%B2%E0%B8%87%E0%B9%80%E0%B8%81%E0%B8%A3%E0%B8%87
+  subcat_path:
+  - หมวดหมู่:คลองในประเทศไทย
+  - หมวดหมู่:คลองในจังหวัดสมุทรปราการ
+  - หมวดหมู่:คลองในอำเภอเมืองสมุทรปราการ
+  matches: []

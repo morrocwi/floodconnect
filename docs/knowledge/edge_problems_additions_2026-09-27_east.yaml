@@ -1,0 +1,289 @@
+# edge_problems_additions_2026-09-27_east.yaml -- NEW rows for docs/knowledge/edge_problems.yaml
+# (same schema as the existing rows: src_id + dst_id (a class row keeps src_id and explains the class
+# in edge_kind, exactly like the existing AG_DDPM/dst_prefix row), problem_name_academic, problem_th,
+# typical_failure, evidence[{source,tag}], severity_tag, open_questions). Written 2026-09-27 by the
+# "หนองจอก -> เจ้าพระยา / บางปะกง" extraction task (see
+# docs/knowledge/EXTRACT_NONGCHOK_TO_CHAOPHRAYA_BANGPAKONG_2026-09-27.md for page-cited detail).
+#
+# WRITES A NEW FILE ONLY -- does not edit edge_problems.yaml (another worker is the committer).
+# Every endpoint id below exists in docs/knowledge/water_system_dag.mmd as of this check (grepped);
+# tools/dag/edge_problems.py will still fail loudly if any is missing when the committer merges.
+#
+# Inclusion rule applied (task instruction): a row is added ONLY when the problem is corroborated by
+# >=2 independent sources, or by one VERIFIED primary source (an official document read directly).
+# Documents cited (short keys):
+#   A = Imsawas, K. (2562/2019) research report, Burapha Univ., "การจัดการระบบระบายน้ำแบบบูรณาการ...
+#       พื้นที่เศรษฐกิจพิเศษภาคตะวันออก" (99 pp.)                                  -> tag RELAYED (peer research)
+#   B = Tepparos, S. (2564/2021) Chula thesis, "การวิเคราะห์การหน่วงน้ำ...ด้วยการตัดสินใจแบบหลายเกณฑ์" (152 pp.)
+#       -> tag RELAYED; B's ch.2.3 reproduces the DDS 2561 flood-prevention action plan, so B is a
+#       SECONDARY carrier of DDS text (same author-lineage as D, NOT an independent source of it).
+#   C = BMA City Planning & Urban Development Dept. (2565/2022) "การออกแบบเมืองเพื่อรับมือภัยพิบัติ
+#       ในเขตกรุงเทพมหานคร" (72 pp.)                                              -> tag VERIFIED-official-secondary
+#   D = BMA Dept. of Drainage & Sewerage (DDS) "แผนปฏิบัติราชการประจำปี พ.ศ. 2567" (85 pp.)
+#       -> tag VERIFIED (official primary; NOTE its running footers still read "พ.ศ. 2565" and its
+#          tunnel table is dated 28 Oct 2565, so the vintage of its statistics is OPEN 2565-vs-2567).
+#
+# Toledo: no equation in this file. All numbers are copied verbatim with page refs.
+
+rows:
+  # ---------------------------------------------------------------------------------------------
+  # 1. Level-of-service mismatch: 468 km2 outside the King's dyke is FORMALLY a floodway while it is
+  #    the repeat-flood, fast-urbanising eastern districts (หนองจอก/คลองสามวา/ลาดกระบัง/มีนบุรี).
+  # ---------------------------------------------------------------------------------------------
+  - src_id: "AS_EAST_UPPER"
+    dst_id: "AS_KING_DIKE"
+    problem_name_academic: "Level-of-service mismatch: designated floodway vs. de-facto urban land use (sacrificial-zone designation without a matching service standard)"
+    problem_th: "ระดับการให้บริการไม่สอดคล้อง: พื้นที่ 468 ตร.กม. นอกคันกั้นน้ำพระราชดำริถูกกำหนดเป็น 'ทางน้ำหลาก (Flood way)' ทั้งที่เป็นเขตเมืองที่ท่วมซ้ำซากและกำลังขยายตัว"
+    typical_failure: >
+      The DDS plan defines three protection areas: 650 km2 inside the eastern King's dyke, 450 km2
+      Thonburi, and 468 km2 "พื้นที่ด้านตะวันออกนอกคันกั้นน้ำพระราชดำริ ... ซึ่งกรุงเทพมหานครใช้เป็นพื้นที่ทางน้ำหลาก
+      ตามธรรมชาติ (Flood way)" so that tung water from the north/east reaches the sea without entering the
+      inner polder. The same districts (หนองจอก คลองสามวา ลาดกระบัง มีนบุรี) are DDPM level-1 repeat-flood areas
+      (7-9 flood years in 10). The 2567 plan funds only a 70 MTHB consultant to "สำรวจจัดทำแผนหลักและออกแบบ
+      ระบบป้องกันน้ำท่วมและระบบระบายน้ำพื้นที่ฝั่งตะวันออก...นอกแนวคันกั้นน้ำพระราชดำริ" -- i.e. no completed
+      master plan exists yet for the floodway zone. Typical failure: residents of a floodway zone receive the
+      inner-city drainage expectation (120-min road clearance KPI) while the zone's design function is to hold
+      water; complaints and gate-opening pressure follow (see row 6).
+    evidence:
+      - source: "D p.12 (three protection areas; 468 km2 Flood way quote)"
+        tag: "VERIFIED"
+      - source: "D p.33 project 113036 (70.000 MTHB, 2567: master plan + design for east area OUTSIDE the dyke -- implies none exists)"
+        tag: "VERIFIED"
+      - source: "C p.17 (DDPM: หนองจอก/คลองสามวา/ลาดกระบัง/มีนบุรี = พื้นที่เสี่ยงอุทกภัยระดับ 1, ท่วมซ้ำซาก 7-9 ปี)"
+        tag: "RELAYED (C relays DDPM)"
+      - source: "C p.20 (districts คลองสามวา/มีนบุรี/ลาดกระบัง/สะพานสูง/ประเวศ/สวนหลวง/บางกะปิ at <0 to +1 m MSL)"
+        tag: "RELAYED (C relays กรมแผนที่ทหาร via a property website)"
+      - source: "docs/knowledge/card_thirdparty_east_outlets_multi_outlet_2026-09-27.md (monitor.bangkok.go.th master-plan page: area outside dyke 'urbanising faster than planned')"
+        tag: "VERIFIED (that task)"
+    severity_tag: "VERIFIED (D) + RELAYED (C) -- 3 documents, 2 independent lineages (DDS, DDPM)"
+    open_questions: >
+      OPEN: is the 468 km2 figure the same polygon as monitor.bangkok.go.th's master-plan area? OPEN: what
+      level of service (return period / hours) does BMA formally promise INSIDE the floodway zone -- none is
+      stated in D. OPEN: Suvarnabhumi retention inside this zone is not mentioned in A-D at all.
+
+  # ---------------------------------------------------------------------------------------------
+  # 2. Land subsidence -> loss of dyke crest and of drainage head (the plan itself calls it the most
+  #    worrying cause of failure of already-built and future works).
+  # ---------------------------------------------------------------------------------------------
+  - src_id: "AS_KING_DIKE"
+    dst_id: "AS_EAST_UPPER"
+    problem_name_academic: "Land subsidence-induced protection loss (dyke crest settlement + loss of gravity head)"
+    problem_th: "แผ่นดินทรุดทำให้คันกั้นน้ำเตี้ยลงและสูญเสียหัวน้ำสำหรับการไหลตามแรงโน้มถ่วง"
+    typical_failure: >
+      The eastern King's dyke was built (2527-2528) to +3.00 m MSL; "คันกั้นน้ำบางส่วนมีการทรุดตัว ทำให้คันกั้นน้ำ
+      มีระดับลดลงมีความสูงที่ +2.00 ม.รทก. ถึง +2.50 ม.รทก." and had to be raised after 2554 (+3.95 / +3.55 /
+      +3.00 / +2.50 by segment). DDS (via B, 2561 plan) and D (2567 plan) both state verbatim that subsidence is
+      "ปัญหาที่น่าวิตกที่สุด เนื่องจากเป็นสาเหตุที่ทำให้ระบบป้องกันน้ำท่วมและระบายน้ำที่ลงทุนไปแล้วและจะลงทุนอีกในอนาคต
+      ประสบความล้มเหลว หรือลดประสิทธิภาพ". Ground in the central/east/south sits at 0.00 to +0.50 m MSL, some
+      below MSL (รามคำแหง named), so gravity flow to canals/river is "ทำได้ยากและมีประสิทธิภาพต่ำ" -- the
+      system is pump-dependent by construction. Typical failure: a dyke segment or canal bank that met its
+      design crest when built no longer does; the failure is silent until a high-water year.
+    evidence:
+      - source: "D p.10 (dyke +3.00 design; subsided to +2.00-+2.50; post-2554 raising by segment)"
+        tag: "VERIFIED"
+      - source: "D p.8 (subsidence = most worrying cause of failure of invested works)"
+        tag: "VERIFIED"
+      - source: "D p.10 (ground 0.00-+0.50 m MSL, below MSL at รามคำแหง; gravity flow low-efficiency)"
+        tag: "VERIFIED"
+      - source: "B p.37 (same 'most worrying' text, DDS 2561 plan) and B p.35 (east-side floods 2525/2526/2538/2549/2554 linked to land slope from subsidence)"
+        tag: "RELAYED (B relays DDS 2561 -- same lineage as D)"
+      - source: "C p.12 and p.20 (subsidence ~1 cm/yr from groundwater; sea level +1.3 cm/yr at 4 river mouths incl. บางปะกง)"
+        tag: "RELAYED (C relays IPCC / กรมแผนที่ทหาร)"
+      - source: "D p.27 (subsidence 1-2 cm/yr, Bang Khun Thian coast)"
+        tag: "VERIFIED"
+    severity_tag: "VERIFIED (D primary) -- corroborated by C (independent lineage)"
+    open_questions: >
+      CONTRADICTED rate: C says ~1 cm/yr (city), D p.27 says 1-2 cm/yr (coast) -- both kept, different
+      locations/years. OPEN: current crest survey of the dyke segment along สุวินทวงศ์/ร่มเกล้า (nearest to
+      Sammakorn) -- no post-2554 survey figure in A-D.
+
+  # ---------------------------------------------------------------------------------------------
+  # 3. Conveyance deficit locked in by canal encroachment (cannot widen/dredge; pumps capped by canals).
+  # ---------------------------------------------------------------------------------------------
+  - src_id: "AS_EAST_UPPER"
+    dst_id: "AS_SSB_BK"
+    problem_name_academic: "Conveyance deficit locked in by riparian encroachment (canal cross-section cannot be restored; pumping capacity is capped by canal delivery)"
+    problem_th: "ความจุลำเลียงน้ำขาดแคลนและถูกล็อกด้วยการรุกล้ำคูคลอง (ขยาย/ขุดลอกไม่ได้ กำลังสูบถูกจำกัดด้วยคลองที่ส่งน้ำมาไม่ทัน)"
+    typical_failure: >
+      D: "การระบายน้ำออกจากพื้นที่โดยขีดความสามารถของสถานีสูบน้ำและคลองระบายน้ำจึงมีความจำเป็น แต่ก็มีขีดจำกัดจากการที่
+      ไม่สามารถปรับปรุงขยายความกว้างของคลองได้จึงทำให้เพิ่มขีดความสามารถการระบายน้ำไม่ได้ เนื่องจากปัญหาการรุกล้ำ
+      คู คลอง สาธารณะ". DDS (via B): canals "ถูกรุกล้ำจนแคบไม่สามารถขุดลอกได้ลึกเพียงพอ นอกจากจะต้องสร้างเขื่อน
+      คอนกรีตเสริมเหล็กริมคลองก่อนเท่านั้น"; pipes are "ขนาดเล็กกว่าความต้องการของแผนหลัก". Hence the 2567 plan's
+      largest east-path line item is a canal WALL, not a pump: เขื่อน ค.ส.ล. คลองแสนแสบ ปตร.มีนบุรี -> ปตร.หนองจอก
+      (359.98 MTHB in 2567 of 1,799.90 MTHB 2567-2571). Typical failure: pump stations at the outlet are rated
+      far above what the upstream canal reach can deliver in a storm, so rated outlet capacity overstates
+      real drainage rate for หนองจอก-มีนบุรี water.
+    evidence:
+      - source: "D p.10 (cannot widen canals -> cannot raise drainage capacity; encroachment)"
+        tag: "VERIFIED"
+      - source: "D p.35 / p.49 project 113055 (เขื่อน ค.ส.ล. + ระบบระบายน้ำเสีย คลองแสนแสบ ปตร.มีนบุรี-ปตร.หนองจอก, 359.980 MTHB 2567, total 1,799.900 MTHB 2567-2571)"
+        tag: "VERIFIED"
+      - source: "B p.37 and p.49 §1.1 (encroachment prevents dredging; pipes undersized vs master plan; garbage at intakes and pump screens)"
+        tag: "RELAYED (DDS 2561 via B)"
+      - source: "C p.13 items 8-10 (insufficient drainage channels; garbage blockage; canal encroachment)"
+        tag: "VERIFIED-official-secondary (BMA planning dept.)"
+      - source: "A p.86 and p.89 §5.1.1.3 (EEC towns: pipe count/size + garbage/sediment blockage make drainage fail under 40-46 mm/hr; enlarging pipes is 'เบื้องต้น' only)"
+        tag: "RELAYED (peer research, different geography -- mechanism corroboration only)"
+    severity_tag: "VERIFIED (D primary) -- corroborated by B, C (BMA lineages) and A (independent, mechanism-level)"
+    open_questions: >
+      OPEN: actual conveyance (m3/s) of คลองแสนแสบ between ปตร.หนองจอก and ปตร.มีนบุรี -- no figure in A-D or in
+      sources/capacity_ledger.yaml. OPEN: whether the 2567-2571 wall project changes the design discharge (D
+      gives budget and reach only, no m3/s).
+
+  # ---------------------------------------------------------------------------------------------
+  # 4. Retention (แก้มลิง) deficit on the east side -- BMA's own arithmetic: need 13 M m3, have 7.67 M m3.
+  # ---------------------------------------------------------------------------------------------
+  - src_id: "AS_PONDS"
+    dst_id: "AS_SSB_BK"
+    edge_kind: "WATER (no direct AS_PONDS->AS_SSB_BK edge exists in water_system_dag.mmd -- a 'no-edge' row per tools/dag/edge_problems.py: both nodes exist. Documents the CLASS of east-side retention nodes AS_PONDS/AS_SPS_POND/AS_RETENTION_12THUNG feeding the Saen Saep chain; AS_PONDS is the Sammakorn instance, listed by D as แก้มลิง #27 'บึงรับน้ำหมู่บ้านสัมมากร 227,200 ลบ.ม.')"
+    problem_name_academic: "Retention deficit (planned detention volume not secured; reliance on private ponds)"
+    problem_th: "แก้มลิงขาดแคลน: ฝั่งตะวันออกต้องการ 13 ล้าน ลบ.ม. จัดหาได้ 7.67 ล้าน ลบ.ม. ขาดอีก 5.33 ล้าน ลบ.ม. และส่วนหนึ่งพึ่งบึงเอกชน"
+    typical_failure: >
+      D: "พื้นที่ด้านตะวันออกของกรุงเทพมหานคร ต้องการแก้มลิงเพื่อรองรับน้ำเพื่อป้องกันน้ำท่วมประมาณ 13 ล้านลูกบาศก์เมตร
+      แต่ขณะนี้สามารถจัดหาได้ 33 แห่ง เก็บกักน้ำได้ประมาณ 7.67 ล้านลูกบาศก์เมตร ต้องการเพิ่มเติมอีกประมาณ 5.33 ล้าน
+      ลูกบาศก์เมตร". Of 36 secured sites (13.70 M m3 city-wide) 6.03 M m3 is the single Thonburi คลองมหาชัย-สนามชัย
+      project; on the east side the largest is บึงหนองบอน 5.0 M m3 -- the rest are small (Sammakorn 227,200;
+      Water Banks 1,000-10,000). Several are PRIVATE estate lakes (สัมมากร, ศุภาลัย มีนบุรี, เมืองทอง) used by
+      permission. Sites "to be acquired" include 3.6 M m3 บึงฟิชชิ่งปาร์ค, 1.2 M m3 หนองปลาหมอ, 0.8 M m3 ลำหิน
+      (outside the dyke) and expropriation-pending คลองคู้บอน 728,000 / คลองบางชัน 218,400 m3. Typical failure:
+      the water-balance term "retention" that BMA's own plan assumes is ~59% present on the east side; the
+      Sammakorn pond is simultaneously the estate's asset and BMA's counted retention.
+    evidence:
+      - source: "D p.23 (13 M needed / 7.67 M secured / 5.33 M deficit; east side)"
+        tag: "VERIFIED"
+      - source: "D p.21-22 (36 sites, 13,697,205 m3 total; item 27 บึงรับน้ำหมู่บ้านสัมมากร 227,200 m3; 2 under construction 137,700 m3)"
+        tag: "VERIFIED"
+      - source: "D p.24 (private estate ponds used by permission: สัมมากร สะพานสูง, ศุภาลัย มีนบุรี, เมืองทอง ประเวศ; land-allotment rule amendment pending at กรมที่ดิน)"
+        tag: "VERIFIED"
+      - source: "B p.41 item 6 (2561: 26 sites, 13.07 M m3 city-wide -- older reading, kept)"
+        tag: "RELAYED (DDS 2561 via B)"
+      - source: "B p.5-6 and p.122-124 (expert MCDA: land drainage 33% / land use 22% / elevation 19% / infiltration 16% / ownership 10%; state land more applicable than private -- ownership is the binding constraint)"
+        tag: "RELAYED (13-expert questionnaire, not a measurement)"
+      - source: "docs/CAPACITY.md §4 (Sammakorn 5 ponds 142 rai 227,000 m3, news) -- matches D's 227,200 within rounding"
+        tag: "RELAYED (repo)"
+    severity_tag: "VERIFIED (D primary arithmetic) -- corroborated by B (older count) and repo"
+    open_questions: >
+      OPEN: how the 13 M m3 requirement was derived (design storm, area) -- D gives the number only; any
+      equation behind it is 'not yet in Toledo'. OPEN: none of A-D mentions Suvarnabhumi/หนองงูเห่า retention
+      (TODOLIST #28 stays open). OPEN: whether the 33 east sites include any outside the dyke (D lists outside-dyke
+      sites only under 'to be acquired').
+
+  # ---------------------------------------------------------------------------------------------
+  # 5. Outlet stage dependence / backwater at the Chao Phraya outlets (and, by analogy, Bang Pakong).
+  # ---------------------------------------------------------------------------------------------
+  - src_id: "AS_PKN_PUMP"
+    dst_id: "AS_CHAO"
+    edge_kind: "WATER (documents the CLASS of east-zone outlets discharging to the river: AS_PKN_PUMP->AS_CHAO, AS_PKN_TUNNEL->AS_CHAO, AS_SSB_TUNNEL->AS_CHAO -- keyed on the pump-station pair; the same evidence applies to the two tunnel pairs. Corresponds to sources/capacity_ledger.yaml outfall:phra_khanong / outfall:chao_phraya_boundary whose gravity_threshold is OPEN)"
+    problem_name_academic: "Outlet stage dependence / backwater (receiving-water stage governs discharge; compound event of local rain + high river/tide defeats the design)"
+    problem_th: "ทางออกขึ้นกับระดับน้ำปลายทาง/น้ำเท้อ: ระดับเจ้าพระยา (หรือบางปะกง) สูงเมื่อใด การระบายลดลง; ฝนหนัก + น้ำหนุนพร้อมกันคือกรณีที่แผนยอมรับว่าอาจไม่ได้ผล"
+    typical_failure: >
+      DDS's own 'ปัญหาและอุปสรรค' list (via B): "ในกรณีที่ระดับน้ำในแม่น้ำเจ้าพระยาที่สูงเกินกว่า +2.00 ม.รทก. ตามที่คาดหมาย
+      ไว้ อาจทำให้การป้องกันน้ำท่วมไม่ได้ผล" and "การปฏิบัติการในช่วงฝนตกหนักมาก ซึ่งขณะเดียวกันก็มีระดับน้ำในแม่น้ำสูง อาจจะ
+      มีอุปสรรคในบางพื้นที่". Peak river stages at ปากคลองตลาด: 2.13 (2526) 2.27 (2538) 2.14 2.12 2.22 2.17 2.10
+      2.53 (2554) 2.10 (2560) m MSL; the plan's phase-3 (Oct-Dec) expects +2.00 to 2.53. D confirms the system is
+      pump-dependent because ground is below "ระดับน้ำควบคุมในคลองและในแม่น้ำเจ้าพระยา". A shows the same mechanism
+      on the OTHER outlet: Chachoengsao city drainage is governed by "ระดับความสูง-ต่ำ ของระดับแม่น้ำบางปะกง". The
+      2569 event is NOT a high-river case (repo: C.13 ~1,750 m3/s), so this row is about the design's stated
+      failure mode, not this week's cause. Typical failure: rated outlet m3/s is quoted as if head-independent.
+    evidence:
+      - source: "B p.49 §2.1 and §2.3 (river > +2.00 m MSL; simultaneous heavy rain + high river)"
+        tag: "RELAYED (DDS 2561 via B)"
+      - source: "B p.35-36 and p.38 (peak stages 2526-2560 incl. 2.53 m in 2554; phase-3 +2.00 to 2.53)"
+        tag: "RELAYED (DDS 2561 via B)"
+      - source: "D p.10 (ground below canal/river control level -> gravity flow low-efficiency; pump-dependent)"
+        tag: "VERIFIED"
+      - source: "D p.4 (river walls raised to +2.80 to +3.50 m MSL after 2554; river capacity 3,000-3,500 m3/s)"
+        tag: "VERIFIED"
+      - source: "A p.64 §4.1.1.1 (Bang Pakong stage governs Chachoengsao city drainage) and A p.42 (relayed MOUSE study: tide alone caused ~30% of flooded area in ราษฎร์บูรณะ/ทุ่งครุ)"
+        tag: "RELAYED (peer research; A itself relays the MOUSE study)"
+      - source: "sources/capacity_ledger.yaml outfall:phra_khanong / outfall:chao_phraya_boundary gravity_threshold: OPEN"
+        tag: "MEASURED (repo)"
+    severity_tag: "VERIFIED (D) + RELAYED (B, A) -- 3 documents, 2 independent lineages (DDS; Burapha research)"
+    open_questions: >
+      OPEN (unchanged): the river/tide level at which the พระโขนง gate switches from gravity to forced pumping
+      is stated nowhere in A-D. OPEN: the equivalent stage rule for the Bang Pakong arm (คลองพระองค์ฯ/ชายทะเล)
+      -- A does not cover the RID coastal system at all. OPEN: D's river capacity "3,000-3,500" vs repo ledger
+      "3,000-3,100 operational limit" -- kept as two readings (different basis: wall crest vs operational).
+
+  # ---------------------------------------------------------------------------------------------
+  # 6. Deferred-maintenance / asset-renewal deficit admitted by the operator (budget, aged stations).
+  # ---------------------------------------------------------------------------------------------
+  - src_id: "AG_DDS"
+    dst_id: "AS_PKN_PUMP"
+    problem_name_academic: "Deferred maintenance / asset-renewal deficit (operator admits annual budget insufficient to maintain its pump-station stock)"
+    problem_th: "ซ่อมบำรุงตกค้าง/ทดแทนทรัพย์สินไม่ทัน: ผู้ปฏิบัติยอมรับเองว่างบรายปีไม่พอดูแลสถานีสูบน้ำ-เครื่องสูบน้ำจำนวนมาก และสถานีเก่าต้องฟื้นสมรรถนะ"
+    typical_failure: >
+      D SWOT weakness (verbatim): "การได้รับการจัดสรรงบประมาณที่จำกัดในแต่ละปี ทำให้ไม่เพียงพอสำหรับการดูแลซ่อมบำรุงรักษา
+      สถานีสูบน้ำ เครื่องสูบน้ำ ซึ่งอยู่ในความรับผิดชอบจำนวนมาก"; situation text: "ปรับปรุงพัฒนาสถานีสูบน้ำ อาคารรับน้ำเดิมที่มี
+      อายุการใช้มายาวนานให้สามารถใช้งานได้อย่างเต็มประสิทธิภาพเช่นเดิม". The single largest east-outlet item in 2567 is
+      "งานปรับปรุงระบบสูบน้ำ ระบบไฟฟ้า และระบบเก็บขยะสถานีสูบน้ำพระโขนง" 500.000 MTHB (p.39, under the กนช.-approved
+      east-side concept) -- the same station also appears as "...ระยะที่ 1" 10.000 MTHB of a 300.000 MTHB 2567-68
+      envelope (p.63/p.75): two entries, two totals, kept both. Other admitted frictions: e-Bidding complexity,
+      contractors declining to sign after a ครม. relief resolution -> re-tendering (e.g. ปตร.+ประตูเรือ แสนแสบ
+      ตอนคลองบางชัน is listed as "ครั้งที่ 2"), utility relocation delays. Typical failure: a station's rated
+      m3/s (the number every capacity table quotes) is a design value for equipment the operator says it cannot
+      fully maintain; the live gap is unobservable from outside.
+    evidence:
+      - source: "D p.5 (SWOT weakness: budget insufficient for pump-station maintenance)"
+        tag: "VERIFIED"
+      - source: "D p.4 (aged stations/intakes need renewal to regain rated performance)"
+        tag: "VERIFIED"
+      - source: "D p.39 item 113096 (Phra Khanong pump/electrical/garbage-system renewal 500.000 MTHB) vs D p.63 item 57 / p.75 item 92 (same station 'ระยะที่ 1' 10.000 MTHB of 300.000 MTHB 2567-68)"
+        tag: "VERIFIED -- internal inconsistency of D noted"
+      - source: "D p.7 (obstacles: utility relocation, e-Bidding, ครม. contractor relief -> re-tender)"
+        tag: "VERIFIED"
+      - source: "D p.62 item 33 / p.71 item 43 ('ครั้งที่ 2' re-tender of ปตร.แสนแสบ ตอนคลองบางชัน, 100.000 MTHB)"
+        tag: "VERIFIED"
+      - source: "B p.49 §1.3 (power outage / electrical failure at pumps and gates as an admitted obstacle)"
+        tag: "RELAYED (DDS 2561 via B)"
+    severity_tag: "VERIFIED (D primary admission, several pages) -- single lineage (DDS); repo's Sammakorn ST.SPS pump failures are a DIFFERENT owner and are not counted as corroboration"
+    open_questions: >
+      OPEN: current installed vs operable capacity at สถานีสูบน้ำพระโขนง -- A-D give none; the 49/155/173 m3/s
+      contradiction in the repo is NOT resolved by any of the four documents (none states the station's m3/s).
+      OPEN: which of 500 vs 300 MTHB is the renewal envelope.
+
+# -----------------------------------------------------------------------------------------------
+# ADDITIONAL EVIDENCE FOR ROWS THAT ALREADY EXIST in edge_problems.yaml (do NOT create twin rows --
+# the committer should append these evidence items to the existing rows keyed below).
+# -----------------------------------------------------------------------------------------------
+additional_evidence_for_existing_rows:
+  - existing_row_key: {src_id: "AS_RID_RANGSIT", dst_id: "AS_HOKWA"}
+    existing_problem_name_academic: "Interprovincial gate-politics: no advance allocation rule for BMA-controlled gates affecting a neighbouring province"
+    add_evidence:
+      - source: "B p.49 §3 'ปัญหาจากปริมณฑล: เปิดประตูระบายน้ำในอัตราที่สามารถบริหารจัดการได้โดยไม่ส่งผลกระทบต่อพื้นที่กรุงเทพมหานคร' (DDS 2561 plan lists perimeter-province gate operation as a standing problem, rate unspecified)"
+        tag: "RELAYED (DDS 2561 via B)"
+      - source: "C p.14 'ปัญหาพื้นที่นอกแนวป้องกันของกรุงเทพมหานครที่ประสบปัญหาน้ำท่วม กดดันให้กรุงเทพมหานครเปิดประตูระบายน้ำเข้าท่วมในพื้นที่ชั้นใน' and p.15 (joint BMA-perimeter meetings 'เช่นในปี พ.ศ. 2554'; cooperation with กรมชลประทาน ต้นน้ำ-กลางน้ำ-ปลายน้ำ)"
+        tag: "VERIFIED-official-secondary (BMA planning dept. 2565)"
+    note: "Two BMA-lineage documents now state the gate-pressure mechanism in their own words; still no published allocation RULE or rate anywhere in A-D -- the row's open_questions stand."
+
+  - existing_row_key: {problem_name_academic: "Institutional fragmentation / jurisdictional overlap", any_row_with_src_id: "AG_DDS"}
+    add_evidence:
+      - source: "D p.5 SWOT weakness 1: 'ขั้นตอนดำเนินการในโครงการต่าง ๆ มีความซับซ้อนและมีหน่วยงานที่เกี่ยวข้องจำนวนมาก ทำให้การดำเนินงานล่าช้าใช้เวลานาน'; D p.6: 'ไม่มีการบูรณาการฐานข้อมูลให้สามารถเชื่อมโยงและใช้ประโยชน์ร่วมกันได้'; D p.7: 'นโยบายการปฏิรูประบบราชการมีการปรับหน้าที่ความรับผิดชอบของหน่วยงานทำให้การประสานงานไม่ต่อเนื่อง'"
+        tag: "VERIFIED (operator's own SWOT)"
+      - source: "B p.49 §1.2 'แผนปฏิบัติการยังไม่ครอบคลุมปัญหาอย่างครบถ้วน' and B p.55-56 (Table 2.9 lists DDS and RID's สำนักบริหารจัดการน้ำและอุทกวิทยา side by side with overlapping 'บริหารจัดการน้ำ' mandates)"
+        tag: "RELAYED (DDS 2561 via B; B's own table)"
+      - source: "B p.124 Table 5.1 (policy proposal to integrate พ.ร.บ.ทรัพยากรน้ำ 2561 + พ.ร.บ.คณะกรรมการนโยบายที่ดินแห่งชาติ 2562 + พ.ร.บ.การผังเมือง 2562 -- i.e. the laws are not yet integrated)"
+        tag: "RELAYED (seminar proposal relayed by B)"
+    note: "Adds the operator's self-admission; does not change severity_tag (MEASURED-on-graph)."
+
+  - existing_row_key: {src_id: "AS_DIVERT_CNPS", dst_id: "AS_RID_RANGSIT"}
+    existing_problem_name_academic: "Hierarchical handoff / unfunded downstream burden transfer"
+    add_evidence:
+      - source: "D p.10 (after 2554 BMA coordinated กรมชลประทาน, กรมทางหลวง, กรมทางหลวงชนบท to extend the eastern dyke NORTH along คลองรังสิตฝั่งใต้ to +3.95 m MSL, then along คลองเจ็ด to +3.55 -- the Rangsit relay water is handled by raising BMA's wall, not by an allocation rule)"
+        tag: "VERIFIED"
+    note: "Physical response documented; no compensation/allocation rule appears in D -- who_bears_burden unchanged."
+
+# -----------------------------------------------------------------------------------------------
+# BELOW-THRESHOLD problems (found in only ONE non-primary source; listed so the committer can see
+# they were NOT silently dropped -- see EXTRACT file §6 for the full list).
+# -----------------------------------------------------------------------------------------------
+below_threshold_not_added:
+  - problem: "Power-supply dependence of pumps/gates (grid outage as a stated obstacle)"
+    only_source: "B p.49 §1.3 (DDS 2561 via B)"
+    why_not_added: "single RELAYED source; repo's 2026-09-27 pump failure has 'สาเหตุไม่ทราบ' so it does not corroborate a power cause"
+  - problem: "Warning/communication deficit at the drainage-operator level (BMA-internal Line group 'เตือนภัยน้ำท่วม กทม.' to ปภ./ทหาร/ตำรวจ/สื่อ, no citizen channel named in the 9-step plan)"
+    only_source: "B p.42 (DDS 2561 9-step plan via B)"
+    why_not_added: "single RELAYED source for this specific edge; the repo already carries risk-communication rows from other evidence"
+  - problem: "Bang Pakong arm absent from BMA planning (no project/measure in D mentions บางปะกง, คลองพระองค์เจ้าไชยานุชิต, or the RID coastal pumps; every 'ชายทะเล' in D is บางขุนเทียนชายทะเล on the WEST)"
+    only_source: "D (absence, verified by keyword pass over all 85 pages)"
+    why_not_added: "an absence in one document is evidence of a planning-scope boundary, not of a physical problem; recorded as OPEN in the EXTRACT file and TODOLIST #40"

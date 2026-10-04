@@ -1,0 +1,15 @@
+{
+ "source_id": "rid9_chonburi_rpt",
+ "url": "http://irrigation.rid.go.th/rid9/rid9_new/rpt_show.php?dateid=25691003",
+ "captured_at": "2026-10-03T04:22:46Z",
+ "sha256": "5134130ec329178b2b6d1e98c09394bc2e5c5ddbf2135dec0411f340cfc485a9",
+ "http_status": 200,
+ "content_type": "text/html",
+ "fixture_ext": "html",
+ "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "13be88eddc50603491b7618290955b9b10554c3e16ca81b50d30f221a9c4d507",
+ "trimmed_note": "Further trimmed 2026-10-03 (release pass, publish-safety finding: 300KB total budget for tests/contract/fixtures/ in the public tree) to a minimal real excerpt (header + few real rows, or a real byte-prefix for HTML) -- see the corresponding contract test's own comment for the exact row-count change.",
+ "trimmed_at": "2026-10-03T18:12:27Z"
+}

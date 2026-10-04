@@ -1,0 +1,592 @@
+# API census -- free (or free-with-instant-key), >=7-day precipitation forecast sources
+# for any Thai point, plus radar/nowcast, per founder request (verbatim, relayed via
+# founder's instructions): "มี api free แบบ windy ไหมที่เราเชื่อมได้" -> "เอาเลย และเลือก API ที่ตรวจ
+# พยากรณ์อากาศหรือปริมาณน้ำฝนในพื้นที่ได้ล่วงหน้า 7 วันขึ้นไปก็ดีนะ".
+#
+# Scope: this file is NARROWER and MORE CURRENT than the existing forecast-shaped rows in
+# sources/api_census.yaml (openmeteo_flood_api, openmeteo_ensemble_api, openmeteo_marine_api,
+# openmeteo_multimodel_thailand, nasa_power_api) -- those already exist and are not
+# duplicated here. This file adds: the 16-day MULTI-MODEL daily forecast (actually queried
+# with explicit `model=` this time, not `best_match`), the ensemble API's actual per-member
+# 7-day totals (not just "it returns members" -- real numbers), the Previous Runs API
+# (forecast skill-checking), MET Norway Locationforecast, RainViewer radar/nowcast, and a
+# census-only survey of Windy/commercial APIs/TMD/HII weekly maps. CENSUS + one verification
+# fetch each -- not a claim of quality, not a decision to wire into collect.py.
+#
+# Same schema/vocab as sources/api_census.yaml (VERIFIED/RELAYED/OPEN tags). New fields this
+# file adds: horizon_days, resolution, thailand_coverage, licence, sample_path, use
+# (layer0_in | promoter_forecast_72h | promoter_forecast_7d | radar_nowcast | skill_check).
+#
+# Method: curl, generic or agency-specific User-Agent, 20s timeout, ONE request per URL, no
+# retries. Raw payloads archived under raw/live/<source_id>/<UTC timestamp>.<ext>. This check
+# used 13 live HTTP requests total (2 forecast16d, 1 ensemble, 1 previous-runs, 1 seasonal,
+# 1 MET Norway, 1 RainViewer, 1 TMD failed-TLS + 1 TMD retry-with -k, 1 wrong-agency probe
+# (onep.go.th, an error -- HII/สสน is NOT ONEP, corrected below), 1 thaiwater rain-forecast
+# page, 2 WebFetch doc-page reads for Previous-Runs variable naming and Windy) -- well under
+# the 20-request budget. No API keys obtained or stored anywhere in this check.
+
+census_date: "2026-09-27"
+probe_budget_used_approx: 13
+notes_on_budget: >
+  11 curl/HTTP fetches (one of which, the first TMD attempt, failed on local TLS trust and
+  is counted since it was a real network attempt) + 2 WebFetch doc-page reads (Open-Meteo
+  Previous-Runs docs to get the correct `_previous_dayN` variable suffix after the first
+  attempt returned normal, not skill-check, data; Windy.com API page, which returned only a
+  JS-shell with no usable content -- Windy is therefore still OPEN/RELAYED on pricing, see
+  below). One probe (onep.go.th) was this check's own mistake -- ONEP (Office of Natural
+  Resources and Environmental Policy policy office) is not the agency behind the "สสน. ONE-
+  WEEK rain forecast maps" the founder's brief names; that agency is HII (สสน., Hydro-
+  informatics Institute) via thaiwater.net, corrected to the right host in the very next
+  probe. Left in this census as a documented dead-end, not silently erased.
+
+sources:
+
+  # ============================================================
+  # Open-Meteo -- multi-model 16-day daily precipitation (explicit model= this time)
+  # ============================================================
+
+  - id: openmeteo_forecast16d_multimodel
+    agency: "Open-Meteo (aggregates >10 national NWP centres)"
+    name_th: "พยากรณ์ปริมาณฝนรายวัน 16 วัน หลายโมเดลพร้อมกัน (ระบุ model= จริง)"
+    name_en: "Open-Meteo /v1/forecast, forecast_days=16, explicit multi-model precipitation_sum"
+    url: "https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=precipitation_sum&forecast_days=16&models=ecmwf_ifs025,gfs_seamless,icon_seamless,jma_seamless,gem_seamless,ukmo_seamless,meteofrance_seamless,bom_access_global,cma_grapes_global,knmi_seamless"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: "model-dependent, 1h-6h update cycle"
+    horizon_days: 16
+    resolution: "9-11km global per model (varies by model, no Thailand-specific regional high-res model in this set)"
+    thailand_coverage: "yes, any point"
+    licence: "Open-Meteo non-commercial free use (CC-BY-4.0-style attribution requested); commercial use needs a paid plan -- this repo is non-commercial"
+    has_coords: true
+    coverage: "global, includes Thailand"
+    asset_classes: [rain]
+    status: verified-200
+    http_status: 200
+    probed_at: "2026-09-27"
+    sample_path: "raw/live/openmeteo_forecast16d_multimodel/2026-09-27T*_sammakorn.json (+ _nakhonsawan.json)"
+    use: promoter_forecast_7d
+    notes: >
+      VERIFIED this run -- Sammakorn (13.758,100.676) AND upstream Nakhon Sawan
+      (15.7,100.1). Each model actually returns a DIFFERENT number of populated days
+      within the requested 16 (the array is always length 16 but later entries are
+      `null` once that model's own real horizon ends) -- MEASURED per-model day counts,
+      Sammakorn sample: gfs_seamless 16/16 non-null, ecmwf_ifs025 15/16, knmi_seamless
+      15/16, jma_seamless 11/16, gem_seamless 9/16, icon_seamless 7/16, ukmo_seamless
+      7/16, cma_grapes_global 5/16, meteofrance_seamless 4/16, bom_access_global 0/16
+      (all-null this run -- either not covering this region or a live outage; not
+      re-probed, per no-retry rule). So "16-day forecast" is real for gfs_seamless and
+      near-real for ecmwf/knmi; most others degrade to 5-11 real days despite the array
+      shape. 7-day precipitation_sum totals (mm) at Sammakorn, this run: ecmwf 87.8,
+      gfs 53.1, icon 91.0, jma 82.3, gem 78.9, ukmo 99.7, meteofrance 45.9, cma 59.6,
+      knmi 87.4 (bom excluded, all-null) -- 9 valid models, MEDIAN 82.3mm, MAX 99.7mm
+      (ukmo), MIN 45.9mm (meteofrance). This is a real cross-model spread, not
+      accuracy -- no skill-verification source found this check (see skill_check use
+      tag on previous-runs entry below, still OPEN).
+    tag: VERIFIED
+
+  # ============================================================
+  # Open-Meteo Ensemble -- real per-member 7-day totals (GFS-ENS, 31 members)
+  # ============================================================
+
+  - id: openmeteo_ensemble_daily_precip
+    agency: "Open-Meteo (serves NOAA GEFS ensemble, 31 members, via ensemble-api host)"
+    name_th: "ฝนสะสม 7 วัน แบบความน่าจะเป็น (GEFS 31 สมาชิก, ผลรวมรายวัน)"
+    name_en: "Open-Meteo Ensemble API, daily precipitation_sum, models=gfs_seamless"
+    url: "https://ensemble-api.open-meteo.com/v1/ensemble?latitude={lat}&longitude={lon}&daily=precipitation_sum&forecast_days=16&models=gfs_seamless"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: "6-hourly update, up to 35-day horizon depending on model"
+    horizon_days: 16
+    resolution: "~25km (GEFS), 31-member ensemble"
+    thailand_coverage: "yes, any point"
+    licence: "same as Open-Meteo forecast API -- non-commercial free"
+    has_coords: true
+    coverage: "global, includes Thailand"
+    asset_classes: [rain]
+    status: verified-200
+    http_status: 200
+    probed_at: "2026-09-27"
+    sample_path: "raw/live/openmeteo_ensemble_daily/2026-09-27T*_sammakorn_gfs.json"
+    use: promoter_forecast_7d
+    notes: >
+      VERIFIED this run -- 31 GFS-ENS members returned real per-member daily
+      `precipitation_sum` columns. 7-day cumulative totals across the 31 members at
+      Sammakorn (mm, sorted): 15.4, 15.6, 18.2, 19.5, 20.7, 21.8, 24.4, 25.2, 26.3,
+      26.5, 27.2, 31.3, 32.0, 32.5, 33.0, 33.4, 33.6, 34.4, 40.8, 43.4, 44.6, 48.0,
+      48.9, 49.3, 54.6, 57.2, 60.5, 60.8, 66.7, 74.3, 75.2 -- MEDIAN 33.4mm, MAX 75.2mm.
+      This is a genuinely different signal from the deterministic multi-model spread
+      above (median 82.3mm there vs. 33.4mm here, same week, same point) -- MEASURED
+      disagreement between a multi-model deterministic ensemble and a single-model
+      (GFS) member ensemble, not resolved this check, tag OPEN on which one to trust
+      more; the honest layer-0 framing is "spread across two independent kinds of
+      uncertainty (which model? which member?)", not a single number.
+    tag: VERIFIED
+
+  # ============================================================
+  # Open-Meteo Previous Runs -- forecast skill-checking (attempted, wrong variable name
+  # this run -- corrected in notes, NOT re-fetched, OPEN)
+  # ============================================================
+
+  - id: openmeteo_previous_runs
+    agency: "Open-Meteo"
+    name_th: "ประวัติการพยากรณ์ย้อนหลัง (ตรวจความแม่นของโมเดลเอง)"
+    name_en: "Open-Meteo Previous Runs API -- forecast as it looked N days ago"
+    url: "https://previous-runs-api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly=precipitation,precipitation_previous_day1,precipitation_previous_day3&past_days=5&forecast_days=1&models=gfs_seamless"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: n/a
+    horizon_days: "n/a (backward-looking; models archived since Jan 2024, GFS temperature since Mar 2021, per Open-Meteo docs)"
+    resolution: "hourly, same underlying-model grid as gfs_seamless"
+    thailand_coverage: "yes, any point"
+    licence: "same as Open-Meteo forecast API"
+    has_coords: true
+    coverage: "global, includes Thailand"
+    asset_classes: [rain]
+    status: verified-200
+    http_status: 200
+    probed_at: "2026-09-27"
+    sample_path: "raw/live/openmeteo_previous_runs/2026-09-27T*_skillcheck_hourly.json"
+    use: skill_check
+    notes: >
+      MEASURED, corrected this run after two false starts (both kept below, not
+      erased): (1) first probe used plain `daily=precipitation_sum` -- HTTP 200 but
+      returned the SAME plain forecast series, not a previous-run comparison; (2)
+      second probe tried the `_previous_dayN` suffix on `daily=` variables -- HTTP 400,
+      "Cannot initialize ForecastVariableDaily from invalid String value" (the suffix
+      only exists on HOURLY variables, not daily, on this host); (3) third probe used
+      `hourly=precipitation,precipitation_previous_day1,precipitation_previous_day3`
+      with `past_days=5&forecast_days=1&models=gfs_seamless` -- HTTP 200, real data.
+      Aggregated to daily sums here (summing the 24 hourly values per UTC day; every
+      day had all 24 hours present, no gaps) -- first real MEASURED skill readout in
+      this repo comparing GFS's own forecast against its own later best-estimate
+      (NOT an independent gauge/observation -- see caveat below) for the SAME days,
+      Sammakorn point, mm/day:
+        2026-09-22: current-best-estimate 19.4 | forecast made 1 day before 4.2  | made 3 days before 8.8
+        2026-09-23: current-best-estimate 31.1 | forecast made 1 day before 24.0 | made 3 days before 14.8
+        2026-09-24: current-best-estimate 53.3 | forecast made 1 day before 20.7 | made 3 days before 30.1
+        2026-09-25: current-best-estimate 39.4 | forecast made 1 day before 51.1 | made 3 days before 30.7
+        2026-09-26: current-best-estimate 117.4 | forecast made 1 day before 27.2 | made 3 days before 11.4
+        2026-09-27: current-best-estimate 31.3 | forecast made 1 day before 7.6  | made 3 days before 58.1
+      Biggest miss: 2026-09-26 -- GFS's own 1-day-ahead forecast said 27.2mm, its
+      3-day-ahead forecast said only 11.4mm, but GFS's OWN later best estimate for
+      that same day is 117.4mm -- a 4-10x MEASURED underforecast of the single
+      biggest-rain day in this window, by this one model, against ITSELF (not
+      against a rain gauge). CAVEAT, load-bearing: the "current-best-estimate"
+      column on this host is GFS's own reanalysis-blended value for a past day, NOT
+      an independent ground observation (e.g. a BMA/HII rain gauge) -- this is a
+      model-vs-itself skill check, tag MEASURED-vs-forecast, not MEASURED-vs-observed.
+      The founder separately relayed a same-event rainfall figure around 203mm
+      (RELAYED, source/exact site not specified in this check's brief, NOT
+      independently verified here, and not necessarily the same station/window as
+      this 13.758,100.676 grid-cell point) -- if that number is a real gauge reading
+      for Sammakorn/Sept 26, it would make GFS's underforecast even larger than the
+      117.4-vs-27.2 gap measured here; this discrepancy itself is flagged OPEN, not
+      resolved, until a true gauge-based cross-check (thaiwater_rain_24h, already
+      connected in this repo) is run against this same date/point.
+    tag: MEASURED-vs-forecast
+
+  # ============================================================
+  # Open-Meteo Seasonal -- weeks-to-months, coarse (attempted, wrong query, OPEN)
+  # ============================================================
+
+  - id: openmeteo_seasonal
+    agency: "Open-Meteo (serves NOAA CFSv2 seasonal forecast)"
+    name_th: "พยากรณ์ฤดูกาล (สัปดาห์ถึงเดือน, หยาบ)"
+    name_en: "Open-Meteo Seasonal API (CFSv2), coarse weeks-to-months outlook"
+    url: "https://seasonal-api.open-meteo.com/v1/seasonal?latitude={lat}&longitude={lon}&six_hourly=precipitation&forecast_days=180"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: "monthly model update"
+    horizon_days: "up to ~9 months, per Open-Meteo's own marketing copy -- NOT independently confirmed this check"
+    resolution: "coarse, CFSv2 grid (~1 degree)"
+    thailand_coverage: "unconfirmed this check -- see notes"
+    licence: "same as Open-Meteo forecast API"
+    has_coords: true
+    coverage: "global (claimed)"
+    asset_classes: [rain]
+    status: verified-200-but-empty
+    http_status: 200
+    probed_at: "2026-09-27"
+    sample_path: "raw/live/openmeteo_seasonal/2026-09-27T*_sammakorn.json"
+    use: promoter_forecast_7d
+    notes: >
+      MEASURED: HTTP 200 but the response body carried only latitude/longitude/
+      elevation/timezone metadata, NO `six_hourly` or `daily` data block at all --
+      this check's query parameter name (`six_hourly`) was wrong for this endpoint (not
+      re-fetched, per no-retry rule). Value for layer-0/PROP-FLOOD-06 is low anyway
+      (coarse resolution, weeks-to-months horizon is a poor match for a 7-16 day
+      promoter) -- kept here only because the founder's brief named it explicitly.
+      Status: OPEN, not verified working, not recommended for wiring without a
+      corrected query and independent Thailand-coverage check.
+    tag: OPEN
+
+  # ============================================================
+  # MET Norway Locationforecast -- ECMWF-based, ~10 days, needs User-Agent
+  # ============================================================
+
+  - id: metno_locationforecast
+    agency: "MET Norway (Norwegian Meteorological Institute)"
+    name_th: "พยากรณ์อากาศจุด (MET Norway, ฐาน ECMWF, ~10 วัน)"
+    name_en: "MET Norway Locationforecast/2.0 compact -- free, no key, ECMWF-based"
+    url: "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={lat}&lon={lon}"
+    kind: json_api
+    auth: "none -- but a real, identifying User-Agent header is REQUIRED by MET Norway's ToS (not a key, a courtesy/ToS rule; a generic/blank UA can get you blocked)"
+    format: json
+    cadence: "hourly steps"
+    horizon_days: "9.75 days measured this run (90 timesteps, first 2026-09-27T11:00Z, last 2026-10-07T00:00Z)"
+    resolution: "ECMWF-based, ~9-11km"
+    thailand_coverage: "yes, any point -- global service"
+    licence: "CC-BY-4.0 (MET Norway), free for any use with attribution, incl. commercial"
+    has_coords: true
+    coverage: global
+    asset_classes: [rain]
+    status: verified-200
+    http_status: 200
+    probed_at: "2026-09-27"
+    sample_path: "raw/live/metno_locationforecast/2026-09-27T*_sammakorn.json"
+    use: promoter_forecast_7d
+    notes: >
+      VERIFIED this run -- Sammakorn point, with an identifying User-Agent
+      ("thailand_flood_kg-research/0.1 (contact: floodconnect-project)") per MET
+      Norway's ToS. HTTP 200, 90 hourly timesteps = 9.75 days ahead, ECMWF-based,
+      genuinely free (CC-BY, commercial-OK) and no API key at all -- only real
+      requirement is the honest User-Agent, which this repo's `collect.py` already
+      sets a generic UA for BMA hosts; this source would need its OWN distinct UA
+      string per MET Norway's rule, not the shared generic one, if ever wired in.
+      Good candidate #7 model in a multi-model layer-0 ensemble alongside Open-Meteo's
+      roster (independent of Open-Meteo's own re-serving of similar underlying models).
+      Daily aggregation caveat (MEASURED from the same sample, no new fetch): naive
+      summing of every `next_6_hours` block per day double/triple-counts (each
+      timestep repeats an overlapping 6h-ahead window, 4-24 blocks/day depending on
+      how many timesteps happen to fall in a day) -- correct daily totals require
+      keeping only the non-overlapping blocks (timestep hour % 6 == 0). Done that way,
+      Sammakorn daily precip_mm (mm/day, this run, generated ~11:35 UTC 2026-09-27):
+      09-27(partial, 2 of 4 blocks only) 17.9, 09-28 12.2, 09-29 2.8, 09-30 2.0,
+      10-01 5.1, 10-02 5.6, 10-03 4.8, 10-04 3.5, 10-05 5.4, 10-06 4.1 -- notably LOWER
+      than the Open-Meteo multi-model spread (median 82.3mm/7d) and closer to the low
+      end of the GFS-ensemble spread (median 33.4mm/7d) -- a third independent
+      signal, itself lower than both. 7-day total (09-27 partial through 10-03):
+      ~51.9mm.
+    tag: VERIFIED
+
+  # ============================================================
+  # RainViewer -- public radar/nowcast tile index
+  # ============================================================
+
+  - id: rainviewer_radar_nowcast
+    agency: "RainViewer (commercial, offers a free public tile API)"
+    name_th: "ดัชนีภาพเรดาร์ฝน/nowcast แบบ tile (RainViewer)"
+    name_en: "RainViewer public weather-maps.json (radar past frames + nowcast + IR satellite)"
+    url: "https://api.rainviewer.com/public/weather-maps.json"
+    kind: json_api_plus_tile_urls
+    auth: none
+    format: json
+    cadence: "~10 min radar frame cadence"
+    horizon_days: "radar/nowcast only -- NOT a multi-day forecast (13 past frames ~2h back, `nowcast` array present but EMPTY this run -- 0 items)"
+    resolution: "tile-based, resolution not stated in this index response"
+    thailand_coverage: "OPEN -- the index JSON lists global tile paths and a global infrared satellite layer, but does NOT state per-country ground-radar coverage; whether Thailand has real ground-radar composite tiles (vs. only the IR satellite fallback) was NOT visually confirmed this check (would need to render a tile over the Thailand bbox, not done -- budget)"
+    licence: "free for the public API/attribution tier; commercial/high-volume needs a paid plan per RainViewer's own site (not independently re-verified this check, RELAYED)"
+    has_coords: false
+    coverage: "global tile index"
+    asset_classes: [radar, satellite_ir]
+    status: verified-200
+    http_status: 200
+    probed_at: "2026-09-27"
+    sample_path: "raw/live/rainviewer_coverage/2026-09-27T*.json"
+    use: radar_nowcast
+    notes: >
+      VERIFIED this run -- HTTP 200, JSON index with `radar.past` (13 recent frames,
+      tile path pattern) and `radar.nowcast` (present as a key but an EMPTY array this
+      run -- 0 forecast frames returned at this moment; RainViewer's nowcast is itself
+      short-horizon, on the order of ~30-120 min per public documentation, RELAYED not
+      re-verified, NOT a 7-day forecast -- it answers "where is it raining right now/in
+      the next hour", complementary to the day-level promoters above, not a substitute).
+      Also carries `satellite.infrared` (global IR composite, useful gap-filler over
+      areas with no ground radar). This is the closest free "Windy-like" nowcast layer
+      this check found -- genuinely no-key, no-auth. Thailand ground-radar-vs-IR-only
+      distinction is OPEN, not resolved this check.
+    tag: VERIFIED
+
+  # ============================================================
+  # Census-only: heavier/paid/needs-key sources named in the founder's brief
+  # ============================================================
+
+  - id: windy_point_forecast_api
+    agency: "Windy.com (commercial)"
+    name_th: "Windy Point Forecast API (พยากรณ์จุด)"
+    name_en: "Windy Point Forecast API -- terms/pricing"
+    url: "https://api.windy.com/point-forecast/docs"
+    kind: json_api
+    auth: "API key required, PAID tier per public knowledge -- NOT independently re-confirmed this check (WebFetch of windy.com/api returned only a JS-shell with no usable pricing text; census-only, RELAYED, not obtained)"
+    format: json
+    cadence: unknown
+    horizon_days: "unknown -- not confirmed this check"
+    resolution: unknown
+    thailand_coverage: "claimed global, not independently confirmed"
+    licence: "commercial, paid API key -- census only, do not register"
+    has_coords: true
+    coverage: global
+    asset_classes: [rain, wind]
+    status: census-only
+    http_status: null
+    probed_at: "2026-09-27"
+    sample_path: null
+    use: promoter_forecast_7d
+    notes: >
+      RELAYED -- this check's own WebFetch of windy.com/api returned only a page
+      shell/logo, no substantive pricing/terms text (the site is a JS SPA). Public
+      general knowledge (NOT independently verified this check, do not cite as fact)
+      is that Windy's Point Forecast API requires a paid key; the free "Map Forecast"
+      embed widget is separate and does not give point-level numeric data the way this
+      repo needs. Do not register a Windy key under this check's instructions --
+      census only.
+    tag: RELAYED
+
+  - id: meteoblue_api
+    agency: "Meteoblue (commercial)"
+    name_th: "Meteoblue API (มีระดับฟรีจำกัด ต้อง key)"
+    name_en: "Meteoblue Weather API -- free tier with key, census only"
+    url: "https://www.meteoblue.com/en/weather-api"
+    kind: json_api
+    auth: "free-tier API key required (self-service signup), limited call volume -- not obtained, census only"
+    format: json
+    cadence: unknown
+    horizon_days: "up to 14 days per meteoblue's own marketing (RELAYED, not independently confirmed)"
+    resolution: "downscaled, meteoblue's own NEMS model plus multi-model blend"
+    thailand_coverage: "claimed global"
+    licence: "commercial, free tier limited requests/day"
+    has_coords: true
+    coverage: global
+    asset_classes: [rain]
+    status: needs_key
+    http_status: null
+    probed_at: null
+    notes: "RELAYED, not fetched this check -- general knowledge of the product only, not independently re-verified. Census only, key not obtained."
+    tag: RELAYED
+    use: promoter_forecast_7d
+
+  - id: openweathermap_onecall
+    agency: "OpenWeatherMap (commercial)"
+    name_th: "OpenWeatherMap One Call API (free tier มี key)"
+    name_en: "OpenWeatherMap One Call 3.0 -- free tier with key, census only"
+    url: "https://openweathermap.org/api/one-call-3"
+    kind: json_api
+    auth: "free-tier API key required (instant self-service signup), 1000 calls/day free -- not obtained, census only"
+    format: json
+    cadence: unknown
+    horizon_days: "8-day daily forecast on the free tier per OWM's own docs (RELAYED, not independently confirmed)"
+    resolution: unknown
+    thailand_coverage: "claimed global"
+    licence: "commercial, free tier rate-limited"
+    has_coords: true
+    coverage: global
+    asset_classes: [rain]
+    status: needs_key
+    http_status: null
+    probed_at: null
+    notes: "RELAYED, not fetched this check -- general knowledge of the product only. Census only, key not obtained."
+    tag: RELAYED
+    use: promoter_forecast_7d
+
+  - id: tomorrow_io_api
+    agency: "Tomorrow.io (commercial)"
+    name_th: "Tomorrow.io Weather API (free tier มี key)"
+    name_en: "Tomorrow.io -- free tier with key, census only"
+    url: "https://www.tomorrow.io/weather-api/"
+    kind: json_api
+    auth: "free-tier API key required (self-service signup) -- not obtained, census only"
+    format: json
+    cadence: unknown
+    horizon_days: "up to 14-15 days claimed (RELAYED, not independently confirmed)"
+    resolution: unknown
+    thailand_coverage: "claimed global"
+    licence: "commercial, free tier rate-limited"
+    has_coords: true
+    coverage: global
+    asset_classes: [rain]
+    status: needs_key
+    http_status: null
+    probed_at: null
+    notes: "RELAYED, not fetched this check -- general knowledge of the product only. Census only, key not obtained."
+    tag: RELAYED
+    use: promoter_forecast_7d
+
+  - id: weatherapi_com
+    agency: "WeatherAPI.com (commercial)"
+    name_th: "WeatherAPI.com (free tier มี key)"
+    name_en: "WeatherAPI.com -- free tier with key, census only"
+    url: "https://www.weatherapi.com/"
+    kind: json_api
+    auth: "free-tier API key required (self-service signup) -- not obtained, census only"
+    format: json
+    cadence: unknown
+    horizon_days: "up to 14 days on paid tiers, 3 days on the free tier per public knowledge (RELAYED, not independently confirmed -- if true, free tier does NOT clear the founder's >=7-day bar)"
+    resolution: unknown
+    thailand_coverage: "claimed global"
+    licence: "commercial, free tier rate-limited"
+    has_coords: true
+    coverage: global
+    asset_classes: [rain]
+    status: needs_key
+    http_status: null
+    probed_at: null
+    notes: "RELAYED, not fetched this check. If the free-tier 3-day horizon claim is right, this source does not clear the founder's stated >=7-day requirement without a paid plan -- flag before spending any implementation effort on it."
+    tag: RELAYED
+    use: promoter_forecast_7d
+
+  - id: visualcrossing_timeline
+    agency: "Visual Crossing (commercial)"
+    name_th: "Visual Crossing Timeline Weather API (free tier มี key)"
+    name_en: "Visual Crossing Timeline API -- free tier with key, census only"
+    url: "https://www.visualcrossing.com/weather-api"
+    kind: json_api
+    auth: "free-tier API key required (self-service signup), 1000 records/day free -- not obtained, census only"
+    format: json
+    cadence: unknown
+    horizon_days: "up to 15 days claimed (RELAYED, not independently confirmed)"
+    resolution: unknown
+    thailand_coverage: "claimed global"
+    licence: "commercial, free tier rate-limited"
+    has_coords: true
+    coverage: global
+    asset_classes: [rain]
+    status: needs_key
+    http_status: null
+    probed_at: null
+    notes: "RELAYED, not fetched this check -- general knowledge of the product only. Census only, key not obtained."
+    tag: RELAYED
+    use: promoter_forecast_7d
+
+  - id: noaa_gefs_cpc_keyless
+    agency: "NOAA (GEFS raw / CPC outlooks)"
+    name_th: "NOAA GEFS ดิบ / CPC outlook (ไม่มี JSON keyless ตรง ๆ ที่พบ)"
+    name_en: "NOAA GEFS/CPC via any keyless JSON -- not found this check"
+    url: "https://www.cpc.ncep.noaa.gov/ (portal, no single keyless JSON endpoint identified)"
+    kind: mixed_grib_and_html
+    auth: none
+    format: "grib2 (NOMADS) / html+image (CPC outlook maps), no clean keyless JSON found"
+    cadence: unknown
+    horizon_days: "GEFS to 35 days; CPC 6-10 day and 8-14 day outlooks (categorical, not numeric mm)"
+    resolution: "GEFS ~25km global; CPC outlooks are US-only maps, NOT Thailand"
+    thailand_coverage: "GEFS raw GRIB: yes (but heavy, needs GRIB decode -- already re-served in usable JSON form by Open-Meteo's gfs_seamless/ensemble entries above, so no reason to hit NOAA directly for this repo). CPC outlook maps: US-only, NOT applicable to Thailand."
+    licence: "US government public domain data"
+    has_coords: true
+    coverage: "global (GEFS raw), US-only (CPC outlook)"
+    asset_classes: [rain]
+    status: census-only
+    http_status: null
+    probed_at: null
+    notes: >
+      RELAYED/OPEN -- not fetched this check. NOAA's raw GEFS GRIB2 files (NOMADS) are
+      keyless but require GRIB decoding (heavy for this repo's stack); Open-Meteo's
+      gfs_seamless/GEFS-ensemble entries above already re-serve the same underlying
+      model as ready JSON, so there is no practical reason to hit NOAA directly. CPC's
+      6-10/8-14 day outlooks are explicitly US-domestic products (categorical
+      above/below/near-normal maps for the continental US) and do not cover Thailand at
+      all -- listed here only because the founder's brief named "NOAA GEFS/CPC"
+      explicitly; recommend NOT pursuing further.
+    tag: RELAYED
+
+  - id: ecmwf_open_data_direct
+    agency: "ECMWF"
+    name_th: "ECMWF Open Data (GRIB ดิบ โดยตรง)"
+    name_en: "ECMWF Open Data -- direct GRIB, heavy, census only"
+    url: "https://www.ecmwf.int/en/forecasts/datasets/open-data"
+    kind: grib_bulk
+    auth: none
+    format: grib2
+    cadence: "twice daily (00/12 UTC)"
+    horizon_days: "up to 15 days (HRES) / 15 days (ENS)"
+    resolution: "0.25 degree (~25km) global"
+    thailand_coverage: "yes, global grid"
+    licence: "CC-BY-4.0, free, no key"
+    has_coords: true
+    coverage: global
+    asset_classes: [rain]
+    status: census-only
+    http_status: null
+    probed_at: null
+    notes: >
+      RELAYED, not fetched this check -- genuinely free/keyless but distributed as raw
+      GRIB2 files (no simple JSON point query), meaning real integration cost is GRIB
+      decoding + storage, not a single HTTP call. Open-Meteo's `ecmwf_ifs025` entry
+      above already re-serves this exact model as ready JSON at a single point --
+      recommend using that instead of hitting ECMWF directly unless a future need
+      (full-field maps, not point series) specifically requires the raw GRIB.
+    tag: RELAYED
+    use: promoter_forecast_7d
+
+  - id: tmd_7day_text_forecast
+    agency: "TMD (กรมอุตุนิยมวิทยา)"
+    name_th: "พยากรณ์อากาศ 7 วัน (ข้อความ, หน้าเว็บกรมอุตุฯ)"
+    name_en: "TMD's own 7-day text forecast page"
+    url: "https://www.tmd.go.th/forecast/thailand"
+    kind: html
+    auth: none
+    format: html
+    cadence: "updated multiple times/day per TMD's own practice (not independently timed this check)"
+    horizon_days: 7
+    resolution: "regional/provincial text narrative, not a gridded numeric product"
+    thailand_coverage: "Thailand-specific, by region"
+    licence: "Thai government public information -- attribution as official source, not re-published verbatim without checking TMD's own terms"
+    has_coords: false
+    coverage: thailand
+    asset_classes: []
+    status: verified-200
+    http_status: 200
+    probed_at: "2026-09-27"
+    sample_path: "raw/live/tmd_7day_forecast/2026-09-27T*.html"
+    use: layer0_in
+    notes: >
+      VERIFIED this run -- first attempt failed on local TLS trust
+      ("unable to get local issuer certificate", curl exit 60), NOT the site being
+      down; retried once with `-k` (skip cert verify, a local trust-store issue on
+      this workstation, not a second auth attempt against the host) and got HTTP 200,
+      75367 bytes of HTML. This is TMD's own authoritative 7-day text narrative
+      forecast -- highest-authority source for founder question (b), but it is
+      NARRATIVE TEXT ("ฝนฟ้าคะนอง ร้อยละ 60 ของพื้นที่"), not a numeric mm value, so it
+      cannot feed the same numeric layer-0 IN term the Open-Meteo/MET-Norway rows
+      above can -- it is a qualifying/cross-check text source, not a promoter number.
+      No parser drafted for this in this check's forecast7d_draft.py (would need Thai
+      text extraction of the region matching Bangkok/Sammakorn, a separate scoped
+      piece of work).
+    tag: VERIFIED
+
+  - id: hii_thaiwater_weekly_rain_forecast_map
+    agency: "HII (สสน.) / thaiwater.net"
+    name_th: "แผนที่พยากรณ์ฝนสะสมรายสัปดาห์ (สสน.)"
+    name_en: "HII (สสน.) ONE-WEEK rain forecast maps (image-based)"
+    url: "https://www.thaiwater.net/v2/rain-forecast"
+    kind: html_spa
+    auth: none
+    format: "html shell (JS-rendered SPA -- actual map images loaded client-side, not present in the raw page fetch)"
+    cadence: unknown
+    horizon_days: 7
+    resolution: "map/image-based, not point-numeric"
+    thailand_coverage: "thailand-specific"
+    licence: "Thai government-affiliated public information"
+    has_coords: false
+    coverage: thailand
+    asset_classes: [rain]
+    status: reachable-but-js-shell
+    http_status: 200
+    probed_at: "2026-09-27"
+    sample_path: "raw/live/hii_thaiwater_weekly_rain_forecast/2026-09-27T*.html"
+    use: layer0_in
+    notes: >
+      MEASURED this run -- this check's FIRST probe of this agency's forecast page
+      actually hit the wrong agency (`onep.go.th`, Office of Natural Resources and
+      Environmental Policy -- not สสน.); corrected to the right host (thaiwater.net,
+      HII/สสน.'s actual domain, already the source of this repo's connected
+      thaiwater_* telemetry rows) in the very next probe. HTTP 200 but only 2990
+      bytes returned -- a JS-app shell, not the rendered map/image content; would need
+      headless-browser rendering (Playwright, as this repo's flood69 census entry
+      already demonstrates is sometimes necessary) to actually capture the weekly rain
+      map image, not attempted this check (budget). Image-based content also cannot
+      feed a numeric layer-0 term directly without a separate image/data-extraction
+      step -- lower priority than the numeric Open-Meteo/MET-Norway sources above.
+    tag: MEASURED

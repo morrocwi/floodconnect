@@ -7,6 +7,19 @@
 > Do **not** scan the repo blindly and do **not** create a new ontology until you have checked
 > the canonical Repo Knowledge Graph (RKG).
 
+**Only answering one state/forecast/accountability/route question, not writing code?**
+`AI.md` (repo root) is a single compute call (`kb.py answer --at <area> --json`) that
+covers exactly that case in a fraction of this file's token budget. Read on here only if
+`AI.md` does not cover what you need, or if you are about to write.
+
+The MCP server (`tools/mcp/floodconnect_mcp.py`), the agent skill
+(`skills/floodconnect/SKILL.md`), and the static `api/v1/*` export
+(`tools/api/export_api.py`) are present in this repo at file level — the merge
+history behind that is kept as an internal local-only team record, not synced
+to the public mirror. `AI.md` names all three routes and is the one place the
+reasoning rules are stated; `docs/AI_INTERFACE.md` is the fuller MCP/API
+technical spec.
+
 ## 0A. If you will write
 
 Before semantic changes:
@@ -169,7 +182,7 @@ Current-state claims require fresh operational evidence.
 
 Read:
 
-- Thailand rivers: `build_kg.py`
+- Thailand rivers: `build_river_kg.py`
 - Bangkok canals: `build_bangkok_canals.py`
 - Sammakorn local hydraulics:
   `site/inputs/canals/sammakorn_pond_canal_dag.yaml`
@@ -341,6 +354,39 @@ This diagram is orientation only. The machine-readable edge list in the RKG is c
 | Sammakorn hydraulic topology | `site/inputs/canals/sammakorn_pond_canal_dag.yaml` |
 | Governance actor identity | `site/inputs/governance/thailand_water_governance_reference.json` |
 | Warning roles | `site/inputs/governance/flood_warning_actor_typology.yaml` |
+| Merge record (what/why per piece of work, and per-file merge detail) | internal local-only team record, not public-mirror-synced |
+
+## 5AA. On-demand refresh — env vars and what gets fetched
+
+No scheduler anywhere in this repo. Refresh is the DEFAULT as of 2026-10-03 (founder
+ruling) -- `kb.py answer --at <area>` fetches wired sources on the CALLER's own
+network/compute, then computes; `--offline` opts OUT (answer from the stored DB
+only, no network this run); `--refresh` is kept as a no-op for old scripts. Never a
+server we run, never our keys. A failed fetch (one source or all) falls back to
+whatever is already stored, and every reading still passes the single freshness gate
+before it can decide anything. Every `auth: api_key` source's exact environment variable
+name is in its own `sources/registry.yaml` entry's `key_env` field; as of 2026-10-03
+those are: `GISTDA_API_KEY` (+ optional `GISTDA_API_REFERER`),
+`GOOGLE_FLOOD_HUB_API_KEY`, `CDSAPI_KEY`, `NASA_EARTHDATA_TOKEN`,
+`OPENTOPOGRAPHY_API_KEY`, `GFW_API_KEY`, `RELIEFWEB_APPNAME`, `TMD_OPENDATA_API_KEY`.
+None of these are read from anywhere but that env var -- never stored, never bundled,
+never sent to us. A missing key reports `ok: False` with the env var name in `note`
+(`status=unknown (not_fetched_missing_key)` under `collect.py`'s own CLI repr) --
+never `SAFE`, never a guessed value, never plain `FAIL` (FAIL implies an attempt was
+made; a missing-key source is never attempted).
+
+`--refresh` does NOT fetch every registered source every time:
+- `collect.DORMANT_NOT_IN_ALL` -- hosts that already returned a persistent 403.
+- `collect.CATALOG_ONLY_NOT_IN_REFRESH` -- catalog/document-listing sources (e.g. the
+  nationwide CCTV catalog, the Bangkok CKAN dataset catalog) that feed no `state`/
+  `hazard`/`next_action` field; excluded unconditionally, `--all`/`--source` are
+  unaffected.
+- a key-gated source with no key present in this environment -- excluded when
+  `verbose=False` (the default, both CLI `--verbose` and `build_answer(verbose=...)`)
+  so a normal refresh doesn't attempt-and-report a guaranteed miss on every call;
+  included when `verbose=True`.
+- `collect.AREA_RELEVANT_SOURCES` -- a source whose own coverage is narrower than
+  nationwide is skipped for an area outside that coverage.
 
 ## 5A. Operational vs proposal vs experiment
 

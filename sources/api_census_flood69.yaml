@@ -1,0 +1,103 @@
+# API census -- flood69.peoplesparty.or.th (third-party dashboard, พรรคประชาชน)
+#
+# Same schema/vocab as sources/api_census.yaml. This is a CENSUS of what this one
+# third-party dashboard aggregates and re-serves -- not a claim of quality, not an
+# endorsement, and not an adoption of any political framing. Tier: third_party
+# aggregator (RELAYED). Its own upstream is BMA's KlongMap system
+# (weather.bangkok.go.th/KlongMap), which this repo does not otherwise have wired in
+# under this exact URL (bma_watermap/BMA_STATION_DETAIL_PROBE hit a different BMA
+# endpoint, PageMap/GoogleMap + StationDetail).
+#
+# Method: WebFetch/curl (index.html, JS bundle) + one Playwright page load of
+# https://flood69.peoplesparty.or.th/#klong to capture the SPA's own runtime network
+# call (SPA bundles ship no literal API string; only a rendered page reveals it) +
+# one curl of the resulting JSON endpoint. 4 distinct HTTP fetches total this check,
+# all archived under raw/live/flood69_peoplesparty/. No auth, no retries, one request
+# per URL.
+
+census_date: "2026-09-27"
+probe_budget_used: 4
+notes_on_budget: >
+  index.html (1) + main JS bundle index--avEOgbL.js (1, grepped for API strings --
+  none found; the SPA's fetch call is dynamic, not a literal in the bundle) + one
+  Playwright render of #klong to capture the real XHR (revealed /api/klongmap) +
+  one curl of that JSON endpoint (1). Well under the 8-request budget for this check
+  and under the workspace's "one request per URL, no retries" rule.
+
+sources:
+
+  - id: flood69_site_root
+    agency: "พรรคประชาชน (People's Party) -- flood69.peoplesparty.or.th, self-published dashboard"
+    name_th: "หน้าแรก + JS bundle (React SPA shell)"
+    name_en: "Site root + main JS bundle"
+    url: "https://flood69.peoplesparty.or.th/"
+    kind: html_spa_shell
+    auth: none
+    format: html+js
+    cadence: n/a
+    has_coords: false
+    coverage: n/a
+    asset_classes: []
+    status: reachable
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      Empty React shell (Vite build, assets index--avEOgbL.js + react-CvQj5sbI.js).
+      No API URL literal found in the bundle by grep (checked http(s)://, "/api,
+      klong/canal Thai keyword, VITE_/baseURL/API_URL patterns) -- the app builds
+      its fetch target at runtime, not from a build-time string constant. Confirms
+      this is a client-rendered dashboard, not a static data page.
+    tag: VERIFIED
+    raw_archive: raw/live/flood69_peoplesparty/index_2026-09-27.html, raw/live/flood69_peoplesparty/index_bundle_2026-09-27.js
+
+  - id: flood69_api_klongmap
+    agency: "พรรคประชาชน (People's Party) -- proxying BMA สำนักการระบายน้ำ (Dept. of Drainage and Sewerage) KlongMap"
+    name_th: "แผนผังการไหลของน้ำในคลอง (proxy ของ weather.bangkok.go.th/KlongMap)"
+    name_en: "Bangkok canal-flow map, mirrored/cached from BMA KlongMap"
+    url: "https://flood69.peoplesparty.or.th/api/klongmap"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: "page states its own cadence explicitly: 'ดึงข้อมูลผ่านเซิร์ฟเวอร์ตัวกลางที่เก็บสำเนาไว้ครั้งละ
+      5 นาที เพื่อลดภาระระบบของ กทม.' (mirrored/cached every 5 minutes, to reduce load on BMA's
+      own system) -- an explicit server-side caching layer in front of BMA, not a direct passthrough."
+    has_coords: false
+    coverage: "Bangkok canals only (ฝั่งธนบุรี / ฝั่งพระนคร zone toggle in UI, system_id 1/2 in payload)"
+    asset_classes: [canal, gauge, gate, pump, tide_table]
+    status: reachable
+    http_status: 200
+    probed_at: "2026-09-27"
+    upstream_cited_on_page: "https://weather.bangkok.go.th/KlongMap (สำนักการระบายน้ำ กทม., linked
+      directly in the page's own attribution footer: 'ภาพแผนผังและข้อมูล © สำนักการระบายน้ำ กทม.')"
+    payload_shape: >
+      Single JSON object, 6 top-level keys: waterStation (403 rows, per-station schema --
+      water_id/water_name/lat-long/water_min-max/bed_bank/left_bank/right_bank/warning
+      /critical thresholds x2 sets (out01/out02)/pump_count/water_gate_count/
+      station_status/waterstatus/statusColor/water_control/district_name/river_name/
+      map offset_x-y -- ALL null except water_id/system_id/active/offset_x/offset_y in
+      this snapshot, so this call returns the map-LAYOUT table, not live values, at
+      this moment -- OPEN why live fields are null here); stationMap (253 rows, station
+      label + map pixel-offset, e.g. station_name "ค.บางพรม-ถ.กาญจนาฯ" = canal-x-road
+      junction naming); arrowMap (241 rows, flow-direction arrows: offset_x/y,
+      configs "32,32,0deg,0000FF" = width,height,rotation-degrees,hex-color, plus
+      reverse/flow_id/configs_reverse fields for a second, opposite-direction arrow
+      state -- null in this snapshot but structurally present); riverMap (12 named
+      canal segments, river_map_id + Thai/English name); listRiverMap (89 rows joining
+      station_id to river_map_id with profile_order (sequence position along the
+      canal) and point (wl_out01 etc -- which gauge leg this reading is));
+      dailyheightwater (1 object, BMA/Hydrographic-style tide table: date_stamp,
+      daily_time/hight_water, daily_time_low/low_water, night_time/hight_water_pm,
+      night_time_low/low_water_pm -- AM/PM high/low tide time+height).
+    notes: >
+      This is functionally a proxy of BMA's own KlongMap system, not an independent
+      instrument or independent dataset -- it re-serves BMA's schema near-verbatim
+      (water_control field name matches this repo's own
+      docs/knowledge/BMA_STATION_DETAIL_PROBE.md finding on a DIFFERENT BMA endpoint,
+      weather.bangkok.go.th/water/StationDetail -- same agency, same field vocabulary,
+      different URL path (/KlongMap vs /water/...) -- not yet confirmed whether this
+      is the exact same backend table or a sibling one -- OPEN). No licence/terms text
+      seen on the page during this probe (footer only credits the source, does not
+      state re-use terms) -- RELAYED, unresolved, same posture as this repo's other
+      BMA sources.
+    tag: RELAYED
+    raw_archive: raw/live/flood69_peoplesparty/api_klongmap_2026-09-27.json

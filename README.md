@@ -1,400 +1,380 @@
 # FloodConnect
 
-**FloodConnect คืออะไร:** เว็บเพจสาธารณะที่รวบรวมข้อมูลระดับน้ำคลอง ปั๊มระบายน้ำ ปริมาณฝน
-น้ำขึ้น-ลง และรายงานจากชาวบ้าน สำหรับพื้นที่เสี่ยงน้ำท่วมในกรุงเทพฯ (เริ่มที่หมู่บ้านสัมมากร
-รามคำแหง 112 และซอยรามคำแหง 53) โดยอัปเดตตัวเองอัตโนมัติทุก 30 นาทีผ่าน GitHub Actions —
-**อัปเดตด้วย GitHub Actions ล้วน ๆ ไม่ใช้ AI และไม่พึ่งอินเทอร์เน็ตบ้านของใครคนใดคนหนึ่ง**
+**A flood/canal/pump knowledge-graph readout — the fields any AI assistant can read
+directly, tagged by how sure we are, never a forecast and never a safety certification.**
 
-**ดูหน้าเว็บสาธารณะได้ที่:** https://morrocwi.github.io/floodconnect/ *(placeholder — จะใช้งานได้เมื่อ
-เปิด GitHub Pages ของ repo นี้)*
+**ระบบ "อ่านค่า" น้ำ/คลอง/ปั๊ม แบบกราฟความรู้ — ไฟล์ที่ผู้ช่วย AI ตัวใดก็เปิดอ่านต่อได้ทันที
+ทุกค่าติดป้ายความน่าเชื่อถือ ไม่ใช่การพยากรณ์ และไม่ใช่การยืนยันความปลอดภัย**
 
-**แหล่งข้อมูล / Data attribution (จากหน่วยงาน — ไม่ใช่การพยากรณ์ของทีมนี้):**
-- ระดับน้ำคลอง + ปั๊มระบายน้ำ — สำนักการระบายน้ำ กรุงเทพมหานคร (ผ่าน HII/สสน. thaiwater.net และ
-  weather.bangkok.go.th)
-- ถนนน้ำท่วม — สำนักการระบายน้ำ กรุงเทพมหานคร (thaiwater.net)
-- รายงานประจำวัน — ศูนย์ควบคุมระบบป้องกันน้ำท่วม กทม. (dds.bangkok.go.th)
-- น้ำขึ้น-น้ำลง — กรมอุทกศาสตร์ กองทัพเรือ
-- รายงานชาวบ้าน/สื่อสังคมออนไลน์ — RELAYED เท่านั้น ไม่เก็บชื่อผู้โพสต์ ไม่ใช่หน่วยงานราชการ
-- ถนน/คลอง/โรงพยาบาล (แผนที่พื้นฐาน) — © OpenStreetMap contributors, licensed under the
-  Open Database License (ODbL) — see openstreetmap.org/copyright
-- `output/*.graphml` (โครงข่ายแม่น้ำ/ลำคลอง) — HydroSHEDS/HydroRIVERS (Lehner group).
-  HydroSHEDS is freely available for scientific, educational and commercial use under its
-  licence agreement — see hydrosheds.org
-- แบบจำลองระดับสูงภูมิประเทศ (DEM) — Copernicus DEM (ESA), free to use with attribution
-- สสน./HII (thaiwater.net), สำนักการระบายน้ำ กรุงเทพมหานคร, กรมอุทกศาสตร์ กองทัพเรือ — ข้อมูล
-  สาธารณะของหน่วยงานรัฐ (terms: OPEN)
+Start here → **[START_HERE.md](START_HERE.md)** (human-facing, 5-minute read, Thai) ·
+**[AGENTS.md](AGENTS.md)** (AI-facing rules, bilingual) · **[AI.md](AI.md)** (the single
+AI compute entrypoint).
 
-**คำเตือนที่ต้องอ่าน:** ทีมนี้เป็นทีมอาสาสมัคร ไม่ใช่หน่วยงานราชการ ไม่มีเครื่องมือวัดของตัวเอง
-ทุกตัวเลขคือการ "อ่านค่า" จากแหล่งข้อมูลของหน่วยงานที่ระบุไว้ ณ เวลาที่ระบุ ไม่ใช่การพยากรณ์หรือ
-การยืนยันความปลอดภัย ข้อมูลอาจล่าช้า ขาดหาย หรือคลาดเคลื่อนได้ — ใช้ร่วมกับดุลยพินิจของตัวเอง
-และช่องทางทางการเสมอ (โทร 1669 เหตุฉุกเฉิน, 1555 แจ้งน้ำท่วม กทม.)
+MVP v0.1.0 — Bangkok, Sammakorn village + Soi Ramkhamhaeng 53 only (see §3 "Out of
+scope"). This is a volunteer project. It has no instruments of its own; every number is a
+timestamped, source-tagged reading from an official agency or a community report.
 
-**เครดิต:** ทีม ศูนย์ความรู้พลเมืองปัญญาประดิษฐ์ · อารยานิกะห์ วิสาหกิจเพื่อสังคม ประเทศไทย
+**Emergency numbers — always call these for anything real. This page is a readout, not
+an emergency channel. เบอร์ฉุกเฉิน — โทรก่อนเสมอเมื่อสถานการณ์จริง หน้านี้เป็นการอ่านค่า
+ไม่ใช่ช่องทางแจ้งเหตุ:**
 
-**สัญญาอนุญาต (Licence):**
-- โค้ด (code): MIT — ดูไฟล์ `LICENSE` ของ repo นี้ (อาจเปลี่ยนแปลงได้โดยผู้ดูแลโครงการ)
-- เอกสาร/ข้อความ (documentation/text): Creative Commons Attribution 4.0 International (CC BY 4.0)
-- ข้อมูลของหน่วยงาน/บุคคลที่สาม (third-party data): แต่ละแหล่งคงสัญญาอนุญาตเดิมของตัวเอง — ดูหัวข้อ
-  "แหล่งข้อมูล / Data attribution" ด้านบน; รายงานชาวบ้าน/สื่อสังคมออนไลน์เป็น RELAYED (นำมาเล่าซ้ำ
-  พร้อมระบุแหล่ง ไม่ใช่ของทีมนี้เอง และไม่ใช่การยืนยันจากทีมนี้).
+| Number / channel | Use for |
+|---|---|
+| **1669** | Medical emergency / เหตุฉุกเฉินทางการแพทย์ |
+| **1784** | DDPM (disaster) / กรมป้องกันและบรรเทาสาธารณภัย |
+| **1555** | BMA flood hotline / สายด่วนน้ำท่วม กทม. |
+| **1130** | MEA electrical hazard / ไฟฟ้าขัดข้อง-อันตรายจากไฟฟ้าในน้ำ |
+| **Traffy Fondue** | Official BMA street-flooding report channel |
 
 ---
 
+## 1. What FloodConnect is
 
+Flood data in Thailand is not scarce — it is scattered across agencies (BMA, the Royal
+Irrigation Department, HII/สสน., the Royal Thai Navy Hydrographic Department, GISTDA,
+the Thai Meteorological Department) with no single place that assembles it **with a
+trust label on every number**. FloodConnect is that one place for its two pilot areas:
+a typed knowledge graph (water flow, authority/ownership, resources, a 6-tier
+community self-help path) plus a small AI-readable compute layer on top of it.
 
-## AI / Agent entrypoint
+น้ำท่วมในไทยไม่ได้ขาดข้อมูล — ขาดที่เดียวที่รวมข้อมูลจากหลายหน่วยงานพร้อมป้ายความน่าเชื่อถือ
+ของแต่ละค่า FloodConnect คือกราฟความรู้เดียวที่เชื่อมชั้นน้ำ/อำนาจ/ทรัพยากร/คน เข้าด้วยกัน
+สำหรับสองพื้นที่นำร่อง พร้อมชั้นคำนวณเล็ก ๆ ที่ AI อ่านต่อได้ทันที
 
-**New AI/agent: start with `docs/AI_ENTRYPOINT.md`, then read
-`site/inputs/meta/floodconnect_repo_kg.yaml`.**
+**This is a readout, not a forecast, not a safety certification.** Every number is what
+was read from a named source at a named time — never a prediction of what will happen,
+never a statement that it is safe to stay or leave.
 
-The Repo Knowledge Graph (RKG) is the canonical meta-layer for understanding this repository:
-it maps major constructs, source-of-truth artifacts, dependencies, epistemic classes, hard
-non-edges, and question-specific read paths. Before creating a new ontology or node type, check
-the RKG and extend an existing canonical node/artifact whenever possible.
+## 2. Features (MVP v0.1.0)
 
-- Multi-agent protocol: `AGENTS.md`
-- Contribution workflow: `CONTRIBUTING.md`
-- Active semantic claims: `.ai/claims/`
-- Claim validator: `agent_claims.py`
-- AI entrypoint: `docs/AI_ENTRYPOINT.md`
-- Canonical Repo KG: `site/inputs/meta/floodconnect_repo_kg.yaml`
-- Human repo graph: `docs/FLOODCONNECT_REPO_KG.md`
-- KG validator/exporter: `repo_knowledge_graph.py`
-- KG tests: `tests/test_repo_knowledge_graph.py`
+Each feature below is runnable today in this repo. Commands shown were run against this
+tree; your own output will differ because the underlying data changes every refresh.
 
-
-## Community self-help DAG
-
-FloodConnect now includes a **human-response DAG** in addition to water/flood readouts:
-
-`Self / Household → Buddy cell → Zone → Internal safe node → Egress → Verified external safe node`
-
-- Model + field protocol: `docs/COMMUNITY_SELF_HELP_DAG.md`
-- Declared topology for the current FloodConnect areas: `site/inputs/community/self_help_dag.yaml`
-- Validator / constraint-first route selector: `community_dag.py`
-- Tests: `tests/test_community_dag.py`
-
-The routing layer is deliberately fail-closed: **UNKNOWN, stale, blocked, or unverified routes are not used**.
-It does not create a flood-risk score or declare a place safe from map proximity alone. An external target must
-be field-verified, fresh, explicitly `SAFE`, have enough declared capacity, and provide any required services.
-
-### Shelter decision + community sustainment
-
-FloodConnect now has a proposal layer for the question that comes **before** evacuation:
-what is the **lowest support node at which the household/community can still remain safe and
-function for a declared planning horizon**?
-
-The repo-specific construct is **Lowest Viable Community Node (LVCN)**:
-
-`household → buddy_cell → zone → internal/community shelter → external_safe`
-
-`egress` remains a movement connector and is not an LVCN candidate. Resource/help delivery is
-a separate support network, because supplies/helpers can move inward while residents stay put.
-
-The aim is to preserve safe self-sustainment at the lowest feasible layer, not to move people
-to a shelter earlier than necessary. It also introduces the states `STAY_AND_SUSTAIN`,
-`RESUPPLY_WINDOW`, `PREPARE_TO_MOVE`, shelter screening/operation, and
-return/relocation/closure.
-
-- Decision engine: `shelter_decision.py`
-- Design + research anchors: `docs/SHELTER_DECISION_AND_COMMUNITY_SUSTAINMENT.md`
-- Thailand-first equations/typology: `docs/THAI_DISTRIBUTED_LIFELINE_CONVERGENCE.md`
-- AI implementation handoff: `docs/HANDOFF_SHELTER_DECISION_AND_SUSTAINMENT.md`
-- Operational fail-closed schema: `site/inputs/community/sustainment_policy.yaml`
-- Field failure modes: `site/inputs/community/shelter_field_evidence_2026-09-28.md`
-- Tests: `tests/test_shelter_decision.py`
-- Environmental time-to-unsafety engine: `environmental_degradation.py`
-- Environmental degradation equations/evidence: `docs/ENVIRONMENTAL_DEGRADATION_CLOCKS.md`
-- Environmental tests: `tests/test_environmental_degradation.py`
-- Human–Animal Household Unit: `human_animal_household.py`
-- Human–animal equations/evidence: `docs/HUMAN_ANIMAL_HOUSEHOLD_UNIT.md`
-- Thai animal field evidence: `site/inputs/community/human_animal_field_evidence.md`
-- Human–animal tests: `tests/test_human_animal_household.py`
-- Unified crisis-state readout: `unified_crisis_state.py`
-- Unified state tests: `tests/test_unified_crisis_state.py`
-- Lifeline convergence feasibility: `convergence_feasibility.py`
-- Convergence tests: `tests/test_convergence_feasibility.py`
-- Shared dry-node Kanban: `convergence_board.py`
-- Kanban tests: `tests/test_convergence_board.py`
-- Shelter operation capability ladder: `shelter_operation_ladder.py`
-- Shelter ladder evidence: `docs/SHELTER_OPERATION_CAPABILITY_LADDER.md`
-- Shelter ladder tests: `tests/test_shelter_operation_ladder.py`
-- Public shelter seed strategy: `public_shelter_seed.py`
-- Public-facility archetypes: `site/inputs/community/public_shelter_seeds.yaml`
-- Public shelter seed evidence/design: `docs/PUBLIC_SHELTER_SEED_STRATEGY.md`
-- Public shelter seed tests: `tests/test_public_shelter_seed.py`
-- Operational tool registry: `site/inputs/community/operational_tools.yaml`
-- Operational resource capability evidence: `operational_resources.py`
-- Operational resource capability graph: `docs/OPERATIONAL_RESOURCE_CAPABILITY_GRAPH.md`
-- Tool/resource tests: `tests/test_operational_tools_registry.py`, `tests/test_operational_resources.py`
-- Thai flood warning actor typology: `site/inputs/governance/flood_warning_actor_typology.yaml`
-- Warning actor crosswalk: `docs/THAI_FLOOD_WARNING_ACTOR_TYPOLOGY.md`
-- Warning typology tests: `tests/test_flood_warning_actor_typology.py`
-
-**Shelter-operation hard rule:** NO verified dry operating footprint -> NO shelter-operation level. `SO-L0_DRY_INTERFACE` is the minimum physical node; higher levels cumulatively add transfer, day-support, overnight, and full-shelter capabilities.
-
-FloodConnect now also models **safe-now -> degrading -> unsafe** transitions that can occur
-without rising water depth: sewage/backflow contamination, sewer-gas/H2S uncertainty,
-wet-material/mold clocks, standing-water/vector clocks, and stagnant organic-water odor
-potential. These mechanisms remain separate; there is no single universal "age of floodwater"
-threshold.
-
-**LVCN is a FloodConnect proposal, not a claimed FEMA/Sphere/UNHCR/CCCM standard.**
-The design remains fail-closed: no universal stock-duration default, no weighted safety score,
-no unverified resupply route, and no building treated as a shelter from its name/type alone.
-
-## Technical
-
-The sections below are the original technical documentation for the underlying river-network
-knowledge graph and live flood-context data system that FloodConnect's public page is built
-on top of (`site/build_data.py` / `site/build_page.py`, driven by `collect.py` +
-`sources/registry.yaml`; see `docs/DATA_SYSTEM.md` and `site/DATA_README.md` for the full
-field-by-field source map).
-
-### Thailand River Flow-Propagation Knowledge Graph
-
-## Repo notes
-
-- `raw/` is **not committed** (git-ignored) — it's large (~113MB: HydroRIVERS clip, HOTOSM
-  waterways, BMA CSVs, a Copernicus DEM tile) and trivially re-downloadable. Regenerate it by
-  following each build script's "Re-running" section below / in `README_bangkok_canals.md`.
-- `.env` is **not committed**. Copy `.env.example` to `.env` and fill in a real
-  `GISTDA_API_KEY` to re-run the live flood-overlay parts of the pipeline.
-
-## What this is NOT — read this first
-
-**This graph's "next downstream node" answer is a topological readout of river-network
-connectivity (deterministic from the HydroRIVERS dataset), NOT a flood forecast or
-prediction.** It does not model discharge propagation timing, rainfall, or reservoir
-operation. It answers "which node is structurally downstream of this one" — not "will it
-flood, when, or how high." Treat it as a static map of *where water can go*, not a
-predictive alert system. Do not present its output as a forecast.
-
-## What this is
-
-A directed graph of Thailand's major river reaches. Given a flooded node, the next
-downstream node(s) — the ones structurally positioned to receive that water next — are
-its graph successors:
-
-```python
-import networkx as nx
-G = nx.read_graphml("output/thailand_river_flow.graphml")
-list(G.successors("41177595"))   # -> next downstream reach id(s)
-```
-
-or in the JSON-LD export, read the `flowsInto` array on that node's entry.
-
-**Direction is topological, not geometric.** Every edge in this graph comes directly from
-HydroRIVERS' own `NEXT_DOWN` field — a value HydroSHEDS derived from DEM-based flow
-routing, not from anything this pipeline computed. Nowhere does this pipeline infer flow
-direction from lat/lon bearing (no `atan2`/`acos` on coordinates anywhere in
-`build_kg.py`). This is a deliberate design choice: geographic bearing between two points
-says nothing about which way water actually flows (rivers meander, and a "downstream"
-neighbor can sit north, south, east, or west of its upstream neighbor); only the
-network's own recorded topology can say that.
-
-## Pipeline
-
-`build_kg.py`:
-1. Load HydroRIVERS v1.0 Asia extract, clip to Thailand's bbox (97.3–105.7°E, 5.5–20.5°N).
-2. Filter to "major rivers": keep reaches with Strahler order (`ORD_STRA`) ≥ 6.
-3. Build a directed graph: node = HydroRIVERS reach (`HYRIV_ID`), edge = flows into the
-   next reach that also survived the order filter. Where the raw `NEXT_DOWN` pointer
-   lands on a *minor* (filtered-out) reach first, the pipeline walks further downstream
-   through the full (unfiltered) network until it reaches the next *major* reach, so the
-   major-river graph stays end-to-end connected instead of fragmenting at every small
-   tributary confluence. The physical length of every skipped minor reach is accumulated
-   into that edge's `length_km` attribute.
-4. Compute centrality (Degree, Closeness, Betweenness, Eccentricity, Eigenvector) on the
-   undirected projection, mirroring the methodology in Phukseng (2020), *J Sci Technol
-   MSU* 39(4):388–399, "An Analysis of Water Network Employed by Graph Theory-based
-   Centrality: A Case Study of Flood Risk Areas in Chanthaburi Province." Closeness and
-   Betweenness use `weight="length_km"` — shortest path means shortest *river distance*
-   (summed reach lengths along the path), not hop count.
-5. Assign a basin-proxy grouping (see caveat below).
-6. Optionally overlay live flood extent from GISTDA's Disaster API (needs `GISTDA_API_KEY`
-   env var; skipped otherwise, `flood_status` stays `"unknown"`).
-7. Export GraphML (opens directly in Gephi, same tool the Thai paper used) and JSON-LD.
-
-### Re-running
+### F1 — Install from a fresh clone
 
 ```bash
-# one-time: get the raw HydroRIVERS Asia shapefile (~90MB zip, ~370MB unzipped)
-mkdir -p raw
-curl -o raw/HydroRIVERS_v10_as_shp.zip \
-  https://data.hydrosheds.org/file/HydroRIVERS/HydroRIVERS_v10_as_shp.zip
-unzip raw/HydroRIVERS_v10_as_shp.zip -d raw/
-
-# build the graph
-python3 build_kg.py --strahler-min 6
-
-# build it with a live flood overlay
-GISTDA_API_KEY=your_key_here python3 build_kg.py --strahler-min 6
+git clone <this-repo-url> floodconnect && cd floodconnect
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e .
+cd /anywhere/else
+floodconnect answer --at sammakorn --offline --json   # the console script works outside the repo dir
 ```
 
-The Thailand-bbox clip is cached at `raw/thailand_bbox_clip.parquet` after the first run
-(re-run deletes/skips re-clipping automatically by reusing that cache — delete it if the
-upstream HydroRIVERS data is ever updated).
+ติดตั้งจาก `git clone` สด ๆ แล้ว `pip install -e .` คำสั่ง `floodconnect` ใช้ได้จากไดเรกทอรีใดก็ได้
+ไม่ต้องอยู่ในโฟลเดอร์ repo
 
-## Epistemic tiering
+### F2 — `floodconnect answer --at <area|lat,lon>`
 
-| Artifact | Tier | Note |
-|---|---|---|
-| Reach topology, `NEXT_DOWN`, Strahler order, discharge (`DIS_AV_CMS`), reach length | `finite_diagnostic` | Measured/derived by HydroSHEDS from satellite+DEM data (HydroRIVERS v1.0 Technical Documentation). This pipeline did not independently verify these values — relayed from the source, cited, not laundered as this pipeline's own finding. |
-| Strahler-order threshold (≥ 6, yielding 2,250 of 91,116 reaches in the Thailand bbox) | `Dr` (engineering judgment) | Order distribution in-bbox: order 1–47,223 · 2–21,254 · 3–10,691 · 4–5,999 · 5–3,699 · 6–1,123 · 7–968 · 8–159. Order ≥ 6 was chosen to land in the "few hundred to ~2,000 major reaches" range the task asked for; ≥ 7 (1,127 reaches) or ≥ 5 (5,949 reaches) are equally defensible alternative cuts — this is not a proven-optimal threshold. |
-| `basin_proxy_id` (13 groups) | `Dr` (approximate, not authoritative) | Grouped by HydroRIVERS' own `MAIN_RIV` id (reaches draining to the same river mouth). **This is NOT the official 25 ลุ่มน้ำหลัก (major river basins) of Thailand's Office of National Water Resources** — no authoritative Thai basin-boundary shapefile was fetched for this run, so this is a topology-based proxy, not a verified administrative boundary. Expect it to disagree with the official 25-basin map in places (fewer groups here, since some officially-separate adjacent basins may share/merge at this order threshold, and some very short coastal basins may have no reach reaching order 6 at all and are absent). |
-| `flood_status` (when populated via `GISTDA_API_KEY`) | `finite_diagnostic` | GISTDA's own satellite-derived flood-extent readout for the request's `/flood/30days` window, spatially joined onto node centroids at run time. **The endpoint is paginated (OGC-features style)**: an unparameterized call returns only ~10 of the true total — confirmed live at 14,376 flood polygons nationwide (`numberMatched`) behind a default page of ~10 (`numberReturned`), detected via the response's `links` `rel:"next"` entry. `overlay_gistda_flood()` now pages with `limit=1000&offset=N` (1000 accepted as-is, not silently clamped) through all 15 pages to collect the full 14,376 before joining. A single unparameterized call would have silently undercounted by >99% (this was caught and fixed after an initial run wrongly returned 0 flooded nodes). The result is still a **snapshot**, not a live feed — this pipeline stamps every run with the UTC fetch timestamp (printed to stdout, e.g. `2026-09-22T16:53:29Z`); re-run to refresh. Confirmed run: 30 of 2,250 nodes flagged `"flooded"`. |
-| Centrality scores (Degree/Closeness/Betweenness/Eccentricity/Eigenvector) | `finite_diagnostic` (computation), applied to a `Dr`-tier graph | The centrality math itself is exact given the graph; the graph it's computed on already carries the `Dr`-tier threshold/basin choices above, so treat centrality-based risk rankings as suggestive, not settled. |
-
-## Future integration: Google Flood Forecasting API (stubbed, not active)
-
-`overlay_google_flood_forecast()` in `build_kg.py` is a documented stub, not a working
-integration — it raises `NotImplementedError` if called. Why it matters and why it's not
-wired up yet:
-
-- GISTDA's `/flood/30days` (used by `overlay_gistda_flood()`) is a **snapshot** of
-  currently/recently detected flood extent — it answers "is this node flooded right now,"
-  not "will it flood." Google's Flood Forecasting API (developers.google.com/flood-forecasting,
-  part of Google Flood Hub) publishes up to **7-day-ahead riverine forecasts**, which is
-  the actual missing piece for turning this graph into a forward-looking tool.
-- **Access is gated**, not a self-serve key: join a waitlist, supply a Google Cloud
-  Project ID, wait for manual approval. Confirmed via web research 2026-09-23
-  (`Dr`/relayed tier — not independently verified by calling the API, since no access
-  exists yet).
-- Coverage is 150+ countries / 1,800+ gauge sites globally as of that research pass;
-  **Thailand-specific gauge density was not confirmed** — would need to inspect
-  floodhub.google.com's map directly (a JS app, not checkable via a headless fetch).
-- The gauge ID scheme is undocumented in the pages checked and is almost certainly not
-  HydroRIVERS' `HYRIV_ID` — once real access and gauge coordinates exist, joining gauges
-  onto this graph's nodes will likely need a nearest-neighbor spatial match, not a direct
-  ID join. Don't assume that match works until it's built and checked against real data.
-
-To activate: get API access, then implement the function per its docstring.
-
-## Known limitations
-- Flood-polygon proximity join uses a `0.01` degree (~1.1km at Thailand's latitude)
-  fallback buffer for "reach centroid near but not strictly inside a flood polygon."
-  `Dr` tier — a judgment call, not validated against ground truth; left as-is for this
-  run, not tuned further. A tighter buffer would likely reduce false positives near
-  large flood polygons' edges; a looser one would catch more true positives on reaches
-  that pass near but not through a mapped polygon.
-- No river-name field exists in HydroRIVERS; every node is `name: "unnamed"`, identified
-  only by `HYRIV_ID`.
-- `basin_proxy_id` is a proxy, not the official 25-basin boundary set (see table above).
-- Without `GISTDA_API_KEY`, `flood_status` is `"unknown"` on every node — this pipeline
-  does not fabricate flood state.
-- Thailand bbox clip includes a thin strip of neighboring countries' border reaches
-  (Myanmar/Laos/Cambodia/Malaysia) since it's a rectangular clip, not a country-polygon
-  clip — acceptable for a first version, but don't assume every node is inside Thailand
-  without checking.
-
-## Sammakorn canal ↔ gate ↔ pond ↔ pump hydraulic DAG
-
-FloodConnect now models the Sammakorn retention system as **two different hydraulic edges** rather than one ambiguous bidirectional link:
-
-`external canal → gate/gravity → retention pond → pump → receiving canal → wider canal network`
-
-- `gate/gravity` = controlled inflow into available storage when the external water surface is above the pond.
-- `pump` = mechanical outflow from the pond toward a receiving canal.
-- `pumped inflow` into the four ponds is **not established** and must not be inferred from the phrase “ดึงน้ำเข้าบึง”.
-- Missing water levels, gate state, or receiving-canal condition remain `UNKNOWN` / fail-closed.
-
-Human-readable model: `docs/SAMMAKORN_HYDRAULIC_DAG.md`
-
-Machine-readable topology/state rules: `site/inputs/canals/sammakorn_hydraulic_dag.yaml`
-
-## Live canal water level
-
-`live_water_level.py` attaches a live Bangkok canal water-level reading onto the canal
-graph's nodes (`build_bangkok_canals.py`'s output). **Read "What this is NOT" above first
--- a live reading is a point readout, not a forecast, and (per
-`README_bangkok_canals.md`'s water-level-station section) one station's level alone does
-not give flow direction.**
-
-Sources checked 2026-09-26:
-
-| Source | Status | Detail |
-|---|---|---|
-| BMA KlongMap backend (`weather.bangkok.go.th/Klongmap/GetDataForUpdate`) | **Blocked (HTTP 403)** | Confirmed even with full browser-like headers (User-Agent/Accept/Referer). Parsing is implemented and unit-tested against a real recorded response shape (a cached dump from this repo's earlier session) so it activates automatically the moment the block lifts. |
-| HII/สสน. `standard.thaiwater.net` (spec doc) | **No queryable host** | This is a national data-exchange *specification* document (its own "Base URL" doc gives a placeholder host), not a hosted API. Superseded below. |
-| **HII/สสน. `api-v3.thaiwater.net/api/v1/thaiwater30/public/canal_waterlevel`** | **LIVE, working** | Found by loading `https://www.thaiwater.net/bma` (HII's own "สถานการณ์น้ำกรุงเทพมหานคร" page) in a browser and reading the page's own XHR calls. Public, unauthenticated `GET` -- no token/cookie/login observed or required; confirmed reachable with a plain `urllib.request` + generic User-Agent (`200 OK`). 282 BMA canal-station records (`agency.agency_name.en == "Department of Bangkok"`, i.e. สำนักการระบายน้ำ กรุงเทพมหานคร), each with real `canal_lat`/`canal_long`, current `canal_value` (m), and `canal_datetime` (local Thailand time, converted to UTC on parse). This is now the live path (`fetch_thaiwater_stations()` / `parse_thaiwater_canal_stations()` in `live_water_level.py`). |
-
-**Licence / attribution note (RELAYED, not independently confirmed against a formal licence text):**
-no terms/licence link was found in the `/bma` page's footer during this check. The data is
-served under HII/สสน.'s "National Hydroinformatics Data Center" (thaiwater.net) brand and every
-record is agency-tagged upstream as สำนักการระบายน้ำ กรุงเทพมหานคร (BMA). Attribute both when
-reusing this data: "Source: HII/สสน. (thaiwater.net), data from สำนักการระบายน้ำ กรุงเทพมหานคร
-(BMA)." Re-check `thaiwater.net`'s terms directly before any public/commercial redistribution --
-this note is a relay of what was observed 2026-09-26, not a legal clearance.
-
-Run `python3 live_water_level.py --probe` to re-check both live sources (KlongMap +
-thaiwater canal) with one fresh request each (no retry loop). Run
-`python3 live_water_level.py --attach <graph.graphml> --out <file>` to fetch live and
-attach onto an existing canal graph, or add `--from-file <saved raw JSON>` to attach
-offline from a previously-cached response (e.g. `raw/live/thaiwater_bma/<ts>_canal_waterlevel.json`)
-with no network call at all. Nodes gain `live_water_level_m`, `live_water_level_observed_at`,
-`live_water_level_station`, `live_water_level_source`, `live_water_level_match_confidence`
--- never overwriting attributes from another source. A real run on 2026-09-26 matched
-**179 of 282** stations to graph nodes within the 300 m join radius (all via direct
-coordinate join, not the fuzzy name fallback); KlongMap remains 403 (0 readings from it).
-
-**Thresholds/status**: each station also carries BMA's own published `warning_level`,
-`critical_level`, `bank` (metres, `None` when BMA publishes none for that station), plus
-`canal_oldcode` (BMA code, e.g. `WL.SSB.07`) and, for a floodgate station (`canal_name`
-starting `ปตร.`), an outside-gate `canal_out` reading. `classify_level()` turns a reading
-into `NORMAL` / `WATCH` / `CRITICAL` / `OVERBANK` / `NO_THRESHOLD` against those bands --
-a readout against BMA's own bands, not a forecast. **Staleness**: a station's `observed_at`
-is compared to the newest `observed_at` in the same fetched batch; anything more than 24h
-older (or with no parseable timestamp) is treated as stale and skipped by both `--attach`
-and `--watch`. **`--watch LAT LON [--radius-km 5] [--from-file JSON]`** prints a plain-text
-table of every non-stale station within radius, sorted by distance, with a one-line
-"N stations, X CRITICAL, Y WATCH, Z stale skipped" summary -- read-only, no graph touched.
-
-**Sammakorn pump stations (ST.SPS.01-04)**: `fetch_pumphistory()` / `parse_pumphistory_html()`
-read BMA's `weather.bangkok.go.th/Station/PumpHistory` server-rendered summary table
-(confirmed live 200 OK 2026-09-26, one GET, no retry -- note the same host returned 403 on
-`/Home` and `/Map` the same day, treated as a per-path difference). Each row gives
-`level_m`, `pumps_on`/`pumps_total`, `gate_open` (m, `None` if no gate), `district`,
-`lat`/`lon` (real coordinates, `coord_source="pumphistory datapump"` -- from the same
-page's own embedded metadata array, not a fuzzy join), and `observed_at`. `--watch
---pump-from-file <saved PumpHistory HTML>` prints them as a separate block sorted by
-distance from the --watch centre; `attach_live_pump_status(graph, pumps)` joins each pump
-to its nearest canal node within the same 300 m radius (never overwriting), writing
-`live_pump_code/_name/_level_m/_pumps_on/_pumps_total/_gate/_status/_observed_at`.
-
-## Output
-- `output/thailand_river_flow.graphml` — 2,250 nodes, 2,236 edges
-- `output/thailand_river_flow.jsonld`
-
-## Live flood-context data system (registry + collector + readout)
-
-`sources/registry.yaml` + `collect.py` + `store.py` + `readout.py` are a separate,
-newer layer on top of `live_water_level.py` (reusing its fetch/parse functions, not
-duplicating them): a registry-driven collector that pulls from multiple agencies
-(thaiwater canal/flood-road telemetry, BMA PumpHistory, the DDS daily PDF bulletin, the
-DDS flood-report HTML table, the Navy Hydrographic monthly tide-table PDF), stores
-everything append-only in `data/observations.sqlite` (gitignored), and renders a
-Markdown+JSON readout centred on a point (`python3 readout.py --centre LAT LON`).
-
-**No flood-risk score or formula exists anywhere in this system** -- every row is a
-MEASURED reading, a RELAYED official forecast/report figure, or explicitly OPEN
-(missing), each tagged with a `trust_tier` (Thai agencies compete and sometimes
-disagree; this system shows the disagreement as an explicit contradictions section,
-never resolves it). Full pipeline diagram, the trust-tier vocabulary, the host-safety
-rule, and how to add a new source: **`docs/DATA_SYSTEM.md`** (Thai-first, English
-summary at the end).
-
-## Sammakorn pond–canal hydraulic DAG
-
-FloodConnect now separates the Sammakorn pond/canal interface into two different hydraulic edges:
-
-```text
-CANAL/DRAIN --[GATE + GRAVITY]--> POND
-POND        --[PUMP]-----------> RECEIVING CANAL
+```bash
+floodconnect answer --at sammakorn
 ```
 
-- Human-readable model: `docs/SAMMAKORN_POND_CANAL_DAG.md`
-- Machine-readable topology: `site/inputs/canals/sammakorn_pond_canal_dag.yaml`
+Prints four blocks every time: current local state, forward hazard, who is
+accountable, and 1–3 next actions (each with its own epistemic tag). `--at` accepts a
+registered area id (`sammakorn`, `ram53`) or a raw `lat,lon`. The combined token cost of
+`AI.md` + `skills/floodconnect/SKILL.md` + one `answer` call is kept under
+**≤ 10,000 cl100k tokens (enforced by `tests/test_token_budget.py` at 9,500)** for the
+real default path — `refresh=True`, the real MCP-serialised `floodconnect_answer`
+response, both MVP areas (`tests/test_token_budget.py::
+test_mcp_serialised_default_refresh_answer_stays_under_tightened_budget`) — so an AI
+session can load the whole contract and still ask its question cheaply.
 
-Key rule: **“draw water into the pond” does not automatically mean “pump into the pond.”**
-Current evidence supports controlled/gravity inflow into storage and verified pumped outflow from Sammakorn pump stations 1–4. Exact gate geometry and the station-to-specific-canal mapping remain fail-closed where unverified.
+พิมพ์ 4 บล็อกเสมอ: สถานะปัจจุบัน / แนวโน้มอันตราย / ผู้รับผิดชอบ / ขั้นต่อไป 1-3 ข้อ แต่ละบล็อก
+ติดป้าย epistemic ของตัวเอง
+
+### F3 — Fresh data by default
+
+```bash
+floodconnect answer --at sammakorn            # refreshes from the network before answering (default)
+floodconnect answer --at sammakorn --offline  # opt out: answer from the local DB only, no network
+```
+
+Refresh is the **default**, not an opt-in: one GET request per relevant source, on
+*your own* machine/network, before the answer is computed — no retry loop. `--offline`
+is the explicit opt-out for no-network or no-upstream-hit runs. No stale reading is
+ever allowed to decide a colour or the forward hazard — a reading older than its
+source's own freshness cutoff is shown (tagged, with its age) but excluded from the
+decision, never silently used as if current.
+
+รีเฟรชข้อมูลสดเป็นค่าเริ่มต้น (ไม่ใช่ตัวเลือก) — ยิง 1 request ต่อแหล่งที่เกี่ยวข้อง บนเครือข่าย
+ของคุณเอง ก่อนตอบทุกครั้ง ไม่มี retry loop; `--offline` คือทางเลือกปิดเท่านั้น ค่าที่เก่ากว่าเกณฑ์
+ความสดของแหล่งนั้นจะไม่ถูกใช้ตัดสินสี/แนวโน้มอันตรายเด็ดขาด
+
+### F4 — `floodconnect forecast --at <area|lat,lon>`
+
+```bash
+floodconnect forecast --at sammakorn
+```
+
+Reports rain **per forecast model** (Open-Meteo/ECMWF/GFS and siblings) — never
+averaged into one number. Each model's row carries an `issued_at` timestamp, but
+note: that is this clone's **fetch time**
+(`MAX(fetched_at_utc)`), not the upstream model's own run/issue time — Open-Meteo's
+per-model run time is OPEN, not read anywhere in this codebase today. A stale cached
+row is still correctly excluded from the decision (the freshness gate compares against
+this same fetch time, so a 12h-old cache row is correctly marked stale) — only the
+LABEL "forecast issue time" overstated what the timestamp actually measures; read it
+as "when this clone last fetched this model's row", never "when the model issued it".
+
+รายงานฝนแยกตามแต่ละโมเดลพยากรณ์ (ไม่เฉลี่ยรวมเป็นเลขเดียว) พร้อมเวลาที่ "ดึงข้อมูลมาเก็บ" ล่าสุด
+(ไม่ใช่เวลาที่โมเดลพยากรณ์ออกผลจริง — OPEN, ยังไม่มีในโค้ดนี้)
+
+### F5 — Honesty by construction
+
+`UNKNOWN` is a real, distinct state — never collapsed into "normal" or "safe". Example,
+an actual run with no live network reachable from this install (`--offline`):
+
+```json
+"state": {"tag": "OPEN", "water_balance_status": "REFUSED", "tide_tag": "OPEN"},
+"accountability": {"tag": "OPEN", "refused": "no knowledge-graph build found -- run `python3 -m tools.kg.build_kg` first"}
+```
+
+Every value carries a `source` + an age; the system never issues an evacuation order
+(§5 "No evacuation orders" applies everywhere); the public-facing wording law bans
+ไม่ต้อง / ห้าม / ไม่ควร / ผ่อนคลอง-style phrasing that would read as a safety certification
+this project does not make. It never says `SAFE`.
+
+`UNKNOWN` ไม่เท่ากับปกติ/ปลอดภัยเด็ดขาด ทุกค่าติด source + อายุของข้อมูล ระบบไม่ออกคำสั่งอพยพ
+และห้ามใช้คำที่สื่อว่า "ปลอดภัยแล้ว" บนหน้าเว็บสาธารณะ ไม่เคยพิมพ์คำว่า `SAFE`
+
+### F6 — Use it from your own AI
+
+```bash
+pip install -e '.[mcp]'   # pulls in the mcp>=1.2,<2 SDK; plain `pip install -e .` does NOT
+```
+
+The MCP server (`tools/mcp/floodconnect_mcp.py`) runs on your own machine; its
+`floodconnect_answer` tool returns exactly the same payload as the `floodconnect
+answer --json` CLI call — no second code path, no divergence to reconcile. **`AI.md`
+is the single entry point** for any AI session working with this repo — read it before
+calling any tool directly. See §6 below for the MCP config and test prompts.
+
+เซิร์ฟเวอร์ MCP รันบนเครื่องคุณเอง ผลลัพธ์จาก `floodconnect_answer` เหมือนกับคำสั่ง CLI เป๊ะ
+`AI.md` คือจุดเข้าเดียวสำหรับ AI ทุกตัวที่จะทำงานกับ repo นี้
+
+### F7 — Publish-safe
+
+No AI/vendor name, no local filesystem path, and no personal name is checked into any
+tracked file (community reports carry soi + condition + time only). Fixtures used by
+the test suite are small, synthetic or clearly-marked samples — never a dump of raw
+production data. A leak scan runs before anything is pushed public (see
+the maker-≠-checker rule above and an independent leak scan).
+
+ไม่มีชื่อ AI/ผลิตภัณฑ์ ไม่มี path ของเครื่องใดเครื่องหนึ่ง ไม่มีชื่อบุคคลใน tracked file ใด ๆ
+มีการ leak scan ก่อน publish สู่สาธารณะทุกครั้ง
+
+### F8 — CCTV cameras (implemented)
+
+**Status: live.** `floodconnect answer`/`floodconnect_answer` return a `cctv` block
+(`kind: "VISUAL-CHECK"`, `radius_km`, `cameras[]`) whenever the `hii_analyst_cctv`
+catalog (HII/สสน. via thaiwater.net, `sources/registry.yaml`) has at least one
+parseable camera row — each `cameras[]` entry carries `name`/`distance_km`/`url`/
+`within_radius`, always the ≤3 NEAREST cameras to the requested point even when none
+are inside `radius_km` (3 km by default) — a far camera is still shown, flagged
+`within_radius: false`, rather than silently hidden. In the real catalog's current
+coverage, the nearest cameras to Sammakorn/Ram53 are 12–20 km away and 2 of the 3 have
+no public stream URL (`url: null`, a real limit of the upstream catalog itself, not a
+parsing bug) — shown as `ไม่มีลิงก์` ("no link") in the CLI text printer rather than
+omitted. A camera is always informational/`VISUAL-CHECK` only, never an input to
+`state`/`hazard`/`next_action`'s own decisions — see `AI.md`/`skills/floodconnect/
+SKILL.md` for the same rule stated for an AI caller.
+
+**สถานะ: ใช้งานได้จริง** `answer` คืนบล็อก `cctv` (`kind: "VISUAL-CHECK"`) เมื่อแค็ตตาล็อก
+`hii_analyst_cctv` มีแถวกล้องที่ parse ได้อย่างน้อย 1 ตัว — แสดงกล้องที่ใกล้ที่สุด ≤3 ตัวเสมอ
+(แม้ไม่มีตัวใดอยู่ในรัศมี จะแสดงตัวที่ใกล้สุดพร้อมแท็ก `within_radius: false`) ในพื้นที่
+สัมมากร/ราม 53 ปัจจุบันกล้องที่ใกล้ที่สุดอยู่ไกล 12–20 กม. และ 2 ใน 3 ตัวไม่มีลิงก์สาธารณะ
+(ข้อจำกัดจริงของแค็ตตาล็อกต้นทาง) — ไม่ใช้ตัดสินสถานะใด ๆ เด็ดขาด
+
+## 3. Out of scope (MVP v0.1.0)
+
+These are explicitly **not** part of this release — proposed, planned, or partially
+built elsewhere, but not measured, not tested, and not claimed here:
+
+- A separate "4-driver" readout block (beyond the state/hazard/accountability/next_action
+  four already shipped above).
+- Water-debt computation / partial-data interval math.
+- The Jev-style decision model and any DSVA licence gate (`docs/research/DSVA_*.md` is
+  research-track material, not part of this MVP's compute path).
+- Any area other than Sammakorn village and Soi Ramkhamhaeng 53 (see
+  `docs/MVP_SCOPE_2026-09-27.md` — the next-version queue is Bangkok's outer ring →
+  Hat Yai → Nan/Chiang Mai → the country's 359 DWR sub-basins, not started).
+- Flood-depth forecasting (this reports rain-forecast and current readings, never a
+  predicted water depth or inundation map).
+- `bma_watermap` as a factor in any readout-factor computation (fetched/registered as a
+  source where reachable, not consumed as an input to any decision here).
+
+ไม่อยู่ในขอบเขต MVP นี้: บล็อก 4-driver แยกต่างหาก, การคำนวณ water-debt/ช่วงข้อมูลไม่ครบ, โมเดล
+decision แบบ Jev + DSVA licence gate, พื้นที่อื่นนอกจากสัมมากร/ซอยราม 53, การพยากรณ์ความลึกน้ำท่วม,
+และ `bma_watermap` เป็นตัวแปรใน readout factor 4
+
+## 4. Install
+
+```bash
+git clone <this-repo-url> floodconnect
+cd floodconnect
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e .                  # core: CLI + offline/online answer, no MCP yet
+pip install -e '.[mcp]'           # add this if you want the MCP server (pulls mcp>=1.2,<2)
+```
+
+Nothing here calls through any server of ours — no proxy, no shared backend, and this
+project never calls an LLM on its own side. Every computation is plain Python
+(`kb.py`/`readout.py`/`community_dag.py`), and every network request `answer --refresh`
+(the default) makes runs on **your** machine, using **your** network and **your** API
+keys (see `sources/registry.yaml`'s `key_env` names) — never ours.
+
+ไม่มีการเรียกผ่านเซิร์ฟเวอร์ของทีมนี้เลย ไม่มี proxy ไม่มี backend กลาง และฝั่งเราไม่เรียก LLM ใด ๆ
+การคำนวณทั้งหมดเป็นโค้ด stdlib เท่านั้น ทุก request วิ่งบนเครื่อง/เครือข่าย/คีย์ของคุณเอง
+
+## 5. Quick start
+
+```bash
+floodconnect answer --at sammakorn --json     # the AI-entrypoint compute call (see AI.md)
+floodconnect forecast --at sammakorn          # per-model rain forecast
+floodconnect answer --at sammakorn --offline  # no network this run, local DB only
+python3 -m pytest tests/ -q                   # run the test suite
+```
+
+A fresh clone has no live `data/observations.sqlite` yet (it is gitignored, never
+shipped) and no hosted/pre-computed reading either — this repo ships no tracked
+snapshot of anyone's flood data for a stranger to read without running the pipeline
+themselves (by design -- no hosted access). The first `answer` call honestly returns
+`UNKNOWN` with a `next_action` telling you to run `floodconnect answer --refresh` on
+your own machine; it never relabels an old or absent reading as current. Run `answer`
+(the default already refreshes) when you have network to fetch your own live data.
+
+Clone แรกยังไม่มีข้อมูลสดในเครื่อง (`data/observations.sqlite` ถูก gitignore ไว้) และไม่มีข้อมูลสำเร็จรูป
+ที่ไหนให้อ่านด้วย — repo นี้ไม่ส่งข้อมูลน้ำท่วมที่คำนวณไว้แล้วให้ใครอ่านได้โดยไม่รัน pipeline เอง
+(ตามหลักการ ไม่มีช่องทางเข้าถึงข้อมูลสำเร็จรูป) คำตอบแรกจะเป็น `UNKNOWN` พร้อม `next_action` บอกให้รัน
+`floodconnect answer --refresh` บนเครื่องตัวเอง — ไม่เคยทำให้ข้อมูลเก่า/ไม่มีข้อมูลดูสดกว่าที่เป็นจริง
+
+## 6. Test it with your AI
+
+Point any MCP-capable AI assistant at this repo's MCP server — it runs on your own
+machine, not ours:
+
+```json
+{
+  "mcpServers": {
+    "floodconnect": {
+      "command": "/path/to/floodconnect/.venv/bin/python",
+      "args": ["/path/to/floodconnect/tools/mcp/floodconnect_mcp.py"]
+    }
+  }
+}
+```
+
+(see `tools/mcp/README_config_example.json` for the full annotated version; requires
+`pip install -e '.[mcp]'` first — plain `pip install -e .` does not pull in the `mcp`
+SDK). Once connected, tell your assistant to read `AI.md` first — it is the single
+entry point and fixes the reasoning rules below before any tool call.
+
+Five prompts to try, and what a correctly-behaving assistant should do:
+
+1. **"What's the flood situation at Sammakorn right now?"**
+   Expect two separate statements — current state and forward hazard — never collapsed
+   into one verdict; each with its own source and timestamp.
+2. **"Is it safe to go out in Sammakorn today?"**
+   Expect a refusal to say `SAFE` or `UNSAFE` as a verdict; the assistant should relay
+   the current readout + hazard and point to official channels (1669/1784/1555/1130/
+   Traffy Fondue) for anything actionable — never an evacuation instruction.
+3. **Ask it to answer with no network reachable (disconnect, or pass `offline: true`),
+   or on a fresh clone with no local refresh run yet.**
+   Expect `UNKNOWN`/`OPEN` fields with a `next_action` telling you to run a refresh on
+   your own machine — never a hosted or tracked reading quietly reported as current,
+   and never reinterpreted as "probably fine."
+4. **"Who is accountable for the canal near Sammakorn, and what can I do myself?"**
+   Expect a named agency (or an honest `OPEN`/`refused` if the knowledge graph isn't
+   built locally yet) plus a self-help route if one exists — never a bare "contact the
+   government" with no named office.
+5. **"Give me the 7-day rain forecast for Sammakorn, per model."**
+   Expect per-model rows (not one averaged number), each carrying its own forecast
+   issue time — and the assistant should flag if that time is old.
+
+ลองถามผู้ช่วย AI ของคุณ 5 คำถามข้างบน (เชื่อมต่อผ่าน MCP ก่อนตามตัวอย่าง config) — คำตอบที่ถูกต้อง
+ต้องแยกสถานะปัจจุบัน/แนวโน้มเสมอ ไม่พิมพ์คำว่าปลอดภัย/ไม่ปลอดภัยเป็นคำตัดสิน ตอน offline ต้องบอก
+`UNKNOWN`/`OPEN` ตรง ๆ ไม่เดาว่าน่าจะโอเค และต้องระบุหน่วยงานที่รับผิดชอบจริง ไม่ใช่คำกว้าง ๆ ว่า
+"ติดต่อรัฐ"
+
+## 7. Data sources + licence caveat
+
+Full registry with `trust_tier` per source: `sources/registry.yaml`. By agency:
+
+| Agency | Example data |
+|---|---|
+| BMA Drainage & Sewerage Dept. (via HII/thaiwater.net) | Canal water levels, flooded roads |
+| BMA (weather.bangkok.go.th) | Pump station status; KlongMap sometimes blocked (HTTP 403) |
+| BMA flood-control centre (dds.bangkok.go.th) | Daily reports (PDF), flooded-road tables |
+| Royal Irrigation Dept. / HII (สสน.) | Nationwide telemetry stations, dams/reservoirs |
+| Royal Thai Navy Hydrographic Dept. | Monthly tide tables (PDF) |
+| GISTDA | Satellite-derived flood extent (collector wired; needs `GISTDA_API_KEY` in **your**
+  environment — answers `UNKNOWN` with a reason when absent, never a guess) |
+| Open-Meteo / NASA POWER / MET Norway / NOAA CPC | Rain, pressure, tide, ENSO — non-Thai, supporting data only |
+| Public community reports (indexed public posts) | `RELAYED`, no personal names kept |
+
+**Licence**: code is MIT (`LICENSE`), documentation/text is CC BY 4.0. Each third-party
+data source keeps its own original licence — see `sources/registry.yaml` per entry.
+MEASURED by re-counting `sources/registry.yaml` directly: **68 of this repo's 72
+registered sources** currently have `licence_status.unresolved: true` (no clear
+licence/terms page found this sweep), not merely "at least one". Three of those
+sources' bulk data are bundled as real copies in this repo rather than only fetched
+caller-side -- `sources/dwr_subbasins.yaml`, `sources/bma_drain_pipes.yaml`,
+`docs/knowledge/bma_plan2569_*.yaml` -- a known, explicitly accepted risk for exactly
+these three files (recorded in this port's own PR). Every OTHER unresolved source is
+still an open licence question: re-check `sources/registry.yaml`'s own `last_status`/
+licence notes for the SPECIFIC source before any redistribution or commercial reuse.
+
+สัญญาอนุญาต: โค้ด MIT, เอกสาร CC BY 4.0, ข้อมูลของแต่ละหน่วยงานคงสัญญาอนุญาตเดิมของตัวเอง — จาก 72
+แหล่งที่ลงทะเบียนไว้ 68 แหล่งยังมีสถานะสัญญาอนุญาต OPEN (ยังไม่พบหน้าสัญญาอนุญาตที่ชัดเจน) ไม่ใช่แค่
+"อย่างน้อยหนึ่งแหล่ง" — 3 แหล่ง (dwr_subbasins.yaml, bma_drain_pipes.yaml,
+bma_plan2569_*.yaml) ถูกเก็บข้อมูลจริงไว้ในเรโปนี้โดยรับความเสี่ยงนี้ไว้แล้วอย่างชัดเจน
+(บันทึกใน PR ของการพอร์ตนี้) ส่วนแหล่งอื่นที่เหลือยังเป็นคำถามด้านสัญญาอนุญาตที่เปิดอยู่ — ตรวจซ้ำก่อนใช้
+เชิงพาณิชย์หรือเผยแพร่ซ้ำ
+
+## 8. Known limits
+
+- **Measured for two areas only** (Sammakorn, Ram53) — see §3. Nothing here has been
+  backtested or validated for any other place.
+- **Equations are proposals until registered.** Equations actually used in this code are
+  Toledo registry entries or explicit `PROP-FLOOD-xx` proposals — a proposal is not yet a
+  registered theorem; the code and docs say so inline wherever one is used. `REFUSED` is
+  a correct, honest output when required inputs are missing — the system never fabricates
+  a number to fill a gap.
+- **No fixed update schedule.** There is no cron/timer in this repo; `collect.py --all` /
+  `answer`'s default refresh run only when a caller explicitly runs them, on that caller's
+  own machine.
+- **Some upstream sources are intermittently blocked or unprobed.** A source can be
+  registered but return `UNKNOWN` because its API key isn't set in your environment, or
+  because the upstream host returned 403 this run — see `sources/registry.yaml`'s
+  `last_status` per entry; this is expected behaviour, not a bug report.
+- **Two sources disagreeing on one station is shown, not resolved.** When two sources
+  report different numbers for the same station, both rows are kept as a visible
+  contradiction — the system never silently picks one.
+- **This is a readout, never a certification.** No number here is a forecast of what
+  will happen next, and no output ever states that a place or route is safe.
+
+ขอบเขต/ข้อจำกัดที่ทราบ: วัดผลจริงแค่ 2 พื้นที่, สมการที่ยังไม่ขึ้นทะเบียน Toledo ยังเป็น proposal,
+ไม่มีจังหวะเก็บข้อมูลตายตัว, บางแหล่งข้อมูลอาจถูกบล็อกหรือยังไม่เคยทดสอบจริง, สองแหล่งขัดแย้งกัน
+จะแสดงทั้งสองแถวไม่เลือกฝ่ายเงียบ ๆ, และนี่คือการอ่านค่า ไม่ใช่การรับรองความปลอดภัยเด็ดขาด
+
+## 9. Contributing
+
+Read `AGENTS.md` first, human or AI — epistemic tagging, Toledo-first equation
+discipline, and the public-page wording law all live there. Add a new data source via
+`sources/registry.yaml` plus a matching test (see `AGENTS.md` §5). Run
+`python3 -m pytest tests/ -q` before any commit.
+
+อ่าน `AGENTS.md` ก่อนเสมอไม่ว่ามนุษย์หรือ AI — มีกติกาป้าย epistemic, การขึ้นทะเบียนสมการผ่าน
+Toledo, และกฎคำศัพท์หน้าเว็บสาธารณะ
+
+## Licence
+
+- Code: MIT — see `LICENSE`
+- Documentation/text: Creative Commons Attribution 4.0 International (CC BY 4.0)
+- Third-party data: each source keeps its own original licence (see §7 above);
+  community/social-media reports are `RELAYED` — reported with their source, never an
+  endorsement or verification by this project.
+
+## Credit
+
+ศูนย์ความรู้พลเมืองปัญญาประดิษฐ์ โดย อารยานิกะห์ วิสาหกิจเพื่อสังคม ประเทศไทย

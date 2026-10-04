@@ -575,7 +575,16 @@ def _movement_route_to_target(
     """Use community_dag's own edge/node rules; no duplicated route scoring."""
     fn = getattr(cd, "find_feasible_route_to_target", None)
     if fn is None:
-        return False
+        # community_dag.find_feasible_route_to_target
+        # is a required dependency after the superset merge, not an optional capability --
+        # a silent `return False` here would read as "no feasible route" when the real
+        # failure is a missing/incompatible community_dag module, which is a much worse
+        # and different problem. Fail loud instead of silently degrading.
+        raise RuntimeError(
+            "community_dag.find_feasible_route_to_target is missing -- "
+            "shelter_decision cannot evaluate movement routes without it "
+            "(required dependency since the 2026-10-02 merge)"
+        )
     result = fn(
         doc,
         start_node,
@@ -817,7 +826,16 @@ def evaluate_resupply_window(
 
     route_edges = rs.get("route_edges")
     fn = getattr(cd, "validate_declared_edge_path", None)
-    if not isinstance(route_edges, list) or not route_edges or fn is None:
+    if fn is None:
+        # Same fail-loud reasoning as
+        # _movement_route_to_target above -- a missing community_dag function is a
+        # dependency failure, not an unverified-route decision outcome.
+        raise RuntimeError(
+            "community_dag.validate_declared_edge_path is missing -- "
+            "shelter_decision cannot admit a resupply route without it "
+            "(required dependency since the 2026-10-02 merge)"
+        )
+    if not isinstance(route_edges, list) or not route_edges:
         return DecisionResult(
             False, "RESUPPLY_NOT_ADMITTED", (REASON_RESUPPLY_ROUTE_UNVERIFIED,)
         )

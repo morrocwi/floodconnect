@@ -1,0 +1,9 @@
+{
+  "source_id": "bma_pak_khlong_csv",
+  "url": "https://data.bangkok.go.th/dataset/0b2b0b13-62b1-4489-85ef-bb76a09898af/resource/b3cc65d5-52d9-42c5-91e9-4f0137b43ae8/download/river_pak_khlong.csv",
+  "captured_at": "2026-10-03T05:21:00Z",
+  "sha256": "a06c4f74a8c9aa608ebff4246f3eef6827e4bea91d9ac0b9fa3a5a8e2ffd06b6",
+  "http_status": 200,
+  "fixture_ext": "csv",
+  "parser_version": "v1"
+}

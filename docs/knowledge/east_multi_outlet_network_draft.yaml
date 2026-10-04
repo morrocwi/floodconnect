@@ -1,0 +1,354 @@
+# east_multi_outlet_network_draft.yaml -- PROPOSED multi-outlet network for BKK east zone
+#
+# Written 2026-09-27 per founder request (cross-check a third-party analysis + a 8-URL
+# reference list + a Hok Wa junction follow-up, all RELAYED third-party paste, see
+# docs/knowledge/card_thirdparty_east_outlets_multi_outlet_2026-09-27.md for the full claim
+# table / verdict / fetch log this file is built from).
+#
+# THIS FILE WRITES NEW DATA ONLY -- does not edit water_system_dag.mmd, east_chain.yaml,
+# capacity_ledger.yaml, or any tracked file. Another worker is the sole committer on this
+# branch this check. Existing ids are REUSED (never duplicated); new ids are minted only
+# where no equivalent exists anywhere in this repo (checked via grep this check).
+#
+# Toledo: no equation in this file. capacity_m3s values are copied verbatim from cited
+# sources (VERIFIED = read directly from an official page/PDF this check; RELAYED = not
+# independently checked; OPEN = no source found, never guessed).
+#
+# readout_goal (founder's own words, translated): "outlet ไหนมี head/ความจุเหลือตอนนี้ และ
+# ผู้ควบคุมเลือกส่งไปทางไหน เพราะอะไร" -- this file proposes the schema (controller, mode,
+# capacity_m3s, backwater_risk) that would let a future readout answer this; it does NOT
+# compute an answer itself (all utilisation/head fields below are OPEN, per this repo's
+# Toledo/never-guess discipline).
+
+schema_note: >
+  Each node: id (existing id reused where possible, `new:` prefix where minted),
+  label_th, kind (canal|pump|gate|outlet|junction), reused_from (source file+row, or
+  "NEW" if minted), lat/lon (OPEN if not found), tag.
+  Each edge: src, dst, controller (bma|rid|shared|OPEN), mode (gravity|pump|gate|OPEN),
+  capacity_m3s (number + tag, or OPEN), direction_policy_note, backwater_risk (OPEN by
+  default -- a flag for future stage-dependent analysis, not a computed value; see
+  PROP-FLOOD-06 D_H/R_H term-selection in docs/knowledge/DRAINAGE_MODE_SOURCES.md §5 --
+  no new equation registered here).
+  readout_goal: per-outlet, which live feeds (watergate_load, canal_waterlevel station ids)
+  would answer "which outlet has head/remaining capacity now, and why did the controller
+  route water there" -- and which are absent (OPEN) today.
+
+nodes:
+  # ---- reused from site/inputs/canals/east_chain.yaml (Sammakorn-centric chain) ----
+  - id: "ssb10"
+    label_th: "ปตร.แสนแสบ-มีนบุรี"
+    kind: gate
+    reused_from: "site/inputs/canals/east_chain.yaml node ssb10 / gate:thaiwater_bma:WL.SSB.10"
+    lat: 13.82094
+    lon: 100.74738
+    tag: VERIFIED
+
+  - id: "ssb09"
+    label_th: "ปตร.บางชัน"
+    kind: gate
+    reused_from: "site/inputs/canals/east_chain.yaml node ssb09 / gate:thaiwater_bma:WL.SSB.09"
+    lat: 13.7972
+    lon: 100.70458
+    tag: VERIFIED
+
+  - id: "pwt03"
+    label_th: "ปตร.ประเวศฯ-วัดกระทุ่ม"
+    kind: gate
+    reused_from: "site/inputs/canals/east_chain.yaml node pwt03"
+    lat: 13.72396
+    lon: 100.68956
+    tag: VERIFIED
+
+  - id: "pwt04"
+    label_th: "ปตร.ประเวศฯ-ลาดกระบัง"
+    kind: gate
+    reused_from: "site/inputs/canals/east_chain.yaml node pwt04"
+    lat: 13.72411
+    lon: 100.74987
+    tag: VERIFIED
+
+  # ---- reused from sources/capacity_ledger.yaml (outfall rows) ----
+  - id: "outfall:phra_khanong"
+    label_th: "จุดออกพระโขนง"
+    kind: outlet
+    reused_from: "sources/capacity_ledger.yaml id outfall:phra_khanong"
+    lat: 13.7085
+    lon: 100.5953
+    tag: MEASURED
+    note: >
+      CONTRADICTED capacity across 3 sources found this check: capacity_ledger.yaml=49
+      m3/s (MEASURED-from-sqlite), monitor.bangkok.go.th project page=155 m3/s (VERIFIED,
+      URL#4), plan50 PDF map=173 cms (VERIFIED, URL#6). Kept as 3 separate readings, not
+      merged -- see card §1 claim #5.
+
+  - id: "outfall:chao_phraya_boundary"
+    label_th: "แม่น้ำเจ้าพระยา -- ทางออกหลัก"
+    kind: outlet
+    reused_from: "sources/capacity_ledger.yaml id outfall:chao_phraya_boundary"
+    tag: RELAYED
+
+  - id: "outfall:east_seaside_rid"
+    label_th: "ระบบชลประทานชายทะเลตะวันออก (คลองพระองค์ฯ) -- ทางออกอ่าวไทย"
+    kind: outlet
+    reused_from: "sources/capacity_ledger.yaml id outfall:east_seaside_rid"
+    tag: OPEN
+
+  - id: "tunnel:bma_dds:saensaeb_ladprao"
+    label_th: "อุโมงค์แสนแสบ-ลาดพร้าว"
+    kind: pump
+    reused_from: "sources/capacity_ledger.yaml"
+    capacity_m3s: {value: 60, tag: RELAYED}
+    tag: RELAYED
+
+  - id: "tunnel:bma_dds:bangsue"
+    label_th: "อุโมงค์บางซื่อ (เกียกกาย)"
+    kind: pump
+    reused_from: "sources/capacity_ledger.yaml"
+    capacity_m3s: {value: 60, tag: RELAYED}
+    tag: RELAYED
+
+  # ---- reused from docs/knowledge/water_system_dag.mmd ----
+  - id: "AS_HOKWA"
+    label_th: "คลองหกวา / คลองซอยฝั่งตะวันออก"
+    kind: junction
+    reused_from: "docs/knowledge/water_system_dag.mmd (existing node, owner AG_RID + AG_DWR overlap per RESOURCE_AUTHORITY_AND_BOTTLENECKS.md §3.2)"
+    tag: RELAYED-GENERAL
+    note: >
+      PROPOSED role change: model as a JUNCTION with two outbound arms (see edges below)
+      instead of the single AS_HOKWA->AS_EAST_UPPER edge currently in
+      water_system_dag.mmd. This file does not edit that .mmd -- proposal only.
+
+  - id: "AS_RID_RANGSIT"
+    label_th: "ระบบคลองรังสิต/ระพีพัฒน์ (ชลประทาน)"
+    kind: canal
+    reused_from: "docs/knowledge/water_system_dag.mmd (existing node)"
+    tag: RELAYED-GENERAL
+
+  - id: "AS_RID_COAST"
+    label_th: "ระบบชลประทานชายฝั่ง (RID coastal)"
+    kind: outlet
+    reused_from: "docs/knowledge/water_system_dag.mmd (existing node, corresponds to outfall:east_seaside_rid)"
+    tag: OPEN
+
+  # ---- NEW nodes (no equivalent id found anywhere in this repo, grepped this check) ----
+  - id: "new:pump_rid_khlong13"
+    label_th: "สถานีสูบน้ำคลองหกวาสายล่าง (คลอง 13, RID)"
+    kind: pump
+    reused_from: "NEW -- minted this check; not in water_system_dag.mmd, east_chain.yaml, or capacity_ledger.yaml"
+    lat: OPEN
+    lon: OPEN
+    capacity_m3s: {value: 36, tag: VERIFIED, source: "dds.bangkok.go.th/News_dds/magazine/plan50/plan03.pdf p.40, quote: \"คลองหกวาสายล่าง ขนาดสูบ 36 ลบ.ม./วินาที\""}
+    tag: VERIFIED-capacity / OPEN-coordinate
+
+  - id: "new:pump_bma_nongchok_saensaeb"
+    label_th: "สถานีสูบน้ำแสนแสบ@หนองจอก"
+    kind: pump
+    reused_from: "NEW -- minted this check; a station called \"สถานีสูบน้ำหนองจอก\" exists at weather.bangkok.go.th/water/StationDetail?id=51 but that page carries no capacity figure (fetched this check)"
+    lat: OPEN
+    lon: OPEN
+    capacity_m3s: {value: 60, tag: VERIFIED, source: "dds.bangkok.go.th/News_dds/magazine/plan50/plan03.pdf p.40, quote: \"คลองแสนแสบ ขนาดสูบ 60 ลบ.ม./วินาที\" -- attributed to RID (กรมชลประทาน), NOT a BMA project as the third-party paste claimed"}
+    tag: VERIFIED-capacity / OPEN-coordinate / CONTRADICTED-attribution
+
+  - id: "new:pump_prawet_phra_ong"
+    label_th: "สถานีสูบน้ำประเวศบุรีรมย์@พระองค์เจ้าไชยานุชิต"
+    kind: pump
+    reused_from: "NEW -- minted this check"
+    lat: OPEN
+    lon: OPEN
+    capacity_m3s: {value: 60, tag: VERIFIED, source: "same plan50 p.40, quote: \"คลองประเวศบุรีรมย์ ขนาดสูบ 60 ลบ.ม./วินาที\" -- RID, not BMA"}
+    tag: VERIFIED-capacity / OPEN-coordinate / CONTRADICTED-attribution
+
+  - id: "new:canal_phra_ong_chaiyanuchit"
+    label_th: "คลองพระองค์เจ้าไชยานุชิต"
+    kind: canal
+    reused_from: "NEW -- minted this check"
+    lat: OPEN
+    lon: OPEN
+    capacity_m3s: {value: null, tag: OPEN, note: "third-party claim of 200 m3/s widening NOT found in any of the 8 URLs fetched this check; dredging of this canal IS confirmed (plan50 p.40 dredge list) but no capacity figure accompanies it there"}
+    tag: OPEN-capacity / VERIFIED-existence-in-dredge-list
+
+  - id: "new:pump_chonlahan_phichit_3"
+    label_th: "สถานีสูบน้ำชลหารพิจิตร 3"
+    kind: pump
+    reused_from: "NEW -- minted this check"
+    lat: OPEN
+    lon: OPEN
+    capacity_m3s: {value: null, tag: OPEN}
+    tag: VERIFIED-existence (rid11.rid.go.th/th/pr-news/104970) / OPEN-capacity
+
+  - id: "new:pump_charoen_rat"
+    label_th: "สถานีสูบน้ำเจริญราษฎร์"
+    kind: pump
+    reused_from: "NEW -- minted this check"
+    lat: OPEN
+    lon: OPEN
+    capacity_m3s: {value: null, tag: OPEN}
+    tag: VERIFIED-existence (rid11.rid.go.th/th/pr-news/104970) / OPEN-capacity
+
+  - id: "new:outlet_bang_pakong"
+    label_th: "แม่น้ำบางปะกง -- ทางออกอ่าวไทยที่สอง"
+    kind: outlet
+    reused_from: "NEW -- minted this check; basin:onwr:15 (บางปะกง/นครนายก) exists as a SKELETAL basin node in docs/knowledge/DRAINAGE_CAPACITY_MAP.md §0 but has no id/edge connecting it to east_chain.yaml or water_system_dag.mmd -- this node bridges that gap as a proposal only"
+    lat: OPEN
+    lon: OPEN
+    tag: OPEN
+
+edges:
+  - src: "ssb10"
+    dst: "ssb09"
+    controller: {value: "bma", tag: RELAYED}
+    mode: {value: "gate", tag: RELAYED}
+    capacity_m3s: {value: null, tag: OPEN}
+    direction_policy_note: "reused from east_chain.yaml design_direction u_to_v (RID relay, not independently verified there either)"
+    backwater_risk: OPEN
+
+  - src: "ssb09"
+    dst: "outfall:phra_khanong"
+    controller: {value: "bma", tag: RELAYED}
+    mode: {value: "pump", tag: RELAYED}
+    capacity_m3s: {value: "SEE NOTE -- 49/155/173 m3/s CONTRADICTED across 3 sources, not merged", tag: CONTRADICTED}
+    direction_policy_note: "matches capacity_ledger.yaml outfall:phra_khanong note + monitor.bangkok.go.th project page VERIFIED quote (ประเวศ+แสนแสบ+ลาดพร้าว feed Phra Khanong)"
+    backwater_risk: OPEN
+
+  - src: "AS_RID_RANGSIT"
+    dst: "AS_HOKWA"
+    controller: {value: "rid", tag: RELAYED-GENERAL}
+    mode: {value: "gravity", tag: RELAYED-GENERAL}
+    capacity_m3s: {value: null, tag: OPEN}
+    direction_policy_note: "existing edge in water_system_dag.mmd, unchanged"
+    backwater_risk: OPEN
+
+  # ---- PROPOSED: AS_HOKWA as junction, arm 1 (existing, toward Chao Phraya via Lat Phrao/Saen Saep) ----
+  - src: "AS_HOKWA"
+    dst: "tunnel:bma_dds:saensaeb_ladprao"
+    controller: {value: "bma", tag: RELAYED}
+    mode: {value: "gravity+pump", tag: RELAYED}
+    capacity_m3s: {value: 60, tag: RELAYED}
+    direction_policy_note: >
+      Arm 1 (Chao Phraya-bound). Existing water_system_dag.mmd edge is
+      AS_HOKWA->AS_EAST_UPPER (unnamed capacity); this row proposes routing that arm
+      explicitly through the named Saen Saep/Lat Phrao tunnel structure this repo already
+      tracks, rather than the generic AS_EAST_UPPER node. Design direction: OUT of Hok Wa
+      toward the river -- NOT a route by which Bang Pakong water enters Lat Phrao (see
+      card §6.2 verdict).
+    backwater_risk: OPEN
+
+  # ---- PROPOSED: AS_HOKWA as junction, arm 2 (NEW, toward Bang Pakong via canal 13) ----
+  - src: "AS_HOKWA"
+    dst: "new:pump_rid_khlong13"
+    controller: {value: "rid", tag: VERIFIED, source: "plan50 PDF p.40, explicitly attributed to กรมชลประทาน"}
+    mode: {value: "pump", tag: VERIFIED}
+    capacity_m3s: {value: 36, tag: VERIFIED}
+    direction_policy_note: >
+      Arm 2 (Bang Pakong-bound). NOT present in water_system_dag.mmd today (repo gap,
+      see TODOLIST #29). Design direction per plan50: "เพื่อเร่งผันน้ำจากพื้นที่ลงสู่
+      แม่น้ำบางปะกงและทะเล" -- OUT of Hok Wa toward Bang Pakong, i.e. the same outward
+      direction as Arm 1, just a different destination. This directly refutes a literal
+      reading of "Bang Pakong water flows INTO Lat Phrao" (see card §6.2).
+    backwater_risk:
+      value: "OPEN"
+      note: >
+        Plausible stage-dependent mechanism (high Bang Pakong stage -> reduced ΔH at this
+        arm's outlet -> reduced discharge here -> more water held in AS_HOKWA -> more
+        load pushed onto Arm 1/Lat Phrao) -- ties to PROP-FLOOD-06's D_H/R_H
+        term-selection logic already in docs/knowledge/DRAINAGE_MODE_SOURCES.md §5. No
+        new equation is proposed or registered here; no measured propagation exists in
+        this repo today.
+
+  - src: "new:pump_rid_khlong13"
+    dst: "new:outlet_bang_pakong"
+    controller: {value: "rid", tag: VERIFIED}
+    mode: {value: "pump", tag: VERIFIED}
+    capacity_m3s: {value: 36, tag: VERIFIED}
+    direction_policy_note: "terminal discharge arm, per plan50 quote above"
+    backwater_risk: OPEN
+
+  - src: "AS_HOKWA"
+    dst: "new:pump_bma_nongchok_saensaeb"
+    controller: {value: "rid", tag: VERIFIED, note: "attribution CONTRADICTS third-party claim of a BMA project -- see card claim #6"}
+    mode: {value: "pump", tag: VERIFIED}
+    capacity_m3s: {value: 60, tag: VERIFIED}
+    direction_policy_note: "part of the same RID plan50 chain, distinct from arm 2's canal-13 pump"
+    backwater_risk: OPEN
+
+  - src: "new:pump_bma_nongchok_saensaeb"
+    dst: "new:pump_prawet_phra_ong"
+    controller: {value: "rid", tag: VERIFIED}
+    mode: {value: "pump", tag: VERIFIED}
+    capacity_m3s: {value: 60, tag: VERIFIED}
+    direction_policy_note: "chain continues per plan50 p.40; both pumps discharge toward บางปะกงและทะเล"
+    backwater_risk: OPEN
+
+  - src: "new:pump_prawet_phra_ong"
+    dst: "new:canal_phra_ong_chaiyanuchit"
+    controller: {value: "rid", tag: VERIFIED}
+    mode: {value: "gravity+dredge-improved", tag: VERIFIED, note: "dredging confirmed (plan50 dredge list), no post-dredge capacity figure found"}
+    capacity_m3s: {value: null, tag: OPEN, note: "third-party 200 m3/s claim NOT confirmed in any of 8 URLs fetched"}
+    direction_policy_note: "toward Bang Pakong/sea per plan50"
+    backwater_risk: OPEN
+
+  - src: "new:canal_phra_ong_chaiyanuchit"
+    dst: "new:outlet_bang_pakong"
+    controller: {value: "rid", tag: VERIFIED}
+    mode: {value: "gravity", tag: OPEN}
+    capacity_m3s: {value: null, tag: OPEN}
+    direction_policy_note: "terminal reach to Bang Pakong -- OPEN capacity"
+    backwater_risk: OPEN
+
+  # ---- RID office-11 monitored chain (VERIFIED as a named set, capacities OPEN) ----
+  - src: "new:pump_bma_nongchok_saensaeb"
+    dst: "new:pump_chonlahan_phichit_3"
+    controller: {value: "rid", tag: VERIFIED, source: "rid11.rid.go.th/th/pr-news/104970 -- lists these 4 stations as one monitored set"}
+    mode: {value: OPEN, tag: OPEN}
+    capacity_m3s: {value: null, tag: OPEN}
+    direction_policy_note: "co-monitored by RID office 11 as of 3 Sep 2569 news item; no flow-direction/capacity stated in that news item"
+    backwater_risk: OPEN
+
+  - src: "new:pump_chonlahan_phichit_3"
+    dst: "new:pump_charoen_rat"
+    controller: {value: "rid", tag: VERIFIED}
+    mode: {value: OPEN, tag: OPEN}
+    capacity_m3s: {value: null, tag: OPEN}
+    direction_policy_note: "same source as above"
+    backwater_risk: OPEN
+
+  # ---- BMA master-plan target (outside King's dyke, VERIFIED) ----
+  - src: "AS_HOKWA"
+    dst: "AS_RID_COAST"
+    controller: {value: "shared", tag: VERIFIED, note: "BMA master plan (monitor.bangkok.go.th pid=11000000-7193) targets discharge INTO RID's coastal retention canal (แก้มลิงคลองชายทะเล, RID-owned) -- a BMA-to-RID handoff point, hence 'shared'"}
+    mode: {value: "pump", tag: VERIFIED}
+    capacity_m3s: {value: "≥190 (target) + a separate 100 m3/s canal", tag: VERIFIED, source: "monitor.bangkok.go.th pid=11000000-7193, quote: \"ลงสู่แก้มลิงคลองชายทะเลตามแนวพระราชดำริและคลอง ๑๐๐ ลบ.ม./วินาที...ไม่น้อยกว่า ๑๙๐ ลบ.ม./วินาที\""}
+    direction_policy_note: >
+      This is the BMA-side master-plan target for the area outside the King's dyke
+      (หนองจอก/ลาดกระบัง/คลองสามวา/มีนบุรี, confirmed urbanising faster than planned per
+      the same page) -- distinct from the RID plan50 project above (different agency,
+      different document, same general geography). Kept as a separate edge, not merged.
+    backwater_risk: OPEN
+
+  # ---- BMA-side arm 3 (candidate, RELAYED only, per founder's own caveat) ----
+  - src: "AS_HOKWA"
+    dst: "tunnel:bma_dds:bangsue"
+    controller: {value: "bma", tag: RELAYED}
+    mode: {value: OPEN, tag: OPEN}
+    capacity_m3s: {value: "+38 (candidate addition, RELAYED, unconfirmed)", tag: RELAYED}
+    direction_policy_note: >
+      Third-party claim: BMA considering routing Lat Phrao -> Bang Sue tunnel to take an
+      extra ~38 m3/s "from Lower Hok Wa". NOT found in any of the 8 URLs fetched this
+      task -- kept RELAYED per explicit instruction not to spend a 9th fetch on it.
+    backwater_risk: OPEN
+
+readout_goal:
+  question_th: >
+    "outlet ไหนมี head/ความจุเหลือตอนนี้ และผู้ควบคุมเลือกส่งไปทางไหน เพราะอะไร"
+  answerable_with_live_feeds_that_exist_today:
+    - "watergate_load / canal_waterlevel stations already in sources/registry.yaml for ssb10/ssb09/pwt03/pwt04 (water level only, NOT flow/capacity)"
+  missing_feeds_needed_to_actually_answer_it:
+    - "no flow-rate (m3/s) telemetry for any node in this file -- only water_control band levels exist for the 4 BMA gates (see sources/bottleneck_nodes_2026-09-27.yaml, utilisation OPEN for all of them)"
+    - "no capacity_m3s reading at all for new:pump_rid_khlong13, new:pump_chonlahan_phichit_3, new:pump_charoen_rat, new:canal_phra_ong_chaiyanuchit"
+    - "no gravity_threshold (river/tide level that forces gate closure + pump takeover) for any outlet in this file -- OPEN everywhere per capacity_ledger.yaml's own note"
+    - "no controller field exists today in water_system_dag.mmd or east_chain.yaml -- this file's `controller` column is a proposal, not a live attribute"
+  conclusion: >
+    With today's data, this question is REFUSED for every outlet in this network (Toledo/
+    never-guess discipline) -- not because the outlets don't matter, but because no source
+    this repo has ingested publishes a live m3/s or head reading per structure, only
+    design/rated capacities (themselves partly CONTRADICTED, e.g. Phra Khanong 49/155/173).

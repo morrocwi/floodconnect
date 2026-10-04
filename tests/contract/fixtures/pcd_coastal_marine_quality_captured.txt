@@ -1,0 +1,6 @@
+﻿Sampling Rounds,Province,Station Name,Station ID,Date,Distance from Shore (meters),Type of Utilization,Time,Temperature (°C),pH,Conductivity (mS/cm),Salinity (ppt),DO (mg/L),SS (mg/L),PO4 (microgram-P/L),NH3 (microgram-N/L),NO3 (microgram-N/L),TCB (MPN/100 mL),FCB (CFU/100 mL),Enterrococci (CFU/100 mL),As (microgram/L),Cd (microgram/L),Cr (microgram/L),Cr6+ (microgram/L),Cu (microgram/L),Pb (microgram/L),Zn (microgram/L),Hg (microgram/L),TPH (microgram/L),,,,,,,,,,,,,,,,,,
+ครึ่งปีแรก,ตราด,อ่าวบางเบ้า เกาะช้าง,Tdbb1,10 Mar 25,100,2,9:00,29.97,8.3,50.12,33.45,3.62*,5.20,1.66,139.00,6.52,33,23,26,ND,ND,ND,ND,<0.5,ND,8.77,ND,0.46,,,,,,,,,,,,,,,,,,
+ครึ่งปีแรก,ตราด,หาดไก่แบ้ เกาะช้าง,Tdkb0,10 Mar 25,10,2,10:00,30.18,8.3,50.57,33.79,4.13*,5.90,1.96,177.00,1.49,110,5,9,ND,ND,ND,ND,<0.5,ND,3.95,ND,,,,,,,,,,,,,,,,,,,
+ครึ่งปีแรก,ตราด,หาดคลองพร้าว เกาะช้าง,Tdkp0,10 Mar 25,10,2,10:35,30.12,8.4,48.70,32.39,4.15*,3.00,1.06,107.00,1.68,<1.8,2,3,ND,ND,ND,ND,<0.5,ND,5.08,ND,,,,,,,,,,,,,,,,,,,
+ครึ่งปีแรก,ตราด,หาดทรายขาว เกาะช้าง,Tdsk0,10 Mar 25,10,2,11:10,31.14,8.3,49.70,33.23,4.05*,4.50,1.51,135.00,10.90,79,18,26,ND,ND,ND,ND,<0.5,ND,5.45,ND,0.06,,,,,,,,,,,,,,,,,,
+ครึ่งปีแรก,ตราด,อ่าวสลักเพชร เกาะช้าง,Tdsp1,10 Mar 25,100,1,12:20,30.80,8.3,50.90,34.17,3.99*,5.60,1.36,77.50,2.86,<1.8,1,1,ND,ND,ND,ND,<0.5,ND,4.71,ND,0.11,,,,,,,,,,,,,,,,,,

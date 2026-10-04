@@ -1,0 +1,34 @@
+_meta:
+  generated: '2026-09-27'
+  source: Open-Meteo Elevation API (Copernicus GLO-90 DEM re-serve)
+  url_template: https://api.open-meteo.com/v1/elevation?latitude={lats}&longitude={lons}
+  caveat: DEM SURFACE elevation, NOT a ม.รทก. survey benchmark -- see this module's
+    own docstring. Never merge/average silently with sources/bkk_district_elevation.yaml's
+    RTSD-2010-survey values -- keep both, tagged by method.
+  tag: VERIFIED
+  unit: m
+points:
+- point_id: sammakorn
+  lat: 13.758235
+  lon: 100.676084
+  elevation_m: 4.0
+- point_id: ram53
+  lat: 13.765540125000635
+  lon: 100.61909460837903
+  elevation_m: 3.0
+- point_id: bangkok_east
+  lat: 13.7734
+  lon: 100.6813
+  elevation_m: 6.0
+- point_id: nakhonsawan
+  lat: 15.7047
+  lon: 100.1372
+  elevation_m: 32.0
+- point_id: chaophraya_dam
+  lat: 15.1897
+  lon: 100.1608
+  elevation_m: 15.0
+- point_id: bang_sai
+  lat: 14.35
+  lon: 100.55
+  elevation_m: 7.0

@@ -1,0 +1,1774 @@
+{
+  "tag": "MEASURED-on-graph",
+  "source": "docs/knowledge/water_system_dag.mmd",
+  "node_count": 240,
+  "edge_count": 519,
+  "rule_1_conflicting_commanders": [
+    {
+      "node": "DC_ALERT",
+      "node_label": "ประกาศระดับเตือนภัย",
+      "commanders": [
+        "AG_BMA_GOV",
+        "AG_DDPM",
+        "AG_ONWR",
+        "AG_TMD"
+      ],
+      "commander_labels": [
+        "ผู้ว่าฯ กทม. = ผู้อำนวยการ กทม.",
+        "ปภ. กรมป้องกันและบรรเทาสาธารณภัย (ผู้อำนวยการกลาง)",
+        "สทนช. สำนักงานทรัพยากรน้ำแห่งชาติ",
+        "กรมอุตุนิยมวิทยา"
+      ]
+    },
+    {
+      "node": "DC_MOBILE",
+      "node_label": "ส่งเครื่องสูบเคลื่อนที่เข้าพื้นที่",
+      "commanders": [
+        "AG_DDPM",
+        "AG_DDS",
+        "AG_DIST_SS",
+        "AG_WARROOM"
+      ],
+      "commander_labels": [
+        "ปภ. กรมป้องกันและบรรเทาสาธารณภัย (ผู้อำนวยการกลาง)",
+        "สนน. สำนักการระบายน้ำ + ศูนย์ควบคุมระบบป้องกันน้ำท่วม",
+        "ผอ.เขตสะพานสูง (ผู้ช่วยผู้อำนวยการ กทม.)",
+        "ศูนย์บัญชาการตาม พ.ร.ก.ฉุกเฉิน / วอร์รูม (ผบ.ทสส.)"
+      ]
+    },
+    {
+      "node": "AG_BASIN_CHAOPHRAYA",
+      "node_label": "คณะกรรมการลุ่มน้ำเจ้าพระยา (basin:onwr:10)",
+      "commanders": [
+        "AG_GONCH",
+        "AG_KNCH",
+        "AG_ONWR"
+      ],
+      "commander_labels": [
+        "กอนช. กองอำนวยการน้ำแห่งชาติ",
+        "กนช. คณะกรรมการทรัพยากรน้ำแห่งชาติ",
+        "สทนช. สำนักงานทรัพยากรน้ำแห่งชาติ"
+      ]
+    },
+    {
+      "node": "AG_BASIN_PASAK",
+      "node_label": "คณะกรรมการลุ่มน้ำป่าสัก (basin:onwr:12)",
+      "commanders": [
+        "AG_GONCH",
+        "AG_KNCH",
+        "AG_ONWR"
+      ],
+      "commander_labels": [
+        "กอนช. กองอำนวยการน้ำแห่งชาติ",
+        "กนช. คณะกรรมการทรัพยากรน้ำแห่งชาติ",
+        "สทนช. สำนักงานทรัพยากรน้ำแห่งชาติ"
+      ]
+    },
+    {
+      "node": "AG_BMA_GOV",
+      "node_label": "ผู้ว่าฯ กทม. = ผู้อำนวยการ กทม.",
+      "commanders": [
+        "AG_ADMIN_COURT",
+        "AG_MOI_CMD",
+        "AG_OMBUDSMAN"
+      ],
+      "commander_labels": [
+        "ศาลปกครอง",
+        "รมว.มหาดไทย = ผู้บัญชาการ ตาม พ.ร.บ.ป้องกันฯ 2550",
+        "ผู้ตรวจการแผ่นดิน"
+      ]
+    },
+    {
+      "node": "AG_DDPM",
+      "node_label": "ปภ. กรมป้องกันและบรรเทาสาธารณภัย (ผู้อำนวยการกลาง)",
+      "commanders": [
+        "AG_MOI_CMD",
+        "AG_PARLIAMENT_CMT",
+        "AG_REGCOM"
+      ],
+      "commander_labels": [
+        "รมว.มหาดไทย = ผู้บัญชาการ ตาม พ.ร.บ.ป้องกันฯ 2550",
+        "กมธ.สภาผู้แทนราษฎร (ที่ดิน ทรัพยากรธรรมชาติและสิ่งแวดล้อม / ป้องกันฯ)",
+        "คณะกรรมการอุทกภัยและภัยแล้งระดับภูมิภาค 5 คณะ (คำสั่งสำนักนายกฯ 275/2569)"
+      ]
+    },
+    {
+      "node": "AG_PROV_GOV",
+      "node_label": "ผู้ว่าราชการจังหวัด (= ผอ.จังหวัด ตาม พ.ร.บ.ป้องกันฯ 2550)",
+      "commanders": [
+        "AG_ADMIN_COURT",
+        "AG_BASIN_CMT",
+        "AG_MOI_CMD"
+      ],
+      "commander_labels": [
+        "ศาลปกครอง",
+        "คณะกรรมการลุ่มน้ำ (36 ลุ่มน้ำ ตาม พ.ร.บ.ทรัพยากรน้ำ 2561)",
+        "รมว.มหาดไทย = ผู้บัญชาการ ตาม พ.ร.บ.ป้องกันฯ 2550"
+      ]
+    },
+    {
+      "node": "DC_BACKUP_POWER",
+      "node_label": "จัดไฟสำรองสถานีสูบ",
+      "commanders": [
+        "AG_DDS",
+        "AG_ESTATE",
+        "AG_MEA"
+      ],
+      "commander_labels": [
+        "สนน. สำนักการระบายน้ำ + ศูนย์ควบคุมระบบป้องกันน้ำท่วม",
+        "นิติบุคคลหมู่บ้านจัดสรร / คณะกรรมการหมู่บ้านสัมมากร",
+        "กฟน. การไฟฟ้านครหลวง"
+      ]
+    },
+    {
+      "node": "DC_BEDRIDDEN",
+      "node_label": "ย้ายผู้ป่วยติดเตียง",
+      "commanders": [
+        "AG_BMA_MED",
+        "AG_DIST_SS",
+        "AG_HEALTH_CTR"
+      ],
+      "commander_labels": [
+        "สำนักการแพทย์ / ศูนย์เอราวัณ (1669 ใน กทม.)",
+        "ผอ.เขตสะพานสูง (ผู้ช่วยผู้อำนวยการ กทม.)",
+        "ศูนย์บริการสาธารณสุข (สังกัดสำนักอนามัย ไม่ใช่เขต)"
+      ]
+    },
+    {
+      "node": "DC_COMPENSATE",
+      "node_label": "จ่ายเยียวยา",
+      "commanders": [
+        "AG_DDPM",
+        "AG_DIST_SS",
+        "AG_MOF"
+      ],
+      "commander_labels": [
+        "ปภ. กรมป้องกันและบรรเทาสาธารณภัย (ผู้อำนวยการกลาง)",
+        "ผอ.เขตสะพานสูง (ผู้ช่วยผู้อำนวยการ กทม.)",
+        "กระทรวงการคลัง (ระเบียบเงินทดรองราชการ)"
+      ]
+    },
+    {
+      "node": "DC_DAM_RELEASE",
+      "node_label": "ปล่อยน้ำเขื่อน",
+      "commanders": [
+        "AG_EGAT",
+        "AG_ONWR",
+        "AG_RID"
+      ],
+      "commander_labels": [
+        "กฟผ.",
+        "สทนช. สำนักงานทรัพยากรน้ำแห่งชาติ",
+        "กรมชลประทาน"
+      ]
+    },
+    {
+      "node": "DC_EMERG",
+      "node_label": "ประกาศ พ.ร.ก.ฉุกเฉิน / ตั้งศูนย์บัญชาการเฉพาะกิจ",
+      "commanders": [
+        "AG_CABINET",
+        "AG_KNCH",
+        "AG_PM"
+      ],
+      "commander_labels": [
+        "คณะรัฐมนตรี",
+        "กนช. คณะกรรมการทรัพยากรน้ำแห่งชาติ",
+        "นายกรัฐมนตรี (ควบ รมว.มหาดไทย ตามข่าว)"
+      ]
+    },
+    {
+      "node": "DC_EVACUATE",
+      "node_label": "สั่งอพยพ",
+      "commanders": [
+        "AG_BMA_GOV",
+        "AG_DIST_SS",
+        "AG_WARROOM"
+      ],
+      "commander_labels": [
+        "ผู้ว่าฯ กทม. = ผู้อำนวยการ กทม.",
+        "ผอ.เขตสะพานสูง (ผู้ช่วยผู้อำนวยการ กทม.)",
+        "ศูนย์บัญชาการตาม พ.ร.ก.ฉุกเฉิน / วอร์รูม (ผบ.ทสส.)"
+      ]
+    },
+    {
+      "node": "DC_GATE_MINBURI",
+      "node_label": "เปิด/ปิด ปตร.แสนแสบ-มีนบุรี",
+      "commanders": [
+        "AG_BMA_GOV",
+        "AG_DDS",
+        "AG_PM"
+      ],
+      "commander_labels": [
+        "ผู้ว่าฯ กทม. = ผู้อำนวยการ กทม.",
+        "สนน. สำนักการระบายน้ำ + ศูนย์ควบคุมระบบป้องกันน้ำท่วม",
+        "นายกรัฐมนตรี (ควบ รมว.มหาดไทย ตามข่าว)"
+      ]
+    },
+    {
+      "node": "DC_SHELTER",
+      "node_label": "เปิดศูนย์พักพิง",
+      "commanders": [
+        "AG_BMA_GOV",
+        "AG_DIST_SS",
+        "AG_RELIG"
+      ],
+      "commander_labels": [
+        "ผู้ว่าฯ กทม. = ผู้อำนวยการ กทม.",
+        "ผอ.เขตสะพานสูง (ผู้ช่วยผู้อำนวยการ กทม.)",
+        "มัสยิด/วัด/โบสถ์ ในพื้นที่"
+      ]
+    },
+    {
+      "node": "AG_BASIN_CMT",
+      "node_label": "คณะกรรมการลุ่มน้ำ (36 ลุ่มน้ำ ตาม พ.ร.บ.ทรัพยากรน้ำ 2561)",
+      "commanders": [
+        "AG_KNCH",
+        "AG_ONWR"
+      ],
+      "commander_labels": [
+        "กนช. คณะกรรมการทรัพยากรน้ำแห่งชาติ",
+        "สทนช. สำนักงานทรัพยากรน้ำแห่งชาติ"
+      ]
+    },
+    {
+      "node": "AG_BUDGET",
+      "node_label": "สำนักงบประมาณ",
+      "commanders": [
+        "AG_CABINET",
+        "AG_SAO"
+      ],
+      "commander_labels": [
+        "คณะรัฐมนตรี",
+        "สตง. สำนักงานการตรวจเงินแผ่นดิน"
+      ]
+    },
+    {
+      "node": "AG_ONWR",
+      "node_label": "สทนช. สำนักงานทรัพยากรน้ำแห่งชาติ",
+      "commanders": [
+        "AG_KNCH",
+        "AG_SNP"
+      ],
+      "commander_labels": [
+        "กนช. คณะกรรมการทรัพยากรน้ำแห่งชาติ",
+        "ศนภ. ศูนย์บริหารจัดการน้ำในสถานการณ์ภัยพิบัติ (ผอ.=รองนายกฯ/รมว.เกษตรฯ)"
+      ]
+    },
+    {
+      "node": "AG_PROV_PPHA",
+      "node_label": "สนง.ปภ.จังหวัด",
+      "commanders": [
+        "AG_DDPM",
+        "AG_PROV_GOV"
+      ],
+      "commander_labels": [
+        "ปภ. กรมป้องกันและบรรเทาสาธารณภัย (ผู้อำนวยการกลาง)",
+        "ผู้ว่าราชการจังหวัด (= ผอ.จังหวัด ตาม พ.ร.บ.ป้องกันฯ 2550)"
+      ]
+    },
+    {
+      "node": "AG_PROV_PUYAIBAN",
+      "node_label": "ผู้ใหญ่บ้าน",
+      "commanders": [
+        "AG_PROV_KAMNAN",
+        "AG_PROV_TAO"
+      ],
+      "commander_labels": [
+        "กำนัน",
+        "อบต. (องค์การบริหารส่วนตำบล)"
+      ]
+    },
+    {
+      "node": "AG_PROV_RID",
+      "node_label": "โครงการชลประทานจังหวัด / สำนักงานชลประทานที่ N",
+      "commanders": [
+        "AG_PROV_GOV",
+        "AG_RID"
+      ],
+      "commander_labels": [
+        "ผู้ว่าราชการจังหวัด (= ผอ.จังหวัด ตาม พ.ร.บ.ป้องกันฯ 2550)",
+        "กรมชลประทาน"
+      ]
+    },
+    {
+      "node": "AG_RID",
+      "node_label": "กรมชลประทาน",
+      "commanders": [
+        "AG_REGCOM",
+        "AG_SNP"
+      ],
+      "commander_labels": [
+        "คณะกรรมการอุทกภัยและภัยแล้งระดับภูมิภาค 5 คณะ (คำสั่งสำนักนายกฯ 275/2569)",
+        "ศนภ. ศูนย์บริหารจัดการน้ำในสถานการณ์ภัยพิบัติ (ผอ.=รองนายกฯ/รมว.เกษตรฯ)"
+      ]
+    },
+    {
+      "node": "DC_DECLARE",
+      "node_label": "ประกาศเขตภัยพิบัติ/เขตให้ความช่วยเหลือ (กทม.)",
+      "commanders": [
+        "AG_BMA_GOV",
+        "AG_MOI_CMD"
+      ],
+      "commander_labels": [
+        "ผู้ว่าฯ กทม. = ผู้อำนวยการ กทม.",
+        "รมว.มหาดไทย = ผู้บัญชาการ ตาม พ.ร.บ.ป้องกันฯ 2550"
+      ]
+    },
+    {
+      "node": "DC_GATE_BANGCHAN",
+      "node_label": "เปิด/ปิด ปตร.บางชัน",
+      "commanders": [
+        "AG_BMA_GOV",
+        "AG_DDS"
+      ],
+      "commander_labels": [
+        "ผู้ว่าฯ กทม. = ผู้อำนวยการ กทม.",
+        "สนน. สำนักการระบายน้ำ + ศูนย์ควบคุมระบบป้องกันน้ำท่วม"
+      ]
+    },
+    {
+      "node": "DC_GATE_PRAWET",
+      "node_label": "เปิด/ปิด ปตร.ประเวศ (PWT.03/.04)",
+      "commanders": [
+        "AG_DDS",
+        "AG_RID"
+      ],
+      "commander_labels": [
+        "สนน. สำนักการระบายน้ำ + ศูนย์ควบคุมระบบป้องกันน้ำท่วม",
+        "กรมชลประทาน"
+      ]
+    },
+    {
+      "node": "DC_POND_DRAWDOWN",
+      "node_label": "พร่องบึงหมู่บ้านก่อนฝน",
+      "commanders": [
+        "AG_DDS",
+        "AG_ESTATE"
+      ],
+      "commander_labels": [
+        "สนน. สำนักการระบายน้ำ + ศูนย์ควบคุมระบบป้องกันน้ำท่วม",
+        "นิติบุคคลหมู่บ้านจัดสรร / คณะกรรมการหมู่บ้านสัมมากร"
+      ]
+    },
+    {
+      "node": "DC_POWER_CUT",
+      "node_label": "ตัดไฟพื้นที่น้ำท่วม",
+      "commanders": [
+        "AG_BMA_GOV",
+        "AG_MEA"
+      ],
+      "commander_labels": [
+        "ผู้ว่าฯ กทม. = ผู้อำนวยการ กทม.",
+        "กฟน. การไฟฟ้านครหลวง"
+      ]
+    },
+    {
+      "node": "DC_RID_DIVERT",
+      "node_label": "ผันน้ำ/เปิดปิดประตูระบบชลประทานตะวันออก",
+      "commanders": [
+        "AG_RID",
+        "AG_SNP"
+      ],
+      "commander_labels": [
+        "กรมชลประทาน",
+        "ศนภ. ศูนย์บริหารจัดการน้ำในสถานการณ์ภัยพิบัติ (ผอ.=รองนายกฯ/รมว.เกษตรฯ)"
+      ]
+    },
+    {
+      "node": "DC_ROAD",
+      "node_label": "ปิดถนน/ยกถนน/ยกเว้นค่าทางด่วน",
+      "commanders": [
+        "AG_BMA_PWD",
+        "AG_DOH"
+      ],
+      "commander_labels": [
+        "สำนักการโยธา กทม.",
+        "กรมทางหลวง / กทพ. (ทางด่วน)"
+      ]
+    },
+    {
+      "node": "DC_RUN_SPS",
+      "node_label": "เดิน/ซ่อมปั๊ม ST.SPS.01-04",
+      "commanders": [
+        "AG_DDS",
+        "AG_ESTATE"
+      ],
+      "commander_labels": [
+        "สนน. สำนักการระบายน้ำ + ศูนย์ควบคุมระบบป้องกันน้ำท่วม",
+        "นิติบุคคลหมู่บ้านจัดสรร / คณะกรรมการหมู่บ้านสัมมากร"
+      ]
+    },
+    {
+      "node": "PP_VULN",
+      "node_label": "ผู้ป่วยติดเตียง/กลุ่มเปราะบางในสัมมากร",
+      "commanders": [
+        "AS_BOATS",
+        "DC_BEDRIDDEN"
+      ],
+      "commander_labels": [
+        "เรือ/รถยกสูง",
+        "ย้ายผู้ป่วยติดเตียง"
+      ]
+    }
+  ],
+  "rule_2_ownership_gaps": {
+    "unowned": [
+      {
+        "node": "AS_CHAO_UP",
+        "node_label": "เจ้าพระยาตอนบน-กลาง"
+      },
+      {
+        "node": "AS_EAST_UPPER",
+        "node_label": "คลองตะวันออก กทม. ตอนบน (สามวา/หนองจอก-มีนบุรี)"
+      },
+      {
+        "node": "AS_KING_DIKE",
+        "node_label": "คันกั้นน้ำพระราชดำริฝั่งตะวันออก"
+      },
+      {
+        "node": "AS_LKB",
+        "node_label": "พื้นที่ลาดกระบัง-สุวรรณภูมิ (ฝั่งรับภาระ)"
+      },
+      {
+        "node": "AS_PASAK_RIVER",
+        "node_label": "แม่น้ำป่าสักตอนล่าง (เหนือเขื่อนพระราม 6)"
+      },
+      {
+        "node": "AS_RAIN",
+        "node_label": "ฝน 26 ก.ย. 2569 (สนข.สะพานสูง 203.5 มม./วัน)"
+      },
+      {
+        "node": "AS_SEA",
+        "node_label": "อ่าวไทย"
+      }
+    ],
+    "contested": [
+      {
+        "node": "DT_BEDRIDDEN",
+        "node_label": "ทะเบียนผู้ป่วยติดเตียง/กลุ่มเปราะบาง (สัมมากร)",
+        "owners": [
+          "AG_BMA_COMM",
+          "AG_ESTATE",
+          "AG_HEALTH_CTR",
+          "AG_MSDHS",
+          "AG_OSS"
+        ],
+        "owner_labels": [
+          "ชุมชนจดทะเบียน กทม. (ประธาน/กรรมการชุมชน)",
+          "นิติบุคคลหมู่บ้านจัดสรร / คณะกรรมการหมู่บ้านสัมมากร",
+          "ศูนย์บริการสาธารณสุข (สังกัดสำนักอนามัย ไม่ใช่เขต)",
+          "พม. กระทรวงการพัฒนาสังคมฯ",
+          "อสส. อาสาสมัครสาธารณสุข กทม."
+        ]
+      },
+      {
+        "node": "AS_BOATS",
+        "node_label": "เรือ/รถยกสูง",
+        "owners": [
+          "AG_BMA_FIRE",
+          "AG_MILITARY",
+          "AG_RESCUE"
+        ],
+        "owner_labels": [
+          "สำนักป้องกันและบรรเทาสาธารณภัย กทม. (สปภ.)",
+          "กองทัพ / มณฑลทหารบก / แม่ทัพภาค",
+          "มูลนิธิกู้ภัย (เช่น ร่วมกตัญญู/ป่อเต็กตึ๊ง)"
+        ]
+      },
+      {
+        "node": "AS_MOBILE_PUMPS",
+        "node_label": "เครื่องสูบเคลื่อนที่ (เขต/สปภ./ปภ./ทหาร)",
+        "owners": [
+          "AG_BMA_FIRE",
+          "AG_DDPM",
+          "AG_DIST_SS"
+        ],
+        "owner_labels": [
+          "สำนักป้องกันและบรรเทาสาธารณภัย กทม. (สปภ.)",
+          "ปภ. กรมป้องกันและบรรเทาสาธารณภัย (ผู้อำนวยการกลาง)",
+          "ผอ.เขตสะพานสูง (ผู้ช่วยผู้อำนวยการ กทม.)"
+        ]
+      },
+      {
+        "node": "AS_RAM_ROAD",
+        "node_label": "ถนนรามคำแหง (ทำหน้าที่คันกั้นน้ำ)",
+        "owners": [
+          "AG_BMA_PWD",
+          "AG_DOH",
+          "AG_DPT"
+        ],
+        "owner_labels": [
+          "สำนักการโยธา กทม.",
+          "กรมทางหลวง / กทพ. (ทางด่วน)",
+          "กรมโยธาธิการและผังเมือง"
+        ]
+      },
+      {
+        "node": "AS_HOKWA",
+        "node_label": "คลองหกวา / คลองซอยฝั่งตะวันออก",
+        "owners": [
+          "AG_DWR",
+          "AG_RID"
+        ],
+        "owner_labels": [
+          "กรมทรัพยากรน้ำ (น้ำผิวดินนอกเขตชลประทาน+น้ำบาดาล)",
+          "กรมชลประทาน"
+        ]
+      },
+      {
+        "node": "AS_SPS_POND",
+        "node_label": "สถานีสูบบึง ST.SPS.02/.03/.04 (2+3+2 เครื่อง)",
+        "owners": [
+          "AG_DDS",
+          "AG_ESTATE"
+        ],
+        "owner_labels": [
+          "สนน. สำนักการระบายน้ำ + ศูนย์ควบคุมระบบป้องกันน้ำท่วม",
+          "นิติบุคคลหมู่บ้านจัดสรร / คณะกรรมการหมู่บ้านสัมมากร"
+        ]
+      }
+    ]
+  },
+  "rule_3_shares_without_arbitration": [
+    {
+      "u": "AG_BMA_EDU",
+      "u_label": "สำนักการศึกษา กทม. (โรงเรียน กทม.)",
+      "v": "AG_KMITL",
+      "v_label": "สจล. (สถานที่รับผู้อพยพลาดกระบัง)",
+      "tag": "RELAYED-GENERAL"
+    },
+    {
+      "u": "AG_HII",
+      "u_label": "สสน. (thaiwater)",
+      "v": "AG_ONWR",
+      "v_label": "สทนช. สำนักงานทรัพยากรน้ำแห่งชาติ",
+      "tag": "RELAYED"
+    },
+    {
+      "u": "AG_MEA",
+      "u_label": "กฟน. การไฟฟ้านครหลวง",
+      "v": "AG_ESTATE",
+      "v_label": "นิติบุคคลหมู่บ้านจัดสรร / คณะกรรมการหมู่บ้านสัมมากร",
+      "tag": "OPEN"
+    },
+    {
+      "u": "AG_MOF",
+      "u_label": "กระทรวงการคลัง (ระเบียบเงินทดรองราชการ)",
+      "v": "AG_BMA_GOV",
+      "v_label": "ผู้ว่าฯ กทม. = ผู้อำนวยการ กทม.",
+      "tag": "RELAYED-GENERAL"
+    },
+    {
+      "u": "AG_MOF",
+      "u_label": "กระทรวงการคลัง (ระเบียบเงินทดรองราชการ)",
+      "v": "AG_PROV_GOV",
+      "v_label": "ผู้ว่าราชการจังหวัด (= ผอ.จังหวัด ตาม พ.ร.บ.ป้องกันฯ 2550)",
+      "tag": "RELAYED-GENERAL"
+    },
+    {
+      "u": "AG_RELIG",
+      "u_label": "มัสยิด/วัด/โบสถ์ ในพื้นที่",
+      "v": "AG_BMA_EDU",
+      "v_label": "สำนักการศึกษา กทม. (โรงเรียน กทม.)",
+      "tag": "RELAYED-GENERAL"
+    },
+    {
+      "u": "AG_RID",
+      "u_label": "กรมชลประทาน",
+      "v": "AG_DWR",
+      "v_label": "กรมทรัพยากรน้ำ (น้ำผิวดินนอกเขตชลประทาน+น้ำบาดาล)",
+      "tag": "OPEN"
+    }
+  ],
+  "rule_4_single_points_of_failure": [],
+  "rule_5_resource_holdings_by_agency": [
+    {
+      "node": "AG_ADMIN_COURT",
+      "node_label": "ศาลปกครอง",
+      "owns": [],
+      "commands": [
+        "AG_BMA_GOV",
+        "AG_PROV_GOV"
+      ],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_APPOR",
+      "node_label": "อปพร. (เขต/กทม.)",
+      "owns": [],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_APPOR_REG"
+      ],
+      "shares_resource_with": [
+        "AG_MILITARY"
+      ]
+    },
+    {
+      "node": "AG_BASIN_CHAOPHRAYA",
+      "node_label": "คณะกรรมการลุ่มน้ำเจ้าพระยา (basin:onwr:10)",
+      "owns": [],
+      "commands": [
+        "AG_PROV_GOV_ATG",
+        "AG_PROV_GOV_AYA",
+        "AG_PROV_GOV_CNT",
+        "AG_PROV_GOV_NSW",
+        "AG_PROV_GOV_NTB",
+        "AG_PROV_GOV_PTT",
+        "AG_PROV_GOV_SBR"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_WATER2561"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_BASIN_CMT",
+      "node_label": "คณะกรรมการลุ่มน้ำ (36 ลุ่มน้ำ ตาม พ.ร.บ.ทรัพยากรน้ำ 2561)",
+      "owns": [],
+      "commands": [
+        "AG_PROV_GOV"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_WATER2561"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_BASIN_PASAK",
+      "node_label": "คณะกรรมการลุ่มน้ำป่าสัก (basin:onwr:12)",
+      "owns": [],
+      "commands": [
+        "AG_PROV_GOV_LPB",
+        "AG_PROV_GOV_SRB"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_WATER2561"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_BIZ",
+      "node_label": "ตลาด/ห้าง/คอนโด (เจ้าของปั๊มเอกชน)",
+      "owns": [
+        "AS_PRIVATE_PUMPS"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_BMA_COMM",
+      "node_label": "ชุมชนจดทะเบียน กทม. (ประธาน/กรรมการชุมชน)",
+      "owns": [
+        "DT_BEDRIDDEN"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_BMA_COUNCIL",
+      "node_label": "สภา กทม. (ส.ก. ทุกเขต) — อนุมัติงบ",
+      "owns": [],
+      "commands": [],
+      "funds": [
+        "AG_DDS"
+      ],
+      "authorized_by_law": [
+        "LAW_BMA2528"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_BMA_EDU",
+      "node_label": "สำนักการศึกษา กทม. (โรงเรียน กทม.)",
+      "owns": [
+        "AS_SHELTER_SCHOOL"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": [
+        "AG_KMITL",
+        "AG_RELIG"
+      ]
+    },
+    {
+      "node": "AG_BMA_FIRE",
+      "node_label": "สำนักป้องกันและบรรเทาสาธารณภัย กทม. (สปภ.)",
+      "owns": [
+        "AS_BOATS",
+        "AS_MOBILE_PUMPS"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": [
+        "AG_DDPM",
+        "AG_DIST_SS"
+      ]
+    },
+    {
+      "node": "AG_BMA_GOV",
+      "node_label": "ผู้ว่าฯ กทม. = ผู้อำนวยการ กทม.",
+      "owns": [
+        "CH_1555",
+        "CH_BRIEFING",
+        "DT_TICKETS"
+      ],
+      "commands": [
+        "AG_BMA_EDU",
+        "AG_BMA_FIRE",
+        "AG_BMA_HEALTH",
+        "AG_BMA_MED",
+        "AG_BMA_PWD",
+        "AG_DDS",
+        "AG_DIST_NEIGH",
+        "AG_DIST_SS",
+        "DC_ALERT",
+        "DC_DECLARE",
+        "DC_EVACUATE",
+        "DC_GATE_BANGCHAN",
+        "DC_GATE_MINBURI",
+        "DC_POWER_CUT",
+        "DC_SHELTER"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_BMA2528",
+        "LAW_DECENTRAL2542",
+        "LAW_DISASTER2550"
+      ],
+      "shares_resource_with": [
+        "AG_MOF"
+      ]
+    },
+    {
+      "node": "AG_BMA_HEALTH",
+      "node_label": "สำนักอนามัย กทม.",
+      "owns": [],
+      "commands": [
+        "AG_HEALTH_CTR"
+      ],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_BMA_MED",
+      "node_label": "สำนักการแพทย์ / ศูนย์เอราวัณ (1669 ใน กทม.)",
+      "owns": [],
+      "commands": [
+        "DC_BEDRIDDEN"
+      ],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_BMA_PWD",
+      "node_label": "สำนักการโยธา กทม.",
+      "owns": [
+        "AS_CULVERT",
+        "AS_RAM_ROAD"
+      ],
+      "commands": [
+        "DC_ROAD"
+      ],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_BUDGET",
+      "node_label": "สำนักงบประมาณ",
+      "owns": [],
+      "commands": [],
+      "funds": [
+        "AG_BMA_GOV",
+        "AG_DDPM",
+        "AG_ONWR",
+        "AG_RID"
+      ],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_CABINET",
+      "node_label": "คณะรัฐมนตรี",
+      "owns": [],
+      "commands": [
+        "AG_BUDGET",
+        "DC_EMERG"
+      ],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_DDPM",
+      "node_label": "ปภ. กรมป้องกันและบรรเทาสาธารณภัย (ผู้อำนวยการกลาง)",
+      "owns": [
+        "AS_MOBILE_PUMPS",
+        "CH_1784",
+        "CH_CELLBC"
+      ],
+      "commands": [
+        "AG_PROV_PPHA",
+        "DC_ALERT",
+        "DC_COMPENSATE",
+        "DC_MOBILE"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_DISASTER2550"
+      ],
+      "shares_resource_with": [
+        "AG_BMA_FIRE"
+      ]
+    },
+    {
+      "node": "AG_DDS",
+      "node_label": "สนน. สำนักการระบายน้ำ + ศูนย์ควบคุมระบบป้องกันน้ำท่วม",
+      "owns": [
+        "AS_GATE_BANGCHAN",
+        "AS_GATE_MINBURI",
+        "AS_GATE_PWT03",
+        "AS_PKN_PUMP",
+        "AS_PKN_TUNNEL",
+        "AS_SPS01",
+        "AS_SPS_POND",
+        "AS_SSB_BK",
+        "AS_SSB_INNER",
+        "AS_SSB_TUNNEL",
+        "AS_TPK",
+        "AS_TRIBS",
+        "CH_BMA_WEB",
+        "DT_DDS_PDF",
+        "DT_PUMPHIST",
+        "DT_RAIN",
+        "DT_SCADA_GATE",
+        "DT_WL_BMA"
+      ],
+      "commands": [
+        "DC_BACKUP_POWER",
+        "DC_GATE_BANGCHAN",
+        "DC_GATE_MINBURI",
+        "DC_GATE_PRAWET",
+        "DC_MOBILE",
+        "DC_POND_DRAWDOWN",
+        "DC_RUN_PKN",
+        "DC_RUN_SPS"
+      ],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": [
+        "AG_RID"
+      ]
+    },
+    {
+      "node": "AG_DIST_COMMDEV",
+      "node_label": "ฝ่ายพัฒนาชุมชนและสวัสดิการสังคม เขต",
+      "owns": [],
+      "commands": [],
+      "funds": [
+        "AG_BMA_COMM"
+      ],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_DIST_SS",
+      "node_label": "ผอ.เขตสะพานสูง (ผู้ช่วยผู้อำนวยการ กทม.)",
+      "owns": [
+        "AS_MOBILE_PUMPS",
+        "AS_SANDBAGS",
+        "CH_DISTRICT",
+        "DT_DAMAGE"
+      ],
+      "commands": [
+        "AG_APPOR",
+        "AG_DIST_COMMDEV",
+        "AG_DIST_EOC",
+        "AG_DIST_TESAKIJ",
+        "AG_DIST_WORKS",
+        "DC_BEDRIDDEN",
+        "DC_COMPENSATE",
+        "DC_EVACUATE",
+        "DC_MOBILE",
+        "DC_SANDBAG",
+        "DC_SHELTER"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_BMA2528",
+        "LAW_DISASTER2550"
+      ],
+      "shares_resource_with": [
+        "AG_BMA_FIRE"
+      ]
+    },
+    {
+      "node": "AG_DIST_WORKS",
+      "node_label": "ฝ่ายโยธา สำนักงานเขต",
+      "owns": [
+        "AS_BANMA",
+        "AS_RAM53_LAT",
+        "AS_WANGYAI"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_DOH",
+      "node_label": "กรมทางหลวง / กทพ. (ทางด่วน)",
+      "owns": [
+        "AS_RAM_ROAD"
+      ],
+      "commands": [
+        "DC_ROAD"
+      ],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_DPT",
+      "node_label": "กรมโยธาธิการและผังเมือง",
+      "owns": [
+        "AS_RAM_ROAD"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_PLANNING2562"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_DWR",
+      "node_label": "กรมทรัพยากรน้ำ (น้ำผิวดินนอกเขตชลประทาน+น้ำบาดาล)",
+      "owns": [
+        "AS_HOKWA"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": [
+        "AG_RID"
+      ]
+    },
+    {
+      "node": "AG_EGAT",
+      "node_label": "กฟผ.",
+      "owns": [
+        "AS_DAM_BHUMIBOL",
+        "AS_DAM_EGAT",
+        "AS_DAM_SIRIKIT",
+        "DT_DAM"
+      ],
+      "commands": [
+        "DC_DAM_RELEASE"
+      ],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_ESTATE",
+      "node_label": "นิติบุคคลหมู่บ้านจัดสรร / คณะกรรมการหมู่บ้านสัมมากร",
+      "owns": [
+        "AS_DRAINS",
+        "AS_GEN_BACKUP",
+        "AS_PONDS",
+        "AS_SOI",
+        "AS_SPS_POND",
+        "CH_LINE_ESTATE",
+        "DT_BEDRIDDEN"
+      ],
+      "commands": [
+        "DC_BACKUP_POWER",
+        "DC_POND_DRAWDOWN",
+        "DC_RUN_SPS"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_LANDALLOT2543"
+      ],
+      "shares_resource_with": [
+        "AG_MEA"
+      ]
+    },
+    {
+      "node": "AG_FB_ADMIN",
+      "node_label": "ผู้ดูแลกลุ่ม Facebook/LINE หมู่บ้าน (อาสา)",
+      "owns": [
+        "CH_FB_GROUP",
+        "DT_FB_POSTS"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_FC_TEAM",
+      "node_label": "ผู้ดูแลหน้า FloodConnect (ภาคประชาชน)",
+      "owns": [
+        "CH_FLOODCONNECT",
+        "DT_OPENMETEO",
+        "DT_SOI_TIERS"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_GISTDA",
+      "node_label": "GISTDA",
+      "owns": [
+        "DT_GISTDA"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_GONCH",
+      "node_label": "กอนช. กองอำนวยการน้ำแห่งชาติ",
+      "owns": [],
+      "commands": [
+        "AG_BASIN_CHAOPHRAYA",
+        "AG_BASIN_PASAK"
+      ],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_HEALTH_CTR",
+      "node_label": "ศูนย์บริการสาธารณสุข (สังกัดสำนักอนามัย ไม่ใช่เขต)",
+      "owns": [
+        "DT_BEDRIDDEN"
+      ],
+      "commands": [
+        "AG_OSS",
+        "DC_BEDRIDDEN"
+      ],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_HII",
+      "node_label": "สสน. (thaiwater)",
+      "owns": [
+        "CH_THAIWATER_WEB",
+        "DT_FLOODROAD",
+        "DT_THAIWATER"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": [
+        "AG_ONWR"
+      ]
+    },
+    {
+      "node": "AG_KMITL",
+      "node_label": "สจล. (สถานที่รับผู้อพยพลาดกระบัง)",
+      "owns": [
+        "AS_SHELTER_KMITL"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": [
+        "AG_BMA_EDU"
+      ]
+    },
+    {
+      "node": "AG_KNCH",
+      "node_label": "กนช. คณะกรรมการทรัพยากรน้ำแห่งชาติ",
+      "owns": [],
+      "commands": [
+        "AG_BASIN_CHAOPHRAYA",
+        "AG_BASIN_CMT",
+        "AG_BASIN_PASAK",
+        "AG_ONWR",
+        "DC_EMERG"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_CONST2560",
+        "LAW_WATER2561"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_KOPOR",
+      "node_label": "คอภ. คณะกรรมการอำนวยการและบริหารสถานการณ์ภัยพิบัติทางธรรมชาติ",
+      "owns": [],
+      "commands": [
+        "AG_SNP"
+      ],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_MARINE",
+      "node_label": "กรมเจ้าท่า",
+      "owns": [
+        "AS_CHAO"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_NAVIGATION2456"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_MEA",
+      "node_label": "กฟน. การไฟฟ้านครหลวง",
+      "owns": [
+        "AS_GRID",
+        "CH_MEA_1130"
+      ],
+      "commands": [
+        "DC_BACKUP_POWER",
+        "DC_POWER_CUT"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_MEA2501"
+      ],
+      "shares_resource_with": [
+        "AG_ESTATE"
+      ]
+    },
+    {
+      "node": "AG_MHESI",
+      "node_label": "กระทรวงการอุดมศึกษา วิทยาศาสตร์ วิจัยและนวัตกรรม (อว.)",
+      "owns": [],
+      "commands": [
+        "AG_GISTDA",
+        "AG_HII",
+        "AG_NRCT"
+      ],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_MILITARY",
+      "node_label": "กองทัพ / มณฑลทหารบก / แม่ทัพภาค",
+      "owns": [
+        "AS_BOATS"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": [
+        "AG_APPOR"
+      ]
+    },
+    {
+      "node": "AG_MOAC",
+      "node_label": "กระทรวงเกษตรและสหกรณ์",
+      "owns": [
+        "AG_RID"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_MOF",
+      "node_label": "กระทรวงการคลัง (ระเบียบเงินทดรองราชการ)",
+      "owns": [],
+      "commands": [
+        "DC_COMPENSATE"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_MOF_ADVANCE"
+      ],
+      "shares_resource_with": [
+        "AG_BMA_GOV",
+        "AG_PROV_GOV"
+      ]
+    },
+    {
+      "node": "AG_MOI_CMD",
+      "node_label": "รมว.มหาดไทย = ผู้บัญชาการ ตาม พ.ร.บ.ป้องกันฯ 2550",
+      "owns": [],
+      "commands": [
+        "AG_BMA_GOV",
+        "AG_DDPM",
+        "AG_PROV_GOV",
+        "DC_DECLARE"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_DISASTER2550"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_MP",
+      "node_label": "ส.ส. เขต",
+      "owns": [
+        "CH_REP"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_MSDHS",
+      "node_label": "พม. กระทรวงการพัฒนาสังคมฯ",
+      "owns": [
+        "DT_BEDRIDDEN"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_NAVY_HYDRO",
+      "node_label": "กรมอุทกศาสตร์ ทร. (น้ำขึ้นน้ำลง)",
+      "owns": [
+        "DT_TIDE"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_NECTEC",
+      "node_label": "สวทช./NECTEC ผู้พัฒนา Traffy Fondue",
+      "owns": [
+        "CH_TRAFFY"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_NIEMS",
+      "node_label": "สพฉ. (ระบบ 1669 ระดับชาติ)",
+      "owns": [
+        "CH_1669"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_NSC",
+      "node_label": "สมช. (เลขานุการการประกาศ พ.ร.ก.ฉุกเฉิน)",
+      "owns": [],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_EMERGENCY2548"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_OMBUDSMAN",
+      "node_label": "ผู้ตรวจการแผ่นดิน",
+      "owns": [],
+      "commands": [
+        "AG_BMA_GOV"
+      ],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_ONWR",
+      "node_label": "สทนช. สำนักงานทรัพยากรน้ำแห่งชาติ",
+      "owns": [
+        "AG_GONCH",
+        "DT_ONWR"
+      ],
+      "commands": [
+        "AG_BASIN_CHAOPHRAYA",
+        "AG_BASIN_CMT",
+        "AG_BASIN_PASAK",
+        "DC_ALERT",
+        "DC_DAM_RELEASE"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_WATER2561"
+      ],
+      "shares_resource_with": [
+        "AG_HII",
+        "AG_TMD"
+      ]
+    },
+    {
+      "node": "AG_OSS",
+      "node_label": "อสส. อาสาสมัครสาธารณสุข กทม.",
+      "owns": [
+        "DT_BEDRIDDEN"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_OWNERS",
+      "node_label": "สมาชิก/เจ้าของแปลง (ผู้จ่ายค่าส่วนกลาง)",
+      "owns": [],
+      "commands": [],
+      "funds": [
+        "AG_ESTATE"
+      ],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_PARLIAMENT_CMT",
+      "node_label": "กมธ.สภาผู้แทนราษฎร (ที่ดิน ทรัพยากรธรรมชาติและสิ่งแวดล้อม / ป้องกันฯ)",
+      "owns": [],
+      "commands": [
+        "AG_DDPM"
+      ],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_PM",
+      "node_label": "นายกรัฐมนตรี (ควบ รมว.มหาดไทย ตามข่าว)",
+      "owns": [],
+      "commands": [
+        "AG_GONCH",
+        "AG_KNCH",
+        "AG_KOPOR",
+        "AG_MOI_CMD",
+        "AG_REGCOM",
+        "AG_WARROOM",
+        "DC_EMERG",
+        "DC_GATE_MINBURI"
+      ],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_PROV_DISTOFF",
+      "node_label": "นายอำเภอ",
+      "owns": [],
+      "commands": [
+        "AG_PROV_KAMNAN"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_LOCALADMIN2457"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_PROV_GOV",
+      "node_label": "ผู้ว่าราชการจังหวัด (= ผอ.จังหวัด ตาม พ.ร.บ.ป้องกันฯ 2550)",
+      "owns": [],
+      "commands": [
+        "AG_PROV_DISTOFF",
+        "AG_PROV_MUNI",
+        "AG_PROV_PAO",
+        "AG_PROV_PPHA",
+        "AG_PROV_RID",
+        "AG_PROV_TAO"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_DISASTER2550"
+      ],
+      "shares_resource_with": [
+        "AG_MOF"
+      ]
+    },
+    {
+      "node": "AG_PROV_GOV_ATG",
+      "node_label": "ผู้ว่าราชการจังหวัดอ่างทอง",
+      "owns": [],
+      "commands": [
+        "AG_PROV_PAO_ATG",
+        "AG_PROV_RID_ATG"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_DISASTER2550"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_PROV_GOV_AYA",
+      "node_label": "ผู้ว่าราชการจังหวัดพระนครศรีอยุธยา",
+      "owns": [],
+      "commands": [
+        "AG_PROV_PAO_AYA",
+        "AG_PROV_RID_AYA"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_DISASTER2550"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_PROV_GOV_CNT",
+      "node_label": "ผู้ว่าราชการจังหวัดชัยนาท",
+      "owns": [],
+      "commands": [
+        "AG_PROV_PAO_CNT",
+        "AG_PROV_RID_CNT"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_DISASTER2550"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_PROV_GOV_LPB",
+      "node_label": "ผู้ว่าราชการจังหวัดลพบุรี",
+      "owns": [],
+      "commands": [
+        "AG_PROV_PAO_LPB",
+        "AG_PROV_RID_LPB"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_DISASTER2550"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_PROV_GOV_NSW",
+      "node_label": "ผู้ว่าราชการจังหวัดนครสวรรค์",
+      "owns": [],
+      "commands": [
+        "AG_PROV_PAO_NSW",
+        "AG_PROV_RID_NSW"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_DISASTER2550"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_PROV_GOV_NTB",
+      "node_label": "ผู้ว่าราชการจังหวัดนนทบุรี",
+      "owns": [],
+      "commands": [
+        "AG_PROV_PAO_NTB",
+        "AG_PROV_RID_NTB"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_DISASTER2550"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_PROV_GOV_PTT",
+      "node_label": "ผู้ว่าราชการจังหวัดปทุมธานี",
+      "owns": [],
+      "commands": [
+        "AG_PROV_PAO_PTT",
+        "AG_PROV_RID_PTT"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_DISASTER2550"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_PROV_GOV_SBR",
+      "node_label": "ผู้ว่าราชการจังหวัดสิงห์บุรี",
+      "owns": [],
+      "commands": [
+        "AG_PROV_PAO_SBR",
+        "AG_PROV_RID_SBR"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_DISASTER2550"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_PROV_GOV_SRB",
+      "node_label": "ผู้ว่าราชการจังหวัดสระบุรี",
+      "owns": [],
+      "commands": [
+        "AG_PROV_PAO_SRB",
+        "AG_PROV_RID_SRB"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_DISASTER2550"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_PROV_KAMNAN",
+      "node_label": "กำนัน",
+      "owns": [],
+      "commands": [
+        "AG_PROV_PUYAIBAN"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_LOCALADMIN2457"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_PROV_MUNI",
+      "node_label": "เทศบาล (นคร/เมือง/ตำบล)",
+      "owns": [],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_DECENTRAL2542",
+        "LAW_DISASTER2550",
+        "LAW_MUNI2496"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_PROV_PAO",
+      "node_label": "อบจ. (องค์การบริหารส่วนจังหวัด)",
+      "owns": [],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_DECENTRAL2542",
+        "LAW_PAO2540"
+      ],
+      "shares_resource_with": [
+        "AG_PROV_RID"
+      ]
+    },
+    {
+      "node": "AG_PROV_PUYAIBAN",
+      "node_label": "ผู้ใหญ่บ้าน",
+      "owns": [],
+      "commands": [
+        "AG_PROV_VILLCMT"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_LOCALADMIN2457"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_PROV_RID",
+      "node_label": "โครงการชลประทานจังหวัด / สำนักงานชลประทานที่ N",
+      "owns": [],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": [
+        "AG_PROV_PAO"
+      ]
+    },
+    {
+      "node": "AG_PROV_TAO",
+      "node_label": "อบต. (องค์การบริหารส่วนตำบล)",
+      "owns": [],
+      "commands": [
+        "AG_PROV_PUYAIBAN"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_DECENTRAL2542",
+        "LAW_DISASTER2550",
+        "LAW_TAO2537"
+      ],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_PROV_VILLCMT",
+      "node_label": "คณะกรรมการหมู่บ้าน",
+      "owns": [],
+      "commands": [
+        "AG_PROV_HH"
+      ],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_REGCOM",
+      "node_label": "คณะกรรมการอุทกภัยและภัยแล้งระดับภูมิภาค 5 คณะ (คำสั่งสำนักนายกฯ 275/2569)",
+      "owns": [],
+      "commands": [
+        "AG_DDPM",
+        "AG_EGAT",
+        "AG_RID",
+        "AG_TMD"
+      ],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_RELIG",
+      "node_label": "มัสยิด/วัด/โบสถ์ ในพื้นที่",
+      "owns": [
+        "AS_SHELTER_RELIG"
+      ],
+      "commands": [
+        "DC_SHELTER"
+      ],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": [
+        "AG_BMA_EDU"
+      ]
+    },
+    {
+      "node": "AG_RESCUE",
+      "node_label": "มูลนิธิกู้ภัย (เช่น ร่วมกตัญญู/ป่อเต็กตึ๊ง)",
+      "owns": [
+        "AS_BOATS"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_RID",
+      "node_label": "กรมชลประทาน",
+      "owns": [
+        "AS_DAM_C13",
+        "AS_DAM_KWAENOI",
+        "AS_DAM_PASAK",
+        "AS_DAM_RAMA6",
+        "AS_DAM_RID",
+        "AS_DIVERT_CNPS",
+        "AS_DIVERT_WEST",
+        "AS_GATE_PWT04",
+        "AS_GAUGE_C2",
+        "AS_HOKWA",
+        "AS_RETENTION_12THUNG",
+        "AS_RID_COAST",
+        "AS_RID_RANGSIT",
+        "CH_RID_HOTLINE",
+        "DT_RID_TELE"
+      ],
+      "commands": [
+        "AG_PROV_RID",
+        "DC_DAM_RELEASE",
+        "DC_GATE_PRAWET",
+        "DC_RID_DIVERT"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_IRRIGATION2485"
+      ],
+      "shares_resource_with": [
+        "AG_DDS",
+        "AG_DWR"
+      ]
+    },
+    {
+      "node": "AG_SAO",
+      "node_label": "สตง. สำนักงานการตรวจเงินแผ่นดิน",
+      "owns": [],
+      "commands": [
+        "AG_BUDGET"
+      ],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_SK",
+      "node_label": "ส.ก. เขตสะพานสูง",
+      "owns": [
+        "CH_REP"
+      ],
+      "commands": [],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_SNP",
+      "node_label": "ศนภ. ศูนย์บริหารจัดการน้ำในสถานการณ์ภัยพิบัติ (ผอ.=รองนายกฯ/รมว.เกษตรฯ)",
+      "owns": [],
+      "commands": [
+        "AG_ONWR",
+        "AG_RID",
+        "DC_RID_DIVERT"
+      ],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": []
+    },
+    {
+      "node": "AG_TMD",
+      "node_label": "กรมอุตุนิยมวิทยา",
+      "owns": [
+        "DT_TMD"
+      ],
+      "commands": [
+        "DC_ALERT"
+      ],
+      "funds": [],
+      "authorized_by_law": [],
+      "shares_resource_with": [
+        "AG_ONWR"
+      ]
+    },
+    {
+      "node": "AG_WARROOM",
+      "node_label": "ศูนย์บัญชาการตาม พ.ร.ก.ฉุกเฉิน / วอร์รูม (ผบ.ทสส.)",
+      "owns": [],
+      "commands": [
+        "AG_MILITARY",
+        "DC_EVACUATE",
+        "DC_MOBILE"
+      ],
+      "funds": [],
+      "authorized_by_law": [
+        "LAW_EMERGENCY2548"
+      ],
+      "shares_resource_with": []
+    }
+  ]
+}

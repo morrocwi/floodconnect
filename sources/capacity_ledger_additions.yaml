@@ -1,0 +1,192 @@
+# capacity_ledger_additions.yaml -- Scope: new data only, from a data-sweep pass
+# (2026-09-27). Does not edit sources/capacity_ledger.yaml itself. Schema
+# mirrors that file's own row shape (element_th/en, capacity figure, tag, source, note).
+# Not committed as part of this change -- a later pass decides whether/how to fold
+# these rows into capacity_ledger.yaml proper.
+#
+# Founder task: fill outlet-capacity gaps that made PROP-FLOOD-06 backtest REFUSE
+# NAN/CHIANGMAI 100% with OUTLET_CAPACITY_UNKNOWN (docs/BACKTEST_PROP_FLOOD_06_v0.md sec.2).
+#
+# Provenance for every qmax figure below: HII/thaiwater telemetry station metadata field
+# "qmax" (found in the SAME cached public/waterlevel snapshot this repo's collect.py
+# already pulls -- raw/live/thaiwater_waterlevel/2026-09-27T094357Z.json -- read locally,
+# NO NEW HTTP REQUEST spent to obtain the qmax numbers themselves). This is HII's own
+# station-level design/rated-capacity field, populated for their critical-level warning
+# logic -- RELAYED tier (an agency-populated station attribute, not an independently
+# re-derived RID/สทนช. hydraulic-capacity report read start-to-finish by this check).
+# Treat as the best available proxy, not as VERIFIED bankfull capacity.
+
+additions:
+
+  - element_th: "แม่น้ำน่าน ที่สถานี N.1 (หน้าสำนักงานป่าไม้, อ.เมืองน่าน)"
+    element_en: "Nan River at station N.1 (Mueang Nan)"
+    ledger_id_new: "led:U_nan_n1_station"
+    station_id_hii: 3219
+    lat: 18.774879
+    lon: 100.779694
+    Q_cap_o_m3s:
+      value: 1066
+      tag: RELAYED
+      source: "HII/thaiwater station metadata field qmax, station N.1 (id 3219)"
+    critical_level_m: null
+    left_bank_msl: 396.425
+    right_bank_msl: 396.352
+    min_bank_msl: 199.2
+    ground_level_msl: 188.9
+    measured_peak_2567_event:
+      value_m3s: 1463.6
+      datetime: "2024-08-22 20:00"
+      tag: MEASURED-history
+      source: "waterlevel_graph, station_type=tele_waterlevel, station_id=3219, 2024-08-01..2024-09-15"
+      archive: "raw/backtest/hii_history/N1_3219_2567.json"
+      note: "measured peak discharge (1463.6 m3/s) EXCEEDS the qmax/bankfull proxy above
+        (1066 m3/s) by ~37% on 2024-08-22 -- directionally consistent with the reported
+        Nan 2567 flood severity (card_research_nan_flood_2567.md), but this is an
+        observation about this one station's telemetry, not an independent confirmation
+        of the qmax figure's accuracy."
+
+  - element_th: "แม่น้ำน่าน ที่สถานี N.64 (บ้านผาขวาง, อ.ท่าวังผา)"
+    element_en: "Nan River at station N.64 (Tha Wang Pha)"
+    ledger_id_new: "led:U_nan_n64_station"
+    station_id_hii: 3246
+    lat: 19.015169
+    lon: 100.780212
+    Q_cap_o_m3s:
+      value: 1028
+      tag: RELAYED
+      source: "HII/thaiwater station metadata field qmax, station N.64 (id 3246)"
+    left_bank_msl: 437.332
+    right_bank_msl: 434.986
+    min_bank_msl: 220.4
+    ground_level_msl: 210.81
+    measured_peak_2567_event:
+      value_m3s: 1426.5
+      datetime: "2024-08-22 10:00"
+      tag: MEASURED-history
+      source: "waterlevel_graph, station_type=tele_waterlevel, station_id=3246, 2024-08-01..2024-09-15"
+      archive: "raw/backtest/hii_history/N64_3246_2567.json"
+      note: "same pattern as N.1: measured peak ~39% over the qmax proxy, ~10h before N.1's
+        own peak (upstream station, consistent with a flood wave travelling downstream) --
+        OPEN whether this timing offset is real routing or a telemetry-timestamp artifact,
+        not independently checked this check."
+
+  - element_th: "แม่น้ำปิง ที่สถานี P.1 (สะพานนวรัฐ, อ.เมืองเชียงใหม่)"
+    element_en: "Ping River at station P.1 (Nawarat Bridge, Chiang Mai)"
+    ledger_id_new: "led:U_chiangmai_p1_station"
+    station_id_hii: 3226
+    lat: 18.786961
+    lon: 99.005089
+    Q_cap_o_m3s:
+      value: 425
+      tag: RELAYED
+      source: "HII/thaiwater station metadata field qmax, station P.1 (id 3226)"
+    critical_level_m: 3.7
+    critical_level_msl: 304.2
+    left_bank_msl: 608.356
+    right_bank_msl: 608.288
+    min_bank_msl: 304.2
+    ground_level_msl: 299.25
+    measured_peak_2567_event:
+      value_m3s: 656
+      datetime: "2024-10-05 12:00"
+      tag: MEASURED-history
+      source: "waterlevel_graph, station_type=tele_waterlevel, station_id=3226, 2024-09-15..2024-10-15"
+      archive: "raw/backtest/hii_history/P1_3226_2567.json"
+      note: "measured peak ~54% over the qmax proxy, on 2024-10-05 -- this date matches the
+        '5 ต.ค.' date already flagged in docs/knowledge/case_chiangmai_2567.md as a key event
+        day (RELAYED card cross-check, not independently re-verified beyond the date match)."
+
+  - element_th: "คลองอู่ตะเภา ที่สถานี X.44 (บ้านหาดใหญ่ใน, อ.หาดใหญ่)"
+    element_en: "Khlong U Taphao at station X.44 (Ban Hat Yai Nai)"
+    ledger_id_new: "led:U_hatyai_x44_station"
+    station_id_hii: 2591
+    lat: 7.00218
+    lon: 100.456062
+    Q_cap_o_m3s:
+      value: 481
+      tag: RELAYED
+      source: "HII/thaiwater station metadata field qmax, station X.44 (id 2591)"
+    critical_level_m: 7.44
+    critical_level_msl: 7.44
+    left_bank_msl: 8.68
+    right_bank_msl: 8.661
+    min_bank_msl: 7.15
+    ground_level_msl: -2.204
+    measured_history_2565_event:
+      window: "2022-11-10..2022-12-10"
+      tag: MEASURED-history
+      source: "waterlevel_graph, station_type=tele_waterlevel, station_id=2591"
+      archive: "raw/backtest/hii_history/X44_2591_2565.json"
+      note: "REAL hourly level+discharge series exists at this station for the 2565 window
+        (681/744 hourly readings non-null) -- this directly answers the single biggest
+        falsifier finding of docs/BACKTEST_PROP_FLOOD_06_v0.md sec.7 ('GloFAS ไม่ resolve
+        คลอง ร.1' -> REFUSED almost 100%): a real gauge (X.44, not GloFAS) exists and has
+        history. HONEST caveat, stated plainly: discharge during the reported flood-peak
+        window (2022-11-29..12-03) was LOWER (38.8-58.4 m3/s) than earlier/later in the
+        same series (max 168.6 m3/s on 2022-12-10, AFTER the reported flood peak) -- this
+        does NOT cleanly show a peak-at-flood-date signal. Plausible reading (INSTINCT,
+        not confirmed): X.44 sits downstream of the ร.1 diversion-canal intake, so a major
+        diversion during the crisis could route flow away from this gauge -- but this is a
+        hypothesis, not a checked fact. Also tried the 2553 (2010) window at this same
+        station: ALL 648 hourly readings null -- telemetry at X.44 does not reach back to
+        2010."
+    no_data_2553: true
+
+  - element_th: "คลองอู่ตะเภา ที่สถานี X.90 (บ้านบางศาลา, ควบคุมเงียบ/control)"
+    element_en: "Khlong U Taphao at station X.90 (Ban Bang Sala, quiet-period control)"
+    ledger_id_new: "led:U_hatyai_x90_station"
+    station_id_hii: 2589
+    lat: 6.93124
+    lon: 100.439857
+    Q_cap_o_m3s:
+      value: 777.8
+      tag: RELAYED
+      source: "HII/thaiwater station metadata field qmax, station X.90 (id 2589)"
+    left_bank_msl: 11.247
+    right_bank_msl: 11.25
+    min_bank_msl: 9.34
+    ground_level_msl: -0.881
+    archive: "raw/backtest/hii_history/X90_2589_2565.json"
+    tag: MEASURED-history
+
+  - element_th: "สถานีวัดน้ำ ONE037 (สะพานข้ามคลองอู่ตะเภา, RID/HII ใหม่กว่า X.44)"
+    element_en: "Station ONE037 (Khlong U Taphao Bridge)"
+    ledger_id_new: "led:U_hatyai_one037_station"
+    station_id_hii: 1109526
+    lat: 7.134997
+    lon: 100.45321
+    Q_cap_o_m3s: {value: null, tag: OPEN, note: "no qmax populated for this station"}
+    measured_history_2565_event:
+      window: "2022-11-10..2022-12-10"
+      tag: MEASURED-history
+      archive: "raw/backtest/hii_history/ONE037_1109526_2565.json"
+      note: "1584/4464 10-minute readings non-null (level only, 0.535-0.89 m, no discharge
+        field populated at this station) -- confirms telemetry exists at a SECOND, more
+        upstream Khlong U Taphao point, but does not by itself give a usable discharge
+        series."
+
+notes_dwr_sub_basin_gap:
+  - "DWR WebGIS (webgis.dwr.go.th) ArcGIS Server root (gis.dwr.go.th/arcgis/rest/services,
+     f=json, unauthenticated) exposes a nationwide Sub_Basin MapServer layer with fields
+     SB_CODE/SB_NAME_T/MB_CODE/MBASIN_T/MBASIN_E/AREA_SQKM + polygon geometry, queryable
+     with standard ArcGIS REST (where=1=1&outFields=*&f=json), confirmed reachable and
+     paginated (exceededTransferLimit:true on an unfiltered query, i.e. full national
+     coverage, not a single sample). This is a DIRECT, downloadable replacement for the
+     units.yaml A_U 'radius fallback r=3km (INSTINCT)' area figure used for HATYAI in the
+     current backtest -- once a future run pages through by OBJECTID/bbox to find the
+     Hat Yai / Nan / Chiang Mai sub-basin polygons specifically (this check's DWR budget
+     spent finding+confirming the service, not yet extracting those 3 specific polygons).
+     A name-substring query for 'อู่ตะเภา' matched zero features (sub-basin names use
+     upstream-river naming, not the town/canal name) -- the correct SB_CODE/SB_NAME_T for
+     Hat Yai's sub-basin needs either a spatial (bbox) query or manual lookup by basin
+     code, not a name guess. See docs/knowledge/DATA_SWEEP_2026-09-27.md for the full
+     endpoint list and licence status. Tag: RELAYED (service discovered + schema
+     confirmed; specific polygons for our 3 units not yet extracted)."
+  - "Same ArcGIS root also exposes a MapServer named
+     'สถานีวัดระดับน้ำ_กรมชลประทาน' (RID water-level stations) with fields
+     Region/Code/River/Detail/Amphoe/Province/Region_1/Time/Lat/Long/Basin_Code/Basin/
+     Remark -- Code values look like RID's own station codes (sample row: Code='Sw.5A').
+     This is a STATIC station directory (coordinates/metadata), not a live-value or
+     history feed -- worth a future targeted query for X.94 / N.1 / N.64 / P.1 by Code to
+     cross-check RID's own station naming against HII's numeric ids used above (not done
+     this check -- budget spent confirming the layer exists and its field list). Tag: OPEN."

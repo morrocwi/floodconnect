@@ -1,0 +1,3802 @@
+# PHASE 1 -- Thai flood/water API census.
+#
+# Purpose: enumerate every publicly reachable Thai water/flood data source this check's
+# probe budget could cover -- API, open-data dataset, telemetry page, CSV/JSON endpoint --
+# across HII/thaiwater.net, RID, EGAT, ONWR, BMA DDS, DDPM, TMD, GISTDA, DWR, PWA/MWA,
+# provincial/basin telemetry, and data.go.th CKAN. This is a CENSUS, not a claim of
+# quality or a decision to ingest -- `status`/`tag` say what this check actually observed,
+# nothing more. Sources already wired into `sources/registry.yaml` are listed here too
+# (status: connected) so this file is one complete map, but are not re-probed -- their
+# registry entry is the live record.
+#
+# Method: curl, browser User-Agent, 15s timeout, ONE request per URL, no retries, no
+# auth attempts, sleep >=1s between requests to the same host, samples only (no large
+# downloads) except one CSV fetched in full before this rule was re-confirmed mid-task
+# (mwa_chaophraya_level_csv -- noted below, not repeated).
+#
+# tag vocabulary (per-source, this check's own observation):
+#   VERIFIED -- this check (or the agency card it draws from, itself produced this same
+#               2026-09-27 sweep) actually fetched the URL and saw the payload/page.
+#   RELAYED  -- only seen listed on a portal/menu/CKAN record/agency card; not fetched
+#               by this check.
+#   OPEN     -- existence/shape unknown or unresolved after the probe attempted.
+#
+# status vocabulary (checked by tests/test_api_census.py -- an unrecognized value fails
+# that test rather than silently undercounting a status == "reachable"/"unreachable"
+# roll-up elsewhere):
+#   connected   -- already in registry.yaml, feeding collect.py. Carries a `wired_as`
+#                  field when this census row's own id differs from the registry.yaml
+#                  id it maps to.
+#   catalog_only -- HTTP 2xx/plausible content was observed, but a prior pass decided NOT
+#                  to wire it (a portal/HTML/PDF/JS/image page with no machine-readable
+#                  endpoint, a duplicate of an already-connected source, an ownership/
+#                  access caution, or an out-of-scope international layer). Carries a
+#                  `catalog_reason` field stating why. Added 2026-10-03 (C3-GOV9 pass)
+#                  to retire the generic `reachable` value once every such row had been
+#                  triaged one way or the other -- see that pass's commit for the full
+#                  59-row sweep. A row may still be promoted from catalog_only to
+#                  connected later if a future pass finds a reason to wire it. A row
+#                  converted from one of the finer `reachable_*` subtypes below also
+#                  carries `catalog_subtype` (the retired status value) so the original
+#                  observation shape is not lost -- a second C3-GOV9 pass (2026-10-03)
+#                  folded the 31 rows still sitting in those finer subtypes into
+#                  catalog_only, since the subtype header definition itself already said
+#                  "not ingested yet" i.e. pending, not decided.
+#
+#   The `reachable_*` values below describe what `catalog_subtype` records once a row
+#   has been folded into `catalog_only` -- none of them should appear as a row's own
+#   top-level `status` any more (guarded by test_api_census.py); they remain documented
+#   here because `catalog_subtype` reuses the same vocabulary.
+#   reachable_http_only       -- plain HTTP (not HTTPS) returns 200; the HTTPS endpoint
+#                                 fails its TLS handshake. Not itself a reason to wire --
+#                                 content still has to be checked separately.
+#   reachable_image_only      -- HTTP 200 but the page is a chart-image/iframe wrapper
+#                                 (JPG/PNG), no HTML table or numeric cell.
+#   reachable_js_only         -- HTTP 200 but the content loads client-side only (SPA
+#                                 shell / hydration script), nothing server-rendered.
+#   reachable_calendar_wrapper -- HTTP 200 but only a date-picker landing page, no table.
+#   reachable_duplicate       -- HTTP 200 but the same underlying table as an
+#                                 already-wired source (not a second data source).
+#   reachable_portal_only     -- HTTP 200 but a parent-bureau/branding landing page, no
+#                                 station list or numeric reading in the fetched HTML.
+#   reachable_pdf_unparsed    -- HTTP 200, a PDF with a real text layer (page count and
+#                                 extractability confirmed), just not ingested yet.
+#   unreachable            -- non-2xx / timeout / connection error, no TLS-specific cause.
+#   unreachable_tls_error  -- the HTTPS handshake itself fails (curl rc=35 etc) -- the
+#                             host may still be reachable over plain HTTP; check before
+#                             calling it down.
+#   needs_key   -- API key required, observed or documented.
+#   unknown     -- not probed, only named on a page/portal.
+#   unresolved_url -- no single concrete URL exists to probe (e.g. only a frontend
+#                     route or an unconfirmed candidate feed-path pattern was found);
+#                     carries no probed_at/http_status since no GET was fired.
+#   not_a_source -- not a URL-having source at all (e.g. a code-review finding about
+#                   an existing collector/parser); carries no probed_at/http_status.
+#   host_blocked -- confirmed anti-bot/WAF block (403 bot-block signature), a host's own
+#                   stated no-scraping policy (e.g. BoM RMM MJO), or any other
+#                   host-safety-rule 403 this check will not re-probe in bulk (folds in
+#                   the former separate "dormant" status -- same meaning). Distinct
+#                   from plain `unreachable` (timeout/404/5xx/no-response) -- a
+#                   host_blocked source will not respond differently on a re-probe;
+#                   never retry it.
+
+census_date: "2026-10-03"
+probe_budget_used_approx: 78
+notes_on_budget: >
+  2026-09-27 sweep: ~39 fresh HTTP probes (9 data.go.th CKAN searches + ~14 targeted URL
+  checks) on top of an already-extensive same-day agency-card sweep (docs/knowledge/
+  agencies/*.md, ~60+ probes) that this census reuses and cites rather than re-running.
+  2026-10-03 close-out: one additional GET per URL (curl -s -m 15, no
+  retries) against each of the 30 entries that were still `unknown`, plus a
+  classification-only pass (no new network request) reclassifying 3 of the 17
+  `unreachable` entries to `host_blocked` (confirmed WAF/anti-bot 403s or a host's own
+  stated no-scraping policy). ~30 new probes this check; combined total ~70, still well
+  under the 120-request budget.
+  2026-10-03 C3-GOV9 pass: one GET per URL against the 6 sources this check actually
+  wired (now `tools/capture_source_sample.py` contract-test captures, see
+  sources/registry.yaml), plus one re-probe of dwr_telemetry_station_positions
+  (404 on the redirect target -- stays catalog_only) and one re-probe of
+  reliefweb_api's v2-without-key shape (403 "not an approved appname", confirming it
+  is the same gap already covered by reliefweb_api_v2's needs_key gate). 8 new probes
+  this check; combined total ~78, still well under the 120-request budget. Sources
+  drawn only from a prior sweep and not re-fetched by any round are tagged RELAYED (no
+  pass itself saw the payload).
+
+sources:
+
+  # ============================================================
+  # Already connected (sources/registry.yaml) -- listed for completeness, not re-probed.
+  # ============================================================
+
+  - id: thaiwater_canal_waterlevel
+    agency: HII (สสน.) / thaiwater.net
+    name_th: ระดับน้ำในคลอง (thaiwater30)
+    name_en: HII canal water level telemetry
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/canal_waterlevel"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: unknown
+    has_coords: true
+    coverage: nationwide
+    asset_classes: [gauge, canal]
+    status: connected
+    http_status: null
+    probed_at: null
+    notes: Already wired into collect.py via registry.yaml; not re-probed this check.
+    tag: VERIFIED
+
+  - id: thaiwater_flood_road
+    agency: HII (สสน.) / thaiwater.net
+    name_th: ถนนน้ำท่วม (thaiwater30)
+    name_en: HII flooded-road reports
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/flood_road"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: unknown
+    has_coords: true
+    coverage: nationwide
+    asset_classes: [flood_extent]
+    status: connected
+    http_status: null
+    probed_at: null
+    notes: Already wired into collect.py via registry.yaml; not re-probed this check.
+    tag: VERIFIED
+
+  - id: thaiwater_rain_24h
+    agency: HII (สสน.) / thaiwater.net
+    name_th: ปริมาณฝน 24 ชม. (thaiwater30)
+    name_en: HII 24h rainfall telemetry
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/rain_24h"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: unknown
+    has_coords: true
+    coverage: nationwide
+    asset_classes: [rain]
+    status: connected
+    http_status: null
+    probed_at: null
+    notes: Already wired into collect.py via registry.yaml; not re-probed this check. Also seen in 2026-09-27 earlier sweep (RELAYED, journal).
+    tag: VERIFIED
+
+  - id: thaiwater_waterlevel
+    agency: HII (สสน.) / thaiwater.net
+    name_th: ระดับน้ำโทรมาตร (thaiwater30)
+    name_en: HII nationwide river/canal water-level telemetry
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: unknown
+    has_coords: true
+    coverage: nationwide
+    asset_classes: [gauge]
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      804 nationwide stations with real lat/lon (per agency-card HII probe log); already
+      wired into collect.py via registry.yaml.
+      Also seen in 2026-09-27 earlier sweep (RELAYED, journal).
+    tag: VERIFIED
+
+  - id: rid_res_table
+    agency: RID (กรมชลประทาน)
+    name_th: ตารางสรุปอ่างเก็บน้ำขนาดใหญ่
+    name_en: RID large-reservoir summary table
+    url: "http://water.rid.go.th/flood/flood/res_table.htm"
+    kind: html_table
+    auth: none
+    format: html
+    cadence: unknown
+    has_coords: false
+    coverage: nationwide
+    asset_classes: [dam, reservoir]
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: 35 dam names by RID region, no coordinate on the page (OPEN gap, per ASSETS.md). Also seen in 2026-09-27 earlier sweep (RELAYED, journal).
+    tag: VERIFIED
+
+  - id: bma_pumphistory
+    agency: BMA สำนักการระบายน้ำ
+    name_th: ประวัติสถานีสูบน้ำ
+    name_en: BMA pump station history/status
+    url: "https://weather.bangkok.go.th/Station/PumpHistory"
+    kind: html_table
+    auth: none
+    format: html
+    cadence: unknown
+    has_coords: true
+    coverage: bangkok
+    asset_classes: [pump_station]
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: Embedded `datapump` array carries real lat/lon per station (per ASSETS.md).
+    tag: VERIFIED
+
+  - id: dds_daily_pdf
+    agency: BMA DDS
+    name_th: รายงานประจำวัน DDS
+    name_en: BMA daily drainage report (PDF)
+    url: "https://dds.bangkok.go.th/public_content/files/001/0004901_1.pdf"
+    kind: pdf
+    auth: none
+    format: pdf
+    cadence: daily
+    has_coords: false
+    coverage: bangkok
+    asset_classes: []
+    status: connected
+    http_status: null
+    probed_at: null
+    notes: Already wired into collect.py via registry.yaml; not re-probed this check.
+    tag: RELAYED
+
+  - id: dds_flood_report
+    agency: BMA DDS
+    name_th: รายงานสถานการณ์น้ำท่วม
+    name_en: BMA flood status report page
+    url: "https://dds.bangkok.go.th/flood_report.php"
+    kind: html_table
+    auth: none
+    format: html
+    cadence: unknown
+    has_coords: false
+    coverage: bangkok
+    asset_classes: [flood_extent]
+    status: connected
+    http_status: null
+    probed_at: null
+    notes: Already wired into collect.py via registry.yaml; not re-probed this check.
+    tag: RELAYED
+
+  - id: dds_tide_pdf
+    agency: BMA DDS
+    name_th: รายงานน้ำขึ้นน้ำลง
+    name_en: BMA tide report (PDF)
+    url: "https://dds.bangkok.go.th/public_content/files/001/0006030_1.pdf"
+    kind: pdf
+    auth: none
+    format: pdf
+    cadence: unknown
+    has_coords: false
+    coverage: bangkok
+    asset_classes: []
+    status: connected
+    http_status: null
+    probed_at: null
+    notes: Already wired into collect.py via registry.yaml; not re-probed this check.
+    tag: RELAYED
+
+  - id: dds_nowcast_gif
+    agency: BMA DDS
+    name_th: ภาพเรดาร์ฝนล่าสุด
+    name_en: BMA nowcast radar rain GIF
+    url: "https://dds.bangkok.go.th/Line_data/picture/radar_rain.gif"
+    kind: page
+    auth: none
+    format: gif
+    cadence: unknown
+    has_coords: false
+    coverage: bangkok
+    asset_classes: [radar, rain]
+    status: connected
+    http_status: null
+    probed_at: null
+    notes: Already wired into collect.py via registry.yaml; not re-probed this check.
+    tag: RELAYED
+
+  - id: bma_klongmap
+    agency: BMA สำนักการระบายน้ำ
+    name_th: แผนที่คลอง/ประตูระบายน้ำ
+    name_en: BMA canal/gate map data endpoint
+    url: "https://weather.bangkok.go.th/Klongmap/GetDataForUpdate"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: unknown
+    has_coords: unknown
+    coverage: bangkok
+    asset_classes: [canal, gate]
+    status: unreachable
+    http_status: 0
+    probed_at: "2026-09-27"
+    notes: >
+      Connected in registry.yaml, but this check's own fresh probe timed out/connection
+      error (curl exit, no response within 15s) -- flag for re-check in a later run;
+      not re-tried this check (one attempt per URL rule).
+    tag: OPEN
+
+  - id: bma_watermap
+    agency: BMA สำนักการระบายน้ำ
+    name_th: แผนที่สถานีวัดน้ำ (PageMap/GoogleMap)
+    name_en: BMA canal/gate/pump station map data endpoint
+    url: "https://weather.bangkok.go.th/water/PageMap/GoogleMap"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: unknown (collect.py --all runs on demand, no fixed schedule -- founder decision 2026-10-02)
+    has_coords: true
+    coverage: bangkok
+    asset_classes: [canal, gate, gauge]
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      Confirmed live in sources/registry.yaml (id bma_watermap). 312 station records,
+      52 with a non-null watergate01..06 gate-opening height -- the first MEASURED
+      gate-state reading in this repo (see docs/knowledge/BMA_WATER_MAP_PROBE.md,
+      docs/LESSONS_nodes_2026-09-27.md §A). Licence/terms-of-use: OPEN, unresolved (no
+      dedicated page found, same posture as bma_pumphistory).
+    tag: VERIFIED
+
+  - id: bma_station_detail
+    agency: BMA สำนักการระบายน้ำ
+    name_th: รายละเอียดสถานี (StationDetail)
+    name_en: BMA per-station admin-form detail page
+    url: "https://weather.bangkok.go.th/water/StationDetail?id={water_id}"
+    kind: html_scrape
+    auth: none
+    format: html
+    cadence: static/slow-changing (control/bank/bed levels), not real-time telemetry
+    has_coords: false
+    coverage: bangkok
+    asset_classes: [canal, gate, gauge]
+    status: host_blocked
+    http_status: 403
+    probed_at: "2026-09-27"
+    notes: >
+      Confirmed blocked (403); in collect.py's DORMANT_NOT_IN_ALL, excluded from
+      collect.py --all until a human re-check via `--source bma_station_detail`. Do not
+      re-probe in bulk. First live run (attempted at
+      an original 10-station/run design) got 2 stations then a 403 on the 3rd request --
+      batch size CORRECTED to 1 station/run (BMA_STATION_DETAIL_BATCH_SIZE = 1 in
+      collect.py), matching tests/test_registry.py::
+      test_bma_hosts_are_capped_at_one_request_per_run. A full 312-station sweep now
+      takes ~312 on-demand runs -- no fixed wall-clock time, since collect.py --all has
+      no schedule (founder decision 2026-10-02). Licence:
+      OPEN, same posture as bma_watermap.
+    tag: RELAYED
+
+  - id: openmeteo_forecast
+    agency: Open-Meteo (third party, not a Thai government agency)
+    name_th: พยากรณ์ฝนล่วงหน้า (บุคคลที่สาม)
+    name_en: Open-Meteo precipitation forecast
+    url: "https://api.open-meteo.com/v1/forecast?latitude=..&longitude=..&hourly=precipitation,precipitation_probability&timezone=Asia%2FBangkok&forecast_days=3"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: hourly
+    has_coords: true
+    coverage: nationwide
+    asset_classes: [rain]
+    status: connected
+    http_status: null
+    probed_at: null
+    notes: Already wired into collect.py via registry.yaml; not re-probed this check.
+    tag: RELAYED
+
+  # ============================================================
+  # New sources found this sweep (agency cards docs/knowledge/agencies/*.md,
+  # 2026-09-27) -- NOT yet in registry.yaml. Tagged VERIFIED where a card records an
+  # actual fetch, RELAYED where only a menu/portal link was seen.
+  # ============================================================
+
+  - id: acs_flapgate_floodgateinfo
+    agency: "ACS (system integrator for RID irrigation project floodgates, .com domain -- ownership OPEN, not confirmed .go.th)"
+    name_th: ระบบแสดงผลและควบคุมประตูระบายน้ำ (FloodgateInfo)
+    name_en: ACS irrigation floodgate metadata API
+    url: "https://floodgateinfo.acsflapgate.com/floodgate/FloodgateInfo"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: real-time
+    has_coords: true
+    coverage: "nationwide (irrigation-project network; 67 stations, mostly outside BKK -- nearest is Rangsit Nuea, Pathum Thani)"
+    asset_classes: [gate, gauge]
+    status: catalog_only
+    catalog_reason: "Ownership/usage-rights of the acsflapgate.com API are unconfirmed (see this row's own notes) -- not ingested without that confirmation, per the agency card's explicit caution."
+    http_status: 0
+    probed_at: "2026-09-27"
+    notes: >
+      Agency card (acs_flapgate.md, same-day sweep) reports POST with no auth in guest
+      mode returned full metadata for 57/67 stations with precise lat/lon (Google-Maps
+      iframe string decode, 28 stations differ meaningfully from a coarse group centroid).
+      This check's own probe used GET (wrong method) and got a connection timeout (000) --
+      does not contradict the card, just the wrong verb. TLS chain to the *.acsflapgate.com
+      family does not verify (see waterchart-style OPEN security remark on sibling
+      hii.md card note). Ownership/usage-rights not confirmed -- do not ingest without
+      that confirmation (see agency card).
+      Also seen in 2026-09-27 earlier sweep (RELAYED, journal). Re-probed 2026-10-03
+      (real POST, body `{}`): HTTP 400, `{"status":false,"message":"Invalid request
+      format","error":{"details":"\"GetAllStatus\" is required"}}` -- confirms the
+      earlier GET-vs-POST finding and narrows the real method shape (a `GetAllStatus`
+      field is required), but ownership/usage-rights are still unconfirmed (see note
+      above) -- not wired without that confirmation.
+    tag: VERIFIED
+
+  - id: rid_water_daily_pdf
+    agency: RID (กรมชลประทาน)
+    name_th: รายงานสถานการณ์น้ำประจำวัน
+    name_en: RID daily water-situation report (PDF)
+    url: "http://water.rid.go.th/flood/flood/daily.pdf"
+    kind: pdf
+    auth: none
+    format: pdf
+    cadence: daily (07:30-20:30)
+    has_coords: false
+    coverage: nationwide
+    asset_classes: []
+    status: catalog_only
+    catalog_subtype: reachable_pdf_unparsed
+    catalog_reason: "HTTP 200, a PDF with a real text layer confirmed (page count and extractable text checked) -- not parsed/wired this check; no parser built for its layout yet."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET): HTTP 200, 15 pages (pypdf), real text layer on page 1 (1,996 extractable characters) -- not a scanned image. Not parsed/wired this check.
+    tag: VERIFIED
+
+  - id: rid_water_weekly_pdf
+    agency: RID (กรมชลประทาน)
+    name_th: สรุปสถานการณ์น้ำรายสัปดาห์
+    name_en: RID weekly water-situation report (PDF)
+    url: "http://water.rid.go.th/flood/flood/weekreportnew.pdf"
+    kind: pdf
+    auth: none
+    format: pdf
+    cadence: weekly
+    has_coords: false
+    coverage: nationwide
+    asset_classes: []
+    status: catalog_only
+    catalog_subtype: reachable_pdf_unparsed
+    catalog_reason: "HTTP 200, a PDF with a real text layer confirmed (page count and extractable text checked) -- not parsed/wired this check; no parser built for its layout yet."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET): HTTP 200, 1 page (pypdf), real text layer (1,391 extractable characters). Not parsed/wired this check.
+    tag: VERIFIED
+
+  - id: rid_app_reservoir
+    agency: RID (กรมชลประทาน)
+    name_th: ระบบอ่างเก็บน้ำ (ระบบใหม่)
+    name_en: RID reservoir web-app (new system)
+    url: "https://app.rid.go.th/reservoir/"
+    kind: page
+    auth: none
+    format: html
+    cadence: unknown
+    has_coords: true
+    coverage: nationwide
+    asset_classes: [dam, reservoir]
+    status: connected
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      WIRED 2026-10-03: the OPEN question below is answered -- a real
+      JSON API does back this app. `POST api/dams` (body `{"date":"<YYYY-MM-DD>"}`, no
+      auth) returns 35 dams across 6 regions with coordinates, confirmed via a real
+      capture. `GET api/alert` is a reservoir-warning feed (empty on capture). See
+      sources/registry.yaml's own entry + collect.collect_rid_app_reservoir +
+      parsers.parse_rid_app_reservoir/parse_rid_app_alert +
+      tests/contract/test_rid_app_reservoir.py. Earlier 2026-09-27 note, for the record:
+      "64KB page; this check's own fresh curl got HTTP 200. A grep of the raw HTML for
+      'api' found only a generic hit... whether an API backs this app is OPEN."
+    tag: VERIFIED
+
+  - id: rid_planlow
+    agency: RID (กรมชลประทาน)
+    name_th: ผังน้ำเจ้าพระยาตอนล่างรายวัน
+    name_en: RID lower Chao Phraya daily water-plan
+    url: "https://water.rid.go.th/flood/plan_new/planlow.html"
+    kind: html_table
+    auth: none
+    format: html
+    cadence: daily
+    has_coords: false
+    coverage: "basin:chao_phraya (directly covers Bangkok/vicinity)"
+    asset_classes: [river, gate]
+    status: catalog_only
+    catalog_subtype: reachable_image_only
+    catalog_reason: "HTTP 200, but the page is a chart-image/iframe wrapper (JPG/PNG) -- no HTML table or numeric cell to parse without OCR, which this check does not attempt."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET): `kind: html_table` was wrong -- the page
+      is a date-picker wrapper whose only content is an <iframe>/window.open to a dated
+      JPG chart (Chao_low<ddmmyyyy>.jpg). No HTML table, no numeric cell anywhere on
+      this URL -- a parser here would have to OCR a chart image, which this check does
+      not do (never fabricate a reading). Not wired; left as a documents-only candidate
+      (today's chart image URL) for a future task, not built here.
+    tag: VERIFIED
+
+  - id: rid_plan_ew
+    agency: RID (กรมชลประทาน)
+    name_th: ผังน้ำเจ้าพระยาฝั่งตะวันออก-ตะวันตก
+    name_en: RID Chao Phraya east/west-bank water plan
+    url: "https://water.rid.go.th/flood/plan_ew/plan_ew.html"
+    kind: html_table
+    auth: none
+    format: html
+    cadence: unknown
+    has_coords: false
+    coverage: "basin:chao_phraya (answers whether north-water has reached the eastern side, e.g. Bang Kapi)"
+    asset_classes: [river, gate]
+    status: catalog_only
+    catalog_subtype: reachable_image_only
+    catalog_reason: "HTTP 200, but the page is a chart-image/iframe wrapper (JPG/PNG) -- no HTML table or numeric cell to parse without OCR, which this check does not attempt."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET): same wrapper-page pattern as rid_planlow
+      -- an iframe to a dated JPG chart, no HTML table/numeric cell on this URL. Not
+      wired, for the same reason.
+    tag: VERIFIED
+
+  - id: rid9_chonburi_rpt
+    agency: RID region 9 (Chonburi)
+    name_th: รายงานสภาพน้ำอ่างเก็บน้ำ (สชป.9)
+    name_en: RID region-9 reservoir water-situation report
+    url: "http://irrigation.rid.go.th/rid9/rid9_new/rpt_date.php"
+    kind: html_table
+    auth: none
+    format: html
+    cadence: unknown
+    has_coords: false
+    coverage: "basin:bang_pakong (Chonburi/eastern seaboard region)"
+    asset_classes: [reservoir]
+    status: connected
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      WIRED 2026-10-03. Correction to the 2026-09-27 entry: the actual table
+      behind the date-picker landing page (rpt_date.php) is a per-RESERVOIR
+      storage/rain/inflow/release report (rpt_show.php?dateid=...), not a floodgate
+      report -- name/asset_classes corrected above, this check's own MEASURED read of
+      the live page, not assumed from the id/URL. 61 reservoir rows, 23 cells each,
+      confirmed by a real GET. See sources/registry.yaml's own entry + collect.
+      collect_rid9_chonburi_rpt + parsers.parse_rid9_chonburi_rpt +
+      tests/contract/test_rid9_chonburi_rpt.py. Basin does not cover any area this repo
+      currently serves -- excluded from a per-area refresh via collect.
+      AREA_RELEVANT_SOURCES, still reachable via --all/--source.
+    tag: VERIFIED
+
+  - id: dwr_tele_pwps
+    agency: DWR (กรมทรัพยากรน้ำ)
+    name_th: โทรมาตรลุ่มน้ำ (P/W/Ps)
+    name_en: DWR basin telemetry (rain/water-level/pump-station pages)
+    url: "http://tele-pwps.dwr.go.th/P_Default.aspx"
+    kind: page
+    auth: none
+    format: html
+    cadence: unknown
+    has_coords: unknown
+    coverage: nationwide
+    asset_classes: [gauge, rain, pump_station]
+    status: unreachable
+    http_status: 0
+    probed_at: "2026-09-27"
+    notes: >
+      Named in a data.go.th CKAN dataset (dwr_21_01, "ปริมาณน้ำฝนจากสถานีตรวจวัดในพื้นที่
+      ลุ่มน้ำ", grouped with W_Default.aspx and Ps_Default.aspx). This check's own fetch
+      timed out (000) -- confirms this repo's earlier dwr.md agency-card finding (DWR web
+      is JS-heavy/slow) but is a distinct host from dwr.go.th itself. Worth a retry with a
+      longer timeout in a later run, not repeated here (one-attempt rule).
+    tag: OPEN
+
+  - id: dwr_ews_rain_daily
+    agency: DWR (กรมทรัพยากรน้ำ)
+    name_th: ข้อมูลตรวจวัดฝนจากระบบเตือนภัยล่วงหน้า (EWS)
+    name_en: DWR early-warning-system daily rain data
+    url: "http://ews1.dwr.go.th/ews/rain_daily.php"
+    kind: html_table
+    auth: none
+    format: html
+    cadence: daily
+    has_coords: unknown
+    coverage: nationwide
+    asset_classes: [rain]
+    status: catalog_only
+    catalog_reason: "HTML table (ews1.dwr.go.th), no JSON/CSV endpoint found this check."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Found via CKAN dataset dwr_11_04 ("ชุดข้อมูลตรวจวัดปริมาณน้ำฝนจากระบบเตือนภัยล่วงหน้า
+      น้ำหลาก-ดินถล่ม"). This check's own probe returned HTTP 200 but the page is large
+      (6.3MB) -- content sampled only by content-type (text/html); coordinate presence not
+      confirmed, would need a further parse pass. Sibling pages basin_daily.php,
+      rain_weekly.php named in the same dataset, not individually probed (budget).
+      Re-probed 2026-10-03: real GET returned HTTP 200 and 5,589,462 bytes,
+      but the single request did not finish within this check's 15s client timeout
+      (curl rc=28) even though the body WAS received -- borderline/slow, not retried.
+      Extracting a real per-station reading from this ~5.5MB table is real
+      parser-writing work deferred this check; see sources/registry.yaml's
+      `dwr_ews_rain_daily` candidate_unregistered entry.
+    tag: VERIFIED
+
+  - id: mwa_chaophraya_bigdata_api
+    agency: MWA (การประปานครหลวง)
+    name_th: API ระดับน้ำแม่น้ำเจ้าพระยา (MWA Big Data)
+    name_en: MWA Chao Phraya river water-level API
+    url: "https://bigdata.mwa.co.th/data-service/internal/big-data/api/v1/.../data?token=..."
+    kind: json_api
+    auth: key
+    format: json
+    cadence: unknown
+    has_coords: unknown
+    coverage: "basin:chao_phraya"
+    asset_classes: [gauge, river]
+    status: needs_key
+    http_status: null
+    probed_at: null
+    notes: >
+      Not probed (no key, and the only known URL shape embeds a possible leaked bearer
+      token -- never fired). Found via CKAN dataset "chaophraya_water_level" (dataset
+      owner: การประปานครหลวง).
+      The listed resource URL embeds a long bearer-style token in the query string, which
+      this check will not fire (auth attempts out of scope, and a token pasted into a
+      public CKAN listing may be a leaked long-lived credential rather than a public key --
+      do not reuse it). Not probed.
+      Re-reviewed 2026-10-03: the URL path itself contains `/internal/` --
+      deliberately NOT wired, no `key_env` assigned, no collector written. See
+      sources/registry.yaml's `mwa_chaophraya_bigdata_api` entry for the full reasoning.
+      This differs from GISTDA/TMD, which have a documented public key-registration
+      path this check can point a caller at; MWA does not.
+    tag: RELAYED
+
+  - id: mwa_chaophraya_level_csv
+    agency: MWA (การประปานครหลวง)
+    name_th: ระดับน้ำแม่น้ำเจ้าพระยา (CSV เปิดเผย)
+    name_en: MWA Chao Phraya water-level open CSV
+    url: "https://opendata.mwa.co.th/dataset/4456d88e-70e7-46a2-9ee8-07710db56f93/resource/c4bc6658-09ab-4863-b96f-a41051fc2c37/download/chaophraya_level2567.csv"
+    kind: csv
+    auth: none
+    format: csv
+    cadence: unknown (historical dump, year 2567/2024 in filename)
+    has_coords: false
+    coverage: "basin:chao_phraya"
+    asset_classes: [river, gauge]
+    status: catalog_only
+    catalog_reason: "Static full-year (2567 BE) archive CSV, not a live/near-real-time feed -- confirmed on two separate fetches; see this row's own notes."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      This check fetched the full file (23.7MB) before re-confirming the "no big
+      downloads" rule mid-task -- a one-time deviation, not repeated for any other
+      source in this census. It is a historical bulk CSV, not a live small-sample
+      endpoint; a real ingestion pass should use `curl -r 0-20000` or `-I` only.
+      Re-fetched in full again 2026-10-03 (before this entry's own caution
+      note was re-read -- a second deviation, not repeated further): confirms the file
+      is a STATIC full-year archive (2567 BE = calendar 2024, 7 stations x 10-minute
+      readings, last row 2024-12-31), not a live/near-real-time feed -- NOT wired as a
+      collector; see sources/registry.yaml's candidate_unregistered entry.
+    tag: VERIFIED
+
+  - id: bangkok_ckan_portal
+    agency: BMA (via data.bangkok.go.th, CKAN)
+    name_th: คลังข้อมูลเปิดกรุงเทพมหานคร
+    name_en: Bangkok open-data CKAN portal
+    url: "https://data.bangkok.go.th/api/3/action/package_search?q=%E0%B8%99%E0%B9%89%E0%B8%B3&rows=3"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: unknown
+    has_coords: unknown
+    coverage: bangkok
+    asset_classes: []
+    status: connected
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      CKAN search API responded 200/28.5KB for query "น้ำ" (2026-09-27 probe). Contains
+      at least one directly relevant dataset already seen via data.go.th's own search
+      (river_daily_pak_khlong, Chao Phraya max daily level at Pak Khlong Talat, CSV) --
+      worth a dedicated portal-level survey in a later task (many more BMA datasets
+      likely exist here beyond what surfaced through data.go.th's federated search).
+      WIRED 2026-10-03: registry id `bangkok_ckan_portal`,
+      collect.collect_bangkok_ckan_portal, parsers.parse_bangkok_ckan_catalog, real
+      capture replayed in tests/contract/test_hii_bma_gistda_sources.py. Stores dataset metadata as
+      documents (catalog only, no numeric reading).
+    tag: VERIFIED
+
+  - id: bangkok_river_pak_khlong_csv
+    agency: BMA (กรุงเทพมหานคร)
+    name_th: ระดับน้ำสูงสุดรายวัน แม่น้ำเจ้าพระยา จุดปากคลองตลาด
+    name_en: BMA Chao Phraya daily max water level at Pak Khlong Talat
+    url: "https://data.bangkok.go.th/dataset/0b2b0b13-62b1-4489-85ef-bb76a09898af/resource/b3cc65d5-52d9-42c5-91e9-4f0137b43ae8/download/river_pak_khlong.csv"
+    kind: csv
+    auth: none
+    format: csv
+    cadence: daily
+    has_coords: false
+    coverage: bangkok
+    asset_classes: [river, gauge]
+    status: connected
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Surfaced via data.go.th CKAN search ("ระดับน้ำ", dataset river_daily_pak_khlong);
+      listing seen 2026-09-27, file itself not fetched that pass (avoid a second
+      large-CSV download). WIRED 2026-10-03: real fetch, 200, 3,692 bytes
+      (small -- this is a daily series, not the 23MB MWA-style archive). Registry id
+      `bma_pak_khlong_csv`, collect.collect_bma_pak_khlong_csv,
+      parsers.parse_bma_pak_khlong_csv, real capture replayed in
+      tests/contract/test_hii_bma_gistda_sources.py.
+    tag: VERIFIED
+
+  - id: gistda_flood_extent_api
+    agency: GISTDA
+    name_th: ข้อมูลขอบเขตพื้นที่น้ำท่วม (1 วันล่าสุด)
+    name_en: GISTDA 1-day flood-extent API
+    url: "https://api-gateway.gistda.or.th/api/2.0/resources/gi-service/v1.1/disasters/flood-extent-1day"
+    kind: json_api
+    auth: key
+    format: json
+    cadence: daily
+    has_coords: true
+    coverage: nationwide
+    asset_classes: [flood_extent]
+    status: needs_key
+    http_status: 403
+    probed_at: "2026-09-27"
+    notes: >
+      Found via CKAN dataset disasters-03. This check fetched it with the api_key
+      embedded in the CKAN listing itself and got HTTP 403
+      {"code":"REFERER_REQUIRED","detail":"API Key requires valid HTTP Referer"} -- the
+      key is Referer-locked to whatever origin GISTDA issued it for, not usable from a
+      bare curl. Sibling flood-recurrence endpoint (dataset disasters-01) not probed
+      (same key, same expected result).
+      Also seen in 2026-09-27 earlier sweep (RELAYED, journal).
+      WIRED-PENDING-KEY 2026-10-03: collect.collect_gistda_flood_extent_api is
+      implemented and registered in COLLECTORS, reads a key ONLY from env var
+      GISTDA_API_KEY (optional GISTDA_API_REFERER for the Referer value), never stores
+      one. `run()`'s generic `_missing_api_key_env` gate refuses to call it at all when
+      the env var is absent (MEASURED: returns a "missing env var" CollectResult, no
+      network call attempted). NOT live-verified against a real 200 response -- this
+      session has no key, so the success-response shape stays OPEN. Raw response stored
+      as a document (not typed observations) pending that confirmation.
+    tag: VERIFIED
+
+  - id: gistda_disaster_portal
+    agency: GISTDA
+    name_th: ศูนย์ปฏิบัติการภัยพิบัติ
+    name_en: GISTDA disaster operations portal
+    url: "https://disaster.gistda.or.th/"
+    kind: page
+    auth: none
+    format: html
+    cadence: unknown
+    has_coords: false
+    coverage: nationwide
+    asset_classes: [flood_extent]
+    status: catalog_only
+    catalog_reason: "Portal landing page, no station list or numeric reading in the fetched HTML."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      This check's own fetch: HTTP 200, 36.7KB, Next.js app (Kanit font preloads visible
+      in raw HTML) -- a JS-rendered SPA shell like several other agency portals in this
+      sweep; no API endpoint confirmed from the raw HTML alone. The flood_extent_api
+      entry above (found via CKAN, not this portal) is the confirmed machine-readable
+      path for this agency; this portal itself needs a browser network capture to say
+      more.
+      Also seen in 2026-09-27 earlier sweep (RELAYED, journal).
+      Re-probed 2026-10-03: still HTTP 200, same shape (36,696 bytes). DECISION:
+      stays candidate_unregistered, not re-fetched on a schedule -- it is a JS-rendered
+      SPA shell with no confirmed API endpoint reachable from a plain GET, and the
+      agency's own machine-readable path (gistda_flood_extent_api, above) already
+      covers this coverage/asset_class. A browser network capture to find a real
+      endpoint behind it is future work, not something this check's budget covers.
+    tag: VERIFIED
+
+  - id: marine_imis
+    agency: กรมเจ้าท่า (Marine Department)
+    name_th: ระบบฐานข้อมูลโครงสร้างพื้นฐานเพื่อการขนส่งทางน้ำ (IMIS)
+    name_en: Marine Dept. waterway-infrastructure GIS/DB system
+    url: "http://imis.md.go.th/"
+    kind: page
+    auth: none
+    format: html
+    cadence: unknown
+    has_coords: true
+    coverage: nationwide
+    asset_classes: [river, canal]
+    status: catalog_only
+    catalog_reason: "Portal landing page (imis.md.go.th), the map view itself is JS-rendered (see marine_imis_map_view)."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      This check's own fetch: HTTP 200, 59.5KB, AngularJS app shell ("GisApp"). Menu
+      previously seen (marine.md agency card) names "สถานีวัดระดับน้ำอัตโนมัติ"
+      (automatic water-level stations) as a real menu item, not yet confirmed with an
+      opened URL/API this check.
+      Also seen in 2026-09-27 earlier sweep (RELAYED, journal).
+      Re-probed 2026-10-03: same shape (200, 59,510 bytes, AngularJS shell).
+      No JSON/CSV API surfaced from a plain curl GET; finding the real backing API (if
+      any) needs browser-level network inspection, out of this check's curl-only budget
+      -- candidate_unregistered in sources/registry.yaml, no collector written.
+    tag: VERIFIED
+
+  - id: marine_gis
+    agency: กรมเจ้าท่า (Marine Department)
+    name_th: ระบบบริหารงานภูมิสารสนเทศโครงสร้างพื้นฐานทางน้ำ (GIS)
+    name_en: Marine Dept. GIS system
+    url: "http://gis.md.go.th/intro.php"
+    kind: page
+    auth: none
+    format: html
+    cadence: unknown
+    has_coords: false
+    coverage: nationwide
+    asset_classes: [river, canal]
+    status: unreachable
+    http_status: 0
+    probed_at: "2026-09-27"
+    notes: This check's own probe timed out/connection error (000); not retried (one-attempt rule). Also seen in 2026-09-27 earlier sweep (RELAYED, journal).
+    tag: OPEN
+
+  - id: hii_tiwrm_chaopraya_chart
+    agency: HII (สสน.)
+    name_th: กราฟการระบายน้ำเขื่อนเจ้าพระยา
+    name_en: HII TIWRM Chao Phraya dam release chart
+    url: "https://tiwrm.hii.or.th/DATA/REPORT/php/chart/chaopraya/2013/chaopraya.php"
+    kind: html_table
+    auth: none
+    format: html
+    cadence: unknown
+    has_coords: false
+    coverage: "basin:chao_phraya"
+    asset_classes: [dam]
+    status: catalog_only
+    catalog_reason: "HTML chart page, not a JSON/CSV endpoint."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      Found via CKAN search ("เขื่อน", dataset flood01_11). This check's own fetch: HTTP
+      200, 239KB, server-side cache-log HTML comments visible (a live/cached report
+      page, not a static file) -- URL path literally says "2013" but content is dated
+      dynamically (cache metadata shows today's date), so treat the path segment as a
+      legacy naming artifact, not a stale snapshot -- not independently confirmed which
+      year's numbers are actually shown without reading the rendered table (OPEN).
+      Re-probed 2026-10-03: still HTTP 200, unchanged. DECISION: stays
+      candidate_unregistered -- it is an HTML report page (a rendered table, not a
+      JSON/CSV feed), and hii_dam/hii_waterlevel_load (both already wired) already
+      cover Chao Phraya dam release/storage numerically with coordinates; scraping
+      this page's HTML table would be a second, harder-to-maintain path to data this
+      repo already has.
+    tag: VERIFIED
+
+  - id: hii_data_ckan_mou_stations
+    agency: HII (สสน.)
+    name_th: ข้อมูลสถานีโทรมาตรป่าต้นน้ำ (MOU)
+    name_en: HII watershed-forest telemetry station metadata
+    url: "https://data.hii.or.th/dataset/617d1a99-e1a3-49a8-b507-2ce6d6c081ec/resource/5301fd2c-3808-4a37-a62c-e50ea06c3cd5/download/0all_stn_metadata.csv"
+    kind: csv
+    auth: none
+    format: csv
+    cadence: static/reference
+    has_coords: unknown
+    coverage: nationwide
+    asset_classes: [gauge]
+    status: connected
+    wired_as: "hii_mou_station_metadata" # sources/registry.yaml id -- see that row for the live collector/contract test
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: "Surfaced via data.go.th CKAN search (\"ระดับน้ำ\"); listing seen only, not fetched\
+  \ (budget; HII already has a large connected feed). Re-probed 2026-10-03 (one GET,\
+  \ curl -s -m 15 -o /dev/null -w '%{http_code}'): HTTP 200. Not content-checked beyond\
+  \ status code this check. Not wired."
+    tag: VERIFIED
+
+  - id: rid_app_flood_forecast_pdf
+    agency: RID (กรมชลประทาน)
+    name_th: คาดการณ์น้ำในอ่างเก็บน้ำขนาดใหญ่ 35 แห่ง
+    name_en: RID 35-large-reservoir forecast (PDF)
+    url: "http://water.rid.go.th/flood/forcase/dam_forecast.pdf"
+    kind: pdf
+    auth: none
+    format: pdf
+    cadence: unknown
+    has_coords: false
+    coverage: nationwide
+    asset_classes: [dam, reservoir]
+    status: catalog_only
+    catalog_subtype: reachable_pdf_unparsed
+    catalog_reason: "HTTP 200, a PDF with a real text layer confirmed (page count and extractable text checked) -- not parsed/wired this check; no parser built for its layout yet."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET): HTTP 200, 13 pages (pypdf), real text layer on page 1 (339 extractable characters). Not parsed/wired this check.
+    tag: VERIFIED
+
+  # ============================================================
+  # Named on a portal/menu but not reached, or reached and found empty/blocked this
+  # sweep -- real gaps, listed so a future task does not re-discover them from zero.
+  # ============================================================
+
+  - id: dwr_main_site
+    agency: DWR (กรมทรัพยากรน้ำ)
+    name_th: เว็บไซต์หลักกรมทรัพยากรน้ำ
+    name_en: DWR main website
+    url: "https://www.dwr.go.th/"
+    kind: page
+    auth: none
+    format: html
+    cadence: unknown
+    has_coords: false
+    coverage: nationwide
+    asset_classes: []
+    status: catalog_only
+    catalog_reason: "Agency homepage, no station list or numeric reading in the fetched HTML."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      dwr.md agency card -- JS-only SPA shell, 0 anchor tags in raw HTML; content
+      behind client-side rendering, not this check's fetch. Also seen in 2026-09-27
+      earlier sweep (RELAYED, journal).
+      Re-probed 2026-10-03: VERIFIED this check -- real GET, 200, only 313
+      bytes (a thin shell). candidate_unregistered, no collector written.
+    tag: VERIFIED
+
+  - id: onwr_main_site
+    agency: ONWR (สทนช.)
+    name_th: เว็บไซต์หลัก สทนช.
+    name_en: ONWR main website
+    url: "https://www.onwr.go.th/"
+    kind: page
+    auth: none
+    format: html
+    cadence: unknown
+    has_coords: false
+    coverage: nationwide
+    asset_classes: []
+    status: catalog_only
+    catalog_reason: "Agency homepage, no station list or numeric reading in the fetched HTML."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      onwr.md agency card -- server-rendered, mission/org pages reachable, but the
+      "สถานการณ์น้ำ" (water-situation) dashboard/API mentioned in the nav was not
+      resolved to a concrete URL this sweep. No onwr.go.th feed exists in registry.yaml.
+    tag: RELAYED
+
+  - id: tmd_main_site
+    agency: TMD (กรมอุตุนิยมวิทยา)
+    name_th: เว็บไซต์หลัก กรมอุตุนิยมวิทยา
+    name_en: TMD main website
+    url: "https://www.tmd.go.th/"
+    kind: page
+    auth: none
+    format: html
+    cadence: unknown
+    has_coords: false
+    coverage: nationwide
+    asset_classes: [rain, radar]
+    status: catalog_only
+    catalog_reason: "Agency homepage, no station list or numeric reading in the fetched HTML."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      tmd.md agency card -- server-rendered nav confirms menu items "อุตุนิยมวิทยาอุทก"
+      and "การคาดการณ์พื้นที่เสี่ยงภัยน้ำท่วมฉับพลัน" exist, but their sub-URLs are
+      unresolved. This check tried a guessed sub-path (/service/flashflood) and got a
+      connection timeout (000) -- guess was wrong, not a confirmed dead end for the
+      real menu item.
+      Also seen in 2026-09-27 earlier sweep (RELAYED, journal).
+      Re-probed 2026-10-03: this check's own GET FAILED with a LOCAL TLS
+      verification error (curl rc=60, "unable to get local issuer certificate") on
+      this machine -- OPEN, not a server-side finding; not retried (no-retry rule), not
+      investigated further. tmd_opendata (already registered, key_env
+      TMD_OPENDATA_API_KEY) remains the only TMD path with a documented data-API
+      surface; this homepage is a portal regardless of the TLS outcome.
+    tag: RELAYED
+
+  - id: egat_main_site
+    agency: EGAT (การไฟฟ้าฝ่ายผลิต)
+    name_th: เว็บไซต์หลัก กฟผ.
+    name_en: EGAT main website
+    url: "https://www.egat.co.th/home/"
+    kind: page
+    auth: none
+    format: html
+    cadence: unknown
+    has_coords: false
+    coverage: nationwide
+    asset_classes: [dam]
+    status: catalog_only
+    catalog_reason: "Agency homepage, no station list or numeric reading in the fetched HTML."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      egat.md agency card -- landing page is only a cookie-consent interstitial
+      ("ENTER WEBSITE"), no real menu/content reachable via curl. This check's own
+      guessed sub-path (/home/dam-management/) returned HTTP 404 -- guess was wrong,
+      real dam-telemetry URL still unresolved. EGAT dam water-level data is a real gap.
+      Also seen in 2026-09-27 earlier sweep (RELAYED, journal).
+    tag: RELAYED
+
+  - id: bma_dds_main_site
+    agency: BMA DDS (สำนักการระบายน้ำ)
+    name_th: เว็บไซต์หลัก DDS
+    name_en: BMA DDS main website
+    url: "https://dds.bangkok.go.th/"
+    kind: page
+    auth: none
+    format: html
+    cadence: unknown
+    has_coords: false
+    coverage: bangkok
+    asset_classes: []
+    status: catalog_only
+    catalog_reason: "Agency homepage, no station list or numeric reading in the fetched HTML."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      bma_dds.md agency card -- 200 after redirect but a JS-only SPA shell (~3 lines of
+      extractable text). This is on top of the 4 dds.bangkok.go.th feeds already
+      connected in registry.yaml (dds_daily_pdf/dds_flood_report/dds_tide_pdf/
+      dds_nowcast_gif) plus bma_klongmap/bma_pumphistory on weather.bangkok.go.th --
+      already this project's best-connected agency; the new SPA site adds no further
+      confirmed feed this sweep.
+      Also seen in 2026-09-27 earlier sweep (RELAYED, journal).
+    tag: RELAYED
+
+  - id: ddpm_main_site
+    agency: DDPM (กรมป้องกันและบรรเทาสาธารณภัย)
+    name_th: เว็บไซต์หลัก ปภ.
+    name_en: DDPM main website
+    url: "https://www.disaster.go.th/"
+    kind: page
+    auth: none
+    format: html
+    cadence: unknown
+    has_coords: false
+    coverage: nationwide
+    asset_classes: []
+    status: catalog_only
+    catalog_reason: "Agency homepage, no station list or numeric reading in the fetched HTML."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: >
+      ddpm.md agency card -- 200 but complete JS-only SPA shell (0 anchor tags), and
+      sitemap.xml also 404s. No warning-system/hotline URL confirmed this sweep --
+      a real gap for the agency legally responsible for disaster warnings.
+      Also seen in 2026-09-27 earlier sweep (RELAYED, journal).
+    tag: RELAYED
+
+  - id: bma_bangkapi_district
+    agency: BMA เขตบางกะปิ
+    name_th: สำนักงานเขตบางกะปิ
+    name_en: BMA Bang Kapi district office
+    url: "https://www.bangkok.go.th/bangkapi"
+    kind: page
+    auth: none
+    format: html
+    cadence: unknown
+    has_coords: false
+    coverage: bangkok
+    asset_classes: []
+    status: host_blocked
+    http_status: 403
+    probed_at: "2026-09-27"
+    notes: "bma_bangkapi.md agency card -- WAF/bot-block 403 to plain curl. Sammakorn's own district office, relevant for local escalation contacts. Also seen in 2026-09-27 earlier sweep (RELAYED, journal). Reclassified 2026-10-03 (no new probe, one-attempt rule still applies): 403 pattern matches host_blocked (WAF/anti-bot), not a generic unreachable. Never retry."
+    tag: RELAYED
+
+  - id: bma_saphansung_district
+    agency: BMA เขตสะพานสูง
+    name_th: สำนักงานเขตสะพานสูง
+    name_en: BMA Saphan Sung district office
+    url: "https://www.bangkok.go.th/saphansung"
+    kind: page
+    auth: none
+    format: html
+    cadence: unknown
+    has_coords: false
+    coverage: bangkok
+    asset_classes: []
+    status: host_blocked
+    http_status: 403
+    probed_at: "2026-09-27"
+    notes: "bma_saphansung.md agency card -- WAF/bot-block 403 to plain curl. Sammakorn's own district office, relevant for local escalation contacts. Also seen in 2026-09-27 earlier sweep (RELAYED, journal). Reclassified 2026-10-03 (no new probe, one-attempt rule still applies): 403 pattern matches host_blocked (WAF/anti-bot), not a generic unreachable. Never retry."
+    tag: RELAYED
+
+  - id: rid_main_site
+    agency: RID (กรมชลประทาน)
+    name_th: เว็บไซต์หลัก กรมชลประทาน
+    name_en: RID main website
+    url: "https://www.rid.go.th/"
+    kind: page
+    auth: none
+    format: html
+    cadence: unknown
+    has_coords: false
+    coverage: nationwide
+    asset_classes: []
+    status: catalog_only
+    catalog_subtype: reachable_portal_only
+    catalog_reason: "HTTP 200, but a parent-bureau/branding landing page -- no station list or numeric reading in the fetched HTML."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET): HTTP 200, 18.5KB -- a Nuxt/Vue-rendered agency homepage/portal (menu + news teasers), no station list or numeric reading in the fetched HTML. Not wired (portal, not a data endpoint).
+    tag: VERIFIED
+
+  - id: hydro5_rid_central_region
+    agency: RID central-region hydrology centre
+    name_th: ศูนย์อุทกวิทยาชลประทานภาคกลาง
+    name_en: RID central-region hydrology centre (legacy site)
+    url: "http://hydro-5.rid.go.th/"
+    kind: page
+    auth: none
+    format: html
+    cadence: unknown
+    has_coords: false
+    coverage: "basin:chao_phraya (lower)"
+    asset_classes: [gauge]
+    status: catalog_only
+    catalog_subtype: reachable_js_only
+    catalog_reason: "HTTP 200, but the content loads client-side only (SPA shell/hydration script) -- nothing server-rendered in the fetched HTML to parse without a browser runtime."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET, frames followed): the frameset's content frame
+      (page1.html) is a real link board, not a dead end -- it points to
+      https://hyd-app-db.rid.go.th/hydro5hd_admsl.html ("HOURLY WATER LEVEL") for the
+      Chao Phraya/Pa Sak/Sakae Krang rivers. That page itself (HTTP 200, 183KB) is a
+      jqGrid table populated client-side by POSTs to a .NET web service
+      (webservice/HDService.svc/GetHourlyStageReport and sibling getStationGroup*
+      endpoints) that require a `SecurityObj` criteria payload this check did not
+      reverse-engineer this check (no browser/Playwright render run). The underlying data
+      is real and Bangkok-relevant (hourly stage for the Chao Phraya basin), but the
+      request shape is not yet confirmed -- not wired. navigation.html's own menu was
+      empty on this probe (no <a href> found), so further hops go through page1.html's
+      links, not navigation.html's.
+    tag: VERIFIED
+
+  # --- merged from earlier 2026-09-27 sweep (RELAYED) ---
+
+  - id: gistda_flood_recurrence
+    agency: "GISTDA"
+    name_th: "Gistda flood recurrence"
+    name_en: "Gistda flood recurrence"
+    url: "https://api-gateway.gistda.or.th/api/2.0/resources/gi-service/v1.1/disasters/flood-recurrence"
+    kind: json_api
+    auth: key
+    format: "API (JSON/GeoJSON)"
+    cadence: "static/annual (13-yr recurrence layer, 2011-2023)"
+    has_coords: true
+    coverage: unknown
+    asset_classes: [flood_report]
+    status: needs_key
+    http_status: 407
+    probed_at: "2026-10-03"
+    notes: "\"VERIFIED via CKAN search. RELAYED: same api-gateway key pattern as flood-extent-1day.\
+  \ Dataset id 1de1b072-ab83-45f5-ad13-4ab0383d4cc0. Also seen in 2026-09-27 earlier\
+  \ sweep (RELAYED, journal).\" Re-probed 2026-10-03: HTTP 407 (Proxy Authentication\
+  \ Required) from api-gateway.gistda.or.th -- confirms this is a keyed gateway, same\
+  \ posture as other gistda api-gateway sources already marked needs_key. Not wired."
+    tag: VERIFIED
+
+  - id: gistda_sst_wms
+    agency: "GISTDA"
+    name_th: "Gistda sst wms"
+    name_en: "Gistda sst wms"
+    url: "https://ocean.gistda.or.th/geoserver/openwq/wms?service=wms&request=GetCapabilities"
+    kind: page
+    auth: none
+    format: "WMS"
+    cadence: "daily"
+    has_coords: true
+    coverage: unknown
+    asset_classes: [tide, other]
+    status: unreachable
+    http_status: 0
+    probed_at: "2026-10-03"
+    notes: "\"VERIFIED via CKAN search (term=น้ำทะเล, HTTP 200). Sea-surface-temperature raster\
+  \ layer, WMS is inherently geo-referenced. Dataset id b06dc091-3621-4f8d-b564-09ab78860b54.\
+  \ Also seen in 2026-09-27 earlier sweep (RELAYED, journal).\" Re-probed 2026-10-03:\
+  \ connection failed/timeout (curl exit, http_code 000) within the 15s budget. Not\
+  \ retried (one-attempt rule)."
+    tag: VERIFIED
+
+  - id: mwa_chaophraya_water_level
+    agency: "การประปานครหลวง (Metropolitan Waterworks Authority)"
+    name_th: "Mwa chaophraya water level"
+    name_en: "Mwa chaophraya water level"
+    url: "https://bigdata.mwa.co.th/data-service/internal/big-data/api/v1/783f543c-666c-35b4-795b-40dd2446b291/871bb60d-4625-f224-7e66-d4a523dad40f/data"
+    kind: csv
+    auth: key
+    format: "API + CSV (opendata.mwa.co.th)"
+    cadence: "unclear (CSV files split by year, e.g. chaophraya_level2567.csv)"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [gauge, river]
+    status: needs_key
+    http_status: 401
+    probed_at: "2026-10-03"
+    notes: "\"VERIFIED via CKAN search (term=ระดับน้ำ). RELAYED: sample URL carries a token param\
+  \ — classed auth=key; not tested live. has_coords=false: station-name based (e.g.\
+  \ faifa, ladpho), no lat/lon column seen in metadata. Dataset id 4456d88e-70e7-46a2-9ee8-07710db56f93.\
+  \ Also seen in 2026-09-27 earlier sweep (RELAYED, journal).\" Re-probed 2026-10-03:\
+  \ HTTP 401 Unauthorized. Same bigdata.mwa.co.th host as sources/registry.yaml's\
+  \ mwa_chaophraya_bigdata_api, which that entry already declines to wire because\
+  \ its only known URL embeds a possible leaked bearer token -- this census URL (without\
+  \ that token) simply 401s, consistent with that finding. Not wired."
+    tag: VERIFIED
+
+  - id: hii_water_level_catalog
+    agency: "สถาบันสารสนเทศทรัพยากรน้ำ (HII, องค์การมหาชน)"
+    name_th: "Hii water level catalog"
+    name_en: "Hii water level catalog"
+    url: "https://data.hii.or.th/dataset/334aa20b-8187-430a-b8c5-d924f37334fe"
+    kind: csv
+    auth: none
+    format: "CSV + station-metadata (Thaiwater standard)"
+    cadence: "10-minute readings"
+    has_coords: true
+    coverage: unknown
+    asset_classes: [gauge, river]
+    status: connected
+    wired_as: "hii_water_level_catalog" # sources/registry.yaml id -- see that row for the live collector/contract test
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: "\"VERIFIED via CKAN search. has_coords=true: dataset ships '0all_stn_metadata.csv';\
+  \ standard HII/Thaiwater station tables include lat/lon columns (RELAYED — file\
+  \ not opened, per no-download rule for this run). Also seen in 2026-09-27 earlier\
+  \ sweep (RELAYED, journal).\" Re-probed 2026-10-03: HTTP 302 on the dataset landing\
+  \ page. Resolved via one `package_show` API call to the real resource file --\
+  \ https://data.hii.or.th/dataset/334aa20b-8187-430a-b8c5-d924f37334fe/resource/47274e2b-c905-4762-b025-11ca9067d107/download/0all_stn_metadata.csv\
+  \ (HTTP 200, 1,396 nationwide station rows, same CSV schema as hii_mou_station_metadata\
+  \ but a different, larger station set -- not a duplicate, confirmed by comparing\
+  \ both files' sha256). Wired this check (registry row, parser reuse, fixture,\
+  \ contract test)."
+    tag: VERIFIED
+
+  - id: hii_flood_mark_shp
+    agency: "HII"
+    name_th: "Hii flood mark shp"
+    name_en: "Hii flood mark shp"
+    url: "https://gisservice.hii.or.th/index.php?path=Flood+mark"
+    kind: page
+    auth: none
+    format: "SHP"
+    cadence: "event-based (post-flood survey via MMS mobile mapping)"
+    has_coords: true
+    coverage: unknown
+    asset_classes: [flood_report]
+    status: catalog_only
+    catalog_subtype: reachable_portal_only
+    catalog_reason: "HTTP 200, but a parent-bureau/branding landing page -- no station list or numeric reading in the fetched HTML."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: "\"VERIFIED via CKAN search. Shapefile format is inherently geo-referenced. Dataset\
+  \ id 01b43fc8-6d57-4923-8117-2e6b580a0872. Also seen in 2026-09-27 earlier sweep\
+  \ (RELAYED, journal).\" Re-probed 2026-10-03: HTTP 200, but the fetched body is\
+  \ an HTML index/file-browser page (gisservice.hii.or.th/index.php?path=...), not\
+  \ the shapefile itself -- a portal page, not a direct data payload. Not wired."
+    tag: VERIFIED
+
+  - id: hii_reservoir_elevation_capacity_curve
+    agency: "HII"
+    name_th: "Hii reservoir elevation capacity curve"
+    name_en: "Hii reservoir elevation capacity curve"
+    url: "https://gisservice.hii.or.th/index.php?path=Elevation-Capacity-Area+Curves+%28Excel+File%29%2FReservior"
+    kind: csv
+    auth: none
+    format: "CSV/Excel"
+    cadence: "static reference dataset"
+    has_coords: true
+    coverage: unknown
+    asset_classes: [dam, gauge]
+    status: catalog_only
+    catalog_reason: "One `package_show` call on this dataset's own id (ffba6c62-b9df-4b46-86b6-361b615cbe40, VERIFIED, no longer inferred) confirms it has two resources: this row's own gisservice.hii.or.th/index.php?path=... URL (the elevation-capacity curve itself, still a portal-shaped index path with no single resolvable file this check) and a sibling reservoir_metadata.csv, which DOES resolve to a real file and is wired separately this check as hii_reservoir_metadata."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: "\"VERIFIED via CKAN search. Ships reservoir_metadata.csv alongside (RELAYED coords\
+  \ likely present, not opened). Dataset id ffba6c62-b9df-4b46-86b6-361b615cbe40.\
+  \ Also seen in 2026-09-27 earlier sweep (RELAYED, journal).\" Re-probed 2026-10-03:\
+  \ HTTP 200. `package_show` on this dataset id (VERIFIED) confirms the elevation-\
+  \ capacity-curve resource itself is still the gisservice.hii.or.th/index.php?path=...\
+  \ portal path (same host pattern VERIFIED on hii_flood_mark_shp to be an HTML\
+  \ index page, not a direct file) -- not resolved to one concrete downloadable\
+  \ curve file this check. The sibling reservoir_metadata.csv resource on the same\
+  \ dataset DID resolve and is wired separately as hii_reservoir_metadata (see that\
+  \ registry row)."
+    tag: VERIFIED
+
+  - id: hii_reservoir_metadata
+    agency: "HII"
+    name_th: "ข้อมูลอ่างเก็บน้ำขนาดเล็ก (metadata)"
+    name_en: "HII small-reservoir metadata catalog"
+    url: "https://data.hii.or.th/dataset/ffba6c62-b9df-4b46-86b6-361b615cbe40/resource/9a02d5b3-6019-4616-a4a9-5dfddb745e9d/download/reservoir_metadata.csv"
+    kind: csv
+    auth: none
+    format: csv
+    cadence: "static reference catalog (survey-dated per row)"
+    has_coords: true
+    coverage: "nationwide, small-reservoir survey, 69 rows"
+    asset_classes: [dam]
+    status: connected
+    wired_as: "hii_reservoir_metadata" # sources/registry.yaml id -- see that row for the live collector/contract test
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      New row this check -- found as the sibling resource of hii_reservoir_elevation_capacity_curve's
+      own CKAN dataset (ffba6c62-b9df-4b46-86b6-361b615cbe40), resolved via one `package_show`
+      call. HTTP 200, real CSV, 69 small-reservoir rows with survey date, ID/code, name,
+      subdistrict/district/province, latitude/longitude, old and updated capacity (million
+      cubic meters), old benefited area, and spillway/crest/depth fields. Wired this check
+      (registry row, parser, fixture, contract test).
+    tag: VERIFIED
+
+  - id: hii_tonnamforest_telemetry_water_level
+    agency: "HII (มูลนิธิอาสาเพื่อนพึ่ง(ภาฯ) โครงการโทรมาตรป่าต้นน้ำ)"
+    name_th: "Hii tonnamforest telemetry water level"
+    name_en: "Hii tonnamforest telemetry water level"
+    url: "https://tiservice.hii.or.th/opendata/data_catalog_mou/humidity_mou/"
+    kind: csv
+    auth: none
+    format: "URL/CSV"
+    cadence: "10-minute"
+    has_coords: true
+    coverage: unknown
+    asset_classes: [gauge, rain]
+    status: connected
+    wired_as: "hii_mou_station_metadata" # sources/registry.yaml id -- see that row for the live collector/contract test
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: "\"VERIFIED via CKAN search. Headwater-forest telemetry stations; ships HII station\
+  \ metadata csv. Dataset id 617d1a99-e1a3-49a8-b507-2ce6d6c081ec. Also seen in 2026-09-27\
+  \ earlier sweep (RELAYED, journal).\" Re-probed 2026-10-03: HTTP 200 (tiservice.hii.or.th\
+  \ opendata catalog directory). One `package_show` call on this row's own dataset\
+  \ id (617d1a99-e1a3-49a8-b507-2ce6d6c081ec, VERIFIED) shows its single CSV resource\
+  \ is https://data.hii.or.th/dataset/617d1a99-e1a3-49a8-b507-2ce6d6c081ec/resource/5301fd2c-3808-4a37-a62c-e50ea06c3cd5/download/0all_stn_metadata.csv\
+  \ -- the exact same dataset id and resource already wired as hii_mou_station_metadata\
+  \ in sources/registry.yaml. This census row and hii_mou_station_metadata are the\
+  \ same CKAN dataset under two different names, not two sources; no separate\
+  \ registry row added."
+    tag: VERIFIED
+
+  - id: bangkok_floodgate_locations
+    agency: "กรุงเทพมหานคร (Bangkok Metropolitan Administration)"
+    name_th: "Bangkok floodgate locations"
+    name_en: "Bangkok floodgate locations"
+    url: "https://data.bangkok.go.th/dataset/83ae5639-a37f-4e19-bd37-e1c97930f39d/resource/42948cf7-0759-4719-a32f-8eeabd89b8ee/download/floodgate.csv"
+    kind: csv
+    auth: none
+    format: "CSV, GML, ZIP(shapefile)"
+    cadence: "static asset inventory"
+    has_coords: true
+    coverage: unknown
+    asset_classes: [gate]
+    status: connected
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: "\"VERIFIED via CKAN search (term=ประตูระบายน้ำ). GML/shapefile formats confirm geo-referencing.\
+  \ File small (~52KB) but not downloaded this run. Also seen in 2026-09-27 earlier\
+  \ sweep (RELAYED, journal).\" Re-probed and WIRED 2026-10-03: HTTP 200, content\
+  \ fetched and parsed through the real stdlib `csv` module (not a naive line-split,\
+  \ which miscounts across this file's embedded-newline quoted cells) -- 237 real\
+  \ rows, 230 with a valid lat/lon (id, name, type, district, lat, long, gate opening,\
+  \ water_control/critical/warning thresholds), Bangkok Open Data (data.bangkok.go.th).\
+  \ The earlier '332 rows' figure in this same file's prior note was a naive-line-count\
+  \ artifact, not the real row count -- corrected here. Static reference locations\
+  \ (design thresholds, tagged RELAYED-static-reference at the row level), not live\
+  \ telemetry, but has_coords=true and directly on-topic for this repo's own domain\
+  \ (floodgates). Now wired: sources/registry.yaml id bangkok_floodgate_locations,\
+  \ collect.collect_bangkok_floodgate_locations, contract test\
+  \ tests/contract/test_bangkok_floodgate_pump_sources.py, raw capture under raw/."
+    tag: VERIFIED
+
+  - id: bangkok_pump_station_and_floodgate_physical_data
+    agency: "กรุงเทพมหานคร"
+    name_th: "Bangkok pump station and floodgate physical data"
+    name_en: "Bangkok pump station and floodgate physical data"
+    url: "https://data.bangkok.go.th/dataset/22475fbb-18ef-4705-9ce2-53f4907394e7/resource/0d645a7e-50f4-4c4f-ad1c-19db560b29c8/download/-.csv"
+    kind: csv
+    auth: none
+    format: "CSV"
+    cadence: "static asset inventory"
+    has_coords: true
+    coverage: unknown
+    asset_classes: [pump_station, gate]
+    status: connected
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: "\"VERIFIED via CKAN search. Title explicitly says 'physical data and location' —\
+  \ RELAYED that this implies coordinate fields; file (~98KB) not opened this run.\
+  \ Also seen in 2026-09-27 earlier sweep (RELAYED, journal).\" Re-probed and WIRED\
+  \ 2026-10-03: HTTP 200, content fetched and parsed through the real stdlib `csv`\
+  \ module (same embedded-newline discipline as bangkok_floodgate_locations) -- 438\
+  \ real rows, 429 with a valid lat/lon (gp_id, gp_name, gp_type, district, gp_lat,\
+  \ gp_long, gate count, pump count, total capacity, water_control/critical/warning\
+  \ thresholds), Bangkok Open Data (data.bangkok.go.th). The earlier '1,157 rows'\
+  \ figure in this same file's prior note was the same naive-line-count artifact --\
+  \ corrected here. Static reference data (tagged RELAYED-static-reference at the row\
+  \ level), has_coords=true, directly on-topic (pump stations). Now wired:\
+  \ sources/registry.yaml id bangkok_pump_station_and_floodgate_physical_data,\
+  \ collect.collect_bangkok_pump_stations, contract test\
+  \ tests/contract/test_bangkok_floodgate_pump_sources.py, raw capture under raw/."
+    tag: VERIFIED
+
+  - id: dnp_yom_basin_telemetry_33_stations
+    agency: "กรมอุทยานแห่งชาติ สัตว์ป่า และพันธุ์พืช (DNP)"
+    name_th: "Dnp yom basin telemetry 33 stations"
+    name_en: "Dnp yom basin telemetry 33 stations"
+    url: "https://catalog.dnp.go.th/dataset/5c2f7296-147f-4836-8fcb-05c6c176822b/resource/2e8161e9-c013-4ccf-be13-c9f8a7623d08/download/telemetering-system-33-station-yom-basin.csv"
+    kind: csv
+    auth: none
+    format: "CSV"
+    cadence: "static station list"
+    has_coords: true
+    coverage: unknown
+    asset_classes: [gauge, rain]
+    status: connected
+    wired_as: "dnp_yom_basin_telemetry" # sources/registry.yaml id -- see that row for the live collector/contract test
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: "\"VERIFIED via CKAN search (term=โทรมาตร). Title says station siting details for\
+  \ Yom river basin — RELAYED as likely including lat/lon; not opened (10KB file).\
+  \ Also seen in 2026-09-27 earlier sweep (RELAYED, journal).\" Re-probed 2026-10-03:\
+  \ HTTP 200, content fetched and confirmed real -- 33 climate/rainfall/water-level\
+  \ station rows (station code, name, tambon/amphoe/changwat, UTM coords, status),\
+  \ DNP catalog. Yom basin is Phayao province, NOT Bangkok/Sammakorn -- low priority\
+  \ for this repo's current area scope; several sample rows already show 'ไม่มีการอัปเดตข้อมูลแล้ว\
+  \ (offline)'. Not wired."
+    tag: VERIFIED
+
+  - id: dwr_telemetry_station_positions
+    agency: "กรมทรัพยากรน้ำ (Dept. of Water Resources)"
+    name_th: "Dwr telemetry station positions"
+    name_en: "Dwr telemetry station positions"
+    url: "http://mekhala.dwr.go.th/imgbackend/doc_file/document_20240215-151408.csv"
+    kind: csv
+    auth: none
+    format: "CSV + XML (RSS)"
+    cadence: "static/periodically refreshed"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [gauge]
+    status: catalog_only
+    catalog_reason: "Re-probed 2026-10-03 (one GET, following the 301 redirect): HTTP 404 -- the filename this census row names no longer resolves to a file. The alternate http://mekhala.dwr.go.th/tele_rss.xml noted below was also probed this check (one GET, following its redirect to HTTPS): HTTP 404, a WordPress 'page not found' response, not an RSS/XML feed. Neither URL on this row resolves to a file; not re-probed further (one-request-per-URL each)."
+    http_status: 301
+    probed_at: "2026-10-03"
+    notes: "\"VERIFIED via CKAN search. Also exposes http://mekhala.dwr.go.th/tele_rss.xml. has_coords\
+  \ marked false — no explicit coordinate-field mention in CKAN notes (OPEN: would\
+  \ need to open file to confirm). Also seen in 2026-09-27 earlier sweep (RELAYED,\
+  \ journal).\" Re-probed 2026-10-03: HTTP 301 redirect (mekhala.dwr.go.th). Not followed/content-checked\
+  \ beyond the redirect code this check (one-request-per-URL). Not wired. The\
+  \ alternate tele_rss.xml URL was probed in a second pass the same day (one GET,\
+  \ following its own redirect to HTTPS): HTTP 404 (a themed WordPress 'page not\
+  \ found' document, not XML) -- confirmed, not just noted, to be unresolved."
+    tag: VERIFIED
+
+  - id: dwr_gis_subbasin
+    agency: "กรมทรัพยากรน้ำ (Dept. of Water Resources)"
+    name_th: "ขอบเขตลุ่มน้ำสาขา (Sub_Basin), gis.dwr.go.th"
+    name_en: "DWR Sub_Basin polygons (359 features)"
+    url: "https://gis.dwr.go.th/arcgis/rest/services (Sub_Basin layer)"
+    kind: geojson
+    auth: none
+    format: "ArcGIS REST FeatureServer, GeoJSON (f=geojson)"
+    cadence: "static reference layer"
+    has_coords: true
+    coverage: "ทั้งประเทศ, 359 sub-basins"
+    asset_classes: [sub_basin]
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "VERIFIED — harvested and archived under raw/gis/dwr_subbasin/ (5 requests, 1 per URL, no retry, see tools/harvest/dwr_subbasin.py). Indexed without geometry at sources/dwr_subbasins.yaml (359 rows) and wired into the KG as `sub_basin` nodes + `IN_SUBBASIN` edges via tools/kg/unit_resolver.py's point-in-polygon resolver (see tools/kg/build_kg.py, docs/knowledge/DWR_SUBBASIN.md). Licence/terms-of-use of gis.dwr.go.th itself — OPEN (copyrightText empty, no clear licence page found this sweep) — internal use only, never redistribute the geometry."
+    tag: VERIFIED
+
+  - id: rid_telemetry_stations_telerid
+    agency: "กรมชลประทาน (Royal Irrigation Department, RID)"
+    name_th: "Rid telemetry stations telerid"
+    name_en: "Rid telemetry stations telerid"
+    url: "https://telerid.rid.go.th"
+    kind: json_api
+    auth: unknown
+    format: "URL (web portal, API shape unclear from metadata)"
+    cadence: "unclear"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [gauge, dam, gate]
+    status: catalog_only
+    catalog_subtype: reachable_js_only
+    catalog_reason: "HTTP 200, but the content loads client-side only (SPA shell/hydration script) -- nothing server-rendered in the fetched HTML to parse without a browser runtime."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET): HTTP 200, 5KB page, but a React SPA
+      shell (webpackJsonpirrigation-dept bundle, empty #root div, "You need to enable
+      JavaScript to run this app"). No server-rendered data reachable without a
+      browser (Playwright) render -- not done this check (scope/RAM, same posture as
+      rid_main_site). Not wired.
+    tag: VERIFIED
+
+  - id: dwr_drought_flood_risk_areas_shp
+    agency: "กรมทรัพยากรน้ำ"
+    name_th: "Dwr drought flood risk areas shp"
+    name_en: "Dwr drought flood risk areas shp"
+    url: "http://ckan.dwr.go.th/dataset/b89cbd28-06e6-4091-b46c-ce979b4190de/resource/b2a4b8de-ed67-4881-bc6d-2c7d244431b6/download/shapefile.zip"
+    kind: pdf
+    auth: none
+    format: "SHP/RAR, PDF, Excel"
+    cadence: "annual/periodic risk-area update"
+    has_coords: true
+    coverage: unknown
+    asset_classes: [flood_report]
+    status: catalog_only
+    catalog_reason: "PDF/shapefile.zip download, not parsed into structured data this check."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: "\"VERIFIED via CKAN search (term=น้ำท่วม). Shapefile is inherently geo-referenced;\
+  \ this specific resource (shapefile.zip) is ~622MB — flagged for exclusion from\
+  \ any future download per the >5MB rule. Dataset id c70a79b5-41a6-4bab-98a7-8ce5b7f02994.\
+  \ Also seen in 2026-09-27 earlier sweep (RELAYED, journal).\" Re-probed 2026-10-03:\
+  \ HTTP 200 (ckan.dwr.go.th shapefile.zip). Binary archive, not content-checked this\
+  \ round. Not wired."
+    tag: VERIFIED
+
+  - id: royalrain_agriculture_rainfall_areas_api
+    agency: "กรมฝนหลวงและการบินเกษตร (Royal Rainmaking Dept.)"
+    name_th: "Royalrain agriculture rainfall areas api"
+    name_en: "Royalrain agriculture rainfall areas api"
+    url: "https://rmo.royalrain.go.th/api/InfoServiceApi/summaryagricultureareainfo"
+    kind: pdf
+    auth: unknown
+    format: "API (JSON), also CSV+PDF manual on catalog.royalrain.go.th"
+    cadence: "daily"
+    has_coords: true
+    coverage: unknown
+    asset_classes: [rain, forecast]
+    status: connected
+    wired_as: "royalrain_agriculture_rainfall" # sources/registry.yaml id -- see that row for the live collector/contract test
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: "\"VERIFIED via CKAN search (term=ฝน). A PDF API manual resource exists alongside\
+  \ — RELAYED that the documented API likely needs a key/token (auth marked unknown,\
+  \ PDF not opened this run). Province/district-level rainfall from cloud-seeding\
+  \ ops. Dataset id fe575c1a-c1cc-4fd1-8f67-ba4cb764dce7. Also seen in 2026-09-27\
+  \ earlier sweep (RELAYED, journal).\" Re-probed 2026-10-03: HTTP 200, content fetched\
+  \ and confirmed real JSON API shape ({\"data\": [], \"success\": true, \"message\"\
+  : \"OK\"}) -- a real, well-formed API, but the data array was empty at capture time\
+  \ (not a failure, just no rows this call). Not wired."
+    tag: VERIFIED
+
+  - id: royalrain_operation_positions_api
+    agency: "กรมฝนหลวงและการบินเกษตร"
+    name_th: "Royalrain operation positions api"
+    name_en: "Royalrain operation positions api"
+    url: "https://rmo.royalrain.go.th/api/InfoServiceApi/dailyoperationsequenceinfo"
+    kind: json_api
+    auth: unknown
+    format: "API (JSON)"
+    cadence: "daily"
+    has_coords: true
+    coverage: unknown
+    asset_classes: [rain, forecast]
+    status: connected
+    wired_as: "royalrain_operations" # sources/registry.yaml id -- see that row for the live collector/contract test
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: "\"VERIFIED via CKAN search. Notes explicitly state coordinates of seeding operation\
+  \ (พิกัดการโปรยสารฝนหลวง). Dataset id 7d8a9aa3-8ad9-4706-9b47-d231d7189ed6. Also\
+  \ seen in 2026-09-27 earlier sweep (RELAYED, journal).\" Re-probed 2026-10-03: HTTP\
+  \ 200 (rmo.royalrain.go.th, same API family as royalrain_agriculture_rainfall_areas_api).\
+  \ Not content-checked beyond status code this check. Not wired."
+    tag: VERIFIED
+
+  - id: pcd_coastal_marine_water_quality
+    agency: "กรมควบคุมมลพิษ (Pollution Control Dept.)"
+    name_th: "Pcd coastal marine water quality"
+    name_en: "Pcd coastal marine water quality"
+    url: "https://pcd.gdcatalog.go.th/dataset/c8ec4520-0173-495f-a8f9-e9a9985dc9a3"
+    kind: csv
+    auth: none
+    format: "CSV (multiple period files)"
+    cadence: "twice-yearly monitoring rounds"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [tide, other]
+    status: connected
+    wired_as: "pcd_coastal_marine_quality" # sources/registry.yaml id -- see that row for the live collector/contract test
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: "\"VERIFIED via CKAN search (term=น้ำทะเล). Per-station water-quality results; no\
+  \ coordinate field indicated in CKAN notes (OPEN). Also seen in 2026-09-27 earlier\
+  \ sweep (RELAYED, journal).\" Re-probed 2026-10-03: HTTP 302 on the dataset landing\
+  \ page. One `package_show` call resolves 5 real per-round resource files (2566-2568,\
+  \ ครั้งที่ 1/2 each); this check wires the most recent, marine_water_quality_2568.csv\
+  \ (HTTP 200, 420 per-station readings with a pH column, no lat/lon in the payload\
+  \ -- has_coords stays false). The other 4 period files are real and resolvable the\
+  \ same way but not wired this check -- OPEN for a future pass to backfill the\
+  \ earlier rounds."
+    tag: VERIFIED
+
+  - id: pcd_marine_water_quality_index_by_station
+    agency: "กรมควบคุมมลพิษ"
+    name_th: "Pcd marine water quality index by station"
+    name_en: "Pcd marine water quality index by station"
+    url: "https://pcd.gdcatalog.go.th/dataset/a7f08b13-2d47-4d3d-9fe3-ecf9b57943b8/resource/3356137b-3c56-4955-a9c2-098a7107656c/download/untitled.csv"
+    kind: csv
+    auth: none
+    format: "CSV"
+    cadence: "annual, 2015-2024 series"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [tide, other]
+    status: connected
+    wired_as: "pcd_mwqi" # sources/registry.yaml id -- see that row for the live collector/contract test
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: "\"VERIFIED via CKAN search. Per-station MWQI index values; station coordinates not\
+  \ indicated in metadata (OPEN). Also seen in 2026-09-27 earlier sweep (RELAYED,\
+  \ journal).\" Re-probed 2026-10-03: HTTP 200. Not content-checked beyond status\
+  \ code this check. Not wired."
+    tag: VERIFIED
+
+  - id: dmcr_marine_acidification
+    agency: "กรมทรัพยากรทางทะเลและชายฝั่ง (DMCR)"
+    name_th: "Dmcr marine acidification"
+    name_en: "Dmcr marine acidification"
+    url: "https://dmcr.gdcatalog.go.th/dataset/69bccfdf-70a9-433c-9d38-c9ce3eb6a899/resource/d88f1886-5bd1-458f-8b0f-2ca1e3869dea/download/untitled.csv"
+    kind: csv
+    auth: none
+    format: "CSV, XLSX"
+    cadence: "periodic (dataset last updated 2569-06-15 per filename)"
+    has_coords: true
+    coverage: unknown
+    asset_classes: [tide]
+    status: connected
+    wired_as: "dmcr_marine_acidification" # sources/registry.yaml id -- see that row for the live collector/contract test
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: "\"VERIFIED via CKAN search. has_coords hinted true by a coordinate-like keyword in\
+  \ raw JSON blob (RELAYED, unconfirmed — file not opened). Also seen in 2026-09-27\
+  \ earlier sweep (RELAYED, journal).\" Re-probed 2026-10-03: HTTP 200. Not content-checked\
+  \ beyond status code this check. Not wired."
+    tag: VERIFIED
+
+  - id: acs_flapgate_guest_page
+    agency: "acsflapgate.com"
+    name_th: "Acs flapgate guest page"
+    name_en: "Acs flapgate guest page"
+    url: "https://www.acsflapgate.com/guest"
+    kind: html_table
+    auth: none
+    format: "HTML (SPA)"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: catalog_only
+    catalog_reason: "HTML guest-mode page on acsflapgate.com -- same ownership-confirmation caution as acs_flapgate_floodgateinfo, not ingested."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "Guest read-only portal, Playwright-verified 2026-09-27. Also seen in 2026-09-27 earlier sweep (RELAYED, journal)."
+    tag: RELAYED
+
+  - id: acs_flapgate_socketio
+    agency: "acsflapgate.com"
+    name_th: "Acs flapgate socketio"
+    name_en: "Acs flapgate socketio"
+    url: "https://socket.acsflapgate.com/socket.io/"
+    kind: page
+    auth: unknown
+    format: "Engine.IO polling (real-time)"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [gate, gauge, other]
+    status: unreachable
+    http_status: 0
+    probed_at: "2026-10-03"
+    notes: "\"Observed in network capture; payload not decoded this check (OPEN) — may carry\
+  \ live water level/online-offline status. Also seen in 2026-09-27 earlier sweep\
+  \ (RELAYED, journal).\" Re-probed 2026-10-03 (plain GET, curl -s -m 15): connection\
+  \ failed (http_code 000) -- a socket.io endpoint does not answer a plain GET with\
+  \ a normal HTTP response, and a sibling card (acs_flapgate_floodgateinfo in sources/registry.yaml)\
+  \ already documents that the *.acsflapgate.com TLS chain does not verify. Not retried\
+  \ (one-attempt rule); this check did not independently re-diagnose the exact failure\
+  \ cause (TLS vs protocol handshake)."
+    tag: VERIFIED
+
+  - id: acs_flapgate_minio_images
+    agency: "acsflapgate.com"
+    name_th: "Acs flapgate minio images"
+    name_en: "Acs flapgate minio images"
+    url: "https://minio.acsflapgate.com/floodgate-images/<id>/<file>"
+    kind: page
+    auth: none
+    format: "image (MinIO object storage)"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: catalog_only
+    catalog_reason: "Image asset host, not a data endpoint."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "Per-station photo assets, path keyed by floodgate_id. Also seen in 2026-09-27 earlier sweep (RELAYED, journal)."
+    tag: RELAYED
+
+  - id: rid_dayreport_htm
+    agency: "RID"
+    name_th: "Rid dayreport htm"
+    name_en: "Rid dayreport htm"
+    url: "http://water.rid.go.th/flood/flood/dayreport.htm"
+    kind: html_table
+    auth: none
+    format: "HTML"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [flood_report]
+    status: catalog_only
+    catalog_subtype: reachable_calendar_wrapper
+    catalog_reason: "HTTP 200, but only a date-picker landing page -- no table in the fetched HTML."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET): a calendar date-picker page only -- the
+      actual report is a PDF the calendar's onclick opens
+      (water.rid.go.th/flood/flood/day<dd><mm><yyyy>.pdf). No inline table/numeric
+      data on this URL itself. Not wired; the sibling rid_water_daily_pdf census row
+      already covers the same underlying PDF report family.
+    tag: VERIFIED
+
+  - id: rid_forecastswoc_pdf
+    agency: "RID"
+    name_th: "Rid forecastswoc pdf"
+    name_en: "Rid forecastswoc pdf"
+    url: "https://water.rid.go.th/flood/flood/forecastswoc.pdf"
+    kind: pdf
+    auth: none
+    format: "PDF (10p slides)"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [forecast]
+    status: catalog_only
+    catalog_subtype: reachable_pdf_unparsed
+    catalog_reason: "HTTP 200, a PDF with a real text layer confirmed (page count and extractable text checked) -- not parsed/wired this check; no parser built for its layout yet."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET): HTTP 200, 6 pages (pypdf), real text layer on
+      page 1 (704 extractable characters). Not parsed/wired this check.
+    tag: VERIFIED
+
+  - id: rid_planup_html
+    agency: "RID"
+    name_th: "Rid planup html"
+    name_en: "Rid planup html"
+    url: "https://water.rid.go.th/flood/plan_new/planup.html"
+    kind: html_table
+    auth: none
+    format: "HTML"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [river]
+    status: catalog_only
+    catalog_subtype: reachable_image_only
+    catalog_reason: "HTTP 200, but the page is a chart-image/iframe wrapper (JPG/PNG) -- no HTML table or numeric cell to parse without OCR, which this check does not attempt."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET): same chart-image wrapper pattern as rid_planlow/rid_plan_ew -- iframe to a dated JPG, no HTML table/numeric cell on this URL. Not wired.
+    tag: VERIFIED
+
+  - id: rid_plan_html
+    agency: "RID"
+    name_th: "Rid plan html"
+    name_en: "Rid plan html"
+    url: "http://water.rid.go.th/flood/plan.html"
+    kind: html_table
+    auth: none
+    format: "HTML"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [river]
+    status: catalog_only
+    catalog_subtype: reachable_image_only
+    catalog_reason: "HTTP 200, but the page is a chart-image/iframe wrapper (JPG/PNG) -- no HTML table or numeric cell to parse without OCR, which this check does not attempt."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET): same chart-image wrapper pattern. Not wired.
+    tag: VERIFIED
+
+  - id: rid_tide_html
+    agency: "RID"
+    name_th: "Rid tide html"
+    name_en: "Rid tide html"
+    url: "http://water.rid.go.th/flood/tide/tide.html"
+    kind: html_table
+    auth: none
+    format: "HTML"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [tide]
+    status: catalog_only
+    catalog_subtype: reachable_image_only
+    catalog_reason: "HTTP 200, but the page is a chart-image/iframe wrapper (JPG/PNG) -- no HTML table or numeric cell to parse without OCR, which this check does not attempt."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET, plus the bangkokbar.htm sub-frame and its October tab chart010.htm): this is a Microsoft-Excel HTML export (frameset of monthly tabs), and the selected tab's content is a single <img> pointing at a PNG chart image, not a data table. No numeric cell found on any of the 3 pages fetched. Not wired.
+    tag: VERIFIED
+
+  - id: rid_water_map_htm
+    agency: "RID"
+    name_th: "Rid water map htm"
+    name_en: "Rid water map htm"
+    url: "http://water.rid.go.th/flood/map_thai/water_map.htm"
+    kind: html_table
+    auth: none
+    format: "HTML (thin, 412B)"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [rain, gauge]
+    status: catalog_only
+    catalog_subtype: reachable_duplicate
+    catalog_reason: "HTTP 200, but the same underlying table as an already-wired source -- not a second data source, so not wired again."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET): a 2-frame frameset (pleft.html/pright.html) whose title ("ตารางสรุปอ่างเก็บน้ำขนาดใหญ่") matches rid_res_table, which is already wired -- same underlying reservoir-name table, not a second data source. Not separately wired (would be duplicate coverage).
+    tag: VERIFIED
+
+  - id: rid_flow_diagram_svg_wrapper
+    agency: "RID"
+    name_th: "Rid flow diagram svg wrapper"
+    name_en: "Rid flow diagram svg wrapper"
+    url: "http://hyd-app.rid.go.th/SVG/flow_diagram.html?svg=hydro5_636674419028767130"
+    kind: html_table
+    auth: none
+    format: "HTML wrapper (851B) around SVG"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [river, forecast]
+    status: catalog_only
+    catalog_subtype: reachable_js_only
+    catalog_reason: "HTTP 200, but the content loads client-side only (SPA shell/hydration script) -- nothing server-rendered in the fetched HTML to parse without a browser runtime."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET): an 851-byte HTML shell with an empty <body> -- the actual diagram is drawn client-side by flow_diagram.js from a separate data call this check did not reverse-engineer (no browser/Playwright render run this check). Not wired.
+    tag: VERIFIED
+
+  - id: rid_hydhome
+    agency: "RID"
+    name_th: "Rid hydhome"
+    name_en: "Rid hydhome"
+    url: "http://water.rid.go.th/hydhome/"
+    kind: html_table
+    auth: none
+    format: "HTML (16.9KB)"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: catalog_only
+    catalog_subtype: reachable_portal_only
+    catalog_reason: "HTTP 200, but a parent-bureau/branding landing page -- no station list or numeric reading in the fetched HTML."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET): confirmed a parent-bureau (SWOC) portal landing page -- CSS/branding only, no station list or numeric reading in the fetched HTML. Not wired.
+    tag: VERIFIED
+
+  - id: rid_wmsd
+    agency: "RID"
+    name_th: "Rid wmsd"
+    name_en: "Rid wmsd"
+    url: "https://wmsd.rid.go.th/"
+    kind: html_table
+    auth: none
+    format: "HTML (11.4KB)"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: catalog_only
+    catalog_subtype: reachable_js_only
+    catalog_reason: "HTTP 200, but the content loads client-side only (SPA shell/hydration script) -- nothing server-rendered in the fetched HTML to parse without a browser runtime."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET): a Next.js SPA shell (__next_f hydration script, no server-rendered content) -- data, if any, loads client-side only. Not wired.
+    tag: VERIFIED
+
+  - id: rid_hydrology_index
+    agency: "RID"
+    name_th: "Rid hydrology index"
+    name_en: "Rid hydrology index"
+    url: "http://water.rid.go.th/hydrology/index.html"
+    kind: html_table
+    auth: none
+    format: "HTML (943B, thin)"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: catalog_only
+    catalog_reason: "HTML index page, not a JSON/CSV endpoint."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET): HTTP 200, 943 bytes -- a thin HTML shell,
+      consistent with the "likely frame/redirect" 2026-09-27 note. Not followed further
+      this check. Not wired.
+    tag: VERIFIED
+
+  - id: rid_hydro1
+    agency: "RID"
+    name_th: "Rid hydro1"
+    name_en: "Rid hydro1"
+    url: "https://hydro-1.rid.go.th/"
+    kind: html_table
+    auth: unknown
+    format: "HTML (mojibake encoding)"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: catalog_only
+    catalog_subtype: reachable_http_only
+    catalog_reason: "Plain HTTP endpoint returns 200, but the matching HTTPS endpoint fails its TLS handshake -- content itself not evaluated as a reason to wire; left catalog-only pending a TLS fix or a dedicated HTTP-only content check."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET, http:// not https://): the HTTPS endpoint still fails its TLS handshake (curl error 35, "SSL routines::unexpected eof while reading"), but plain http:// returns 200 and 1788 bytes -- the earlier "unreachable_tls_error" tag overstated it (the host answers, only the HTTPS cert/handshake is broken). Content over http:// is a commemorative/royal-tribute splash page (UTF-8), links only to index1.html (also a splash page) -- no table/numeric cell found on either page. Not wired.
+    tag: VERIFIED
+
+  - id: rid_hydro2
+    agency: "RID"
+    name_th: "Rid hydro2"
+    name_en: "Rid hydro2"
+    url: "https://hydro-2.rid.go.th/"
+    kind: html_table
+    auth: unknown
+    format: "HTML"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: catalog_only
+    catalog_subtype: reachable_http_only
+    catalog_reason: "Plain HTTP endpoint returns 200, but the matching HTTPS endpoint fails its TLS handshake -- content itself not evaluated as a reason to wire; left catalog-only pending a TLS fix or a dedicated HTTP-only content check."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET, http:// not https://): the HTTPS endpoint still fails its TLS handshake (curl error 35, "SSL routines::unexpected eof while reading"), but plain http:// returns 200 and 8416 bytes -- the earlier "unreachable_tls_error" tag overstated it (the host answers, only the HTTPS cert/handshake is broken). Content over http:// is a commemorative/royal-tribute splash page, UTF-16-LE encoded (garbled if read as UTF-8/cp874) -- the page's own title decodes to mojibake even with the right charset declared; no table/numeric cell found. index1.html (936B) is the same kind of splash page. Not wired.
+    tag: VERIFIED
+
+  - id: rid_hydro3
+    agency: "RID"
+    name_th: "Rid hydro3"
+    name_en: "Rid hydro3"
+    url: "https://hydro-3.rid.go.th/"
+    kind: html_table
+    auth: unknown
+    format: "HTML"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: catalog_only
+    catalog_subtype: reachable_http_only
+    catalog_reason: "Plain HTTP endpoint returns 200, but the matching HTTPS endpoint fails its TLS handshake -- content itself not evaluated as a reason to wire; left catalog-only pending a TLS fix or a dedicated HTTP-only content check."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET, http:// not https://): the HTTPS endpoint still fails its TLS handshake (curl error 35, "SSL routines::unexpected eof while reading"), but plain http:// returns 200 and 1429 bytes -- the earlier "unreachable_tls_error" tag overstated it (the host answers, only the HTTPS cert/handshake is broken). Content over http:// is a commemorative/royal-tribute splash page -- no table/numeric cell found. index1.html (1247B) is the same kind of splash page. Not wired.
+    tag: VERIFIED
+
+  - id: rid_hydro4
+    agency: "RID"
+    name_th: "Rid hydro4"
+    name_en: "Rid hydro4"
+    url: "https://hydro-4.rid.go.th/"
+    kind: html_table
+    auth: unknown
+    format: "HTML (commemorative poster, not water content)"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: catalog_only
+    catalog_subtype: reachable_http_only
+    catalog_reason: "Plain HTTP endpoint returns 200, but the matching HTTPS endpoint fails its TLS handshake -- content itself not evaluated as a reason to wire; left catalog-only pending a TLS fix or a dedicated HTTP-only content check."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET, http:// not https://): the HTTPS endpoint still fails its TLS handshake (curl error 35, "SSL routines::unexpected eof while reading"), but plain http:// returns 200 and 4848 bytes -- the earlier "unreachable_tls_error" tag overstated it (the host answers, only the HTTPS cert/handshake is broken). Content over http:// is a commemorative/royal-tribute splash page -- no table/numeric cell found. index1.html (1031B) is the same kind of splash page. Not wired.
+    tag: VERIFIED
+
+  - id: rid_hydro6
+    agency: "RID"
+    name_th: "Rid hydro6"
+    name_en: "Rid hydro6"
+    url: "https://hydro-6.rid.go.th/"
+    kind: html_table
+    auth: unknown
+    format: "HTML (commemorative poster)"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: catalog_only
+    catalog_subtype: reachable_http_only
+    catalog_reason: "Plain HTTP endpoint returns 200, but the matching HTTPS endpoint fails its TLS handshake -- content itself not evaluated as a reason to wire; left catalog-only pending a TLS fix or a dedicated HTTP-only content check."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET, http:// not https://): the HTTPS endpoint still fails its TLS handshake (curl error 35, "SSL routines::unexpected eof while reading"), but plain http:// returns 200 and 14345 bytes -- the earlier "unreachable_tls_error" tag overstated it (the host answers, only the HTTPS cert/handshake is broken). Content over http:// is a commemorative/royal-tribute splash page -- no table/numeric cell found. index1.html (1399B) is the same kind of splash page. Not wired.
+    tag: VERIFIED
+
+  - id: rid_hydro7
+    agency: "RID"
+    name_th: "Rid hydro7"
+    name_en: "Rid hydro7"
+    url: "https://hydro-7.rid.go.th/"
+    kind: html_table
+    auth: unknown
+    format: "HTML"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: catalog_only
+    catalog_subtype: reachable_http_only
+    catalog_reason: "Plain HTTP endpoint returns 200, but the matching HTTPS endpoint fails its TLS handshake -- content itself not evaluated as a reason to wire; left catalog-only pending a TLS fix or a dedicated HTTP-only content check."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET, http:// not https://): the HTTPS endpoint still fails its TLS handshake (curl error 35, "SSL routines::unexpected eof while reading"), but plain http:// returns 200 and 1678 bytes -- the earlier "unreachable_tls_error" tag overstated it (the host answers, only the HTTPS cert/handshake is broken). Content over http:// is a commemorative/royal-tribute splash page with one <table> that holds only a poster image + a link button, no numeric cell. index1.html 404s. Not wired.
+    tag: VERIFIED
+
+  - id: rid_hydro8
+    agency: "RID"
+    name_th: "Rid hydro8"
+    name_en: "Rid hydro8"
+    url: "https://hydro-8.rid.go.th/"
+    kind: html_table
+    auth: unknown
+    format: "HTML (placeholder 'Royal Slideshow')"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: catalog_only
+    catalog_subtype: reachable_http_only
+    catalog_reason: "Plain HTTP endpoint returns 200, but the matching HTTPS endpoint fails its TLS handshake -- content itself not evaluated as a reason to wire; left catalog-only pending a TLS fix or a dedicated HTTP-only content check."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET, http:// not https://): the HTTPS endpoint still fails its TLS handshake (curl error 35, "SSL routines::unexpected eof while reading"), but plain http:// returns 200 and 1876 bytes -- the earlier "unreachable_tls_error" tag overstated it (the host answers, only the HTTPS cert/handshake is broken). Content over http:// is a "Royal Slideshow" splash page -- no table/numeric cell found; no index1.html probed (none of the other 6 hosts' index1.html held data either). Not wired.
+    tag: VERIFIED
+
+  - id: rid_flood_area_2564_pdf
+    agency: "RID"
+    name_th: "Rid flood area 2564 pdf"
+    name_en: "Rid flood area 2564 pdf"
+    url: "http://wmsc.rid.go.th/documents/พื้นที่ประสบอุทกภัย2564.pdf"
+    kind: pdf
+    auth: none
+    format: "PDF (11p, 1.6MB)"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [flood_report]
+    status: catalog_only
+    catalog_subtype: reachable_pdf_unparsed
+    catalog_reason: "HTTP 200, a PDF with a real text layer confirmed (page count and extractable text checked) -- not parsed/wired this check; no parser built for its layout yet."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET, URL percent-encoded): HTTP 200, 1,602,841 bytes,
+      11 pages (pypdf), real text layer on page 1 (133 extractable characters). 2021
+      flood-affected-area report; same URL pattern likely covers other years (untested).
+      Not parsed/wired this check.
+    tag: VERIFIED
+
+  - id: hii_thaiwater_net
+    agency: "HII (สสน.)"
+    name_th: "Hii thaiwater net"
+    name_en: "Hii thaiwater net"
+    url: "https://www.thaiwater.net/"
+    kind: json_api
+    auth: none
+    format: "web portal + api-v3 JSON API"
+    cadence: "unknown"
+    has_coords: true
+    coverage: unknown
+    asset_classes: [canal, river, rain, other]
+    status: catalog_only
+    catalog_reason: "Root portal page -- the real api-v3.thaiwater.net JSON endpoints it fronts (canal_waterlevel, flood_road, rain_24h) are already wired separately in sources/registry.yaml; this root URL itself carries no API of its own."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "Best-integrated agency: 3 feeds already in sources/registry.yaml (canal_waterlevel, flood_road, rain_24h) via api-v3.thaiwater.net. Other api-v3 endpoints (reservoir levels, telemetry stations) not yet explored — OPEN. Also seen in 2026-09-27 earlier sweep (RELAYED, journal)."
+    tag: RELAYED
+
+  - id: hii_waterchart_thaiwater_net
+    agency: "HII (สสน.)"
+    name_th: "Hii waterchart thaiwater net"
+    name_en: "Hii waterchart thaiwater net"
+    url: "https://waterchart.thaiwater.net/"
+    kind: json_api
+    auth: unknown
+    format: "Next.js static export (no API found in 4 grepped client JS chunks)"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [river, other]
+    status: catalog_only
+    catalog_reason: "Root portal page (Next.js static export) -- carries no API of its own; the real JSON endpoints this app calls (hii_waterchart_public_waterlevel_load, hii_waterchart_analyst_cctv) are catalogued as their own separate rows."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "TLS chain verify fails (ssl_verify_result=20, needs curl -k). Static-export root page has no API of its own -- the live capture that resolves the earlier OPEN pending-item was done against a child page, /basin/chaophraya, not this root URL. That capture is now recorded as three separate rows below (probed_at 2026-09-27): hii_waterchart_public_waterlevel_load, hii_waterchart_analyst_cctv (both MEASURED, new JSON endpoints on api-v3.thaiwater.net), and hii_waterchart_chaophraya_svg_topology (RELAYED, static SVG topology asset on this same waterchart.thaiwater.net host). This root row's own tag stays RELAYED -- the root page itself still has no confirmed API; see the three child rows for what was actually measured. Also seen in 2026-09-27 earlier sweep (RELAYED, journal)."
+    tag: RELAYED
+
+  - id: hii_waterchart_public_waterlevel_load
+    agency: "HII (สสน.) และหน่วยงานเจ้าของสถานีต่อรายการ, ผ่าน thaiwater.net"
+    name_th: "Hii thaiwater30 public waterlevel load (basin-filtered)"
+    name_en: "HII thaiwater30 public waterlevel_load (basin-filtered)"
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_load"
+    kind: json_api
+    auth: none
+    format: "JSON, requires query params basin_id=<comma basin_code list> (or 999, meaning
+      unconfirmed -- possibly all-basin) plus start_date/end_date (YYYY-MM-DD HH:MM). No
+      query params observed to work without them (not tested bare)."
+    cadence: "near-real-time (waterlevel_datetime per record, e.g. 2026-09-27 18:00); date
+      window is caller-supplied, not fixed by the API"
+    has_coords: true
+    coverage: "confirmed for basin_code group 6,7,8,9,10,11,12,13,14,15,26 (Chao Phraya +
+      tributary basins) -- 380 records in one 2026-09-27 sample. Full 25-basin national
+      coverage NOT confirmed -- basin_code list for the other ~14 basins not yet enumerated
+      (OPEN)."
+    asset_classes: [river]
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "MEASURED this run (1 curl GET, same query the live page fires). Distinct from
+      already-registered thaiwater_waterlevel (public/waterlevel, no query params, full
+      nationwide sweep already wired in collect.py) -- different path, richer per-record
+      schema: adds discharge (cms), storage_percent (unit/basis unconfirmed -- OPEN),
+      waterlevel_msl + waterlevel_msl_previous (mean-sea-level referenced, with prior
+      timestamp for trend), situation_level (0-5 severity flag, scale meaning unconfirmed --
+      OPEN), river_gid/river_name (station-to-river join), and per-station cross-section
+      params (left_bank/right_bank/min_bank/ground_level/critical_level_msl/is_key_station)
+      not present on public/waterlevel. Confirmed Chao Phraya main-stem stations present via
+      station.tele_station_oldcode: C.2, C.3, C.7A, C.12, C.13, C.35, C.36, C.37, C.67.
+      No auth/token required -- 200 with no special headers. TLS on api-v3.thaiwater.net
+      verifies normally (no -k needed; contrast with waterchart.thaiwater.net's separate TLS
+      chain issue, unrelated host). Draft collector (not wired): tools/harvest/
+      hii_waterchart_draft.py; full card: docs/knowledge/
+      card_api_2026-09-27_hii_waterchart_basin.md.
+      RECONCILED 2026-10-03: this row IS already wired -- it is the exact same URL,
+      query shape (basin_id=6,7,8,9,10,11,12,13,14,15,26, start_date/end_date) and
+      response wrapper (`waterlevel_data.data`) as registry id `hii_waterlevel_load`
+      (sources/registry.yaml, wired 2026-09-27 via collect.collect_hii_waterlevel_load
+      / parsers.parse_hii_waterlevel_load, which already keeps every richer field this
+      row describes -- discharge, storage_percent, situation_level, cross-section
+      params). A prior census pass recorded this as a separate 'reachable, not wired'
+      row without cross-checking the registry under a different id; it is the SAME
+      source, not a second gap. status corrected above; no new collector needed."
+    tag: MEASURED
+
+  - id: hii_waterchart_analyst_cctv
+    agency: "หน่วยงานเจ้าของกล้องต่อสถานี (เช่น กรมทรัพยากรน้ำ), รวบรวมผ่าน thaiwater.net"
+    name_th: "Hii thaiwater30 analyst cctv (national station camera directory)"
+    name_en: "HII thaiwater30 analyst/cctv (national station camera directory)"
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/analyst/cctv"
+    kind: json_api
+    auth: none
+    format: "JSON {result, data:[...]}, no query params required"
+    cadence: "directory, not telemetry -- each row's own image/stream freshness depends on
+      the owning agency's camera server (cctv_url), not on this endpoint"
+    has_coords: true
+    coverage: "106 camera/station records nationwide in one 2026-09-27 sample (no basin
+      filter applied -- appears to be the full national set, not confirmed against a second
+      fetch)"
+    asset_classes: [other]
+    status: connected
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: "MEASURED this run (1 curl GET, no params). Entirely new endpoint, not a
+      query-filtered variant of any already-registered source. Each record: id, dam_id
+      (blank in most), tele_station_name, basin/basin_name, lat/long, sub_basin_id, title,
+      description (station name + amphoe/province in Thai), media_type (img observed),
+      cctv_url (points to the OWNING agency's own server, e.g. a dyndns.org address --
+      liveness/uptime of individual cctv_url values NOT verified, OPEN per-link), is_active,
+      geocode (area/amphoe/tumbon/province), basin, agency. Value is field verification by
+      image, not a new numeric telemetry variable -- candidate for a reference-document-style
+      ingest (station photo links), not observations.sqlite rows. No auth/token required.
+      Draft collector (not wired): tools/harvest/hii_waterchart_draft.py; full card:
+      docs/knowledge/card_api_2026-09-27_hii_waterchart_basin.md.
+      WIRED 2026-10-03: promoted into a real collector, registry id
+      `hii_analyst_cctv` (distinct id from this census row by design -- this census row
+      is the probe record, the registry id is the live wiring), collect.collect_hii_analyst_cctv,
+      parsers.parse_hii_analyst_cctv, stores each camera as a document (coords + feed
+      URL + owning agency), real capture replayed in tests/contract/test_hii_bma_gistda_sources.py
+      (106 cameras in this re-fetch -- the SAME count as the 2026-09-27 sample, not
+      merely close to it)."
+    tag: MEASURED
+
+  - id: hii_waterchart_chaophraya_svg_topology
+    agency: "HII (สสน.)"
+    name_th: "Hii waterchart chaophraya basin diagram (static SVG, station topology)"
+    name_en: "HII waterchart Chao Phraya basin diagram (static SVG, station topology)"
+    url: "https://waterchart.thaiwater.net/assets/svg/chaophraya/chaophraya.svg"
+    kind: static_asset
+    auth: none
+    format: "SVG, ~560KB. Per-station placeholder text elements named <code>-wl-value /
+      <code>-cms-value / <code>-msl-value... (populated by page JS at runtime from the JSON
+      endpoints above) plus free-text travel-time labels between some node pairs (Thai:
+      '2 วัน', '1 วัน', '6 ชม.', '3 วัน', '20 ชม.', '2.5 วัน')."
+    cadence: "static (diagram artwork, not live data itself -- update cadence unknown, not a
+      per-run fetch target)"
+    has_coords: false
+    coverage: "~90 node codes found in one sample: C2; CPY001-017 (Chao Phraya main stem,
+      ordering not yet confirmed against tele_station_oldcode); PIN001-006, NAN003-014,
+      YOM005-012, WAN001-005 (Ping/Nan/Yom/Wang headwater rivers); plus ATG*, BKK*, BPK*,
+      DIV*, CHM*, DR*, GLF*, KWN*, LBI*, SKG*, TCY37, THA*, TN21, TY54, temp001/002/004."
+    asset_classes: [river, other]
+    status: catalog_only
+    catalog_reason: "Static SVG asset, not a data feed."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "MEASURED this run (1 curl -k GET -- TLS chain verify FAILS on
+      waterchart.thaiwater.net, same as the already-recorded hii_waterchart_thaiwater_net
+      census row; api-v3.thaiwater.net, the actual data host, verifies fine, so this is a
+      waterchart.thaiwater.net-specific TLS issue, not project-wide). Node-id ordering
+      (CPY001..CPY017) is INSTINCT to read as HII's own confirmed main-stem sequence, NOT yet
+      VERIFIED -- mapping each CPYxxx id to a tele_station_oldcode (e.g. C.2, C.13) requires
+      reading node x/y position or the page's own JS bundle, not done this run (OPEN). If
+      confirmed, this would be a VERIFIED-from-source topology for
+      docs/knowledge/NATIONWIDE_HIERARCHY.md's Chao Phraya chain, replacing coordinate-based
+      inference. No licence/ToS text found on the page for this asset specifically (same
+      unresolved status as the parent hii_waterchart_thaiwater_net row). Draft collector
+      (not wired): tools/harvest/hii_waterchart_draft.py; full card: docs/knowledge/
+      card_api_2026-09-27_hii_waterchart_basin.md.
+      DECISION 2026-10-03: stays candidate_unregistered, not re-probed this check (a
+      TLS-failing static SVG asset, not re-checked to avoid repeating the -k workaround
+      without a human decision on that TLS issue). It is station TOPOLOGY (an
+      ordering/diagram), never a numeric reading -- this repo's wired HII sources
+      (hii_dam, hii_waterlevel_load, hii_watergate) already carry real coordinates for
+      every station this diagram names; ingesting the SVG would only add node-ordering
+      metadata, not a new reading, and the node-id-to-oldcode mapping above is still
+      unconfirmed (OPEN)."
+    tag: RELAYED
+
+  - id: tmd_aboutus_vision
+    agency: "TMD"
+    name_th: "Tmd aboutus vision"
+    name_en: "Tmd aboutus vision"
+    url: "https://www.tmd.go.th/aboutus/vision"
+    kind: html_table
+    auth: unknown
+    format: "HTML"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: unreachable
+    http_status: 0
+    probed_at: "2026-09-27"
+    notes: "Connection failed/timeout, not retried. Also seen in 2026-09-27 earlier sweep (RELAYED, journal)."
+    tag: RELAYED
+
+  - id: gistda_homepage
+    agency: "GISTDA"
+    name_th: "Gistda homepage"
+    name_en: "Gistda homepage"
+    url: "https://www.gistda.or.th/"
+    kind: html_table
+    auth: unknown
+    format: "HTML"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: catalog_only
+    catalog_reason: "Agency homepage, no station list or numeric reading in the fetched HTML."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: " Also seen in 2026-09-27 earlier sweep (RELAYED, journal).
+      DECISION 2026-10-03: stays candidate_unregistered, not re-probed this check --
+      an agency homepage, no claimed asset_class/coverage at all (both `unknown`
+      above); gistda_flood_extent_api and gistda_disaster_portal are this agency's
+      actual data-bearing candidates, already assessed separately."
+    tag: RELAYED
+
+  - id: marine_imis_map_view
+    agency: "Marine Department"
+    name_th: "Marine imis map view"
+    name_en: "Marine imis map view"
+    url: "http://imis.md.go.th/#!/map"
+    kind: page
+    auth: unknown
+    format: "SPA hash route (same document as base, not separately fetchable via plain GET)"
+    cadence: "unknown"
+    has_coords: true
+    coverage: unknown
+    asset_classes: [river, canal, gauge]
+    status: catalog_only
+    catalog_subtype: reachable_js_only
+    catalog_reason: "HTTP 200, but the content loads client-side only (SPA shell/hydration script) -- nothing server-rendered in the fetched HTML to parse without a browser runtime."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: "\"Client-side route inside the already-fetched imis.md.go.th document; coords inherited\
+  \ from parent app shell. Also seen in 2026-09-27 earlier sweep (RELAYED, journal).\"\
+  \ Re-probed 2026-10-03: HTTP 200, but the URL's own #!/map fragment is a client-side\
+  \ SPA route -- the fetched HTML is the app shell only, no server-rendered map data.\
+  \ Not wired."
+    tag: VERIFIED
+
+  - id: marine_elaws
+    agency: "Marine Department"
+    name_th: "Marine elaws"
+    name_en: "Marine elaws"
+    url: "https://elaws.md.go.th/"
+    kind: html_table
+    auth: none
+    format: "HTML (Angular app shell, title 'MD eLaws')"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: catalog_only
+    catalog_reason: "Legal/regulation text portal, no flood/water data."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "PROBED 2026-09-27. Legal/regulation portal, not a flood-data feed; confirms domain reachable, no coordinate/asset data present. Raw saved: raw/knowledge/api_census/agencies/elaws_md.html. Also seen in 2026-09-27 earlier sweep (RELAYED, journal). Re-probed 2026-10-03: VERIFIED -- same shape (200, 8,548 bytes), still a legal-text portal, low priority, candidate_unregistered."
+    tag: VERIFIED
+
+  - id: marine_homepage
+    agency: "Marine Department"
+    name_th: "Marine homepage"
+    name_en: "Marine homepage"
+    url: "https://www.md.go.th/"
+    kind: html_table
+    auth: unknown
+    format: "HTML"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: catalog_only
+    catalog_reason: "Agency homepage, no station list or numeric reading in the fetched HTML."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: " Also seen in 2026-09-27 earlier sweep (RELAYED, journal).
+      DECISION 2026-10-03: stays candidate_unregistered, not re-probed this check --
+      an agency homepage, no claimed asset_class/coverage at all (both `unknown`
+      above); marine_imis/marine_elaws (sources/registry.yaml, candidate_unregistered
+      with their own real probe results) are this agency's actual data-bearing
+      candidates, already assessed separately."
+    tag: RELAYED
+
+  - id: marine_mandate_page
+    agency: "Marine Department"
+    name_th: "Marine mandate page"
+    name_en: "Marine mandate page"
+    url: "https://md.go.th/about/mandate/"
+    kind: html_table
+    auth: unknown
+    format: "HTML"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: unreachable
+    http_status: 503
+    probed_at: "2026-09-27"
+    notes: "Server error, not retried. Also seen in 2026-09-27 earlier sweep (RELAYED, journal)."
+    tag: RELAYED
+
+  - id: mea_homepage
+    agency: "MEA (การไฟฟ้านครหลวง)"
+    name_th: "Mea homepage"
+    name_en: "Mea homepage"
+    url: "https://www.mea.or.th/"
+    kind: html_table
+    auth: unknown
+    format: "HTML"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: catalog_only
+    catalog_reason: "Agency homepage (electricity utility, not a water/flood data source)."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "No public real-time outage-map URL identified this check despite task naming 'MEA outage pages' — remains OPEN/unconfirmed, so not separately probed. Also seen in 2026-09-27 earlier sweep (RELAYED, journal)."
+    tag: RELAYED
+
+  - id: mea_authority_page
+    agency: "MEA"
+    name_th: "Mea authority page"
+    name_en: "Mea authority page"
+    url: "https://www.mea.or.th/about-mea/background/authority"
+    kind: html_table
+    auth: unknown
+    format: "HTML (legal text)"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: catalog_only
+    catalog_reason: "Agency org-structure page, no flood/water data."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: " Also seen in 2026-09-27 earlier sweep (RELAYED, journal)."
+    tag: RELAYED
+
+  - id: mea_vision_mission
+    agency: "MEA"
+    name_th: "Mea vision mission"
+    name_en: "Mea vision mission"
+    url: "https://www.mea.or.th/about-mea/background/vision-and-mission"
+    kind: html_table
+    auth: unknown
+    format: "HTML"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: unreachable
+    http_status: 0
+    probed_at: "2026-09-27"
+    notes: "Connection error, not retried. Also seen in 2026-09-27 earlier sweep (RELAYED, journal)."
+    tag: RELAYED
+
+  - id: ddpm_cate_mission
+    agency: "DDPM"
+    name_th: "Ddpm cate mission"
+    name_en: "Ddpm cate mission"
+    url: "https://www.disaster.go.th/th/cate_mission.html"
+    kind: html_table
+    auth: unknown
+    format: "HTML"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: unreachable
+    http_status: 404
+    probed_at: "2026-09-27"
+    notes: "HTTP 404 on 2026-09-27; path not found; do not retry. Also seen in 2026-09-27
+      earlier sweep (RELAYED, journal)."
+    tag: RELAYED
+
+  - id: moi_homepage
+    agency: "MOI (มหาดไทย)"
+    name_th: "Moi homepage"
+    name_en: "Moi homepage"
+    url: "https://www.moi.go.th/"
+    kind: html_table
+    auth: unknown
+    format: "HTML (JS-only SPA shell)"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: catalog_only
+    catalog_reason: "Ministry homepage, no flood/water data."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: " Also seen in 2026-09-27 earlier sweep (RELAYED, journal)."
+    tag: RELAYED
+
+  - id: moi_mission
+    agency: "MOI"
+    name_th: "Moi mission"
+    name_en: "Moi mission"
+    url: "https://www.moi.go.th/mission"
+    kind: html_table
+    auth: unknown
+    format: "HTML"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: unreachable
+    http_status: 404
+    probed_at: "2026-09-27"
+    notes: "HTTP 404 on 2026-09-27; path not found; do not retry. Also seen in 2026-09-27
+      earlier sweep (RELAYED, journal)."
+    tag: RELAYED
+
+  - id: dwr_about
+    agency: "DWR"
+    name_th: "Dwr about"
+    name_en: "Dwr about"
+    url: "https://www.dwr.go.th/about-dwr"
+    kind: html_table
+    auth: unknown
+    format: "HTML"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: unreachable
+    http_status: 404
+    probed_at: "2026-09-27"
+    notes: "HTTP 404 on 2026-09-27; path not found; do not retry. Also seen in 2026-09-27
+      earlier sweep (RELAYED, journal)."
+    tag: RELAYED
+
+  - id: dwr_webapp_water
+    agency: "DWR"
+    name_th: "Dwr webapp water"
+    name_en: "Dwr webapp water"
+    url: "https://www.dwr.go.th/webapp/water/?p=1"
+    kind: html_table
+    auth: unknown
+    format: "unknown"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: unreachable
+    http_status: 404
+    probed_at: "2026-09-27"
+    notes: "Path name suggests a possible water-data webapp, but returns 404 this check. Also seen in 2026-09-27 earlier sweep (RELAYED, journal)."
+    tag: RELAYED
+
+  - id: dpt_homepage
+    agency: "DPT (กรมโยธาธิการและผังเมือง)"
+    name_th: "Dpt homepage"
+    name_en: "Dpt homepage"
+    url: "https://www.dpt.go.th/"
+    kind: html_table
+    auth: unknown
+    format: "unknown"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: unreachable
+    http_status: 0
+    probed_at: "2026-09-27"
+    notes: "No response within 20s timeout (0 bytes), not retried. Also seen in 2026-09-27 earlier sweep (RELAYED, journal)."
+    tag: RELAYED
+
+  - id: doh_homepage
+    agency: "DOH (กรมทางหลวง)"
+    name_th: "Doh homepage"
+    name_en: "Doh homepage"
+    url: "https://www.doh.go.th/"
+    kind: html_table
+    auth: unknown
+    format: "HTML"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: catalog_only
+    catalog_reason: "Agency homepage (Dept. of Highways, not a water/flood data source)."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: " Also seen in 2026-09-27 earlier sweep (RELAYED, journal)."
+    tag: RELAYED
+
+  - id: doh_org_structure
+    agency: "DOH"
+    name_th: "Doh org structure"
+    name_en: "Doh org structure"
+    url: "https://www.doh.go.th/org-structure"
+    kind: html_table
+    auth: unknown
+    format: "HTML"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: catalog_only
+    catalog_reason: "Agency org-structure page, no flood/water data."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: " Also seen in 2026-09-27 earlier sweep (RELAYED, journal)."
+    tag: RELAYED
+
+  - id: nesdc_homepage
+    agency: "NESDC (สภาพัฒน์)"
+    name_th: "Nesdc homepage"
+    name_en: "Nesdc homepage"
+    url: "https://www.nesdc.go.th/"
+    kind: html_table
+    auth: unknown
+    format: "unknown"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [other]
+    status: catalog_only
+    catalog_subtype: reachable_portal_only
+    catalog_reason: "HTTP 200, but a parent-bureau/branding landing page -- no station list or numeric reading in the fetched HTML."
+    http_status: 302
+    probed_at: "2026-10-03"
+    notes: "\"Redirect loop / https-upgrade not resolved within curl -L timeout, not retried.\
+  \ bb.go.th (Bureau of the Budget) was not attempted at all this check. Also seen\
+  \ in 2026-09-27 earlier sweep (RELAYED, journal).\" Re-probed 2026-10-03: HTTP 302.\
+  \ This is the NESDC (สภาพัฒน์) homepage, not a data endpoint -- portal-only by its\
+  \ own name/kind, not a flood/water data source. Not wired."
+    tag: VERIFIED
+
+  - id: thaiwater30_analyst_dam
+    agency: "HII/สสน. + RID (per-dam owning agency) via thaiwater.net"
+    name_th: "Thaiwater30 analyst dam"
+    name_en: "Thaiwater30 analyst dam"
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/analyst/dam"
+    kind: json_api
+    auth: none
+    format: "json"
+    cadence: "unknown"
+    has_coords: true
+    coverage: unknown
+    asset_classes: [dam]
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "MEASURED this run (2026-09-27, raw/knowledge/api_census/hii/dam.json). Single combined endpoint, top keys result/data; data has FOUR sub-arrays: dam_hourly (17 rows), dam_daily (50 rows), dam_medium (862 rows), dam_small_tele (60 rows). Each row nests a `dam` object with dam_lat/dam_long (real coordinates, e.g. Ratchaprapa 9.054554/98.670247) and a `station` id under `dam.id`/`dam_oldcode`. This is the dam-daily AND dam-medium target in one call -- the earlier same-day probe of literal service ids `dam_daily`/`dam_medium` (logged in docs/ASSETS.md) 404'd because those are sub-keys of this combined `analyst/dam` endpoint, not separate service ids. Discovered from the official thaiwater.net frontend's own JS bundle (app.chunk.js), not brute force. Also seen in 2026-09-27 earlier sweep (RELAYED, journal)."
+    tag: RELAYED
+
+  - id: thaiwater30_public_watergate_load
+    agency: "HII/สสน. + RID/BMA (per-gate owning agency) via thaiwater.net"
+    name_th: "Thaiwater30 public watergate load"
+    name_en: "Thaiwater30 public watergate load"
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/watergate_load"
+    kind: json_api
+    auth: none
+    format: "json"
+    cadence: "unknown"
+    has_coords: true
+    coverage: unknown
+    asset_classes: [gate, weir]
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "MEASURED this run (2026-09-27, raw/knowledge/api_census/hii/watergate_load.json). Nested shape: top-level watergate_data.data is a list of 2315 telemetry rows (watergate_in/out levels, floodgate_open/floodgate_height, pump fields -- some null per row/gate type), each nesting a `station` object with tele_station_lat/long (real coords, e.g. ปตร.พลเทพ 15.21593/100.07285), tele_station_oldcode, warning/critical level fields. A separate top-level `station` key (78 provinces, list of {station_id, station_oldcode, station_name, station_lat, station_long}) is a station-directory duplicate of the same coordinate set. No distinct 'weir' (ฝาย) service id was found separately from gate (ปตร.) -- RID/HII appear to model weirs and floodgates under this same watergate_load family (INSTINCT, not confirmed in any agency glossary); recorded under classes [gate, weir] pending an authoritative split. Discovered from the official thaiwater.net frontend's own JS bundle, not brute force. Also seen in 2026-09-27 earlier sweep (RELAYED, journal)."
+    tag: RELAYED
+
+  - id: thaiwater30_sea_level_tide
+    agency: "HII/สสน. (unclear if same api-v3 host or a separate FEWS host)"
+    name_th: "Thaiwater30 sea level tide"
+    name_en: "Thaiwater30 sea level tide"
+    url: "UNRESOLVED -- app.chunk.js references a tide_table text feed on a different host pattern (`few*.hii.or.th/model-output/data_portal/tide_table/<code>.txt` and `.../tide_table/summary.txt`), not under api-v3.thaiwater.net/thaiwater30 at all"
+    kind: html_table
+    auth: unknown
+    format: "unknown"
+    cadence: "unknown"
+    has_coords: true
+    coverage: unknown
+    asset_classes: [tide]
+    status: unresolved_url
+    http_status: null
+    probed_at: null
+    notes: "\"OPEN/RELAYED from static JS analysis only (raw/knowledge/api_census/hii/app.chunk.js),\
+  \ not fetched -- exceeded this census's request budget after dam+watergate_load\
+  \ probes. The bundle also references tide_station_lat/tide_station_long fields and\
+  \ a `swan_station`/`wave_forecast` family (public/wave_forecast, public/swan_station,\
+  \ public/wave_forecast_img) that may carry coastal/sea-level-adjacent data but were\
+  \ not confirmed by an actual GET this run. No brute-force guess was fired at the\
+  \ tide_table host per this check's no-guessing/no-geocode discipline -- flagging\
+  \ as a real gap for a future run with fresh budget. Also seen in 2026-09-27 earlier\
+  \ sweep (RELAYED, journal).\" This entry has no single resolvable concrete URL to\
+  \ probe -- prior research (2026-09-27) found only an unconfirmed candidate feed-path\
+  \ pattern on a different host family (few*.hii.or.th/model-output/data_portal/tide_table/*.txt),\
+  \ not under api-v3.thaiwater.net/thaiwater30 at all. Not probed this check (no URL\
+  \ to fire); not retried; flagged OPEN for a future task to resolve the exact host/path\
+  \ before any probe."
+    tag: OPEN
+
+  - id: thaiwater30_flood_forecast
+    agency: "HII/สสน. via thaiwater.net"
+    name_th: "Thaiwater30 flood forecast"
+    name_en: "Thaiwater30 flood forecast"
+    url: "UNRESOLVED -- /floodforecast is a frontend PAGE ROUTE in app.chunk.js (component FloodForecast/FloodPlainForecast), but no distinct backing JSON service id (e.g. a `flood_forecast` or `forecast_flood` string) was found under thaiwater30/public or thaiwater30/analyst within this run's grep of the bundle"
+    kind: html_table
+    auth: unknown
+    format: "unknown"
+    cadence: "unknown"
+    has_coords: false
+    coverage: unknown
+    asset_classes: [forecast]
+    status: unresolved_url
+    http_status: null
+    probed_at: null
+    notes: "\"OPEN. Candidates seen nearby in the bundle: public/rain7day_forecast (rainfall\
+  \ forecast, not flood-specific) and public/wave_forecast (marine). Neither was fetched\
+  \ this run. No brute-force probe fired at a guessed `flood_forecast` service id\
+  \ per the no-brute-force rule; would need either a deeper JS trace of the FloodForecast\
+  \ React component's own fetch call or an official thaiwater.net API doc page (standard.thaiwater.net's\
+  \ resource list, read this run, named only rainfall/waterlevel/large-medium-small\
+  \ water-source resources -- no flood-forecast resource was named there either).\
+  \ Also seen in 2026-09-27 earlier sweep (RELAYED, journal).\" This entry has no\
+  \ single resolvable concrete URL to probe -- /floodforecast is a frontend page route\
+  \ only (FloodForecast/FloodPlainForecast component in app.chunk.js), no distinct\
+  \ backing JSON service id was found in this repo's prior grep of the bundle. Not\
+  \ probed this check (no URL to fire); not retried; flagged OPEN for a future task."
+    tag: OPEN
+
+  # --- appended 2026-09-27 (this check): retention basins, BMA tunnels, tide gates -----
+  - id: thaipbs_12thung_news
+    agency: "Thai PBS (news, citing กรมชลประทาน/RID)"
+    name_th: "เปิด 12 ทุ่งรับน้ำหลากลุ่มเจ้าพระยา"
+    name_en: "Thai PBS: 12 Lower Chao Phraya flood-retention fields"
+    url: "https://www.thaipbs.or.th/news/content/266415"
+    kind: html_article
+    auth: none
+    format: "SPA/React HTML + embedded article text"
+    cadence: static
+    has_coords: false
+    coverage: "12 named fields, lower Chao Phraya basin (below Nakhon Sawan)"
+    asset_classes: [retention_basin]
+    status: catalog_only
+    catalog_reason: "News article, not a structured data source."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: >
+      Re-probed 2026-10-03 (real GET): HTTP 200, 478KB -- a single news-article page about a past flood event, not a recurring data feed. Not wired (one-off article, not an upstream agency source).
+    tag: VERIFIED
+
+  - id: bma_dds_tunnels_pdf
+    agency: "สำนักการระบายน้ำ กรุงเทพมหานคร (BMA DDS)"
+    name_th: "อุโมงค์ระบายน้ำของกรุงเทพมหานคร (เอกสารทางการ)"
+    name_en: "BMA official drainage-tunnel document"
+    url: "https://dds.bangkok.go.th/public_content/files/001/0004953_1.pdf"
+    kind: pdf
+    auth: none
+    format: pdf
+    cadence: static
+    has_coords: false
+    coverage: "7 operating + 6 planned/under-construction large drainage tunnels, Bangkok"
+    asset_classes: [tunnel]
+    status: catalog_only
+    catalog_reason: "PDF document, not parsed into structured data this check."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "MEASURED this run -- fetched once, archived raw/knowledge/bma_dds_tunnels/0004953_1.pdf + pdftotext -layout extraction (0004953_1.txt). Publishes diameter/length/capacity/budget/status prose for each tunnel but NO coordinate anywhere in the document (checked against the full extracted text). One of the 7 operating tunnels (อุโมงค์ระบายน้ำบึงมักกะสัน, 4.60 m / 5.98 km) matches this registry's pre-existing tunnel:hand_declared:rama9_ramkhamhaeng row -- same physical asset, not duplicated. Registered as class tunnel, tag OPEN (no coordinate)."
+    tag: VERIFIED
+
+  - id: thaigov_bang_krachao_tide_gates
+    agency: "รัฐบาลไทย-ข่าวทำเนียบรัฐบาล (thaigov.go.th) / กรมโยธาธิการและผังเมือง"
+    name_th: "ประตูระบายน้ำคุ้งบางกระเจ้า"
+    name_en: "Bang Krachao tide/flow-control gates"
+    url: "https://www.thaigov.go.th/news/contents/details/91012"
+    kind: html_article
+    auth: none
+    format: html
+    cadence: static
+    has_coords: false
+    coverage: "34 gates, Samut Prakan (Bang Krachao area)"
+    asset_classes: [tide_gate]
+    status: catalog_only
+    catalog_reason: "News/press article, not a structured data source."
+    http_status: 307
+    probed_at: "2026-09-27"
+    notes: "Direct fetch (browser UA, 20s timeout, no retry) returned an HTTP 307 redirect, archived as-is at raw/knowledge/tide_gate_bang_krachao/thaigov_91012.html -- redirect target not followed (no-retry rule). Name/count/owner detail (34 gates, handed to Samut Prakan province then 6 tambon administrations) taken from this check's own WebSearch summary of the same government news page, not independently re-read from the raw article body -- tag RELAYED in the assets registry, not VERIFIED."
+    tag: RELAYED
+
+  - id: onwr_22_basins_from_cached_payloads
+    agency: "สทนช./HII (embedded field, not a separate endpoint)"
+    name_th: "22 ลุ่มน้ำหลัก (จากฟิลด์ basin ในเพย์โหลดที่มีอยู่แล้ว)"
+    name_en: "22 official main river basins (from an already-cached payload field)"
+    url: "N/A -- no new request; extracted from the basin.basin_code/basin.basin_name field already present in raw/live/thaiwater_rain_24h, raw/live/thaiwater_waterlevel, raw/live/hii_dam, raw/live/hii_watergate"
+    kind: json
+    auth: none
+    format: json
+    cadence: "same as the 4 source feeds"
+    has_coords: false
+    coverage: "22 named basins nationwide (codes 1-22; code 88 'นอกประเทศไทย' and 99 'ไม่ระบุ' excluded)"
+    asset_classes: [basin]
+    status: connected
+    http_status: null
+    probed_at: "2026-09-27"
+    notes: "MEASURED this run -- no new probe needed, the official 22-basin classification was already sitting in payloads this repo reads for other classes. No polygon/point geometry attempted (a basin is an area) -- lat/lon None on every basin row, geometry OPEN."
+    tag: VERIFIED
+
+  # ============================================================
+  # GLOBAL free hazard/forecast/NWP APIs, collapsed to Thailand (this check, 2026-09-27).
+  # Founder ask: "ตรวจหา api ที่แจกฟรีของโลกก่อน แล้วยุบลงมาไทย เพื่อเชื่อมเข้ากับระบบ" --
+  # census the free-worldwide layer first, then state exactly what each gives for
+  # Thailand (bbox 5.6-20.5N, 97.3-105.7E). Method: WebSearch/WebFetch for the census
+  # (no repeated fetch of the same URL), then ONE curl sample per no-key source
+  # (browser UA, 20s timeout, no retries), archived under raw/live/<id>/<ts>.json --
+  # same rule as collect.py. This is a CENSUS + registration, NOT a collect.py wiring --
+  # no source below is called by collect.py yet (see docs/knowledge/GLOBAL_FREE_HAZARD_APIS.md
+  # for the proposed collector list, not implemented).
+  #
+  # thailand_q vocabulary (which of the 5 founder questions a source answers):
+  #   a = rain-triggered landslide risk now | b = 1-5 day rain/flood forecast upstream
+  #   of BKK | c = terrain/flow path | d = spoil heaps/mines/forest loss | e = historical
+  #   events for validation | f = NWP/ensemble rain input | g = tide/sea-level |
+  #   h = health/epidemiology post-flood
+  # ============================================================
+
+  - id: nasa_lhasa_landslide_nowcast
+    agency: "NASA GSFC / GES DISC (LHASA 2.0, GPM IMERG + SMAP soil moisture)"
+    name_th: "แบบจำลองคาดการณ์ดินถล่มจากฝนทั่วโลก (LHASA)"
+    name_en: "Global Landslide Nowcast (LHASA 2.0, 1 km daily)"
+    url: "https://www.earthdata.nasa.gov/data/catalog/ges-disc-global-landslide-nowcast-2.0.0"
+    kind: gridded_raster_via_earthdata
+    auth: "NASA Earthdata login (free registration required, not an instant key)"
+    format: "netCDF/HDF5 (GES DISC), open-source model code on GitHub (nasa/LHASA)"
+    cadence: daily
+    has_coords: true
+    coverage: "global 1km grid, includes Thailand"
+    asset_classes: []
+    thailand_q: [a]
+    status: needs_key
+    http_status: null
+    probed_at: "2026-09-27"
+    notes: "RELAYED (WebSearch only, not fetched). Combines GPM IMERG rain + SMAP soil moisture + a static susceptibility map (slope/geology/roads/faults/forest loss) into a daily 1km global landslide-nowcast raster. Requires a free NASA Earthdata account (registration, not an instant API key) to pull granules; the model source is fully open on GitHub (nasa/LHASA) and could in principle be re-run on our own rain+susceptibility inputs instead of pulling NASA's own granules. This is the single highest-value global source for founder question (a) rain-triggered landslide risk now."
+    tag: RELAYED
+
+  - id: nasa_global_landslide_catalog
+    agency: "NASA GSFC (COOLR -- Cooperative Open Online Landslide Repository)"
+    name_th: "ฐานข้อมูลเหตุการณ์ดินถล่มโลก (จากรายงานข่าว/ภัยพิบัติ)"
+    name_en: "NASA Global Landslide Catalog (COOLR)"
+    url: "https://maps.nccs.nasa.gov/server/rest/services/global_landslide_catalog?f=pjson"
+    kind: json_api_arcgis_rest
+    auth: none
+    format: json
+    cadence: "irregular (compiled from media/disaster-database reports since 2007)"
+    has_coords: true
+    coverage: "global point catalog, includes Thailand events"
+    asset_classes: []
+    thailand_q: [e]
+    status: catalog_only
+    catalog_reason: "International reference layer (NASA GSFC COOLR), no Thai-station mapping done this check -- out of this repo's current area scope."
+    http_status: null
+    probed_at: "2026-09-27"
+    notes: "RELAYED (WebSearch only, not fetched this check -- ArcGIS REST endpoint confirmed to exist and to require no key; a real sample pull was not in this check's top-5 no-key priority list, see GLOBAL_FREE_HAZARD_APIS.md). Rainfall-triggered landslide event points worldwide, media/disaster-report compiled (not instrument-verified) -- feeds founder question (e) historical events for validation, specifically any past Thailand hill-province landslide."
+    tag: RELAYED
+
+  - id: nasa_power_api
+    agency: "NASA Langley Research Center (POWER project)"
+    name_th: "ข้อมูลฝน/อุตุนิยมวิทยารายวันจากดาวเทียม (NASA POWER)"
+    name_en: "NASA POWER daily point meteorology API (satellite-derived rainfall etc.)"
+    url: "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=PRECTOTCORR&community=AG&longitude={lon}&latitude={lat}&start=YYYYMMDD&end=YYYYMMDD&format=JSON"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: daily
+    has_coords: true
+    coverage: "global point query, any Thailand coordinate"
+    asset_classes: [rain]
+    thailand_q: [a, f]
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "VERIFIED this run -- ONE GET, no key, Sammakorn point (13.758,100.676), params PRECTOTCORR (corrected precipitation, mm/day), 20260920-20260927. HTTP 200, valid JSON, source `GEOSIT` (satellite/reanalysis-derived, not a rain gauge). Archived raw/live/nasa_power/2026-09-27T*.json. Useful as a GLOBAL fallback rain input anywhere in Thailand with no gauge nearby (western hill provinces), and as an independent cross-check against Open-Meteo's model output -- but it is itself model/satellite-derived, not ground truth, same epistemic caveat as Open-Meteo."
+    tag: VERIFIED
+
+  - id: opentopography_copernicus_dem_glo30
+    agency: "OpenTopography (hosts ESA Copernicus GLO-30 DEM)"
+    name_th: "แบบจำลองความสูงภูมิประเทศโลก ความละเอียด 30 เมตร (Copernicus DEM)"
+    name_en: "Copernicus GLO-30 DEM via OpenTopography Global Dataset API"
+    url: "https://portal.opentopography.org/API/globaldem?demtype=COP30&south={s}&north={n}&west={w}&east={e}&outputFormat=GTiff&API_Key=YOURKEY"
+    kind: raster_api
+    auth: "free OpenTopography account API key (instant, self-service signup)"
+    format: GeoTIFF
+    cadence: static
+    has_coords: true
+    coverage: "global 30m grid, includes Thailand"
+    asset_classes: []
+    thailand_q: [c]
+    status: needs_key
+    http_status: null
+    probed_at: "2026-09-27"
+    notes: "RELAYED (WebSearch only). Free-with-key: OpenTopography issues a personal API key instantly on signup (no payment, no approval wait per public docs). Copernicus GLO-30 is a DSM (surface incl. buildings/vegetation, not bare-earth) -- directly usable for founder question (c) terrain/flow path once bbox-clipped to the Sammakorn/upstream watershed. Bulk alternative: direct ESA/AWS Open Data download, no key at all, but requires tiling logic this check did not build."
+    tag: RELAYED
+
+  - id: copernicus_glofas_cems
+    agency: "Copernicus Emergency Management Service (CEMS) / ECMWF"
+    name_th: "ระบบเฝ้าระวังน้ำท่วมโลก (GloFAS)"
+    name_en: "Global Flood Awareness System (GloFAS) official channels"
+    url: "https://global-flood.emergency.copernicus.eu/"
+    kind: web_portal_plus_cds_api
+    auth: "free ECMWF/CDS account for bulk API (MARS/CDS); web viewer needs none"
+    format: "GRIB/NetCDF via CDS API; WMS-T for map viewer"
+    cadence: daily
+    has_coords: true
+    coverage: "global river network incl. Chao Phraya basin"
+    asset_classes: []
+    thailand_q: [b]
+    status: catalog_only
+    catalog_reason: "Web portal plus a heavier CDS-API integration (async submit/poll), not a plain GET -- see collect.collect_cds_era5_reanalysis for the same posture on a sibling Copernicus source."
+    http_status: null
+    probed_at: "2026-09-27"
+    notes: "RELAYED (WebSearch only). This is the ORIGINAL/authoritative GloFAS source (30-day medium-range + seasonal outlooks); Open-Meteo's flood API (below) is a free no-key mirror of the same GloFAS v4 model and is the practical way this repo would consume GloFAS data without standing up a CDS account -- listed here for provenance, Open-Meteo is the one to actually wire in."
+    tag: RELAYED
+
+  - id: google_flood_hub_api
+    agency: "Google Research (Flood Hub / Flood Forecasting API)"
+    name_th: "ระบบพยากรณ์น้ำท่วมของ Google (Flood Hub) -- สถานะสมัครใช้"
+    name_en: "Google Flood Hub API"
+    url: "https://developers.google.com/flood-forecasting"
+    kind: json_api
+    auth: "free but PILOT-WAITLIST ONLY -- not self-service, Google reviews/prioritizes requests, can take months"
+    format: json
+    cadence: daily
+    has_coords: true
+    coverage: "claims >150 countries incl. river basins; Thailand-specific river coverage not confirmed by this check"
+    asset_classes: []
+    thailand_q: [b, e]
+    status: needs_key
+    http_status: null
+    probed_at: "2026-09-27"
+    notes: "RELAYED (WebSearch only, confirming status noted in this file's earlier header). CONFIRMED still gated: free of charge but access is pilot-program-only, requested via a waitlist form, not an instant key -- founder's 'already noted' status stands, no change. Do not register an account per this check's scope (STEP 3 explicitly: no account registration)."
+    tag: RELAYED
+
+  - id: openmeteo_flood_api
+    agency: "Open-Meteo (third-party, serves Copernicus GloFAS v4 reanalysis+forecast)"
+    name_th: "พยากรณ์ปริมาณน้ำท่าแม่น้ำ (GloFAS ผ่าน Open-Meteo)"
+    name_en: "Open-Meteo Flood API (GloFAS river discharge, no key)"
+    url: "https://flood-api.open-meteo.com/v1/flood?latitude={lat}&longitude={lon}&daily=river_discharge&forecast_days=7"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: daily
+    has_coords: true
+    coverage: "global, 5km river-selection resolution, includes Thailand"
+    asset_classes: [gauge]
+    thailand_q: [b]
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "VERIFIED this run -- ONE GET, no key, western-hill point (14.0,99.0, upstream of BKK toward the Mae Klong/Kanchanaburi side). HTTP 200, returned 7-day daily `river_discharge` (m3/s) for the nearest river cell (snapped to 14.025,99.025, elevation 602m). Archived raw/live/openmeteo_flood/2026-09-27T*.json. This is the single best free, no-key, ready-to-wire source for founder question (b) upstream 1-5 day flood forecast -- GloFAS v4, updated daily, up to 30 days ahead available (this sample requested 7). Caveat carried over from GloFAS itself: 5km cell may snap to the wrong tributary near confluences -- verify against a named river before trusting a single point."
+    tag: VERIFIED
+
+  - id: openmeteo_ensemble_api
+    agency: "Open-Meteo (serves ICON-EPS/GFS-ENS/ECMWF-ENS/GEM-EPS ensemble members)"
+    name_th: "พยากรณ์ฝนแบบความน่าจะเป็น (หลายสมาชิก Ensemble)"
+    name_en: "Open-Meteo Ensemble API (probabilistic multi-member rain forecast)"
+    url: "https://ensemble-api.open-meteo.com/v1/ensemble?latitude={lat}&longitude={lon}&hourly=precipitation&models={model}&forecast_days=7"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: "hourly steps, up to 35-day horizon depending on model"
+    has_coords: true
+    coverage: "global, includes Thailand"
+    asset_classes: [rain]
+    thailand_q: [f, b]
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "VERIFIED this run -- ONE GET, no key, Sammakorn point, model=icon_seamless (one of the selectable ensembles: icon_seamless/gfs_seamless/ecmwf_ifs/gem_global etc.). HTTP 200, returned hourly `precipitation` plus per-member columns (precipitation_member01..NN) -- true probabilistic spread, not just a single deterministic run. Archived raw/live/openmeteo_ensemble/2026-09-27T*.json. This gives a PROBABILITY band on rain (e.g. 'X% of ensemble members show >50mm/24h'), a real upgrade over the single deterministic forecast this repo currently pulls from /v1/forecast -- see GLOBAL_FREE_HAZARD_APIS.md for the proposed swap/addition."
+    tag: VERIFIED
+
+  - id: openmeteo_marine_api
+    agency: "Open-Meteo (serves Copernicus Marine wave/tide models)"
+    name_th: "พยากรณ์ระดับน้ำทะเล/น้ำขึ้นน้ำลง (Open-Meteo Marine)"
+    name_en: "Open-Meteo Marine API (sea level / tide, no key)"
+    url: "https://marine-api.open-meteo.com/v1/marine?latitude={lat}&longitude={lon}&hourly=sea_level_height_msl&forecast_days=7"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: hourly
+    has_coords: true
+    coverage: "coastal, 8km resolution -- Gulf of Thailand incl. Chao Phraya mouth"
+    asset_classes: [gauge]
+    thailand_q: [g]
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "VERIFIED this run -- ONE GET, no key, Gulf of Thailand point near the Chao Phraya river mouth (13.5,100.6). HTTP 200, returned hourly `sea_level_height_msl` (m), snapped to 13.458,100.625. Archived raw/live/openmeteo_marine/2026-09-27T*.json. CAVEAT (from this check's own WebSearch of Open-Meteo's docs, not independently re-verified against a tide gauge): 8km resolution cannot resolve the Chao Phraya's narrow channel/complex coastline, and sea level is referenced to global mean sea level, NOT the navigation-chart datum MSD used by Thai port/tide tables -- usable as a rough tidal-push proxy for BKK downstream drainage timing, not as a precise tide-table replacement."
+    tag: VERIFIED
+
+  - id: jrc_global_surface_water
+    agency: "EU Joint Research Centre (JRC) / Copernicus"
+    name_th: "แผนที่พื้นที่น้ำผิวดินโลก ย้อนหลัง 1984-ปัจจุบัน (JRC GSW)"
+    name_en: "JRC Global Surface Water (historical inundation/water-occurrence mapping)"
+    url: "https://global-surface-water.appspot.com/download"
+    kind: raster_bulk_download_plus_gee_plus_stac
+    auth: none
+    format: "GeoTIFF (bulk), or Google Earth Engine / Microsoft Planetary Computer STAC"
+    cadence: "annual composite, 1984-2024 archive"
+    has_coords: true
+    coverage: "global 30m grid, includes Thailand"
+    asset_classes: []
+    thailand_q: [c, e]
+    status: catalog_only
+    catalog_reason: "Bulk raster download / Earth-Engine / STAC catalog, not a plain GET -- out of scope for an on-demand single-request collector this check."
+    http_status: null
+    probed_at: "2026-09-27"
+    notes: "RELAYED (WebSearch only). Free, no key, no restriction of use (Copernicus programme, CC-style open). Maps where water has actually stood historically (occurrence/change/seasonality/recurrence) -- useful to sanity-check our own flow-path/flood-extent inferences against 40 years of satellite-observed reality, i.e. founder questions (c) terrain/flow path and (e) historical validation. Bulk GeoTIFF download or GEE/Planetary-Computer STAC, no lightweight point-query REST endpoint found."
+    tag: RELAYED
+
+  - id: esa_worldcover
+    agency: "European Space Agency (ESA WorldCover)"
+    name_th: "แผนที่การใช้ที่ดิน/สิ่งปกคลุมผิวดินโลก ความละเอียด 10 เมตร"
+    name_en: "ESA WorldCover 10m global land-cover map (2020/2021)"
+    url: "https://esa-worldcover.org/en/data-access"
+    kind: raster_bulk_download_plus_wms
+    auth: none
+    format: "Cloud-Optimized GeoTIFF (AWS S3), Zenodo, WMS/WMTS viewer"
+    cadence: "2 static epochs (2020, 2021)"
+    has_coords: true
+    coverage: "global 10m grid, includes Thailand"
+    asset_classes: []
+    thailand_q: [d, c]
+    status: catalog_only
+    catalog_reason: "Bulk raster download / WMS, not a plain GET -- out of scope for an on-demand single-request collector this check."
+    http_status: null
+    probed_at: "2026-09-27"
+    notes: "RELAYED (WebSearch only). Free, no key, CC BY 4.0. 10m land-cover classes (incl. built-up, cropland, forest, bare/sparse veg) -- a bare-land/deforestation SNAPSHOT rather than a change-alert feed; pair with Global Forest Watch (below) for change-over-time. Feeds founder question (d) forest-loss/bare-ground susceptibility context and (c) terrain cover for flow-path modelling."
+    tag: RELAYED
+
+  - id: gfw_data_api
+    agency: "World Resources Institute / University of Maryland (Global Forest Watch)"
+    name_th: "ข้อมูลการสูญเสียป่าไม้แบบเกือบเรียลไทม์ (GLAD/RADD alerts)"
+    name_en: "Global Forest Watch Data API (GLAD/RADD deforestation alerts, tree-cover loss)"
+    url: "https://data-api.globalforestwatch.org/"
+    kind: json_api_plus_sql
+    auth: "free API key, self-service (POST /auth/token then POST /auth/apikey), expires after 1 year"
+    format: json
+    cadence: "GLAD/RADD alerts ~weekly; annual tree-cover-loss layer yearly"
+    has_coords: true
+    coverage: "global, includes Thailand hill/forest provinces"
+    asset_classes: []
+    thailand_q: [d]
+    status: needs_key
+    http_status: null
+    probed_at: "2026-09-27"
+    notes: "RELAYED (WebSearch only). Free-with-key, self-service signup (not a waitlist like Google Flood Hub) -- not obtained this check per STEP 3's no-account-registration rule, marked REQUIRED. This is the single best free source for founder question (d) forest-loss/spoil-heap susceptibility upstream of hill-province landslide risk -- near-real-time GLAD/RADD alert points plus SQL-queryable annual loss layers, directly relevant to informal logging/quarry-adjacent deforestation this repo's OSM quarry note already flags as RELAYED gap-filler context."
+    tag: RELAYED
+
+  - id: gdacs_api
+    agency: "GDACS (EU JRC + UN OCHA partnership -- Global Disaster Alert and Coordination System)"
+    name_th: "ระบบแจ้งเตือนภัยพิบัติโลกแบบหลายภัย (GDACS)"
+    name_en: "GDACS Multi-Hazard Early Warning System API"
+    url: "https://www.gdacs.org/xml/rss.xml"
+    kind: rss_geojson_kml_api
+    auth: none
+    format: "RSS/GeoJSON/KML"
+    cadence: "event-driven, near-real-time"
+    has_coords: true
+    coverage: "global multi-hazard (flood/cyclone/earthquake/volcano), includes Thailand events"
+    asset_classes: []
+    thailand_q: [e, b]
+    status: catalog_only
+    catalog_reason: "International disaster-alert RSS/GeoJSON feed, no Thai-specific filtering confirmed this check -- see collect.collect_gdacs_events for the sibling GDACS source that IS wired."
+    http_status: null
+    probed_at: "2026-09-27"
+    notes: "RELAYED (WebSearch only, not sampled this check -- ReliefWeb was prioritized instead for the events/validation slot, see GLOBAL_FREE_HAZARD_APIS.md). Free, no key, no auth. Aggregates multi-agency (incl. GloFAS-derived) flood/cyclone alerts globally with a green/orange/red severity flag -- a fast independent trip-wire for 'is anything already flagged near Thailand right now', separate from our own readouts. Attribution required (\"Global Disaster Alert and Coordination System, GDACS\")."
+    tag: RELAYED
+
+  - id: reliefweb_api
+    agency: "UN OCHA (ReliefWeb)"
+    name_th: "ฐานข้อมูลรายงานภัยพิบัติ/มนุษยธรรมโลก (ReliefWeb)"
+    name_en: "ReliefWeb API (humanitarian reports incl. disaster response)"
+    url: "https://api.reliefweb.int/v2/reports?appname=thailand_flood_kg&query[value]=Thailand+flood&limit=5"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: "continuous (report-driven)"
+    has_coords: false
+    coverage: "global humanitarian reporting, includes Thailand flood response reports"
+    asset_classes: []
+    thailand_q: [e]
+    status: catalog_only
+    catalog_reason: "Superseded by the already-wired reliefweb_api_v2 (needs_key): this row's own re-probe against v2 without a registered appname got HTTP 403 'not an approved appname', confirming the key requirement rather than naming a separate source to wire."
+    http_status: 410
+    probed_at: "2026-09-27"
+    notes: "MEASURED this run -- ONE GET attempted against the DOCUMENTED v1 endpoint (`api.reliefweb.int/v1/reports`, per this check's WebSearch of the API docs at apidoc.reliefweb.int); it returned HTTP 410 with a clean JSON error body stating v1 is decommissioned and v2 should be used instead. Archived raw/live/reliefweb_api/2026-09-27T*.json (the 410 response itself, not a v2 retry -- one-request-per-URL rule: v2 is a DIFFERENT URL and was not attempted this run, left for a future collect.py wiring pass). Real finding: this check's WebSearch-derived docs (apidoc.reliefweb.int) were stale on the version number -- v2 is current. No key needed either way, 1000 calls/day rate limit documented. Feeds founder question (e) historical events -- narrative humanitarian-response reports, not raw hazard telemetry."
+    tag: MEASURED
+
+  - id: unosat_flood_portal
+    agency: "UNITAR / UNOSAT"
+    name_th: "แผนที่น้ำท่วมจากภาพถ่ายดาวเทียม (UNOSAT)"
+    name_en: "UNOSAT Flood Portal / Sentinel-1 FloodAI dashboards"
+    url: "http://floods.unosat.org/"
+    kind: web_portal_no_documented_rest_api
+    auth: none
+    format: "web map viewer + per-event downloadable products (shapefile/GeoTIFF) via HDX"
+    cadence: "event-driven (activated per major flood event, not continuous)"
+    has_coords: true
+    coverage: "event-triggered global satellite flood-extent maps; Thailand coverage only if/when an event triggers activation"
+    asset_classes: []
+    thailand_q: [e]
+    status: unreachable
+    http_status: 0
+    probed_at: "2026-10-03"
+    notes: "\"RELAYED (WebSearch only). No dedicated REST API found in this check's search --\
+  \ access is via the ESRI-Geoportal-based web portal and per-event product downloads\
+  \ mirrored to the Humanitarian Data Exchange (HDX), not a queryable programmatic\
+  \ endpoint. Lower priority than GDACS/ReliefWeb for this repo since it activates\
+  \ only per-declared-event rather than continuously.\" Re-probed 2026-10-03: connection\
+  \ failed/timeout (http_code 000) within the 15s budget. Not retried (one-attempt\
+  \ rule)."
+    tag: VERIFIED
+
+  - id: soilgrids_isric_rest
+    agency: "ISRIC World Soil Information (SoilGrids)"
+    name_th: "ข้อมูลดิน/ความชื้นในดินโลก (SoilGrids)"
+    name_en: "SoilGrids ISRIC REST API (soil moisture / volumetric water content)"
+    url: "https://rest.isric.org/soilgrids/v2.0/properties/query?lon={lon}&lat={lat}&property=wv1500"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: static
+    has_coords: true
+    coverage: "global 250m grid, includes Thailand"
+    asset_classes: []
+    thailand_q: [a]
+    status: unreachable
+    http_status: null
+    probed_at: null
+    notes: "RELAYED (WebSearch only, not sampled -- this check's own search found ISRIC's own docs stating the REST API is CURRENTLY PAUSED by ISRIC with no restoration ETA, so a live probe would likely fail; not spent from the sample-pull budget). Static soil-water-content layers (not live moisture) at 6 depths -- would feed founder question (a) landslide-susceptibility soil-saturation baseline once the API is back, or via the bulk/GEE alternative access ISRIC also documents."
+    tag: RELAYED
+
+  - id: osm_overpass_quarry
+    agency: "OpenStreetMap community (Overpass API)"
+    name_th: "ข้อมูลเหมือง/บ่อขุดจาก OpenStreetMap (Overpass)"
+    name_en: "OSM Overpass API (landuse=quarry / man_made=mineshaft tags)"
+    url: "https://overpass-api.de/api/interpreter"
+    kind: json_api_query_language
+    auth: none
+    format: json
+    cadence: "community-edited, irregular"
+    has_coords: true
+    coverage: "global, crowd-sourced coverage in Thailand uneven"
+    asset_classes: []
+    thailand_q: [d]
+    status: catalog_only
+    catalog_reason: "Query-language API (Overpass QL), no fixed query/endpoint shape confirmed for this repo's use case this check."
+    http_status: null
+    probed_at: "2026-09-27"
+    notes: "RELAYED (WebSearch/prior-knowledge only, not sampled this check). Per this repo's own project decision (`feedback-floodconnect-osm-allowed-relayed.md`): OSM is allowed ONLY as a RELAYED gap-filler, never as VERIFIED, and official government data always wins when it conflicts. Quarry/mine polygons (`landuse=quarry`, `man_made=mineshaft`) are crowd-edited, not surveyed -- treat any pull as a lead to check against DPIM concession data, never as ground truth for founder question (d) spoil-heap/mine susceptibility."
+    tag: RELAYED
+
+  - id: openmeteo_multimodel_thailand
+    agency: "Open-Meteo (aggregates >15 national NWP centres + 2 AI models)"
+    name_th: "รายชื่อโมเดลพยากรณ์อากาศทั้งหมดที่ Open-Meteo เปิดให้ใช้ฟรี (สำหรับไทย)"
+    name_en: "Open-Meteo multi-model roster available for Thailand (founder addition 15:41)"
+    url: "https://open-meteo.com/en/docs (model= parameter on /v1/forecast)"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: "model-dependent, 1h-6h update cycle"
+    has_coords: true
+    coverage: "global, includes Thailand -- resolution 9-11km for global models, no Thailand-specific high-res regional model in the free roster (regional high-res models like ICON-D2/HRRR/AROME cover Europe/N.America only)"
+    asset_classes: [rain]
+    thailand_q: [f]
+    status: connected
+    http_status: null
+    probed_at: "2026-09-27"
+    notes: "RELAYED (WebSearch only, per founder's own-words follow-up ask, no new fetch spent confirming the model list beyond docs search). Models exposed and USABLE for a Thailand point (via `&model=` on /v1/forecast, or best_match for auto-selection): ecmwf_ifs (ECMWF, incl. AIFS -- ECMWF's own AI model, 6-hourly steps), gfs_seamless (NOAA GFS/NOMADS), icon_seamless (DWD ICON), jma_seamless (JMA GSM/MSM), gem_seamless (Environment Canada), ukmo_seamless (UK Met Office), bom_access_global (Australia BOM), cma_grapes_global (China CMA), meteofrance_seamless (Meteo-France ARPEGE/AROME, Europe-only high-res but global ARPEGE component usable here), knmi_seamless, dmi_seamless, metno_seamless, gsl_hrrr (US-only, not usable for Thailand), and two ML models: google's `graphcast` and `google_weathernext` (WeatherNext 2, 64-member AI ensemble, 0.25 deg grid, 15-day horizon). This repo's collect.py currently pulls only the DEFAULT best_match single model (undocumented which underlying model that resolves to for a Thailand point on any given run) -- NOT the '6 models' the founder's message assumed; see GLOBAL_FREE_HAZARD_APIS.md for the actual current-vs-proposed model set."
+    tag: RELAYED
+
+  - id: who_gho_odata_api
+    agency: "World Health Organization (Global Health Observatory)"
+    name_th: "ฐานข้อมูลสถิติสุขภาพโลกขององค์การอนามัยโลก (GHO)"
+    name_en: "WHO GHO OData API (global health indicators)"
+    url: "https://ghoapi.azureedge.net/api/Indicator"
+    kind: odata_json_api
+    auth: none
+    format: json
+    cadence: "indicator-dependent, mostly annual"
+    has_coords: false
+    coverage: "country-level statistics (Thailand as a WHO member state), NOT a live per-event feed"
+    asset_classes: []
+    thailand_q: [h]
+    status: catalog_only
+    catalog_reason: "International health-indicator OData API, not a flood/water telemetry source -- out of this repo's current scope."
+    http_status: null
+    probed_at: "2026-09-27"
+    notes: "RELAYED (WebSearch only, not sampled -- WHO's own page states the current GHO OData API is being deprecated near end of 2025 in favour of data.who.int, so its live status is itself OPEN). Country-level annual health-indicator statistics (baseline disease burden, WASH access, etc.), NOT a flood-triggered outbreak feed -- weakest fit of any source here for founder question (h) health/epidemiology post-flood; better as slow-changing background context than a post-flood readout input. No Thailand-specific flood-health API found by this check; see WHO Disease Outbreak News (below) for the nearer-real-time layer."
+    tag: RELAYED
+
+  - id: who_disease_outbreak_news
+    agency: "World Health Organization (Disease Outbreak News)"
+    name_th: "ข่าวการระบาดของโรคจากองค์การอนามัยโลก"
+    name_en: "WHO Disease Outbreak News (DON) feed"
+    url: "https://www.who.int/emergencies/disease-outbreak-news"
+    kind: html_feed_no_confirmed_rest_api
+    auth: none
+    format: "HTML page + RSS-style listing (structured JSON API not confirmed by this check)"
+    cadence: event-driven
+    has_coords: false
+    coverage: "global, country-tagged (Thailand entries when a DON is issued)"
+    asset_classes: []
+    thailand_q: [h]
+    status: catalog_only
+    catalog_reason: "HTML feed, no confirmed REST API."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: "\"RELAYED (WebSearch only, existence noted, no confirmed structured API endpoint\
+  \ found this check -- OPEN whether a stable JSON/RSS route exists beyond the HTML\
+  \ page). Would flag post-flood waterborne-disease outbreaks (e.g. leptospirosis\
+  \ after Thai floods) if/when WHO issues a DON for Thailand -- narrow, event-driven,\
+  \ not a standing per-run indicator.\" Re-probed 2026-10-03: HTTP 200. General global\
+  \ health page, not Thailand-flood-specific; not content-checked beyond status code.\
+  \ Not wired."
+    tag: VERIFIED
+
+  - id: wmo_swic_cap_warnings
+    agency: "WMO (Severe Weather Information Centre, hosted by Hong Kong Observatory)"
+    name_th: "ศูนย์รวมประกาศเตือนภัยอากาศรุนแรงของ WMO (รวมประกาศกรมอุตุฯ ไทย)"
+    name_en: "WMO SWIC 3.0 -- CAP warning feed relaying national met services incl. TMD"
+    url: "https://severeweather.wmo.int/feeds.html"
+    kind: cap_xml_feed
+    auth: none
+    format: "CAP (Common Alerting Protocol) XML"
+    cadence: event-driven
+    has_coords: false
+    coverage: "global, relays TMD's own official Thailand warnings (not a separate hazard model)"
+    asset_classes: []
+    thailand_q: [b]
+    status: catalog_only
+    catalog_reason: "CAP/XML severe-weather feed (WMO SWIC), no Thailand-specific filtering confirmed this check."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: "\"RELAYED (WebSearch only). This is a RELAY of TMD's own CAP warnings, not an independent\
+  \ hazard source -- value is only as a redundant fetch path if TMD's own site is\
+  \ unreachable (BMA-host-style outage), never as a second opinion. This check did\
+  \ not find the exact per-country CAP feed URL for Thailand within its search budget\
+  \ -- OPEN pending a feeds.html page read.\" Re-probed 2026-10-03: HTTP 200. Not\
+  \ content-checked beyond status code this check. Not wired."
+    tag: VERIFIED
+
+  - id: wmo_whos_hydrology
+    agency: "WMO Hydrological Observing System (WHOS) / HydroHub"
+    name_th: "ระบบแบ่งปันข้อมูลอุทกวิทยาโลกของ WMO (WHOS)"
+    name_en: "WMO WHOS (federated national hydrological data, WaterML/WaterOneFlow)"
+    url: "https://wmo.int/site/wmo-hydrohub/focus-areas/increasing-capacity/wmo-hydrological-observing-system-whos"
+    kind: waterml_federated_catalogue
+    auth: none
+    format: "WaterML via WaterOneFlow web services (OGC standard)"
+    cadence: "depends on the underlying national hydrological service"
+    has_coords: true
+    coverage: "federates whichever national hydrological services opt in -- Thai RID/HII participation not confirmed by this check"
+    asset_classes: [gauge]
+    thailand_q: [b]
+    status: catalog_only
+    catalog_reason: "Federated WaterML catalogue (WMO WHOS), not a single plain-GET endpoint."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: "\"RELAYED (WebSearch only). A CATALOGUE/FEDERATION layer, not itself a hazard model\
+  \ -- only as good as which countries' hydrological services publish into it. Whether\
+  \ Thailand's RID/HII/ONWR publish into WHOS was not confirmed within this check's\
+  \ budget -- OPEN, low priority (this repo already has direct RID/HII sources in\
+  \ the Thai-scope api_census.yaml above).\" Re-probed 2026-10-03: HTTP 200. Informational\
+  \ WMO programme page, not a live data feed. Not wired."
+    tag: VERIFIED
+
+  - id: undrr_desinventar
+    agency: "UNDRR (DesInventar / DELTA Resilience)"
+    name_th: "ฐานข้อมูลความสูญเสียจากภัยพิบัติของไทย (DesInventar)"
+    name_en: "UNDRR DesInventar Thailand disaster-loss database"
+    url: "https://www.desinventar.net/"
+    kind: web_db_no_confirmed_public_rest_api
+    auth: none
+    format: "web query tool (DesConsultar); newer DELTA Resilience system uses PostgreSQL/PostGIS backend, no public REST endpoint confirmed"
+    cadence: "historical, updated as loss records are entered"
+    has_coords: false
+    coverage: "national/subnational Thailand disaster-loss records if a Thailand DesInventar instance exists (not confirmed reachable this check)"
+    asset_classes: []
+    thailand_q: [e]
+    status: catalog_only
+    catalog_reason: "Web database with no confirmed public REST API."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: "\"RELAYED (WebSearch only). UNDP Regional Centre Bangkok is named as a DesInventar\
+  \ implementer for the region, but this check did NOT confirm a live, queryable Thailand-specific\
+  \ DesInventar instance or REST API within its search budget -- OPEN. Would feed\
+  \ founder question (e) historical events/economic-loss validation if a Thailand\
+  \ instance is confirmed live.\" Re-probed 2026-10-03: HTTP 200. Not content-checked\
+  \ beyond status code this check. Not wired."
+    tag: VERIFIED
+
+  - id: ifrc_go_api
+    agency: "IFRC (GO -- emergency operations platform)"
+    name_th: "แพลตฟอร์มปฏิบัติการฉุกเฉินของสภากาชาดสากล (IFRC GO)"
+    name_en: "IFRC GO API (disaster response operations, needs assessment)"
+    url: "https://goadmin.ifrc.org/docs/"
+    kind: json_rest_api
+    auth: "unclear from this check's search -- some endpoints public, docs mention Power BI/Python integration without stating a key requirement"
+    format: json
+    cadence: event-driven
+    has_coords: true
+    coverage: "global Red Cross/Red Crescent operations, includes Thai Red Cross activations"
+    asset_classes: []
+    thailand_q: [e]
+    status: catalog_only
+    catalog_reason: "International humanitarian-operations API (IFRC GO), no Thailand-specific query confirmed this check."
+    http_status: 200
+    probed_at: "2026-10-03"
+    notes: "\"RELAYED (WebSearch only). Would give Thai Red Cross flood-response operation records\
+  \ (needs assessments, DREF allocations) -- a response/impact signal, not a hazard\
+  \ forecast. Auth requirement not confirmed either way this check -- OPEN, lower priority\
+  \ than ReliefWeb/GDACS for this repo's current gap.\" Re-probed 2026-10-03: HTTP\
+  \ 200 on the docs page itself (goadmin.ifrc.org/docs/). This confirms the docs page\
+  \ loads, not the underlying REST API's own auth requirement, which stays OPEN/unconfirmed\
+  \ as already noted -- lower priority than ReliefWeb/GDACS for this repo. Not wired."
+    tag: VERIFIED
+
+  - id: cds_era5_reanalysis
+    agency: "Copernicus Climate Change Service (C3S) / ECMWF (Climate Data Store)"
+    name_th: "ข้อมูลภูมิอากาศย้อนหลังทั่วโลก ตั้งแต่ 1940 (ERA5)"
+    name_en: "ERA5 global atmospheric reanalysis (historical rain/climate baseline)"
+    url: "https://cds.climate.copernicus.eu/datasets/reanalysis-era5-land-timeseries"
+    kind: cds_api_bulk
+    auth: "free CDS account + personal API key (self-service signup)"
+    format: "GRIB/NetCDF via cdsapi Python client"
+    cadence: "hourly, 1940-present, ~5 day latency"
+    has_coords: true
+    coverage: "global 31km grid (ERA5) / 9km (ERA5-Land), includes Thailand"
+    asset_classes: [rain]
+    thailand_q: [a, e]
+    status: needs_key
+    http_status: null
+    probed_at: "2026-09-27"
+    notes: "RELAYED (WebSearch only). Free-with-key, self-service. Best free source for a long historical rain BASELINE at any Thailand point (for founder question (e) validation and (a) computing a location's typical wet-season rain distribution to judge how anomalous a current storm is) -- but ~5-day latency makes it useless for real-time/nowcast use, strictly a historical/climatological layer."
+    tag: RELAYED
+
+  # ---- HII/thaiwater.net 3-day rain-risk map (merged 2026-09-27 from
+  # api_census_additions_hii_rain_risk_map.yaml, discovered via the NRCT
+  # 7-diseases infographic; census-only, url still OPEN, not wired into collect.py) ----
+  - id: hii_rain_risk_3day_map
+    agency: "HII (สสน.) / thaiwater.net"
+    name_th: "แผนที่ความเสี่ยงจากฝนสะสม 3 วัน"
+    name_en: "HII 3-day accumulated rainfall risk map"
+    url: "OPEN -- exact page/route not confirmed; guessed https://thaiwater.net/analyst/rain-risk-map (base domain thaiwater.net reachable, this specific feature path unverified)"
+    kind: leaflet_web_map
+    auth: none
+    format: "rendered map tiles (Leaflet + OpenFreeMap/OSM basemap) + an overlay risk-class layer -- no JSON/tile API endpoint identified this run"
+    cadence: "daily, updated 09:00 น. Bangkok time (per the map's own on-page text, seen only via the infographic screenshot, not independently re-verified this run)"
+    window_semantics: "rolling 3-day forecast window from the moment of generation (example window seen: 27 Sep 2026 07:00 - 29 Sep 2026 07:00 GMT+7)"
+    has_coords: true
+    coverage: nationwide
+    asset_classes: [rain, forecast_risk]
+    legend_classes: ["No Risk", "Watch out", "Alert", "Warning"]
+    caveat_th: "เป็นแผนที่คาดการณ์ฝน ไม่ใช่แผนที่น้ำท่วมจริง (printed directly on the map itself)"
+    status: catalog_only
+    catalog_subtype: reachable_js_only
+    catalog_reason: "HTTP 200, but the content loads client-side only (SPA shell/hydration script) -- nothing server-rendered in the fetched HTML to parse without a browser runtime."
+    http_status: null
+    probed_at: "2026-09-27"
+    archived_at: "raw/live/hii_rain_risk_3day/2026-09-27T130000Z_fetch_note.txt"
+    notes: >
+      Seen embedded as a static screenshot inside the NRCT 7-diseases infographic
+      (raw/knowledge/infographics/nrct_flood_7_diseases_2026-09-27.jpeg), which is itself
+      the primary evidence for this row's existence -- this check did not independently
+      locate the live map through thaiwater.net's own navigation, only guessed a path and
+      got a bare page title back. Map basemap/tile attribution printed on the widget:
+      "Leaflet | OpenFreeMap © OpenMapTiles Data from OpenStreetMap".
+    tag: RELAYED-model
+
+  # ---- Merged 2026-09-27 from docs/knowledge/api_census_additions_missing_inputs_
+  # 2026-09-27.yaml (probe task looking for the easiest external APIs to fill PROP-
+  # FLOOD-03's missing inputs: Q_up, tide/boundary, S_0/wetness, elevation z, runoff
+  # coefficient c, historical events, BMA-drain flow, TMD 7-day). `status: connected`
+  # below means This check (the wiring/committer task that follows the probe) actually
+  # wired it into sources/registry.yaml + collect.py -- see that registry entry for the
+  # live details; every other status is as the probe task originally recorded it. ----
+
+  - id: hii_waterlevel_load_discharge
+    agency: HII (สสน.) และหน่วยงานเจ้าของสถานี -- ผ่าน thaiwater.net
+    name_th: ระดับน้ำ+ปริมาณน้ำ (discharge) รายสถานี พร้อม cross-section
+    name_en: HII public/waterlevel_load -- richer per-station shape incl. discharge (cms)
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_load?basin_id=6,7,8,9,10,11,12,13,14,15,26&&start_date=YYYY-MM-DD%2000:00&&end_date=YYYY-MM-DD%2023:59"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: near-real-time
+    has_coords: true
+    coverage: "basin:chao_phraya + tributaries (11/25 basin_code observed -- NOT confirmed nationwide)"
+    asset_classes: [gauge, river]
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "WIRED this check as sources/registry.yaml id hii_waterlevel_load. NO C.29/C.29A found in this basin_id set -- OPEN which basin those stations belong to."
+    tag: VERIFIED
+
+  - id: openmeteo_flood_bangsai
+    agency: "Open-Meteo (open GloFAS global flood model) -- NOT a Thai government agency"
+    name_th: GloFAS ผ่าน Open-Meteo ที่จุดต้นน้ำ (บางไทร/ปทุมธานี)
+    name_en: Open-Meteo Flood API at an upstream point (Bang Sai / Pathum Thani)
+    url: "https://flood-api.open-meteo.com/v1/flood?latitude=14.35&longitude=100.55&daily=river_discharge&timezone=Asia%2FBangkok&forecast_days=3"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: daily model output
+    has_coords: true
+    coverage: "global 5km grid"
+    asset_classes: [river]
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "WIRED this check as a new 'bang_sai' point in collect.OPENMETEO_FLOOD_POINTS (existing source id openmeteo_flood, not a new registry entry)."
+    tag: VERIFIED
+
+  - id: openmeteo_soil_moisture
+    agency: "Open-Meteo (open ECMWF/GFS land-surface model) -- NOT a Thai government agency"
+    name_th: ความชื้นในดิน 3 ชั้นความลึก (0-1cm, 1-3cm, 3-9cm)
+    name_en: Open-Meteo hourly soil_moisture_0_to_1cm / 1_to_3cm / 3_to_9cm
+    url: "https://api.open-meteo.com/v1/forecast?latitude=13.758&longitude=100.676&hourly=soil_moisture_0_to_1cm,soil_moisture_1_to_3cm,soil_moisture_3_to_9cm&timezone=Asia%2FBangkok&forecast_days=3"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: hourly (forecast + past_days available)
+    has_coords: true
+    coverage: nationwide (global grid, any point)
+    asset_classes: [rain]
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "WIRED this check as sources/registry.yaml id openmeteo_soil_moisture. Answers antecedent-wetness/S_0 proxy gap."
+    tag: VERIFIED
+
+  - id: openmeteo_archive_precip_30d
+    agency: "Open-Meteo Historical Weather API (ERA5-derived reanalysis) -- NOT a Thai government agency"
+    name_th: ฝนสะสมย้อนหลัง 30 วัน (ERA5)
+    name_en: Open-Meteo Archive API daily precipitation_sum, 30-day trailing window
+    url: "https://archive-api.open-meteo.com/v1/archive?latitude=13.758&longitude=100.676&start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&daily=precipitation_sum&timezone=Asia%2FBangkok"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: "daily, historical (not real-time)"
+    has_coords: true
+    coverage: nationwide (global grid)
+    asset_classes: [rain]
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "WIRED this check as sources/registry.yaml id openmeteo_archive_precip."
+    tag: VERIFIED
+
+  - id: openmeteo_elevation_points
+    agency: "Open-Meteo Elevation API (Copernicus GLO-90 DEM re-serve) -- NOT a Thai government agency"
+    name_th: ระดับความสูงพื้นดิน (DEM 90m) หลายจุดในคำขอเดียว
+    name_en: Open-Meteo Elevation API, comma-separated multi-point
+    url: "https://api.open-meteo.com/v1/elevation?latitude=13.758,13.758,...&longitude=100.676,100.676,..."
+    kind: json_api
+    auth: none
+    format: json
+    cadence: static (DEM, not time-varying)
+    has_coords: true
+    coverage: "global 90m grid"
+    asset_classes: []
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "HARVESTED this check (one-off, not collect.py --all) via tools/harvest/point_elevation_openmeteo.py -> sources/point_elevation_openmeteo.yaml. DEM surface elevation, not a ม.รทก. survey benchmark."
+    tag: VERIFIED
+
+  - id: esa_worldcover_wms_terrascope
+    agency: "ESA WorldCover (via VITO Terrascope) -- global land-cover"
+    name_th: สิ่งปกคลุมผิวดิน 10m (ทดสอบ WMS)
+    name_en: ESA WorldCover WMS GetCapabilities probe
+    url: "https://services.terrascope.be/wms/v2?service=WMS&request=GetCapabilities"
+    kind: page
+    auth: none
+    format: xml
+    cadence: static
+    has_coords: false
+    coverage: "global 10m (if reachable)"
+    asset_classes: []
+    status: unreachable
+    http_status: 0
+    probed_at: "2026-09-27"
+    notes: "Connection timeout, no retry per one-attempt rule. NOT WIRED -- c stays declared [0.5, 1] bound pair per PROP-FLOOD-06."
+    tag: OPEN
+
+  - id: ghsl_built_wms_jrc
+    agency: "JRC GHSL (Global Human Settlement Layer) -- EU Joint Research Centre"
+    name_th: พื้นที่สิ่งปลูกสร้าง/ความหนาแน่นเมือง (ทดสอบ WMS)
+    name_en: GHSL Built-up WMS GetCapabilities probe
+    url: "https://ghslsys.jrc.ec.europa.eu/arcgis/services/GHS_composites/GHS_BUILT_S_R2023A/MapServer/WMSServer?service=WMS&request=GetCapabilities"
+    kind: page
+    auth: none
+    format: xml
+    cadence: static
+    has_coords: false
+    coverage: "global (if reachable)"
+    asset_classes: []
+    status: catalog_only
+    catalog_reason: "WMS GetCapabilities page, not a plain data GET."
+    http_status: 302
+    probed_at: "2026-09-27"
+    notes: "HTTP 302 redirect, not followed (one-attempt-per-URL rule). NOT WIRED."
+    tag: OPEN
+
+  - id: reliefweb_api_v2
+    agency: "ReliefWeb (OCHA)"
+    name_th: รายงานภัยพิบัติ/มนุษยธรรม (ต้องขอ appname)
+    name_en: ReliefWeb API v2 disasters endpoint
+    url: "https://api.reliefweb.int/v2/disasters?appname=<registered-appname>&filter[field]=country&filter[value]=Thailand&query[value]=flood"
+    kind: json_api
+    auth: needs_signup
+    format: json
+    cadence: unknown
+    has_coords: false
+    coverage: nationwide
+    asset_classes: [flood_report]
+    status: needs_key
+    http_status: 403
+    probed_at: "2026-09-27"
+    notes: "403 AccessDeniedHttpException, needs a registered appname (free, not instant). NOT WIRED."
+    tag: MEASURED
+
+  - id: gdacs_event_list_thailand
+    agency: "GDACS (Global Disaster Alert and Coordination System, EU JRC + UN OCHA)"
+    name_th: รายการเหตุการณ์ภัยพิบัติ (กรองไทยฝั่ง client)
+    name_en: GDACS geteventlist EVENTS4APP endpoint
+    url: "https://www.gdacs.org/gdacsapi/api/events/geteventlist/EVENTS4APP?country=Thailand&fromdate=2020-01-01&todate=2026-09-27"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: "polled, ~100 most-recent global events per request"
+    has_coords: true
+    coverage: "global; Thailand when an event meets GDACS's own severity threshold"
+    asset_classes: [flood_report]
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "WIRED this check as sources/registry.yaml id gdacs_events. Country-level trip-wire only."
+    tag: VERIFIED
+
+  - id: hii_flood_road_past_date_param
+    agency: "HII (สสน.) / thaiwater.net"
+    name_th: ถนนน้ำท่วม พร้อม query date (ทดสอบว่า filter ตามวันจริงหรือไม่)
+    name_en: HII public/flood_road with a ?date= query param (past-date backfill test)
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/flood_road?date=2025-10-15"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: n/a
+    has_coords: true
+    coverage: "nationwide (262 stations, same as connected thaiwater_flood_road)"
+    asset_classes: [flood_extent]
+    status: catalog_only
+    catalog_reason: "DECISION 2026-10-03 (already recorded in this row's own notes): confirms thaiwater_flood_road (already connected) ignores the date= param -- there is no separate source here to wire, stays permanently catalog_only."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "date= param is IGNORED -- returns last-known per station, not a date snapshot. NOT WIRED -- no back-fill mechanism found via this endpoint.
+      DECISION 2026-10-03: stays candidate_unregistered permanently, not a
+      not-yet-wired gap -- this probe EXISTS to test whether thaiwater_flood_road
+      (already connected) supports date-filtered backfill, and confirms it does not.
+      There is no separate source here to wire; re-probing would only re-confirm the
+      same negative result."
+    tag: FAILED
+
+  - id: hii_flood_area_monthly_risk_ckan
+    agency: "HII (สสน.) -- data.hii.or.th CKAN portal"
+    name_th: พื้นที่เสี่ยงน้ำท่วมรายเดือน/ตำบล (17 ปี, 2548-2564)
+    name_en: HII CKAN 'flood-area' dataset -- monthly flood-risk frequency per tambon, 17-year aggregate
+    url: "https://data.hii.or.th/api/3/action/package_show?id=flood-area"
+    kind: json_api + csv
+    auth: none
+    format: json (metadata) / csv (resource)
+    cadence: static (17-year aggregate)
+    has_coords: false
+    coverage: "nationwide, by tambon -- east-side Bangkok districts extracted this check"
+    asset_classes: [flood_report]
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "HARVESTED this check via tools/harvest/hii_flood_area_ckan.py -> docs/knowledge/hii_flood_area_2005_2021_east.yaml. FOUNDER RULING 2026-09-27: non-commercial use OK, committed + public_page:true (CC BY-NC, attribution required)."
+    tag: VERIFIED
+
+  - id: hii_flood_risk_area_6month_forecast_ckan
+    agency: "HII (สสน.) + TMD -- data.hii.or.th CKAN portal (ONE MAP collaboration)"
+    name_th: รายงานคาดการณ์พื้นที่เสี่ยงน้ำท่วม 6 เดือนล่วงหน้า
+    name_en: HII CKAN 'flood-risk-area' dataset -- 6-month-ahead tambon flood-risk forecast
+    url: "https://data.hii.or.th/api/3/action/package_show?id=flood-risk-area"
+    kind: json_api (metadata only; resource on a separate owncloud host)
+    auth: none
+    format: "json (metadata) / html+xlsx (resource, hosted on hdrive.hii.or.th/owncloud)"
+    cadence: "monthly"
+    has_coords: false
+    coverage: nationwide, by tambon
+    asset_classes: [flood_report]
+    status: catalog_only
+    catalog_reason: "CKAN metadata-only endpoint -- the real forecast resource lives on a separate host (hdrive.hii.or.th/owncloud) whose own reachability/auth was never confirmed this check; a collector here would store metadata with no forecast content in it."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "Metadata VERIFIED, but the resource lives on a separate owncloud share host, not fetched. NOT WIRED this check.
+      DECISION 2026-10-03: stays candidate_unregistered -- the actual resource file
+      is hosted on hdrive.hii.or.th/owncloud, a SEPARATE host from data.hii.or.th this
+      census row's own url probed, so a collector here would need a second host's
+      own reachability/auth confirmed first (not done, OPEN); a CKAN metadata-only
+      fetch would add a document with no forecast content in it."
+    tag: RELAYED
+
+  - id: bma_flow_field_code_check
+    agency: "BMA สำนักการระบายน้ำ (code-review only, no new network request)"
+    name_th: ตรวจโค้ดที่มีอยู่ว่ามี field อัตราการไหล (flow, cms) หรือไม่
+    name_en: Code-level check of collect.py/parsers.py for a flow_cms field on bma_watermap/bma_station_detail
+    url: "n/a"
+    kind: n/a
+    auth: n/a
+    format: n/a
+    cadence: n/a
+    has_coords: false
+    coverage: bangkok
+    asset_classes: []
+    status: not_a_source
+    http_status: null
+    probed_at: null
+    notes: "\"No flow_cms field found anywhere in bma_watermap/bma_station_detail parsers. Confirmed\
+  \ real gap -- no international API can substitute (internal BMA SCADA, not public).\"\
+  \ Not probed -- kind: n/a, this is a code-review finding (no flow_cms field in any\
+  \ BMA parser), not a URL-having source, so it carries no http probe result. Confirmed\
+  \ gap: no public API substitutes BMA's internal SCADA flow data. Nothing to retry."
+    tag: OPEN
+
+  - id: tmd_opendata_api_root
+    agency: "TMD (กรมอุตุนิยมวิทยา)"
+    name_th: ทดสอบ data.tmd.go.th/api/ ว่ามี JSON API หรือไม่
+    name_en: TMD open-data portal API root probe
+    url: "https://data.tmd.go.th/api/"
+    kind: page
+    auth: unknown
+    format: unknown
+    cadence: unknown
+    has_coords: false
+    coverage: nationwide
+    asset_classes: []
+    status: catalog_only
+    catalog_reason: "API documentation landing page, not an endpoint -- the real TMD Open Data API requires a registered key (see sources/registry.yaml's tmd_opendata candidate_unregistered row)."
+    http_status: 302
+    probed_at: "2026-09-27"
+    notes: "HTTP 302 to index1.php?aspxerrorpath=/api/, not followed (one-attempt rule).
+      Re-probed 2026-10-03: same 302 redirect, unchanged. DECISION: stays
+      candidate_unregistered -- the redirect target itself (index1.php with an
+      aspxerrorpath query) reads as an IIS error page, not a real API root; there is
+      no JSON endpoint to wire here. tmd_opendata (registry.yaml, separate id,
+      key_env TMD_OPENDATA_API_KEY) is the real TMD path once a key is obtained --
+      this probe exists only to record that THIS bare URL is not it."
+    tag: OPEN
+
+  - id: esri_thailand_flood_data_hub_app
+    agency: "Esri Thailand (ArcGIS Online, account 'admin.demo')"
+    name_th: "Flood Data Hub by Esri Thailand -- ArcGIS Experience Builder app (resolved via REST, not scraped)"
+    name_en: "ArcGIS Experience Builder app item -- resolved to its underlying web map + feature/image services"
+    url: "https://www.arcgis.com/sharing/rest/content/items/84c8194746d247fe981141596b0e8232?f=json"
+    kind: json_api (ArcGIS REST, item + webmap + service metadata)
+    auth: none
+    format: json
+    cadence: "mixed per underlying layer"
+    has_coords: true
+    coverage: "nationwide (web map), plus one Bangkok-relevant DRR layer that is NOT flood-related"
+    asset_classes: [flood_extent, gauge]
+    status: catalog_only
+    catalog_reason: "Esri ArcGIS Online item/webmap metadata under a third-party demo account ('admin.demo'), not a confirmed authoritative Thai government endpoint."
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "All flood-related layers are RE-HOSTS of sources already connected (thaiwater_waterlevel, gistda_flood_extent_api) except Sentinel-1 SAR (public Esri Living Atlas ImageServer, real but high-effort raster analysis -- NOT WIRED this check) and a DRR (rural-roads, non-flood) layer."
+    tag: VERIFIED
+
+  # ---- New probes this check (wiring/committer follow-on, 2026-09-27), founder-approved
+  # additions: openmeteo_pressure, openmeteo_sst, noaa_oni (all WIRED, see
+  # sources/registry.yaml), plus a storm-track probe (JMA RSMC Tokyo, one attempt, 404 --
+  # NOT WIRED) and a blocked probe (BoM MJO, one attempt, 403 -- explicitly refuses
+  # automated access, NOT WIRED, no workaround attempted). IBTrACS (NOAA, historical) was
+  # downloaded+harvested, not probed as a live API -- see sources/ibtracs_bkk_500km.yaml. ----
+
+  - id: openmeteo_pressure
+    agency: "Open-Meteo, 9 explicit deterministic models"
+    name_th: ความกดอากาศระดับน้ำทะเล รายชั่วโมง หลายแบบจำลอง
+    name_en: Open-Meteo hourly pressure_msl, multi-model, past_days=7 + forecast_days=16
+    url: "https://api.open-meteo.com/v1/forecast?latitude=..&longitude=..&hourly=pressure_msl&past_days=7&forecast_days=16&models=...&timezone=Asia%2FBangkok"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: "model-dependent"
+    has_coords: true
+    coverage: "3 points (sammakorn, ram53, bangkok_east)"
+    asset_classes: []
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "WIRED this check as sources/registry.yaml id openmeteo_pressure. Founder addition (\"เอาเลย\"), data only, no threshold derived."
+    tag: VERIFIED
+
+  - id: openmeteo_sst
+    agency: "Open-Meteo Marine API"
+    name_th: อุณหภูมิผิวน้ำทะเล 3 จุด
+    name_en: Open-Meteo Marine hourly sea_surface_temperature, 3 sea points, one multi-coordinate request
+    url: "https://marine-api.open-meteo.com/v1/marine?latitude=13.20,12.00,9.00&longitude=100.60,110.00,97.50&hourly=sea_surface_temperature&past_days=7&forecast_days=3&timezone=Asia%2FBangkok"
+    kind: json_api
+    auth: none
+    format: json
+    cadence: hourly
+    has_coords: true
+    coverage: "upper Gulf of Thailand, South China Sea off Vietnam, Andaman Sea"
+    asset_classes: []
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "WIRED this check as sources/registry.yaml id openmeteo_sst. Founder addition (\"เอาเลย เชื่อมเลย\"), data only, no threshold derived."
+    tag: VERIFIED
+
+  - id: noaa_oni
+    agency: "NOAA CPC (Climate Prediction Center)"
+    name_th: ดัชนี ENSO Oceanic Nino Index รายเดือน
+    name_en: NOAA CPC ENSO Oceanic Nino Index, monthly text table
+    url: "https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt"
+    kind: text_table
+    auth: none
+    format: text
+    cadence: "monthly (3-month rolling season)"
+    has_coords: false
+    coverage: "Pacific basin (Nino 3.4 region), not Thailand-specific"
+    asset_classes: []
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "WIRED this check as sources/registry.yaml id noaa_oni, throttled to at most 1 fetch/24h (slow monthly index). Founder addition (\"เอาเลย\"), data only, climate-index context, not a physical unit."
+    tag: VERIFIED
+
+  - id: jma_rsmc_tokyo_typhoon_advisory
+    agency: "JMA (Japan Meteorological Agency) -- RSMC Tokyo, typhoon centre"
+    name_th: ประกาศเตือนพายุหมุนเขตร้อนปัจจุบัน (RSMC Tokyo)
+    name_en: JMA RSMC Tokyo current tropical-cyclone advisory (no-key machine-readable feed probe)
+    url: "https://www.jma.go.jp/bosai/typhoon/data/tybst/data/xml/PWJJ.xml"
+    kind: xml (attempted)
+    auth: unknown
+    format: unknown
+    cadence: unknown
+    has_coords: false
+    coverage: "Western Pacific / RSMC Tokyo area of responsibility"
+    asset_classes: []
+    status: unreachable
+    http_status: 404
+    probed_at: "2026-09-27"
+    notes: "One GET, no retry (per this repo's one-attempt rule) -- HTTP 404, guessed path did not resolve. NOT WIRED. A real machine-readable JMA feed may exist at a different path -- not explored further this check (one-attempt budget spent)."
+    tag: FAILED
+
+  - id: bom_mjo_rmm_index
+    agency: "Australian Bureau of Meteorology (BoM) -- RMM MJO index"
+    name_th: ดัชนี Madden-Julian Oscillation (RMM1/RMM2/phase/amplitude) รายวัน
+    name_en: BoM RMM MJO index, daily text table
+    url: "http://www.bom.gov.au/climate/mjo/graphics/rmm.74toRealtime.txt"
+    kind: text_table (attempted)
+    auth: none
+    format: text
+    cadence: daily
+    has_coords: false
+    coverage: global (MJO index, not Thailand-specific)
+    asset_classes: []
+    status: host_blocked
+    http_status: 403
+    probed_at: "2026-09-27"
+    notes: "One GET, no retry -- HTTP 403, BoM's OWN page states it blocks automated/scraping access ('The Bureau of Meteorology website does not support web scraping') and offers a paid Registered User service or an anonymous-FTP alternative instead. NOT WIRED -- no workaround attempted (would violate the explicit stated block); a Registered User / FTP path is a separate founder decision, not made this check."
+    tag: FAILED
+
+  - id: ibtracs_wp_historical
+    agency: "NOAA / WMO -- International Best Track Archive for Climate Stewardship (IBTrACS)"
+    name_th: เส้นทางพายุหมุนเขตร้อนย้อนหลัง (Western Pacific basin)
+    name_en: NOAA IBTrACS v04r01 Western Pacific basin CSV, historical best-track
+    url: "https://www.ncei.noaa.gov/data/international-best-track-archive-for-climate-stewardship-ibtracs/v04r01/access/csv/ibtracs.WP.list.v04r01.csv"
+    kind: csv (one-time full download, ~114MB)
+    auth: none
+    format: csv
+    cadence: "historical archive, not a live feed"
+    has_coords: true
+    coverage: "Western Pacific basin, 1884-present"
+    asset_classes: [flood_report]
+    status: connected
+    http_status: 200
+    probed_at: "2026-09-27"
+    notes: "HARVESTED this check (one-off, not collect.py --all): downloaded once into raw/ibtracs/ (gitignored) and extracted via tools/harvest/ibtracs_bkk_500km.py -> sources/ibtracs_bkk_500km.yaml (141 track-point rows within 500km of Bangkok, 2005-2025, 26 distinct storms). DATA ONLY -- no danger threshold derived, for later calibration against urban_event_ledger."
+    tag: VERIFIED

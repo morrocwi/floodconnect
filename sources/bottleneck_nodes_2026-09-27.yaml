@@ -1,0 +1,214 @@
+# bottleneck_nodes_2026-09-27.yaml -- ranked east-zone bottleneck structures on the paths
+# between BKK-east canals and the Chao Phraya outfall, plus Sammakorn's own pumps.
+#
+# Founder context: DRAINAGE_CAPACITY_MAP.md already showed the river itself is NOT this
+# week's bottleneck (~1,300 m3/s of river headroom exists but is unusable right now -- see
+# that doc's new section "ทำไมที่ว่างในแม่น้ำ ... ใช้ไม่ได้ทันที"). This ledger ranks the
+# STRUCTURES between Sammakorn/east-zone canals and that river outfall by utilisation
+# (current/rated, or "at full" when only a status statement exists) and by
+# contributing-canal in-degree (how many upstream canal reaches feed into it) -- the
+# combination that determines which structure is actually limiting drainage right now.
+#
+# Toledo: no equation -- ranking is a sort on numbers/states already recorded in
+# sources/capacity_ledger.yaml, sources/drainage_mode.yaml, and data/observations.sqlite's
+# assets table (queried directly this check). No new capacity numbers are invented; a
+# missing utilisation is left OPEN.
+#
+# Coordinates: taken directly from data/observations.sqlite's assets table (lat/lon
+# columns) where a row exists; OPEN (never geocoded) where no asset row carries a
+# coordinate for that exact structure -- see each row's `coord_source` field.
+
+ranked_2026_09_27:
+
+  - rank: 1
+    id: outfall:phra_khanong
+    name_th: "จุดออกพระโขนง (สถานีสูบน้ำพระโขนง + อุโมงค์พระโขนง)"
+    lat: 13.7085
+    lon: 100.5953
+    coord_source: "data/observations.sqlite assets (pump_station:water_station:1)"
+    kind: pump_station_and_tunnel
+    capacity_m3s: 49
+    utilisation: "at_full (proxy)"
+    utilisation_basis: >
+      Not itself individually metered this check, but this structure is part of the
+      ฝั่งพระนคร pump group reported RELAYED at full capacity (1,200/1,200 m3/s, all
+      running) since 25 ก.ย. 2569 (led:bkk_total_pumping_phranakhon,
+      sources/capacity_ledger.yaml) -- utilisation shown here is a scope-proxy from that
+      wider group, not a per-station reading of พระโขนง alone (OPEN at the per-station
+      level).
+    in_degree_contributing_canals: "high -- serves the east-side canal network (แสนแสบ/ประเวศ chain) that Sammakorn's own watershed ultimately drains toward (per capacity_ledger.yaml notes on this row)"
+    tag: RELAYED
+    why_ranked_1: >
+      Highest confirmed utilisation of any structure in this list (reported at-full, not
+      just "actively managed") AND high in-degree (terminal outfall for the whole
+      catchment Sammakorn sits within) -- the closest thing this ledger has to a measured
+      real bottleneck on the east-zone path.
+
+  - rank: 2
+    id: gate:thaiwater_bma:WL.SSB.10
+    name_th: "ปตร.แสนแสบ-มีนบุรี (ด้านใน)"
+    lat: 13.8209
+    lon: 100.7473
+    coord_source: "data/observations.sqlite assets (gate:water_station:235, cross-matched to gate:thaiwater_bma:WL.SSB.10 by coordinate, see sources/drainage_mode.yaml)"
+    kind: gate
+    capacity_m3s: OPEN
+    utilisation: OPEN
+    utilisation_basis: "No m3/s capacity published for this gate (drainage_mode.yaml, capacity_ledger.yaml both OPEN) -- only a numeric managed CONTROL BAND exists (water_control=0.2, warning=0.5, critical=0.6 m.รทก.), not a throughput figure, so utilisation cannot be computed, only inferred qualitatively from being actively controlled rather than passive."
+    in_degree_contributing_canals: "high -- มีนบุรี-หนองจอก + บางกะปิ-สะพานสูง reaches of คลองแสนแสบ converge here (AGENTS.md §8, east_chain.yaml)"
+    tag: OPEN
+    why_ranked_2: >
+      Highest in-degree of any gate in this list (two large sub-catchments converge) and
+      its open/closed STATE is itself only inferred, not measured (AGENTS.md §8) -- ranked
+      above the other 3 gates because มีนบุรี sits furthest upstream in the east chain,
+      so a bottleneck here backs up the most area behind it.
+
+  - rank: 3
+    id: gate:thaiwater_bma:WL.SSB.09
+    name_th: "ปตร.บางชัน (ตอนคลองแสนแสบ)"
+    lat: 13.7972
+    lon: 100.70458
+    coord_source: "data/observations.sqlite assets (gate:water_station:230, cross-matched by coordinate)"
+    kind: gate
+    capacity_m3s: OPEN
+    utilisation: OPEN
+    utilisation_basis: "Same pattern as WL.SSB.10 -- numeric control band (water_control=0.2, warning=0.4, critical=0.5) but no m3/s capacity, no current-flow reading."
+    in_degree_contributing_canals: "medium-high -- downstream of WL.SSB.10, receives the combined มีนบุรี flow plus local บางชัน-area canals"
+    tag: OPEN
+    why_ranked_3: "Second gate on the same mainstem reach, downstream of rank 2 -- lower in-degree than SSB.10 because it is one step closer to the outfall (less area still behind it)."
+
+  - rank: 4
+    id: gate:thaiwater_bma:WL.PWT.03
+    name_th: "ปตร.คลองประเวศฯ-วัดกระทุ่มฯ (ด้านใน)"
+    lat: 13.72396
+    lon: 100.68956
+    coord_source: "data/observations.sqlite assets (gate:thaiwater_bma:WL.PWT.03)"
+    kind: gate
+    capacity_m3s: OPEN
+    utilisation: OPEN
+    utilisation_basis: "Numeric control band only (water_control=-0.1, warning=0.1, critical=0.2) -- no capacity or current-flow figure."
+    in_degree_contributing_canals: "medium -- ลาดกระบัง-สุวรรณภูมิ reach of คลองประเวศฯ"
+    tag: OPEN
+    why_ranked_4: "Same OPEN-utilisation status as the other 3 east gates; ranked below the แสนแสบ pair because this reach (ประเวศ) is a parallel, not the same mainstem as มีนบุรี/บางชัน, and its outfall (outfall:nongbon, 65 m3/s) is a smaller confirmed downstream capacity than พระโขนง's."
+
+  - rank: 5
+    id: gate:thaiwater_bma:WL.PWT.04
+    name_th: "ปตร.คลองประเวศฯ-ลาดกระบัง (ด้านใน)"
+    lat: 13.72411
+    lon: 100.74987
+    coord_source: "data/observations.sqlite assets (gate:thaiwater_bma:WL.PWT.04)"
+    kind: gate
+    capacity_m3s: OPEN
+    utilisation: OPEN
+    utilisation_basis: "Numeric control band only (water_control=0.1, warning=0.3, critical=0.4)."
+    in_degree_contributing_canals: "medium -- ลาดกระบัง-สุวรรณภูมิ, further from the outfall than PWT.03"
+    tag: OPEN
+    why_ranked_5: "Same reach as rank 4, one step further from the outfall -- slightly lower in-degree (less area drains through this specific gate vs. PWT.03, per east_chain.yaml's declared upstream->downstream order)."
+
+  - rank: 6
+    id: tunnel:bma_dds:saensaeb_ladprao
+    name_th: "อุโมงค์ระบายน้ำคลองแสนแสบและคลองลาดพร้าวลงสู่แม่น้ำเจ้าพระยา"
+    lat: OPEN
+    lon: OPEN
+    coord_source: >
+      OPEN -- the tunnel structure itself has no lat/lon row in data/observations.sqlite
+      (asset_id tunnel:bma_dds:saensaeb_ladprao, lat/lon both NULL, queried this check).
+      Nearest related structure with a coordinate: pump_station:water_station:27
+      "อาคารรับน้ำคลองแสนแสบ-ลาดพร้าว (บึงพระราม9)" at 13.7507,100.6033 -- a plausible
+      same-facility intake structure by name match, NOT confirmed identical to the
+      tunnel's own portal -- listed separately below as a hint, never substituted for
+      the tunnel's own (missing) coordinate, per this check's "OPEN if absent, never
+      geocode" instruction.
+    related_structure_coord_hint:
+      id: "pump_station:water_station:27"
+      name_th: "อาคารรับน้ำคลองแสนแสบ-ลาดพร้าว (บึงพระราม9)"
+      lat: 13.7507
+      lon: 100.6033
+      confidence: "name-match only, not confirmed same structure"
+    kind: tunnel
+    capacity_m3s: 60
+    utilisation: OPEN
+    utilisation_basis: "Design capacity 60 m3/s (RELAYED, two independent media sources agree per capacity_ledger.yaml) but no current-flow reading exists anywhere in this repo for this tunnel -- utilisation cannot be computed."
+    in_degree_contributing_canals: "high -- combines both คลองแสนแสบ (mainstem, carrying the มีนบุรี/บางชัน flow above) and คลองลาดพร้าว into one outfall tunnel to the river"
+    tag: RELAYED
+    why_ranked_6: "Highest published design capacity (60 m3/s) of any east-zone structure besides the phranakhon pump aggregate, and combines two mainstems (highest structural in-degree in this list) -- but ranked below the gates above because its own utilisation is completely OPEN (no current-flow reading at all, not even a qualitative control-band statement)."
+
+  - rank: 7
+    id: tunnel:bma_dds:bangsue
+    name_th: "อุโมงค์ระบายน้ำใต้คลองบางซื่อ จากคลองลาดพร้าวถึงแม่น้ำเจ้าพระยา (เกียกกาย)"
+    lat: OPEN
+    lon: OPEN
+    coord_source: >
+      OPEN -- tunnel:bma_dds:bangsue has NULL lat/lon in data/observations.sqlite
+      (queried this check). Nearest same-name-area gauge with a coordinate:
+      gauge:thaiwater_bma:WL.BSU.07 "ค.บางซื่อ ถ.ลาดพร้าว" at 13.79875,100.58655 --
+      a nearby canal gauge, NOT the tunnel portal itself, listed as a hint only, never
+      substituted for the tunnel's own missing coordinate.
+    related_structure_coord_hint:
+      id: "gauge:thaiwater_bma:WL.BSU.07"
+      name_th: "ค.บางซื่อ ถ.ลาดพร้าว"
+      lat: 13.79875
+      lon: 100.58655
+      confidence: "same-canal-area gauge, not confirmed same structure"
+    kind: tunnel
+    capacity_m3s: 60
+    utilisation: OPEN
+    utilisation_basis: "Design capacity 60 m3/s (RELAYED) + 6 m3/s companion pump = 66 m3/s combined outfall (outfall:bang_sue_kiak_kai) -- no current-flow reading."
+    in_degree_contributing_canals: "medium -- serves the north-side คลองบางซื่อ/ลาดพร้าว catchment, NOT the Sammakorn-side east catchment (per capacity_ledger.yaml's own note distinguishing this from the east-zone chain)"
+    tag: RELAYED
+    why_ranked_7: "Same OPEN-utilisation status as rank 6's tunnel, but ranked below it because this structure sits on a different (north-side) catchment than Sammakorn's own east-zone path -- lower relevance in-degree for this specific ranking's purpose, even though its own design capacity is the same 60 m3/s."
+
+  - rank: 8
+    id: "pump_station:pumphistory:ST.SPS.01"
+    name_th: "สถานีสูบน้ำคลองบ้านม้า 2 (สัมมากร)"
+    lat: 13.7763
+    lon: 100.6713
+    coord_source: "data/observations.sqlite assets (pump_station:pumphistory:ST.SPS.01)"
+    kind: pump_station
+    capacity_m3s: OPEN
+    utilisation: "0 (ขัดข้อง / fault -- 0 of 4 village pumps running)"
+    utilisation_basis: >
+      MEASURED (this repo's own sensor read, docs/SAMMAKORN_STANDING_WATER_2026-09-27.md):
+      all 4 of ST.SPS.01-04 report status "ขัดข้อง" (fault, cause not stated by BMA) as of
+      2026-09-27. No published rated capacity_m3s exists for any of the 4 (OPEN, per
+      capacity_ledger.yaml's led:bkk_east_pump_summary row) so a true utilisation ratio
+      cannot be computed -- "0" here means zero of the known pump count is running, not
+      zero-over-a-known-denominator in m3/s.
+    in_degree_contributing_canals: "low in city-wide terms (serves only the village's own pond/canal loop) but 100% of Sammakorn's own local drainage depends on these 4 pumps per site/inputs/areas/sammakorn.balance.yaml's own declared model"
+    tag: MEASURED
+    why_ranked_8: >
+      Lowest city-wide in-degree of any structure in this list (a single village's own
+      pumps, not a shared trunk structure) -- ranked last by that criterion even though
+      its utilisation state (total fault) is the worst in this entire list; kept in the
+      ranking because the founder's brief named it explicitly and because it is the one
+      structure in this list where the OPEN capacity/OPEN mode (sources/drainage_mode.yaml
+      area:sammakorn_own_path) intersects with a fully MEASURED failure state.
+
+sammakorn_sibling_pumps_same_status:
+  # ST.SPS.02-04 share the identical "ขัดข้อง, 0 running" status as ST.SPS.01 above
+  # (docs/SAMMAKORN_STANDING_WATER_2026-09-27.md) -- listed here for completeness, not
+  # separately ranked (same village, same failure event, same OPEN capacity).
+  - id: "pump_station:pumphistory:ST.SPS.02"
+    name_th: "สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่"
+    lat: 13.7555
+    lon: 100.6795
+    coord_source: "data/observations.sqlite assets"
+  - id: "pump_station:pumphistory:ST.SPS.03"
+    name_th: "สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2"
+    lat: 13.767
+    lon: 100.6771
+    coord_source: "data/observations.sqlite assets"
+  - id: "pump_station:pumphistory:ST.SPS.04"
+    name_th: "สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง"
+    lat: 13.7706
+    lon: 100.6798
+    coord_source: "data/observations.sqlite assets"
+
+kg_attachment_note: >
+  Proposed KG node attribute `bottleneck_2026_09_27: <rank>` (integer 1-8) for the 8 node
+  ids ranked above, per DRAINAGE_CAPACITY_MAP.md's KG-builder section's existing
+  attribute-attachment convention. NOT attached to tools/kg/build_kg.py by this file
+  (write-scope: new files only) -- a KG rebuild was not run within this check's own time
+  budget (tools/kg/build_kg.py's runtime was not separately timed this check to confirm
+  it is under the 3-minute threshold this check was given) -- left as an explicit next
+  step for the sync-build pass (see AGENTS.md handoff convention) rather than guessed at
+  or silently skipped.

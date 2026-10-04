@@ -1,0 +1,109 @@
+# typology/nodes/resources.yaml -- `resource` node kind (proposal §1). A layer that did
+# not exist anywhere in this repo before this build (confirmed: no `resource`-kind node
+# in tools/kg/build_kg.py's schema) -- every row here is a genuinely new data layer, not
+# a reorganisation of existing rows. All INSTINCT/RELAYED examples pulled from news/social
+# posts named in STRUCTURAL_ISSUES_2026-09-28.md / floodconnect_mapping.md -- no
+# collector exists yet to make any of these MEASURED.
+# `phase` (added 2026-09-28, TDRI ณัฐสิฏ รักษ์เกียรติวงศ์, 3 ธ.ค. 2025) -- every row below is
+# cited mid-flood (S9/S11, 26-28 ก.ย. 2569), so `phase: incident` throughout, tag INSTINCT.
+schema_version: 1
+doc_kind: typology_node_registry
+status_th: >
+  ทะเบียน node kind resource -- ชั้นข้อมูลใหม่ทั้งชั้น ไม่มีมาก่อนในคลังนี้ ตัวอย่างทุกแถวเป็น
+  INSTINCT/RELAYED จากข่าว/โพสต์ ไม่มี collector อัตโนมัติ -- ต้องอัปเดตมือจนกว่าจะมี.
+rows:
+  - id: RES.TRUCK_GMC.AG_BMA_DDS.01
+    kind: resource
+    layer: resource
+    label_th: "รถยกสูง (GMC) เพิ่ม 15 คัน -- ต้องการ ไม่ใช่ยืนยันว่าจัดสรรแล้ว"
+    resource_type: vehicle
+    quantity: 15
+    unit: "คัน"
+    phase: incident
+    phase_tag: INSTINCT
+    owner_agency: "OPEN"
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9, แถลง กทม. 28 ก.ย., รองผู้ว่าฯ ฝ่ายสาธารณสุข)"
+    note_th: >
+      owner_agency = OPEN เพราะแถลงการณ์ S9 ไม่ระบุหน่วยงานย่อยที่ถือครองรถจริง (อาจเป็น สนน. หรือ
+      สำนักงานเขต) -- ห้ามเดา ดู edges/owned_by.yaml แถวคู่กัน (status OPEN เช่นกัน).
+  - id: RES.MEAL_BOX.AG_BMA_KHET_LADKRABANG.01
+    kind: resource
+    layer: resource
+    label_th: "ข้าวกล่อง 20,000 กล่อง/มื้อ (เขตลาดกระบัง)"
+    resource_type: food
+    quantity: 20000
+    unit: "กล่อง/มื้อ"
+    phase: incident
+    phase_tag: INSTINCT
+    owner_agency: AG_DIST_NEIGH
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9)"
+  - id: RES.MEAL_BOX.AG_BMA_KHET_BANGKAPI.01
+    kind: resource
+    layer: resource
+    label_th: "ข้าวกล่อง 3,000 กล่อง/มื้อ (เขตบางกะปิ)"
+    resource_type: food
+    quantity: 3000
+    unit: "กล่อง/มื้อ"
+    phase: incident
+    phase_tag: INSTINCT
+    owner_agency: AG_DIST_NEIGH
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9)"
+  - id: RES.BOAT_PUSH.AG_UNKNOWN.01
+    kind: resource
+    layer: resource
+    label_th: "เรือผลักดันน้ำคลองแสนแสบ ใกล้จุดรับน้ำอุโมงค์พระราม 9 (ผลยังไม่วัดอิสระ)"
+    resource_type: watercraft
+    tool_class: water_push_boat
+    generic_tool_ref: RES.TOOL.WATER_PUSH_BOAT
+    mode: boat
+    infra_class: soft
+    infra_class_tag: INSTINCT
+    quantity: null
+    unit: null
+    phase: incident
+    phase_tag: INSTINCT
+    owner_agency: AG_OPERATOR_SAENSAEB_BOAT
+    owner_agency_tag: RELAYED
+    effectiveness: OPEN
+    deployment_note_th: >
+      ใกล้จุดรับน้ำอุโมงค์แสนแสบ-ลาดพร้าว (alias candidate "อุโมงค์พระราม 9",
+      tunnel:bma_dds:saensaeb_ladprao) -- ระยะทาง/จำนวนเรือ/ชั่วโมงหมุนเวียน ไม่ใส่ตัวเลขในชั้นนี้
+      ดูตัวเลขทั้งหมดใน docs/knowledge/card_tool_water_push_boats.md
+    tag: RELAYED
+    source: >
+      STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 4.3 (S11, JS100) + The Bangkok Insight
+      27 ก.ย. 2569 (https://www.thebangkokinsight.com/news/politics-general/general/
+      1701479/) + MGR Online 27 ก.ย. 2569
+      (https://mgronline.com/business/detail/9690000094733) -- reuse-first: ถือเป็น
+      real-world referent เดียวกันกับที่ S11/JS100 รายงานไว้ก่อนหน้า (ดูเหตุผลเต็มใน
+      docs/knowledge/card_tool_water_push_boats.md §5), ไม่สร้าง node ใหม่ซ้ำ
+    note_th: >
+      effect_measured: OPEN -- ยังไม่มีเกจอิสระของคลังนี้ยืนยันผลกระทบต่อทิศทาง/ระดับน้ำ; คำกล่าวอ้าง
+      ของผู้ประกอบการเรื่องระดับน้ำลดลงเป็นคำให้สัมภาษณ์ ไม่ใช่ค่าวัดอิสระ (การ์ดความรู้ §1)
+  - id: RES.DONATION_INTAKE.CITYHALL_DINDAENG.01
+    kind: resource
+    layer: resource
+    label_th: "จุดรับบริจาค ศาลาว่าการ กทม. (ดินแดง)"
+    resource_type: donation_intake_point
+    quantity: null
+    unit: null
+    phase: incident
+    phase_tag: INSTINCT
+    owner_agency: AG_BMA_GOV
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9)"
+  - id: RES.DONATION_INTAKE.KHET_PRAWET_VOCTRAIN.01
+    kind: resource
+    layer: resource
+    label_th: "จุดรับบริจาค ศูนย์ฝึกอาชีพเขตประเวศ"
+    resource_type: donation_intake_point
+    quantity: null
+    unit: null
+    phase: incident
+    phase_tag: INSTINCT
+    owner_agency: AG_DIST_NEIGH
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9)"

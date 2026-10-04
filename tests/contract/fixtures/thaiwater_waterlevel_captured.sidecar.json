@@ -1,0 +1,15 @@
+{
+ "source_id": "thaiwater_waterlevel",
+ "url": "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel",
+ "captured_at": "2026-10-02T07:44:36Z",
+ "sha256": "f25d40bda18959ffd6184e11ade36a1bd1a3bf09d28c6ea0120f60c34c2f5a8d",
+ "http_status": 200,
+ "content_type": "application/json; charset=utf-8",
+ "fixture_ext": "json",
+ "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "79e672ae1ce3a9344c3fed93e4571b63efb3be07c4a897898001a8ae87346e47",
+ "trimmed_note": "trimmed from 808 to first 60 station records -- same publish-safety finding | earlier: trimmed from 808 to first 60 station records -- same publish-safety finding",
+ "trimmed_at": "2026-10-03T18:10:36Z"
+}

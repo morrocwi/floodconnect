@@ -1,0 +1,22 @@
+# Small fixture for tools/kg/build_kg.py's load_sump_wells()/build_sump_well_district_edges()
+# (build 4, 2026-09-27). Only the `sump_wells` key is exercised by these tests -- never
+# the real 13-row sources/bma_drain_pipes.yaml.
+sump_wells:
+- well_id: fixture_sump_matched
+  district: TestDistrict
+  place: "บ่อสูบน้ำทดสอบ (จับคู่เขตได้)"
+  lat: 13.7
+  lon: 100.6
+  power_kw: 5.0
+  tag: VERIFIED-from-official-csv
+  coord_source: "test fixture"
+  source: "test fixture"
+- well_id: fixture_sump_unmatched
+  district: NoSuchDistrict
+  place: "บ่อสูบน้ำทดสอบ (จับคู่เขตไม่ได้)"
+  lat: 13.8
+  lon: 100.7
+  power_kw: 3.0
+  tag: VERIFIED-from-official-csv
+  coord_source: "test fixture"
+  source: "test fixture"

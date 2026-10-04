@@ -1,0 +1,387 @@
+# sources/terminology_crosswalk.yaml -- standard hydrology / urban-drainage terminology for every
+# quantity in play on 2026-09-27, so each one is computable and comparable with foreign APIs and
+# literature. Founder instruction (verbatim, 2026-09-27): "หาคำที่เหมาะสม เพื่อให้ใช้คำนวณได้จริงระดับโลก"
+# + project decision on the "wallet" analogy (verbatim): "ความสามารถจ่ายของเมืองคืออัตราระบายน้ำ
+# ส่วนเขตหรือพื้นที่ก็เป็น node หรือกระเป๋า หรืออะไรก็ว่าไป".
+#
+# Scope: new file only (2026-09-27). No tracked file edited, no commit, no build, no
+# network request. Terminology only -- NO new equation is introduced by this file (Toledo symbols are
+# cited by proposal code; PROP-FLOOD-08-DRAFT is a draft, not registered).
+#
+# Tags per row (AGENTS.md ss2):
+#   VERIFIED  = the Thai/English term is used, as quoted, in a document this repo holds (BMA plan 2569
+#               card, coping_thresholds*.yaml, capacity_ledger.yaml, docs/*.md) -- the CITATION is what
+#               is verified, not the physics.
+#   RELAYED   = the standard-term definition is attributed to a named reference by name only; that
+#               reference was NOT opened this check (founder instruction: name only, no fetch). Where the
+#               attribution comes from the worker's own recollection rather than a coordinator-supplied
+#               list, the row says "RELAYED (from recollection)" -- treat as a lead to verify, not a fact.
+#   OPEN      = no term/definition/source found in our documents and none confidently attributable.
+#
+# Columns: concept_id | standard_en (+variants_en) | thai_official (+cite) | toledo_symbol | si_unit
+# (key in sources/units_datum_crosswalk.yaml `quantities:` where one exists) | supplied_by (API field /
+# gauge / declared constant) | reference_standard (names only) | tag | public_th_candidate (PROPOSAL --
+# founder decides public wording; never auto-applied to the page) | note
+
+_meta:
+  generated: "2026-09-27"
+  scope: "terminology crosswalk for the forecast-risk / load-ratio / water-balance work of 2026-09-27"
+  reference_standards_named_not_fetched:
+    - "WMO-No. 1072 Manual on Flood Forecasting and Warning"
+    - "WMO-No. 168 Guide to Hydrological Practices"
+    - "WMO-No. 385 International Glossary of Hydrology (WMO/UNESCO) -- RELAYED (from recollection)"
+    - "Chow, Maidment, Mays -- Applied Hydrology"
+    - "US EPA SWMM (Storm Water Management Model) Reference / User's Manual"
+    - "USACE HEC-HMS / HEC-RAS glossaries"
+    - "UK Environment Agency flood-risk terminology (flood warning / flood alert / severe flood warning)"
+    - "ISO 14090 / ISO 14091 (adaptation to climate change -- vulnerability, impacts and risk assessment)"
+    - "Kohler & Linsley (1951) antecedent precipitation index -- RELAYED (from recollection)"
+  our_documents_cited:
+    - "docs/knowledge/card_official_2026-09-27_bma_flood_plan_2569.md (BMA plan 2569; PDF page numbers)"
+    - "docs/knowledge/coping_thresholds_additions_bma_plan2569.yaml"
+    - "sources/coping_thresholds.yaml, sources/coping_thresholds_news_sept.yaml"
+    - "sources/capacity_ledger.yaml, sources/units_datum_crosswalk.yaml, sources/backtest_units.yaml"
+    - "docs/LAYER0_IN_OUT_CAPACITY.md, docs/FLOW_STALL_TYPOLOGY.md, docs/CAPACITY.md"
+    - "toledo registry/proposals: flood_readout_trend.json (01/02), flood_water_balance.json (03),
+       flood_burden_ledger.json (05a/b), flood_outlet_coping.json (06.v6.1), flood_flow_state.json (07);
+       PROP-FLOOD-04 is cited by 05a as a pending sibling (PR #61), its JSON is not on this branch"
+  public_wording_rule: "public_th_candidate is a PROPOSAL column. Public-page wording law (AGENTS.md ss2)
+    still applies: never ยังไม่ต้อง / ห้าม / ไม่ควร / ผ่อนคลาย / ปั๊มเสีย. Finance metaphors (debt, wallet,
+    ability to pay) are NOT proposed for the public page -- the plain Thai below replaces them."
+
+concepts:
+
+  # ---------------------------------------------------------------- nodes / units / network
+  - concept_id: drainage_unit_node
+    standard_en: "drainage unit / sub-catchment / polder cell (sub-polder)"
+    variants_en: ["drainage area", "sewershed", "catchment cell", "polder compartment", "node (network graph)"]
+    thai_official: "พื้นที่ปิดล้อมย่อยบริหารจัดการน้ำท่วม (Sub Polder) -- 38 พื้นที่ (BMA plan 2569 p24-25, T09); พื้นที่ปิดล้อม 650/450 ตร.กม. (p60)"
+    toledo_symbol: "U (PROP-FLOOD-06 declared drainage unit, tuple <A_U,O_U,P_U,c_U>); b / node (PROP-FLOOD-03 basin node); Z (PROP-FLOOD-05b zone)"
+    si_unit: "identifier; area in km2 -> m2 (units_datum_crosswalk: length/area not a separate key; A_U in m2 per 06)"
+    supplied_by: "declared: bma_plan2569_assets.yaml sub_polders_38_p24_25 (area_km2, districts, VERIFIED); KG basin/reach nodes (tools/kg)"
+    reference_standard: "SWMM 'subcatchment'; HEC-HMS 'subbasin'; WMO-No. 168 'catchment'"
+    tag: VERIFIED
+    public_th_candidate: "พื้นที่รับน้ำ (ของเขต/หมู่บ้าน)"
+    note: "Project decision 2026-09-27: each area is a NODE holding its own storage balance -- this is PROP-FLOOD-03 per node, coupled through Q_in/Q_out on KG edges. Analogy words 'wallet/account/กระเป๋า' map here but are not proposed for the page."
+
+  - concept_id: storage_account
+    standard_en: "storage (in a node) / storage state / water in storage"
+    variants_en: ["storage volume", "stored volume", "ponded volume", "system storage"]
+    thai_official: "ปริมาตรเก็บกัก (ลบ.ม.) -- BMA plan 2569 ภาคผนวก ก p74 table header (แก้มลิง); 'น้ำค้าง/ปริมาณน้ำสะสม 223 ล้าน ลบ.ม.' (BMA briefing 26 ก.ย. 13:00, RELAYED)"
+    toledo_symbol: "S_b(k) (PROP-FLOOD-03); S_k (PROP-FLOOD-08-DRAFT E_k := max(0, S_k - S_safe))"
+    si_unit: "m3 (units_datum_crosswalk: storage_volume)"
+    supplied_by: "declared S_b(0) (OPEN for sammakorn: site/inputs/areas/sammakorn.balance.yaml S0); briefing backlog_volume_phra_nakhon_side (official_report, URL OPEN)"
+    reference_standard: "Chow/Maidment/Mays 'storage' in the continuity equation dS/dt = I - O; SWMM 'storage unit'"
+    tag: VERIFIED
+    public_th_candidate: "น้ำที่ค้างอยู่ในพื้นที่"
+    note: "Analogy 'wallet balance / opening-closing debt' = S_k. Avoid on page."
+
+  - concept_id: drainage_capacity_outflow_rate
+    standard_en: "drainage capacity / outflow rate / discharge capacity"
+    variants_en: ["outflow", "drainage rate", "discharge (Q)", "conveyance + pumping capacity combined"]
+    thai_official: "ขีดความสามารถของระบบระบายน้ำ (p63 ก-9); กำลังสูบรวม (ลบ.ม./วินาที) (ภาคผนวก ง column header, p170+)"
+    toledo_symbol: "Q_out(k) (PROP-FLOOD-03: 0 if gate CLOSED else min(Q_out_meas, C_pump)); D_H(U)+R_H(U) as OUT_H (PROP-FLOOD-06 layer0)"
+    si_unit: "m3/s (units_datum_crosswalk: discharge; pump_capacity)"
+    supplied_by: "bma_plan2569_control_structures.yaml capacity_m3s_parsed (rated, VERIFIED); running state from bma_watermap pumphistory (MEASURED); effective outflow NOT measured anywhere in this repo (OPEN)"
+    reference_standard: "WMO-No. 168 'discharge'; SWMM 'outfall' / 'pump curve'"
+    tag: VERIFIED
+    public_th_candidate: "อัตราระบายน้ำออกได้จริง"
+    note: "Project decision: 'ability to pay' = this quantity. NEVER conflate rated pumping capacity (design) with effective outflow (actual) -- see rated_vs_effective_capacity."
+
+  # ---------------------------------------------------------------- antecedent / storage deficit
+  - concept_id: antecedent_conditions
+    standard_en: "antecedent conditions / antecedent moisture condition (AMC) / antecedent precipitation index (API)"
+    variants_en: ["pre-storm wetness", "antecedent wetness", "initial abstraction state", "pre-load"]
+    thai_official: "ไม่มีคำทางการในเอกสารที่เราถือ; ใกล้เคียง: 'ตกติดต่อกันหลายวัน' (BMA plan p22 §5.1 abnormal-weather trigger) และ 'ฝนสะสม' (สนน. monthly chart)"
+    toledo_symbol: "S_b(0) declared initial storage (PROP-FLOOD-03); promoter BASIN_RAIN_ACCUM_EXCEEDS (24h/72h accumulated rain, PROP-FLOOD-06.v5); E_k (08-DRAFT) when S_k is known"
+    si_unit: "mm with explicit window (units_datum_crosswalk: rainfall_depth) or m3 (storage_volume)"
+    supplied_by: "DDS monthly chart 1-25 Sep 487.0 mm vs prorated mean 268.8 (VERIFIED-transcription, RAIN_LADDER_BKK_SEPT_NEWS.md); ERA5/IMERG gap-fill RELAYED (06 v5 basin_rain_accum)"
+    reference_standard: "Kohler & Linsley 1951 API -- RELAYED (from recollection); USDA SCS-CN 'AMC I/II/III' -- RELAYED (from recollection); Chow/Maidment/Mays"
+    tag: RELAYED
+    public_th_candidate: "ดินและคลองอิ่มน้ำอยู่แล้ว / ฝนสะสมก่อนหน้า"
+    note: "The ratio P_mtd/P_mean_30y (1.81) is evidence of a high S_0, not a registered term (Thai doc §1 #1)."
+
+  - concept_id: storage_deficit_available_storage
+    standard_en: "available storage / storage deficit / freeboard volume; excess = surcharge volume"
+    variants_en: ["remaining storage", "retention headroom", "storage surplus (when negative)", "drainage debt (analogy, not standard)"]
+    thai_official: "ปริมาตรเก็บกัก (design full) p74; ระดับควบคุม แผน ก/ข/ค (ม.รทก.) ภาคผนวก ง = target operating levels that define a 'safe' storage in level terms"
+    toledo_symbol: "headroom pattern R_H = sum max(0, Q_cap - Q_now)*H*3600 (PROP-FLOOD-06, flow domain); excess E_k := max(0, S_k - S_safe) (PROP-FLOOD-08-DRAFT, storage domain, delta)"
+    si_unit: "m3 (storage_volume); level form in m against named datum (water_level)"
+    supplied_by: "S_safe: declared from BMA plan control levels (+0.40 เตือนภัย / +0.50 วิกฤติ ม.รทก. at สถานีสูบน้ำคลองบ้านม้า 2, p ง-25) -- needs stage-storage curve (OPEN) to become m3"
+    reference_standard: "SWMM 'storage unit depth/volume curve'; HEC-HMS 'reservoir storage-elevation'; Chow 'storage indication'"
+    tag: VERIFIED
+    public_th_candidate: "น้ำที่เกินระดับที่รับได้ / ที่ว่างที่ยังรับน้ำได้"
+    note: "'Drainage debt' in the founder-relayed analogy = surcharge volume above S_safe; computable only with S_k (volume) -- REFUSED for Sammakorn tonight (no stage-storage, S0 OPEN, datum OPEN)."
+
+  - concept_id: ponding_standing_water
+    standard_en: "ponding / surface ponding / standing water (nuisance flooding)"
+    variants_en: ["surface flooding", "pluvial flooding", "street flooding", "waterlogging"]
+    thai_official: "น้ำท่วมขัง / น้ำท่วมขังถนน (news + coping_thresholds.yaml outcome 'ท่วมขังถนน'); จุดเสี่ยงน้ำท่วมถนนสายหลัก (BMA plan p117-123 T26); สถานีน้ำท่วมถนน FL (p244+)"
+    toledo_symbol: "point depth d := max(0, H - z) -- instance of delta_R against a static declared elevation z (PROP-FLOOD-04/05a pattern); community M=BACKFLOW/RISING (PROP-FLOOD-07)"
+    si_unit: "m depth (water_level minus ground_elevation, same datum)"
+    supplied_by: "BMA FL flood-road telemetry (bma_watermap flood_road); community reports (RELAYED); bkk_district_elevation.yaml (ground_elevation)"
+    reference_standard: "SWMM 'ponded area / surface flooding'; UK EA 'surface water flooding'"
+    tag: VERIFIED
+    public_th_candidate: "น้ำท่วมขัง (ถนน/ซอย)"
+    note: ""
+
+  # ---------------------------------------------------------------- design standard / LoS
+  - concept_id: level_of_service_design_storm
+    standard_en: "level of service (LoS) / design storm / design rainfall depth"
+    variants_en: ["design event", "design capacity (depth per day)", "drainage design standard"]
+    thai_official: "ขีดความสามารถของระบบระบายน้ำ ... รองรับปริมาณฝนตกสะสมรวมได้ไม่เกิน 80 มิลลิเมตร ใน 1 วัน (BMA plan p63 ก-9, VERIFIED); เป้าหมายอนาคต 104 มม./วัน (p64)"
+    toledo_symbol: "D_design (PROP-FLOOD-08-DRAFT, declared C_H case (e) DESIGN_DECLARED); promoter RAIN_24H_EXCEEDS_DESIGN threshold 80 (PROP-FLOOD-06)"
+    si_unit: "mm / 24 h (rainfall_depth with window)"
+    supplied_by: "declared constant from the plan (VERIFIED); coping_thresholds.yaml bangkok_east design row"
+    reference_standard: "SWMM / HEC-HMS 'design storm'; UK EA / CIRIA 'level of service' -- RELAYED (from recollection for CIRIA)"
+    tag: VERIFIED
+    public_th_candidate: "ฝนที่ระบบระบายน้ำออกแบบไว้รับได้ (80 มม./วัน)"
+    note: "The relayed note's '80 mm/day envelope' = design rainfall depth at the system's LoS."
+
+  - concept_id: design_rainfall_intensity
+    standard_en: "design rainfall intensity"
+    variants_en: ["rainfall rate", "intensity (mm/h)"]
+    thai_official: "ความเข้มของฝน ... 58.7 มิลลิเมตรต่อชั่วโมง (p63); ช่วงปฏิบัติการ 10-60 / 60-90 / >90 มม./ชม. (p22 §5.1); §4.1.3 target 60 มม./ชม. (p21)"
+    toledo_symbol: "D_design at H=1 (08-DRAFT: L_1 := P_1h/58.7 only from hourly data)"
+    si_unit: "mm/h (rainfall_intensity)"
+    supplied_by: "declared (VERIFIED p63/p22); hourly gauge rows where available (DDS RF stations)"
+    reference_standard: "Chow/Maidment/Mays; WMO-No. 168"
+    tag: VERIFIED
+    public_th_candidate: "ฝนตกแรงแค่ไหนต่อชั่วโมง"
+    note: "computation_rules.never_add_intensity_to_accumulation (units_datum_crosswalk) applies; 24h depth never converted to hourly intensity."
+
+  - concept_id: return_period_idf
+    standard_en: "return period / recurrence interval; IDF curve (intensity-duration-frequency)"
+    variants_en: ["annual exceedance probability (AEP)", "T-year storm", "depth-duration-frequency (DDF)"]
+    thai_official: "ค่าการเกิดซ้ำของฝนในคาบอุบัติ 2 ปี / 5 ปี (p18 1-2); ตาราง IDF: 1 ชม. คาบ 2 ปี = 58.7 มม., 24 ชม. คาบ 2 ปี = 93.6, 24 ชม. คาบ 12 ปี = 163.2 มม. (p18, VERIFIED table)"
+    toledo_symbol: "not a Toledo object; used only to tag D_design's provenance"
+    si_unit: "years (T); mm per duration"
+    supplied_by: "bma_plan2569_assets.yaml design_storm_table_p18 (VERIFIED)"
+    reference_standard: "Chow/Maidment/Mays ch. 'Frequency analysis'; WMO-No. 168"
+    tag: VERIFIED
+    public_th_candidate: "ฝนหนักขนาดนี้เจอกี่ปีครั้ง"
+    note: "203 mm/24h (26 Sep) exceeds the 12-yr 24-h depth 163.2 in the plan's own table."
+
+  # ---------------------------------------------------------------- capacities
+  - concept_id: conveyance_capacity
+    standard_en: "conveyance capacity (channel / pipe / tunnel)"
+    variants_en: ["channel capacity", "hydraulic capacity", "design discharge of a conduit"]
+    thai_official: "ขีดความสามารถ (ลบ.ม./วินาที) ของอุโมงค์ระบายน้ำ (p64-75 T19); คลอง กว้าง/ยาว/ระดับขุดลอก (ภาคผนวก ข T24)"
+    toledo_symbol: "Q_cap,o per outlet o (PROP-FLOOD-06 R_H); edge conveyance on KG edges (PROP-FLOOD-04 declared graph)"
+    si_unit: "m3/s (canal_tunnel_design_capacity)"
+    supplied_by: "capacity_ledger.yaml tunnel/canal rows; bma_plan2569_canal_dimensions.yaml (dimensions only, no discharge -> OPEN for most canals)"
+    reference_standard: "HEC-RAS 'conveyance (K)'; SWMM 'conduit full-flow capacity'; Chow 'Manning'"
+    tag: VERIFIED
+    public_th_candidate: "คลอง/ท่อ/อุโมงค์รับน้ำได้เท่าไร"
+    note: "Distinct from pumping_capacity and outfall_capacity -- three different bottlenecks (06 binding OUTLET vs PUMP)."
+
+  - concept_id: pumping_capacity
+    standard_en: "pumping capacity (installed / rated)"
+    variants_en: ["pump station capacity", "installed capacity", "nameplate capacity"]
+    thai_official: "กำลังสูบรวม (ลบ.ม./วินาที) / จำนวนเครื่องสูบน้ำ (ภาคผนวก ง column headers); กำลังสูบรวมฝั่งพระนคร 1,200 ลบ.ม./วิ (RELAYED news)"
+    toledo_symbol: "P_run,p summed over running pumps -> D_H(U) (PROP-FLOOD-06); C_pump,b cap in Q_out (PROP-FLOOD-03)"
+    si_unit: "m3/s (pump_capacity)"
+    supplied_by: "bma_plan2569_control_structures.yaml (rated, VERIFIED); backtest_units.yaml SAMMAKORN 7.75 (VERIFIED ง-25); bma_watermap pumphistory running count (MEASURED)"
+    reference_standard: "SWMM 'pump curve types 1-4'; WMO-No. 1072 (urban drainage section)"
+    tag: VERIFIED
+    public_th_candidate: "ปั๊มสูบได้สูงสุด (ถ้าวิ่งครบ)"
+    note: "Rated. Actual = running set x derating -- see rated_vs_effective_capacity."
+
+  - concept_id: outfall_capacity
+    standard_en: "outfall capacity / receiving-water capacity"
+    variants_en: ["outlet capacity", "river conveyance at the outfall", "tide-limited outfall"]
+    thai_official: "แม่น้ำเจ้าพระยาบริเวณกรุงเทพมหานคร สามารถรองรับปริมาณน้ำเหนือได้ประมาณ 2,500-3,500 ลบ.ม./วินาที โดยไม่มีน้ำล้นตลิ่ง (p19 1-3); C.29B วิกฤติไม่เกิน 3,500 (p22)"
+    toledo_symbol: "Q_cap,o for the river outlet (PROP-FLOOD-06 O_U); outfall node in KG"
+    si_unit: "m3/s (discharge)"
+    supplied_by: "capacity_ledger.yaml outfall:chao_phraya_boundary (3,100 RELAYED); C.29B/C.13 gauge readings (thaiwater, RELAYED)"
+    reference_standard: "SWMM 'outfall node (free / fixed / tidal)'; HEC-RAS downstream boundary"
+    tag: VERIFIED
+    public_th_candidate: "แม่น้ำยังรับน้ำจากคลองได้ไหม"
+    note: ""
+
+  - concept_id: rated_vs_effective_capacity
+    standard_en: "rated (nameplate) capacity vs effective (actual) capacity; capacity reduction / derating factor"
+    variants_en: ["availability factor", "efficiency factor", "capacity utilisation", "eta (analogy)"]
+    thai_official: "ไม่มีคำทางการในเอกสารที่เราถือ; ใกล้เคียง 'ขัดข้อง' (bma_watermap pump status, MEASURED) และ 'สูบเต็มกำลัง 1,200' (news RELAYED)"
+    toledo_symbol: "g_U(t) in (0,1] derating factor (PROP-FLOOD-06 -- undeclared => REFUSED DERATING_UNDECLARED); P_U^run running subset (06); C=FAULT (PROP-FLOOD-07)"
+    si_unit: "dimensionless [0,1]"
+    supplied_by: "tide: กรมอุทกศาสตร์ tide table (p275-286, VERIFIED table) -> declared g_U; availability: pumphistory running/ขัดข้อง (MEASURED); canal-fullness derating: NOT measured (OPEN) -> to be fitted via PROP-FLOOD-06 v5 calibration_procedure from real events, never assumed"
+    reference_standard: "SWMM pump 'on/off depths' and 'status'; WMO-No. 1072"
+    tag: VERIFIED
+    public_th_candidate: "ปั๊มที่วิ่งอยู่จริง / ระบายได้จริงตอนนี้"
+    note: "Founder point all night: Q_eff < Q_rated. Tonight Sammakorn eta_pump = 0 (0/4 running, MEASURED 2026-09-27T13:40Z) -- a measurement, not an assumption."
+
+  # ---------------------------------------------------------------- ratios / indices
+  - concept_id: load_to_capacity_ratio
+    standard_en: "load-to-capacity ratio / utilisation ratio / exceedance ratio (dimensionless)"
+    variants_en: ["demand-capacity ratio", "capacity utilisation", "inflow/outflow ratio", "DSR (analogy, not standard)"]
+    thai_official: "ไม่มีคำทางการ; ใกล้เคียง card_official §1: 'crisis_min 203 มม./24 ชม. = 2.5 เท่าของ 80 มม./วัน' (VERIFIED arithmetic in our own doc)"
+    toledo_symbol: "S_H(U) := F_H(U)/C_H(U) (PROP-FLOOD-06); L_H(U) (PROP-FLOOD-08-DRAFT, S_H with C_H declared as design depth)"
+    si_unit: "dimensionless"
+    supplied_by: "computed from rainfall_depth (gauge MEASURED / model forecast RELAYED) and D_design (VERIFIED)"
+    reference_standard: "generic engineering 'demand/capacity ratio' -- RELAYED (from recollection); WMO-No. 1072 uses threshold exceedance, not a named ratio -- OPEN"
+    tag: VERIFIED
+    public_th_candidate: "ฝนเทียบกับที่ระบบรับได้ (กี่เท่า)"
+    note: "One object, not two: the analogy's DSR = L_H with excess storage E_k in the numerator (Thai doc §7 c)."
+
+  # ---------------------------------------------------------------- times
+  - concept_id: drawdown_recovery_time
+    standard_en: "drawdown time / time-to-drain / emptying time (recovery time)"
+    variants_en: ["dewatering time", "drain-down time", "time to empty", "T = V/Q"]
+    thai_official: "คาด 2-3 วันระบายหมด (BMA briefing 26 ก.ย., RELAYED news)"
+    toledo_symbol: "T_rec(U) := V_stored / Q_out (PROP-FLOOD-08-DRAFT, delta; closed form of PROP-FLOOD-03 with P=Q_in=0); NOT PROP-FLOOD-02 (rising series only)"
+    si_unit: "s -> h / d"
+    supplied_by: "V from briefing backlog (official_report, RELAYED); Q_out rated 1,200 (RELAYED) -- effective OPEN"
+    reference_standard: "SWMM storage 'drain time'; USACE HEC-HMS detention 'drawdown'; Chow 'reservoir routing'"
+    tag: RELAYED
+    public_th_candidate: "อีกกี่ชั่วโมงน้ำจะลดหมด (ถ้าฝนหยุด)"
+    note: "Already computed live in site/build_data.py (V/Q, '52 ชม./2.2 วัน') without a Toledo marker -- flagged for the committing worker."
+
+  - concept_id: time_to_threshold_lead_time
+    standard_en: "time-to-threshold / time to exceedance; lead time (warning)"
+    variants_en: ["time-to-crest", "forecast lead time", "warning lead time"]
+    thai_official: "ไม่มีคำทางการในเอกสารที่เราถือ (แผน 2569 ใช้ 'เตือนภัย' เป็นระดับ ไม่ใช่เวลา)"
+    toledo_symbol: "T_k := (theta - h(t))*k/Delta_k(t) (PROP-FLOOD-02); T_act(U), T_act_upstream / lead_time_h with tau_up (PROP-FLOOD-06.v5)"
+    si_unit: "h"
+    supplied_by: "gauge series (WL.*) via PROP-FLOOD-01 trend; upstream gauge + declared tau_up (OPEN for most units)"
+    reference_standard: "WMO-No. 1072 'lead time'; UK EA 'warning lead time'"
+    tag: VERIFIED
+    public_th_candidate: "อีกกี่ชั่วโมงจะถึงระดับเตือน"
+    note: "PROP-FLOOD-02 is not implemented live (AGENTS.md ss8); layer0 time_to_exceed_hours reuses its idea only."
+
+  # ---------------------------------------------------------------- stages / levels
+  - concept_id: stage_thresholds
+    standard_en: "warning stage / flood stage / critical stage; bankfull; freeboard"
+    variants_en: ["alert level", "action stage", "top of bank", "crest level minus water level (freeboard)"]
+    thai_official: "เตือนภัย / วิกฤติ / ระดับควบคุม แผน ก ข ค (ม.รทก.) ภาคผนวก ง (VERIFIED, e.g. คลองบ้านม้า 2 +0.40/+0.50); ระดับตลิ่ง (bank) bma_watermap field; คันกั้นน้ำ +2.80 ถึง +3.50 ม.รทก. (p28); ระดับที่การป้องกันอาจล้มเหลว +2.00 ม.รทก. (p47)"
+    toledo_symbol: "canal_warning_m / canal_critical_m / bank_level_m in promoters CANAL_AT_WARNING_LINE / CANAL_AT_CRITICAL_LINE / CANAL_AT_BANK_LEVEL (PROP-FLOOD-06); theta (PROP-FLOOD-02)"
+    si_unit: "m against named datum (water_level; datums section of units_datum_crosswalk -- ม.รทก. = MSL)"
+    supplied_by: "bma_plan2569_canal_thresholds.yaml (VERIFIED, 406 rows); bma_watermap warning/critical (official_telemetry; datum OPEN for several stations)"
+    reference_standard: "US NWS 'action / minor / moderate / major flood stage'; UK EA 'flood alert / warning / severe'; WMO-No. 1072"
+    tag: VERIFIED
+    public_th_candidate: "ระดับเตือน / ระดับวิกฤติ / ปริ่มตลิ่ง"
+    note: "Freeboard = bank_level_m - h(t) (a delta_R; no separate Toledo object needed). Datum rule: never_mix_msl_and_local."
+
+  - concept_id: backwater_tailwater_tide_lock
+    standard_en: "backwater / tailwater effect; tide-locked (tidally influenced) outfall"
+    variants_en: ["submerged outfall", "downstream control", "reverse flow", "surcharge (F5)"]
+    thai_official: "น้ำทะเลหนุนสูง / น้ำหนุน (p22 §5.1 ช่วงที่ 3; plan title); น้ำเหนือไหลบ่า (p22)"
+    toledo_symbol: "D=REVERSE -> F4 tailwater/backwater; M=BACKFLOW -> F5 surcharge (PROP-FLOOD-07); g_U(t) tide derating (PROP-FLOOD-06); backflow_state enum in layer0 (06)"
+    si_unit: "state; head in m (water_level)"
+    supplied_by: "PROP-FLOOD-04 head gradient on edges (gauges both ends, same datum); กรมอุทกศาสตร์ tide table (p275-286); community reports (RELAYED)"
+    reference_standard: "HEC-RAS 'backwater profile'; SWMM 'tidal outfall'; Chow"
+    tag: VERIFIED
+    public_th_candidate: "น้ำย้อนจากคลอง / น้ำทะเลหนุนทำให้ระบายช้า"
+    note: "Founder correction recorded in LAYER0 doc §2: Sammakorn inflow includes canal backflow, not only rain."
+
+  - concept_id: hydraulic_head_difference
+    standard_en: "hydraulic head / head difference (across a structure or edge)"
+    variants_en: ["water-level gradient", "driving head", "differential head"]
+    thai_official: "ระดับน้ำด้านใน / ด้านนอก (ปตร. two_sided rows, ภาคผนวก ง; card §5.3.4 inter-agency agreements)"
+    toledo_symbol: "a_c(t) := h_A(t) - h_B(t) (PROP-FLOOD-05a, DATUM_MISMATCH refusal); edge direction readout (PROP-FLOOD-04, pending sibling PR #61)"
+    si_unit: "m (same datum both sides)"
+    supplied_by: "paired gauges (bma_watermap two-sided gates); datum crosswalk"
+    reference_standard: "HEC-RAS / Chow open-channel hydraulics 'head'"
+    tag: VERIFIED
+    public_th_candidate: "น้ำฝั่งไหนสูงกว่า"
+    note: ""
+
+  # ---------------------------------------------------------------- rainfall-runoff terms
+  - concept_id: runoff_coefficient
+    standard_en: "runoff coefficient (C, rational method) / effective rainfall"
+    variants_en: ["rainfall-runoff ratio", "imperviousness proxy", "excess rainfall"]
+    thai_official: "ไม่พบในเอกสารที่เราถือ (OPEN)"
+    toledo_symbol: "c_b (PROP-FLOOD-03); c_U or bound pair [0.5, 1] (PROP-FLOOD-06); c_U := 1 upper bound (08-DRAFT)"
+    si_unit: "dimensionless [0,1]"
+    supplied_by: "declared; OPEN for every unit in backtest_units.yaml; INSTINCT 0.7 in sammakorn rough_estimate only (never fed to the ledger)"
+    reference_standard: "Chow/Maidment/Mays rational method; SWMM 'percent impervious'"
+    tag: OPEN
+    public_th_candidate: "ฝนที่กลายเป็นน้ำไหลบนพื้น (สัดส่วน)"
+    note: "Infiltration I and evaporation E of the relayed balance are absorbed into (1-c)."
+
+  - concept_id: catchment_area
+    standard_en: "catchment area / drainage area (A)"
+    variants_en: ["contributing area", "sub-polder area"]
+    thai_official: "พื้นที่ (ตร.กม.) column of the 38 sub-polders (p24-25, VERIFIED); พื้นที่ปิดล้อม 650 / 450 / Flood Way 468 ตร.กม. (p60)"
+    toledo_symbol: "A_b (PROP-FLOOD-03); A_U (PROP-FLOOD-06); cancels in L_H under DESIGN_DECLARED (08-DRAFT)"
+    si_unit: "m2 (declared as km2 x 1e6)"
+    supplied_by: "bma_plan2569_assets.yaml sub_polders_38_p24_25 (VERIFIED); bangkok_east.balance.yaml A 1,568.737 km2 (RELAYED admin area); sammakorn A OPEN"
+    reference_standard: "WMO-No. 168; SWMM subcatchment area"
+    tag: VERIFIED
+    public_th_candidate: "พื้นที่รับน้ำกว้างเท่าไร"
+    note: ""
+
+  # ---------------------------------------------------------------- storage structures / land designations
+  - concept_id: retention_detention_retarding
+    standard_en: "retention basin / detention basin / retarding basin; polder"
+    variants_en: ["storage pond", "monkey-cheek (literal of แก้มลิง)", "flood storage area"]
+    thai_official: "แก้มลิง / พื้นที่รองรับและเก็บกัก / บึงรับน้ำ (BMA plan ภาคผนวก ก p78-81 T22-23, ภาคผนวก ข T25, VERIFIED); พื้นที่ปิดล้อม (polder) p60"
+    toledo_symbol: "storage node b (PROP-FLOOD-03); pond_storage_capacity_m3 as declared capacity fact (backtest_units.yaml SAMMAKORN 227,200 VERIFIED)"
+    si_unit: "m3 (storage_volume)"
+    supplied_by: "bma_plan2569_retention_ponds.yaml (VERIFIED); capacity_ledger.yaml"
+    reference_standard: "SWMM storage unit; HEC-HMS reservoir; card_research_kaemling_* (repo, RELAYED academic)"
+    tag: VERIFIED
+    public_th_candidate: "แก้มลิง / บึงรับน้ำ"
+    note: "Retention (holds) vs detention (delays) distinction not made in the Thai official term; both are 'แก้มลิง'."
+
+  - concept_id: floodway_floodplain
+    standard_en: "floodway / flood plain designation"
+    variants_en: ["flood corridor", "natural flood channel", "flood-prone area outside the levee"]
+    thai_official: "พื้นที่ทางน้ำหลากตามธรรมชาติ (Flood Way) 468 ตร.กม. นอกคันกั้นน้ำพระราชดำริ (p60, VERIFIED quote)"
+    toledo_symbol: "a KG node/area attribute, not a Toledo object"
+    si_unit: "km2"
+    supplied_by: "bma_plan2569_assets.yaml protected_areas_p60"
+    reference_standard: "US FEMA / USACE 'floodway'; UK EA 'Flood Zone 3b functional floodplain' -- RELAYED (from recollection for the zone code)"
+    tag: VERIFIED
+    public_th_candidate: "พื้นที่รับน้ำหลาก (นอกคัน)"
+    note: ""
+
+  # ---------------------------------------------------------------- operations
+  - concept_id: pump_availability_outage
+    standard_en: "pump availability / pump outage (forced outage)"
+    variants_en: ["unit unavailability", "downtime", "failure state"]
+    thai_official: "ขัดข้อง (bma_watermap status, MEASURED); public wording fixed by repo: 'ขัดข้อง (กทม. รายงาน สาเหตุไม่ทราบ)' (AGENTS.md ss2)"
+    toledo_symbol: "P_U^run vs P_U (PROP-FLOOD-06); promoter PUMPS_ZERO_RUNNING_ABOVE_THRESHOLD; C=FAULT (PROP-FLOOD-07)"
+    si_unit: "count / fraction"
+    supplied_by: "bma_watermap pumphistory (MEASURED); Sammakorn 0/4 at 2026-09-27T13:40Z"
+    reference_standard: "generic reliability engineering 'availability' -- RELAYED (from recollection)"
+    tag: VERIFIED
+    public_th_candidate: "ขัดข้อง (กทม. รายงาน สาเหตุไม่ทราบ)"
+    note: "Public wording is already fixed by the repo law; do not paraphrase."
+
+  - concept_id: data_quality_flags
+    standard_en: "data quality flag / quality control (QC) flag; contradiction record"
+    variants_en: ["suspect", "missing", "stale", "inconsistent", "estimated"]
+    thai_official: "ไม่มีคำทางการในเอกสารที่เราถือ; repo vocabulary: REFUSED reasons MISSING_INPUT / STALE_INPUT / UNDECLARED_* (PROP-FLOOD-03/06), contradictions table (store.py), statement_contradictions_2026-09-27.yaml, tag OPEN"
+    toledo_symbol: "REFUSED(reason) codes (PROP-FLOOD-02/03/06/07); cov6 present/absent/inferred (PROP-FLOOD-06/07)"
+    si_unit: "enum"
+    supplied_by: "store.py contradictions table; readout refusal codes"
+    reference_standard: "WMO quality-flag vocabulary: OPEN -- the worker recalls WMO-No. 306 (Manual on Codes, BUFR quality flags) and WMO-No. 1238 as candidates but did NOT verify; treat as a lead only"
+    tag: OPEN
+    public_th_candidate: "ข้อมูลขัดกัน / ข้อมูลเก่า / ยังไม่มีข้อมูล"
+    note: "Mapping our SUSPECT-like states to a WMO flag set is left OPEN per instruction (no fetch)."
+
+  # ---------------------------------------------------------------- forecast-specific
+  - concept_id: grid_cell_mean_vs_point
+    standard_en: "grid-cell (areal) mean precipitation vs point (gauge) precipitation; areal reduction"
+    variants_en: ["representativeness error", "sub-grid variability"]
+    thai_official: "ไม่มีคำทางการ; repo rule grid_cell_vs_gauge_not_equal (units_datum_crosswalk computation_rules)"
+    toledo_symbol: "forecast_grid_cell_mean (PROP-FLOOD-06.v6.1) -- single evidence pair 13-53 mm cell vs 203 mm gauge, 26 Sep 2569"
+    si_unit: "mm per window"
+    supplied_by: "Open-Meteo multi-model daily rows (10 models) + MET Norway; gauge DDS RF stations"
+    reference_standard: "WMO-No. 168 'areal precipitation'; Chow 'areal reduction factor'"
+    tag: VERIFIED
+    public_th_candidate: "โมเดลบอกค่าเฉลี่ยทั้งพื้นที่ ไม่ใช่ที่จุดนี้"
+    note: ""
+
+  - concept_id: ensemble_scenarios_worst_first
+    standard_en: "ensemble / multi-model spread; worst-case and best-case scenario; percentile bands (p10/p90)"
+    variants_en: ["ensemble members", "model spread", "scenario envelope", "interval bounds [lo, hi]"]
+    thai_official: "ไม่มีคำทางการ; repo: 'ไม่เฉลี่ยข้ามโมเดล กรณีแย่สุดก่อน' (founder rule, 06 v6.1)"
+    toledo_symbol: "multi_model_scenarios worst_case/best_case/majority_band (PROP-FLOOD-06.v6.1); the relayed 'interval form' D^-/D^+ is this same pair (Thai doc §1 row 'ช่วง')"
+    si_unit: "same as the underlying term"
+    supplied_by: "per-model rows in data/observations.sqlite (MEASURED-from-store)"
+    reference_standard: "WMO-No. 1072 (ensemble flood forecasting); interval arithmetic (Moore) -- RELAYED (from recollection)"
+    tag: VERIFIED
+    public_th_candidate: "โมเดลไม่ตรงกัน: แย่สุด … / ส่วนใหญ่ …"
+    note: "A missing bound is REFUSED for that layer, never +/-infinity (fail-closed; consistent with 06 except c's declared default pair [0.5,1], which 08-DRAFT asks to be an explicit declaration)."

@@ -1,0 +1,99 @@
+# typology/edges/owned_by.yaml -- edge_kind=owned_by, from_kind in {sensor,gate,pump} ->
+# to_kind=agency, cardinality exactly-one (proposal §2/§4c). A `to: "OPEN"` row means the
+# owner is genuinely unresolved in this repo right now -- never guessed. Two rows for the
+# SAME `from` with different `to`, neither OPEN, would be a contradiction (kept as a
+# separate `contradictions` list per proposal §2, none observed yet -- see validate.py).
+#
+# Completeness pass 2026-09-28 (founder: "fill structural gaps that sources already in
+# the repo can close"): ST.SPS.01-04 owner resolved via `sources/owner_agency_
+# crosswalk.yaml`'s own VERIFIED row (owner="กทม. สนน. (กลุ่มงานระบบควบคุมน้ำตะวันออก)" ->
+# AG_DDS) + `docs/CAPACITY.md` §2 (bma_plan2569 p.191, table matches ST.SPS.01-04 by
+# name+coordinates) -- was previously believed to be AG_ESTATE (village juristic person),
+# CORRECTED 2026-09-27 in this repo's own capacity doc. Still flagged
+# CONTRADICTED/pending-confirmation THERE (no operator-side confirmation from สนน./the
+# village yet) -- kept here as the single owned_by edge (exactly-one cardinality) with
+# that contradiction status carried on the edge itself, never silently dropped.
+schema_version: 1
+doc_kind: typology_edge_registry
+edge_kind: owned_by
+status_th: >
+  ทุก sensor/gate/pump ต้องมี owned_by เท่ากับ 1 เส้นเสมอ (exactly-one) -- แถว to: "OPEN" คือช่องว่าง
+  จริงที่ยังไม่ยืนยัน ไม่ใช่การเดา.
+rows:
+  - from: SENSOR.SSB.10
+    to: AG_DDS
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ISSUE-AGENCY-01 (S1)"
+  - from: WL.SSB.10
+    to: AG_DDS
+    tag: RELAYED
+    source: "FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §5 (AG_BMA_DDS reused as AG_DDS)"
+  - from: WL.PWT.04
+    to: AG_DDS
+    tag: RELAYED
+    source: "FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §5"
+  - from: SENSOR.PWT.04
+    to: AG_DDS
+    tag: RELAYED
+    source: "FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §5"
+  - from: ST.SPS.01
+    to: AG_DDS
+    tag: "VERIFIED-CONTRADICTED"
+    source: >
+      sources/owner_agency_crosswalk.yaml (owner="กทม. สนน. (กลุ่มงานระบบควบคุมน้ำตะวันออก)" ->
+      AG_DDS, VERIFIED) + docs/knowledge/bma_plan2569_control_structures.yaml + docs/
+      CAPACITY.md §2 (bma_plan2569 p.191 "พิมพ์ ง-25", table matched by name+coordinates) --
+      CORRECTED 2026-09-27, was previously believed AG_ESTATE (village juristic person,
+      docs/knowledge/THAI_WATER_GOVERNANCE_MAP.md §(7)) -- docs/CAPACITY.md §2 itself still
+      flags this CONTRADICTED/รอยืนยัน (no confirmation yet from สนน./the village side), kept
+      as tag VERIFIED-CONTRADICTED rather than plain VERIFIED so that pending status is not
+      silently dropped, per this edge's own exactly-one cardinality (AG_ESTATE not written
+      as a second edge -- see AGENTS.md §8 for the standing contradiction).
+  - from: ST.SPS.02
+    to: AG_DDS
+    tag: "VERIFIED-CONTRADICTED"
+    source: "same as ST.SPS.01 -- one row per station, all 4 resolved the same way by the same crosswalk row"
+  - from: ST.SPS.03
+    to: AG_DDS
+    tag: "VERIFIED-CONTRADICTED"
+    source: "same as ST.SPS.01"
+  - from: ST.SPS.04
+    to: AG_DDS
+    tag: "VERIFIED-CONTRADICTED"
+    source: "same as ST.SPS.01"
+  - from: SENSOR.SPS.01
+    to: AG_DDS
+    tag: "VERIFIED-CONTRADICTED"
+    source: "same crosswalk row as ST.SPS.01 -- sensor ownership mirrors station ownership, not resolved separately"
+  - from: SENSOR.SPS.02
+    to: AG_DDS
+    tag: "VERIFIED-CONTRADICTED"
+    source: "same as SENSOR.SPS.01"
+  - from: SENSOR.SPS.03
+    to: AG_DDS
+    tag: "VERIFIED-CONTRADICTED"
+    source: "same as SENSOR.SPS.01"
+  - from: SENSOR.SPS.04
+    to: AG_DDS
+    tag: "VERIFIED-CONTRADICTED"
+    source: "same as SENSOR.SPS.01"
+  - from: AS_SHELTER_KMITL
+    to: AG_KMITL
+    tag: VERIFIED
+    source: "docs/knowledge/water_system_dag.mmd (existing OWNS edge AG_KMITL->AS_SHELTER_KMITL, reused verbatim)"
+  - from: RES.PARKING.CENTRALPATTANA_01
+    to: AG_CENTRALPATTANA
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §3"
+  - from: RES.DONATION_INTAKE.CENTRALPATTANA.01
+    to: AG_CENTRALPATTANA
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §3"
+  - from: RES.DONATION_INTAKE.ROBINSON.01
+    to: AG_ROBINSON
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §3"
+  - from: RES.MEAL_BOX.PRIVATE_RESTAURANTS.KMITL.01
+    to: AG_RESTAURANT_NETWORK
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §7"

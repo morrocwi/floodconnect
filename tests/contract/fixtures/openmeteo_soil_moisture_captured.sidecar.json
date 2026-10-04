@@ -1,0 +1,11 @@
+{
+  "source_id": "openmeteo_soil_moisture",
+  "url": "https://api.open-meteo.com/v1/forecast?latitude=13.758235&longitude=100.676084&hourly=soil_moisture_0_to_1cm,soil_moisture_1_to_3cm,soil_moisture_3_to_9cm&timezone=Asia%2FBangkok&forecast_days=3",
+  "captured_at": "2026-10-02T07:44:29Z",
+  "sha256": "d6084020b278883051cde6ac19c5b9855ebeadb553da1d3f07ebff4a114299f0",
+  "http_status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "fixture_ext": "json",
+  "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+  "parser_version": "v1"
+}

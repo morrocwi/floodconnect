@@ -1,0 +1,15 @@
+{
+ "source_id": "thaiwater_rain_24h",
+ "url": "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/rain_24h",
+ "captured_at": "2026-10-02T07:44:36Z",
+ "sha256": "339bad458503ab3fa456a7e6d94b35d13f2da719361e927013ffa425d4a22832",
+ "http_status": 200,
+ "content_type": "application/json; charset=utf-8",
+ "fixture_ext": "json",
+ "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "3f8f9fa947a19d5fb33cc90e0b051400a87573cf87e411596eb90f09e70d08f6",
+ "trimmed_note": "trimmed from 4642 to first 60 station records (minimal real excerpt per pre-publish licence/redistribution finding) -- licence_status.unresolved=true | earlier: trimmed from 4642 to first 60 station records (minimal real excerpt per pre-publish licence/redistribution finding) -- licence_status.unresolved=true",
+ "trimmed_at": "2026-10-03T18:10:36Z"
+}

@@ -1,0 +1,13 @@
+{
+ "source_id": "bangkok_pump_station_and_floodgate_physical_data",
+ "url": "https://data.bangkok.go.th/dataset/22475fbb-18ef-4705-9ce2-53f4907394e7/resource/0d645a7e-50f4-4c4f-ad1c-19db560b29c8/download/-.csv",
+ "captured_at": "2026-10-03T13:45:00Z",
+ "sha256": "e4a1eff62f95f1cdb2f1e06e96f53563fdaa0dc533e4559371e88454c4c3e6f0",
+ "http_status": 200,
+ "fixture_ext": "csv",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "097a4bda30cad5093a1e6d8428841b5642ae23edef5fe249c68fbff755cc9dfd",
+ "trimmed_note": "Further trimmed 2026-10-03 (release pass, publish-safety finding: 300KB total budget for tests/contract/fixtures/ in the public tree) to a minimal real excerpt (header + few real rows, or a real byte-prefix for HTML) -- see the corresponding contract test's own comment for the exact row-count change.",
+ "trimmed_at": "2026-10-03T18:10:36Z"
+}

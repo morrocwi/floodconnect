@@ -1,0 +1,324 @@
+# Generated 2026-09-28 by a one-off read of raw/backtest/dam_history_2026-09-28/ via tools/backtest/peak_window.py:dam_trend().
+# Real data only; tags inline. Days-to-full is a PROPOSAL readout ("ทดลอง — สมการข้อเสนอ").
+id: dam_history_30d_2026-09-28
+label_th: ประวัติเขื่อนรายวัน 30 วัน (29 ส.ค. – 27 ก.ย. 2569) — 6 เขื่อนที่ไหลลง กทม.
+fetched_at_utc: 2026-09-28T01:56Z..02:00Z
+source:
+  agency: HII (สสน.) + RID/EGAT dam owners, via api-v3.thaiwater.net (same host and analyst/ API family as the hii_dam collector)
+  endpoints: ['https://api-v3.thaiwater.net/api/v1/thaiwater30/analyst/dam_yearly_graph_multiple?data_type={dam_released|dam_inflow|dam_storage}&dam_id=1,12,11,36,34,35&year=2026',
+    'https://api-v3.thaiwater.net/api/v1/thaiwater30/analyst/dam_yearly_graph?data_type=dam_storage&dam_id={11|12|36|35|34}&year=2026']
+  endpoint_discovery: 'VERIFIED: found in the cached thaiwater.net frontend bundle raw/knowledge/api_census/hii/app.chunk.js (no guessing); not
+    previously used by collect.py'
+  raw_files: raw/backtest/dam_history_2026-09-28/ (gitignored, append-only) + requests.log
+  units: MCM (ล้าน ลบ.ม.) and MCM/day; date = dam_date label (ICT); m3/s = MCM/day / 0.0864 (unit arithmetic)
+caveats: ['Daily row labelled 27 Sep: which 24 h it covers (26 or 27 Sep) is OPEN (same caveat as INBOUND_DEBT doc). Storage day-to-day change
+    matches inflow - release to within ~1 MCM for Pasak (723.26 -> 779.80 = +56.54 vs net +56.98) -- MEASURED consistency check.', 'Bhumibol /
+    Sirikit have a second HII record (dam_id 43 / 52, EGAT feed) also labelled 27 Sep but equal to EGAT''s 28 Sep snapshot (Bhumibol inflow 45.65,
+    release 3.02, storage 8512.28; Sirikit 18.06 / 7.99 / 7615.37). Storage deltas (+42.04, +9.31) fit one extra day of inflow - release -> INSTINCT:
+    the EGAT record is one day later. Both kept, not merged.', Rule curves for dams 12/34/35/36 are labelled year 2020 in the payload (template
+    curve); read by month-day. Whether that is the operating curve for 2026 is OPEN., 'Pasak: HII storage % implies a 100 % of 871.5 MCM (~= the
+    payload''s upper-rule-curve maximum 872), while normal_bound = upper_bound = 960 MCM. Two denominators, both kept -- not resolved.', 'Pasak
+    release reported 2.16 MCM/day (25 m3/s) vs S.28 below the dam 55-78 m3/s daily max (25-27 Sep), 60-65 on 28 Sep (waterlevel_graph) -- CONTRADICTION
+    kept, not resolved.', Bhumibol rule curve / bounds not fetched (request budget) -> REFUSED for URC comparison.]
+dams:
+- name_th: ป่าสักชลสิทธิ์
+  hii_dam_id: 11
+  kg_node: node:dam:hii_dam:11
+  asof_dam_date: '2026-09-27'
+  now: {inflow_mcm_day: 59.14, release_mcm_day: 2.16, release_m3s_computed: 25.0, storage_mcm: 779.8, storage_pct_hii: 89.48, tag: MEASURED}
+  capacity_refs: {full_by_pct_mcm: 871.5, full_by_pct_tag: MEASURED-derived (storage / pct), normal_bound_mcm: 960, upper_bound_mcm: 960, upper_rule_curve_mcm_on_asof: 445.33,
+    bounds_tag: MEASURED (HII dam_yearly_graph payload)}
+  days_to_full:
+    to_full_by_pct: {state: FILLING, headroom_mcm: 91.7, net_mcm_day: 56.98, days: 1.61}
+    to_normal_bound: {state: FILLING, headroom_mcm: 180.2, net_mcm_day: 56.98, days: 3.16}
+    label_th: ทดลอง — สมการข้อเสนอ
+    basis: PROP-FLOOD-03 step iterated at constant measured rates (inversion not yet in Toledo)
+  last_release_change: &id001 {date: '2026-09-25', from: 1.3, to: 2.16, delta: 0.86}
+  release_changes_30d:
+  - *id001
+  forced_release_flag: {value: FLAG, tag: INSTINCT, note: flag only -- never a claim of an operator decision}
+  series_30d:
+  - {date: '2026-08-29', inflow_mcm_day: 14.6, release_mcm_day: 1.3, storage_mcm: 346.12}
+  - {date: '2026-08-30', inflow_mcm_day: 13.63, release_mcm_day: 1.3, storage_mcm: 358.14}
+  - {date: '2026-08-31', inflow_mcm_day: 16.92, release_mcm_day: 1.3, storage_mcm: 373.43}
+  - {date: '2026-09-01', inflow_mcm_day: 14.74, release_mcm_day: 1.3, storage_mcm: 386.54}
+  - {date: '2026-09-02', inflow_mcm_day: 11.44, release_mcm_day: 1.3, storage_mcm: 396.38}
+  - {date: '2026-09-03', inflow_mcm_day: 13.63, release_mcm_day: 1.3, storage_mcm: 408.39}
+  - {date: '2026-09-04', inflow_mcm_day: 11.46, release_mcm_day: 1.3, storage_mcm: 418.22}
+  - {date: '2026-09-05', inflow_mcm_day: 13.65, release_mcm_day: 1.3, storage_mcm: 430.24}
+  - {date: '2026-09-06', inflow_mcm_day: 11.46, release_mcm_day: 1.3, storage_mcm: 440.07}
+  - {date: '2026-09-07', inflow_mcm_day: 10.38, release_mcm_day: 1.3, storage_mcm: 448.81}
+  - {date: '2026-09-08', inflow_mcm_day: 6.02, release_mcm_day: 1.3, storage_mcm: 453.18}
+  - {date: '2026-09-09', inflow_mcm_day: 5.23, release_mcm_day: 1.3, storage_mcm: 456.77}
+  - {date: '2026-09-10', inflow_mcm_day: 7.89, release_mcm_day: 1.3, storage_mcm: 463.02}
+  - {date: '2026-09-11', inflow_mcm_day: 9.15, release_mcm_day: 1.3, storage_mcm: 470.51}
+  - {date: '2026-09-12', inflow_mcm_day: 4.15, release_mcm_day: 1.3, storage_mcm: 473.03}
+  - {date: '2026-09-13', inflow_mcm_day: 6.65, release_mcm_day: 1.3, storage_mcm: 478.01}
+  - {date: '2026-09-14', inflow_mcm_day: 6.65, release_mcm_day: 1.3, storage_mcm: 483}
+  - {date: '2026-09-15', inflow_mcm_day: 7.9, release_mcm_day: 1.3, storage_mcm: 489.25}
+  - {date: '2026-09-16', inflow_mcm_day: 20.39, release_mcm_day: 1.3, storage_mcm: 507.99}
+  - {date: '2026-09-17', inflow_mcm_day: 15.4, release_mcm_day: 1.3, storage_mcm: 521.72}
+  - {date: '2026-09-18', inflow_mcm_day: 12.91, release_mcm_day: 1.3, storage_mcm: 532.97}
+  - {date: '2026-09-19', inflow_mcm_day: 12.92, release_mcm_day: 1.3, storage_mcm: 544.21}
+  - {date: '2026-09-20', inflow_mcm_day: 14.17, release_mcm_day: 1.3, storage_mcm: 556.7}
+  - {date: '2026-09-21', inflow_mcm_day: 15.42, release_mcm_day: 1.3, storage_mcm: 570.44}
+  - {date: '2026-09-22', inflow_mcm_day: 18.8, release_mcm_day: 1.3, storage_mcm: 587.55}
+  - {date: '2026-09-23', inflow_mcm_day: 22.62, release_mcm_day: 1.3, storage_mcm: 608.47}
+  - {date: '2026-09-24', inflow_mcm_day: 30.99, release_mcm_day: 1.3, storage_mcm: 637.77}
+  - {date: '2026-09-25', inflow_mcm_day: 40.79, release_mcm_day: 2.16, storage_mcm: 676.82}
+  - {date: '2026-09-26', inflow_mcm_day: 49.01, release_mcm_day: 2.16, storage_mcm: 723.26}
+  - {date: '2026-09-27', inflow_mcm_day: 59.14, release_mcm_day: 2.16, storage_mcm: 779.8}
+- name_th: ภูมิพล
+  hii_dam_id: 1
+  kg_node: node:dam:hii_dam:1
+  asof_dam_date: '2026-09-27'
+  now: {inflow_mcm_day: 36.16, release_mcm_day: 3, release_m3s_computed: 34.7, storage_mcm: 8470.24, storage_pct_hii: 62.92, tag: MEASURED}
+  capacity_refs: {full_by_pct_mcm: 13461.9, full_by_pct_tag: MEASURED-derived (storage / pct), normal_bound_mcm: null, upper_bound_mcm: null,
+    upper_rule_curve_mcm_on_asof: null, bounds_tag: REFUSED NOT_FETCHED (request budget)}
+  days_to_full:
+    to_full_by_pct: {state: FILLING, headroom_mcm: 4991.66, net_mcm_day: 33.16, days: 150.53}
+    to_normal_bound: {state: REFUSED, reason: NORMAL_BOUND_NOT_FETCHED}
+    label_th: ทดลอง — สมการข้อเสนอ
+    basis: PROP-FLOOD-03 step iterated at constant measured rates (inversion not yet in Toledo)
+  last_release_change: &id002 {date: '2026-09-23', from: 6.01, to: 3, delta: -3.01}
+  release_changes_30d:
+  - {date: '2026-09-16', from: 10, to: 8, delta: -2.0}
+  - {date: '2026-09-17', from: 8, to: 6, delta: -2.0}
+  - *id002
+  forced_release_flag: {value: NO_FLAG_URC_UNKNOWN, tag: INSTINCT, note: flag only -- never a claim of an operator decision}
+  series_30d:
+  - {date: '2026-08-29', inflow_mcm_day: 24.95, release_mcm_day: 10, storage_mcm: 7603.03}
+  - {date: '2026-08-30', inflow_mcm_day: 22.88, release_mcm_day: 10, storage_mcm: 7615.37}
+  - {date: '2026-08-31', inflow_mcm_day: 29.15, release_mcm_day: 10, storage_mcm: 7633.93}
+  - {date: '2026-09-01', inflow_mcm_day: 29.21, release_mcm_day: 10, storage_mcm: 7652.56}
+  - {date: '2026-09-02', inflow_mcm_day: 39.54, release_mcm_day: 10.01, storage_mcm: 7681.64}
+  - {date: '2026-09-03', inflow_mcm_day: 41.83, release_mcm_day: 10.02, storage_mcm: 7712.96}
+  - {date: '2026-09-04', inflow_mcm_day: 33.46, release_mcm_day: 10.01, storage_mcm: 7736.04}
+  - {date: '2026-09-05', inflow_mcm_day: 31.57, release_mcm_day: 10.02, storage_mcm: 7757.09}
+  - {date: '2026-09-06', inflow_mcm_day: 29.58, release_mcm_day: 10.03, storage_mcm: 7776.1}
+  - {date: '2026-09-07', inflow_mcm_day: 25.19, release_mcm_day: 10, storage_mcm: 7790.93}
+  - {date: '2026-09-08', inflow_mcm_day: 27.54, release_mcm_day: 10, storage_mcm: 7807.92}
+  - {date: '2026-09-09', inflow_mcm_day: 27.6, release_mcm_day: 10, storage_mcm: 7824.95}
+  - {date: '2026-09-10', inflow_mcm_day: 31.88, release_mcm_day: 10, storage_mcm: 7846.31}
+  - {date: '2026-09-11', inflow_mcm_day: 31.95, release_mcm_day: 10, storage_mcm: 7867.74}
+  - {date: '2026-09-12', inflow_mcm_day: 47.09, release_mcm_day: 10, storage_mcm: 7904.34}
+  - {date: '2026-09-13', inflow_mcm_day: 45.16, release_mcm_day: 10, storage_mcm: 7938.96}
+  - {date: '2026-09-14', inflow_mcm_day: 36.65, release_mcm_day: 10, storage_mcm: 7965.06}
+  - {date: '2026-09-15', inflow_mcm_day: 32.36, release_mcm_day: 10, storage_mcm: 7986.87}
+  - {date: '2026-09-16', inflow_mcm_day: 26.03, release_mcm_day: 8, storage_mcm: 8004.38}
+  - {date: '2026-09-17', inflow_mcm_day: 30.67, release_mcm_day: 6, storage_mcm: 8028.52}
+  - {date: '2026-09-18', inflow_mcm_day: 30.77, release_mcm_day: 6, storage_mcm: 8052.75}
+  - {date: '2026-09-19', inflow_mcm_day: 30.91, release_mcm_day: 6, storage_mcm: 8077.07}
+  - {date: '2026-09-20', inflow_mcm_day: 39.81, release_mcm_day: 6, storage_mcm: 8110.35}
+  - {date: '2026-09-21', inflow_mcm_day: 98.24, release_mcm_day: 6, storage_mcm: 8202.13}
+  - {date: '2026-09-22', inflow_mcm_day: 74.44, release_mcm_day: 6.01, storage_mcm: 8270}
+  - {date: '2026-09-23', inflow_mcm_day: 60.6, release_mcm_day: 3, storage_mcm: 8327.03}
+  - {date: '2026-09-24', inflow_mcm_day: 49.45, release_mcm_day: 3, storage_mcm: 8372.95}
+  - {date: '2026-09-25', inflow_mcm_day: 40.46, release_mcm_day: 3, storage_mcm: 8409.87}
+  - {date: '2026-09-26', inflow_mcm_day: 31.38, release_mcm_day: 3, storage_mcm: 8437.68}
+  - {date: '2026-09-27', inflow_mcm_day: 36.16, release_mcm_day: 3, storage_mcm: 8470.24}
+- name_th: สิริกิติ์
+  hii_dam_id: 12
+  kg_node: node:dam:hii_dam:12
+  asof_dam_date: '2026-09-27'
+  now: {inflow_mcm_day: 22.74, release_mcm_day: 8.03, release_m3s_computed: 92.9, storage_mcm: 7606.06, storage_pct_hii: 79.98, tag: MEASURED}
+  capacity_refs: {full_by_pct_mcm: 9510.0, full_by_pct_tag: MEASURED-derived (storage / pct), normal_bound_mcm: 9510, upper_bound_mcm: 10508.3199,
+    upper_rule_curve_mcm_on_asof: 8664.09, bounds_tag: MEASURED (HII dam_yearly_graph payload)}
+  days_to_full:
+    to_full_by_pct: {state: FILLING, headroom_mcm: 1903.94, net_mcm_day: 14.71, days: 129.43}
+    to_normal_bound: {state: FILLING, headroom_mcm: 1903.94, net_mcm_day: 14.71, days: 129.43}
+    label_th: ทดลอง — สมการข้อเสนอ
+    basis: PROP-FLOOD-03 step iterated at constant measured rates (inversion not yet in Toledo)
+  last_release_change: &id003 {date: '2026-09-27', from: 6, to: 8.03, delta: 2.03}
+  release_changes_30d:
+  - {date: '2026-09-12', from: 9.89, to: 11.9, delta: 2.01}
+  - {date: '2026-09-13', from: 11.9, to: 13.96, delta: 2.06}
+  - {date: '2026-09-14', from: 13.96, to: 16.95, delta: 2.99}
+  - {date: '2026-09-15', from: 16.95, to: 19.95, delta: 3.0}
+  - {date: '2026-09-16', from: 19.95, to: 16.99, delta: -2.96}
+  - {date: '2026-09-19', from: 17, to: 14, delta: -3.0}
+  - {date: '2026-09-20', from: 14, to: 10.96, delta: -3.04}
+  - {date: '2026-09-21', from: 10.96, to: 7.95, delta: -3.01}
+  - {date: '2026-09-23', from: 8.01, to: 5.96, delta: -2.05}
+  - *id003
+  forced_release_flag: {value: NO_FLAG, tag: INSTINCT, note: flag only -- never a claim of an operator decision}
+  series_30d:
+  - {date: '2026-08-29', inflow_mcm_day: 30.66, release_mcm_day: 10.02, storage_mcm: 6872.28}
+  - {date: '2026-08-30', inflow_mcm_day: 28.46, release_mcm_day: 10.01, storage_mcm: 6890.04}
+  - {date: '2026-08-31', inflow_mcm_day: 26.13, release_mcm_day: 9.89, storage_mcm: 6905.59}
+  - {date: '2026-09-01', inflow_mcm_day: 30.64, release_mcm_day: 9.93, storage_mcm: 6925.61}
+  - {date: '2026-09-02', inflow_mcm_day: 37.4, release_mcm_day: 9.94, storage_mcm: 6952.34}
+  - {date: '2026-09-03', inflow_mcm_day: 39.73, release_mcm_day: 9.98, storage_mcm: 6981.36}
+  - {date: '2026-09-04', inflow_mcm_day: 42, release_mcm_day: 9.95, storage_mcm: 7012.68}
+  - {date: '2026-09-05', inflow_mcm_day: 37.58, release_mcm_day: 9.96, storage_mcm: 7039.57}
+  - {date: '2026-09-06', inflow_mcm_day: 44.45, release_mcm_day: 10.03, storage_mcm: 7073.25}
+  - {date: '2026-09-07', inflow_mcm_day: 39.97, release_mcm_day: 9.98, storage_mcm: 7102.51}
+  - {date: '2026-09-08', inflow_mcm_day: 35.47, release_mcm_day: 9.94, storage_mcm: 7127.3}
+  - {date: '2026-09-09', inflow_mcm_day: 42.36, release_mcm_day: 10, storage_mcm: 7158.92}
+  - {date: '2026-09-10', inflow_mcm_day: 42.46, release_mcm_day: 10.03, storage_mcm: 7190.61}
+  - {date: '2026-09-11', inflow_mcm_day: 37.84, release_mcm_day: 9.89, storage_mcm: 7217.81}
+  - {date: '2026-09-12', inflow_mcm_day: 37.63, release_mcm_day: 11.9, storage_mcm: 7242.8}
+  - {date: '2026-09-13', inflow_mcm_day: 42, release_mcm_day: 13.96, storage_mcm: 7270.1}
+  - {date: '2026-09-14', inflow_mcm_day: 33.64, release_mcm_day: 16.95, storage_mcm: 7286.05}
+  - {date: '2026-09-15', inflow_mcm_day: 27.53, release_mcm_day: 19.95, storage_mcm: 7292.89}
+  - {date: '2026-09-16', inflow_mcm_day: 24.58, release_mcm_day: 16.99, storage_mcm: 7299.73}
+  - {date: '2026-09-17', inflow_mcm_day: 40.53, release_mcm_day: 16.95, storage_mcm: 7322.56}
+  - {date: '2026-09-18', inflow_mcm_day: 52.06, release_mcm_day: 17, storage_mcm: 7356.86}
+  - {date: '2026-09-19', inflow_mcm_day: 67.51, release_mcm_day: 14, storage_mcm: 7409.61}
+  - {date: '2026-09-20', inflow_mcm_day: 55.43, release_mcm_day: 10.96, storage_mcm: 7453.32}
+  - {date: '2026-09-21', inflow_mcm_day: 40.99, release_mcm_day: 7.95, storage_mcm: 7485.6}
+  - {date: '2026-09-22', inflow_mcm_day: 38.8, release_mcm_day: 8.01, storage_mcm: 7515.63}
+  - {date: '2026-09-23', inflow_mcm_day: 32.18, release_mcm_day: 5.96, storage_mcm: 7541.09}
+  - {date: '2026-09-24', inflow_mcm_day: 27.52, release_mcm_day: 5.9, storage_mcm: 7561.95}
+  - {date: '2026-09-25', inflow_mcm_day: 20.67, release_mcm_day: 5.99, storage_mcm: 7575.86}
+  - {date: '2026-09-26', inflow_mcm_day: 23.02, release_mcm_day: 6, storage_mcm: 7592.12}
+  - {date: '2026-09-27', inflow_mcm_day: 22.74, release_mcm_day: 8.03, storage_mcm: 7606.06}
+- name_th: แควน้อยบำรุงแดน
+  hii_dam_id: 36
+  kg_node: node:dam:hii_dam:36
+  asof_dam_date: '2026-09-27'
+  now: {inflow_mcm_day: 13.296, release_mcm_day: 1.296, release_m3s_computed: 15.0, storage_mcm: 666.875, storage_pct_hii: 71.02, tag: MEASURED}
+  capacity_refs: {full_by_pct_mcm: 939.0, full_by_pct_tag: MEASURED-derived (storage / pct), normal_bound_mcm: 939, upper_bound_mcm: 1080, upper_rule_curve_mcm_on_asof: 797.36,
+    bounds_tag: MEASURED (HII dam_yearly_graph payload)}
+  days_to_full:
+    to_full_by_pct: {state: FILLING, headroom_mcm: 272.12, net_mcm_day: 12.0, days: 22.68}
+    to_normal_bound: {state: FILLING, headroom_mcm: 272.12, net_mcm_day: 12.0, days: 22.68}
+    label_th: ทดลอง — สมการข้อเสนอ
+    basis: PROP-FLOOD-03 step iterated at constant measured rates (inversion not yet in Toledo)
+  last_release_change: &id004 {date: '2026-09-23', from: 1.728, to: 1.296, delta: -0.432}
+  release_changes_30d:
+  - {date: '2026-09-02', from: 1.728, to: 4.32, delta: 2.592}
+  - {date: '2026-09-06', from: 4.32, to: 1.728, delta: -2.592}
+  - *id004
+  forced_release_flag: {value: NO_FLAG, tag: INSTINCT, note: flag only -- never a claim of an operator decision}
+  series_30d:
+  - {date: '2026-08-29', inflow_mcm_day: 10.128, release_mcm_day: 1.728, storage_mcm: 381.48}
+  - {date: '2026-08-30', inflow_mcm_day: 5.85, release_mcm_day: 1.728, storage_mcm: 385.53}
+  - {date: '2026-08-31', inflow_mcm_day: 9.018, release_mcm_day: 1.728, storage_mcm: 392.82}
+  - {date: '2026-09-01', inflow_mcm_day: 5.508, release_mcm_day: 1.728, storage_mcm: 396.6}
+  - {date: '2026-09-02', inflow_mcm_day: 7.56, release_mcm_day: 4.32, storage_mcm: 399.84}
+  - {date: '2026-09-03', inflow_mcm_day: 5.67, release_mcm_day: 4.32, storage_mcm: 401.19}
+  - {date: '2026-09-04', inflow_mcm_day: 7.37, release_mcm_day: 4.32, storage_mcm: 404.24}
+  - {date: '2026-09-05', inflow_mcm_day: 8.8, release_mcm_day: 4.32, storage_mcm: 408.72}
+  - {date: '2026-09-06', inflow_mcm_day: 9.382, release_mcm_day: 1.728, storage_mcm: 416.28}
+  - {date: '2026-09-07', inflow_mcm_day: 10.783, release_mcm_day: 1.728, storage_mcm: 425.24}
+  - {date: '2026-09-08', inflow_mcm_day: 10.063, release_mcm_day: 1.728, storage_mcm: 433.575}
+  - {date: '2026-09-09', inflow_mcm_day: 9.27, release_mcm_day: 1.728, storage_mcm: 441}
+  - {date: '2026-09-10', inflow_mcm_day: 10.371, release_mcm_day: 1.728, storage_mcm: 449.525}
+  - {date: '2026-09-11', inflow_mcm_day: 9.998, release_mcm_day: 1.728, storage_mcm: 457.795}
+  - {date: '2026-09-12', inflow_mcm_day: 11.034, release_mcm_day: 1.728, storage_mcm: 466.94}
+  - {date: '2026-09-13', inflow_mcm_day: 9.988, release_mcm_day: 1.728, storage_mcm: 475.2}
+  - {date: '2026-09-14', inflow_mcm_day: 9.693, release_mcm_day: 1.728, storage_mcm: 483.165}
+  - {date: '2026-09-15', inflow_mcm_day: 10.063, release_mcm_day: 1.728, storage_mcm: 491.5}
+  - {date: '2026-09-16', inflow_mcm_day: 7.793, release_mcm_day: 1.728, storage_mcm: 497.5}
+  - {date: '2026-09-17', inflow_mcm_day: 8.628, release_mcm_day: 1.728, storage_mcm: 504.4}
+  - {date: '2026-09-18', inflow_mcm_day: 12.828, release_mcm_day: 1.728, storage_mcm: 515.5}
+  - {date: '2026-09-19', inflow_mcm_day: 20.388, release_mcm_day: 1.728, storage_mcm: 534.16}
+  - {date: '2026-09-20', inflow_mcm_day: 20.128, release_mcm_day: 1.728, storage_mcm: 552.56}
+  - {date: '2026-09-21', inflow_mcm_day: 20.928, release_mcm_day: 1.728, storage_mcm: 571.76}
+  - {date: '2026-09-22', inflow_mcm_day: 19.228, release_mcm_day: 1.728, storage_mcm: 589.26}
+  - {date: '2026-09-23', inflow_mcm_day: 19.964, release_mcm_day: 1.296, storage_mcm: 607.74}
+  - {date: '2026-09-24', inflow_mcm_day: 19.224, release_mcm_day: 1.296, storage_mcm: 625.5}
+  - {date: '2026-09-25', inflow_mcm_day: 17.144, release_mcm_day: 1.296, storage_mcm: 641.25}
+  - {date: '2026-09-26', inflow_mcm_day: 14.921, release_mcm_day: 1.296, storage_mcm: 654.875}
+  - {date: '2026-09-27', inflow_mcm_day: 13.296, release_mcm_day: 1.296, storage_mcm: 666.875}
+- name_th: กิ่วลม
+  hii_dam_id: 34
+  kg_node: node:dam:hii_dam:34
+  asof_dam_date: '2026-09-27'
+  now: {inflow_mcm_day: 2.282, release_mcm_day: 1.97, release_m3s_computed: 22.8, storage_mcm: 96.08, storage_pct_hii: 90.45, tag: MEASURED}
+  capacity_refs: {full_by_pct_mcm: 106.2, full_by_pct_tag: MEASURED-derived (storage / pct), normal_bound_mcm: 106.22, upper_bound_mcm: 106.22,
+    upper_rule_curve_mcm_on_asof: 78.67, bounds_tag: MEASURED (HII dam_yearly_graph payload)}
+  days_to_full:
+    to_full_by_pct: {state: FILLING, headroom_mcm: 10.12, net_mcm_day: 0.31, days: 32.44}
+    to_normal_bound: {state: FILLING, headroom_mcm: 10.14, net_mcm_day: 0.31, days: 32.5}
+    label_th: ทดลอง — สมการข้อเสนอ
+    basis: PROP-FLOOD-03 step iterated at constant measured rates (inversion not yet in Toledo)
+  last_release_change: &id005 {date: '2026-09-25', from: 2.543, to: 1.954, delta: -0.589}
+  release_changes_30d:
+  - {date: '2026-09-02', from: 1.46, to: 1.797, delta: 0.337}
+  - {date: '2026-09-09', from: 1.705, to: 2.009, delta: 0.304}
+  - {date: '2026-09-11', from: 1.958, to: 1.658, delta: -0.3}
+  - {date: '2026-09-17', from: 1.625, to: 1.388, delta: -0.237}
+  - {date: '2026-09-19', from: 1.317, to: 1.516, delta: 0.199}
+  - {date: '2026-09-22', from: 1.615, to: 1.898, delta: 0.283}
+  - {date: '2026-09-23', from: 1.898, to: 2.551, delta: 0.653}
+  - *id005
+  forced_release_flag: {value: NO_FLAG, tag: INSTINCT, note: flag only -- never a claim of an operator decision}
+  series_30d:
+  - {date: '2026-08-29', inflow_mcm_day: 1.329, release_mcm_day: 1.767, storage_mcm: 61.494}
+  - {date: '2026-08-30', inflow_mcm_day: 1.198, release_mcm_day: 1.615, storage_mcm: 61.077}
+  - {date: '2026-08-31', inflow_mcm_day: 1.233, release_mcm_day: 1.598, storage_mcm: 60.712}
+  - {date: '2026-09-01', inflow_mcm_day: 1.199, release_mcm_day: 1.46, storage_mcm: 60.451}
+  - {date: '2026-09-02', inflow_mcm_day: 1.171, release_mcm_day: 1.797, storage_mcm: 59.825}
+  - {date: '2026-09-03', inflow_mcm_day: 1.966, release_mcm_day: 1.862, storage_mcm: 59.929}
+  - {date: '2026-09-04', inflow_mcm_day: 3.21, release_mcm_day: 1.854, storage_mcm: 61.285}
+  - {date: '2026-09-05', inflow_mcm_day: 2.247, release_mcm_day: 1.725, storage_mcm: 61.807}
+  - {date: '2026-09-06', inflow_mcm_day: 1.911, release_mcm_day: 1.702, storage_mcm: 62.016}
+  - {date: '2026-09-07', inflow_mcm_day: 1.912, release_mcm_day: 1.704, storage_mcm: 62.224}
+  - {date: '2026-09-08', inflow_mcm_day: 1.81, release_mcm_day: 1.705, storage_mcm: 62.329}
+  - {date: '2026-09-09', inflow_mcm_day: 1.852, release_mcm_day: 2.009, storage_mcm: 62.172}
+  - {date: '2026-09-10', inflow_mcm_day: 1.958, release_mcm_day: 1.958, storage_mcm: 62.172}
+  - {date: '2026-09-11', inflow_mcm_day: 3.901, release_mcm_day: 1.658, storage_mcm: 64.415}
+  - {date: '2026-09-12', inflow_mcm_day: 3.956, release_mcm_day: 1.64, storage_mcm: 66.731}
+  - {date: '2026-09-13', inflow_mcm_day: 8.847, release_mcm_day: 1.671, storage_mcm: 73.907}
+  - {date: '2026-09-14', inflow_mcm_day: 4.334, release_mcm_day: 1.703, storage_mcm: 76.538}
+  - {date: '2026-09-15', inflow_mcm_day: 2.415, release_mcm_day: 1.644, storage_mcm: 77.309}
+  - {date: '2026-09-16', inflow_mcm_day: 2.174, release_mcm_day: 1.625, storage_mcm: 77.858}
+  - {date: '2026-09-17', inflow_mcm_day: 4.545, release_mcm_day: 1.388, storage_mcm: 81.015}
+  - {date: '2026-09-18', inflow_mcm_day: 4.13, release_mcm_day: 1.317, storage_mcm: 83.828}
+  - {date: '2026-09-19', inflow_mcm_day: 4.879, release_mcm_day: 1.516, storage_mcm: 87.191}
+  - {date: '2026-09-20', inflow_mcm_day: 4.349, release_mcm_day: 1.604, storage_mcm: 89.936}
+  - {date: '2026-09-21', inflow_mcm_day: 3.237, release_mcm_day: 1.615, storage_mcm: 91.558}
+  - {date: '2026-09-22', inflow_mcm_day: 4.549, release_mcm_day: 1.898, storage_mcm: 94.209}
+  - {date: '2026-09-23', inflow_mcm_day: 3.175, release_mcm_day: 2.551, storage_mcm: 94.833}
+  - {date: '2026-09-24', inflow_mcm_day: 2.387, release_mcm_day: 2.543, storage_mcm: 94.677}
+  - {date: '2026-09-25', inflow_mcm_day: 2.422, release_mcm_day: 1.954, storage_mcm: 95.145}
+  - {date: '2026-09-26', inflow_mcm_day: 2.59, release_mcm_day: 1.967, storage_mcm: 95.768}
+  - {date: '2026-09-27', inflow_mcm_day: 2.282, release_mcm_day: 1.97, storage_mcm: 96.08}
+- name_th: กิ่วคอหมา
+  hii_dam_id: 35
+  kg_node: node:dam:hii_dam:35
+  asof_dam_date: '2026-09-27'
+  now: {inflow_mcm_day: 1.865, release_mcm_day: 0.39, release_m3s_computed: 4.5, storage_mcm: 159.902, storage_pct_hii: 94.06, tag: MEASURED}
+  capacity_refs: {full_by_pct_mcm: 170.0, full_by_pct_tag: MEASURED-derived (storage / pct), normal_bound_mcm: 170, upper_bound_mcm: 209, upper_rule_curve_mcm_on_asof: 156.67,
+    bounds_tag: MEASURED (HII dam_yearly_graph payload)}
+  days_to_full:
+    to_full_by_pct: {state: FILLING, headroom_mcm: 10.1, net_mcm_day: 1.48, days: 6.85}
+    to_normal_bound: {state: FILLING, headroom_mcm: 10.1, net_mcm_day: 1.48, days: 6.85}
+    label_th: ทดลอง — สมการข้อเสนอ
+    basis: PROP-FLOOD-03 step iterated at constant measured rates (inversion not yet in Toledo)
+  last_release_change: null
+  release_changes_30d: []
+  forced_release_flag: {value: FLAG, tag: INSTINCT, note: flag only -- never a claim of an operator decision}
+  series_30d:
+  - {date: '2026-08-29', inflow_mcm_day: 0.368, release_mcm_day: 0.368, storage_mcm: 122.431}
+  - {date: '2026-08-30', inflow_mcm_day: 0.368, release_mcm_day: 0.368, storage_mcm: 122.431}
+  - {date: '2026-08-31', inflow_mcm_day: 0.468, release_mcm_day: 0.368, storage_mcm: 122.531}
+  - {date: '2026-09-01', inflow_mcm_day: 0.368, release_mcm_day: 0.368, storage_mcm: 122.531}
+  - {date: '2026-09-02', inflow_mcm_day: 0.469, release_mcm_day: 0.368, storage_mcm: 122.632}
+  - {date: '2026-09-03', inflow_mcm_day: 0.771, release_mcm_day: 0.369, storage_mcm: 123.034}
+  - {date: '2026-09-04', inflow_mcm_day: 0.671, release_mcm_day: 0.369, storage_mcm: 123.336}
+  - {date: '2026-09-05', inflow_mcm_day: 0.772, release_mcm_day: 0.369, storage_mcm: 123.739}
+  - {date: '2026-09-06', inflow_mcm_day: 1.074, release_mcm_day: 0.37, storage_mcm: 124.443}
+  - {date: '2026-09-07', inflow_mcm_day: 0.873, release_mcm_day: 0.37, storage_mcm: 124.946}
+  - {date: '2026-09-08', inflow_mcm_day: 0.571, release_mcm_day: 0.37, storage_mcm: 125.147}
+  - {date: '2026-09-09', inflow_mcm_day: 0.571, release_mcm_day: 0.37, storage_mcm: 125.348}
+  - {date: '2026-09-10', inflow_mcm_day: 0.572, release_mcm_day: 0.371, storage_mcm: 125.459}
+  - {date: '2026-09-11', inflow_mcm_day: 3.491, release_mcm_day: 0.372, storage_mcm: 128.668}
+  - {date: '2026-09-12', inflow_mcm_day: 4.316, release_mcm_day: 0.374, storage_mcm: 132.61}
+  - {date: '2026-09-13', inflow_mcm_day: 2.815, release_mcm_day: 0.376, storage_mcm: 135.049}
+  - {date: '2026-09-14', inflow_mcm_day: 1.394, release_mcm_day: 0.378, storage_mcm: 136.065}
+  - {date: '2026-09-15', inflow_mcm_day: 0.683, release_mcm_day: 0.378, storage_mcm: 136.37}
+  - {date: '2026-09-16', inflow_mcm_day: 1.292, release_mcm_day: 0.378, storage_mcm: 137.284}
+  - {date: '2026-09-17', inflow_mcm_day: 1.903, release_mcm_day: 0.379, storage_mcm: 138.808}
+  - {date: '2026-09-18', inflow_mcm_day: 1.193, release_mcm_day: 0.38, storage_mcm: 139.621}
+  - {date: '2026-09-19', inflow_mcm_day: 2.271, release_mcm_day: 0.381, storage_mcm: 141.511}
+  - {date: '2026-09-20', inflow_mcm_day: 4.01, release_mcm_day: 0.383, storage_mcm: 145.138}
+  - {date: '2026-09-21', inflow_mcm_day: 2.935, release_mcm_day: 0.384, storage_mcm: 147.689}
+  - {date: '2026-09-22', inflow_mcm_day: 4.952, release_mcm_day: 0.386, storage_mcm: 152.255}
+  - {date: '2026-09-23', inflow_mcm_day: 3.744, release_mcm_day: 0.388, storage_mcm: 155.611}
+  - {date: '2026-09-24', inflow_mcm_day: 1.462, release_mcm_day: 0.389, storage_mcm: 156.684}
+  - {date: '2026-09-25', inflow_mcm_day: 1.327, release_mcm_day: 0.389, storage_mcm: 157.622}
+  - {date: '2026-09-26', inflow_mcm_day: 1.195, release_mcm_day: 0.39, storage_mcm: 158.427}
+  - {date: '2026-09-27', inflow_mcm_day: 1.865, release_mcm_day: 0.39, storage_mcm: 159.902}

@@ -1,0 +1,4 @@
+# Dependency for tools/mcp/floodconnect_mcp.py — checked with: python3 -c "import mcp"
+# Everything else this module uses is the Python 3 standard library.
+# Mirrors toledo/mcp's requirements-mcp.txt shape (NOT merged into requirements-ci.txt).
+mcp==1.28.1

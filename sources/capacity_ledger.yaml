@@ -1,0 +1,1241 @@
+# capacity_ledger.yaml — one ledger of DESIGN/NORMAL discharge capacities for the whole
+# upstream-dam -> BKK-canal -> tunnel/pump -> river/sea outfall chain.
+#
+# Written 2026-09-27 per founder request (16:40): "ทำผังให้ครบทั้งเรื่อง ความสามารถของการ
+# ระบายน้ำตามปกติ ของลำน้ำ แม่น้ำ และความสามารถของเครื่องมือต่างๆ" + founder correction
+# (16:44): "แต่เจ้าพระยาก็เป็นทางออกน้ำไม่ใช่เรอะ" -- the Chao Phraya (and the Gulf via
+# คลองพระองค์ฯ/ชายทะเล) is treated explicitly as the OUTLET/boundary of the Bangkok
+# drainage system below, not only as an upstream source -- see the `outfall` kind rows
+# and each BKK-side pump/tunnel row's `discharges_to` field.
+#
+# THIS FILE WRITES NEW DATA ONLY -- it does not edit docs/CAPACITY.md, docs/ASSETS.md,
+# sources/assets_registry.yaml, or site/build_data.py (out of this check's write scope;
+# another worker is the sole committer for this branch). ids reuse DAG `AS_*` node ids
+# and asset_ids from data/observations.sqlite's `assets` table where they already exist
+# (queried directly this check, not assumed); a new id is minted only where neither
+# exists, prefixed `led:`.
+#
+# Toledo: no equation is used anywhere in this file -- every capacity_value below is a
+# number copied verbatim from a cited source, or an arithmetic sum of two ledger
+# numbers (unit conversion million-m3/day -> m3/s by /86400, per CHAO_PHRAYA_CAPACITY_
+# AND_DISCHARGE.md's own convention -- basic arithmetic, not a registered equation).
+#
+# Tags follow this repo's epistemic floor (see AGENTS.md/README.md): VERIFIED (read
+# from an official document opened by this check or an already-VERIFIED sqlite row) /
+# RELAYED (news/media, not independently checked against the primary document) / OPEN
+# (no number found).
+
+schema_note: >
+  Each row: id, element_th, kind, location {order_index, province, district},
+  capacity_value, unit, capacity_basis, year_of_statement, source, tag,
+  current_value_this_week, observed_at, notes. Outfall-kind rows add:
+  discharges_to, bank, gravity_threshold (river/tide level above which the gate must
+  close and pumps take over -- OPEN everywhere in this ledger; no official threshold
+  document was found for any structure, see notes on each outfall row and the
+  DRAINAGE_CAPACITY_MAP.md "ทางออก" section).
+
+rows:
+  # ===================== TIER-2: upstream dams (spillway/release capacity) =====================
+  - id: AS_DAM_BHUMIBOL
+    element_th: "เขื่อนภูมิพล"
+    kind: dam_spillway
+    location: {order_index: 1, province: "ตาก", district: "สามเงา"}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "docs/knowledge/CHAO_PHRAYA_CAPACITY_AND_DISCHARGE.md §3 (ไม่ระบุความจุระบายสูงสุดออกแบบ, มีแต่ค่าไหลเข้า/ระบายจริงสัปดาห์นี้)"
+    tag: OPEN
+    current_value_this_week: {inflow_m3s: 418, release_m3s: 35}
+    observed_at: "2026-09-26T24:00+07:00"
+    notes: >
+      MEASURED-from-payload (raw/live/egat_water_crisis/2026-09-27T090623Z.html):
+      inflow 36.16 ล้าน ลบ.ม./วัน (≈418 m3/s), release 3.02 ล้าน ลบ.ม./วัน (≈35 m3/s).
+      Design spillway/max-release capacity itself not found in any source read this
+      task -- OPEN, do not confuse with the operational release value above.
+
+  - id: AS_DAM_SIRIKIT
+    element_th: "เขื่อนสิริกิติ์"
+    kind: dam_spillway
+    location: {order_index: 1, province: "อุตรดิตถ์", district: "ท่าปลา"}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "docs/knowledge/CHAO_PHRAYA_CAPACITY_AND_DISCHARGE.md §3"
+    tag: OPEN
+    current_value_this_week: {inflow_m3s: 263, release_m3s: 93}
+    observed_at: "2026-09-26T24:00+07:00"
+    notes: >
+      MEASURED-from-payload: inflow 22.74 ล้าน ลบ.ม./วัน (≈263 m3/s), release 8.03
+      ล้าน ลบ.ม./วัน (≈93 m3/s). Design spillway capacity: OPEN.
+
+  - id: AS_DAM_PASAK
+    element_th: "เขื่อนป่าสักชลสิทธิ์"
+    kind: dam_spillway
+    location: {order_index: 1, province: "ลพบุรี", district: "พัฒนานิคม"}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "no source read this check states its spillway/max-release m3/s"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "Not covered in this check's dam-release readings; ASSETS.md has coordinates (dam:rid_res_table:ป่าสักชลสิทธิ์ / dam:hii_dam:11) but no capacity field."
+
+  - id: AS_DAM_KWAENOI
+    element_th: "เขื่อนแควน้อยบำรุงแดน"
+    kind: dam_spillway
+    location: {order_index: 1, province: "พิษณุโลก", district: "วัดโบสถ์"}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "no source read this check states its spillway/max-release m3/s"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "Coordinates only (dam:rid_res_table:แควน้อยบำรุงแดน / dam:hii_dam:36); no capacity field in any source read."
+
+  # ===================== TIER-3: main-stem river reaches / control dam =====================
+  - id: AS_GAUGE_C2
+    element_th: "สถานี C.2 นครสวรรค์"
+    kind: river_reach
+    location: {order_index: 2, province: "นครสวรรค์", district: "เมืองนครสวรรค์"}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "docs/knowledge/CHAO_PHRAYA_CAPACITY_AND_DISCHARGE.md §1/§3"
+    tag: OPEN
+    current_value_this_week: 1800
+    observed_at: "2026-09-25T06:00+07:00"
+    notes: >
+      RELAYED (thaipbs.or.th/news/content/558442), current 1,737-1,800 m3/s.
+      No stated design/normal conveyance capacity found for this specific reach --
+      only the historical 2554 peak (4,686 m3/s, 13 Oct 2011, trueid.net, RELAYED)
+      exists as a reference ceiling, not a design number.
+
+  - id: AS_DAM_C13
+    element_th: "เขื่อนเจ้าพระยา C.13 ชัยนาท"
+    kind: dam_spillway
+    location: {order_index: 3, province: "ชัยนาท", district: "สรรพยา"}
+    capacity_value: 3100
+    unit: "m3s"
+    capacity_basis: operational_limit
+    year_of_statement: 2022
+    source: "thaipbs.or.th/news/content/320348 (via CHAO_PHRAYA_CAPACITY_AND_DISCHARGE.md §2)"
+    tag: RELAYED
+    current_value_this_week: 1750
+    observed_at: "2026-09-27"
+    notes: >
+      3,100 m3/s = the operationally-used downstream release limit as of 2565 (2022),
+      RELAYED. A second RELAYED figure, 2,800 m3/s ("รับได้สูงสุดก่อนล้นตลิ่ง" quoted from
+      a 2569 article referencing 2554), is a DIFFERENT basis (bank-overflow ceiling vs.
+      operational-management limit) -- kept as a separate note, not averaged/merged.
+      Current: 1,620 m3/s (23 ก.ย.) rising toward a stated plan of 2,000 m3/s; 1,750
+      m3/s per a later same-week reading (27 ก.ย., igreenstory.co/flood-15). 2554 peak
+      reference (not capacity): 3,721 m3/s, 21 ก.ย. 2554.
+
+  - id: led:divert_chainat_pasak
+    element_th: "คลองชัยนาท-ป่าสัก"
+    kind: diversion
+    location: {order_index: 4, province: "ชัยนาท/ลพบุรี", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "docs/knowledge/NATIONWIDE_HIERARCHY.md TIER-3 (AS_DIVERT_CNPS, node only, no capacity)"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "AS_DIVERT_CNPS in water_system_dag.mmd/NATIONWIDE_HIERARCHY.md is a governance/routing node, no m3/s figure found in any source read for this check."
+
+  - id: led:divert_rapiphat
+    element_th: "คลองระพีพัฒน์"
+    kind: diversion
+    location: {order_index: 4, province: "ปทุมธานี/สระบุรี", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "no source read this check states its m3/s"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: >
+      Referenced qualitatively in docs/knowledge/UPSTREAM_CHAIN_SOURCE_2026-09-26.md
+      (RID intentionally limits release through ปตร.จุฬาลงกรณ์ into คลองรังสิต/ระพีพัฒน์
+      to control the outer-embankment level) but no numeric design capacity found.
+
+  - id: led:divert_chainat_ayutthaya
+    element_th: "คลองชัยนาท-อยุธยา"
+    kind: diversion
+    location: {order_index: 4, province: "ชัยนาท/อยุธยา", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "no source read this check states its m3/s"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "Named in ONWR's '9 แผนงาน' summary (onwr.go.th/?page_id=3667, RELAYED per CHAO_PHRAYA doc §2) with no capacity figure quoted."
+
+  - id: led:divert_west_makhamthao_uthong
+    element_th: "ฝั่งตะวันตก (มะขามเฒ่า-อู่ทอง / ท่าจีน)"
+    kind: diversion
+    location: {order_index: 4, province: "ชัยนาท/สุพรรณบุรี", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "docs/knowledge/NATIONWIDE_HIERARCHY.md TIER-3 (AS_DIVERT_WEST, node only)"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "Node exists in the DAG/hierarchy doc; no m3/s figure found in any source read this check."
+
+  - id: led:retention_12thung
+    element_th: "12 ทุ่งรับน้ำ (เจ้าพระยาตอนล่าง)"
+    kind: retention_basin
+    location: {order_index: 4, province: "หลายจังหวัดลุ่มเจ้าพระยาตอนล่าง", district: null}
+    capacity_value: null
+    unit: "million_m3"
+    capacity_basis: OPEN
+    year_of_statement: 2026
+    source: "raw/knowledge/retention_basins/thaipbs_266415.html (id thaipbs_12thung in sources/assets_registry.yaml)"
+    tag: RELAYED
+    current_value_this_week: null
+    observed_at: null
+    notes: >
+      12 named ทุ่งรับน้ำ registered as class retention_basin, tag RELAYED, no
+      coordinate AND no per-field volume/capacity found in the Thai PBS article read
+      for that registry entry -- both location (coordinate) and volume are OPEN for
+      each individual field; usage status this week is separately noted OPEN in
+      NATIONWIDE_HIERARCHY.md (AS_RETENTION_12THUNG, "สถานะการใช้งานรอบนี้ OPEN").
+
+  - id: AS_DAM_RAMA6
+    element_th: "เขื่อนพระราม 6 (แม่น้ำป่าสัก)"
+    kind: dam_spillway
+    location: {order_index: 5, province: "พระนครศรีอยุธยา", district: "ท่าเรือ"}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "docs/knowledge/NATIONWIDE_HIERARCHY.md TIER-3 / water_system_dag.mmd AS_DAM_RAMA6 (node only)"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "Confluence point of the ป่าสัก chain with the main Chao Phraya stem below C.13/AS_CHAO_UP; no m3/s design or current figure found."
+
+  - id: led:bangban_bangsai_floodway
+    element_th: "คลองระบายน้ำหลากบางบาล-บางไทร"
+    kind: floodway_canal
+    location: {order_index: 6, province: "พระนครศรีอยุธยา", district: "บางบาล/บางไทร"}
+    capacity_value: 1200
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: null
+    source: "th.wikipedia.org (คลองระบายน้ำหลากบางบาล-บางไทร), via CHAO_PHRAYA_CAPACITY_AND_DISCHARGE.md §2"
+    tag: RELAYED
+    current_value_this_week: null
+    observed_at: null
+    notes: >
+      Under construction (ครม.-approved timeline extended to 2569/2026); designed
+      capacity 1,200 m3/s is a NEW bypass canal, not the main river channel. Numeric
+      coincidence flagged in CHAO_PHRAYA doc §4(c): this 1,200 is NOT the same
+      quantity as BMA's "1,200 m3/s ฝั่งพระนคร" pumping figure below (different
+      agency, different water, same number by chance).
+
+  - id: AS_GAUGE_C29_SAMKHOK
+    element_th: "C.29B สามโคก (ปทุมธานี) -- proxy สำหรับ C.29 บางไทร"
+    kind: river_reach
+    location: {order_index: 7, province: "ปทุมธานี", district: "สามโคก"}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "thaipbs.or.th/news/content/558442, via CHAO_PHRAYA_CAPACITY_AND_DISCHARGE.md §3"
+    tag: RELAYED
+    current_value_this_week: 1184
+    observed_at: "2026-09-23"
+    notes: >
+      C.29B (สามโคก) is not identical to C.29A (บางไทร proper) -- CHAO_PHRAYA doc flags
+      this distinction explicitly. C.29A บางไทร real-time m3/s this week: OPEN (only a
+      water-level-vs-critical-threshold narrative available, igreenstory.co/flood-15,
+      27 ก.ย. 2569). 2554 historical peak reference (not capacity): C.29 3,930 m3/s,
+      6 Oct 2011, trueid.net.
+
+  - id: led:river_through_bangkok
+    element_th: "แม่น้ำเจ้าพระยาผ่านกรุงเทพฯ"
+    kind: river_reach
+    location: {order_index: 8, province: "กรุงเทพมหานคร", district: null}
+    capacity_value: 3000
+    unit: "m3s"
+    capacity_basis: theoretical_sum
+    year_of_statement: 1999
+    source: "JICA Master Plan 1999 / UNESCAP (unescap.org/sites/default/files/S3b4_Thailand.pdf), via CHAO_PHRAYA_CAPACITY_AND_DISCHARGE.md §2"
+    tag: RELAYED
+    current_value_this_week: 1750
+    observed_at: "2026-09-27"
+    notes: >
+      ~3,000 m3/s (≈260 ล้าน ลบ.ม./วัน) = JICA's urbanization-limited conveyance
+      estimate (1999, repeated post-2554). A second, more recent operational figure:
+      3,100 m3/s (2565/2022, same basis as the C.13 operational limit row above --
+      this reach's usable capacity is effectively bounded by the C.13 release
+      decision upstream, not an independent number). No source found confirming
+      either figure has changed (silted/dredged/subsided) since 2554 -- OPEN per
+      CHAO_PHRAYA doc §2's own conclusion. THIS ROW IS THE PRIMARY OUTFALL/BOUNDARY
+      of the whole BKK drainage system -- see kind:outfall rows below and
+      DRAINAGE_CAPACITY_MAP.md "ทางออก" section for the tide interaction.
+
+  # ===================== TIER-5: BKK internal canal systems (east side) =====================
+  - id: led:bkk_east_canals_summary
+    element_th: "คลองหลัก กทม. ฝั่งตะวันออก (แสนแสบ/ประเวศ/ลาดพร้าว/พระโขนง ฯลฯ)"
+    kind: bkk_canal
+    location: {order_index: 9, province: "กรุงเทพมหานคร", district: "บึงกุ่ม/สะพานสูง/ประเวศ/บางกะปิ/คลองสามวา"}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "docs/CAPACITY.md §2/§3, water_system_dag.mmd (AS_SSB_BK, AS_SSB_INNER, AS_TRIBS, AS_TPK)"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: >
+      No single stated m3/s conveyance capacity exists for the canal reaches
+      themselves (แสนแสบ/ประเวศ/ลาดพร้าว/ทับช้าง) as distinct from the pump/tunnel
+      structures on them -- capacity in this system is expressed only at the
+      pump/tunnel/gate level below, never as a bare canal cross-section number, in
+      any source read for this check. Gate states (WL.SSB.10 มีนบุรี, WL.SSB.09
+      บางชัน, WL.PWT.03/04 ประเวศ) are themselves INFERRED not measured (see
+      AGENTS.md §8, docs/LESSONS_nodes_2026-09-27.md §A) -- open/closed state OPEN,
+      not just capacity.
+
+  # ===================== Tunnels (13, per docs/ASSETS.md / build_data.py) =====================
+  - id: tunnel:bma_dds:sukhumvit26
+    element_th: "อุโมงค์ระบายน้ำและสถานีสูบน้ำซอยสุขุมวิท 26"
+    kind: tunnel
+    location: {order_index: 10, province: "กรุงเทพมหานคร", district: "คลองเตย"}
+    capacity_value: 4
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: null
+    source: "docs/knowledge/card_media_springnews_851116.md (SpringNews infographic 851116)"
+    tag: RELAYED
+    current_value_this_week: null
+    observed_at: null
+    notes: "Was OPEN (no capacity) in docs/ASSETS.md/build_data.py; this ledger fills 4 m3/s from a media infographic, not yet cross-checked against a BMA document -- keep RELAYED, do not upgrade the sqlite row's own tag."
+
+  - id: tunnel:bma_dds:khlong_prem_diversion
+    element_th: "ระบบผันน้ำคลองเปรมประชากร (บางซื่อ/จตุจักร/หลักสี่/บางเขน/ดอนเมือง)"
+    kind: tunnel
+    location: {order_index: 10, province: "กรุงเทพมหานคร", district: "บางซื่อ/จตุจักร/หลักสี่/บางเขน/ดอนเมือง"}
+    capacity_value: 30
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: null
+    source: "docs/knowledge/card_media_springnews_851116.md"
+    tag: RELAYED
+    current_value_this_week: null
+    observed_at: null
+    notes: "Was OPEN. discharges_to: แม่น้ำเจ้าพระยา (via บางซื่อ tunnel, see outfall row below)."
+
+  - id: tunnel:bma_dds:sukhumvit36
+    element_th: "อุโมงค์ระบายน้ำและสถานีสูบน้ำซอยสุขุมวิท 36"
+    kind: tunnel
+    location: {order_index: 10, province: "กรุงเทพมหานคร", district: "คลองเตย"}
+    capacity_value: 6
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: null
+    source: "docs/knowledge/card_media_springnews_851116.md"
+    tag: RELAYED
+    current_value_this_week: null
+    observed_at: null
+    notes: "Was OPEN."
+
+  - id: tunnel:bma_dds:sukhumvit42
+    element_th: "อุโมงค์ระบายน้ำและสถานีสูบน้ำซอยสุขุมวิท 42"
+    kind: tunnel
+    location: {order_index: 10, province: "กรุงเทพมหานคร", district: "คลองเตย"}
+    capacity_value: 6
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: null
+    source: "docs/knowledge/card_media_springnews_851116.md"
+    tag: RELAYED
+    current_value_this_week: null
+    observed_at: null
+    notes: "Was OPEN."
+
+  - id: tunnel:bma_dds:phayathai
+    element_th: "ระบบระบายน้ำพื้นที่เขตพญาไท (ถนนพหลโยธิน/พระราม 6)"
+    kind: tunnel
+    location: {order_index: 10, province: "กรุงเทพมหานคร", district: "พญาไท"}
+    capacity_value: 4.5
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: null
+    source: "docs/knowledge/card_media_springnews_851116.md"
+    tag: RELAYED
+    current_value_this_week: null
+    observed_at: null
+    notes: "Was OPEN."
+
+  - id: tunnel:bma_dds:saensaeb_ladprao
+    element_th: "อุโมงค์ระบายน้ำคลองแสนแสบและคลองลาดพร้าวลงสู่แม่น้ำเจ้าพระยา"
+    kind: tunnel
+    location: {order_index: 10, province: "กรุงเทพมหานคร", district: "บางกะปิ/ห้วยขวาง"}
+    capacity_value: 60
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: null
+    source: "docs/knowledge/card_media_springnews_851116.md AND docs/CAPACITY.md (แสนแสบ-ลาดพร้าว ส่วนต่อขยาย, 60 m3/s -- two independent sources agree)"
+    tag: RELAYED
+    current_value_this_week: null
+    observed_at: null
+    notes: >
+      Two independent RELAYED sources (SpringNews infographic + the earlier
+      docs/CAPACITY.md news relay) state the same 60 m3/s -- consistency noted, still
+      RELAYED (neither is a primary BMA document opened directly). discharges_to:
+      แม่น้ำเจ้าพระยา.
+
+  - id: tunnel:bma_dds:bangsue
+    element_th: "อุโมงค์ระบายน้ำใต้คลองบางซื่อ จากคลองลาดพร้าวถึงแม่น้ำเจ้าพระยา (เกียกกาย)"
+    kind: tunnel
+    location: {order_index: 10, province: "กรุงเทพมหานคร", district: "บางซื่อ/ดุสิต"}
+    capacity_value: 60
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: null
+    source: "docs/CAPACITY.md (บางซื่อ แห่งที่ 8, 60 m3/s)"
+    tag: RELAYED
+    current_value_this_week: null
+    observed_at: null
+    notes: "discharges_to: แม่น้ำเจ้าพระยา (เกียกกาย reach) -- see outfall row below. Beneficiary area 56 sq km per docs/CAPACITY.md."
+
+  - id: tunnel:bma_dds:nongbon
+    element_th: "อุโมงค์ระบายน้ำจากบึงหนองบอนลงสู่แม่น้ำเจ้าพระยา"
+    kind: tunnel
+    location: {order_index: 10, province: "กรุงเทพมหานคร", district: "ประเวศ/บางนา/พระโขนง/สวนหลวง"}
+    capacity_value: 60
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: null
+    source: "docs/CAPACITY.md (บึงหนองบอน, 60 m3/s)"
+    tag: RELAYED
+    current_value_this_week: null
+    observed_at: null
+    notes: "discharges_to: แม่น้ำเจ้าพระยา."
+
+  - id: led:tunnel_makkasan_chaophraya
+    element_th: "อุโมงค์บึงมักกะสัน ลงสู่แม่น้ำเจ้าพระยา"
+    kind: tunnel
+    location: {order_index: 10, province: "กรุงเทพมหานคร", district: "ราชเทวี/ดินแดง"}
+    capacity_value: 45
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: null
+    source: "docs/knowledge/card_media_springnews_851116.md"
+    tag: RELAYED
+    current_value_this_week: null
+    observed_at: null
+    notes: >
+      NEW row -- this tunnel does not have an existing asset_id/DAG node in this
+      repo (checked: not in docs/ASSETS.md's tunnel list, not in water_system_dag.mmd);
+      found only via the SpringNews infographic this check. Minted id `led:tunnel_
+      makkasan_chaophraya`, tag RELAYED, not yet reconciled with the sqlite `assets`
+      table by the committing worker (out of this check's write scope).
+
+  - id: tunnel:bma_dds:prem_bangbua
+    element_th: "อุโมงค์ระบายน้ำคลองเปรมประชากรจากคลองบางบัวลงสู่แม่น้ำเจ้าพระยา (สะพานพระราม 7)"
+    kind: tunnel
+    location: {order_index: 10, province: "กรุงเทพมหานคร", district: "บางซื่อ/ดุสิต"}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "docs/ASSETS.md tunnel list (bma_dds_tunnels_pdf, name only)"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "No capacity found in the BMA DDS PDF or the SpringNews infographic (which covers only 7 of these 13 tunnels by name)."
+
+  - id: tunnel:bma_dds:saensaeb_ext
+    element_th: "อุโมงค์ระบายน้ำคลองแสนแสบส่วนต่อขยาย (ถึงซอยลาดพร้าว 130)"
+    kind: tunnel
+    location: {order_index: 10, province: "กรุงเทพมหานคร", district: "บางกะปิ/วังทองหลาง"}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "docs/ASSETS.md tunnel list"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "No capacity found in any source read."
+
+  - id: tunnel:bma_dds:taweewatthana
+    element_th: "อุโมงค์ระบายน้ำคลองทวีวัฒนาบริเวณคอขวด"
+    kind: tunnel
+    location: {order_index: 10, province: "กรุงเทพมหานคร", district: "ทวีวัฒนา"}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "docs/ASSETS.md tunnel list"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "No capacity found in any source read."
+
+  - id: tunnel:bma_dds:phraya_ratchamontri
+    element_th: "อุโมงค์ระบายน้ำคลองพระยาราชมนตรี (คลองภาษีเจริญ-คลองสนามชัย)"
+    kind: tunnel
+    location: {order_index: 10, province: "กรุงเทพมหานคร", district: "บางแค/หนองแขม"}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "docs/ASSETS.md tunnel list"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "No capacity found in any source read. discharges_to: ฝั่งธนบุรี/แม่น้ำท่าจีนหรือเจ้าพระยา (unspecified in source -- OPEN)."
+
+  - id: tunnel:hand_declared:rama9_ramkhamhaeng
+    element_th: "อุโมงค์พระราม 9-รามคำแหง"
+    kind: tunnel
+    location: {order_index: 10, province: "กรุงเทพมหานคร", district: "บางกะปิ/สวนหลวง"}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "docs/ASSETS.md OPEN list; not covered by the SpringNews infographic"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "diameter 4.60 m, length 5.98 km known (site/dist/data.json); no m3/s capacity or coordinate found anywhere read for this check."
+
+  # ===================== BKK pump stations (nearest-to-Sammakorn / named, from live sqlite) =====================
+  - id: pump_station:water_station:1
+    element_th: "สถานีสูบน้ำพระโขนง"
+    kind: pump_station
+    location: {order_index: 11, province: "กรุงเทพมหานคร", district: "พระโขนง"}
+    capacity_value: 45
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: null
+    source: "data/observations.sqlite assets table (class=pump_station, water_station source, VERIFIED -- queried this check, not re-verified against the original PDF)"
+    tag: MEASURED
+    current_value_this_week: null
+    observed_at: null
+    notes: >
+      45 m3/s (45 เครื่อง: 35x3 + 10x5) per docs/CAPACITY.md; a 2550 (2007) official
+      document states 173 m3/s for the same station name (OPEN discrepancy, 18 m3/s
+      gap, unresolved). discharges_to: แม่น้ำเจ้าพระยา (พระโขนง reach, both banks --
+      see outfall row below).
+
+  - id: pump_station:water_station:2
+    element_th: "สถานีสูบน้ำอุโมงค์พระโขนง"
+    kind: pump_station
+    location: {order_index: 11, province: "กรุงเทพมหานคร", district: "พระโขนง"}
+    capacity_value: 4
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: null
+    source: "data/observations.sqlite assets table"
+    tag: MEASURED
+    current_value_this_week: null
+    observed_at: null
+    notes: "4x1 เครื่อง per docs/CAPACITY.md (listed there as 60 m3/s for '4x15 เครื่อง' -- sqlite row's own capacity_m3s field differs, 4 vs 60; kept as-is from the live query, flagged OPEN which is correct: docs/CAPACITY.md and the sqlite row disagree, not reconciled here, out of write scope)."
+
+  - id: led:pump_bmakstations_summary
+    element_th: "สถานีสูบน้ำหลัก กทม. อื่น ๆ ที่มีตัวเลขความจุตีพิมพ์ (สรุปรวม) -- SUSPECT (เดิม)"
+    kind: pump_station
+    location: {order_index: 11, province: "กรุงเทพมหานคร", district: "หลายเขต"}
+    capacity_value: 718
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: null
+    source: "data/observations.sqlite: SELECT COUNT(*), SUM(capacity_m3s) FROM assets WHERE class='pump_station' AND capacity_m3s IS NOT NULL -> 187 rows, sum 718.0 m3/s (queried this check, BEFORE the 2026-09-27 TODO #51 correction below)"
+    tag: SUSPECT
+    current_value_this_week: null
+    observed_at: null
+    notes: >
+      SUSPECT as of 2026-09-27 (TODO #51, bma_plan2569 extraction) -- kept here
+      verbatim as historical record, NOT deleted/edited, per this repo's never-prune
+      rule. 91 of these 187 rows' capacity_m3s value turned out to equal the BMA
+      2569 plan's PUMP COUNT for that station, not its m3/s figure (e.g. อุโมงค์บางซื่อ
+      parsed here as 6, plan states 60 m3/s from 6 machines; สามเสน 15 vs 45; see
+      docs/knowledge/bma_plan2569_control_structures.yaml repo_match rows,
+      cross-checked against every asset_id in this store). This 718.0 sum is
+      therefore a mix of ~96 genuine capacity figures and ~91 mistaken pump counts
+      -- do not cite 718 as a capacity total going forward. See
+      led:pump_bmakstations_summary_corrected below for the 2026-09-27 replacement.
+
+  - id: led:pump_bmakstations_summary_corrected
+    element_th: "สถานีสูบน้ำหลัก กทม. อื่น ๆ ที่แก้ไขค่าความจุแล้ว (91 สถานี, เทียบแผน 2569)"
+    kind: pump_station
+    location: {order_index: 11, province: "กรุงเทพมหานคร", district: "หลายเขต"}
+    capacity_value: 1117.68
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: 2569
+    source: "data/observations.sqlite assets table, corrected 2026-09-27 (TODO #51) against docs/knowledge/bma_plan2569_control_structures.yaml p.170-208; old (pump-count) value moved to capacity_m3s_suspect_count per asset row, never deleted"
+    tag: VERIFIED
+    current_value_this_week: null
+    observed_at: null
+    notes: >
+      91 pump_station rows corrected 2026-09-27: old capacity_m3s (which was actually
+      a pump count, summing to 405.0 across these 91 rows) moved to
+      capacity_m3s_suspect_count (preserved, never deleted); capacity_m3s replaced
+      with the BMA 2569 plan's own printed m3/s figure for the matching station name
+      +coordinates, tag VERIFIED, page cited per-row in the sqlite `notes` column.
+      New sum over these 91 corrected rows = 1,117.68 m3/s. The remaining 96 of 187
+      pump_station rows with a capacity_m3s figure were NOT re-verified against the
+      plan this check (no plan match found, or matched and already agreed) -- their
+      sum (313.0 m3/s) is carried forward unchanged and is NOT re-tagged VERIFIED
+      here; treat it as OPEN/unconfirmed until cross-checked. Full-store total
+      across all 187 rows post-correction = 1,430.68 m3/s (91 VERIFIED @ 1,117.68 +
+      96 unverified-carryover @ 313.0) -- cite 1,117.68 (91 rows) as the safe VERIFIED
+      figure, not 1,430.68, until the remaining 96 are checked. Of those 96, 7 more
+      pumphistory-sourced rows (ST.DST.01, ST.BSU.01/02, ST.PYT.02, ST.BKN.06,
+      ST.BPD.04/05) were found by the same capacity_m3s==pumps_total pattern but were
+      NOT corrected this check (no repo_match link from the extraction step, one plan
+      row parsed ambiguously) -- see tests/test_pump_capacity_suspect_count.py's own
+      module note.
+
+  - id: led:bkk_total_pumping_phranakhon
+    element_th: "กำลังสูบรวม กทม. ฝั่งพระนคร"
+    kind: pump_station
+    location: {order_index: 11, province: "กรุงเทพมหานคร", district: "ฝั่งพระนคร (ทุกเขต)"}
+    capacity_value: 1200
+    unit: "m3s"
+    capacity_basis: reported_max
+    year_of_statement: 2026
+    source: "mgronline.com/qol/detail/9690000093779, via CHAO_PHRAYA_CAPACITY_AND_DISCHARGE.md §3"
+    tag: RELAYED
+    current_value_this_week: 1200
+    observed_at: "2026-09-25T20:12+07:00"
+    notes: >
+      "ฝั่งพระนครมีกำลังสูบรวม 1,200 ลูกบาศก์เมตรต่อวินาที" -- stated as full-capacity
+      operation as of this observation (25 ก.ย. 2569). One bank/side only, not
+      citywide -- do not conflate with the 2,467.69 citywide theoretical row below
+      (see CHAO_PHRAYA doc §4(c) for the exact disambiguation already done).
+
+  - id: led:bkk_total_pumping_citywide_theoretical
+    element_th: "กำลังสูบรวมทั้งเมือง (190 สถานีสูบ + 243 ประตูระบาย + 329 บ่อสูบ)"
+    kind: pump_station
+    location: {order_index: 11, province: "กรุงเทพมหานคร", district: "ทั้งเมือง (ทุกฝั่ง)"}
+    capacity_value: 2467.69
+    unit: "m3s"
+    capacity_basis: theoretical_sum
+    year_of_statement: null
+    source: "rocketmedialab.co/bkk-flood, docs/knowledge/card_media_rocketmedialab_bkk_flood.md"
+    tag: RELAYED
+    current_value_this_week: null
+    observed_at: null
+    notes: >
+      Theoretical/design sum across every station+gate+auxiliary pit citywide, NOT a
+      measured full-operation reading for any specific day. OPEN whether this
+      matches the store's own summed-pump-capacity row (see
+      led:pump_bmakstations_summary_corrected, 1,117.68 m3/s over 91 VERIFIED rows as
+      of the 2026-09-27 TODO #51 correction -- superseding the old 718.0 figure,
+      itself now flagged SUSPECT, see led:pump_bmakstations_summary above) or a fuller
+      unpublished BMA internal total -- both kept as separate rows per this repo's
+      never-merge-without-source rule. Sub-component: 483 auxiliary pumps
+      (electric+engine) = 806.60 m3/s (subset of this row, overlap with the
+      190/243/329 count unclear per the source itself).
+
+  - id: led:bkk_east_pump_summary
+    element_th: "สถานีสูบหลักฝั่งตะวันออก กทม. ใกล้สัมมากร (สรุป)"
+    kind: pump_station
+    location: {order_index: 11, province: "กรุงเทพมหานคร", district: "บางกะปิ/สะพานสูง/ประเวศ"}
+    capacity_value: 7.75
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: 2569
+    source: "แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. 2569 p.191 (ง-25), docs/knowledge/bma_plan2569_control_structures.yaml row_ids bma_plan2569:ctrl:p191:28-31"
+    tag: VERIFIED
+    current_value_this_week: null
+    observed_at: null
+    notes: >
+      UPDATED 2026-09-27 (TODO #50): ST.SPS.01-04 -- previously listed here as
+      "village-owned pumps near Sammakorn" with capacity OPEN -- are CORRECTED per
+      the BMA 2569 plan p.191: ST.SPS.01 สถานีสูบน้ำคลองบ้านม้า 2 (4.0, 4x1.0),
+      ST.SPS.04 บึงที่ 1 ตอนคลองสะพานสูง (1.0, 2x0.5), ST.SPS.03 บึงที่ 2 ตอนคลองบ้านม้า 2
+      (0.75, 3x0.25), ST.SPS.02 บึงที่ 4 ตอนคลองวังใหญ่ (2.0, 2x1.0) -- sum 7.75 m3/s,
+      owner สนน. กลุ่มงานระบบควบคุมน้ำตะวันออก, not the village juristic person. Still
+      CONTRADICTED pending founder/สนน. confirmation (docs/CAPACITY.md §2, AGENTS.md §8).
+      สถานีสูบน้ำคลองลำพังพวย (นิด้า) and อุโมงค์พระราม 9-รามคำแหง remain OPEN capacity
+      (out of this row's scope, kept as separate OPEN items elsewhere).
+
+  # ===================== Gates =====================
+  - id: led:gates_summary
+    element_th: "ประตูระบายน้ำหลัก กทม./ทั่วประเทศ"
+    kind: gate
+    location: {order_index: 12, province: "ทั่วประเทศ", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "data/observations.sqlite: SELECT COUNT(*) FROM assets WHERE class='gate' -> 2,279; SELECT COUNT(*) FROM assets WHERE class='gate' AND capacity_m3s IS NOT NULL -> 0 (queried this check)"
+    tag: MEASURED
+    current_value_this_week: null
+    observed_at: null
+    notes: >
+      2,279 gate rows exist in the live registry (2,266 VERIFIED + 13 OPEN
+      coordinate, per docs/ASSETS.md), but ZERO of them carry a capacity_m3s value
+      -- a gate's throughput capacity is not published per-structure in any source
+      this repo has ingested. docs/CAPACITY.md's older count (242 or 243, RELAYED/
+      OPEN, contradictory across sources) is the Bangkok-only pre-HII-expansion
+      figure; superseded in scope (not in capacity) by the nationwide sqlite count.
+
+  # ===================== Design rainfall standard =====================
+  - id: led:design_rainfall_standard
+    element_th: "ระบบออกแบบรับฝน (มาตรฐานสำนักการระบายน้ำ กทม.)"
+    kind: bkk_canal
+    location: {order_index: 0, province: "กรุงเทพมหานคร", district: null}
+    capacity_value: 80
+    unit: "mm_per_day"
+    capacity_basis: design
+    year_of_statement: 2026
+    source: "แผนปฏิบัติราชการประจำปี พ.ศ. 2569 สำนักการระบายน้ำ กทม., หน้า 4 (dds.bangkok.go.th/public_content/files/001/0011062_1.pdf) via docs/CAPACITY.md §1"
+    tag: VERIFIED
+    current_value_this_week: null
+    observed_at: null
+    notes: >
+      VERIFIED direct quote: "ขีดความสามารถของระบบระบายน้ำสามารถรองรับปริมาณฝนตกสะสม
+      รวมได้ไม่เกิน 80 มิลลิเมตร ใน 1 วัน ... หรือแปลงเป็นความเข้มของฝนไม่เกิน 58.7
+      มิลลิเมตรต่อชั่วโมง" -- equivalent second figure: 58.7 mm/hour. A conflicting
+      RELAYED news figure (76 mm/hr current design, 100 mm/hr future 20-40yr target,
+      JICA master-plan framing) exists per docs/CAPACITY.md §1 -- OPEN which basis
+      (as-built vs. new-project target) each applies to; not resolved by this check.
+
+  # ===================== OUTFALL rows (founder correction 16:44) =====================
+  - id: outfall:chao_phraya_boundary
+    element_th: "แม่น้ำเจ้าพระยา -- ทางออกหลักของระบบระบายน้ำ กทม. ทั้งระบบ"
+    kind: outfall
+    location: {order_index: 13, province: "กรุงเทพมหานคร", district: null}
+    capacity_value: 3100
+    unit: "m3s"
+    capacity_basis: operational_limit
+    year_of_statement: 2022
+    source: "same as led:river_through_bangkok above"
+    tag: RELAYED
+    current_value_this_week: 1750
+    observed_at: "2026-09-27"
+    discharges_to: "อ่าวไทย (via the river mouth, Samut Prakan)"
+    bank: "both (ฝั่งพระนคร + ฝั่งธนบุรี all discharge here)"
+    gravity_threshold: OPEN
+    notes: >
+      THE outlet/boundary node founder flagged (16:44 "แต่เจ้าพระยาก็เป็นทางออกน้ำไม่ใช่
+      เรอะ") -- every BKK pump/tunnel row above that lists "discharges_to: แม่น้ำ
+      เจ้าพระยา" ultimately empties here. Its own capacity (3,000-3,100 m3/s) is
+      simultaneously (a) the OUTPUT ceiling for every city pump/tunnel that gravity-
+      or force-drains into it, and (b) the INPUT this week (C.29/สามโคก 1,184 m3/s +
+      local BKK contribution, current C.13 1,750 m3/s at the upstream control point)
+      -- see DRAINAGE_CAPACITY_MAP.md "ทางออก" section for the tide-interaction
+      arithmetic. gravity_threshold OPEN: no official document read for this check
+      states a river/tide level above which a specific gate must close and switch to
+      forced pumping (see docs/knowledge/DRAINAGE_CAPACITY_MAP.md "ทางออก" section
+      and the BMA DDS tunnel PDF grep -- no gravity-closure threshold text found in
+      the extracted PDF text either).
+
+  - id: outfall:phra_khanong
+    element_th: "จุดออกพระโขนง (สถานีสูบน้ำพระโขนง + อุโมงค์พระโขนง)"
+    kind: outfall
+    location: {order_index: 13, province: "กรุงเทพมหานคร", district: "พระโขนง"}
+    capacity_value: 49
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: null
+    source: "sum of pump_station:water_station:1 (45) + pump_station:water_station:2 (4) above"
+    tag: MEASURED
+    current_value_this_week: null
+    observed_at: null
+    discharges_to: "แม่น้ำเจ้าพระยา, ฝั่งพระนคร (พระโขนง reach, downstream of central Bangkok)"
+    bank: "ฝั่งพระนคร (east/left bank)"
+    gravity_threshold: OPEN
+    notes: >
+      This is the pump group serving the east-side canal network (แสนแสบ/ประเวศ
+      chain) that Sammakorn's watershed ultimately drains toward. No document read
+      states the river level at which the พระโขนง gate switches from gravity flow to
+      forced pumping -- OPEN.
+
+  - id: outfall:bang_sue_kiak_kai
+    element_th: "จุดออกบางซื่อ (เกียกกาย) -- อุโมงค์บางซื่อ + สถานีสูบอุโมงค์บางซื่อ"
+    kind: outfall
+    location: {order_index: 13, province: "กรุงเทพมหานคร", district: "บางซื่อ/ดุสิต"}
+    capacity_value: 66
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: null
+    source: "sum of tunnel:bma_dds:bangsue (60) + pump_station:water_station:8 สถานีสูบน้ำอุโมงค์บางซื่อ (6) above"
+    tag: MEASURED
+    current_value_this_week: null
+    observed_at: null
+    discharges_to: "แม่น้ำเจ้าพระยา, ฝั่งพระนคร (เกียกกาย reach, upstream of central Bangkok)"
+    bank: "ฝั่งพระนคร (east/left bank)"
+    gravity_threshold: OPEN
+    notes: "Serves the north-side คลองบางซื่อ/ลาดพร้าว catchment, not the Sammakorn-side east catchment."
+
+  - id: outfall:makkasan
+    element_th: "จุดออกบึงมักกะสัน"
+    kind: outfall
+    location: {order_index: 13, province: "กรุงเทพมหานคร", district: "ราชเทวี"}
+    capacity_value: 45
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: null
+    source: "led:tunnel_makkasan_chaophraya above (SpringNews infographic)"
+    tag: RELAYED
+    current_value_this_week: null
+    observed_at: null
+    discharges_to: "แม่น้ำเจ้าพระยา, ฝั่งพระนคร"
+    bank: "ฝั่งพระนคร (east/left bank)"
+    gravity_threshold: OPEN
+    notes: "New find this check, not previously in this repo's tunnel registry."
+
+  - id: outfall:nongbon
+    element_th: "จุดออกบึงหนองบอน"
+    kind: outfall
+    location: {order_index: 13, province: "กรุงเทพมหานคร", district: "ประเวศ"}
+    capacity_value: 65
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: null
+    source: "sum of tunnel:bma_dds:nongbon (60) + pump_station:water_station:11 สถานีสูบน้ำบึงหนองบอน (5) above"
+    tag: MEASURED
+    current_value_this_week: null
+    observed_at: null
+    discharges_to: "แม่น้ำเจ้าพระยา, ฝั่งพระนคร"
+    bank: "ฝั่งพระนคร (east/left bank)"
+    gravity_threshold: OPEN
+    notes: "This is the outfall for the ประเวศ/บางนา/สวนหลวง portion of the same east-side catchment Sammakorn sits within (upstream of it in the chain, not the same lateral)."
+
+  - id: outfall:east_seaside_rid
+    element_th: "ระบบชลประทานชายทะเลตะวันออก (คลองพระองค์ฯ/สถานีสูบชายทะเล)"
+    kind: outfall
+    location: {order_index: 13, province: "สมุทรปราการ", district: "บางบ่อ/บางเสาธง (ชายทะเล)"}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "water_system_dag.mmd AS_RID_COAST node; sources/assets_registry.yaml tide_gate_bang_krachao (34 gates, aggregate)"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    discharges_to: "อ่าวไทย, โดยตรง (ไม่ผ่านแม่น้ำเจ้าพระยาสายหลัก)"
+    bank: "ชายฝั่งทะเล (sea-facing, east of the river mouth)"
+    gravity_threshold: OPEN
+    notes: >
+      This is the SECOND, sea-facing outlet the founder's correction names alongside
+      the river ("และอ่าวไทย via คลองพระองค์ฯ/ชายทะเล") -- the terminus of the east-side
+      canal chain that bypasses the Chao Phraya entirely. No m3/s capacity found for
+      the RID coastal irrigation/drainage system itself; the only numeric row related
+      to this outlet is tide_gate:thaigov_bang_krachao (34 gates, ประตูระบายน้ำ
+      คุ้งบางกระเจ้า, RELAYED, aggregate scheme, no per-gate capacity).
+
+  - id: outfall:tide_boundary_condition
+    element_th: "เงื่อนไขระดับน้ำทะเล/น้ำขึ้นลง ที่ปากแม่น้ำ (กรมอุทกศาสตร์ กองทัพเรือ)"
+    kind: outfall
+    location: {order_index: 13, province: "กรุงเทพมหานคร", district: null}
+    capacity_value: null
+    unit: "m_MSL"
+    capacity_basis: OPEN
+    year_of_statement: 2026
+    source: "raw/tide/hydro_navy_bangkok_2026.json (กรมอุทกศาสตร์ กองทัพเรือ, astronomical tide table, official_report)"
+    tag: MEASURED
+    current_value_this_week: "see DRAINAGE_CAPACITY_MAP.md ทางออก section for the day-by-day HW/LW table, 23-27 ก.ย. 2569"
+    observed_at: "2026-09-23 to 2026-09-27"
+    discharges_to: null
+    bank: null
+    gravity_threshold: OPEN
+    notes: >
+      This is a boundary CONDITION row, not a discharge-capacity row: it carries the
+      tide height (m, MSL) that determines whether the river/sea outfalls above can
+      drain by gravity or need forced pumping. Astronomical prediction only --
+      explicitly excludes dam-release water and rainfall per the source document's
+      own stated scope ("ไม่รวมน้ำระบายจากเขื่อน และปริมาณน้ำฝน"). No official
+      gravity-drain threshold level (m) was found in docs/CAPACITY.md or the archived
+      BMA DDS tunnel PDF (grepped this check, no match) -- gravity_threshold OPEN
+      everywhere in this ledger; DRAINAGE_CAPACITY_MAP.md instead lists the high-tide
+      windows themselves without a threshold comparison.
+
+  # ===================== JICA 2013 plan-document discharge distribution (Fig.4, 2011 estimate) =====================
+  - id: led:jica_2011_discharge_upper
+    element_th: "จุดรวมน้ำตอนบน (ใกล้จุดรวมน้ำเหนือเขื่อน, ตามผัง Fig.4 JICA)"
+    kind: river_reach
+    location: {order_index: 2, province: "นครสวรรค์ (โดยประมาณตามผัง)", district: null}
+    capacity_value: 4800
+    unit: "m3s"
+    capacity_basis: theoretical_sum
+    year_of_statement: 2013
+    source: "docs/knowledge/card_report_jica_flood_info_system_plan.md (JICA Basic Plan of Flood Management Information System of Thailand, Feb 2013, Fig.4)"
+    tag: RELAYED
+    current_value_this_week: null
+    observed_at: null
+    notes: >
+      Modeled "estimated discharge distribution, 2011 flood without dyke breach" --
+      a planning-document estimate for a specific historical event, NOT a design
+      capacity or a current measurement. Kept as a separate row from AS_GAUGE_C2
+      (which is the live-registry gauge node) because the JICA figure's exact
+      station location on the ground is not stated precisely enough in the readable
+      figure to merge with confidence.
+
+  - id: led:jica_2011_discharge_mid
+    element_th: "ลำน้ำหลักช่วงกลาง (หลังหักส่วนแยกเข้าทุ่ง/คลอง, ตามผัง Fig.4 JICA)"
+    kind: river_reach
+    location: {order_index: 4, province: "ชัยนาท/สิงห์บุรี/อ่างทอง (โดยประมาณตามผัง)", district: null}
+    capacity_value: 3700
+    unit: "m3s"
+    capacity_basis: theoretical_sum
+    year_of_statement: 2013
+    source: "docs/knowledge/card_report_jica_flood_info_system_plan.md, Fig.4"
+    tag: RELAYED
+    current_value_this_week: null
+    observed_at: null
+    notes: "Same 2011-flood-estimate basis as the row above; several further branch values (500/300/1,000/1,400/700/400/1,100/2,300 m3/s) appear at intermediate diversion points in the same figure but are not individually identifiable to a named structure in this repo -- listed in the card, not each minted as its own ledger row."
+
+  - id: led:jica_2011_discharge_bangkok
+    element_th: "ผ่านกรุงเทพฯ, จุดที่ผังระบุ 'Areas to be protected' (ตามผัง Fig.4 JICA)"
+    kind: river_reach
+    location: {order_index: 8, province: "กรุงเทพมหานคร", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: theoretical_sum
+    year_of_statement: 2013
+    source: "docs/knowledge/card_report_jica_flood_info_system_plan.md, Fig.4"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: >
+      Two values appear side by side at this point in the figure (3,300 and 4,000
+      m3/s) with no caption distinguishing which is which scenario/location in the
+      portion of the image readable this check -- capacity_value left OPEN rather
+      than guessing which number applies; both are recorded in
+      card_report_jica_flood_info_system_plan.md verbatim. Cross-reference: this is
+      in the same range as led:river_through_bangkok's own 3,000-3,100 m3/s figure
+      (JICA 1999/2022 operational sources) -- broadly consistent, not identical
+      (different year, different method: 1999 urbanization-limited estimate vs.
+      2013 event-specific simulation), not merged into one row.
+
+  # ===================== NATIONWIDE mini-chains (founder 16:58: "ต้องไม่ใช่แค่ กทม. นะ อย่าลืม") =====================
+  # Each basin below follows the same dam/weir -> mainstem reach -> town/outlet shape as the
+  # Chao Phraya chain, grouped by the 22 official ONWR basin nodes (basin:onwr:* in the live
+  # registry). Skeletal/OPEN where this repo has not yet collected a capacity number --
+  # existing asset_ids reused wherever a matching sqlite row was found this check (queried
+  # directly), never invented.
+
+  # --- ลุ่มน้ำท่าจีน (basin:onwr:13) ---
+  - id: led:U_thachin_dam
+    element_th: "ต้นน้ำท่าจีน (แยกจากเจ้าพระยาที่ปากคลองมะขามเฒ่า-อู่ทอง)"
+    kind: diversion
+    location: {order_index: 1, province: "ชัยนาท", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "same node as led:divert_west_makhamthao_uthong above -- ท่าจีนรับน้ำผ่านจุดผันเดียวกัน, ไม่ใช่ลุ่มน้ำอิสระที่มีเขื่อนต้นน้ำของตัวเอง"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "หน่วยระบายน้ำ (U) ตัวอย่าง: ท่าจีนไม่มีเขื่อนใหญ่ต้นน้ำของตัวเอง -- รับน้ำจากการผันจากเจ้าพระยาเท่านั้น (ดู basin:onwr:13)."
+
+  - id: led:U_thachin_mainstem
+    element_th: "แม่น้ำท่าจีน (สายหลัก, ผ่านนครปฐม/สมุทรสาคร)"
+    kind: river_reach
+    location: {order_index: 5, province: "นครปฐม/สมุทรสาคร", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "basin:onwr:13; gauge:thaiwater_waterlevel:X.47 (บ้านท่าจีน); gate:hii_watergate:753 (ปากแม่น้ำท่าจีน)"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "Telemetry stations exist (X.47, gate 753) but no design/normal conveyance capacity found in any source read this check."
+
+  - id: led:U_thachin_outlet
+    element_th: "ปากแม่น้ำท่าจีน -- ทางออกอ่าวไทย"
+    kind: outfall
+    location: {order_index: 13, province: "สมุทรสาคร", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "gauge:thaiwater_rain:GLF002 / rain_gauge:thaiwater_rain_24h:753 (ปากแม่น้ำท่าจีน)"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    discharges_to: "อ่าวไทย"
+    bank: null
+    gravity_threshold: OPEN
+    notes: "Second Gulf-facing outlet distinct from the Chao Phraya mouth and from outfall:east_seaside_rid -- capacity OPEN."
+
+  # --- ลุ่มน้ำบางปะกง/นครนายก (basin:onwr:15) ---
+  - id: led:U_bangpakong_dam
+    element_th: "เขื่อนทดน้ำบางปะกง (weir/regulator ต้นทาง)"
+    kind: dam_spillway
+    location: {order_index: 1, province: "ฉะเชิงเทรา", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "rain_gauge:thaiwater_rain_24h:1316657 (เขื่อนทดน้ำบางปะกง, name only, no capacity field)"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "Node exists in the live registry as a rain gauge site sharing the structure's name; no discharge/capacity figure found."
+
+  - id: led:U_bangpakong_mainstem
+    element_th: "แม่น้ำบางปะกง (สายหลัก)"
+    kind: river_reach
+    location: {order_index: 5, province: "ฉะเชิงเทรา", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "gauge:thaiwater_waterlevel:BPK001 (บางปะกง); basin:onwr:15"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "Telemetry exists (BPK001); no capacity figure found in any source read this check."
+
+  - id: led:U_bangpakong_outlet
+    element_th: "ปากแม่น้ำบางปะกง -- ทางออกอ่าวไทย (ด้านตะวันออก)"
+    kind: outfall
+    location: {order_index: 13, province: "ฉะเชิงเทรา", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "rain_gauge:thaiwater_rain_24h:1316653 (ปากแม่น้ำบางปะกง)"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    discharges_to: "อ่าวไทย (ฝั่งตะวันออก, near คุ้งบางกระเจ้า/east-seaside RID system)"
+    bank: null
+    gravity_threshold: OPEN
+    notes: "This is the eastern counterpart outlet to outfall:east_seaside_rid -- distinct river mouth, same general Gulf coast."
+
+  # --- ลุ่มน้ำยม / น่าน (basin:onwr:8 / basin:onwr:9) -- diversion channels already registered ---
+  - id: led:U_yomnan_diversion2
+    element_th: "คลองผันน้ำยม-น่าน 2"
+    kind: diversion
+    location: {order_index: 1, province: "สุโขทัย/พิษณุโลก (โดยประมาณ)", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "diversion_channel:thailand_water_kg:yom_nan2 (already in the live registry, class diversion_channel, tag OPEN)"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "Reused directly from the existing sqlite asset row -- gauge on the channel is separately VERIFIED (DIV002 per sources/assets_registry.yaml notes) but the channel's own conveyance capacity is not published anywhere read."
+
+  - id: led:U_yomnan_diversion3
+    element_th: "คลองผันน้ำยม-น่าน 3"
+    kind: diversion
+    location: {order_index: 1, province: "สุโขทัย/พิษณุโลก (โดยประมาณ)", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "diversion_channel:thailand_water_kg:yom_nan3"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "Same as yom_nan2 row above -- capacity OPEN."
+
+  - id: led:U_yomnan_diversion4
+    element_th: "คลองผันน้ำยม-น่าน 4"
+    kind: diversion
+    location: {order_index: 1, province: "สุโขทัย/พิษณุโลก (โดยประมาณ)", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "diversion_channel:thailand_water_kg:yom_nan4"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "Same as yom_nan2/3 rows above -- capacity OPEN. Yom/Nan basins (basin:onwr:8/9) feed into the upper Chao Phraya above C.2 -- these 3 channels are part of the TIER-1/TIER-2 upstream picture the Chao Phraya chain already covers, listed here separately per basin grouping."
+
+  # --- ลุ่มน้ำปิง / วัง (basin:onwr:6 / basin:onwr:7) -- เชียงใหม่/ลำปาง ---
+  - id: led:U_ping_dam
+    element_th: "เขื่อนแม่ปิงตอนล่าง (ลุ่มน้ำปิง)"
+    kind: dam_spillway
+    location: {order_index: 1, province: "เชียงใหม่/ลำพูน (โดยประมาณ)", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "dam:hii_dam:51 (เขื่อนแม่ปิงตอนล่าง, coordinate VERIFIED per HII census, no capacity field)"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "basin:onwr:6 (ลุ่มน้ำปิง). Coordinate exists; discharge/spillway capacity not published in the source this row's coordinate came from."
+
+  - id: led:U_wang_dam_kiewlom
+    element_th: "เขื่อนกิ่วลม (ลุ่มน้ำวัง)"
+    kind: dam_spillway
+    location: {order_index: 1, province: "ลำปาง", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "dam:rid_res_table:กิ่วลม / dam:hii_dam:34"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "basin:onwr:7 (ลุ่มน้ำวัง). Named + coordinate-VERIFIED per docs/ASSETS.md's 35-dam HII match; no spillway/max-release m3/s found in any source read."
+
+  - id: led:U_wang_dam_kiewkhoma
+    element_th: "เขื่อนกิ่วคอหมา (ลุ่มน้ำวัง)"
+    kind: dam_spillway
+    location: {order_index: 1, province: "ลำปาง", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "dam:rid_res_table:กิ่วคอหมา / dam:hii_dam:35"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "basin:onwr:7. Same as กิ่วลม row -- capacity OPEN."
+
+  - id: led:U_ping_wang_outlet
+    element_th: "ปิง/วัง บรรจบเข้าเจ้าพระยาที่นครสวรรค์ (C.2)"
+    kind: river_reach
+    location: {order_index: 2, province: "นครสวรรค์", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "AS_GAUGE_C2 above -- same confluence point already tracked as the Chao Phraya chain's own upstream gauge"
+    tag: OPEN
+    current_value_this_week: 1800
+    observed_at: "2026-09-25T06:00+07:00"
+    notes: "Ping/Wang (+ Yom/Nan) all converge at Nakhon Sawan before C.2 -- this row cross-references AS_GAUGE_C2 rather than duplicating its number; ปิง/วัง's own individual contribution split is OPEN (no per-basin breakdown found for this week's C.2 reading)."
+
+  # --- ลุ่มน้ำมูล / ชี (basin:onwr:5 / basin:onwr:4) -- อุบล outlet ---
+  - id: led:U_mun_dam_sirindhorn
+    element_th: "เขื่อนสิรินธร (ลุ่มน้ำมูล)"
+    kind: dam_spillway
+    location: {order_index: 1, province: "อุบลราชธานี", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "dam:rid_res_table:สิรินธร / dam:hii_dam:3,44"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "basin:onwr:5 (ลุ่มน้ำมูล). Two HII rows (id 3 and 44) for the same physical dam under different agency reporting, per docs/ASSETS.md's keep-both convention; no capacity found."
+
+  - id: led:U_mun_dam_paakmun
+    element_th: "เขื่อนปากมูล (ลุ่มน้ำมูล, ท้ายน้ำสุด ก่อนบรรจบโขง)"
+    kind: dam_spillway
+    location: {order_index: 4, province: "อุบลราชธานี", district: "โขงเจียม"}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "dam:hii_dam:48 (ปากมูล)"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "Not in the rid_res_table 35-dam list (EGAT-operated run-of-river dam) -- coordinate VERIFIED via HII census only; no capacity found."
+
+  - id: led:U_chi_dam_lampao
+    element_th: "เขื่อนลำปาว (ลุ่มน้ำชี)"
+    kind: dam_spillway
+    location: {order_index: 1, province: "กาฬสินธุ์", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "docs/ASSETS.md Dams table (ภาคตะวันออกเฉียงเหนือ region list, ลำปาง -- actually ลำปาว per that table)"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "basin:onwr:4 (ลุ่มน้ำชี). Named + region-VERIFIED per the 35-dam HII match; no capacity found."
+
+  - id: led:U_mun_chi_outlet
+    element_th: "มูล/ชี บรรจบโขงที่อุบลราชธานี (Mekong confluence)"
+    kind: outfall
+    location: {order_index: 13, province: "อุบลราชธานี", district: "โขงเจียม"}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "no telemetry/capacity source read this check states a confluence discharge figure"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    discharges_to: "แม่น้ำโขง (international river, not the Gulf of Thailand -- the only basin in this ledger whose outlet is not a Thai coastline)"
+    bank: null
+    gravity_threshold: OPEN
+    notes: "Distinct hydrological regime from every other chain in this ledger (Mekong mainstem water levels, not tide) -- flagged so a future task does not accidentally apply a tide/gravity-threshold framing here."
+
+  # --- ภาคใต้ (หาดใหญ่): คลองอู่ตะเภา + คลอง ร.1 (basin:onwr:20, ลุ่มน้ำทะเลสาบสงขลา) ---
+  - id: led:U_hatyai_utapao_mainstem
+    element_th: "คลองอู่ตะเภา (สายหลักผ่านหาดใหญ่)"
+    kind: bkk_canal
+    location: {order_index: 5, province: "สงขลา", district: "หาดใหญ่"}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "gauge:thaiwater_waterlevel:ONE037 (สะพานข้ามคลองอู่ตะเภา); gauge:thaiwater_waterlevel:X.44 (บ้านหาดใหญ่ใน); gate:hii_watergate:709679 (ปตร.อู่ตะเภา)"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    notes: "basin:onwr:20 (ลุ่มน้ำทะเลสาบสงขลา). Telemetry exists at 3+ points; no conveyance capacity figure for the canal itself found in any source read this check."
+
+  - id: led:U_hatyai_r1_canal
+    element_th: "คลองระบายน้ำภูมิพลานุสรณ์ (คลอง ร.1 เดิม) -- ทางผันน้ำหลักเลี่ยงตัวเมืองหาดใหญ่"
+    kind: floodway_canal
+    location: {order_index: 6, province: "สงขลา", district: "หาดใหญ่"}
+    capacity_value: 1200
+    unit: "m3s"
+    capacity_basis: design
+    year_of_statement: null
+    source: "th.wikipedia.org คลองระบายน้ำภูมิพลานุสรณ์ (fetched this check, WebFetch)"
+    tag: RELAYED
+    current_value_this_week: null
+    observed_at: null
+    notes: >
+      Design capacity 1,200 m3/s per the cited Wikipedia article, up from an
+      original 465 m3/s before an expansion (year of the expansion not stated in
+      the fetched summary -- OPEN). The article itself states this canal was
+      "insufficient during the 2568 (2025) southern Thailand floods when rainfall
+      exceeded the system's design standards" -- RELAYED, not independently
+      verified against a RID/DPT document by this check (single-source, an
+      encyclopedia article, not an official document opened directly). Same
+      numeric-coincidence caution as bangban_bangsai_floodway above: 1,200 m3/s
+      recurs at three unrelated structures in this ledger (BMA ฝั่งพระนคร pumping,
+      บางบาล-บางไทร floodway, and this Hat Yai canal) -- flagged, not an error.
+
+  - id: led:U_hatyai_outlet
+    element_th: "ทะเลสาบสงขลา -- ทางออกของระบบหาดใหญ่"
+    kind: outfall
+    location: {order_index: 13, province: "สงขลา", district: null}
+    capacity_value: null
+    unit: "m3s"
+    capacity_basis: OPEN
+    year_of_statement: null
+    source: "basin:onwr:20 (ลุ่มน้ำทะเลสาบสงขลา)"
+    tag: OPEN
+    current_value_this_week: null
+    observed_at: null
+    discharges_to: "ทะเลสาบสงขลา, แล้วออกอ่าวไทยที่ปากทะเลสาบ (Songkhla Lake, then the Gulf via the lake's own outlet)"
+    bank: null
+    gravity_threshold: OPEN
+    notes: "Third distinct outlet type in this ledger (a lagoon, not a direct river mouth) -- no capacity/threshold figure found in any source read this check."

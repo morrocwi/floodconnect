@@ -9,7 +9,7 @@ and empirically test whether it AGREES with ground truth often enough to be wort
 a corroborating tie-breaker for otherwise-unknown canal components.
 
 This script ONLY measures the calibration/agreement rate. It does not touch
-build_bangkok_canals.py. Ground truth = build_kg.py's major-river graph, whose direction is
+build_bangkok_canals.py. Ground truth = build_river_kg.py's major-river graph, whose direction is
 `finite_diagnostic` tier (HydroRIVERS' own NEXT_DOWN field) -- i.e. real, non-heuristic
 direction. For every KlongMap real-coordinate station (199 total) that has >=1 nearby arrow
 in schematic-pixel space, and that also sits within some real-world radius of a major-river
@@ -123,7 +123,7 @@ def load_stations_and_arrows():
 
 
 def load_major_river_edges():
-    """Ground truth: build_kg.py's major-river graph, direction = HydroRIVERS NEXT_DOWN,
+    """Ground truth: build_river_kg.py's major-river graph, direction = HydroRIVERS NEXT_DOWN,
     finite_diagnostic tier (real, not heuristic). Returns list of
     {lat, lon, to_lat, to_lon, bearing_deg (true downstream direction)}."""
     if not MAIN_RIVER_JSONLD.exists():

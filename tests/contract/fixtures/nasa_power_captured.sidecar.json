@@ -1,0 +1,11 @@
+{
+  "source_id": "nasa_power",
+  "url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=PRECTOTCORR&community=AG&longitude=100.676084&latitude=13.758235&start=20260925&end=20261002&format=JSON",
+  "captured_at": "2026-10-02T07:44:33Z",
+  "sha256": "6c7a516b5cf26a31552d307134ea3d9d489294f9466722b1e23789d0ec62f9ce",
+  "http_status": 200,
+  "content_type": "application/json",
+  "fixture_ext": "json",
+  "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+  "parser_version": "v1"
+}

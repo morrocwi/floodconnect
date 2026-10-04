@@ -1,0 +1,15 @@
+{
+ "source_id": "noaa_oni",
+ "url": "https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt",
+ "captured_at": "2026-10-02T11:32:24Z",
+ "sha256": "c05631372073de6329d9150899737cb0c8759768f8ab540f3c44b3b4210afbd9",
+ "http_status": 200,
+ "content_type": "text/plain",
+ "fixture_ext": "txt",
+ "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "93f8c86c7a660f46318abe33b38c0479d184812d95a479a1fe869c0c2363a9e4",
+ "trimmed_note": "Further trimmed 2026-10-03 (release pass, publish-safety finding: 300KB total budget for tests/contract/fixtures/ in the public tree) to a minimal real excerpt (header + few real rows, or a real byte-prefix for HTML) -- see the corresponding contract test's own comment for the exact row-count change.",
+ "trimmed_at": "2026-10-03T18:10:36Z"
+}

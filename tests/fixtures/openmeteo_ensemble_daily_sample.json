@@ -1,0 +1,75 @@
+{
+ "latitude": 13.75,
+ "longitude": 100.75,
+ "generationtime_ms": 1.5823841094970703,
+ "utc_offset_seconds": 0,
+ "timezone": "GMT",
+ "timezone_abbreviation": "GMT",
+ "elevation": 4.0,
+ "daily_units": {
+  "time": "iso8601",
+  "precipitation_sum": "mm",
+  "precipitation_sum_member01": "mm",
+  "precipitation_sum_member02": "mm",
+  "precipitation_sum_member03": "mm",
+  "precipitation_sum_member04": "mm",
+  "precipitation_sum_member05": "mm",
+  "precipitation_sum_member06": "mm",
+  "precipitation_sum_member07": "mm",
+  "precipitation_sum_member08": "mm",
+  "precipitation_sum_member09": "mm",
+  "precipitation_sum_member10": "mm",
+  "precipitation_sum_member11": "mm",
+  "precipitation_sum_member12": "mm",
+  "precipitation_sum_member13": "mm",
+  "precipitation_sum_member14": "mm",
+  "precipitation_sum_member15": "mm",
+  "precipitation_sum_member16": "mm",
+  "precipitation_sum_member17": "mm",
+  "precipitation_sum_member18": "mm",
+  "precipitation_sum_member19": "mm",
+  "precipitation_sum_member20": "mm",
+  "precipitation_sum_member21": "mm",
+  "precipitation_sum_member22": "mm",
+  "precipitation_sum_member23": "mm",
+  "precipitation_sum_member24": "mm",
+  "precipitation_sum_member25": "mm",
+  "precipitation_sum_member26": "mm",
+  "precipitation_sum_member27": "mm",
+  "precipitation_sum_member28": "mm",
+  "precipitation_sum_member29": "mm",
+  "precipitation_sum_member30": "mm"
+ },
+ "daily": {
+  "time": [
+   "2026-09-27",
+   "2026-09-28",
+   "2026-09-29"
+  ],
+  "precipitation_sum": [
+   13.6,
+   8.9,
+   0.6
+  ],
+  "precipitation_sum_member01": [
+   15.8,
+   9.5,
+   0.5
+  ],
+  "precipitation_sum_member02": [
+   6.5,
+   16.3,
+   3.1
+  ],
+  "precipitation_sum_member03": [
+   12.6,
+   11.3,
+   0.6
+  ],
+  "precipitation_sum_member04": [
+   12.4,
+   6.7,
+   0.8
+  ]
+ }
+}

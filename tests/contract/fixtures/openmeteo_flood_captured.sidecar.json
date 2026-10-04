@@ -1,0 +1,11 @@
+{
+  "source_id": "openmeteo_flood",
+  "url": "https://flood-api.open-meteo.com/v1/flood?latitude=13.758235&longitude=100.676084&daily=river_discharge&timezone=Asia%2FBangkok",
+  "captured_at": "2026-10-02T07:44:25Z",
+  "sha256": "8e19e69d6b91a7910e278cdb9ead7f9097c2028eb9c074c53ae6ca8c5b0c01f6",
+  "http_status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "fixture_ext": "json",
+  "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+  "parser_version": "v1"
+}

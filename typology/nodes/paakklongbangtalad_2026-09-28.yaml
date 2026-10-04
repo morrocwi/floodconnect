@@ -1,0 +1,85 @@
+# typology/nodes/paakklongbangtalad_2026-09-28.yaml -- ปากคลองบางตลาด INTAKE_STARVED
+# pattern (docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md, RELAYED-field
+# report ทีมลงพื้นที่ภาคประชาชน, 28 ก.ย. 2569). Next-version stub area (Bangkok-north/
+# Nonthaburi border, outside Sammakorn) -- pattern is generic. No numbers.
+schema_version: 1
+doc_kind: typology_node_registry
+status_th: >
+  node สำหรับ pattern INTAKE_STARVED (ปั๊ม idle เพราะน้ำฝั่งรับต่ำ ขณะต้นน้ำยังท่วม) ที่ปากคลอง
+  บางตลาด -- stub area, ไม่มีตัวเลข.
+rows:
+  - id: WATER.canal_bangtalad
+    kind: canal_reach
+    layer: water
+    label_th: "คลองบางตลาด"
+    infra_class: grey
+    infra_class_tag: INSTINCT
+    tag: OPEN
+    source: "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md §1"
+  - id: WATER.bangtalad_tiwanon_bridge
+    kind: canal_reach
+    layer: water
+    label_th: "คลองบางตลาด ช่วงสะพานถนนติวานนท์ (ฝั่งตลาดชลประทาน)"
+    infra_class: grey
+    infra_class_tag: INSTINCT
+    condition: debris_hyacinth
+    condition_tag: RELAYED-field
+    tag: RELAYED
+    source: "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md §1 -- ทีมลงพื้นที่รายงานผักตบชวา/ขยะอุดตัน"
+  - id: ST.BANGTALAD.01
+    kind: pump
+    layer: water
+    label_th: "ประตูน้ำ/สถานีสูบ ปากคลองบางตลาด (ปั๊มใหญ่ 4 ตัว)"
+    infra_class: grey
+    infra_class_tag: INSTINCT
+    stall_state: INTAKE_STARVED
+    stall_cause_confirmed: upstream_blockage
+    stall_cause_checklist_pending: [relay_pump_failure, gate_state, culvert_constriction]
+    owner_agency: "OPEN"
+    tag: RELAYED
+    source: "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md §1 -- น้ำมาไม่ถึงจุดสูบน้ำ"
+  - id: ST.BANGTALAD.RELAY.01
+    kind: pump
+    layer: water
+    label_th: "สถานีสูบ relay ('ทอยน้ำ') แนวคลองบางตลาด -- ตำแหน่งยังไม่ยืนยัน"
+    infra_class: grey
+    infra_class_tag: INSTINCT
+    tag: OPEN
+    source: "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md §1 -- คำถามเปิดของทีมลงพื้นที่"
+  - id: SOI.BANGTALAD.SAMAKKEE
+    kind: soi_surface
+    layer: civil
+    label_th: "ถ.สามัคคี/ประชานิเวศน์ 3/ประชาชื่น"
+    tag: RELAYED
+    source: "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md §1"
+  - id: RES.TOOL.MOBILE_PUMP
+    kind: resource
+    layer: resource
+    label_th: "ปั๊มเคลื่อนที่ (เครื่องมือทั่วไป)"
+    resource_type: tool
+    tool_class: mobile_pump
+    infra_class: soft
+    infra_class_tag: INSTINCT
+    mode: vehicle
+    phase: normal
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md §1"
+  - id: RES.PUMP.BANGTALAD_MOBILE_01
+    kind: resource
+    layer: resource
+    label_th: "ปั๊มเคลื่อนที่ใช้แทนปั๊มใหญ่ที่ปากคลองบางตลาด"
+    resource_type: tool
+    tool_class: mobile_pump
+    generic_tool_ref: RES.TOOL.MOBILE_PUMP
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md §1"
+  - id: CIV.FIELD_OBSERVER
+    kind: agency
+    layer: civil
+    label_th: "ทีมลงพื้นที่ภาคประชาชน (generic role, ไม่ระบุชื่อบุคคล/กลุ่ม)"
+    agency_class: volunteer_informal
+    tag: RELAYED
+    source: "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md -- generic observer role, reusable ที่อื่น"

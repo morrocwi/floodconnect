@@ -1,0 +1,93 @@
+# typology/nodes/environman_extension_2026-09-28.yaml -- Environman (สื่อสิ่งแวดล้อม) FB post,
+# 28 ก.ย. 2569, RELAYED, citing ubonmet.tmd.go.th/.../1_Month/09.pdf, prd.go.th/.../iid/545141,
+# thaipbs 558736 & 558712. Founder correction: "ไม่ต้องเอาตัวเลข สกัดแค่เครือข่าย node โฟกัสที่ทำ
+# typology ให้เต็ม" -- network structure ONLY, no capacity/length/rain/level numbers imported.
+schema_version: 1
+doc_kind: typology_node_registry
+status_th: >
+  โครงข่าย node เพิ่มจาก Environman FB post -- ไม่มีตัวเลขความจุ/ระยะทาง/ปริมาณฝน/ระดับน้ำใด ๆ
+  ในไฟล์นี้ตามคำสั่งแก้ไขของฟาวน์เดอร์ (2026-09-28).
+rows:
+  - id: WATER.canal_ladprao
+    kind: canal_reach
+    layer: water
+    label_th: "คลองลาดพร้าว"
+    infra_class: grey
+    infra_class_tag: INSTINCT
+    tag: OPEN
+    source: "Environman FB post 28 ก.ย. 2569 -- ไม่มีพิกัด/รหัสสถานีในคลังนี้"
+  - id: WL.CONFLUENCE.LPR_SSB.01
+    kind: canal_reach
+    layer: water
+    label_th: "จุดบรรจบคลองลาดพร้าว-คลองแสนแสบ ที่บึงพระราม 9"
+    infra_class: grey
+    infra_class_tag: INSTINCT
+    position_note_th: >
+      OPEN precision -- วางไว้ระหว่าง WL.SSB.07 (บางกะปิ) กับ WL.SSB.04 (ตอนใน/คลองตัน) โดย
+      อนุมานจากภูมิศาสตร์คร่าว ๆ (บึงพระราม 9/ห้วยขวาง อยู่ระหว่างบางกะปิกับคลองตัน) ไม่ใช่การจับคู่
+      พิกัดที่สำรวจจริง -- เชื่อมเป็น inflow เพิ่มเข้า WL.SSB.04 โดยไม่แก้/ลบ edge เดิม
+      e_ssb07_ssb04 ที่มีอยู่แล้ว (คงเส้นทางที่ test เดิมตรวจอยู่).
+    tag: OPEN
+    source: "Environman FB post 28 ก.ย. 2569 (คลองลาดพร้าวบรรจบคลองแสนแสบที่บึงพระราม 9)"
+  - id: tunnel:bma_dds:saensaeb_ladprao
+    kind: tunnel
+    layer: water
+    label_th: "อุโมงค์ระบายน้ำคลองแสนแสบและคลองลาดพร้าวลงสู่แม่น้ำเจ้าพระยา"
+    infra_class: grey
+    infra_class_tag: INSTINCT
+    alias_th: >
+      "อุโมงค์แสนเลิศ" (docs/knowledge/card_official_2026-09-27_bma_saensaeb_tunnel_sideflow.md,
+      match_confidence OPEN) และ "อุโมงค์พระราม 9" (candidate alias จาก Environman post นี้,
+      OPEN เช่นกัน -- ทั้งสองชื่อยังไม่ยืนยันด้วยเอกสารทางการที่ระบุคู่กับ id นี้ตรง ๆ)
+    condition: "OPEN"
+    condition_note_th: >
+      "บางสถานีสูบน้ำยังมีขยะจำนวนมากขวางทางระบาย" (Environman post) -- ไม่ระบุสถานีที่แน่ชัด,
+      ไม่ทราบว่ารวมจุดนี้หรือไม่ -- OPEN, ไม่เดา
+    tag: RELAYED
+    source: >
+      sources/capacity_ledger.yaml id=tunnel:bma_dds:saensaeb_ladprao (id เดิม, reuse ตรง
+      ไม่สร้างซ้ำ) + Environman FB post 28 ก.ย. 2569 (ยืนยันการทำหน้าที่รับน้ำ 2 คลองลงเจ้าพระยา)
+  - id: pump_station:water_station:1
+    kind: pump
+    layer: water
+    label_th: "สถานีสูบน้ำพระโขนง"
+    infra_class: grey
+    infra_class_tag: INSTINCT
+    condition: "OPEN"
+    condition_note_th: "\"บางสถานีสูบน้ำยังมีขยะจำนวนมากขวางทางระบาย\" (Environman post) -- ไม่ระบุสถานีที่แน่ชัด"
+    tag: MEASURED
+    source: "sources/capacity_ledger.yaml id=pump_station:water_station:1 (id เดิม, reuse ตรง)"
+  - id: pump_station:water_station:2
+    kind: pump
+    layer: water
+    label_th: "สถานีสูบน้ำอุโมงค์พระโขนง"
+    infra_class: grey
+    infra_class_tag: INSTINCT
+    condition: "OPEN"
+    condition_note_th: "\"บางสถานีสูบน้ำยังมีขยะจำนวนมากขวางทางระบาย\" (Environman post) -- ไม่ระบุสถานีที่แน่ชัด"
+    tag: MEASURED
+    source: "sources/capacity_ledger.yaml id=pump_station:water_station:2 (id เดิม, reuse ตรง)"
+  - id: WATER.khlong_jik
+    kind: canal_reach
+    layer: water
+    label_th: "คลองจิก"
+    infra_class: grey
+    infra_class_tag: INSTINCT
+    tag: OPEN
+    source: "Environman FB post 28 ก.ย. 2569 -- ไม่มี node/รหัสสถานีในคลังนี้มาก่อน"
+
+  # -- North axis (Bangkok MVP scope, NOT Sammakorn) -- clearly labelled stub, separate
+  # component from the main east/Sammakorn graph, no connectivity claimed beyond what the
+  # post itself states.
+  - id: WATER.canal_prem_prachakon
+    kind: canal_reach
+    layer: water
+    label_th: "คลองเปรมประชากร (+ คลองที่เชื่อมต่อ ดอนเมือง/หลักสี่/สายไหม/บางเขน/จตุจักร)"
+    infra_class: grey
+    infra_class_tag: INSTINCT
+    scope: bangkok_north_mvp_stub
+    scope_note_th: >
+      นอกขอบเขต MVP สัมมากร (Bangkok-north stub) -- จุดที่โพสต์ระบุว่าน้ำล้นขณะนี้: ดอนเมือง/เสนา/
+      วังหิน/พหลโยธิน/แจ้งวัฒนะ (ข้อความ ไม่ใช่ node แยกในงานนี้ -- ไม่มีรหัสสถานี/พิกัดให้)
+    tag: OPEN
+    source: "Environman FB post 28 ก.ย. 2569 -- north-axis chain, stub only"

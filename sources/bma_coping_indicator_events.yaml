@@ -1,0 +1,244 @@
+schema_version: 1
+kind: bma_coping_indicator_events
+append_only: true
+status: NEW DERIVATION / PROPOSAL -- not yet in Toledo (indicator); scoring cells per PROP-FLOOD-10-DRAFT delta 10.3
+built: '2026-09-27'
+card: docs/knowledge/S51_DEBT_ONSET_AND_BMA_COPING_INDICATOR_2026-09-27.md
+code: tools/backtest/bma_coping_indicator.py (re-score + tally with --summarise <this file>)
+description: >
+  One row per real Bangkok/Sammakorn event (or annual-resolution unit) used to test the BMA
+  coping indicator read from plan 2569 section 5.1. Three axes are kept apart and never merged:
+  borrow (new rain load L against the owner's design depth for the SAME window), inbound
+  (stacked debt term, PROP-FLOOD-10-DRAFT Delta1) and derating (river stage / reach flow reducing
+  repayment). Every readout carries its own tag; a row tag never upgrades a readout tag.
+indicator:
+  borrow_1h: "L_1 = i_1h / 58.7 (plan p.63 VERIFIED; = IDF T=2y 1-h, p.18 VERIFIED). State by D/M.71-76 renaming against 1."
+  borrow_24h: "L_24 = P_24h / 80 (plan p.63 VERIFIED). Separate window; never converted to/from L_1 (rules R1/R2)."
+  derating: "stage H (m MSL) against the period's upper characteristic level (p.22 VERIFIED numbers; 'derated above it' is OUR reading, INSTINCT) and against +2.00 (p.47 VERIFIED owner line)."
+  inbound: "P3 only in the owner's table (p.22). No east field-water discharge feed exists -> REFUSED INPUT_ABSENT; P1/P2 = NA (not listed by owner)."
+  composite: "'+' if borrow or inbound is '+'; derating alone never certifies debt (eta ABSENT) but turns '-' into '_|_'."
+states: {"+": certain new debt, "-": certain repaid within the window, "0": exact balance, "_|_": unresolved at this resolution, REFUSED: input missing}
+scoring:
+  rule: "PROP-FLOOD-10-DRAFT delta 10.3: '+'&flood=HIT, '+'&no-flood=FALSE_ALARM, '-'&flood=MISS, '-'&no-flood=CORRECT_NEG; '_|_', '0', REFUSED or unknown truth = UNRESOLVED (never CN)"
+  lead: "integer 1-h ticks = onset - crossing; a left-censored onset makes the lead an UPPER bound"
+  independence: "events in one meteorological episode (gap <= 72 h) share an independence_group and count once"
+  n_min_proposal: 10
+  n_min_tag: "INSTINCT (ours) -- PROP-FLOOD-10-DRAFT leaves N_min OPEN; founder to confirm"
+inputs:
+  - id: thaiwater_rain_snapshots
+    what: "api-v3 rain_24h payload archived by the collector every run (fields rain_24h AND rain_1h); Bangkok province rows 2026-09-26 05:00 .. 2026-09-27 23:00 ICT only (36 distinct hours, 129 stations)"
+    tag: MEASURED
+    note: "the collector stores only rain_24h_mm in the DB; rain_1h exists only in the raw snapshots. The snapshots start AFTER the 25 Sep onset -> the borrowing hours are not held."
+  - id: dds_daily_pdf
+    what: "BMA daily bulletin 24 h rain (DDS 269/69): 203.0 / 203.5 / 205.0 mm (Phaya Thai / Saphan Sung / Wang Thonglang)"
+    tag: VERIFIED
+  - id: era5_hourly
+    what: "archive-api.open-meteo.com ERA5 hourly precipitation, 3 grid cells (13.743,100.661 = Sammakorn/east cell; 13.814,100.506; 13.814,100.836), 2005-01-01 .. 2026-09-26, Asia/Bangkok"
+    tag: "MEASURED (reanalysis grid-cell mean; not a gauge -- rule grid_cell_vs_gauge_not_equal)"
+    finding: "0 of 571,608 cell-hours (3 cells x 190,536 hours) reach 58.7 mm/h; the largest cell-hour in 21.7 years is 30.2 mm/h (2019-09-20 06:00). ERA5 cannot express the borrow_1h edge at all."
+  - id: c12_stage_hourly
+    what: "api-v3 waterlevel_graph station_id 2599 (C.12 RID Sam Sen, field waterlevel_msl), 2023-09-27 .. 2026-09-27, 18,988 non-null hours"
+    tag: "MEASURED (datum MSL per field name -- RELAYED)"
+    note: "the endpoint returned at most one year per request (a 3-year request came back as the last year only); min_bank 2.26 m in the same payload"
+  - id: plan_p19_stage_table
+    what: "annual maximum stage at Pak Khlong Talat (m MSL), 12 years, asterisk = 'major flood year in Bangkok'"
+    tag: VERIFIED
+events:
+  # ------------------------------------------------------------------ dated events
+  - event_id: bkk_2569_09_24_27_districts
+    independence_group: G1_2569_09
+    unit_scope: city
+    unit: "Bangkok, 11 BMA flood-road district codes (BKP LKB WTL BKA BKM LPW PWT SLG CTC DMG DDG LSI)"
+    period: [P2]
+    truth:
+      flooded: true
+      class: "road flooding >=10 cm at >=3 roads per district (ledger rule road_telemetry_district_cluster_v1), then houses"
+      onset_local: '2026-09-25T20:00+07:00'
+      censoring: left_censored (first road-telemetry fetch 2026-09-26 15:25 ICT)
+      source: sources/urban_flood_event_ledger.yaml (lkb/wtl/bkp_2026-09-25 rows)
+      tag: MEASURED
+    readouts:
+      - {axis: borrow, input: gauge_1h, window_h: 1, value_mm: "[0, 205.0] (bound from the worst 24 h total; no hourly series before onset)", ratio: "[0, 3.49]", issued_state: "_|_", cell: UNRESOLVED, lead_ticks: null, tag: "MEASURED+VERIFIED"}
+      - {axis: borrow, input: era5_1h, window_h: 1, value_mm: 13.4, ratio: 0.23, issued_state: "-", cell: MISS, lead_ticks: null, tag: MEASURED-reanalysis, note: "worst of 3 cells, 25 Sep 10:00"}
+      - {axis: borrow, input: gauge_24h, window_h: 24, value_mm: 205.0, ratio: 2.56, issued_state: "+", cell: HIT, lead_ticks: null, tag: VERIFIED, note: "DDS 205.0 mm; thaiwater worst gauge 186.6 mm (TMD 48453 Bang Na) = 2.33, MEASURED. Crossing time not held (gauge 24 h archive starts after onset) -> lead UNRESOLVED; a RELAYED news total of 86.5-101.5 mm by 25 Sep 07:00 (window unclear) would put the crossing up to ~13 h before onset"}
+      - {axis: borrow, input: era5_24h, window_h: 24, value_mm: 132.7, ratio: 1.66, issued_state: "+", cell: HIT, lead_ticks: 10, tag: MEASURED-reanalysis, note: "rolling 24 h first >=80 mm at 2026-09-25 10:00 ICT (two cells); onset left-censored -> lead <= 10 ticks (upper bound). ERA5 is not available in real time (days of lag) -> a hindsight lead, not an achievable one"}
+      - {axis: derating, input: c12_stage, scored: false, value_msl: 1.84, issued_state: "+", tag: MEASURED, note: "at onset hour 25 Sep 20:00; first >+1.80 at 19:00 (1 tick before onset); first >+2.00 (owner defence line) 26 Sep 18:00 (22 ticks after onset); 27 Sep 19:00 = 2.24"}
+      - {axis: inbound, input: none, scored: false, issued_state: NA, tag: VERIFIED, note: "P2: owner lists no inbound term"}
+      - {axis: composite, input: gauge_1h, window_h: 1, issued_state: "_|_", cell: UNRESOLVED, lead_ticks: null, tag: MEASURED}
+      - {axis: composite, input: era5_1h, window_h: 1, issued_state: "_|_", cell: UNRESOLVED, lead_ticks: null, tag: MEASURED, note: "borrow '-' but stage above +1.80 at onset -> '_|_' (derating rescues the ERA5 miss into unresolved, not into a hit)"}
+      - {axis: composite, input: gauge_24h, window_h: 24, issued_state: "+", cell: HIT, lead_ticks: null, tag: VERIFIED}
+    tag: MEASURED
+  - event_id: sammakorn_2569_09_26
+    independence_group: G1_2569_09
+    unit_scope: node
+    unit: "sammakorn (PROP-FLOOD-06 unit; Saphan Sung district)"
+    period: [P2]
+    truth:
+      flooded: true
+      class: "water entering houses (community report, soi 50)"
+      onset_local: '2026-09-26T04:00+07:00'
+      censoring: "reported as 'since 04:00' -- onset <= 04:00"
+      source: sources/urban_flood_event_ledger.yaml sammakorn_2026-09-26
+      tag: MEASURED
+    readouts:
+      - {axis: borrow, input: gauge_1h, window_h: 1, value_mm: "[0, 203.5]", ratio: "[0, 3.47]", issued_state: "_|_", cell: UNRESOLVED, lead_ticks: null, tag: "VERIFIED (DDS Saphan Sung 24 h total)"}
+      - {axis: borrow, input: era5_1h, window_h: 1, value_mm: 12.5, ratio: 0.21, issued_state: "-", cell: MISS, lead_ticks: null, tag: MEASURED-reanalysis, note: "Sammakorn cell, 25 Sep 04:00"}
+      - {axis: borrow, input: gauge_24h, window_h: 24, value_mm: 203.5, ratio: 2.54, issued_state: "+", cell: HIT, lead_ticks: null, tag: VERIFIED, note: "nearest thaiwater gauge RF.SPS.01 (Saphan Sung district office) 174.0 mm = 2.18, MEASURED"}
+      - {axis: borrow, input: era5_24h, window_h: 24, value_mm: 119.1, ratio: 1.49, issued_state: "+", cell: HIT, lead_ticks: 18, tag: MEASURED-reanalysis, note: "Sammakorn cell first >=80 mm (rolling 24 h) 25 Sep 10:00 ICT; lead <= 18 ticks (upper bound, hindsight)"}
+      - {axis: derating, input: c12_stage, scored: false, value_msl: 1.49, issued_state: "-", tag: MEASURED, note: "26 Sep 04:00 (low tide hour); the day's high was 2.15 at 19:00"}
+      - {axis: composite, input: gauge_24h, window_h: 24, issued_state: "+", cell: HIT, lead_ticks: null, tag: VERIFIED}
+      - {axis: composite, input: era5_1h, window_h: 1, issued_state: "-", cell: MISS, lead_ticks: null, tag: MEASURED-reanalysis}
+    notes: "same meteorological episode as bkk_2569_09_24_27_districts -- counted once (G1)."
+    tag: MEASURED
+  - event_id: bkk_2568_09_14_street
+    independence_group: G2_2568_09
+    unit_scope: city
+    unit: "Bangkok, roads in 12 districts incl. Saphan Sung, Bueng Kum, Min Buri, Lat Krabang, Nong Chok"
+    period: [P2]
+    truth:
+      flooded: true
+      class: "street ponding only; no house flooding, no declaration (qualitative, no mm in the report)"
+      onset_local: '2025-09-14'
+      censoring: day resolution only
+      source: docs/knowledge/RAIN_LADDER_BKK_SEPT_NEWS.md (thansettakij, publication date checked)
+      tag: RELAYED
+    readouts:
+      - {axis: borrow, input: gauge_1h, window_h: 1, issued_state: REFUSED, cell: UNRESOLVED, lead_ticks: null, tag: OPEN, note: "no gauge series held for 2025"}
+      - {axis: borrow, input: era5_1h, window_h: 1, value_mm: 9.1, ratio: 0.16, issued_state: "-", cell: MISS, lead_ticks: null, tag: MEASURED-reanalysis, note: "worst cell-hour 12-16 Sep"}
+      - {axis: borrow, input: gauge_24h, window_h: 24, issued_state: REFUSED, cell: UNRESOLVED, lead_ticks: null, tag: OPEN}
+      - {axis: borrow, input: era5_24h, window_h: 24, value_mm: 19.1, ratio: 0.24, issued_state: "-", cell: MISS, lead_ticks: null, tag: MEASURED-reanalysis}
+      - {axis: derating, input: c12_stage, scored: false, value_msl: 1.61, issued_state: "-", tag: MEASURED, note: "day maximum 14 Sep; P2 band 1.50-1.80"}
+      - {axis: composite, input: era5_1h, window_h: 1, issued_state: "-", cell: MISS, lead_ticks: null, tag: MEASURED-reanalysis}
+    notes: "ERA5 misses a real street-flooding day entirely (cell sums <= 19 mm). Either a small convective cell below grid scale or a date-convention mismatch -- OPEN; a gauge series would decide it."
+    tag: RELAYED
+  - event_id: bkk_2554_oct_nov
+    independence_group: G3_2554
+    unit_scope: city
+    unit: "Bangkok (north, east and west polders)"
+    period: [P2, P3]
+    truth:
+      flooded: true
+      class: "major flood (plan p.19 asterisk) -- inbound field/river water, not local rain"
+      onset_local: '2554-10 (day not held)'
+      censoring: month resolution
+      source: "plan 2569 p.19 asterisk (VERIFIED); docs/knowledge/case_2554_chaophraya_bangkok.md (RELAYED)"
+      tag: VERIFIED
+    readouts:
+      - {axis: borrow, input: era5_1h, window_h: 1, value_mm: 1.5, ratio: 0.03, issued_state: "-", cell: MISS, lead_ticks: null, tag: MEASURED-reanalysis, note: "cached cell 2011-10-20..11-10; the rain axis is expected to read '-' here: 2554 debt was inbound"}
+      - {axis: borrow, input: era5_24h, window_h: 24, value_mm: 2.3, ratio: 0.03, issued_state: "-", cell: MISS, lead_ticks: null, tag: MEASURED-reanalysis}
+      - {axis: derating, input: plan_p19_stage_table, scored: false, value_msl: 2.53, issued_state: "+", tag: VERIFIED, note: "annual max at Pak Khlong Talat; above +2.00 defence line; date not held"}
+      - {axis: inbound, input: none, scored: false, issued_state: REFUSED, tag: OPEN, note: "no discharge feed; the only inbound evidence is the flood outcome itself (circular) -> not used as an issued signal. C.29 peak 3,930 m3/s (RELAYED) is a different station from C.29B -> R5 REFUSED against the 3,500 edge"}
+      - {axis: composite, input: era5_1h, window_h: 1, issued_state: "_|_", cell: UNRESOLVED, lead_ticks: null, tag: OPEN}
+    tag: VERIFIED
+  # ------------------------------------------------- annual-resolution stage rows (p.19)
+  # Diagnostic of the +2.00 line only (axis defence_line_diag); NOT a debt claim.
+  # Two truth definitions from the same plan, kept apart: T_major = asterisk (p.19);
+  # T_east = heavy east-side field-water years listed in section 2.1.2 (2525 2526 2538 2549 2554).
+  - event_id: annual_stage_rows_p19
+    independence_group: per_year
+    unit_scope: city
+    unit: "Chao Phraya at Pak Khlong Talat, annual maximum"
+    period: [P3]
+    truth: {flooded: null, tag: VERIFIED, note: "per-row truth below"}
+    rows:
+      - {year_be: 2526, max_msl: 2.13, t_major: false, t_east: true}
+      - {year_be: 2538, max_msl: 2.27, t_major: true, t_east: true}
+      - {year_be: 2539, max_msl: 2.14, t_major: false, t_east: false}
+      - {year_be: 2545, max_msl: 2.12, t_major: false, t_east: false}
+      - {year_be: 2549, max_msl: 2.22, t_major: false, t_east: true}
+      - {year_be: 2551, max_msl: 2.17, t_major: false, t_east: false}
+      - {year_be: 2553, max_msl: 2.10, t_major: false, t_east: false}
+      - {year_be: 2554, max_msl: 2.53, t_major: true, t_east: true}
+      - {year_be: 2560, max_msl: 2.10, t_major: false, t_east: false}
+      - {year_be: 2564, max_msl: 2.32, t_major: false, t_east: false}
+      - {year_be: 2565, max_msl: 2.32, t_major: false, t_east: false}
+      - {year_be: 2568, max_msl: 2.25, t_major: false, t_east: false}
+    diag_result:
+      line: "+2.00 m MSL (p.47)"
+      issued: "'+' in all 12 years (every listed maximum is above +2.00)"
+      against_t_major: {HIT: 2, FALSE_ALARM: 10}
+      against_t_east: {HIT: 4, FALSE_ALARM: 8, note: "t_east=false only means 'not in the 2.1.2 list' -- UNRESOLVED would be the stricter reading"}
+      correct_neg_possible: false
+      why: "the table lists only high years (all >= 2.10) -- selection by the outcome axis; no low-stage year exists to test a correct negative"
+    contradictions:
+      - {description: "2526 and 2549 are named heavy east-side flood years in section 2.1.2 but carry no asterisk in the p.19 table", tag: OPEN}
+      - {description: "the +2.00 line (p.47) sits below the post-2554 dyke crests of +2.80 to +3.50 printed on the same p.19 table; whether +2.00 is a pre-2554 number still quoted is not stated", tag: OPEN}
+    tag: VERIFIED
+  # ------------------------------------------------------- C.12 hourly flood seasons
+  - event_id: c12_season_2566
+    independence_group: Y2566
+    unit_scope: city
+    unit: "Chao Phraya C.12 Sam Sen, Oct-Dec 2023"
+    period: [P3]
+    truth: {flooded: null, tag: OPEN, note: "no dated Bangkok outcome held for this season; not in the p.19 table"}
+    readouts:
+      - {axis: derating, input: c12_stage, scored: false, value_msl: 1.78, issued_state: "-", tag: MEASURED, note: "season max; 0 hours above +1.80"}
+    tag: MEASURED
+  - event_id: c12_season_2567
+    independence_group: Y2567
+    unit_scope: city
+    unit: "Chao Phraya C.12 Sam Sen, Oct-Dec 2024"
+    period: [P3]
+    truth: {flooded: null, tag: OPEN, note: "no dated outcome held; 2567 absent from the p.19 table (absence is not a statement)"}
+    readouts:
+      - {axis: derating, input: c12_stage, scored: false, value_msl: 2.13, issued_state: "+", tag: MEASURED, note: "2024-10-08 11:00; Oct-Dec 2024: 85 hours above +1.80, 12 above +2.00"}
+    tag: MEASURED
+  - event_id: c12_season_2568
+    independence_group: Y2568
+    unit_scope: city
+    unit: "Chao Phraya C.12 Sam Sen, Oct-Dec 2025"
+    period: [P3]
+    truth: {flooded: null, t_major: false, tag: VERIFIED, note: "p.19 lists 2568 (2.25 at Pak Khlong Talat) without asterisk; local flooding not held"}
+    readouts:
+      - {axis: derating, input: c12_stage, scored: false, value_msl: 2.32, issued_state: "+", tag: MEASURED, note: "2025-11-09 11:00; 241 hours above +1.80 and 68 above +2.00 across Oct-Dec. C.12 reads higher than Pak Khlong Talat (2.32 vs 2.25) -- different stations, both MSL"}
+    tag: MEASURED
+  # ------------------------------------ ERA5 24-h crossings with no truth held yet
+  # The cheapest way to raise the event count: find the outcome for these dates.
+  - event_id: era5_candidates_2548_2563
+    independence_group: per_date
+    unit_scope: city
+    unit: "Bangkok (any of the 3 ERA5 cells), rolling 24 h >= 80 mm"
+    truth: {flooded: null, tag: OPEN, note: "no dated outcome in this repo for any of these dates"}
+    rows:
+      - {first_local: '2005-09-14T12:00', max24_mm: 92.2, max1h_mm_era5_below_58_7: true}
+      - {first_local: '2012-09-06T11:00', max24_mm: 163.8, max1h_mm_era5_below_58_7: true}
+      - {first_local: '2012-09-28T03:00', max24_mm: 131.6, max1h_mm_era5_below_58_7: true}
+      - {first_local: '2015-09-17T19:00', max24_mm: 119.7, max1h_mm_era5_below_58_7: true}
+      - {first_local: '2018-01-10T13:00', max24_mm: 99.8, max1h_mm_era5_below_58_7: true}
+      - {first_local: '2018-04-28T13:00', max24_mm: 93.3, max1h_mm_era5_below_58_7: true}
+      - {first_local: '2018-09-16T04:00', max24_mm: 89.2, max1h_mm_era5_below_58_7: true}
+      - {first_local: '2019-09-20T06:00', max24_mm: 93.2, max1h_mm_era5_below_58_7: true}
+      - {first_local: '2020-09-28T22:00', max24_mm: 90.9, max1h_mm_era5_below_58_7: true}
+      - {first_local: '2020-10-09T17:00', max24_mm: 92.2, max1h_mm_era5_below_58_7: true}
+    cell_for_all: UNRESOLVED
+    tag: MEASURED-reanalysis
+hii_month_consistency:
+  source: docs/knowledge/hii_flood_area_2005_2021_east.yaml (GISTDA satellite flood-area frequency, 17 years, month-of-year only)
+  use: "months-with-flooding truth per district (satellite AREA flooding, mostly field water -- not street ponding); tag VERIFIED as a count, INSTINCT as a truth class for this indicator"
+  hii_months_with_any_flood_8_east_districts: {6: "1/17", 9: "1-3/17", 10: "1-5/17", 11: "1-3/17", 12: "1/17"}
+  era5_24h_episodes_2005_2021_by_month: {1: 1, 4: 1, 9: 7, 10: 1}
+  era5_1h_crossings_2005_2021: 0
+  reading: >
+    ERA5 L_24 episodes sit mostly in September; HII satellite flood months peak in October with
+    November/December present -- the P3 (inbound + stage) months that rain alone does not explain.
+    The January and April ERA5 episodes fall in months with zero HII flood-area records (possible
+    false alarms for AREA flooding; street ponding unknown). Cannot pair years: HII gives month-of-year
+    counts only. No cell is scored from this block.
+  tag: INSTINCT
+tally_at_build:
+  note: "output of: python3 tools/backtest/bma_coping_indicator.py --summarise sources/bma_coping_indicator_events.yaml -- counts are independence groups, not rows"
+  borrow_era5_1h: {MISS: 3, resolved_independent: 3, verdict: REFUSED FEW_EVENTS}
+  borrow_era5_24h: {HIT: 1, MISS: 2, resolved_independent: 3, verdict: REFUSED FEW_EVENTS}
+  borrow_gauge_1h: {UNRESOLVED: 2, resolved_independent: 0, verdict: REFUSED FEW_EVENTS}
+  borrow_gauge_24h: {HIT: 1, UNRESOLVED: 1, resolved_independent: 1, verdict: REFUSED FEW_EVENTS}
+  composite_era5_1h: {MISS: 2, UNRESOLVED: 2, resolved_independent: 2, verdict: REFUSED FEW_EVENTS, note: "group G1 appears in both cells: district unit '_|_' (stage 1.84 at 20:00) vs Sammakorn node '-' (stage 1.49 at 04:00) -- two units, kept apart"}
+  composite_gauge_1h: {UNRESOLVED: 1, resolved_independent: 0, verdict: REFUSED FEW_EVENTS}
+  composite_gauge_24h: {HIT: 1, resolved_independent: 1, verdict: REFUSED FEW_EVENTS}
+requests_made:
+  list:
+  - {n: 1, host: api-v3.thaiwater.net, what: "waterlevel_graph station 2599, 2023-09-27..2026-09-27", status: 200, note: "returned last year only"}
+  - {n: 2, host: api-v3.thaiwater.net, what: "waterlevel_graph station 2599, 2024-09-27..2025-09-26", status: 200}
+  - {n: 3, host: api-v3.thaiwater.net, what: "waterlevel_graph station 2599, 2023-09-27..2024-09-26", status: 200}
+  - {n: 4, host: archive-api.open-meteo.com, what: "ERA5 hourly precipitation, 3 cells, 2022-01-01..2026-09-26", status: 200}
+  - {n: 5, host: archive-api.open-meteo.com, what: "ERA5 hourly precipitation, 3 cells, 2005-01-01..2021-12-31", status: 200}
+  archive: "raw/backtest/s51_2026-09-27/ (gitignored, verbatim responses + requests.log)"

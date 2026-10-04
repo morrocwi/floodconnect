@@ -39,10 +39,22 @@ output/sammakorn_readout_<UTC date>.md   +   .json
 
 | Tier | ความหมาย | ตัวอย่างใน registry นี้ |
 |---|---|---|
-| `official_telemetry` | หน่วยงานวัดเอง เป็นเซนเซอร์/เครื่องมือ ไม่ผ่านคนคอมไพล์ | thaiwater_canal_waterlevel, thaiwater_flood_road, bma_pumphistory, bma_klongmap |
-| `official_report` | หน่วยงานรวบรวม/ออกรายงานเอง (อาจรวม telemetry + คำบรรยาย/พยากรณ์) | dds_daily_pdf, dds_flood_report, dds_tide_pdf, dds_nowcast_gif |
+| `official_telemetry` | หน่วยงานวัดเอง เป็นเซนเซอร์/เครื่องมือ ไม่ผ่านคนคอมไพล์ | thaiwater_canal_waterlevel, thaiwater_flood_road, thaiwater_waterlevel, hii_dam, hii_watergate, bma_pumphistory, bma_klongmap |
+| `official_report` | หน่วยงานรวบรวม/ออกรายงานเอง (อาจรวม telemetry + คำบรรยาย/พยากรณ์) | dds_daily_pdf, dds_flood_report, dds_tide_pdf, dds_nowcast_gif, rid_res_table, egat_water_crisis |
 | `official_shared_inference` | หน่วยงานอนุมานจากสัญญาณของบุคคลที่สาม (เช่น อ่านสีจราจรจาก Google Maps) แล้วแชร์ต่อ | governor_shared_flooded_roads |
-| `third_party` | ไม่ใช่หน่วยงานรัฐ (ยังไม่มี source ในรีจิสทรีนี้ใช้ tier นี้) | (สงวนไว้สำหรับอนาคต) |
+| `third_party` | ไม่ใช่หน่วยงานรัฐ (แบบจำลอง/reanalysis เปิด ไม่มี key) | openmeteo_forecast, openmeteo_flood, openmeteo_ensemble, openmeteo_marine, openmeteo_multimodel, nasa_power |
+
+2026-09-27 (founder ask "ต่อให้เสร็จเฉพาะของฟรี แน่นอน ก่อน"): 9 new registry-driven
+`collect.py` collectors added on top of the above -- nationwide Thai government feeds
+(`thaiwater_waterlevel`, `hii_dam`, `hii_watergate`, `rid_res_table`, `egat_water_crisis`)
+and free global no-key forecast/reanalysis feeds (`openmeteo_flood` -- GloFAS river
+discharge for the upstream Chao Phraya chain, `openmeteo_ensemble` -- multi-member rain,
+`openmeteo_marine` -- Gulf of Thailand sea level, `nasa_power` -- daily bias-corrected
+rain, `openmeteo_multimodel` -- the 6-model feed `site/build_data.py`'s drain-timeline
+chart already reads from `raw/forecast/openmeteo_<model>.json`, now produced by a real
+collector instead of a 2026-09-26 manual one-off). `rid_res_table` has no coordinate or
+numeric reading on its page -- stored as `documents` rows (region + dam name), never a
+fabricated observation. See `sources/registry.yaml` for full per-source detail.
 
 Tier เป็น**การตัดสินใจเชิงวิศวกรรม (INSTINCT/Dr-tier)** ของโค้ดชุดนี้ ไม่ใช่ใบรับรองจากหน่วยงาน —
 ดูรายละเอียด/เหตุผลของแต่ละ source ที่ `sources/registry.yaml`.
@@ -90,8 +102,15 @@ python3 collect.py --all          # เก็บข้อมูลรอบเ�
 python3 readout.py --centre 13.758235 100.676084
 ```
 
-**การตั้งเวลารันอัตโนมัติทำผ่าน GitHub Actions cron ใน `.github/workflows/floodconnect.yml`** --
-ไม่มี private cron/systemd timer ของ repo นี้โดยเฉพาะ.
+**GitHub Actions (`.github/workflows/floodconnect.yml`) ไม่ได้รัน `collect.py` เอง** --
+workflow นี้ทำแค่ validate + test + build หน้าเว็บสาธารณะจาก **tracked inputs เท่านั้น**
+(`site/inputs/**`, `sources/*.yaml`, และไฟล์อื่นที่ commit ไว้) เกิดขึ้น on demand เท่านั้น
+เมื่อ push ไปยัง `main` หรือสั่งรันเอง (`workflow_dispatch`) ไม่มี schedule/cron ตามเวลา และไม่มี
+private cron/systemd timer ของ repo นี้โดยเฉพาะ. runner สดใหม่ไม่มี `data/`/`raw/` (gitignored)
+ดังนั้นหน้าเว็บที่ build ได้จะอยู่ในสถานะ no-current-data/staleness จนกว่าจะมีคน refresh ฝั่งผู้เรียก
+(caller-side) เอง -- รันบนเครื่อง/network/key ของผู้ใช้เอง ไม่ใช่บน runner ของเรา. ส่วน
+`site/dist/api/v1/**` เป็น tracked snapshot ที่ build นี้**ไม่ได้สร้างใหม่** -- แค่ upload ติดไปกับ
+หน้าเว็บเฉย ๆ โดยไม่แก้ไข.
 
 ## เสียงจากอินเทอร์เน็ต (social listening)
 
@@ -127,32 +146,20 @@ append-only). `readout.py --centre LAT LON` renders a Markdown+JSON snapshot wit
 / OFFICIAL FORECAST / MISSING row for each of the four factors (rain, northern Chao Phraya
 inflow, tide surge, drainage), a fixed list of Sammakorn's own nearby stations/pumps, and an
 explicit, never-auto-resolved cross-source contradictions section. There is NO cron/timer
-here -- scheduling is done by the GitHub Actions cron in `.github/workflows/floodconnect.yml`.
+here -- GitHub Actions in `.github/workflows/floodconnect.yml` runs on demand only, triggered
+by a push to `main` or a manual `workflow_dispatch`, with no fixed schedule, and it never
+calls `collect.py` itself: it only validates, tests, and rebuilds the public page from the
+repo's own committed snapshot. Running `collect.py` to fetch fresh upstream data is always
+caller-side -- on the caller's own machine, network and keys.
 
-## Thai flood warning actor typology
+## Thai flood warning actor typology (pointer)
 
-FloodConnect now distinguishes the institutional role of a source from its trust tier.
-`trust_tier` answers **how the item was produced/published**; actor/product metadata answers
-**what role the publisher is playing and what kind of claim the item is**.
-
-Canonical role graph:
-
-`OBSERVE -> INTERPRET_SECTOR -> INTEGRATE -> PUBLIC_WARN -> LOCAL_WARN_AND_ACT`
-
-This is not an exclusive chain of command. Several Thai agencies operate in parallel across
-different hazard domains.
-
-Machine-readable typology:
-`site/inputs/governance/flood_warning_actor_typology.yaml`
-
-Human-readable crosswalk:
-`docs/THAI_FLOOD_WARNING_ACTOR_TYPOLOGY.md`
-
-Recommended provenance fields for new/migrated sources:
-- `actor_role` / `actor_roles`;
-- `product_semantic` (`observation`, `forecast`, `warning`, `operational_instruction`, `response_action`);
-- `hazard_domain`;
-- `valid_for_area` and issue/valid time where applicable.
-
-Important: contradictions should compare like-with-like. A severe-weather warning and a canal
-gauge reading can both be correct because they describe different layers of the system.
+Note (2026-10-02): `trust_tier` (how an item was produced) and
+actor/product role (what the publisher is playing, what kind of claim the item is) are
+two different questions. The canonical role graph is `OBSERVE -> INTERPRET_SECTOR ->
+INTEGRATE -> PUBLIC_WARN -> LOCAL_WARN_AND_ACT` (not an exclusive chain of command --
+several Thai agencies act in parallel across hazard domains). Machine-readable typology:
+`site/inputs/governance/flood_warning_actor_typology.yaml`. Human-readable crosswalk:
+`docs/THAI_FLOOD_WARNING_ACTOR_TYPOLOGY.md`. Contradictions must compare like-with-like
+across these layers -- a severe-weather warning and a canal gauge reading can both be
+correct at once because they describe different layers of the system.

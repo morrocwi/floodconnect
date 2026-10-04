@@ -1,7 +1,7 @@
 # Dependencies for the FloodConnect CI pipeline (.github/workflows/floodconnect.yml):
-# collect.py --all -> site/build_data.py -> site/build_page.py
+# site/build_data.py -> site/build_page.py (no collect; caller-side only)
 #
-# This is deliberately NOT the full repo dependency set -- build_kg.py,
+# This is deliberately NOT the full repo dependency set -- build_river_kg.py,
 # build_bangkok_canals.py, and dem_signal_check.py (offline knowledge-graph construction
 # and DEM analysis, not part of the live collect/site pipeline) need geopandas/shapely/
 # rasterio, which are heavy (compiled GDAL/GEOS/PROJ bindings) and are intentionally left
@@ -12,4 +12,31 @@
 pyyaml
 requests
 networkx
+
+# tools/harvest/bma_drain_pipes.py's parse_pipe_jacking_csv() imports pyproj (UTM47N ->
+# WGS84 conversion) at call time -- tests/test_bma_drain_pipes.py exercises this in the
+# full regression suite (python3 -m pytest -q), so it must be installed even though
+# bma_drain_pipes.py is not part of the live collect/site pipeline. pyproj alone (not
+# the full geopandas/shapely/rasterio geo stack this file otherwise deliberately
+# excludes, per the note above) was missing, causing this one test to
+# ModuleNotFoundError on a clean runner (added 2026-10-02: missing on a clean runner).
+pyproj
+
+# Test runner for the `validate` job's "Run full regression suite" step
+# (python3 -m pytest -q) -- a fresh GitHub-hosted runner's actions/setup-python install
+# has no pytest preinstalled, so this step failed with ModuleNotFoundError on a clean
+# runner before this line was added (added 2026-10-02: missing on a clean runner).
 pytest
+
+# tests/test_api_schema_validity.py hard-imports jsonschema (Draft202012Validator) at
+# module level -- measured on a real clean clone + fresh venv: this is in neither this
+# file nor the `dev` extra, so `python3 -m pytest -q` fails at collection (1 error) on a
+# truly clean install, before any test runs. It happened to be present in the dev
+# machine's own ambient venv, which is why earlier rounds' "fresh clone" pytest counts
+# were measured wrong (corrected 2026-10-02 against a real clean clone + fresh venv).
+jsonschema
+
+# tests/test_token_budget.py hard-imports tiktoken to measure AI.md + SKILL.md + the
+# offline `kb.py answer` JSON against this design's own 5,000-token ceiling -- same
+# reasoning as jsonschema above: needed for `python3 -m pytest -q` to collect cleanly.
+tiktoken

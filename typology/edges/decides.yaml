@@ -1,0 +1,39 @@
+# typology/edges/decides.yaml -- edge_kind=decides, from_kind=agency ->
+# to_kind in {gate,pump} ONLY (proposal §2, AMENDED per independent review 2026-09-28:
+# the original proposal allowed `agency -> gate|pump|edge` as a target; the review fixed
+# this to drop `edge` as an allowed target -- an agency decides a STRUCTURE (gate/pump),
+# never a water edge directly. Burden stays exactly where it already lived: the existing
+# BURDENED/RELIEVED attribute on the water `flows_to` edge through the gate (PROP-FLOOD-
+# 05a/05b), never a new edge kind and never a `decides -> edge` target.
+schema_version: 1
+doc_kind: typology_edge_registry
+edge_kind: decides
+status_th: >
+  แก้ตามรีวิวอิสระ 2026-09-28: decides ชี้ไปที่ gate|pump เท่านั้น (ตัด edge ออกจากเป้าหมายที่อนุญาต).
+  ภาระ (burden) ยังอยู่ที่ attribute BURDENED/RELIEVED เดิมบน edge น้ำผ่านประตูเหมือนเดิม ไม่ใช่ edge
+  kind ใหม่ และไม่ใช่เป้าหมายของ decides.
+rows:
+  - from: AG_BMA_GOV
+    to: WL.SSB.10
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: >
+      STRUCTURAL_ISSUES_2026-09-28.md ข้อ 2.3 (สนน. ผ่าน SCADA เก็บสถานะภายใน, ผู้ว่าฯ กทม./
+      รองผู้ว่าฯ เป็นผู้ตัดสินใจ trade-off ระดับนโยบาย) -- burden ที่ WL.SSB.10 อ่านได้จาก attribute
+      BURDENED/RELIEVED เดิม (PROP-FLOOD-05a/05b), ไม่ใช่เส้นนี้เอง
+  - from: AG_RID
+    to: WL.PWT.04
+    phase: incident
+    phase_tag: INSTINCT
+    tag: "RELAYED-unverified"
+    source: >
+      structural_issues_2026-09-28.yaml ISSUE-DECISION-01 (S2, unverified Facebook post --
+      อ้างว่า RID ตัดสินใจให้ กทม. ยกประตูลาดกระบัง/เปิดวัดกระทุ่มเสือปลา เพราะสถานีสูบประเวศบุรีรมย์
+      ปั๊มออกบางปะกงไม่ได้ -- ยังไม่ยืนยันกับ WL.PWT.*/WL.SSB.* จริง, งานถัดไป)
+  - from: AG_BMA_GOV
+    to: WL.PWT.04
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md S4/S6 (แถลงทางการ กทม. 28 ก.ย., ทิศทางกว้าง ไม่ใช่รายจุด)"

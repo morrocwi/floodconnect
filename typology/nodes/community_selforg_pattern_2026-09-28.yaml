@@ -1,0 +1,45 @@
+# typology/nodes/community_selforg_pattern_2026-09-28.yaml -- reusable community
+# self-organisation pattern (docs/knowledge/card_community_selforg_pattern_2569.md,
+# RELAYED FB post by a university academic, 28 ก.ย. 2569): แฟลตคลองจั่น + ร่มเกล้า pooled
+# money, split procurement/cooking/medicine-sharing roles. Network structure only, no
+# numbers, no personal names (roles recorded, never gender).
+schema_version: 1
+doc_kind: typology_node_registry
+status_th: >
+  node เครื่องมือทั่วไป "shared pool" + zone instance สองจุด (คลองจั่น/ร่มเกล้า) สำหรับ pattern
+  การจัดตั้งชุมชนเองยามฉุกเฉิน -- ไม่มีตัวเลข ไม่มีชื่อบุคคล.
+rows:
+  - id: RES.TOOL.SHARED_POOL
+    kind: resource
+    layer: resource
+    label_th: "กองกลางที่ชุมชนรวมกันเอง (เครื่องมือทั่วไป -- ไม่ผูกกับพื้นที่ใดพื้นที่เดียว)"
+    resource_type: tool
+    tool_class: shared_pool
+    pool_subtypes: [money, medicine, drinking_water]
+    infra_class: soft
+    infra_class_tag: INSTINCT
+    phase: normal
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "docs/knowledge/card_community_selforg_pattern_2569.md §1-2"
+  - id: CIV.ZONE.KHLONGCHAN_FLATS
+    kind: soi_surface
+    layer: civil
+    label_th: "แฟลตคลองจั่น (ที่อยู่อาศัยรวม, เขตบางกะปิ)"
+    self_organized: true
+    self_help_dag_ref: khlongchan_flats_zone
+    pattern_ref: RES.TOOL.SHARED_POOL
+    tag: RELAYED
+    source: "docs/knowledge/card_community_selforg_pattern_2569.md §1"
+  - id: CIV.ZONE.ROMKLAO
+    kind: soi_surface
+    layer: civil
+    label_th: "เคหะชุมชนร่มเกล้า (ลาดกระบัง)"
+    self_organized: true
+    self_help_dag_ref: romklao_zone
+    pattern_ref: RES.TOOL.SHARED_POOL
+    tag: RELAYED
+    source: >
+      docs/knowledge/card_community_selforg_pattern_2569.md §1 -- self_help_dag_ref
+      ชี้กลับไปยัง romklao_zone ที่มีอยู่แล้ว (typology/nodes/mhesi_rescue_drones_
+      romklao_2026-09-28.yaml commit) ไม่สร้าง node ซ้ำในความหมายเดียวกัน

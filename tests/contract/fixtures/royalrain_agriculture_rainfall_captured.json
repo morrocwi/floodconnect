@@ -1,0 +1,205 @@
+{
+  "data": [
+    {
+      "operationCenterId": "63804d986a88af6e1f3a6c22",
+      "operationCenterName": "ศูนย์ปฏิบัติการฝนหลวงภาคตะวันออกเฉียงเหนือ(ตอนล่าง)",
+      "operationUnitId": "638075526a88af6e1f3a6c57",
+      "operationUnitName": "นครราชสีมา",
+      "operationDate": "2026-10-03T00:00:00",
+      "isRainyOnTargetArea": true,
+      "rainQuantity": "ฝนเล็กน้อย",
+      "checkAgricultureArea": true,
+      "agricultureAreaProvice": [
+        {
+          "code": "30",
+          "name": "นครราชสีมา",
+          "foundHail": null,
+          "districts": [
+            {
+              "provinceCode": "30",
+              "code": "3029",
+              "name": "อำเภอลำทะเมนชัย",
+              "foundHail": null
+            }
+          ]
+        },
+        {
+          "code": "31",
+          "name": "บุรีรัมย์",
+          "foundHail": null,
+          "districts": [
+            {
+              "provinceCode": "31",
+              "code": "3102",
+              "name": "อำเภอคูเมือง",
+              "foundHail": null
+            },
+            {
+              "provinceCode": "31",
+              "code": "3122",
+              "name": "อำเภอแคนดง",
+              "foundHail": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "operationCenterId": "63804d0c6a88af6e1f3a6c21",
+      "operationCenterName": "ศูนย์ปฏิบัติการฝนหลวงภาคตะวันออกเฉียงเหนือ",
+      "operationUnitId": "63806edd6a88af6e1f3a6c46",
+      "operationUnitName": "ขอนแก่น",
+      "operationDate": "2026-10-03T00:00:00",
+      "isRainyOnTargetArea": true,
+      "rainQuantity": "ฝนเล็กน้อย",
+      "checkAgricultureArea": true,
+      "agricultureAreaProvice": [
+        {
+          "code": "40",
+          "name": "ขอนแก่น",
+          "foundHail": null,
+          "districts": [
+            {
+              "provinceCode": "40",
+              "code": "4018",
+              "name": "อำเภอชนบท",
+              "foundHail": null
+            }
+          ]
+        },
+        {
+          "code": "44",
+          "name": "มหาสารคาม",
+          "foundHail": null,
+          "districts": [
+            {
+              "provinceCode": "44",
+              "code": "4407",
+              "name": "อำเภอนาเชือก",
+              "foundHail": null
+            },
+            {
+              "provinceCode": "44",
+              "code": "4410",
+              "name": "อำเภอนาดูน",
+              "foundHail": null
+            },
+            {
+              "provinceCode": "44",
+              "code": "4409",
+              "name": "อำเภอวาปีปทุม",
+              "foundHail": null
+            }
+          ]
+        },
+        {
+          "code": "31",
+          "name": "บุรีรัมย์",
+          "foundHail": null,
+          "districts": [
+            {
+              "provinceCode": "31",
+              "code": "3102",
+              "name": "อำเภอคูเมือง",
+              "foundHail": null
+            },
+            {
+              "provinceCode": "31",
+              "code": "3122",
+              "name": "อำเภอแคนดง",
+              "foundHail": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "operationCenterId": "658b8dfa3451ef616b4283c5",
+      "operationCenterName": "ศูนย์ปฏิบัติการฝนหลวงภาคใต้(ตอนบน)",
+      "operationUnitId": "686218e9c24451deddde4946",
+      "operationUnitName": "ประจวบคีรีขันธ์",
+      "operationDate": "2026-10-03T00:00:00",
+      "isRainyOnTargetArea": true,
+      "rainQuantity": "ฝนเล็กน้อย,ฝนปานกลาง",
+      "checkAgricultureArea": true,
+      "agricultureAreaProvice": [
+        {
+          "code": "77",
+          "name": "ประจวบคีรีขันธ์",
+          "foundHail": null,
+          "districts": [
+            {
+              "provinceCode": "77",
+              "code": "7704",
+              "name": "อำเภอบางสะพาน",
+              "foundHail": null
+            },
+            {
+              "provinceCode": "77",
+              "code": "7701",
+              "name": "อำเภอเมืองประจวบคีรีขันธ์",
+              "foundHail": null
+            },
+            {
+              "provinceCode": "77",
+              "code": "7705",
+              "name": "อำเภอบางสะพานน้อย",
+              "foundHail": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "operationCenterId": "65238a174d548333897ff786",
+      "operationCenterName": "กองวิจัยและพัฒนาเทคโนโลยีฝนหลวง",
+      "operationUnitId": "666b8bb64c6c941ec358a16d",
+      "operationUnitName": "หน่วยวิจัยฯ Low Frequency",
+      "operationDate": "2026-10-03T00:00:00",
+      "isRainyOnTargetArea": true,
+      "rainQuantity": "ฝนเล็กน้อย",
+      "checkAgricultureArea": null,
+      "agricultureAreaProvice": []
+    },
+    {
+      "operationCenterId": "636cd36f1ad743f01ad85059",
+      "operationCenterName": "ศูนย์ปฏิบัติการฝนหลวงภาคเหนือ(ตอนบน)",
+      "operationUnitId": "638060af6a88af6e1f3a6c2a",
+      "operationUnitName": "ตาก",
+      "operationDate": "2026-10-03T00:00:00",
+      "isRainyOnTargetArea": true,
+      "rainQuantity": "ฝนเล็กน้อย",
+      "checkAgricultureArea": true,
+      "agricultureAreaProvice": [
+        {
+          "code": "50",
+          "name": "เชียงใหม่",
+          "foundHail": null,
+          "districts": [
+            {
+              "provinceCode": "50",
+              "code": "5018",
+              "name": "อำเภออมก๋อย",
+              "foundHail": null
+            }
+          ]
+        },
+        {
+          "code": "51",
+          "name": "ลำพูน",
+          "foundHail": null,
+          "districts": [
+            {
+              "provinceCode": "51",
+              "code": "5104",
+              "name": "อำเภอลี้",
+              "foundHail": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "success": true,
+  "message": "OK"
+}

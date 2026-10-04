@@ -41,42 +41,42 @@ nodes:
     template: true
     status: UNKNOWN
     fresh: false
-    capacity_persons: null
-    occupied_persons: null
+    capacity_persons:
+    occupied_persons:
     services: []
     support_candidates:
-      - sammakorn_household_template
-      - sammakorn_buddy_cell
-      - sammakorn_zone
-      - sammakorn_internal_safe
-      - external_safe_bkk_east_01
-      - external_safe_bkk_east_02
+    - sammakorn_household_template
+    - sammakorn_buddy_cell
+    - sammakorn_zone
+    - sammakorn_internal_safe
+    - external_safe_bkk_east_01
+    - external_safe_bkk_east_02
     member_need_profile:
       privacy: aggregate_operational_needs_only
-      total_persons: null
+      total_persons:
       living_arrangement: UNKNOWN
-      child_0_5: null
-      child_6_12: null
-      adolescent_13_17: null
-      adult_18_59: null
-      older_adult_60_plus: null
-      pregnant_person: null
-      postpartum_person: null
-      chronic_or_acute_illness: null
-      disability_or_functional_limitation: null
-      bedbound_or_homebound: null
-      needs_continuous_supervision: null
-      needs_mobility_assistance: null
-      needs_essential_medication: null
-      needs_time_critical_medical_followup: null
-      needs_power_dependent_medical_device: null
-      needs_communication_assistance: null
-      needs_special_diet: null
-      needs_infant_feeding: null
-      single_caregiver_household: null
-      dependents_without_co_resident_capable_adult: null
-      co_resident_capable_adults: null
-      co_resident_caregivers: null
+      child_0_5:
+      child_6_12:
+      adolescent_13_17:
+      adult_18_59:
+      older_adult_60_plus:
+      pregnant_person:
+      postpartum_person:
+      chronic_or_acute_illness:
+      disability_or_functional_limitation:
+      bedbound_or_homebound:
+      needs_continuous_supervision:
+      needs_mobility_assistance:
+      needs_essential_medication:
+      needs_time_critical_medical_followup:
+      needs_power_dependent_medical_device:
+      needs_communication_assistance:
+      needs_special_diet:
+      needs_infant_feeding:
+      single_caregiver_household:
+      dependents_without_co_resident_capable_adult:
+      co_resident_capable_adults:
+      co_resident_caregivers:
       child_caregiver_link_uncovered: UNKNOWN
       backup_caregiver_link_uncovered: UNKNOWN
       older_adult_support_link_uncovered: UNKNOWN
@@ -87,7 +87,7 @@ nodes:
       communication_support_link_uncovered: UNKNOWN
       living_alone_buddy_link_uncovered: UNKNOWN
     sustainment:
-      checked_at: null
+      checked_at:
       fresh: false
       physical_safety: UNKNOWN
       potable_water_for_horizon: UNKNOWN
@@ -100,13 +100,14 @@ nodes:
       vulnerable_support: UNKNOWN
       official_instruction: NONE
       resupply:
-        supplier_node: null
+        supplier_node:
         route_edges: []
         official_movement_conflict: false
       escalation:
         status: UNKNOWN
         fresh: false
         verified: false
+
 
   sammakorn_buddy_cell:
     kind: buddy_cell
@@ -115,11 +116,11 @@ nodes:
     label_th: "เครือข่ายเพื่อนบ้าน/บ้านคู่ช่วยเหลือ สัมมากร"
     status: UNKNOWN
     fresh: false
-    capacity_persons: null
-    occupied_persons: null
+    capacity_persons:
+    occupied_persons:
     services: [comms]
     sustainment:
-      checked_at: null
+      checked_at:
       fresh: false
       physical_safety: UNKNOWN
       potable_water_for_horizon: UNKNOWN
@@ -132,13 +133,14 @@ nodes:
       vulnerable_support: UNKNOWN
       official_instruction: NONE
       resupply:
-        supplier_node: null
+        supplier_node:
         route_edges: []
         official_movement_conflict: false
       escalation:
         status: UNKNOWN
         fresh: false
         verified: false
+
 
   sammakorn_zone:
     kind: zone
@@ -147,11 +149,30 @@ nodes:
     label_th: "node พื้นที่หมู่บ้านสัมมากร"
     status: UNKNOWN
     fresh: false
-    capacity_persons: null
-    occupied_persons: null
+    capacity_persons:
+    occupied_persons:
     services: [comms, coordination]
+    # resources (added 2026-09-28, docs/knowledge/card_tool_water_push_boats.md) -- an
+    # OPTIONAL tool a zone may have access to, kept separate from `services` (which is
+    # about a SAFE node's amenities, not equipment a zone can call on). type=boat here
+    # references the typology's generic tool node (RES.TOOL.WATER_PUSH_BOAT), it does not
+    # claim a boat is actually deployed at this zone today -- condition_* fields are
+    # readiness checks, booleans/text only, never a number (no boat count/hp/etc, per
+    # founder rule "ไม่ต้องเอาตัวเลข").
+    resources:
+    - type: boat
+      ref: RES.TOOL.WATER_PUSH_BOAT
+      status: UNKNOWN
+      condition_coordination_with_agency_required: true
+      condition_bridge_clearance_check: true
+      condition_crew_rotation_check: true
+      note_th: >
+        เงื่อนไขก่อนใช้งานจริง (ไม่ใช่การยืนยันว่ามีเรือประจำอยู่ที่ซอมมากรวันนี้) --
+        ต้องประสานหน่วยงาน (BMA/DDS), ต้องตรวจระยะห่าง/ความสูงใต้สะพานก่อนวางเส้นทางเรือ,
+        ต้องมีการหมุนเวียนลูกเรือหากทำงานต่อเนื่อง
+
     sustainment:
-      checked_at: null
+      checked_at:
       fresh: false
       physical_safety: UNKNOWN
       potable_water_for_horizon: UNKNOWN
@@ -164,7 +185,7 @@ nodes:
       vulnerable_support: UNKNOWN
       official_instruction: NONE
       resupply:
-        supplier_node: null
+        supplier_node:
         route_edges: []
         official_movement_conflict: false
       escalation:
@@ -179,11 +200,11 @@ nodes:
     label_th: "จุดปลอดภัยภายในสัมมากร — ยังต้องสำรวจ/ยืนยัน"
     status: UNKNOWN
     fresh: false
-    capacity_persons: null
-    occupied_persons: null
+    capacity_persons:
+    occupied_persons:
     services: []
     sustainment:
-      checked_at: null
+      checked_at:
       fresh: false
       physical_safety: UNKNOWN
       potable_water_for_horizon: UNKNOWN
@@ -196,13 +217,14 @@ nodes:
       vulnerable_support: UNKNOWN
       official_instruction: NONE
       resupply:
-        supplier_node: null
+        supplier_node:
         route_edges: []
         official_movement_conflict: false
       escalation:
         status: UNKNOWN
         fresh: false
         verified: false
+
 
   sammakorn_egress:
     kind: egress
@@ -211,8 +233,8 @@ nodes:
     label_th: "ทางออกจากสัมมากร — ต้องกำหนดเป็นจุดจริงและตรวจภาคสนาม"
     status: UNKNOWN
     fresh: false
-    capacity_persons: null
-    occupied_persons: null
+    capacity_persons:
+    occupied_persons:
     services: []
 
   # ---------------------------------------------------------------------------
@@ -226,42 +248,42 @@ nodes:
     template: true
     status: UNKNOWN
     fresh: false
-    capacity_persons: null
-    occupied_persons: null
+    capacity_persons:
+    occupied_persons:
     services: []
     support_candidates:
-      - ram53_household_template
-      - ram53_buddy_cell
-      - ram53_zone
-      - ram53_internal_safe
-      - external_safe_bkk_east_01
-      - external_safe_bkk_east_02
+    - ram53_household_template
+    - ram53_buddy_cell
+    - ram53_zone
+    - ram53_internal_safe
+    - external_safe_bkk_east_01
+    - external_safe_bkk_east_02
     member_need_profile:
       privacy: aggregate_operational_needs_only
-      total_persons: null
+      total_persons:
       living_arrangement: UNKNOWN
-      child_0_5: null
-      child_6_12: null
-      adolescent_13_17: null
-      adult_18_59: null
-      older_adult_60_plus: null
-      pregnant_person: null
-      postpartum_person: null
-      chronic_or_acute_illness: null
-      disability_or_functional_limitation: null
-      bedbound_or_homebound: null
-      needs_continuous_supervision: null
-      needs_mobility_assistance: null
-      needs_essential_medication: null
-      needs_time_critical_medical_followup: null
-      needs_power_dependent_medical_device: null
-      needs_communication_assistance: null
-      needs_special_diet: null
-      needs_infant_feeding: null
-      single_caregiver_household: null
-      dependents_without_co_resident_capable_adult: null
-      co_resident_capable_adults: null
-      co_resident_caregivers: null
+      child_0_5:
+      child_6_12:
+      adolescent_13_17:
+      adult_18_59:
+      older_adult_60_plus:
+      pregnant_person:
+      postpartum_person:
+      chronic_or_acute_illness:
+      disability_or_functional_limitation:
+      bedbound_or_homebound:
+      needs_continuous_supervision:
+      needs_mobility_assistance:
+      needs_essential_medication:
+      needs_time_critical_medical_followup:
+      needs_power_dependent_medical_device:
+      needs_communication_assistance:
+      needs_special_diet:
+      needs_infant_feeding:
+      single_caregiver_household:
+      dependents_without_co_resident_capable_adult:
+      co_resident_capable_adults:
+      co_resident_caregivers:
       child_caregiver_link_uncovered: UNKNOWN
       backup_caregiver_link_uncovered: UNKNOWN
       older_adult_support_link_uncovered: UNKNOWN
@@ -272,7 +294,7 @@ nodes:
       communication_support_link_uncovered: UNKNOWN
       living_alone_buddy_link_uncovered: UNKNOWN
     sustainment:
-      checked_at: null
+      checked_at:
       fresh: false
       physical_safety: UNKNOWN
       potable_water_for_horizon: UNKNOWN
@@ -285,13 +307,14 @@ nodes:
       vulnerable_support: UNKNOWN
       official_instruction: NONE
       resupply:
-        supplier_node: null
+        supplier_node:
         route_edges: []
         official_movement_conflict: false
       escalation:
         status: UNKNOWN
         fresh: false
         verified: false
+
 
   ram53_buddy_cell:
     kind: buddy_cell
@@ -300,11 +323,11 @@ nodes:
     label_th: "เครือข่ายเพื่อนบ้าน/บ้านคู่ช่วยเหลือ รามคำแหง 53"
     status: UNKNOWN
     fresh: false
-    capacity_persons: null
-    occupied_persons: null
+    capacity_persons:
+    occupied_persons:
     services: [comms]
     sustainment:
-      checked_at: null
+      checked_at:
       fresh: false
       physical_safety: UNKNOWN
       potable_water_for_horizon: UNKNOWN
@@ -317,13 +340,14 @@ nodes:
       vulnerable_support: UNKNOWN
       official_instruction: NONE
       resupply:
-        supplier_node: null
+        supplier_node:
         route_edges: []
         official_movement_conflict: false
       escalation:
         status: UNKNOWN
         fresh: false
         verified: false
+
 
   ram53_zone:
     kind: zone
@@ -332,11 +356,11 @@ nodes:
     label_th: "node พื้นที่ซอยรามคำแหง 53"
     status: UNKNOWN
     fresh: false
-    capacity_persons: null
-    occupied_persons: null
+    capacity_persons:
+    occupied_persons:
     services: [comms, coordination]
     sustainment:
-      checked_at: null
+      checked_at:
       fresh: false
       physical_safety: UNKNOWN
       potable_water_for_horizon: UNKNOWN
@@ -349,13 +373,14 @@ nodes:
       vulnerable_support: UNKNOWN
       official_instruction: NONE
       resupply:
-        supplier_node: null
+        supplier_node:
         route_edges: []
         official_movement_conflict: false
       escalation:
         status: UNKNOWN
         fresh: false
         verified: false
+
 
   ram53_internal_safe:
     kind: internal_safe
@@ -364,11 +389,11 @@ nodes:
     label_th: "จุดปลอดภัยภายในรามคำแหง 53 — ยังต้องสำรวจ/ยืนยัน"
     status: UNKNOWN
     fresh: false
-    capacity_persons: null
-    occupied_persons: null
+    capacity_persons:
+    occupied_persons:
     services: []
     sustainment:
-      checked_at: null
+      checked_at:
       fresh: false
       physical_safety: UNKNOWN
       potable_water_for_horizon: UNKNOWN
@@ -381,13 +406,14 @@ nodes:
       vulnerable_support: UNKNOWN
       official_instruction: NONE
       resupply:
-        supplier_node: null
+        supplier_node:
         route_edges: []
         official_movement_conflict: false
       escalation:
         status: UNKNOWN
         fresh: false
         verified: false
+
 
   ram53_egress:
     kind: egress
@@ -396,8 +422,8 @@ nodes:
     label_th: "ทางออกจากรามคำแหง 53 — ต้องกำหนดเป็นจุดจริงและตรวจภาคสนาม"
     status: UNKNOWN
     fresh: false
-    capacity_persons: null
-    occupied_persons: null
+    capacity_persons:
+    occupied_persons:
     services: []
 
   # ---------------------------------------------------------------------------
@@ -414,11 +440,11 @@ nodes:
     status: UNKNOWN
     fresh: false
     verified_safe: false
-    capacity_persons: null
-    occupied_persons: null
+    capacity_persons:
+    occupied_persons:
     services: []
     sustainment:
-      checked_at: null
+      checked_at:
       fresh: false
       physical_safety: UNKNOWN
       potable_water_for_horizon: UNKNOWN
@@ -431,13 +457,14 @@ nodes:
       vulnerable_support: UNKNOWN
       official_instruction: NONE
       resupply:
-        supplier_node: null
+        supplier_node:
         route_edges: []
         official_movement_conflict: false
       escalation:
         status: UNKNOWN
         fresh: false
         verified: false
+
 
   external_safe_bkk_east_02:
     kind: external_safe
@@ -447,11 +474,11 @@ nodes:
     status: UNKNOWN
     fresh: false
     verified_safe: false
-    capacity_persons: null
-    occupied_persons: null
+    capacity_persons:
+    occupied_persons:
     services: []
     sustainment:
-      checked_at: null
+      checked_at:
       fresh: false
       physical_safety: UNKNOWN
       potable_water_for_horizon: UNKNOWN
@@ -464,7 +491,7 @@ nodes:
       vulnerable_support: UNKNOWN
       official_instruction: NONE
       resupply:
-        supplier_node: null
+        supplier_node:
         route_edges: []
         official_movement_conflict: false
       escalation:
@@ -475,6 +502,133 @@ nodes:
   # ---------------------------------------------------------------------------
   # Supply/service points are placeholders only. They are NOT shelters.
   # ---------------------------------------------------------------------------
+
+  # ---------------------------------------------------------------------------
+  # Romklao (เคหะชุมชนร่มเกล้า, ลาดกระบัง) -- added 2026-09-28, กระทรวง อว. (MHESI) FB post
+  # 28 ก.ย. 2569 (RELAYED, docs/knowledge/card_tool_rescue_drones_romklao_2569.md):
+  # access-first case -- boat mode blocked by obstacles/fences -> air/drone mode. Bangkok
+  # MVP scope (project-floodconnect-mvp-scope). Only a zone + 4 `support` nodes declared
+  # here (no household/buddy_cell/internal_safe/egress chain -- not what this check asked
+  # for and would need field verification this repo has not done); every node stays
+  # status=UNKNOWN/fresh=false, exactly like every other undeclared-verification node in
+  # this file.
+  # ---------------------------------------------------------------------------
+  romklao_zone:
+    kind: zone
+    layer: 2
+    area_id: romklao
+    label_th: "node พื้นที่เคหะชุมชนร่มเกล้า (ลาดกระบัง)"
+    status: UNKNOWN
+    fresh: false
+    capacity_persons:
+    occupied_persons:
+    services: [comms, coordination]
+    # resources (docs/knowledge/card_tool_rescue_drones_romklao_2569.md) -- same pattern
+    # as sammakorn_zone's boat entry: an OPTIONAL tool a zone may request via agencies,
+    # not a claim that a drone is on-site today. condition_* are booleans/text only.
+    resources:
+    - type: drone
+      ref: RES.TOOL.RESCUE_DRONE
+      status: UNKNOWN
+      condition_coordination_with_agency_required: true
+      condition_line_of_sight_or_comms_link_required: true
+      condition_payload_weight_check: true
+      note_th: >
+        เงื่อนไขก่อนใช้งานจริง -- ต้องประสานหน่วยงาน (อว./พม./สอป./บริษัทผู้ให้บริการ), ต้องมี
+        สัญญาณควบคุม/แนวสายตาเพียงพอ, ต้องตรวจน้ำหนักของที่จะส่งก่อนบิน -- ใช้สำหรับส่งของ/
+        สำรวจเท่านั้น ไม่ใช่โหมดย้ายคน (ดู community_dag.py EDGE_MODES)
+      # shared_pool (added 2026-09-28, docs/knowledge/card_community_selforg_pattern_2569.md
+      # -- แฟลตคลองจั่น/ร่มเกล้า self-organisation pattern, RELAYED) -- ชุมชนรวมกองกลางเอง
+      # ไม่ใช่ทรัพยากรที่หน่วยงานจัดสรรให้ (ต่างจาก drone/kitchen ด้านบน)
+    - type: shared_pool
+      ref: RES.TOOL.SHARED_POOL
+      status: UNKNOWN
+      pools_active: [money, medicine, drinking_water]
+      note_th: "กองกลางที่ชุมชนรวมกันเอง (เงิน/ยา/น้ำดื่ม) -- ไม่ใช่การจัดสรรจากหน่วยงาน"
+    roles_active: [coordinator, welfare, route_checker, resource_keeper, comms, procurement_runner]
+
+  romklao_ops_kitchen_ram192:
+    kind: support
+    layer: 3
+    area_id: romklao
+    label_th: "ศูนย์ปฏิบัติการ + ครัวกลาง ปากซอยรามคำแหง 192 (มีนบุรี)"
+    status: UNKNOWN
+    fresh: false
+    capacity_persons:
+    occupied_persons:
+    services: [kitchen]
+
+  romklao_base_romklao2:
+    kind: support
+    layer: 3
+    area_id: romklao
+    label_th: "ฐานหลักปฏิบัติการ ร่มเกล้า 2"
+    status: UNKNOWN
+    fresh: false
+    capacity_persons:
+    occupied_persons:
+    services: [rescue_staging]
+
+  romklao_kitchen_relocation_watpakbueng:
+    kind: support
+    layer: 3
+    area_id: romklao
+    label_th: "แผนย้ายครัวกลางไปวัดปากบึง (แผน -- สถานะดำเนินการยังไม่ยืนยัน)"
+    status: UNKNOWN
+    fresh: false
+    capacity_persons:
+    occupied_persons:
+    services: [kitchen]
+    planned: true
+
+  romklao_vehicle_standby_4wd:
+    kind: support
+    layer: 3
+    area_id: romklao
+    label_th: "จุดจอดรถ 4WD สำรอง"
+    status: UNKNOWN
+    fresh: false
+    capacity_persons:
+    occupied_persons:
+    services: [rescue_staging]
+    modes: [high_clearance, vehicle]
+
+  # ---------------------------------------------------------------------------
+  # Khlongchan flats (แฟลตคลองจั่น, บางกะปิ) -- added 2026-09-28, docs/knowledge/
+  # card_community_selforg_pattern_2569.md (RELAYED FB post by a university academic):
+  # residents pooled money, split procurement/cooking/medicine-sharing roles when aid
+  # had not fully reached them. Bangkok MVP scope. Only a zone + 1 community-kitchen
+  # support node (same minimal-declaration pattern as Romklao, task 3) -- every node
+  # stays status=UNKNOWN/fresh=false.
+  # ---------------------------------------------------------------------------
+  khlongchan_flats_zone:
+    kind: zone
+    layer: 2
+    area_id: khlongchan_flats
+    label_th: "node พื้นที่แฟลตคลองจั่น (บางกะปิ)"
+    status: UNKNOWN
+    fresh: false
+    capacity_persons:
+    occupied_persons:
+    services: [comms, coordination]
+    resources:
+    - type: shared_pool
+      ref: RES.TOOL.SHARED_POOL
+      status: UNKNOWN
+      pools_active: [money, medicine, drinking_water]
+      note_th: "กองกลางที่ชุมชนรวมกันเอง (เงิน/ยา/น้ำดื่ม) -- ไม่ใช่การจัดสรรจากหน่วยงาน"
+    roles_active: [coordinator, welfare, route_checker, resource_keeper, comms, procurement_runner]
+
+  khlongchan_flats_kitchen:
+    kind: support
+    layer: 3
+    area_id: khlongchan_flats
+    label_th: "ครัวกลางที่ชุมชนตั้งเอง (แฟลตคลองจั่น)"
+    status: UNKNOWN
+    fresh: false
+    capacity_persons:
+    occupied_persons:
+    services: [kitchen]
   sammakorn_supply_point_01:
     kind: supply_point
     layer: 5
@@ -483,10 +637,9 @@ nodes:
     status: UNKNOWN
     fresh: false
     verified_service: false
-    capacity_persons: null
-    occupied_persons: null
+    capacity_persons:
+    occupied_persons:
     services: []
-
   ram53_supply_point_01:
     kind: supply_point
     layer: 5
@@ -495,221 +648,268 @@ nodes:
     status: UNKNOWN
     fresh: false
     verified_service: false
-    capacity_persons: null
-    occupied_persons: null
+    capacity_persons:
+    occupied_persons:
     services: []
-
-support_edges:
-  # Resource/help delivery graph. Unlike movement edges, this is NOT required to be a DAG.
-  # Resources can move toward households while people remain in place.
-  - id: sam_zone_support_to_buddy
-    from: sammakorn_zone
-    to: sammakorn_buddy_cell
-    status: UNKNOWN
-    fresh: false
-    field_verified: false
-    resources: []
-
-  - id: sam_buddy_support_to_household
-    from: sammakorn_buddy_cell
-    to: sammakorn_household_template
-    status: UNKNOWN
-    fresh: false
-    field_verified: false
-    resources: []
-
-  - id: ram_zone_support_to_buddy
-    from: ram53_zone
-    to: ram53_buddy_cell
-    status: UNKNOWN
-    fresh: false
-    field_verified: false
-    resources: []
-
-  - id: ram_buddy_support_to_household
-    from: ram53_buddy_cell
-    to: ram53_household_template
-    status: UNKNOWN
-    fresh: false
-    field_verified: false
-    resources: []
 
 edges:
   # Sammakorn chain
-  - id: sam_hh_to_buddy
-    from: sammakorn_household_template
-    to: sammakorn_buddy_cell
-    status: UNKNOWN
-    safety: UNKNOWN
-    fresh: false
-    field_verified: false
-    modes: [walk]
-    max_group: null
-    distance_m: null
+- id: sam_hh_to_buddy
+  from: sammakorn_household_template
+  to: sammakorn_buddy_cell
+  status: UNKNOWN
+  safety: UNKNOWN
+  fresh: false
+  field_verified: false
+  modes: [walk]
+  max_group:
+  distance_m:
 
-  - id: sam_buddy_to_zone
-    from: sammakorn_buddy_cell
-    to: sammakorn_zone
-    status: UNKNOWN
-    safety: UNKNOWN
-    fresh: false
-    field_verified: false
-    modes: [walk]
-    max_group: null
-    distance_m: null
+- id: sam_buddy_to_zone
+  from: sammakorn_buddy_cell
+  to: sammakorn_zone
+  status: UNKNOWN
+  safety: UNKNOWN
+  fresh: false
+  field_verified: false
+  modes: [walk]
+  max_group:
+  distance_m:
 
-  - id: sam_zone_to_internal
-    from: sammakorn_zone
-    to: sammakorn_internal_safe
-    status: UNKNOWN
-    safety: UNKNOWN
-    fresh: false
-    field_verified: false
-    modes: [walk, vehicle]
-    max_group: null
-    distance_m: null
+- id: sam_zone_to_internal
+  from: sammakorn_zone
+  to: sammakorn_internal_safe
+  status: UNKNOWN
+  safety: UNKNOWN
+  fresh: false
+  field_verified: false
+  modes: [walk, vehicle]
+  max_group:
+  distance_m:
 
-  - id: sam_internal_to_egress
-    from: sammakorn_internal_safe
-    to: sammakorn_egress
-    status: UNKNOWN
-    safety: UNKNOWN
-    fresh: false
-    field_verified: false
-    modes: [walk, vehicle]
-    max_group: null
-    distance_m: null
+- id: sam_internal_to_egress
+  from: sammakorn_internal_safe
+  to: sammakorn_egress
+  status: UNKNOWN
+  safety: UNKNOWN
+  fresh: false
+  field_verified: false
+  modes: [walk, vehicle]
+  max_group:
+  distance_m:
 
-  - id: sam_egress_to_external_01
-    from: sammakorn_egress
-    to: external_safe_bkk_east_01
-    status: UNKNOWN
-    safety: UNKNOWN
-    fresh: false
-    field_verified: false
-    modes: [walk, vehicle]
-    max_group: null
-    distance_m: null
+- id: sam_egress_to_external_01
+  from: sammakorn_egress
+  to: external_safe_bkk_east_01
+  status: UNKNOWN
+  safety: UNKNOWN
+  fresh: false
+  field_verified: false
+  modes: [walk, vehicle]
+  max_group:
+  distance_m:
 
-  - id: sam_egress_to_external_02
-    from: sammakorn_egress
-    to: external_safe_bkk_east_02
-    status: UNKNOWN
-    safety: UNKNOWN
-    fresh: false
-    field_verified: false
-    modes: [walk, vehicle]
-    max_group: null
-    distance_m: null
+- id: sam_egress_to_external_02
+  from: sammakorn_egress
+  to: external_safe_bkk_east_02
+  status: UNKNOWN
+  safety: UNKNOWN
+  fresh: false
+  field_verified: false
+  modes: [walk, vehicle]
+  max_group:
+  distance_m:
 
   # Ram 53 chain
-  - id: ram_hh_to_buddy
-    from: ram53_household_template
-    to: ram53_buddy_cell
-    status: UNKNOWN
-    safety: UNKNOWN
-    fresh: false
-    field_verified: false
-    modes: [walk]
-    max_group: null
-    distance_m: null
+- id: ram_hh_to_buddy
+  from: ram53_household_template
+  to: ram53_buddy_cell
+  status: UNKNOWN
+  safety: UNKNOWN
+  fresh: false
+  field_verified: false
+  modes: [walk]
+  max_group:
+  distance_m:
 
-  - id: ram_buddy_to_zone
-    from: ram53_buddy_cell
-    to: ram53_zone
-    status: UNKNOWN
-    safety: UNKNOWN
-    fresh: false
-    field_verified: false
-    modes: [walk]
-    max_group: null
-    distance_m: null
+- id: ram_buddy_to_zone
+  from: ram53_buddy_cell
+  to: ram53_zone
+  status: UNKNOWN
+  safety: UNKNOWN
+  fresh: false
+  field_verified: false
+  modes: [walk]
+  max_group:
+  distance_m:
 
-  - id: ram_zone_to_internal
-    from: ram53_zone
-    to: ram53_internal_safe
-    status: UNKNOWN
-    safety: UNKNOWN
-    fresh: false
-    field_verified: false
-    modes: [walk, vehicle]
-    max_group: null
-    distance_m: null
+- id: ram_zone_to_internal
+  from: ram53_zone
+  to: ram53_internal_safe
+  status: UNKNOWN
+  safety: UNKNOWN
+  fresh: false
+  field_verified: false
+  modes: [walk, vehicle]
+  max_group:
+  distance_m:
 
-  - id: ram_internal_to_egress
-    from: ram53_internal_safe
-    to: ram53_egress
-    status: UNKNOWN
-    safety: UNKNOWN
-    fresh: false
-    field_verified: false
-    modes: [walk, vehicle]
-    max_group: null
-    distance_m: null
+- id: ram_internal_to_egress
+  from: ram53_internal_safe
+  to: ram53_egress
+  status: UNKNOWN
+  safety: UNKNOWN
+  fresh: false
+  field_verified: false
+  modes: [walk, vehicle]
+  max_group:
+  distance_m:
 
-  - id: ram_egress_to_external_01
-    from: ram53_egress
-    to: external_safe_bkk_east_01
-    status: UNKNOWN
-    safety: UNKNOWN
-    fresh: false
-    field_verified: false
-    modes: [walk, vehicle]
-    max_group: null
-    distance_m: null
+- id: ram_egress_to_external_01
+  from: ram53_egress
+  to: external_safe_bkk_east_01
+  status: UNKNOWN
+  safety: UNKNOWN
+  fresh: false
+  field_verified: false
+  modes: [walk, vehicle]
+  max_group:
+  distance_m:
 
-  - id: ram_egress_to_external_02
-    from: ram53_egress
-    to: external_safe_bkk_east_02
-    status: UNKNOWN
-    safety: UNKNOWN
-    fresh: false
-    field_verified: false
-    modes: [walk, vehicle]
-    max_group: null
-    distance_m: null
+- id: ram_egress_to_external_02
+  from: ram53_egress
+  to: external_safe_bkk_east_02
+  status: UNKNOWN
+  safety: UNKNOWN
+  fresh: false
+  field_verified: false
+  modes: [walk, vehicle]
+  max_group:
+  distance_m:
 
+  # Romklao chain -- zone -> support nodes (layer 2 -> 3, per KIND_LAYER's shared-layer-3
+  # rule). Not field-verified by this repo -- every edge stays field_verified: false, so
+  # build_graph.py's load_self_help_dag() tags each OPEN, never RELAYED, until someone
+  # checks in person.
+- id: romklao_zone_to_ops_kitchen
+  from: romklao_zone
+  to: romklao_ops_kitchen_ram192
+  status: UNKNOWN
+  safety: UNKNOWN
+  fresh: false
+  field_verified: false
+  modes: [walk, vehicle]
+  max_group:
+  distance_m:
 
-  - id: sam_egress_to_supply_01
-    from: sammakorn_egress
-    to: sammakorn_supply_point_01
-    status: UNKNOWN
-    safety: UNKNOWN
-    fresh: false
-    field_verified: false
-    modes: [walk, vehicle]
-    max_group: null
-    distance_m: null
+- id: romklao_zone_to_base
+  from: romklao_zone
+  to: romklao_base_romklao2
+  status: UNKNOWN
+  safety: UNKNOWN
+  fresh: false
+  field_verified: false
+  modes: [walk, vehicle]
+  max_group:
+  distance_m:
 
-  - id: ram_egress_to_supply_01
-    from: ram53_egress
-    to: ram53_supply_point_01
-    status: UNKNOWN
-    safety: UNKNOWN
-    fresh: false
-    field_verified: false
-    modes: [walk, vehicle]
-    max_group: null
-    distance_m: null
+- id: romklao_zone_to_kitchen_relocation
+  from: romklao_zone
+  to: romklao_kitchen_relocation_watpakbueng
+  status: UNKNOWN
+  safety: UNKNOWN
+  fresh: false
+  field_verified: false
+  modes: [walk, vehicle]
+  max_group:
+  distance_m:
+
+- id: romklao_zone_to_vehicle_standby
+  from: romklao_zone
+  to: romklao_vehicle_standby_4wd
+  status: UNKNOWN
+  safety: UNKNOWN
+  fresh: false
+  field_verified: false
+  modes: [high_clearance, vehicle]
+  max_group:
+  distance_m:
+
+- id: sam_egress_to_supply_01
+  from: sammakorn_egress
+  to: sammakorn_supply_point_01
+  status: UNKNOWN
+  safety: UNKNOWN
+  fresh: false
+  field_verified: false
+  modes: [walk, vehicle]
+  max_group:
+  distance_m:
+
+- id: ram_egress_to_supply_01
+  from: ram53_egress
+  to: ram53_supply_point_01
+  status: UNKNOWN
+  safety: UNKNOWN
+  fresh: false
+  field_verified: false
+  modes: [walk, vehicle]
+  max_group:
+  distance_m:
 
 field_verification_minimum:
   node:
-    - "สถานะน้ำ/ไฟฟ้า/โครงสร้าง ณ จุด"
-    - "จำนวนคนที่รับเพิ่มได้"
-    - "การเข้าถึงสำหรับกลุ่มเป้าหมาย"
-    - "ช่องทางสื่อสาร"
-    - "เวลาและผู้ตรวจ (เก็บชื่อผู้ตรวจภายใน ไม่ต้องเผยแพร่สาธารณะ)"
+  - "สถานะน้ำ/ไฟฟ้า/โครงสร้าง ณ จุด"
+  - "จำนวนคนที่รับเพิ่มได้"
+  - "การเข้าถึงสำหรับกลุ่มเป้าหมาย"
+  - "ช่องทางสื่อสาร"
+  - "เวลาและผู้ตรวจ (เก็บชื่อผู้ตรวจภายใน ไม่ต้องเผยแพร่สาธารณะ)"
   edge:
-    - "ผ่านได้จริงด้วย mode ที่ประกาศ"
-    - "ไม่มีจุดไฟฟ้า/ฝาท่อ/กระแสน้ำอันตรายที่ผู้ตรวจพบ"
-    - "จุดต้นทางและปลายทางเชื่อมถึงกันจริง"
-    - "ระยะหรือเวลาที่วัดได้ถ้ามี"
-    - "เวลา checked_at และอายุข้อมูลที่ยอมรับได้"
+  - "ผ่านได้จริงด้วย mode ที่ประกาศ"
+  - "ไม่มีจุดไฟฟ้า/ฝาท่อ/กระแสน้ำอันตรายที่ผู้ตรวจพบ"
+  - "จุดต้นทางและปลายทางเชื่อมถึงกันจริง"
+  - "ระยะหรือเวลาที่วัดได้ถ้ามี"
+  - "เวลา checked_at และอายุข้อมูลที่ยอมรับได้"
 
 activation_order_th:
-  - "0 SELF: เช็กคนในบ้าน ไฟฟ้า ยา น้ำ โทรศัพท์ และทางออกของตัวเอง"
-  - "1 BUDDY: เช็กบ้านคู่/กลุ่มบ้านว่าติดต่อได้และต้องการความช่วยเหลืออะไร"
-  - "2 ZONE: รวม demand + supply + ทางผ่านได้ โดยไม่เปิดเผยข้อมูลส่วนบุคคลเกินจำเป็น"
-  - "3 INTERNAL SAFE: เปิดใช้เฉพาะจุดที่ field-verified และยัง fresh"
-  - "4 EGRESS: ยืนยันทางออกอย่างน้อย 2 ทางที่ failure domain ต่างกันเมื่อทำได้"
-  - "5 EXTERNAL SAFE: ส่งต่อเฉพาะ node ที่ verified_safe=true, SAFE, fresh และ capacity พอ"
+- "0 SELF: เช็กคนในบ้าน ไฟฟ้า ยา น้ำ โทรศัพท์ และทางออกของตัวเอง"
+- "1 BUDDY: เช็กบ้านคู่/กลุ่มบ้านว่าติดต่อได้และต้องการความช่วยเหลืออะไร"
+- "2 ZONE: รวม demand + supply + ทางผ่านได้ โดยไม่เปิดเผยข้อมูลส่วนบุคคลเกินจำเป็น"
+- "3 INTERNAL SAFE: เปิดใช้เฉพาะจุดที่ field-verified และยัง fresh"
+- "4 EGRESS: ยืนยันทางออกอย่างน้อย 2 ทางที่ failure domain ต่างกันเมื่อทำได้"
+- "5 EXTERNAL SAFE: ส่งต่อเฉพาะ node ที่ verified_safe=true, SAFE, fresh และ capacity พอ"
+support_edges:
+  # Resource/help delivery graph. Unlike movement edges, this is NOT required to be a DAG.
+  # Resources can move toward households while people remain in place.
+- id: sam_zone_support_to_buddy
+  from: sammakorn_zone
+  to: sammakorn_buddy_cell
+  status: UNKNOWN
+  fresh: false
+  field_verified: false
+  resources: []
+
+- id: sam_buddy_support_to_household
+  from: sammakorn_buddy_cell
+  to: sammakorn_household_template
+  status: UNKNOWN
+  fresh: false
+  field_verified: false
+  resources: []
+
+- id: ram_zone_support_to_buddy
+  from: ram53_zone
+  to: ram53_buddy_cell
+  status: UNKNOWN
+  fresh: false
+  field_verified: false
+  resources: []
+
+- id: ram_buddy_support_to_household
+  from: ram53_buddy_cell
+  to: ram53_household_template
+  status: UNKNOWN
+  fresh: false
+  field_verified: false
+  resources: []
+

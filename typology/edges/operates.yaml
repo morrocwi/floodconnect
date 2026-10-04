@@ -1,0 +1,88 @@
+# typology/edges/operates.yaml -- edge_kind=operates, from_kind=agency ->
+# to_kind in {gate,pump}, many->many (proposal §2). Who actually runs the equipment day
+# to day -- may differ from owned_by (e.g. owner delegates operation to a district).
+schema_version: 1
+doc_kind: typology_edge_registry
+edge_kind: operates
+status_th: >
+  ทุก gate/pump ต้องมี operates อย่างน้อย 1 เส้น -- แถวที่ยังไม่ยืนยันเก็บเป็น to unchanged แต่ tag OPEN
+  (ไม่ตัดออก).
+rows:
+  - from: AG_DDS
+    to: WL.SSB.10
+    tag: RELAYED
+    source: "THAI_WATER_GOVERNANCE_MAP.md §(1) (สนน. เก็บสถานะประตู/ปั๊มไว้ภายในระบบ SCADA)"
+  - from: AG_DDS
+    to: WL.PWT.04
+    tag: RELAYED
+    source: "THAI_WATER_GOVERNANCE_MAP.md §(1)"
+  - from: "OPEN"
+    to: ST.SPS.01
+    tag: OPEN
+    source: >
+      structural_issues_2026-09-28.yaml ISSUE-DECISION-02: candidates are AG_ESTATE
+      (นิติบุคคลหมู่บ้าน) or AG_MEA (ไฟ/สถานีต้นทาง) -- neither confirmed by a source this
+      repo has read directly. Kept OPEN rather than picking one.
+  - from: "OPEN"
+    to: ST.SPS.02
+    tag: OPEN
+    source: "same as ST.SPS.01"
+  - from: "OPEN"
+    to: ST.SPS.03
+    tag: OPEN
+    source: "same as ST.SPS.01"
+  - from: "OPEN"
+    to: ST.SPS.04
+    tag: OPEN
+    source: "same as ST.SPS.01"
+  - from: AG_OPERATOR_SAENSAEB_BOAT
+    to: RES.BOAT_PUSH.AG_UNKNOWN.01
+    tag: RELAYED
+    source: "docs/knowledge/card_tool_water_push_boats.md §1 -- ผู้ประกอบการนำเรือมาเดินเครื่องเอง"
+  - from: AG_TMD
+    to: AG_CLIMATE_COMMS_CENTRE
+    tag: RELAYED
+    source: >
+      ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569 -- TMD เป็นหน่วยงานหลักที่ศูนย์นี้ตั้งอยู่และรับผิดชอบข้อมูล
+      ภูมิอากาศ (docs/knowledge/card_climate_comms_centre_2026-09-28.md)
+  - from: AG_SYSTRONICS
+    to: RES.DRONE.ROMKLAO_20260928
+    tag: RELAYED
+    source: "docs/knowledge/card_tool_rescue_drones_romklao_2569.md §1 -- บริษัทผู้ให้บริการโดรน"
+  - from: AG_SOP
+    to: RES.DRONE.ROMKLAO_20260928
+    tag: RELAYED
+    source: "docs/knowledge/card_tool_rescue_drones_romklao_2569.md §1 -- สอป. ร่วมปฏิบัติการโดรน"
+  - from: AG_MSDHS
+    to: RES.KITCHEN.MSDHS_CENTRAL
+    tag: RELAYED
+    source: "docs/knowledge/card_tool_rescue_drones_romklao_2569.md §1 -- พม. เดินครัวกลางเอง"
+  - from: AG_TELCO_AIS
+    to: RES.COW.SHELTER_KMITL_01
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §1"
+  - from: AG_TELCO_TRUE
+    to: RES.COW.SHELTER_KMITL_01
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §1"
+  - from: AG_TELCO_TRUE
+    to: RES.CHARGING.SHELTER_KMITL_01
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §1"
+  - from: AG_SENA
+    to: RES.TOOL.MOBILE_PUMP
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §5 -- ปั๊มเคลื่อนที่ย้ายระหว่างโครงการ"
+  - from: AG_SENA
+    to: AS_SANDBAGS
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §5"
+  - from: AG_SANSIRI
+    to: AS_SANDBAGS
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §5"
+  - from: AG_RTA
+    to: RES.RELIEF_DELIVERY.PRIVATE_KHLONGCHAN_01
+    edge_role: access_escort
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §6 -- ทบ. คุ้มกันของบริจาคเอกชนเข้าพื้นที่"

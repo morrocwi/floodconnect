@@ -1,0 +1,258 @@
+{
+ "result": "OK",
+ "data": [
+  {
+   "id": 1313806809,
+   "waterlevel_datetime": "2026-09-27 12:50",
+   "waterlevel_m": null,
+   "waterlevel_msl": "12.84",
+   "waterlevel_msl_previous": "12.88",
+   "flow_rate": null,
+   "discharge": null,
+   "storage_percent": "162.78",
+   "sort_order": null,
+   "station_type": "tele_waterlevel",
+   "situation_level": 5,
+   "agency": {
+    "id": 9,
+    "agency_name": {
+     "th": "สถาบันสารสนเทศทรัพยากรน้ำ (องค์การมหาชน)",
+     "en": "Hydro – Informatics Institute (Public Organization)",
+     "jp": ""
+    },
+    "agency_shortname": {
+     "th": "สสน.",
+     "en": "HII",
+     "jp": ""
+    }
+   },
+   "basin": {
+    "id": 16,
+    "basin_code": 15,
+    "basin_name": {
+     "th": "ลุ่มน้ำบางปะกง",
+     "en": "Bang Pakong Basin"
+    }
+   },
+   "station": {
+    "id": 175,
+    "tele_station_name": {
+     "en": "Khao Nang Buat Bridge",
+     "th": "สะพานเขานางบวช"
+    },
+    "tele_station_lat": 14.245718,
+    "tele_station_long": 101.27481,
+    "tele_station_oldcode": "NYK008",
+    "tele_station_type": "tele_waterlevel",
+    "left_bank": 11.309,
+    "right_bank": 8.907,
+    "min_bank": 8.91,
+    "ground_level": 2.642,
+    "offset": null,
+    "sub_basin_id": 282,
+    "agency_id": 9,
+    "geocode_id": 1566,
+    "hydro_id": null,
+    "qmax": null,
+    "is_key_station": false,
+    "warning_level_m": null,
+    "critical_level_m": null,
+    "critical_level_msl": null
+   },
+   "geocode": {
+    "area_code": "2",
+    "area_name": {
+     "th": "ภาคกลาง",
+     "en": "Central"
+    },
+    "amphoe_code": "01",
+    "amphoe_name": {
+     "th": "เมืองนครนายก",
+     "en": "Mueang Nakhon Nayok District"
+    },
+    "tumbon_code": "09",
+    "tumbon_name": {
+     "th": "ศรีนาวา",
+     "en": "Si Nawa"
+    },
+    "province_code": "26",
+    "province_name": {
+     "th": "นครนายก",
+     "en": "Nakhon Nayok"
+    }
+   },
+   "diff_wl_bank": "3.93",
+   "diff_wl_bank_text": "ล้นตลิ่ง (ม.)",
+   "river_gid": 193672,
+   "river_name": "แม่น้ำนครนายก"
+  },
+  {
+   "id": 1313806409,
+   "waterlevel_datetime": "2026-09-27 12:50",
+   "waterlevel_m": null,
+   "waterlevel_msl": "350.88",
+   "waterlevel_msl_previous": "350.91",
+   "flow_rate": null,
+   "discharge": null,
+   "storage_percent": "158.89",
+   "sort_order": null,
+   "station_type": "tele_waterlevel",
+   "situation_level": 5,
+   "agency": {
+    "id": 91,
+    "agency_name": {
+     "th": "มูลนิธิอาสาเพื่อนพึ่ง (ภาฯ) ยามยาก สภากาชาดไทย",
+     "en": "Friend in Need (of “Pa”) Volunteers Foundation",
+     "jp": ""
+    },
+    "agency_shortname": {
+     "th": "พพภ",
+     "en": "FOP",
+     "jp": ""
+    }
+   },
+   "basin": {
+    "id": 5,
+    "basin_code": 5,
+    "basin_name": {
+     "th": "ลุ่มน้ำมูล",
+     "en": "Mun Basin"
+    }
+   },
+   "station": {
+    "id": 1394808,
+    "tele_station_name": {
+     "en": "Lam Takhong Nam Bridge",
+     "th": "สะพานน้ำลำตะคอง"
+    },
+    "tele_station_lat": 14.550208,
+    "tele_station_long": 101.459465,
+    "tele_station_oldcode": "MOU246",
+    "tele_station_type": "tele_waterlevel",
+    "left_bank": 349.854,
+    "right_bank": 348.399,
+    "min_bank": 348.4,
+    "ground_level": 344.186,
+    "offset": null,
+    "sub_basin_id": 108,
+    "sponsor_by": "มูลนิธิอาสาเพื่อนพึ่ง (ภาฯ) ยามยาก สภากาชาดไทย",
+    "agency_id": 91,
+    "geocode_id": 1919,
+    "hydro_id": null,
+    "qmax": null,
+    "is_key_station": false,
+    "warning_level_m": null,
+    "critical_level_m": null,
+    "critical_level_msl": null
+   },
+   "geocode": {
+    "area_code": "4",
+    "area_name": {
+     "th": "ภาคตะวันออกเฉียงเหนือ",
+     "en": "Northeast"
+    },
+    "amphoe_code": "21",
+    "amphoe_name": {
+     "th": "ปากช่อง",
+     "en": "Pak Chong District"
+    },
+    "tumbon_code": "05",
+    "tumbon_name": {
+     "th": "หมูสี",
+     "en": "Mu Si"
+    },
+    "province_code": "30",
+    "province_name": {
+     "th": "นครราชสีมา",
+     "en": "Nakhon Ratchasima"
+    }
+   },
+   "diff_wl_bank": "2.48",
+   "diff_wl_bank_text": "ล้นตลิ่ง (ม.)"
+  },
+  {
+   "id": 1313792743,
+   "waterlevel_datetime": "2026-09-27 12:00",
+   "waterlevel_m": null,
+   "waterlevel_msl": "25.18",
+   "waterlevel_msl_previous": "25.19",
+   "flow_rate": null,
+   "discharge": null,
+   "storage_percent": "149.23",
+   "sort_order": null,
+   "station_type": "tele_waterlevel",
+   "situation_level": 5,
+   "agency": {
+    "id": 12,
+    "agency_name": {
+     "th": "กรมชลประทาน ",
+     "en": "Royal Irrigation Department",
+     "jp": ""
+    },
+    "agency_shortname": {
+     "th": "ชป.",
+     "en": "RID",
+     "jp": ""
+    }
+   },
+   "basin": {
+    "id": 16,
+    "basin_code": 15,
+    "basin_name": {
+     "th": "ลุ่มน้ำบางปะกง",
+     "en": "Bang Pakong Basin"
+    }
+   },
+   "station": {
+    "id": 1098950,
+    "tele_station_name": {
+     "th": "บ้านแก้ง"
+    },
+    "tele_station_lat": 13.93635,
+    "tele_station_long": 101.972321,
+    "tele_station_oldcode": "Kgt.12A",
+    "tele_station_type": "tele_waterlevel",
+    "left_bank": 35.701,
+    "right_bank": 35.847,
+    "min_bank": 21,
+    "ground_level": 12.509,
+    "offset": 12.43,
+    "sub_basin_id": 278,
+    "agency_id": 12,
+    "geocode_id": 1605,
+    "hydro_id": 6,
+    "qmax": 116,
+    "is_key_station": true,
+    "warning_level_m": null,
+    "critical_level_m": null,
+    "critical_level_msl": null
+   },
+   "geocode": {
+    "area_code": "2",
+    "area_name": {
+     "th": "ภาคกลาง",
+     "en": "Central"
+    },
+    "amphoe_code": "01",
+    "amphoe_name": {
+     "th": "เมืองสระแก้ว",
+     "en": "Mueang Sa Kaeo District"
+    },
+    "tumbon_code": "02",
+    "tumbon_name": {
+     "th": "บ้านแก้ง",
+     "en": "Ban Kaeng"
+    },
+    "province_code": "27",
+    "province_name": {
+     "th": "สระแก้ว",
+     "en": "Sa Kaeo"
+    }
+   },
+   "diff_wl_bank": "4.18",
+   "diff_wl_bank_text": "ล้นตลิ่ง (ม.)",
+   "river_gid": 195444,
+   "river_name": "คลองพระปรง"
+  }
+ ]
+}

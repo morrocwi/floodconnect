@@ -1,0 +1,25 @@
+{
+  "latitude": 13.765053,
+  "longitude": 100.66406,
+  "generationtime_ms": 0.08,
+  "utc_offset_seconds": 25200,
+  "timezone": "Asia/Bangkok",
+  "timezone_abbreviation": "GMT+7",
+  "elevation": 4.0,
+  "hourly_units": {
+    "time": "iso8601",
+    "pressure_msl_gfs_seamless": "hPa",
+    "pressure_msl_icon_seamless": "hPa",
+    "pressure_msl_ecmwf_ifs025": "hPa"
+  },
+  "hourly": {
+    "time": [
+      "2026-09-27T00:00",
+      "2026-09-27T01:00",
+      "2026-09-27T02:00"
+    ],
+    "pressure_msl_gfs_seamless": [1008.2, 1008.0, null],
+    "pressure_msl_icon_seamless": [1007.9, 1007.8, 1007.6],
+    "pressure_msl_ecmwf_ifs025": [null, null, null]
+  }
+}

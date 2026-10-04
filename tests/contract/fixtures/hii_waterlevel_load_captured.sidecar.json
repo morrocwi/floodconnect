@@ -1,0 +1,15 @@
+{
+ "source_id": "hii_waterlevel_load",
+ "url": "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_load?basin_id=6,7,8,9,10,11,12,13,14,15,26&&start_date=2026-10-02%2000%3A00&&end_date=2026-10-02%2023%3A59",
+ "captured_at": "2026-10-02T07:44:33Z",
+ "sha256": "802382d98ae7df2bd187be240d1665c2344fc3d93d8095b2885fab79b10e9d91",
+ "http_status": 200,
+ "content_type": "application/json; charset=utf-8",
+ "fixture_ext": "json",
+ "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "d08b43dbc5be55041677e8c606c23eaf088d7a4d253155c861b2ea0ac837c1bd",
+ "trimmed_note": "trimmed from 386 to first 60 station-timestep records -- HII licence family, publish-safety finding | earlier: trimmed from 386 to first 60 station-timestep records -- HII licence family, publish-safety finding",
+ "trimmed_at": "2026-10-03T18:10:36Z"
+}

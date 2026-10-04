@@ -18,7 +18,8 @@ FloodConnect เดิมตอบคำถามว่า “น้ำ/คล�
 ให้กราฟเป็น
 
 [
-G=(V,E), qquad ell:Vightarrow{0,1,2,3,4,5}
+G=(V,E), qquad ell:V
+ightarrow{0,1,2,3,4,5}
 ]
 
 โดยทุกเส้นเชื่อมต้องผ่านเงื่อนไข
@@ -102,6 +103,9 @@ S_Z=(n_{	ext{helpers}},n_{	ext{vehicles}},n_{	ext{lights}},n_{	ext{powerbanks}},
 - **route checker** — รายงานทางที่ตนเองอยู่หรือมองเห็นได้โดยไม่เข้าไปเสี่ยง
 - **resource keeper** — รู้ว่าของ/รถ/จุดชาร์จอยู่ที่ไหน
 - **comms** — ส่งสถานะขึ้น FloodConnect/กลุ่มสื่อสาร
+- **procurement runner** (เพิ่ม 2569-09-28, กรณีแฟลตคลองจั่น/ร่มเกล้า) — ออกไปหาซื้อของเมื่อ
+  เส้นทางอยู่ในสถานะ ASSISTED/OPEN เท่านั้น (เส้นทาง UNKNOWN ไม่ใช้) เงื่อนไขความปลอดภัยบันทึก
+  เป็นข้อความ
 
 คนหนึ่งถือหลายบทบาทได้ในชุมชนเล็ก
 
@@ -122,6 +126,50 @@ S_Z=(n_{	ext{helpers}},n_{	ext{vehicles}},n_{	ext{lights}},n_{	ext{powerbanks}},
 
 **โรงพยาบาล โรงเรียน วัด มัสยิด อาคารสูง หรือถนนใหญ่ ห้ามถูกถือว่าเป็น safe node โดยอัตโนมัติ**
 ต้องยืนยันสถานะน้ำ ทางเข้า ไฟฟ้า ความจุ และการเปิดใช้งาน ณ เวลานั้นก่อน
+
+### 4.1 Zone resources — เครื่องมือที่ zone เข้าถึงได้
+
+`zone` node เก็บรายการ `resources` แยกจาก `services` ได้ — `services` บอกสิ่งอำนวยความสะดวก
+ของ node ปลอดภัย ส่วน `resources` บอกเครื่องมือที่ชุมชนเรียกใช้ได้เมื่อจำเป็น แต่ละแถวอ้างอิง
+typology tool node ทั่วไป (เช่น `RES.TOOL.WATER_PUSH_BOAT`) พร้อมเงื่อนไขความพร้อม
+(`condition_*`) เป็น boolean/text เสมอ ไม่ใช่ตัวเลข — ตัวอย่าง: `type: boat`,
+`ref: RES.TOOL.WATER_PUSH_BOAT`, `condition_coordination_with_agency_required`,
+`condition_bridge_clearance_check`, `condition_crew_rotation_check` การมีแถวนี้อยู่หมายถึง
+"ประเภทเครื่องมือที่พอจะประสานใช้ได้" เท่านั้น — สถานะว่ามีเรือจริงอยู่ที่ zone หรือไม่ยังเป็น
+`status: UNKNOWN` จนกว่าจะตรวจภาคสนามเหมือน node อื่นทุกชนิดในเอกสารนี้ (ดู
+`site/inputs/community/self_help_dag.yaml` sammakorn_zone และ
+`docs/knowledge/card_tool_water_push_boats.md`)
+
+อีกตัวอย่าง (2026-09-28, เคหะร่มเกล้า, `docs/knowledge/card_tool_rescue_drones_romklao_2569.md`):
+`type: drone`, `ref: RES.TOOL.RESCUE_DRONE` — เครื่องมือที่ zone ขอประสานผ่านหน่วยงาน/องค์กร
+ภายนอกได้เมื่อโหมดอื่น (เช่นเรือ) ใช้ไม่ได้เพราะสิ่งกีดขวางในพื้นที่ (access-first: เปลี่ยนโหมด
+แทนการหยุดปฏิบัติการ) — โดรนในเอกสารนี้ใช้สำหรับส่งของ/สำรวจ (`mode: air_drone` ใน
+`community_dag.py`) เท่านั้น ไม่ใช่โหมดสำหรับย้ายคน
+
+อีกตัวอย่าง (2026-09-28, แฟลตคลองจั่น/ร่มเกล้า, `docs/knowledge/card_community_selforg_
+pattern_2569.md`): `type: shared_pool`, `ref: RES.TOOL.SHARED_POOL`, `pools_active:
+[money, medicine, drinking_water]` — กองกลางที่ชุมชนรวมกันเอง ไม่ใช่การจัดสรรจากหน่วยงาน
+ภายนอก
+
+### 4.1b route checker รายงานสิ่งกีดขวาง (2569-09-28, ปากคลองบางตลาด)
+
+`route checker` (§3.3) รายงานสิ่งกีดขวางทางน้ำ (ขยะ/ผักตบชวา) เป็น observation ของ zone ได้
+เหมือนการรายงานสภาพเส้นทาง — แนบรูป+เวลา ผูกกับ node ประเภท `canal_reach`/`pump` ที่มี
+`condition`/`stall_state` (ดู `docs/FLOW_STALL_TYPOLOGY.md` §11 INTAKE_STARVED,
+`docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md`)
+
+### 4.2 ตั้งชุมชนเมื่อฉุกเฉิน (checklist, 2569-09-28)
+
+สรุปจากกรณีแฟลตคลองจั่น/เคหะร่มเกล้า (`docs/knowledge/card_community_selforg_pattern_
+2569.md`) — เมื่อความช่วยเหลือยังไปไม่ถึงครบทุกจุด ชุมชนตั้งกลไกเองได้ตามลำดับนี้:
+
+1. **นัดรวมกองกลาง** — เงิน/ยา/น้ำดื่มที่มีอยู่ รวมเป็น `shared_pool` (ไม่บันทึกจำนวน แค่ประเภท)
+2. **แบ่งบทบาท** — coordinator, welfare, route_checker, resource_keeper, comms,
+   procurement_runner (คนละคนหรือคนเดียวหลายบทบาทก็ได้ ตามขนาดกลุ่ม)
+3. **ตั้งครัวกลาง** — จุดเดียวที่ทำอาหารให้ทุกคน (support node, service `kitchen`)
+4. **procurement_runner ออกหาซื้อของเมื่อเส้นทางผ่านได้จริง** — เช็กสถานะเส้นทาง
+   (ASSISTED/OPEN) ก่อนออกทุกครั้ง
+5. **comms รายงานเข้า zone** — สถานะกองกลาง/ครัว/เส้นทาง ให้ zone coordinator เห็นภาพรวม
 
 ---
 
@@ -358,53 +406,7 @@ field_verified: true
 
 ---
 
-## 12. Shelter Decision + Lowest Viable Community Node
-
-DAG เดิมบอกว่า “ถ้าต้องเคลื่อน จะเชื่อมไปยัง node ปลอดภัยอย่างไร” แต่ยังขาดคำถามก่อนหน้านั้น:
-**จริง ๆ แล้วจำเป็นต้องเคลื่อนหรือยัง และระดับ support ต่ำสุดใดทำให้ชุมชนยังอยู่ได้อย่างปลอดภัย**
-
-FloodConnect จึงมี proposal เพิ่มชื่อ **Lowest Viable Community Node (LVCN)** ซึ่งเป็นคำของ repo นี้
-ไม่ใช่มาตรฐานสากลที่อ้างว่ามาจาก FEMA/Sphere/UNHCR/CCCM.
-
-แนวคิดคือประเมินจากชั้นต่ำขึ้นสูง:
-
-```text
-household
-  -> buddy_cell
-  -> zone
-  -> internal/community shelter
-  -> egress
-  -> verified external_safe
-```
-
-ถ้าบ้านหนึ่งขาดยา/น้ำ/การช่วยเคลื่อนย้าย แต่ buddy cell เติมช่องว่างนั้นได้โดยไม่ต้องย้ายคนทั้งกลุ่ม
-buddy cell อาจเป็น node ต่ำสุดที่ทำให้ระบบยังดำรงอยู่ได้. ถ้า buddy ไม่พอแต่ zone รวมทรัพยากรได้
-zone อาจเป็น LVCN. Shelter จึงเป็น **escalation layer** ไม่ใช่จุดเริ่มต้นโดยอัตโนมัติ.
-
-การประเมินต้องเป็น constraint-first และใช้สถานะ:
-
-- `VIABLE_AND_ESCALATABLE`
-- `VIABLE_BUT_ISOLATED`
-- `NOT_VIABLE`
-- `UNKNOWN`
-
-พร้อม decision states:
-
-`STAY_AND_SUSTAIN → RESUPPLY_WINDOW → PREPARE_TO_MOVE → SHELTER_SITE_SCREENING → EVACUATE_ROUTE → SHELTER_OPERATION → RETURN_RELOCATE_CLOSE`
-
-ห้าม hard-code ว่าทุกบ้านต้องมีของ 24/48/72 ชั่วโมง; planning horizon ต้องประกาศจากบริบท/คำแนะนำที่
-อ้างอิงได้. `RESUPPLY_WINDOW` ก็ไม่ใช่คำสั่งให้ออกไปซื้อของ: ต้องมี route + destination ที่สด,
-field-verified และไม่ขัดคำสั่งทางการก่อน.
-
-รายละเอียดทั้งหมดและ research anchors:
-`docs/SHELTER_DECISION_AND_COMMUNITY_SUSTAINMENT.md`
-
-งานสำหรับ AI/นักพัฒนาคนถัดไป:
-`docs/HANDOFF_SHELTER_DECISION_AND_SUSTAINMENT.md`
-
----
-
-## 13. หลักการสุดท้าย
+## 12. หลักการสุดท้าย
 
 FloodConnect community DAG ไม่ได้พยายามแทนรัฐหรือหน่วยกู้ภัย
 
@@ -412,17 +414,118 @@ FloodConnect community DAG ไม่ได้พยายามแทนรั�
 
 [
 	ext{Self}
-ightarrow
+
+ightarrow
 	ext{Buddy}
-ightarrow
+
+ightarrow
 	ext{Zone}
-ightarrow
+
+ightarrow
 	ext{Internal Safe}
-ightarrow
+
+ightarrow
 	ext{Egress}
-ightarrow
+
+ightarrow
 	ext{External Safe}
 ]
 
 เป้าหมายคือให้ **แต่ละพื้นที่กลายเป็น node ที่รู้สถานะของตัวเอง รับ-ส่งความช่วยเหลือได้
 และเชื่อมต่อไปยัง node ที่ปลอดภัยกว่าโดยไม่ต้องเดาเส้นทาง**.
+
+---
+
+## ภาคผนวก — ส่วนขยาย 2026-09-28 (ต่อยอด ไม่ใช่แยกโปรโตคอลใหม่)
+
+> Import จาก `public/main` (commit `5364c23`) เข้าคลัง private นี้ครั้งแรก 2026-09-28 ตามคำสั่ง
+> ฟาวน์เดอร์ "ตรวจ git ให้ดี" — ไฟล์ต้นฉบับ (หัวข้อ 1-6 ด้านบน) **ไม่ถูกแก้**, ส่วนนี้คือของเพิ่มเท่านั้น.
+
+### A. Mode เพิ่ม: `boat`, `high_clearance`
+
+`modes` เดิม (หัวข้อ 5) มีแค่ walk/vehicle เป็นตัวอย่าง ไม่ใช่ closed vocabulary บังคับในโค้ด —
+`community_dag.py`'s `validate_document()` **ยังไม่เคยตรวจ `modes` เลยก่อนหน้านี้**. ส่วนขยายนี้:
+
+1. ประกาศ `EDGE_MODES = {walk, vehicle, boat, high_clearance}` เป็น closed vocabulary จริง
+2. `validate_document()` error เมื่อ edge มี mode นอกชุดนี้ (schema error, ไม่ใช่แค่ warning)
+
+เหตุผล (ฟาวน์เดอร์ verbatim): "เรื่องเร่งด่วนของหมู่บ้าน เอ อาจต้องเริ่มจากการทำให้ระบบการเดินทาง
+เชื่อมถึงก่อน เช่นเรือ หรือรถยกสูง" — พื้นที่น้ำลึกที่คนเดินเท้าไม่ได้ ต้องมี mode ที่ตรงจริง (เรือ/
+รถยกสูง) ไม่ใช่แค่ walk/vehicle ที่ไม่พอ.
+
+### B. Node kind ใหม่: `support`
+
+`support` (layer 3, **ใช้เลขชั้นเดียวกับ `internal_safe`** — ไม่ใช่เลขชั้นใหม่) คือจุดบริการ/
+โลจิสติกส์ที่ zone เข้าถึงได้ ให้บริการอย่างน้อย 1 ใน `SUPPORT_SERVICES`:
+
+- `kitchen` — ครัวกลาง
+- `medical_post` — จุดปฐมพยาบาล/แพทย์
+- `charging` — จุดชาร์จไฟ/แบตเตอรี่
+- `supply_depot` — คลังของ/เสบียง
+- `donation_point` — จุดรับ-กระจายของบริจาค
+- `rescue_staging` — จุดเตรียมทีมกู้ภัย/พาหนะก่อนเข้าออกพื้นที่
+
+**เหตุผลที่ใช้ layer=3 ร่วมกับ `internal_safe` แทนเลขชั้นใหม่**: การใส่เลขชั้นใหม่จะต้องแก้ `layer`
+ของทุก node ที่ประกาศไว้แล้วใน `site/inputs/community/self_help_dag.yaml` (เปลี่ยนโครง ไม่ใช่ต่อยอด)
+— กฎ forward-only ตรวจ**ต่อ edge** (`layer(v) > layer(u)`) ไม่ได้ผูกกับ "1 layer number = 1 kind"
+ดังนั้น `support` กับ `internal_safe` ใช้เลข 3 ร่วมกันได้อย่างปลอดภัย: zone(2) ไปหา support(3) ได้
+เหมือนไปหา internal_safe(3), และ support(3) ไปหา egress(4)/external_safe(5) ต่อได้เหมือนกัน.
+
+เชื่อมกับ typology graph หลัก (water/power/resource/civil) ผ่าน edge kind เดิม (`supplies`/
+`operates`) — ดู `docs/TYPOLOGY_GRAPH.md` "Community self-help DAG bridge".
+
+### C. กฎลำดับความสำคัญ "การเข้าถึงมาก่อน" (access-first priority rule)
+
+โครงสร้าง ไม่ใช่สมการ — `community_dag.py::zone_priority_order(doc, zone_id, required_modes)`:
+
+```
+ถ้าไม่มี edge ที่ผ่านทุกเงื่อนไข (field_verified=true, fresh=true, status∈{OPEN,ASSISTED},
+safety∈{CLEAR,CAUTION}, mode ตรงกับที่ zone ต้องการ) เชื่อมถึง egress/external_safe ได้เลย
+    -> ลำดับ: RESTORE_ACCESS ก่อน (ขอเรือ/รถยกสูงผ่านช่องทางที่ระบุชื่อ) -> SUPPORT -> EVACUATE
+ถ้ามี edge ที่ผ่านครบแล้ว
+    -> ลำดับ: SUPPORT -> EVACUATE (ไม่ต้อง RESTORE_ACCESS)
+```
+
+`UNKNOWN` (สถานะ node หรือ edge) **ไม่ถูกนับว่าปลอดภัย/ผ่านได้เลย** — ตรงกับกฎเดิมของโปรโตคอล
+("Routing discipline" ในหัวข้อ docstring ของ `community_dag.py`) ทุกประการ, ตรวจซ้ำอย่างชัดเจนใน
+`zone_has_verified_access()`.
+
+### D. เชื่อมกับ typology graph (เชื่อม id เดิม ไม่สร้าง id ใหม่)
+
+`tools/typology/build_graph.py` โหลด `site/inputs/community/self_help_dag.yaml` เป็นชั้น
+`self_help` เพิ่มเข้ากราฟเดียวกับ water/power/resource/civil — ใช้ id เดิมของไฟล์นี้ตรง ๆ
+(`sammakorn_household_template`, `sammakorn_buddy_cell`, `sammakorn_zone`,
+`sammakorn_internal_safe`, `sammakorn_egress`, และชุด `ram53_*`/`external_safe_bkk_east_*`
+คู่ขนาน) — **ไม่สร้าง `CIV.*` id ใหม่**. edge เชื่อมข้ามชั้น (proposal-only, ทุกแถว OPEN, ไม่มีแหล่ง
+ยืนยันว่ามีอยู่จริงวันนี้):
+
+- `sammakorn_zone --reports_to--> AG_ESTATE`
+- `AG_ESTATE --reports_to--> AG_DDS` (ปิดช่องว่างชุมชน→ผู้ควบคุมปั๊ม — เจ้าของปั๊มยังติด
+  `VERIFIED-CONTRADICTED` ตามที่บันทึกไว้ก่อนหน้านี้ ไม่เปลี่ยน)
+- `sammakorn_zone --reports_to--> AG_BMA_GOV` (ช่องทางทางการของ zone แยกจาก
+  `AG_FB_ADMIN --reports_to--> AG_BMA_MED` ที่เป็นการไล่เคสจากโซเชียลมีเดียเดิม)
+- `sammakorn_zone --reports_to--> AG_MEA` (ช่องทางแจ้งไฟดับ แยกจาก `AG_MEA --warns--> OPEN`
+  เดิม — คนละทิศทาง/คนละความหมาย ไม่ปนกัน)
+- `sammakorn_internal_safe --supplies--> sammakorn_zone`
+
+**OPEN ที่ทราบแล้ว (ไม่แก้ในงานนี้)**: ไฟล์ประกาศ zone เดียวสำหรับทั้งหมู่บ้านสัมมากร
+(`sammakorn_zone`) — ไม่สร้าง zone ราย soi เพิ่ม; `sammakorn_internal_safe`/`sammakorn_egress`
+ยังเป็น `status: UNKNOWN` (ยังไม่ตรวจภาคสนาม) — คงไว้ตามเดิม ไม่เปลี่ยนเป็น SAFE.
+
+## 14. Pointer: Shelter Decision + Lowest Viable Community Node
+
+Note (2026-10-02): origin/main carries this section's content
+inline; here it stays a pointer only, since the full LVCN model (states
+`VIABLE_AND_ESCALATABLE`/`VIABLE_BUT_ISOLATED`/`NOT_VIABLE`/`UNKNOWN`, decision ladder
+`STAY_AND_SUSTAIN -> RESUPPLY_WINDOW -> PREPARE_TO_MOVE -> SHELTER_SITE_SCREENING ->
+EVACUATE_ROUTE -> SHELTER_OPERATION -> RETURN_RELOCATE_CLOSE`) already lives as real,
+implemented code (`shelter_decision.py`, `shelter_operation_ladder.py`), not prose that
+belongs duplicated in two docs:
+
+- `docs/SHELTER_DECISION_AND_COMMUNITY_SUSTAINMENT.md` -- full design + research anchors
+- `docs/HANDOFF_SHELTER_DECISION_AND_SUSTAINMENT.md` -- handoff for the next AI/developer
+
+The DAG above answers "if we must move, which safe node"; the LVCN model above answers
+the prior question, "do we need to move yet, and what is the lowest support layer that
+keeps this household/group safe without moving at all". Buddy cell/zone/shelter is an
+escalation layer, never an automatic first step.

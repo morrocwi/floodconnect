@@ -4,7 +4,7 @@ Live Bangkok canal water-level attachment -- companion to build_bangkok_canals.p
 
 Attaches a LIVE (or best-effort near-live) water-level reading to canal-graph nodes,
 reusing this repo's existing patterns: GISTDA-style pagination/caching discipline from
-build_kg.py's `overlay_gistda_flood()`, and the fuzzy station-name -> floodgate-coordinate
+build_river_kg.py's `overlay_gistda_flood()`, and the fuzzy station-name -> floodgate-coordinate
 join from build_bangkok_canals.py's `match_water_level_stations_to_floodgates()`.
 
 ## What this is NOT -- read README.md's "What this is NOT" section first
@@ -129,7 +129,7 @@ def parse_klongmap_stations(data: dict) -> list:
     current level in metres, `-99` = no reading, `site_timestamp` = ASP.NET date string).
 
     Stations with no coordinate, or no current reading, are skipped -- this pipeline does
-    not fabricate a station's location or level (same discipline as build_kg.py's
+    not fabricate a station's location or level (same discipline as build_river_kg.py's
     `flood_status` staying "unknown" without a key, and build_bangkok_canals.py's fuzzy
     match keeping every match_ratio auditable).
 
@@ -363,6 +363,28 @@ def _parse_pumphistory_meta(html: str) -> dict:
     return out
 
 
+# Sensor-fault statuses (data hygiene, 2026-09-27): PumpHistory's "สถานะ" column returns
+# ปกติ (normal) or ขัดข้อง (out of service / faulted) per station per tick. Before this
+# fix, `level_m` was parsed and stored as a real number even when the station itself
+# reported ขัดข้อง (e.g. ST.SPS.01 reading 0.0 m while flagged ขัดข้อง) -- a faulted
+# sensor's last-latched or garbage reading, not a trustworthy MEASURED value. Going
+# forward, a faulted row's `level_m` is None (never a fabricated/frozen number) and
+# `sensor_status` carries the machine-readable flag ("fault"/"ok"/None) so every
+# downstream consumer can exclude it without re-parsing `status_th` itself. Existing rows
+# already written to `data/observations.sqlite` before this fix are NOT rewritten
+# (append-only); they stay untrusted at query time via their own `status` column, which
+# already carried the raw `status_th` text (see collect.py's collect_bma_pumphistory()).
+SENSOR_FAULT_STATUS_TH = {"ขัดข้อง"}
+
+
+def sensor_status_from_status_th(status_th) -> str | None:
+    """"fault" if status_th is a known out-of-service marker, "ok" if present and not
+    faulted, None if status_th itself is missing/unknown (never guessed)."""
+    if not status_th:
+        return None
+    return "fault" if status_th in SENSOR_FAULT_STATUS_TH else "ok"
+
+
 def parse_pumphistory_html(html: str) -> list:
     """
     Pure parser: BMA PumpHistory's server-rendered summary table -> station-reading dicts.
@@ -377,11 +399,16 @@ def parse_pumphistory_html(html: str) -> list:
 
     Returns every station row found (not filtered to any station list -- callers filter),
     each: {station_code, name_th, district, lat, lon, coord_source, level_m, pumps_total,
-    pumps_on, gate_open, observed_at (UTC ISO), status_th, source_url, fetched_at=None}.
+    pumps_on, gate_open, observed_at (UTC ISO), status_th, sensor_status, source_url,
+    fetched_at=None}.
     `district`/`lat`/`lon` come from the same page's embedded `datapump` JS array (real
     coordinates, not a fuzzy join; None if that array is missing or the code isn't in it --
     never fabricated). `coord_source` is `DATAPUMP_COORD_SOURCE` when lat/lon were found,
     else None.
+
+    `level_m` is None whenever `status_th` reports a sensor fault (`ขัดข้อง`) -- the
+    station's own reading is untrusted, never stored as a real number (see
+    `SENSOR_FAULT_STATUS_TH` above). `sensor_status` is "fault"/"ok"/None.
     """
     meta = _parse_pumphistory_meta(html)
     out = []
@@ -414,6 +441,9 @@ def parse_pumphistory_html(html: str) -> list:
                 level_m = float(level_s)
             except ValueError:
                 level_m = None
+        sensor_status = sensor_status_from_status_th(status_th or None)
+        if sensor_status == "fault":
+            level_m = None  # untrusted -- never store/return a faulted sensor's reading
 
         observed_at = None
         if dt_str:
@@ -439,6 +469,7 @@ def parse_pumphistory_html(html: str) -> list:
             "gate_open": gate_open,
             "observed_at": observed_at,
             "status_th": status_th or None,
+            "sensor_status": sensor_status,
             "source_url": PUMPHISTORY_URL,
             "fetched_at": None,
         })
@@ -558,7 +589,7 @@ STALE_HOURS = 24.0
 def safe_float(x):
     """Coerce to float, returning None on any failure (missing, "N/A", empty string,
     non-numeric) instead of raising -- never let one bad agency-published field crash the
-    whole classification pass (red-team fix MEDIUM-4, 2026-09-26)."""
+    whole classification pass (fix MEDIUM-4, 2026-09-26)."""
     if x is None:
         return None
     try:
@@ -567,36 +598,58 @@ def safe_float(x):
         return None
 
 
-def classify_level(value, warning, critical, bank):
+# Sentinel for `classify_level(..., normal_level=...)`: the caller HAS opted into the
+# normal-level ladder (founder rule below) but this station has no resolved normal_level
+# on record (`resolve_normal_level()`'s own basis=="OPEN" case) -- distinct from simply
+# not passing `normal_level` at all (old 4-arg call sites, unchanged behavior below).
+NO_NORMAL_LEVEL = object()
+
+
+def classify_level(value, warning, critical, bank, normal_level=None):
     """
     Pure classifier against BMA's own published thresholds for a station -- never a
     forecast, just "where does this one reading sit against the agency's own bands".
 
     Returns one of:
     - "NO_THRESHOLD" -- BMA publishes no warning/critical/bank level at all for this
-      station (`warning is None and critical is None and bank is None`); this is common
-      for non-gate monitoring points (see fixture station 153).
+      station (`warning is None and critical is None and bank is None`) AND the caller
+      did not opt into the normal-level ladder; this is common for non-gate monitoring
+      points (see fixture station 153).
     - "OVERBANK"  -- value >= bank (bank is the highest published band: canal has topped
       its bank)
     - "CRITICAL"  -- value >= critical
     - "WATCH"     -- value >= warning
-    - "NORMAL"    -- below every published threshold that exists for this station
+    - "ABOVE_NORMAL" -- (only when `normal_level` is passed) below every danger
+      threshold but ABOVE the station's own normal_level -- founder rule (verbatim,
+      2026-09-27): "ไม่ปกติ ต้องต่ำกว่าเกณฑ์ปกติหรือเปล่า แค่นี้ยังไม่เรียกปกติ" -- a level
+      merely below `warning` is NOT "ปกติ" on its own.
+    - "NO_NORMAL_BASIS" -- (only when `normal_level=NO_NORMAL_LEVEL`) the caller opted
+      into the ladder but this station has no resolved normal_level -- grey, NEVER
+      treated as "ปกติ".
+    - "NORMAL"    -- below every danger threshold, AND (when opted into the ladder) at
+      or below the station's own normal_level; when NOT opted in (the original 4-arg
+      call, unchanged), below every published threshold that exists for this station.
 
     Checked highest-band-first so a station missing one threshold (e.g. bank published
     but warning not) still classifies correctly off whichever bands it does have.
+    Passing `normal_level=None` (the default) preserves the EXACT original 4-arg
+    behavior for every existing call site -- only a caller that explicitly resolves and
+    passes a normal_level (or the `NO_NORMAL_LEVEL` sentinel) gets the new ladder.
 
-    Red-team fix MEDIUM-4 (2026-09-26): a non-numeric value/threshold (e.g. a station
+    Fix MEDIUM-4 (2026-09-26): a non-numeric value/threshold (e.g. a station
     publishing "N/A" or "" instead of a number) used to raise TypeError/ValueError deep in
     the comparison; every input is now coerced through a safe float() first, so a
     non-numeric field is just treated as "not published" (None) rather than crashing.
     """
+    opted_in = normal_level is not None
+    nl = None if normal_level is NO_NORMAL_LEVEL or normal_level is None else safe_float(normal_level)
     value = safe_float(value)
     warning = safe_float(warning)
     critical = safe_float(critical)
     bank = safe_float(bank)
-    if warning is None and critical is None and bank is None:
-        return "NO_THRESHOLD"
     if value is None:
+        return "NO_THRESHOLD"
+    if warning is None and critical is None and bank is None and not opted_in:
         return "NO_THRESHOLD"
     if bank is not None and value >= bank:
         return "OVERBANK"
@@ -604,6 +657,12 @@ def classify_level(value, warning, critical, bank):
         return "CRITICAL"
     if warning is not None and value >= warning:
         return "WATCH"
+    if opted_in:
+        if nl is None:
+            return "NO_NORMAL_BASIS"
+        return "NORMAL" if value <= nl else "ABOVE_NORMAL"
+    if warning is None and critical is None and bank is None:
+        return "NO_THRESHOLD"
     return "NORMAL"
 
 
@@ -621,6 +680,68 @@ def age_hours(observed_at, reference):
     except ValueError:
         return None
     return (dt_ref - dt_obs).total_seconds() / 3600.0
+
+
+# --- THE single freshness gate (house rule, 2026-10-03) ------------------------------
+# Every reading must pass THIS function before it is used to decide anything
+# (current_local_state colour, L-tier, a contradiction row, a pump/rain/tide/hazard
+# field). Fail-closed: an unparseable/missing age is never treated as fresh (same
+# posture `age_hours` already documents). No new physics/cutoff is invented here --
+# `max_age_hours` is read by the caller from `sources/registry.yaml`'s own
+# `max_age_hours` field (added 2026-10-03, documented default per variable class: canal
+# level/pump/flood-road readings keep the pre-existing `STALE_HOURS` = 24h cutoff this
+# module already enforced; rain/tide/hazard reuse the same 24h figure `kb.py` already
+# hardcodes as `_FORECAST_STALE_AFTER_S`); a source with no registry entry/field falls
+# back to `STALE_HOURS` below, unchanged from before this function existed.
+def is_fresh(observed_at, reference, max_age_hours=STALE_HOURS, future_tolerance_h=-1.0):
+    """Return (fresh: bool, age_h: float|None). `fresh=False` -- never read as evidence
+    for a decision -- when age_h is None (missing/unparseable timestamp), OR
+    age_h > max_age_hours, OR age_h < future_tolerance_h. This is the ONE gate: every
+    call site that used to inline `age_h is None or age_h > lwl.STALE_HOURS` should call
+    this instead, so there is a single place that defines what "stale" means.
+
+    Fix (2026-10-04): this function used to accept ANY negative
+    `age_h` with no lower bound at all -- a row whose `observed_at` was mis-parsed into
+    the far future (the real measured case: a Buddhist-year PDF date misread as
+    `2569-09-28`, giving `age_h = -4,759,715.5`) passed straight through as `fresh=True`
+    and decided `current_local_state`. `future_tolerance_h` is now an explicit,
+    bounded allowance -- NOT infinite -- for the one real, intended case: `readout.py`'s
+    `as_of_date`-pinned callers set `reference` to LOCAL MIDNIGHT of a given calendar
+    day, so a REAL same-day reading observed later that day (e.g. 06:20 UTC against a
+    00:00 UTC reference) legitimately produces a small negative age and must still read
+    as fresh -- long-settled, widely depended-on behaviour
+    (`tests/test_kb_answer.py`'s own `test_dual_state_*` fixtures). The DEFAULT here
+    (`-1.0`) is for a REAL wall-clock `reference` (production `kb.py answer`/the MCP
+    path, and `readout.py` when no `as_of_date` was pinned) -- at most 1 hour of clock
+    skew is tolerated, anything further in the future is rejected outright, regardless
+    of `max_age_hours`. A day-pinned caller passes a wider `future_tolerance_h` itself
+    (see `readout.py`'s own `_DAY_PIN_FUTURE_TOLERANCE_H`) -- this function never
+    guesses which regime it's in from the reference string alone."""
+    age_h = age_hours(observed_at, reference)
+    if age_h is None:
+        return False, age_h
+    fresh = age_h <= max_age_hours and age_h >= future_tolerance_h
+    return fresh, age_h
+
+
+def max_age_hours_for(source_id: str, registry: "dict | None" = None) -> float:
+    """Max age for `source_id`, read from `sources/registry.yaml`'s own `max_age_hours`
+    field for that source (added 2026-10-03). Falls back to `STALE_HOURS` (24h,
+    unchanged pre-existing default) when the registry is unavailable or the source has
+    no `max_age_hours` field of its own -- never invents a new number, never silently
+    widens a cutoff a prior version enforced."""
+    if registry is None:
+        try:
+            import collect as collect_mod
+            registry = collect_mod.load_registry()
+        except Exception:  # pragma: no cover - defensive, registry must not crash a gate
+            return STALE_HOURS
+    entry = registry.get(source_id) if registry else None
+    val = entry.get("max_age_hours") if entry else None
+    try:
+        return float(val) if val is not None else STALE_HOURS
+    except (TypeError, ValueError):
+        return STALE_HOURS
 
 
 def attach_live_water_level(graph: nx.DiGraph, stations: list) -> dict:

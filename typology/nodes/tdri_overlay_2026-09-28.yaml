@@ -1,0 +1,100 @@
+# typology/nodes/tdri_overlay_2026-09-28.yaml -- NEW mechanism: `doc_kind:
+# typology_node_overlay` (distinct from `typology_node_registry`) -- `tools/typology/
+# build_graph.py::apply_node_overlays()` MERGES these attributes onto nodes that ALREADY
+# exist (created elsewhere in this build), never creates a new node. Used here so the
+# permanence/level/capability attributes TDRI's articles motivate sit on the SAME agency
+# node the rest of this typology already uses (AG_ONWR etc), not a duplicate.
+#
+# `level` (national|ministry|basin|local) and `permanence` (permanent|ad_hoc) are this
+# task's own INSTINCT classification, APPLYING the vocabulary TDRI's articles name
+# (ดร.นิพนธ์ พัวพงศกร, tdri.or.th/.../permanent-disaster-management..., 9 ธ.ค. 2025:
+# "โครงสร้างบัญชาการถาวร-มืออาชีพ vs. ศูนย์เฉพาะกิจ") to agencies TDRI itself did not
+# individually classify -- tag INSTINCT, not RELAYED, on every level/permanence row below
+# (RELAYED is reserved for AG_BASIN_CMT/AG_REGCOM in tdri_extension_2026-09-28.yaml, where
+# the article's OWN example maps directly onto that specific node).
+#
+# `capability_*` fields are the 6 C3 (Command/Control/Capability) elements TDRI's article
+# names: operational policy/goals, roles & responsibilities, action plan/protocols,
+# situational-awareness monitoring loop, logistics/supply mobilisation, training &
+# war-gaming. Every value is `null` (OPEN) -- no source in this check states whether any
+# specific agency actually HAS a given capability; the checklist itself is what TDRI
+# supplies, not a yes/no per agency. `tools/typology/validate.py`'s new "capability gaps"
+# report section lists every `null` field per agency, non-error, by design (these are the
+# structural gaps this check exists to surface, matching this typology's whole OPEN-gap
+# discipline).
+schema_version: 1
+doc_kind: typology_node_overlay
+status_th: >
+  Overlay attrs (permanence/level/capability_*) ทับ node agency ที่มีอยู่แล้ว -- ไม่สร้าง node
+  ใหม่. ทุกแถวต้องมี id ที่มีอยู่จริงในกราฟแล้ว (fail loud ถ้าไม่มี, ดู apply_node_overlays()).
+rows:
+  - id: AG_ONWR
+    permanence: permanent
+    permanence_level_tag: INSTINCT
+    level: national
+    capability_operational_policy: null
+    capability_roles_responsibilities: null
+    capability_action_plan: null
+    capability_monitoring_loop: null
+    capability_logistics: null
+    capability_training: null
+    capability_source: >
+      TDRI (ดร.นิพนธ์ พัวพงศกร, 9 ธ.ค. 2025) -- 6-element C3 checklist named in the article;
+      whether AG_ONWR (Joint-KPI host) actually has each element is not stated by any
+      source this check read, kept OPEN (null), never guessed.
+  - id: AG_DDPM
+    permanence: permanent
+    permanence_level_tag: INSTINCT
+    level: national
+    capability_operational_policy: null
+    capability_roles_responsibilities: null
+    capability_action_plan: null
+    capability_monitoring_loop: null
+    capability_logistics: null
+    capability_training: null
+    capability_source: "TDRI (ดร.นิพนธ์ พัวพงศกร, 9 ธ.ค. 2025) -- same checklist, same OPEN status, no source states these for AG_DDPM"
+  - id: AG_BMA_GOV
+    permanence: permanent
+    permanence_level_tag: INSTINCT
+    level: local
+    capability_operational_policy: null
+    capability_roles_responsibilities: null
+    capability_action_plan: null
+    capability_monitoring_loop: null
+    capability_logistics: null
+    capability_training: null
+    capability_source: "TDRI (ดร.นิพนธ์ พัวพงศกร, 9 ธ.ค. 2025) -- same checklist, same OPEN status"
+  - id: AG_ESTATE
+    permanence: permanent
+    permanence_level_tag: >
+      INSTINCT -- AG_ESTATE (นิติบุคคลหมู่บ้านจัดสรร) is a legally-constituted juristic
+      person under land-allocation law, kept `permanent` rather than `ad_hoc` despite
+      having no professional disaster-command staff of its own (a separate, still-OPEN
+      question -- see structural_issues_2026-09-28.yaml ISSUE-DECISION-02)
+    level: local
+    capability_operational_policy: null
+    capability_roles_responsibilities: null
+    capability_action_plan: null
+    capability_monitoring_loop: null
+    capability_logistics: null
+    capability_training: null
+    capability_source: "TDRI (ดร.นิพนธ์ พัวพงศกร, 9 ธ.ค. 2025) -- same checklist, same OPEN status"
+  - id: AG_RID
+    permanence: permanent
+    permanence_level_tag: INSTINCT
+    level: ministry
+  - id: AG_TMD
+    permanence: permanent
+    permanence_level_tag: INSTINCT
+    level: ministry
+  - id: AG_DPT
+    permanence: permanent
+    permanence_level_tag: INSTINCT
+    level: ministry
+  - id: AG_MEA
+    permanence: permanent
+    permanence_level_tag: >
+      INSTINCT -- state enterprise (รัฐวิสาหกิจ), level mapped to `local` for its Bangkok
+      metropolitan service area rather than `national`, an approximate mapping onto this
+      typology's 4-value vocabulary, not an exact fit
+    level: local

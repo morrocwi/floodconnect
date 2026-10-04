@@ -1,4 +1,4 @@
-"""Red-team fixes 2026-09-26 -- tests for site/build_data.py's DDS PDF path resolution
+"""Fixes 2026-09-26 -- tests for site/build_data.py's DDS PDF path resolution
 and rain source resolution. No network calls."""
 import sys
 from pathlib import Path
@@ -21,7 +21,7 @@ _KHLONGCHAN_SAMPLE = """\
 
 
 def test_dds_pdf_prefers_raw_live_over_dds_reports(tmp_path, monkeypatch):
-    # HIGH-2: collect.py writes to raw/live/dds_daily_pdf/, but build_data.py used to
+    # collect.py writes to raw/live/dds_daily_pdf/, but build_data.py used to
     # only ever look in raw/dds_reports/ (a manual/legacy drop location) -- the two paths
     # had silently diverged. raw/live/dds_daily_pdf/ must win when both exist.
     monkeypatch.setattr(bd, "RAW", tmp_path)
@@ -59,7 +59,7 @@ def test_dds_pdf_none_when_neither_location_has_a_file(tmp_path, monkeypatch):
 
 
 def test_load_rain_prefers_live_thaiwater_snapshot_over_gapfill(tmp_path, monkeypatch):
-    # HIGH-3: raw/live/thaiwater_rain_24h/ (the new CI collector) must win over the
+    # raw/live/thaiwater_rain_24h/ (the new CI collector) must win over the
     # one-time manual raw/gapfill/rain_24h*.json snapshot when both exist.
     import json
     monkeypatch.setattr(bd, "RAW", tmp_path)
@@ -104,3 +104,72 @@ def test_khlongchan_community_names_media_agency_not_person(tmp_path):
 def test_khlongchan_community_missing_file_returns_empty():
     from pathlib import Path
     assert bd.build_khlongchan_community(Path("/nonexistent/path.md")) == []
+
+
+# --- previous_reading (review MUST-FIX #1: trend arrows on every station/pump row) --------
+
+def _make_obs_db(tmp_path, rows):
+    import sqlite3
+    db_path = tmp_path / "observations.sqlite"
+    conn = sqlite3.connect(db_path)
+    conn.execute("""CREATE TABLE observations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, source_id TEXT NOT NULL,
+        station_code TEXT, station_name TEXT, variable TEXT NOT NULL, value REAL,
+        observed_at_utc TEXT NOT NULL, fetched_at_utc TEXT NOT NULL, trust_tier TEXT NOT NULL)""")
+    for source_id, code, value, observed_at in rows:
+        conn.execute(
+            "INSERT INTO observations (source_id, station_code, variable, value, "
+            "observed_at_utc, fetched_at_utc, trust_tier) VALUES (?, ?, 'x', ?, ?, ?, 'official')",
+            (source_id, code, value, observed_at, observed_at))
+    conn.commit()
+    conn.close()
+    return sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+
+
+def test_previous_reading_finds_reading_at_least_60min_older(tmp_path):
+    conn = _make_obs_db(tmp_path, [
+        ("thaiwater_canal_waterlevel", "WL.TEST.01", 1.00, "2026-09-27T00:00:00+00:00"),
+        ("thaiwater_canal_waterlevel", "WL.TEST.01", 1.10, "2026-09-27T00:50:00+00:00"),
+        ("thaiwater_canal_waterlevel", "WL.TEST.01", 1.30, "2026-09-27T02:00:00+00:00"),
+    ])
+    prev = bd.previous_reading(conn, "thaiwater_canal_waterlevel", "WL.TEST.01",
+                                1.30, "2026-09-27T02:00:00+00:00")
+    # the 00:50 reading is only 70 min older but the 00:00 one qualifies too -- the
+    # MOST RECENT one at least 60 min older must win, i.e. 00:50 (70 min gap).
+    assert prev["observed_at"] == "2026-09-27T00:50:00+00:00"
+    assert prev["value"] == 1.10
+    assert abs(prev["delta"] - 0.20) < 1e-9
+
+
+def test_previous_reading_none_when_no_qualifying_row(tmp_path):
+    conn = _make_obs_db(tmp_path, [
+        ("thaiwater_canal_waterlevel", "WL.TEST.01", 1.30, "2026-09-27T01:50:00+00:00"),
+    ])
+    prev = bd.previous_reading(conn, "thaiwater_canal_waterlevel", "WL.TEST.01",
+                                1.30, "2026-09-27T02:00:00+00:00")
+    assert prev is None  # only candidate is 10 min old, below the 60-min gap
+
+
+def test_previous_reading_none_when_db_missing():
+    assert bd.previous_reading(None, "thaiwater_canal_waterlevel", "WL.TEST.01",
+                                1.30, "2026-09-27T02:00:00+00:00") is None
+
+
+def test_main_creates_dist_dir_when_missing(monkeypatch, tmp_path, capsys):
+    # Regression for the fresh-clone crash: site/dist/ is untracked (gitignored), so
+    # a pristine checkout has no dist/ directory at all. main() must create it rather
+    # than assume it exists -- this is exactly what a fresh `git clone` + first run hits.
+    out_json = tmp_path / "dist" / "data.json"
+    assert not out_json.parent.exists()
+    monkeypatch.setattr(bd, "OUT_JSON", out_json)
+    # Keep every other side-effecting write inside tmp_path too, so this test never
+    # touches the real (gitignored) raw/ or data/ trees -- see tests/conftest.py's
+    # no-stray-writes guard.
+    monkeypatch.setattr(bd, "RAW", tmp_path / "raw")
+    monkeypatch.setattr(bd, "READOUTS_DIR", tmp_path / "raw" / "readouts")
+    monkeypatch.setattr(bd, "OBS_DB_PATH", tmp_path / "data" / "observations.sqlite")
+    monkeypatch.setattr(bd, "pf06mod", None)  # skip the separate tier_runs writer
+    rc = bd.main()
+    assert rc in (0, None)
+    assert out_json.exists()
+    assert out_json.parent.is_dir()

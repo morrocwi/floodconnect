@@ -1,0 +1,33 @@
+sources:
+  - id: thaiwater_canal_waterlevel
+    agency:
+      th: "ทดสอบ กทม."
+      en: "Test BMA"
+    url: "https://example.invalid/a"
+    method: GET
+    cadence: near-real-time
+    format: json
+    auth: none
+    licence_status:
+      text: "test fixture"
+      unresolved: true
+    trust_tier: official_telemetry
+    host_rule:
+      max_requests_per_run: 1
+      note: "one request per URL, no retry loops"
+  - id: some_api_needing_key
+    agency:
+      th: "ทดสอบ 2"
+      en: "Test API 2"
+    url: "https://example.invalid/b"
+    method: GET
+    cadence: hourly
+    format: json
+    auth: key
+    licence_status:
+      text: "test fixture"
+      unresolved: false
+    trust_tier: third_party
+    host_rule:
+      max_requests_per_run: 1
+      note: "one request per URL, no retry loops"

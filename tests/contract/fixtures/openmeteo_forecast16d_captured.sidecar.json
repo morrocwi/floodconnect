@@ -1,0 +1,11 @@
+{
+  "source_id": "openmeteo_forecast16d",
+  "url": "https://api.open-meteo.com/v1/forecast?latitude=13.758235&longitude=100.676084&daily=precipitation_sum&timezone=Asia%2FBangkok&forecast_days=16&models=ecmwf_ifs025,gfs_seamless,icon_seamless,jma_seamless,gem_seamless,meteofrance_seamless,ukmo_seamless,knmi_seamless,cma_grapes_global",
+  "captured_at": "2026-10-02T07:44:41Z",
+  "sha256": "f097a7de97251339617abd1ecee29b3d0c8ba1bd5055d86f18481ff6adf00740",
+  "http_status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "fixture_ext": "json",
+  "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+  "parser_version": "v1"
+}

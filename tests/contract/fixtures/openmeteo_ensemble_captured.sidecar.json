@@ -1,0 +1,15 @@
+{
+ "source_id": "openmeteo_ensemble",
+ "url": "https://ensemble-api.open-meteo.com/v1/ensemble?latitude=13.758235&longitude=100.676084&hourly=precipitation&models=icon_seamless&timezone=Asia%2FBangkok&forecast_days=3",
+ "captured_at": "2026-10-02T07:44:26Z",
+ "sha256": "bf6bb04c10421a077ce63a940f7f14bee797028ae4829e9db7398e214bf66d83",
+ "http_status": 200,
+ "content_type": "application/json; charset=utf-8",
+ "fixture_ext": "json",
+ "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "d827dc522f5d50d24791d420fe94b1dcdf9286c5ea69925bf76277720d0a43fe",
+ "trimmed_note": "Further trimmed 2026-10-03 (release pass, publish-safety finding: 300KB total budget for tests/contract/fixtures/ in the public tree) to a minimal real excerpt (header + few real rows, or a real byte-prefix for HTML) -- see the corresponding contract test's own comment for the exact row-count change.",
+ "trimmed_at": "2026-10-03T18:10:36Z"
+}

@@ -1,0 +1,219 @@
+# canal_normal_levels.yaml -- Scope: new data only, from a data-sweep pass
+# (2026-09-27). Does not edit sources/registry.yaml,
+# sources/capacity_ledger.yaml, or any other tracked file. Not committed as part of
+# this change.
+#
+# Founder ask (verbatim): "สกัดหาประโยชน์มาให้ได้ เพื่อให้คลองกลายเป็น node ที่จะระบุได้ง่ายๆ
+# ว่าสถานการณ์กลับสู่ปกติ คลองนี้ควรอยู่ที่เลขเท่าไหร่" -- per-canal NORMAL/CONTROL level so a
+# future readout can say "คลองนี้กลับสู่ปกติที่ X ม."
+#
+# basis values used here:
+#   dry_season_median : MEASURED median of station value_msl (m) over a fetched
+#     2026-02-01..2026-03-15 (dry-season, Gregorian; = ปลายเดือน ก.พ.-กลาง มี.ค. 2569)
+#     window from api-v3.thaiwater.net waterlevel_graph (station_type=canal). Raw payload
+#     archived at raw/backtest/hii_history/canal_<oldcode>_<id>_normal.json (6 requests,
+#     1 request/URL, this check's target-F budget). Tag: MEASURED-history (measured by this
+#     task, not an agency-published "normal" figure).
+#   control_level     : an agency-stated operational control/warning level -- NOT found
+#     for these 6 canals in the one plan document checked (see notes/OPEN below). None
+#     used here.
+#   OPEN              : no basis found.
+#
+# IMPORTANT caveat (say plainly): a computed dry-season median is a DESCRIPTIVE statistic
+# of one ~6-week window, not an agency-declared "normal operating level" -- do not present
+# it to the public as an official control level. It is however directly comparable, on
+# the exact same station/instrument, to any live reading -- which is what makes it useful
+# as a "back to normal" reference node per founder's ask. RELAYED->MEASURED-history
+# distinction matters here per AGENTS.md epistemic floor.
+
+canals:
+
+  - station_code: "WL.SSB.07"
+    canal_name_th: "ค.แสนแสบ-สนข.บางกะปิ"
+    station_id: 77
+    lat: 13.76509
+    lon: 100.64791
+    normal_level_m: -0.36
+    basis: dry_season_median
+    period: "2026-02-01..2026-03-15"
+    n_hourly_readings_nonnull: 2898
+    n_hourly_readings_total: 4128
+    range_observed_m: {min: -0.50, max: -0.04}
+    hii_bank_m: 1.85
+    hii_warning_level_m: 0.35
+    hii_critical_level_m: 0.45
+    source: "api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_graph?station_type=canal&station_id=77"
+    archive: "raw/backtest/hii_history/canal_WL.SSB.07_77_normal.json"
+    tag: MEASURED-history
+
+  - station_code: "WL.SSB.09"
+    canal_name_th: "ปตร.คลองแสนแสบ-บางชัน"
+    station_id: 71
+    lat: 13.7972
+    lon: 100.70458
+    normal_level_m: -0.38
+    basis: dry_season_median
+    period: "2026-02-01..2026-03-15"
+    n_hourly_readings_nonnull: 2904
+    n_hourly_readings_total: 4128
+    range_observed_m: {min: -0.50, max: -0.07}
+    hii_bank_m: 1.98
+    hii_warning_level_m: 0.4
+    hii_critical_level_m: 0.6
+    source: "api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_graph?station_type=canal&station_id=71"
+    archive: "raw/backtest/hii_history/canal_WL.SSB.09_71_normal.json"
+    tag: MEASURED-history
+
+  - station_code: "WL.SSB.10"
+    canal_name_th: "ปตร.คลองแสนแสบ-ถ.ประชาร่วมใจ (มีนบุรี)"
+    station_id: 67
+    lat: 13.82094
+    lon: 100.74738
+    normal_level_m: -0.22
+    basis: dry_season_median
+    period: "2026-02-01..2026-03-15"
+    n_hourly_readings_nonnull: 2905
+    n_hourly_readings_total: 4128
+    range_observed_m: {min: -0.26, max: 0.02}
+    hii_bank_m: 1.98
+    hii_warning_level_m: 0.6
+    hii_critical_level_m: 0.9
+    source: "api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_graph?station_type=canal&station_id=67"
+    archive: "raw/backtest/hii_history/canal_WL.SSB.10_67_normal.json"
+    tag: MEASURED-history
+
+  - station_code: "WL.PWT.03"
+    canal_name_th: "ปตร.คลองประเวศฯ-วัดกระทุ่มฯ"
+    station_id: 82
+    lat: 13.72396
+    lon: 100.68956
+    normal_level_m: -0.43
+    basis: dry_season_median
+    period: "2026-02-01..2026-03-15"
+    n_hourly_readings_nonnull: 2910
+    n_hourly_readings_total: 4128
+    range_observed_m: {min: -0.53, max: -0.11}
+    hii_bank_m: 1.98
+    hii_warning_level_m: 0.3
+    hii_critical_level_m: 0.4
+    source: "api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_graph?station_type=canal&station_id=82"
+    archive: "raw/backtest/hii_history/canal_WL.PWT.03_82_normal.json"
+    tag: MEASURED-history
+
+  - station_code: "WL.PWT.04"
+    canal_name_th: "ปตร.คลองประเวศฯ-ลาดกระบัง"
+    station_id: 81
+    lat: 13.72411
+    lon: 100.74987
+    normal_level_m: -0.24
+    basis: dry_season_median
+    period: "2026-02-01..2026-03-15"
+    n_hourly_readings_nonnull: 2904
+    n_hourly_readings_total: 4128
+    range_observed_m: {min: -0.33, max: -0.02}
+    hii_bank_m: 1.98
+    hii_warning_level_m: 0.4
+    hii_critical_level_m: 0.6
+    source: "api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_graph?station_type=canal&station_id=81"
+    archive: "raw/backtest/hii_history/canal_WL.PWT.04_81_normal.json"
+    tag: MEASURED-history
+
+  - station_code: "WL.LPW.01"
+    canal_name_th: "ปตร.คลองลาดพร้าว"
+    station_id: 72
+    lat: 13.79446
+    lon: 100.58957
+    normal_level_m: -0.35
+    basis: dry_season_median
+    period: "2026-02-01..2026-03-15"
+    n_hourly_readings_nonnull: 2908
+    n_hourly_readings_total: 4128
+    range_observed_m: {min: -0.49, max: -0.12}
+    hii_bank_m: 1.98
+    hii_warning_level_m: 0.2
+    hii_critical_level_m: 0.4
+    source: "api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_graph?station_type=canal&station_id=72"
+    archive: "raw/backtest/hii_history/canal_WL.LPW.01_72_normal.json"
+    tag: MEASURED-history
+
+  # Added 2026-09-27 (TODO #50/#62, bma_plan2569 extraction): WL.BMA.02 (คลองบ้านม้า 2,
+  # สถานีสูบน้ำคลองบ้านม้า 2 / ST.SPS.01) had NO normal_level_m on record anywhere in this
+  # repo before this row -- both tools/heromap/sammakorn_map.classify_tier() and
+  # site/build_data.py's sammakorn_node_readout() correctly rendered "ยังไม่มีเกณฑ์ปกติ" /
+  # NO_NORMAL_BASIS for it (see tests/test_sammakorn_chain.py, pre-fix). basis here is
+  # NOT a dry-season statistical median like the rows above -- it is the agency's own
+  # printed operating ceiling (แผน ค, "ถ่ายเทไหลเวียน ไม่เกินเตือนภัย") from the BMA 2569
+  # plan's ตาราง ง, p.191 (printed ง-25), same row as the ST.SPS.01 capacity match (see
+  # docs/knowledge/bma_plan2569_control_structures.yaml row_id bma_plan2569:ctrl:p191:28).
+  # `basis: official_threshold` is a distinct tag from `dry_season_median` /
+  # `MEASURED-history` on purpose -- see resolve_normal_level()'s "OFFICIAL-BMA-plan"
+  # branch in site/build_data.py, added alongside this row so the basis_label shown to
+  # the public never mislabels an official printed ceiling as a computed statistic.
+  #
+  # CORRECTION 2026-09-27 (P0, orchestrator-verified via read-only SQL, same day as the
+  # row above): this row's lat/lon (13.7763, 100.6713) and its 0.40/0.50 m.MSL lines are
+  # the BMA plan 2569 ตาราง ง p.191 row for สถานีสูบน้ำคลองบ้านม้า 2 / ST.SPS.01 (the PUMP
+  # STATION) -- NOT for WL.BMA.02 (the water-level TELEMETRY GAUGE "จุดวัดคลองบ้านม้า ตอน
+  # ถนนรามคำแหง", per docs/knowledge/bma_plan2569_stations.yaml seq 39, lat 13.77273 /
+  # lon 100.66595, ~0.6 km away -- distance check: haversine(13.7763,100.6713 ->
+  # 13.77273,100.66595) ≈ 630 m, well over the 100 m same-station tolerance). WL.BMA.02's
+  # OWN feed (bma_watermap) carries its own warning/critical (2.14 / 2.68 m) which differ
+  # from this row's 0.40/0.50 by ~1.7 m -- consistent with a datum difference, not a
+  # measurement error (see sources/rain_alert_thresholds_crosswalk.yaml rule R4:
+  # "compare only same station, same datum" -- unknown/mismatched datum = REFUSE, never
+  # silently apply). This row is kept, append-only (AGENTS.md §2 "never prune"), but is
+  # now correctly re-keyed below to the station it actually describes (ST.SPS.01) so
+  # `load_canal_normal_levels()` / `resolve_normal_level()` (site/build_data.py) and
+  # `load_normal_levels()` (tools/heromap/sammakorn_map.py) -- both key strictly by
+  # `station_code` -- stop applying it to WL.BMA.02. WL.BMA.02 therefore resolves to
+  # NO_NORMAL_BASIS / "ยังไม่มีเกณฑ์ปกติ" again (grey), not "สูงกว่าปกติ"/ABOVE_NORMAL and
+  # never "ปกติ". See the contradiction row logged in
+  # docs/knowledge/statement_contradictions_2026-09-27.yaml (station_vs_plan list,
+  # id station_vs_plan:2026-09-27_wl_bma_02_vs_st_sps_01) and
+  # docs/knowledge/INCIDENTS_2026-09-27.md item 4 for the full incident writeup.
+  # `station_distance_m` / `datum` below are read by
+  # resolve_normal_level()/load_canal_normal_levels()'s general guard: any
+  # `basis: official_threshold` row with `station_distance_m` > 100 (or absent) or a
+  # `datum` that is missing/"OPEN"/unconfirmed is refused (never applied), independent of
+  # this specific re-key -- so a future mis-located/undated official_threshold row fails
+  # the same way instead of silently rendering.
+  - station_code: "ST.SPS.01"
+    canal_name_th: "คลองบ้านม้า 2 (สถานีสูบน้ำคลองบ้านม้า 2 / ST.SPS.01)"
+    applies_to: "ST.SPS.01 (สถานีสูบน้ำคลองบ้านม้า 2), ไม่ใช่ WL.BMA.02 (คนละตำแหน่ง ~630 ม. และคนละ datum ที่ยังไม่ยืนยัน)"
+    lat: 13.7763
+    lon: 100.6713
+    station_distance_m: 0
+    normal_level_m: 0.40
+    basis: official_threshold
+    warning_level_m: 0.40
+    critical_level_m: 0.50
+    control_plan_A_m: -1.00
+    control_plan_B_m: -0.50
+    control_plan_C_m: 0.40
+    datum: "m MSL (ม.รทก., BMA plan 2569 ตาราง ง)"
+    source: "แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วม กทม. 2569, ตาราง ง, p.191 (พิมพ์ ง-25), แถวสถานีสูบน้ำคลองบ้านม้า 2"
+    tag: VERIFIED
+    note: "CORRECTED 2026-09-27: 0.40/0.50 ม.รทก. คือเพดานควบคุมของสถานีสูบน้ำคลองบ้านม้า 2 (ST.SPS.01) เท่านั้น -- เดิมเคยผูกผิดกับ WL.BMA.02 (เกจวัดระดับ คนละตำแหน่ง คนละ datum ที่ยังไม่ยืนยัน) ทำให้ค่า 0.71-0.73 ม. ของ WL.BMA.02 ถูกจัดผิดเป็น ABOVE_NORMAL/สูงกว่าปกติ -- แก้แล้ว: station_code เปลี่ยนจาก WL.BMA.02 เป็น ST.SPS.01 (re-key, append-only, แถวเดิมไม่ถูกลบ) WL.BMA.02 กลับสู่ NO_NORMAL_BASIS/ยังไม่มีเกณฑ์ปกติ; ห่างกัน ~630 ม. และ datum ยังเป็น OPEN"
+
+notes:
+  - "observations.sqlite own earliest pump/canal rows (2026-09-26T00:00 onward, per
+     raw/backtest/pumps_2569.csv this same task) are already flood-state (east-zone
+     alert cycle live since before this sweep) -- confirmed unusable as a 'normal'
+     baseline; that is why this file computes normal_level_m from an independent
+     Feb-Mar 2026 dry-season fetch instead of the local sqlite. OPEN/RELAYED, plainly
+     stated per founder's own standing epistemic-floor rule."
+  - "BMA control-level table: checked the one already-archived planning PDF this repo
+     holds (raw/capacity/plan_2569.pdf = แผนปฏิบัติราชการประจำปี พ.ศ.2569 สนน.กทม., already
+     cited in docs/CAPACITY.md) via pdftotext -enc UTF-8 -- zero hits for 'ระดับควบคุม' or
+     'ระดับปกติ'. This document is a general action-plan, not a per-canal control-level
+     table. No other DDS document URL stating per-canal control levels was found within
+     this check's budget. OPEN: a per-canal control-level source, if one exists (DDS
+     internal SCADA manual, ระเบียบปฏิบัติ, or a different annual plan volume), was not
+     located this run."
+  - "The hii_warning_level_m / hii_critical_level_m fields above are HII/thaiwater
+     telemetry-station metadata (same family as the 'qmax' bankfull field used in
+     capacity_ledger_additions.yaml this check) -- RELAYED, not confirmed against an
+     independent RID/BMA capacity document this run, but they are the agency's own
+     operational threshold for that exact station, so they are the closest thing to a
+     control level currently available and are recorded here for comparison against the
+     computed dry-season median."

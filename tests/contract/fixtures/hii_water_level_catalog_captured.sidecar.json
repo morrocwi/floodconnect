@@ -1,0 +1,15 @@
+{
+ "source_id": "hii_water_level_catalog",
+ "url": "https://data.hii.or.th/dataset/334aa20b-8187-430a-b8c5-d924f37334fe/resource/47274e2b-c905-4762-b025-11ca9067d107/download/0all_stn_metadata.csv",
+ "captured_at": "2026-10-03T10:06:27Z",
+ "sha256": "01c60699bc27cc2b832d753aef6f5ece52bf0eb1a10e19a3444e0f9bcb810126",
+ "http_status": 200,
+ "content_type": "text/csv",
+ "fixture_ext": "txt",
+ "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "a9260351d56bf45087e96b4f47549de8eff23fac13ffc6ca09d33615ce164a2d",
+ "trimmed_note": "Further trimmed 2026-10-03 (release pass, publish-safety finding: 300KB total budget for tests/contract/fixtures/ in the public tree) to a minimal real excerpt (header + few real rows, or a real byte-prefix for HTML) -- see the corresponding contract test's own comment for the exact row-count change.",
+ "trimmed_at": "2026-10-03T18:10:36Z"
+}

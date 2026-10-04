@@ -24,11 +24,23 @@ sensor_resolution_m:
     this workspace (INSTINCT), not a manufacturer-specified sensor accuracy figure.
 stale_after_hours: 2.0
 
+# `asset_id`/`lat`/`lon` added 2026-09-27 (assets_registry.py extension task): every node
+# below whose `canal_oldcode` resolves in the built `assets` table (see
+# `assets_registry.py build`, `docs/ASSETS.md`) got its coordinate linked here BY that
+# asset_id -- i.e. read from the same official thaiwater_bma feed this graph already
+# cross-checks against, never a separate/independent lookup. 12 of the 18 nodes below
+# resolved this way (all VERIFIED, official_api). The 6 nodes with `canal_oldcode: null`
+# (banma, sammakorn_pond, wangyai, ladkrabang, south_outlet, ram53_canal) have no asset_id
+# and no lat/lon -- confirmed absent from every source assets_registry.py reads (see
+# docs/ASSETS.md OPEN list) -- never geocoded/guessed.
 nodes:
   ssb10:
     label_th: "มีนบุรี ปตร.แสนแสบ-มีนบุรี"
     canal_oldcode: "WL.SSB.10"
     source_name_th: "ปตร.คลองแสนแสบ-ถ.ประชาร่วมใจ"
+    asset_id: "gate:thaiwater_bma:WL.SSB.10"
+    lat: 13.82094
+    lon: 100.74738
     datum: MSL
     is_gate: true
     note: >
@@ -39,35 +51,50 @@ nodes:
     label_th: "บางชัน ปตร."
     canal_oldcode: "WL.SSB.09"
     source_name_th: "ปตร.คลองแสนแสบ-บางชัน"
+    asset_id: "gate:thaiwater_bma:WL.SSB.09"
+    lat: 13.7972
+    lon: 100.70458
     datum: MSL
     is_gate: true
   ssb08:
     label_th: "แสนแสบ-เสรีไทย 24"
     canal_oldcode: "WL.SSB.08"
     source_name_th: "ค.แสนแสบ-เสรีไทย 24"
+    asset_id: "gauge:thaiwater_bma:WL.SSB.08"
+    lat: 13.7805
+    lon: 100.67387
     datum: MSL
     is_gate: false
   ssb07:
     label_th: "แสนแสบ-บางกะปิ"
     canal_oldcode: "WL.SSB.07"
     source_name_th: "ค.แสนแสบ-สนข.บางกะปิ"
+    asset_id: "gauge:thaiwater_bma:WL.SSB.07"
+    lat: 13.76509
+    lon: 100.64791
     datum: MSL
     is_gate: false
   ssb04:
     label_th: "แสนแสบ ตอนใน (คลองตัน)"
     canal_oldcode: "WL.SSB.04"
     source_name_th: "ส.แสนแสบ-คลองตัน"
+    asset_id: "gauge:thaiwater_bma:WL.SSB.04"
+    lat: 13.74126
+    lon: 100.59642
     datum: MSL
     is_gate: false
     note: >
       Scope decision 2026-09-26: WL.SSB.03/02/01 (อโศก/สมคิด/โบ๊เบ๊) sit on the real canal
       between SSB.07 and SSB.04 but are not declared as nodes in this graph -- out of scope
-      for the east-zone/Sammakorn chain this task asked for. Edge e_ssb07_ssb04 below skips
+      for the east-zone/Sammakorn chain this check asked for. Edge e_ssb07_ssb04 below skips
       them; this is a declared simplification, not a claim those stations don't exist.
   pkn01:
     label_th: "พระโขนง"
     canal_oldcode: "WL.PKN.01"
     source_name_th: "ส.พระโขนง"
+    asset_id: "gauge:thaiwater_bma:WL.PKN.01"
+    lat: 13.70901
+    lon: 100.59503
     datum: MSL
     is_gate: false
   banma:
@@ -95,18 +122,27 @@ nodes:
     label_th: "ทับช้างบน"
     canal_oldcode: "WL.TPK.03"
     source_name_th: "ค.ตาพุก ค.ทับช้างบน"
+    asset_id: "gauge:thaiwater_bma:WL.TPK.03"
+    lat: 13.74247
+    lon: 100.70891
     datum: MSL
     is_gate: false
   pwt03:
     label_th: "ประเวศ-วัดกระทุ่ม ปตร."
     canal_oldcode: "WL.PWT.03"
     source_name_th: "ปตร.คลองประเวศฯ-วัดกระทุ่มฯ"
+    asset_id: "gate:thaiwater_bma:WL.PWT.03"
+    lat: 13.72396
+    lon: 100.68956
     datum: MSL
     is_gate: true
   pwt04:
     label_th: "ประเวศ-ลาดกระบัง ปตร."
     canal_oldcode: "WL.PWT.04"
     source_name_th: "ปตร.คลองประเวศฯ-ลาดกระบัง"
+    asset_id: "gate:thaiwater_bma:WL.PWT.04"
+    lat: 13.72411
+    lon: 100.74987
     datum: MSL
     is_gate: true
   ladkrabang:
@@ -125,18 +161,27 @@ nodes:
     label_th: "คลองหัวหมาก"
     canal_oldcode: "WL.HMK.01"
     source_name_th: "ค.หัวหมาก ถ.ศรีนครินทร์"
+    asset_id: "gauge:thaiwater_bma:WL.HMK.01"
+    lat: 13.73309
+    lon: 100.64107
     datum: MSL
     is_gate: false
   lbk03:
     label_th: "คลองลาดบัวขาว"
     canal_oldcode: "WL.LBK.03"
     source_name_th: "ค.ลาดบัวขาว ซ.กาญจนาภิเษก 24"
+    asset_id: "gauge:thaiwater_bma:WL.LBK.03"
+    lat: 13.74974
+    lon: 100.70291
     datum: MSL
     is_gate: false
   kjn01:
     label_th: "คลองจั่น"
     canal_oldcode: "WL.KJN.01"
     source_name_th: "ค.จั่น ถ.ลาดพร้าว"
+    asset_id: "gauge:thaiwater_bma:WL.KJN.01"
+    lat: 13.77609
+    lon: 100.62816
     datum: MSL
     is_gate: false
   ram53_canal:

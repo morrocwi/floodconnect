@@ -1,0 +1,15 @@
+{
+ "source_id": "dnp_yom_basin_telemetry",
+ "url": "https://catalog.dnp.go.th/dataset/5c2f7296-147f-4836-8fcb-05c6c176822b/resource/2e8161e9-c013-4ccf-be13-c9f8a7623d08/download/telemetering-system-33-station-yom-basin.csv",
+ "captured_at": "2026-10-03T09:41:09Z",
+ "sha256": "fed342bce01c3f8870a814953fab707b9e7cc796b8bd3eab6de7febfaa005124",
+ "http_status": 200,
+ "content_type": "text/csv",
+ "fixture_ext": "txt",
+ "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "c0eeed6b357d80122a1a109d17a2dc2a6ba6aa3539b798f0b74f041aaf79c0c1",
+ "trimmed_note": "Further trimmed 2026-10-03 (release pass, publish-safety finding: 300KB total budget for tests/contract/fixtures/ in the public tree) to a minimal real excerpt (header + few real rows, or a real byte-prefix for HTML) -- see the corresponding contract test's own comment for the exact row-count change.",
+ "trimmed_at": "2026-10-03T18:10:36Z"
+}

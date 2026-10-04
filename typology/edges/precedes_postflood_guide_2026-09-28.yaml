@@ -1,0 +1,103 @@
+# typology/edges/precedes_postflood_guide_2026-09-28.yaml -- NEW edge kind `precedes`,
+# added to the closed vocabulary 2026-09-28 for task ordering ONLY (justification: no
+# existing edge kind expresses "task B only happens after task A" -- `flows_to` is water
+# topology, `escalates_to` is the self-help social-network layer with its own forward-
+# only KIND_LAYER numbers, `part_of`/`operates`/`owned_by`/`decides`/`warns`/`supplies`/
+# `reports_to` all mean something else). `tools/typology/validate.py` enforces
+# acyclicity on `precedes` edges as a schema error (task 3's own requirement).
+#
+# `precedes_basis`: "explicit" (the guide states the order/dependency directly, quoted)
+# vs "toc_order" (follows the guide's own stated general principle, p.3: "การเรียงลำดับ
+# หัวข้อในคู่มือนี้จะเริ่มจากเรื่องสำคัญที่สุดไปหาเรื่องสำคัญน้อย" -- most-important-first,
+# ordered by TOC position, not a separately-restated per-chapter dependency).
+schema_version: 1
+doc_kind: typology_edge_registry
+edge_kind: precedes
+status_th: >
+  ลำดับงานปัจเจกหลังน้ำลด จาก คู่มือจัดการบ้านหลังน้ำลด -- explicit = คู่มือระบุลำดับ/เงื่อนไขตรง,
+  toc_order = ตามหลักการเรียงลำดับที่คู่มือประกาศไว้เอง (p.3) เท่านั้น.
+rows:
+  - from: sammakorn_household_template
+    to: HHTASK.PREP
+    precedes_basis: bridge
+    tag: OPEN
+    source: >
+      PROPOSAL -- bridges the imported self-help DAG's household TEMPLATE node
+      (site/inputs/community/self_help_dag.yaml, "template สำหรับสร้าง node จริงรายกลุ่มบ้าน",
+      already area-agnostic BY DESIGN in that file's own comment, not Sammakorn-specific
+      despite its id) to this post_event task sequence -- the guide itself never
+      mentions this repo's graph, so this ONE bridging edge is OPEN/proposal; every
+      downstream task-to-task edge below is grounded in the guide's own text (VERIFIED).
+  - from: HHTASK.PREP
+    to: HHTASK.PHOTO_DAMAGE
+    precedes_basis: toc_order
+    tag: VERIFIED
+    source: "คู่มือจัดการบ้านหลังน้ำลด p.3 (ordering principle) + p.6-8 (same chapter, equipment then action)"
+  - from: HHTASK.PHOTO_DAMAGE
+    to: HHTASK.VENTILATE
+    precedes_basis: explicit
+    tag: VERIFIED
+    source: >
+      p.8: photo-before-fixing instruction immediately precedes the ventilation
+      instruction in the same "การดำเนินการ" section, same page, same paragraph order
+  - from: HHTASK.VENTILATE
+    to: HHTASK.ELECTRICAL
+    precedes_basis: explicit
+    tag: VERIFIED
+    source: >
+      p.8, quoted: "เรื่องแรกที่ต้องใช้ความระมัดระวังมากที่สุดและต้องดำเนินการเป็นอย่างแรกคือการ
+      ตรวจสอบระบบไฟฟ้า" -- stated as the FIRST priority action, immediately after the
+      ventilation instruction on the same page
+  - from: HHTASK.ELECTRICAL
+    to: HHTASK.STRUCTURE
+    precedes_basis: toc_order
+    tag: VERIFIED
+    source: "คู่มือจัดการบ้านหลังน้ำลด p.3 (ordering principle) -- ไฟฟ้า (p.9-12) มาก่อนโครงสร้าง (p.13-15) ในสารบัญ"
+  - from: HHTASK.ELECTRICAL
+    to: HHTASK.CLEANING
+    precedes_basis: explicit
+    tag: VERIFIED
+    source: >
+      p.8, quoted: "เมื่อท่านแน่ใจแล้วว่าระบบไฟฟ้าทั้งหมดปิดไปหมดแล้วจึงเริ่มดำเนินการแก้ไขระบบอื่นๆ
+      และทำความสะอาดบ้านต่อไป" -- explicit dependency: cleaning only after electrical is
+      confirmed off/safe
+  - from: HHTASK.STRUCTURE
+    to: HHTASK.CLEANING
+    precedes_basis: toc_order
+    tag: VERIFIED
+    source: "คู่มือจัดการบ้านหลังน้ำลด p.3 (ordering principle) -- โครงสร้าง (p.13-15) มาก่อนทำความสะอาด (p.16-18) ในสารบัญ"
+  - from: HHTASK.CLEANING
+    to: HHTASK.SANITATION
+    precedes_basis: toc_order
+    tag: VERIFIED
+    source: "คู่มือจัดการบ้านหลังน้ำลด p.3 (ordering principle) -- ทำความสะอาด (p.16-18) มาก่อนสุขาภิบาล (p.19-21) ในสารบัญ"
+  - from: HHTASK.SANITATION
+    to: HHTASK.DOORS_WINDOWS
+    precedes_basis: toc_order
+    tag: VERIFIED
+    source: "คู่มือจัดการบ้านหลังน้ำลด p.3 (ordering principle) -- สุขาภิบาล (p.19-21) มาก่อนประตูหน้าต่าง (p.22-23) ในสารบัญ"
+  - from: HHTASK.DOORS_WINDOWS
+    to: HHTASK.FLOORS
+    precedes_basis: toc_order
+    tag: VERIFIED
+    source: "คู่มือจัดการบ้านหลังน้ำลด p.3 (ordering principle) -- ประตูหน้าต่าง (p.22-23) มาก่อนพื้น (p.24-27) ในสารบัญ"
+  - from: HHTASK.FLOORS
+    to: HHTASK.WALLS
+    precedes_basis: toc_order
+    tag: VERIFIED
+    source: "คู่มือจัดการบ้านหลังน้ำลด p.3 (ordering principle) -- พื้น (p.24-27) มาก่อนผนัง (p.28-29) ในสารบัญ"
+  - from: HHTASK.WALLS
+    to: HHTASK.APPLIANCES
+    precedes_basis: toc_order
+    tag: VERIFIED
+    source: "คู่มือจัดการบ้านหลังน้ำลด p.3 (ordering principle) -- ผนัง (p.28-29) มาก่อนเครื่องใช้ไฟฟ้า (p.30-33) ในสารบัญ"
+  - from: HHTASK.APPLIANCES
+    to: HHTASK.FURNITURE
+    precedes_basis: toc_order
+    tag: VERIFIED
+    source: "คู่มือจัดการบ้านหลังน้ำลด p.3 (ordering principle) -- เครื่องใช้ไฟฟ้า (p.30-33) มาก่อนเฟอร์นิเจอร์ (p.34-36) ในสารบัญ"
+  - from: HHTASK.FURNITURE
+    to: HHTASK.PLANTS
+    precedes_basis: toc_order
+    tag: VERIFIED
+    source: "คู่มือจัดการบ้านหลังน้ำลด p.3 (ordering principle) -- เฟอร์นิเจอร์ (p.34-36) มาก่อนต้นไม้ (p.37-38) ในสารบัญ"

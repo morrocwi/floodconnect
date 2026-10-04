@@ -37,7 +37,7 @@ pond_overflow_vs_soi_onset_test: # INSTINCT, maintainer hypothesis check
     pump ON/OFF status text (one pump "ขัดข้อง"/malfunction), no numeric pond-depth values in the
     files actually on disk. The maintainer-supplied 11:25 pond levels (บึง4 0.73m, บึง2 0.57m, บึง1
     1.27m, บ้านม้า2 ขัดข้อง 0/4) are RELAYED here, not independently re-derived from the raw files
-    in this repo within this pass -- OPEN: could not locate the exact source file/endpoint that
+    in this repo within this check -- OPEN: could not locate the exact source file/endpoint that
     carries those numeric pump/level readings.
 pond_rings:
   บึงรับน้ำสัมมากร 4:

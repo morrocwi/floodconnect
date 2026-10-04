@@ -1,0 +1,25 @@
+# typology/edges/reports_to_postflood_guide_2026-09-28.yaml -- links household_task
+# nodes to the agencies the guide names as contacts, using the EXISTING reports_to edge
+# kind (household asking an agency for help/inspection).
+schema_version: 1
+doc_kind: typology_edge_registry
+edge_kind: reports_to
+status_th: >
+  เชื่อม household_task เข้ากับหน่วยงานที่คู่มือระบุชื่อตรงว่าควรติดต่อ.
+rows:
+  - from: HHTASK.ELECTRICAL
+    to: AG_MEA
+    tag: VERIFIED
+    source: >
+      คู่มือจัดการบ้านหลังน้ำลด p.10, quoted: "แนะนำว่าให้ท่านติดต่อไปที่การไฟฟ้านครหลวงหรือการ
+      ไฟฟ้าภูมิภาคหรือช่างไฟฟ้าที่มีความสามารถเข้ามาตรวจสอบระบบ"
+  - from: HHTASK.ELECTRICAL
+    to: AG_PEA
+    tag: VERIFIED
+    source: "same quote as HHTASK.ELECTRICAL -> AG_MEA, p.10"
+  - from: HHTASK.STRUCTURE
+    to: AG_EIT
+    tag: VERIFIED
+    source: >
+      คู่มือจัดการบ้านหลังน้ำลด p.15, quoted: "ถ้าท่านต้องการคำปรึกษาเรื่องโครงสร้างให้ติดต่อ
+      'วิศวกรอาสา' วิศวกรรมสถานแห่งประเทศไทยในพระบรมราชูปถัมภ์"

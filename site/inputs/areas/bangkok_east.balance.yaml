@@ -21,7 +21,7 @@ A:
     the east zone (สะพานสูง/บางกะปิ/มีนบุรี/ลาดกระบัง/ประเวศ) FloodConnect covers. Falling
     back to the Bangkok administrative area (1,568.737 km^2) per maintainer instruction --
     this is a WELL-KNOWN PUBLIC FIGURE, not read from a document under raw/capacity in
-    this task, hence RELAYED rather than VERIFIED (see bma_capacity.json key
+    this check, hence RELAYED rather than VERIFIED (see bma_capacity.json key
     bangkok_administrative_area). Using the whole city as the denominator overstates the
     true east-zone catchment, so any comparison built from it is an upper bound on
     capacity relative to a SMALLER true catchment, not a village-scale answer.

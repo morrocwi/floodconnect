@@ -1,0 +1,186 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "bbox": [
+        99.9288,
+        15.7055,
+        99.9288,
+        15.7055
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          99.9288,
+          15.7055
+        ]
+      },
+      "properties": {
+        "eventtype": "FL",
+        "eventid": 1104122,
+        "episodeid": 34,
+        "eventname": "",
+        "glide": "FL-2026-000158-THA",
+        "name": "Flood in Thailand",
+        "description": "Flood in Thailand",
+        "htmldescription": "Green Flood in Thailand from: 18 Aug 2026 01 to: 27 Sep 2026 01.",
+        "icon": "https://www.gdacs.org/images/gdacs_icons/maps/Green/FL.png",
+        "iconoverall": "https://www.gdacs.org/images/gdacs_icons/maps/Green/FL.png",
+        "url": {
+          "geometry": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=1104122&episodeid=34",
+          "report": "https://www.gdacs.org/report.aspx?eventid=1104122&episodeid=34&eventtype=FL",
+          "details": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=FL&eventid=1104122"
+        },
+        "alertlevel": "Green",
+        "alertscore": 1,
+        "episodealertlevel": "Green",
+        "episodealertscore": 0.5,
+        "istemporary": "false",
+        "iscurrent": "true",
+        "country": "Thailand",
+        "fromdate": "2026-08-18T01:00:00",
+        "todate": "2026-09-27T01:00:00",
+        "datemodified": "2026-09-27T11:23:43",
+        "iso3": "THA",
+        "source": "GLOFAS",
+        "sourceid": "",
+        "polygonlabel": "Centroid",
+        "Class": "Point_Centroid",
+        "affectedcountries": [
+          {
+            "iso2": "TH",
+            "iso3": "THA",
+            "countryname": "Thailand"
+          }
+        ],
+        "severitydata": {
+          "severity": 0.0,
+          "severitytext": "Magnitude 0 ",
+          "severityunit": ""
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "bbox": [
+        -0.0892,
+        8.3062,
+        -0.0892,
+        8.3062
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.0892,
+          8.3062
+        ]
+      },
+      "properties": {
+        "eventtype": "FL",
+        "eventid": 1104196,
+        "episodeid": 2,
+        "eventname": "",
+        "glide": "",
+        "name": "Flood in Ghana",
+        "description": "Flood in Ghana",
+        "htmldescription": "Green Flood in Ghana from: 23 Sep 2026 01 to: 27 Sep 2026 01.",
+        "icon": "https://www.gdacs.org/images/gdacs_icons/maps/Green/FL.png",
+        "iconoverall": "https://www.gdacs.org/images/gdacs_icons/maps/Green/FL.png",
+        "url": {
+          "geometry": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=1104196&episodeid=2",
+          "report": "https://www.gdacs.org/report.aspx?eventid=1104196&episodeid=2&eventtype=FL",
+          "details": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=FL&eventid=1104196"
+        },
+        "alertlevel": "Green",
+        "alertscore": 1,
+        "episodealertlevel": "Green",
+        "episodealertscore": 0.5,
+        "istemporary": "false",
+        "iscurrent": "true",
+        "country": "Ghana",
+        "fromdate": "2026-09-23T01:00:00",
+        "todate": "2026-09-27T01:00:00",
+        "datemodified": "2026-09-27T10:34:23",
+        "iso3": "GHA",
+        "source": "GLOFAS",
+        "sourceid": "",
+        "polygonlabel": "Centroid",
+        "Class": "Point_Centroid",
+        "affectedcountries": [
+          {
+            "iso2": "GH",
+            "iso3": "GHA",
+            "countryname": "Ghana"
+          }
+        ],
+        "severitydata": {
+          "severity": 0.0,
+          "severitytext": "Magnitude 0 ",
+          "severityunit": ""
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "bbox": [
+        -158.3,
+        16.2,
+        -158.3,
+        16.2
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -158.3,
+          16.2
+        ]
+      },
+      "properties": {
+        "eventtype": "TC",
+        "eventid": 1001321,
+        "episodeid": 28,
+        "eventname": "NOLO-26",
+        "glide": "",
+        "name": "Tropical Cyclone NOLO-26",
+        "description": "Tropical Cyclone NOLO-26",
+        "htmldescription": "Green Tropical Cyclone NOLO-26 in United States from: 13 Sep 2026  to: 27 Sep 2026 .",
+        "icon": "https://www.gdacs.org/images/gdacs_icons/maps/Green/TC.png",
+        "iconoverall": "https://www.gdacs.org/images/gdacs_icons/maps/Green/TC.png",
+        "url": {
+          "geometry": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=1001321&episodeid=28",
+          "report": "https://www.gdacs.org/report.aspx?eventid=1001321&episodeid=28&eventtype=TC",
+          "details": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=TC&eventid=1001321"
+        },
+        "alertlevel": "Green",
+        "alertscore": 1,
+        "episodealertlevel": "Green",
+        "episodealertscore": 1.0,
+        "istemporary": "false",
+        "iscurrent": "true",
+        "country": "United States",
+        "fromdate": "2026-09-13T21:00:00",
+        "todate": "2026-09-27T15:00:00",
+        "datemodified": "2026-09-27T15:22:14",
+        "iso3": "",
+        "source": "NOAA",
+        "sourceid": "",
+        "polygonlabel": "Centroid",
+        "Class": "Point_Centroid",
+        "countryonland": "",
+        "affectedcountries": [
+          {
+            "iso2": "US",
+            "iso3": "USA",
+            "countryname": "United States"
+          }
+        ],
+        "severitydata": {
+          "severity": 212.9616,
+          "severitytext": "Hurricane/Typhoon > 74 mph (maximum wind speed of 213 km/h)",
+          "severityunit": "km/h"
+        }
+      }
+    }
+  ]
+}

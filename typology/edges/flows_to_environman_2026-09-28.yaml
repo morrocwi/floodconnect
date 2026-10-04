@@ -1,0 +1,54 @@
+# typology/edges/flows_to_environman_2026-09-28.yaml -- edge_kind=flows_to, network
+# structure only from the Environman FB post (28 ก.ย. 2569, RELAYED) -- no capacity/
+# length numbers (founder correction 2026-09-28: "ไม่ต้องเอาตัวเลข สกัดแค่เครือข่าย node").
+schema_version: 1
+doc_kind: typology_edge_registry
+edge_kind: flows_to
+status_th: >
+  เครือข่าย node จาก Environman post -- ไม่แก้/ลบ edge เดิมของ east_chain.yaml เส้นใดเลย, เพิ่ม
+  เป็น inflow/downstream ใหม่เท่านั้น.
+rows:
+  - from: WATER.canal_ladprao
+    to: WL.CONFLUENCE.LPR_SSB.01
+    tag: OPEN
+    source: "Environman FB post 28 ก.ย. 2569"
+  - from: WL.CONFLUENCE.LPR_SSB.01
+    to: WL.SSB.04
+    tag: OPEN
+    source: "Environman FB post 28 ก.ย. 2569 -- ตำแหน่งบน chain OPEN (ดู position_note_th ที่ node นี้)"
+  - from: WL.SSB.04
+    to: tunnel:bma_dds:saensaeb_ladprao
+    tag: RELAYED
+    source: "Environman FB post 28 ก.ย. 2569 -- น้ำจากลาดพร้าวและแสนแสบเข้าอุโมงค์นี้"
+  - from: tunnel:bma_dds:saensaeb_ladprao
+    to: pump_station:water_station:2
+    tag: RELAYED
+    source: "Environman FB post 28 ก.ย. 2569 -- อุโมงค์ -> สถานีสูบน้ำอุโมงค์พระโขนง"
+  - from: pump_station:water_station:2
+    to: river:chao_phraya
+    tag: RELAYED
+    source: "Environman FB post 28 ก.ย. 2569"
+  - from: WL.PKN.01
+    to: pump_station:water_station:1
+    tag: RELAYED
+    source: >
+      Environman FB post 28 ก.ย. 2569 + sources/capacity_ledger.yaml (สถานีสูบน้ำพระโขนง
+      ที่จุดเดียวกับเกจ WL.PKN.01) -- เส้นเสริม, ไม่ตัด edge เดิม WL.PKN.01->river:chao_phraya
+  - from: pump_station:water_station:1
+    to: river:chao_phraya
+    tag: RELAYED
+    source: "Environman FB post 28 ก.ย. 2569"
+  - from: WATER.khlong_jik
+    to: WL.SSB.07
+    drains_after: WL.SSB.09
+    drains_after_tag: RELAYED
+    drains_after_source: >
+      Environman FB post 28 ก.ย. 2569 -- คลองจิก (tributary ใหม่, ไม่มี node มาก่อน) pump
+      ออกได้หลังระดับแสนแสบตอนบนลดเท่านั้น (ตรงกับ รามคำแหง/คลองจั่น -- ดู DRAINS_AFTER_OVERRIDES
+      ใน tools/typology/build_graph.py สำหรับ 2 tributary เดิมที่มี node อยู่แล้ว)
+    tag: OPEN
+    source: "Environman FB post 28 ก.ย. 2569 -- คลองจิกไม่มีพิกัด/รหัสสถานี, ตำแหน่งเข้า WL.SSB.07 เป็น OPEN"
+  - from: WATER.canal_prem_prachakon
+    to: river:chao_phraya
+    tag: OPEN
+    source: "Environman FB post 28 ก.ย. 2569 -- north-axis stub, ไม่มีรหัสสถานี/พิกัด"

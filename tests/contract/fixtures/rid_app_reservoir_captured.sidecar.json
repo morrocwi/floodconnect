@@ -1,0 +1,17 @@
+{
+ "source_id": "rid_app_reservoir",
+ "url": "https://app.rid.go.th/reservoir/api/dams",
+ "method": "POST",
+ "request_body": "{\"date\": \"2026-10-03\"}",
+ "captured_at": "2026-10-03T04:48:00Z",
+ "sha256": "ed6a51f16091e8b0da158610dfab39d9c4f7dc98c609d1ee76b0f7a79095d047",
+ "http_status": 200,
+ "content_type": "application/json",
+ "fixture_ext": "json",
+ "capture_method": "single POST, one request per URL, no retry (per host_rule.max_requests_per_run)",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "7725269d0810754f26a5aa74de21e9c3d0a6a393d7ab36c05d62f64f265776f2",
+ "trimmed_note": "Further trimmed 2026-10-03 (release pass, publish-safety finding: 300KB total budget for tests/contract/fixtures/ in the public tree) to a minimal real excerpt (header + few real rows, or a real byte-prefix for HTML) -- see the corresponding contract test's own comment for the exact row-count change.",
+ "trimmed_at": "2026-10-03T18:10:36Z"
+}

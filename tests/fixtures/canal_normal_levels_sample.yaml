@@ -1,0 +1,13 @@
+# Tiny fixture for tests/test_canal_normal_levels.py -- never the real
+# sources/canal_normal_levels.yaml.
+canals:
+  - station_code: "WL.TEST.01"
+    canal_name_th: "คลองทดสอบ 1"
+    normal_level_m: -0.30
+    basis: dry_season_median
+    period: "2026-02-01..2026-03-15"
+  - station_code: "WL.TEST.02"
+    canal_name_th: "คลองทดสอบ 2 (no BMA control, has dry-season median)"
+    normal_level_m: -0.10
+    basis: dry_season_median
+    period: "2026-02-01..2026-03-15"

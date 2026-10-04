@@ -1,0 +1,206 @@
+# Physical flood-management asset registry -- schema/vocabulary reference for
+# `assets_registry.py` and the `assets` sqlite table (see store.py's "Assets registry"
+# section). This file documents the row shape and controlled vocabularies; the actual
+# harvested rows are written by `assets_registry.py build` to BOTH this file's sibling
+# YAML dump (data/assets_registry.dump.yaml, gitignored, regenerated every build) and
+# the sqlite `assets` table -- this file itself is the schema contract, not a data dump.
+#
+# Founder priority (verbatim, 2026-09-27): "ข้อมูลจากภาครัฐเชื่อมได้ทั้งหมด ให้เน้นข้อมูลที่
+# เชื่อถือได้ โดยเฉพาะตำแหน่งก่อน" then "แล้วค่อยวางระบบเรื่องข้อมูลอัพเดท" -- coordinates
+# first, provable from an official source; live-update plumbing comes after. No
+# geocoding, no OSM, no guessed coordinates anywhere in this registry.
+
+asset_classes:
+  - gauge          # สถานีวัดระดับน้ำ/ฝน
+  - pump_station   # สถานีสูบน้ำ
+  - pump_pit       # บ่อสูบ
+  - gate           # ประตูระบายน้ำ
+  - tunnel         # อุโมงค์
+  - dam
+  - culvert        # ท่อลอด
+  - pond           # บึง/แก้มลิง
+  - control_centre
+  - reservoir_medium  # added 2026-09-27 for hii_dam: HII's `dam_medium` census list
+                       # (medium irrigation reservoirs, mostly RID-operated, ~862
+                       # nationwide) -- distinct from `dam` (large dams) by HII's own
+                       # feed structure, never merged into `dam`
+  - reservoir_small   # added 2026-09-27 for hii_dam: HII's `dam_small_tele` census
+                       # list (small telemetered reservoirs, ~60 nationwide)
+  - weir              # ฝาย -- added 2026-09-27 for hii_watergate: rows whose Thai
+                       # name contains "ฝาย" (a weir, structurally distinct from a
+                       # ปตร./gate) in HII's watergate_data census
+  - rain_gauge        # added 2026-09-27 (this check, founder ask "ทำ kggraph ให้
+                       # สมบูรณ์"): nationwide rain gauges from thaiwater_rain_24h,
+                       # WITHOUT the Bangkok-metro bbox filter `gauge`/thaiwater_rain
+                       # already applies -- a strict addition, not a replacement
+  - basin             # ลุ่มน้ำหลัก -- added 2026-09-27: the 22 official ONWR/HII main
+                       # river basins, extracted from the basin_code/basin_name field
+                       # already embedded in cached HII payloads. No point/polygon
+                       # geometry (a basin is an area) -- lat/lon always None here
+  - retention_basin   # แก้มลิง/ทุ่งรับน้ำ -- added 2026-09-27: RID's 12 named ทุ่งรับน้ำ
+                       # (lower Chao Phraya) + the 2 aggregate RID/BMA east/west
+                       # monkey-cheek schemes. No coordinate found for any row
+  - levee             # คันกั้นน้ำ/คันพระราชดำริ -- added 2026-09-27: named levees
+                       # already declared in docs/knowledge/water_system_dag.mmd
+  - diversion_channel # คลองผันน้ำ -- added 2026-09-27: named diversion channels
+                       # (distinct from any telemetry gauge sited on the same channel)
+  - tide_gate         # ประตูระบายน้ำ/ป้องกันน้ำทะเลหนุน -- added 2026-09-27: named
+                       # tide/salt-water-intrusion control gate schemes
+  - sea_wall          # กำแพงกันคลื่น/เขื่อนกันคลื่นชายฝั่ง -- added to the vocabulary
+                       # 2026-09-27 for future use; NO row registered this check (no
+                       # named sea wall found in any source read within this check's
+                       # probe budget -- see docs/ASSETS.md)
+  - polder            # โพลเดอร์ -- added to the vocabulary 2026-09-27 for future use;
+                       # NO row registered this check (no named polder found in any
+                       # source read within this check's probe budget -- see
+                       # docs/ASSETS.md)
+  - canal             # คลอง -- added 2026-09-27, founder task: th.wikipedia
+                       # "หมวดหมู่:คลองในประเทศไทย" -> "สกัดเข้า kggraph อย่างเป็นระบบ".
+                       # A canal AS A NAMED WATERWAY (its own identity/extent), distinct
+                       # from any gauge/gate/pump_station sited ON a canal. Rows in
+                       # `sources/wikipedia_canals.yaml`, NOT written into the sqlite
+                       # `assets` table by this check's harvester (see `wikipedia`
+                       # source entry below) -- read-only queried FROM the assets
+                       # table for name-matching, never inserted into it.
+
+coord_source_type:
+  - official_api      # a live/cached official API response (e.g. api-v3.thaiwater.net)
+  - official_page      # a government-run server-rendered page (e.g. BMA PumpHistory)
+  - official_dataset   # an open-data CSV/JSON dump published by a government office
+  - repo_declared      # hand-entered by this repo's maintainer, not itself sourced from
+                        # an official feed at the coordinate level (cross-checked where
+                        # possible, but the coordinate itself did not come from the
+                        # official source directly)
+  - none               # no coordinate at all (OPEN)
+
+tag_vocabulary:
+  VERIFIED: >
+    Coordinate read directly from an official feed/dataset cached in this repo
+    (raw/live/*, raw/gapfill/*) -- traceable to a specific cached file + field path.
+  RELAYED: >
+    Coordinate (or the asset's existence) comes from a document/news source, not a
+    structured official feed this repo parses -- e.g. a PDF news relay stating a
+    location in prose.
+  OPEN: >
+    No coordinate found in any source read for this registry. Never filled with a
+    guess, a geocoded address, or an OSM lookup -- listed OPEN in docs/ASSETS.md
+    instead.
+
+row_schema:
+  asset_id: "ours, stable: class:source:code"
+  class: "one of asset_classes above"
+  name_th: "station/structure Thai name as published by the source"
+  source_code: "the source's own station/structure code, when it publishes one"
+  lat: "float, WGS84"
+  lon: "float, WGS84"
+  coord_source: "URL or repo file path (relative) the coordinate was read from"
+  coord_source_type: "one of coord_source_type above"
+  owner: "operating agency/office as stated by the source (not forced into a fixed
+    5-way bucket -- real official data names real agencies)"
+  owner_source: "which field/source stated the owner"
+  pumps_total: "int, if the source states it (pump_station/pump_pit only)"
+  capacity_m3s: "float, if the source states it"
+  warning_level: "float (m), gauges only, if the source states it"
+  critical_level: "float (m), gauges only, if the source states it"
+  bank: "float (m), gauges only, if the source states it"
+  first_seen: "UTC ISO-8601, first time this asset_id was harvested"
+  last_verified: "UTC ISO-8601, most recent successful harvest"
+  tag: "one of tag_vocabulary above"
+  notes: "free text -- provenance detail, merge notes, cross-source discrepancies"
+
+sources_harvested:
+  - thaiwater_bma        # raw/live/thaiwater_bma/*.json -- BMA canal gauges + gates
+                          # (is_gate rows), via api-v3.thaiwater.net (see
+                          # sources/registry.yaml id thaiwater_canal_waterlevel)
+  - thaiwater_rain_24h    # raw/live/thaiwater_rain_24h/*.json -- rain gauges, filtered
+                          # to a Bangkok-metro bounding box (13.4-14.1N, 100.2-100.95E)
+                          # -- the raw feed is nationwide (~4,300 stations), out of
+                          # scope for a Bangkok flood-asset registry
+  - pumphistory           # raw/live/pumphistory/*.html embedded `datapump` JS array --
+                          # BMA pump stations with real lat/lon (see live_water_level.py)
+  - water_station         # raw/gapfill/water_station.csv -- dds.bangkok.go.th open
+                          # dataset, 438 rows (pump stations + gates)
+  - control_structures    # site/inputs/canals/control_structures.yaml's 4 declared
+                          # gates, cross-checked against thaiwater_bma by canal_oldcode
+                          # (all 4 resolved -- VERIFIED, not repo_declared)
+  - hand_declared_open    # known assets this repo's docs/DAG rely on that have no
+                          # coordinate in any source read (see docs/ASSETS.md OPEN list)
+  - thaiwater_waterlevel  # raw/live/thaiwater_waterlevel/*.json -- nationwide HII
+                          # telemetry water-level stations (~804), api-v3.thaiwater.net
+                          # thaiwater30/public/waterlevel (see sources/registry.yaml id
+                          # thaiwater_waterlevel). River/canal gauges, NOT a dedicated
+                          # dam-reservoir feed -- dam_daily/dam_medium/dam/waterlevel_dam
+                          # all probed 404 "Unknown service id" on this host 2026-09-27.
+  - rid_res_table         # raw/live/rid_res_table/*.html -- RID national large-dam
+                          # name list (33 dams by region), water.rid.go.th's
+                          # res_table.htm; page publishes no coordinate at all, so
+                          # every row here is class=dam, tag=OPEN (names only)
+  - hii_dam               # raw/live/hii_dam/*.json (archived from
+                          # raw/knowledge/api_census/hii/dam.json) -- HII dam/reservoir
+                          # census: dam_hourly/dam_daily -> class dam,
+                          # dam_medium -> reservoir_medium, dam_small_tele ->
+                          # reservoir_small. Added 2026-09-27, founder ask
+                          # "เอาพิกัดจากเว็บไซต์รัฐมีเยอะ" -- real lat/lon on nearly every
+                          # row. Also used to FILL the 35 rid_res_table dams'
+                          # coordinates by normalized-name match (see
+                          # assets_registry.py's _merge_hii_dam_into_rid_res_table) --
+                          # all 35 matched confidently as of this check's build.
+  - hii_watergate         # raw/live/hii_watergate/*.json (archived from
+                          # raw/knowledge/api_census/hii/watergate_load.json's
+                          # watergate_data.data, 2,315 rows nationwide) -- class gate
+                          # by default, pump_station/weir by Thai-name keyword. Added
+                          # 2026-09-27, same founder ask. Deduped against existing BMA
+                          # gate rows (thaiwater_bma/control_structures/water_station)
+                          # by exact name + <=0.5km (see
+                          # assets_registry.py's _merge_hii_watergate_gates) -- only 3
+                          # of 2,315 matched an existing BMA gate by that rule, so
+                          # nearly all became new rows (BMA's own gate naming differs
+                          # from HII's watergate_data naming, a real finding, not a bug).
+  - thaiwater_rain_24h_nationwide  # SAME file as `thaiwater_rain_24h` above, read a
+                          # second time WITHOUT the Bangkok bbox filter -> class
+                          # rain_gauge (added 2026-09-27, this check). 4,428 stations
+                          # nationwide with a valid coordinate as of this build.
+  - onwr_basin_codes      # NOT a separate fetch -- the 22 official basins are
+                          # extracted from the `basin.basin_code`/`basin.basin_name`
+                          # field already embedded in the cached thaiwater_rain_24h /
+                          # thaiwater_waterlevel / hii_dam / hii_watergate payloads
+                          # (added 2026-09-27, this check; see harvest_basins()).
+  - thaipbs_12thung       # raw/knowledge/retention_basins/thaipbs_266415.html --
+                          # fetched 2026-09-27 (HTTP 200), Thai PBS news citing RID,
+                          # the 12 named ทุ่งรับน้ำ เจ้าพระยาตอนล่าง (class
+                          # retention_basin, tag RELAYED, no coordinate).
+  - card_pidthong_kaemling  # docs/knowledge/card_pidthong_kaemling_royal_initiative.md
+                          # -- the 2 aggregate RID/BMA east/west monkey-cheek schemes
+                          # (class retention_basin, tag RELAYED, no coordinate).
+  - bma_dds_tunnels_pdf   # raw/knowledge/bma_dds_tunnels/0004953_1.pdf -- fetched
+                          # 2026-09-27 (HTTP 200) from dds.bangkok.go.th's own
+                          # public_content file store. 7 operating + 6 planned/
+                          # under-construction large drainage tunnels (class tunnel,
+                          # tag OPEN, no coordinate published in the document).
+  - water_system_dag_levees  # docs/knowledge/water_system_dag.mmd -- 2 named levees
+                          # already declared as governance_dag nodes (class levee,
+                          # tag OPEN, no coordinate).
+  - thailand_water_kg_diversion  # output/thailand_water_kg.jsonld -- 3 named
+                          # diversion channels (คลองผันน้ำยม-น่าน2/3/4), cross-
+                          # referenced against this registry's own already-VERIFIED
+                          # gauge:thaiwater_waterlevel:DIV002/3/4 rows (class
+                          # diversion_channel, tag OPEN, no separate channel-geometry
+                          # coordinate).
+  - thaigov_bang_krachao  # raw/knowledge/tide_gate_bang_krachao/thaigov_91012.html --
+                          # fetched 2026-09-27 (HTTP 307 redirect, archived as-is, not
+                          # followed); 1 aggregate scheme, 34 gates (class tide_gate,
+                          # tag RELAYED -- content from this check's own web-search
+                          # summary of the same page, not the raw article body).
+  - wikipedia             # tools/harvest/wikipedia_canals.py -- th.wikipedia.org's
+                          # "หมวดหมู่:คลองในประเทศไทย" category tree (MediaWiki API,
+                          # categorymembers recursive to subcat depth 3), coordinate
+                          # gap-filled via Wikidata P625 where the page itself has
+                          # none. Class canal, tag RELAYED (an edited encyclopedia
+                          # article, not an official telemetry/dataset feed), licence
+                          # CC BY-SA 4.0. Raw archive: raw/wikipedia/canals/<UTC ts>/.
+                          # Normalised output: sources/wikipedia_canals.yaml (own file,
+                          # NOT merged into data/assets_registry.dump.yaml or the
+                          # sqlite `assets` table by this check -- matched against that
+                          # table's existing rows by exact normalised Thai name only,
+                          # recorded as each row's own `matches` field, never merged).
+                          # See docs/knowledge/WIKIPEDIA_CANALS.md for counts/method.

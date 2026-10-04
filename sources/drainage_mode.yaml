@@ -1,0 +1,272 @@
+# drainage_mode.yaml -- per area/canal/structure DRAINAGE MODE ledger:
+# gravity-capable vs pump-dependent vs tide-gated (one-way) vs mixed vs OPEN.
+#
+# Founder request (verbatim): "เราต้องรู้ว่าตรงไหนไหลเองได้ตามแรงโน้มถ่วง ตรงไหนไหลเองไม่ได้
+# ยกเว้นมีปั๊มด้วยนะ อาจจะหาข้อมูลนี้จากหน่วยงานรัฐก่อนถ้ามีมาเสริม".
+#
+# THIS FILE WRITES NEW DATA ONLY -- it does not edit docs/CAPACITY.md, docs/ASSETS.md,
+# sources/capacity_ledger.yaml, site/inputs/canals/*.yaml, or site/build_data.py (out of
+# this check's write scope; another worker is the sole committer for this branch). Ids reuse
+# the same asset_id / east_chain node id / DAG id convention already used in
+# site/inputs/canals/east_chain.yaml and sources/capacity_ledger.yaml where a match exists.
+#
+# Toledo: no equation anywhere in this file. Row "derived_geometry" comparisons (tier C)
+# are a single inequality (bed_up > control_down) on numbers copied verbatim from an
+# already-archived source -- not a registered formula, no PROP-FLOOD code needed.
+#
+# Tags follow this repo's epistemic floor (AGENTS.md/README.md): VERIFIED (this check read
+# the primary document/dataset itself) / RELAYED (news/media/search-engine summary, not a
+# primary document opened directly) / MEASURED-derived (tier C, arithmetic on archived
+# numbers) / OPEN (no answer, or basis not stated by the source).
+#
+# mode vocabulary: gravity (drains without a pump under normal levels) / pump_only
+# (structurally below the receiving water body, drainage requires a pump always) /
+# tide_gated (one-way/floating gate: opens by gravity to drain out, self-closes on
+# backflow -- no pump under normal operation) / mixed (gravity when the outside level
+# permits + pump added when it does not, per the ปิดทองหลังพระ "แก้มลิง" mechanic) / OPEN.
+#
+# basis vocabulary: official_statement (an agency's own document/dataset states the
+# mechanism or an operating rule that implies it) / derived_geometry (tier C, computed
+# from bed/control levels of two structures already in this repo) / OPEN (no official
+# statement and no computable geometry found).
+
+schema_note: >
+  Each row: id, element_th, area_or_structure, mode, basis, source, tag, notes.
+
+rows:
+  # ===================== A. Official BMA statements: policy/area level =====================
+  - id: area:bma_east_polder
+    element_th: "พื้นที่ปิดล้อมฝั่งตะวันออก (ระบบพื้นที่ปิดล้อม/polder system)"
+    area_or_structure: "ทั้งฝั่งตะวันออกของแม่น้ำเจ้าพระยา ในแนวคันกั้นน้ำ (~650 ตร.กม.)"
+    mode: mixed
+    basis: official_statement
+    source: >
+      แผนปฏิบัติราชการประจำปี พ.ศ. 2567 สำนักการระบายน้ำ กทม. (infocenter.oic.go.th
+      PDF, ผ่านผลค้นเว็บ 2026-09-27 -- ยังไม่ได้เปิดอ่านตัวเอกสาร PDF โดยตรง เก็บเป็น
+      RELAYED-of-a-search-summary ไม่ใช่ VERIFIED)
+    tag: RELAYED
+    notes: >
+      Search-engine synthesis states: BMA uses a "ระบบพื้นที่ปิดล้อม" (polder system,
+      post-1995-flood) split into 2 sub-systems -- (1) ป้องกัน (prevention, against river
+      surge/high sea) and (2) บรรเทา (mitigation, drains rainfall-caused standing water) --
+      with drainage engineered to push floodwater "quickly to the Chao Phraya River and
+      the Gulf of Thailand", current system capacity stated as the same 58.7 mm/hr figure
+      already VERIFIED in docs/CAPACITY.md (from the 2569 plan, a different document year,
+      independently agreeing on that number). This row is the closed-basin-needs-active-
+      management framing that the derived rows below sit inside; it is NOT itself a
+      per-canal/per-structure gravity-vs-pump statement. `mode: mixed` here means "the
+      area as a whole uses both prevention and mitigation sub-systems", not that every
+      structure in it is individually mixed -- see per-structure rows below.
+
+  - id: area:bma_pattern_floating_oneway_gate
+    element_th: "รูปแบบ 'ประตูเปิดลอย' (floating one-way gate) ในชุดข้อมูลเปิด กทม."
+    area_or_structure: "ทั้งชุดข้อมูล data.bangkok.go.th floodgate.csv + pump-station.csv"
+    mode: tide_gated
+    basis: official_statement
+    source: >
+      https://data.bangkok.go.th/th/dataset/floodgate (floodgate.csv, ดึงจริง
+      2026-09-27, เก็บที่ raw/live/bma_open_data_floodgate/2026-09-27T104746Z_floodgate.csv)
+      และ https://data.bangkok.go.th/dataset/.../pump-station.csv (ดึงจริง 2026-09-27,
+      เก็บที่ raw/live/bma_open_data_pump_station/2026-09-27T104714Z_pump-station.csv)
+    tag: VERIFIED
+    notes: >
+      Read directly from the CSV's own `water_control` free-text field (no interpretation
+      needed -- this is the agency's own row-level description, not a search summary):
+      4 rows in floodgate.csv read exactly "ประตูเปิดลอย น้ำไหลเข้าให้ปิดประตู" or
+      "ประตูเปิดลอย" alone (id 96 บางชัน(ตอนสวนสยาม) 13.8032,100.6917; id 97
+      บึงตาเกตุ 13.8066,100.7018; 2 more rows in เขตหนองจอก, ลำปลาทิว/คลองสองลำปลาทิว,
+      13.8285/13.8158,100.87-ish); 4 more rows in pump-station.csv, all เขตสามวา
+      (ทำนบกั้นน้ำคลองสามวา/สี่ตะวันออก/สามตะวันออก/สองตะวันออก), same exact wording. This
+      is a gravity-outflow, self-closing-on-backflow gate -- no pump named for any of
+      these 8 rows. `official_statement`, VERIFIED because this check read the CSV's own
+      text, not a paraphrase. None of these 8 rows sit on Sammakorn's own path (all
+      สามวา/หนองจอก, north/further-east of ram53_canal/east_chain.yaml's scope).
+
+  # ===================== B. Official BMA per-structure: the 4 east gates on the page ==========
+  - id: gate:thaiwater_bma:WL.SSB.10
+    element_th: "ปตร.แสนแสบ-มีนบุรี (east_chain node ssb10)"
+    area_or_structure: "คลองแสนแสบ ช่วงมีนบุรี-หนองจอก / บางกะปิ-สะพานสูง"
+    mode: OPEN
+    basis: OPEN
+    source: >
+      site/inputs/canals/east_chain.yaml (asset_id gate:thaiwater_bma:WL.SSB.10) cross-
+      matched by lat/lon (13.82094,100.74738) to floodgate.csv row id=100
+      "ประตูระบายน้ำแสนแสบ (มีนบุรี) (ด้านใน)" 13.8209,100.7473 -- coordinates agree to
+      4 decimal places, same structure.
+    tag: VERIFIED
+    notes: >
+      VERIFIED fact: floodgate.csv gives this structure a NUMERIC managed target level
+      (water_control=0.2, warning=0.5, critical=0.6 ม.รทก.) -- i.e. it is actively
+      operated to a control band, not left as a passive one-way gate (contrast with the
+      `เปิดลอย` rows above, which have no numeric water_control at all). But the CSV does
+      NOT state whether that control band is achieved by gravity opening/closing alone,
+      by pump assist, or both -- `mode` stays OPEN rather than guessed from the numeric
+      field. AGENTS.md §8 already flags this gate's open/closed STATE as inferred, not
+      measured; this row adds that its drainage MODE (mechanism) is separately unstated.
+      General east-side mechanism (gravity when sea<canal, close+pump-as-needed when
+      sea>canal) is described only in card_pidthong_kaemling_royal_initiative.md, RELAYED,
+      not specific to this structure -- see area:bma_east_gates_general_mechanism below.
+
+  - id: gate:thaiwater_bma:WL.SSB.09
+    element_th: "ปตร.บางชัน (east_chain node ssb09)"
+    area_or_structure: "คลองแสนแสบ ช่วงบางกะปิ-สะพานสูง / เมืองชั้นใน-พระโขนง"
+    mode: OPEN
+    basis: OPEN
+    source: >
+      east_chain.yaml (asset_id gate:thaiwater_bma:WL.SSB.09, 13.7972,100.70458)
+      cross-matched to floodgate.csv row id=95 "ประตูระบายน้ำบางชัน (ตอนคลองแสนแสบ)"
+      13.7973,100.7045 -- coordinates agree.
+    tag: VERIFIED
+    notes: >
+      Same pattern as WL.SSB.10: numeric control band (water_control=0.2, warning=0.4,
+      critical=0.5) -- actively managed, mechanism (gravity/pump/both) not stated by this
+      source. mode OPEN.
+
+  - id: gate:thaiwater_bma:WL.PWT.03
+    element_th: "ปตร.ประเวศ-วัดกระทุ่ม (east_chain node pwt03)"
+    area_or_structure: "คลองประเวศฯ-วัดกระทุ่ม / ลาดกระบัง-สุวรรณภูมิ"
+    mode: OPEN
+    basis: OPEN
+    source: >
+      east_chain.yaml (asset_id gate:thaiwater_bma:WL.PWT.03, 13.72396,100.68956)
+      cross-matched to floodgate.csv row id=94 "ประตูระบายน้ำประเวศ (กระทุ่มเสือปลา)
+      (ด้านใน)" 13.7239,100.6895 -- coordinates agree.
+    tag: VERIFIED
+    notes: >
+      Numeric control band (water_control=-0.1, warning=0.1, critical=0.2). mode OPEN,
+      same reasoning as WL.SSB.10/09.
+
+  - id: gate:thaiwater_bma:WL.PWT.04
+    element_th: "ปตร.ประเวศ-ลาดกระบัง (east_chain node pwt04)"
+    area_or_structure: "คลองประเวศฯ-ลาดกระบัง / ลาดกระบัง-สุวรรณภูมิ"
+    mode: OPEN
+    basis: OPEN
+    source: >
+      east_chain.yaml (asset_id gate:thaiwater_bma:WL.PWT.04, 13.72411,100.74987)
+      cross-matched to floodgate.csv row id=102 "ประตูระบายน้ำลาดกระบัง (ด้านใน)"
+      13.7241,100.7498 -- coordinates agree.
+    tag: VERIFIED
+    notes: >
+      Numeric control band (water_control=0.1, warning=0.3, critical=0.4). mode OPEN,
+      same reasoning as the other 3.
+
+  - id: area:bma_east_gates_general_mechanism
+    element_th: "กลไกทั่วไปของแก้มลิง/ปตร. ฝั่งตะวันออก (ตามแนวพระราชดำริ)"
+    area_or_structure: "ทั่วไป (ไม่เจาะจงโครงสร้างใดใน 4 ปตร.ข้างบน)"
+    mode: mixed
+    basis: official_statement
+    source: "docs/knowledge/card_pidthong_kaemling_royal_initiative.md (มูลนิธิปิดทองหลังพระ, RELAYED บทความ, อ่านแล้วในคลังนี้ก่อนงานนี้)"
+    tag: RELAYED
+    notes: >
+      General mechanism as described by the article (not agency-issued, foundation's own
+      publicity article -- kept RELAYED per that card's own tag): "Gravity Flow" drains
+      when sea level < canal level; gate closes ("One Way Flow") when sea > canal to
+      block backflow; pump added ("สูบออกเพิ่ม") when necessary to keep pulling water down
+      continuously. This IS the qualitative answer to the founder's question at the
+      general-mechanism level for the BKK-east/east-of-Chao-Phraya polder system as a
+      whole -- but it is not a per-gate official statement, and this check found no BMA/RID
+      document naming WL.SSB.10/09 or WL.PWT.03/04 specifically as gravity-capable,
+      pump-only, or tide-gated. Kept as a separate general-mechanism row rather than
+      copied into each of the 4 gate rows above, so the per-structure OPEN status stays
+      honest and the general narrative doesn't get silently upgraded to per-structure fact.
+
+  # ===================== C. RID: east-side lower polder, sea-outlet pump stations ============
+  - id: area:rid_pra_ong_chaiyanuchit
+    element_th: "โครงการส่งน้ำและบำรุงรักษาพระองค์ไชยานุชิต"
+    area_or_structure: "คลองพระองค์ไชยานุชิต, สมุทรปราการ -- ทางออกฝั่งตะวันออกของแก้มลิง"
+    mode: pump_only
+    basis: official_statement
+    source: >
+      Search-engine summary of RID/สำนักงานชลประทานที่ 11 public material (Facebook page,
+      YouTube video title), 2026-09-27 -- NOT a primary RID document opened directly by
+      this check, kept RELAYED accordingly.
+    tag: RELAYED
+    notes: >
+      Described as draining via "สถานีสูบน้ำสุวรรณภูมิ" (Suvarnabhumi pump station) and a
+      pump station "ริมคลองชายทะเล" (coastal-canal-side) to finally pump into the sea --
+      i.e. this reach is described only in pump terms, no gravity-outlet wording found for
+      it in the material surfaced this check. Consistent with the eastern-polder framing
+      (area:bma_east_polder row) that this outer/lower reach sits below normal sea level
+      and cannot self-drain. A separate, more specific figure -- "สะพานระบายน้ำสุวรรณภูมิ"
+      (Suvarnabhumi elevated drainage bridge/floodway) rated 100 m3/s -- was surfaced by
+      the same search and belongs in sources/capacity_ledger.yaml (out of this file's
+      scope; noted here only as the same-project context).
+
+  - id: area:rid_chonlaharnpichit
+    element_th: "โครงการส่งน้ำและบำรุงรักษาชลหารพิจิตร"
+    area_or_structure: "คลองชายทะเล ต.คลองด่าน สมุทรปราการ -- ทางออกสุดท้ายก่อนอ่าวไทย"
+    mode: pump_only
+    basis: official_statement
+    source: >
+      Search-engine summary of RID public statements / mgronline.com / JS100 coverage
+      (อธิบดีกรมชลประทานตรวจสถานีสูบน้ำชลหารพิจิตร), 2026-09-27 -- NOT a primary RID
+      document opened directly, kept RELAYED.
+    tag: RELAYED
+    notes: >
+      Described as the pump station that drains water "ลงสู่ทะเล" (out to sea) at the
+      final outlet of the eastern lower-polder chain, serving BKK-east + ปริมณฑล. No
+      gravity-outlet wording found for this specific structure -- it is described purely
+      as a pump station at the tidal/sea boundary, consistent with pump_only.
+
+  # ===================== D. Sammakorn's own path (required row, even if OPEN) ==================
+  - id: area:sammakorn_own_path
+    element_th: "บึงสัมมากร -> คลองบ้านม้า 2 -> แสนแสบ"
+    area_or_structure: "หมู่บ้านสัมมากร, เขตสะพานสูง -- ปั๊ม ST.SPS.01-04 (ของหมู่บ้านเอง)"
+    mode: OPEN
+    basis: OPEN
+    source: >
+      docs/knowledge/FLOODCONNECT_TOPOLOGY.md (สะพานสูง = 4 แถวเท่านั้นใน CSV ท่อระบายน้ำ
+      กทม., ไม่มีแถวใดอ้างคลองบ้านม้า); site/inputs/areas/sammakorn.balance.yaml
+      (C_pump section, pump_scenarios incl. `pump2_gravity`); this check's own checks of
+      raw/live/bma_open_data_floodgate + bma_open_data_pump_station (0 rows matching
+      "สะพานสูง"/"บ้านม้า"/"วังใหญ่"/"สัมมากร" in either CSV, confirmed by direct grep this
+      task, not assumed).
+    tag: OPEN
+    notes: >
+      No official statement of drainage mode found anywhere for this path, at any of its
+      three segments -- confirmed again this check via the two freshly-archived BMA open
+      datasets (zero matching rows), consistent with every prior probe in this repo
+      (AGENTS.md §8, FLOODCONNECT_TOPOLOGY.md "นักบิน Sammakorn" section,
+      docs/CAPACITY.md §2 "ปั๊ม ST.SPS.01-04 ... OPEN/NOT FOUND"). The maintainer's own
+      declared model (`sammakorn.balance.yaml`) treats the pumps as the DECISIVE factor
+      ("ตัวตัดสินของสัมมากรคือปั๊มบึงเดินหรือไม่") and separately models a `pump2_gravity`
+      scenario (pump 2 m3/s + an assumed extra 1 m3/s of gravity contribution "หลัง กทม.
+      ระบายหมด") -- but that scenario's own gravity term is tagged INSTINCT (a modeling
+      assumption for what happens once the receiving BKK canal empties), not an official
+      or measured fact. Honest answer: pump-dependent in practice per the village's own
+      pump-scenario modeling (INSTINCT, not OPEN as a narrative), but no official
+      agency has ever stated a drainage mode for this path, and no bed/control-level pair
+      exists to derive it geometrically (see tier-C row below) -- `basis: OPEN` stands.
+      Who to ask: นิติบุคคลหมู่บ้านสัมมากร (owns the private pumps and the pond/canal
+      geometry) and สำนักงานเขตสะพานสูง (the district-level BMA office for any drainage
+      plan covering this reach) -- neither has published anything this repo has found.
+
+  # ===================== E. MEASURED-derived (tier C, geometric attempt) =======================
+  - id: gate:thaiwater_bma:WL.SSB.12
+    element_th: "สถานีสูบน้ำ คลองแสนแสบ หนองจอก (bed/bank sample station, ไม่ใช่ 1 ใน 4 ปตร.หลัก)"
+    area_or_structure: "คลองแสนแสบ หนองจอก -- StationDetail id=51"
+    mode: OPEN
+    basis: OPEN
+    source: "docs/knowledge/BMA_STATION_DETAIL_PROBE.md §2/§4 (bed_bank=-1.24, left/right bank=1.75, water_control=0.70, ม.)"
+    tag: OPEN
+    notes: >
+      This is the ONLY structure anywhere in this repo's archives with a recorded
+      `bed_bank` figure (from StationDetail's admin-edit form fields) -- checked this check
+      by re-reading that probe doc, no second station's bed/bank level exists to compare
+      against. The tier-C rule requires BOTH an upstream structure's bed level AND a
+      downstream/receiving canal's control level to test `bed_up > control_down` (gravity
+      geometrically possible); with only one station's numbers on file, there is no pair
+      to compute -- per this ledger's own rule ("list only rows where both numbers exist;
+      never guess"), NO derived_geometry row is produced from this sample. Recorded here
+      as a negative result (checked, not skipped) rather than silently omitted. Any of
+      the 312 stations behind `weather.bangkok.go.th/water/StationDetail?id={water_id}`
+      could in principle supply the second half of a pair (see that probe doc §6's
+      proposed 10-per-run rotation) -- none has been pulled beyond this one sample.
+
+next_step_th: >
+  (1) ยืนยัน mode ของ 4 ปตร.หลัก (SSB.10/09, PWT.03/04) กับสำนักการระบายน้ำ กทม. โดยตรง --
+  ยังไม่มีเอกสารทางการใดระบุกลไกต่อบานเลย มีแต่ระดับควบคุมเป็นตัวเลข. (2) ยื่นขอข้อมูล
+  แผนผังท่อระบายน้ำ/ปั๊มภายในหมู่บ้านสัมมากรจากนิติบุคคลหมู่บ้านโดยตรง -- ไม่มีทางลัดจากแหล่ง
+  สาธารณะใดๆ ที่สำรวจแล้ว (ยืนยันซ้ำอีกครั้งในงานนี้). (3) หากต้องการแถว derived_geometry จริง
+  ต้องดึง StationDetail เพิ่มอย่างน้อย 1 สถานีที่อยู่ปลายน้ำของอีกสถานีหนึ่งที่มี bed_bank แล้ว --
+  งานนี้ไม่ได้ทำ (นอกงบ 25 คำขอที่ตั้งไว้, ให้ผู้ดูแล collector ตัดสินใจว่าจะลงทุนคำขอเพิ่มหรือไม่).

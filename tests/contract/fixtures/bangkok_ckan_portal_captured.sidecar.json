@@ -1,0 +1,13 @@
+{
+ "source_id": "bangkok_ckan_portal",
+ "url": "https://data.bangkok.go.th/api/3/action/package_search?q=%E0%B8%99%E0%B9%89%E0%B8%B3&rows=20",
+ "captured_at": "2026-10-03T05:21:00Z",
+ "sha256": "cd457a4077cac51bfa83451bbdaab6136b62f63f1fde698964d258a30b69719f",
+ "http_status": 200,
+ "fixture_ext": "json",
+ "parser_version": "v1",
+ "trimmed_excerpt": true,
+ "trimmed_from_full_capture_sha256": "c376406ba78783769a5432eee9df643673d7ecf82ed12fb27478e8864059d35f",
+ "trimmed_note": "trimmed CKAN package_search results to first 3 datasets + redacted every staff email address in the body -- publish-safety finding (CKAN dumps with staff emails) | earlier: trimmed CKAN package_search results to first 3 datasets + redacted every staff email address in the body -- publish-safety finding (CKAN dumps with staff emails)",
+ "trimmed_at": "2026-10-03T18:10:36Z"
+}

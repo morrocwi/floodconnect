@@ -53,6 +53,7 @@ sources:
         redistribution."
       unresolved: true
     trust_tier: official_telemetry
+    max_age_hours: 24
     host_rule:
       max_requests_per_run: 1
       notes: "api-v3.thaiwater.net is HII/สสน., not a BMA host -- this workspace's strict
@@ -62,6 +63,13 @@ sources:
       real canal_lat/canal_long, warning/critical/bank thresholds present."}
     variables: [canal_water_level_m, warning_level_m, critical_level_m, bank_level_m,
       canal_out_m (gate stations only)]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: union(local,origin)
+    contract_test: tests/contract/test_thaiwater_canal_waterlevel.py
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
 
   - id: thaiwater_flood_road
     agency:
@@ -77,6 +85,7 @@ sources:
       thaiwater_canal_waterlevel -- not independently re-checked for this endpoint
       specifically.", unresolved: true}
     trust_tier: official_telemetry
+    max_age_hours: 24
     # Confirmed 2026-09-26 by one real fetch (262 records): station.floodroad_lat/_long
     # are real coordinates, floodroad_oldcode mirrors canal_oldcode's "FL.<area>.<n>"
     # scheme, and floodroad_value ranges 0-35.6 across the sample (212 at exactly 0) --
@@ -88,6 +97,13 @@ sources:
       coordinates. See parsers.py::parse_thaiwater_flood_road for the exact field
       mapping confirmed against this live response."}
     variables: [floodroad_value_cm]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: union(local,origin)
+    contract_test: "tests/contract/test_wp2_additional_sources.py"
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
 
   - id: thaiwater_rain_24h
     agency:
@@ -103,7 +119,13 @@ sources:
       thaiwater_canal_waterlevel -- not independently re-checked for this endpoint
       specifically.", unresolved: true}
     trust_tier: official_telemetry
-    # Added 2026-09-26 (red-team fix HIGH-3): CI had no rain collector at all, so the
+    # Documented explicitly (2026-10-03, ): this already fell back to
+    # live_water_level.STALE_HOURS (24h) when this field was absent -- stated here
+    # instead, same figure, so a reader doesn't have to know that fallback exists.
+    # Matches the "rain 24h" variable-class default already used by kb.py's own
+    # 24h forecast-staleness rule (_FORECAST_STALE_AFTER_S); not a new cutoff.
+    max_age_hours: 24
+    # Added 2026-09-26: CI had no rain collector at all, so the
     # rain tile always fell back to raw/gapfill/rain_24h*.json, a one-time manual snapshot
     # that goes stale forever. This collector writes a fresh raw/live/thaiwater_rain_24h/
     # snapshot every run; build_data.py reads that dir first and only falls back to the
@@ -113,7 +135,120 @@ sources:
       environment -- shape confirmed against the existing raw/gapfill/rain_24h_1.json
       manual snapshot (4282 stations, rain_24h/rainfall_datetime/station lat-long
       fields) from the same API family."}
-    variables: [rain_24h_mm]
+    # TODO #181 (2026-09-28): confirmed against a real raw/live/thaiwater_rain_24h/*.json
+    # payload (4439 records, station_type uniformly "rainfall_24h") that the response also
+    # carries a `rain_1h` field alongside `rain_24h` -- NO rain_3h/6h/12h field exists
+    # anywhere in this API family, MEASURED by inspecting every record's key set. Both
+    # windows end at the same `rainfall_datetime` timestamp; the exact window-start/end
+    # semantics are not independently verified against a written thaiwater.net API spec
+    # (none found), so "rolling window ending at rainfall_datetime" is RELAYED/assumed from
+    # the field name, same as the existing rain_24h note above. `rain_1h` is absent on
+    # ~12% of records (539/4439 checked) -- stored only when present, never fabricated.
+    variables: [rain_24h_mm, rain_1h_mm]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: union(local,origin)
+    contract_test: "tests/contract/test_wp2_additional_sources.py"
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
+
+  - id: thaiwater_waterlevel
+    agency:
+      th: "สถาบันสารสนเทศทรัพยากรน้ำ (สสน.) และหน่วยงานเจ้าของสถานี -- ผ่าน thaiwater.net"
+      en: "Hydro-Informatics Institute (HII) and per-station owning agency, via
+        thaiwater.net"
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel"
+    method: GET
+    cadence: near-real-time (waterlevel_datetime varies per station)
+    format: json
+    auth: none
+    licence_status: {text: "Same relayed/unconfirmed licence note as
+      thaiwater_canal_waterlevel -- not independently re-checked for this endpoint
+      specifically.", unresolved: true}
+    trust_tier: official_telemetry
+    # collect.py collector added 2026-09-27 (founder priority A3: "HII/thaiwater
+    # waterlevel nationwide is listed as 'no collector implemented' -- implement it")
+    # -- see collect.collect_thaiwater_waterlevel + parsers.parse_thaiwater_waterlevel.
+    # Added 2026-09-27, founder ask: "เราได้พิกัด แม่น้ำ เขื่อน ที่สูบน้ำ คลอง หรืออื่นๆ
+    # ครบหรือยัง" -- this is the nationwide fill for river/canal telemetry gauges
+    # (station_type "tele_waterlevel"), sibling to canal_waterlevel/rain_24h on the same
+    # host+family. Discovered by probing candidate `public/<id>` service ids on this
+    # host (max 6 probes per this check's network rule): `dam_daily`, bare `public`, and
+    # `dam_medium`/`dam`/`waterlevel_dam` all returned HTTP 404 "Unknown service id" --
+    # only `waterlevel` (this entry) returned data. No dedicated dam-reservoir endpoint
+    # was found on this host within budget; see docs/ASSETS.md's probe log. Several
+    # station names contain "เขื่อน" (e.g. ท้ายเขื่อนเจ้าพระยา) but these are river gauges
+    # sited near a dam, not the dam/reservoir asset itself -- stored as class `gauge`.
+    host_rule: {max_requests_per_run: 1, notes: "Same host as thaiwater_canal_waterlevel;
+      one GET per run, no retries."}
+    last_status: {date: "2026-09-27", http: 200, note: "804 nationwide telemetry
+      water-level stations, real tele_station_lat/tele_station_long, spans all RID
+      regions/basins (basin field present per row)."}
+    variables: [waterlevel_msl, storage_percent, discharge]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_wp2_additional_sources.py"
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
+
+  - id: rid_res_table
+    agency:
+      th: "กรมชลประทาน"
+      en: "Royal Irrigation Department"
+    url: "http://water.rid.go.th/flood/flood/res_table.htm"
+    method: GET
+    cadence: static (page last touched ~2008 based on embedded chart-image paths;
+      served live, but the dam list itself does not appear to change run over run)
+    format: html (windows-874/cp874 encoded)
+    auth: none
+    licence_status: {text: "RELAYED, not independently confirmed against a formal
+      licence text.", unresolved: true}
+    trust_tier: official_report
+    # Collector added 2026-09-27 (founder ask, priority A5: "rid_res_table --
+    # implement the parser if the page is parseable... it was marked no collector") --
+    # see collect.collect_rid_res_table + parsers.parse_rid_res_table. The page
+    # publishes NO coordinate or numeric reading anywhere, so this collector stores
+    # each dam name as a `documents` row (region + name), never a fabricated
+    # observation/coordinate.
+    # Added 2026-09-27, same founder ask as thaiwater_waterlevel above (dam coverage).
+    # Probed 2026-09-27: HTTP 200, decodes as cp874, and names 33 large dams grouped by
+    # RID region (ภาคเหนือ/ตะวันออกเฉียงเหนือ/กลาง/ตะวันตก/ตะวันออก/ใต้) with links to
+    # historical level-chart JPGs -- but the page publishes NO coordinate anywhere
+    # (checked by reading the full decoded HTML, not assumed). Per this check's
+    # no-guessing rule, every dam from this source is stored class=dam, tag=OPEN,
+    # lat/lon=None -- names only, never geocoded.
+    host_rule: {max_requests_per_run: 1, notes: "One GET per run, no retries (this
+      workspace's blanket no-retry discipline; water.rid.go.th is not itself covered
+      by the BMA-specific host rule, but the same one-shot posture applies)."}
+    last_status: {date: "2026-09-27", http: 200, note: "33 dam names across 6 RID
+      regions; no lat/lon field anywhere on the page."}
+    variables: [dam_name_th]
+
+  # Probed 2026-09-27, same founder ask -- neither of these two candidates yielded
+  # ingestable content within this check's probe budget, so neither has real rows in
+  # `assets_registry.py`; kept here as a registry-level record of what was tried
+  # (see docs/ASSETS.md probe log for the raw HTTP detail):
+  #   - hydro-5.rid.go.th (RID central-region hydrology centre): root + navigation.html
+  #     + page1.html all returned HTTP 200, but are a 2000s-era frameset menu shell --
+  #     no station list or coordinate reachable within the 4-probe RID budget (would
+  #     need to follow several more menu links to reach an actual station table, if
+  #     one exists at all as structured data rather than a PDF/image).
+  #   - dds.bangkok.go.th (BMA tunnels, อุโมงค์ระบายน้ำ): the site root and a guessed
+  #     detail-page URL both returned HTTP 302 redirects into a session-cookied dynamic
+  #     CMS path (/content/specialnews/detail.php?...); no tunnel page content was
+  #     reached within the 3-probe budget. The one BMA tunnel this repo already knows
+  #     of (อุโมงค์พระราม 9-รามคำแหง) stays on the OPEN list via `hand_declared_open()`
+  #     in assets_registry.py -- not re-derived here, and no new tunnel was added.
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_remaining_wired_sources.py"
+    health_check: "not yet captured this check -- see tools/capture_source_sample.py"
 
   - id: bma_pumphistory
     agency:
@@ -128,6 +263,7 @@ sources:
     licence_status: {text: "RELAYED -- no licence/terms text found on this page during
       the 2026-09-26 check.", unresolved: true}
     trust_tier: official_telemetry
+    max_age_hours: 24
     host_rule:
       max_requests_per_run: 1
       notes: "weather.bangkok.go.th IS a BMA host under this workspace's strict rule. Confirmed
@@ -137,6 +273,13 @@ sources:
     last_status: {date: "2026-09-26", http: 200, note: "ST.SPS.01-04 Sammakorn pump
       stations parsed with real lat/lon from the page's own datapump metadata array."}
     variables: [level_m, pumps_on, pumps_total, gate_open_m, station_status_th]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: union(local,origin)
+    contract_test: MISSING
+    health_check: "not yet captured this check -- see tools/capture_source_sample.py"
 
   - id: dds_daily_pdf
     agency:
@@ -154,6 +297,15 @@ sources:
     licence_status: {text: "RELAYED -- no licence/terms text checked for this specific
       file; same public-bulletin posture as the rest of dds.bangkok.go.th.", unresolved: true}
     trust_tier: official_report
+    # This bulletin carries several variable classes (rain_24h_mm, qmax_* Chao Phraya,
+    # tide_*, canal_level_0700_m) under one source_id -- a single daily bulletin, not one
+    # cutoff per variable in this registry yet (OPEN, not invented here). The canal_level
+    # rows already used `live_water_level.STALE_HOURS` (24h) before this field existed;
+    # this value keeps that same existing cutoff for the whole source rather than widen
+    # it, and is also the documented default for rain (no bulletin-specific rain cutoff
+    # existed before this fix either -- same 24h figure `kb.py`'s `_FORECAST_STALE_AFTER_S`
+    # already uses for hazard).
+    max_age_hours: 24
     host_rule:
       max_requests_per_run: 1
       notes: "dds.bangkok.go.th is a BMA host under this workspace's strict rule. Confirmed
@@ -171,6 +323,13 @@ sources:
       not force-parsed into fields."}
     variables: [rain_mm_24h, canal_level_m, canal_critical_m, qmax_cms, reservoir_pct,
       tide_am_level_m, tide_pm_level_m]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: union(local,origin)
+    contract_test: "tests/contract/test_remaining_wired_sources.py"
+    health_check: "not yet captured this check -- see tools/capture_source_sample.py"
 
   - id: dds_flood_report
     agency:
@@ -191,6 +350,13 @@ sources:
       time has an empty เวลาแห้ง/ระยะเวลาท่วม cell -- parsed as None, never fabricated."}
     variables: [district, road, area_detail, flood_height_cm, flood_length_m,
       lanes_affected, flood_start, flood_end, flood_duration, rain_total_mm]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: union(local,origin)
+    contract_test: "tests/contract/test_remaining_wired_sources.py"
+    health_check: "not yet captured this check -- see tools/capture_source_sample.py"
 
   - id: dds_tide_pdf
     agency:
@@ -212,6 +378,13 @@ sources:
     variables: [tide_high_am_time, tide_high_am_level_m, tide_low_am_time,
       tide_low_am_level_m, tide_high_pm_time, tide_high_pm_level_m, tide_low_pm_time,
       tide_low_pm_level_m]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: union(local,origin)
+    contract_test: "tests/contract/test_remaining_wired_sources.py"
+    health_check: "not yet captured this check -- see tools/capture_source_sample.py"
 
   - id: dds_nowcast_gif
     agency:
@@ -230,6 +403,13 @@ sources:
       this run -- image-only source, snapshot-and-store only, no parser to test against
       it beyond confirming a file was saved."}
     variables: []
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: union(local,origin)
+    contract_test: "tests/contract/test_remaining_wired_sources.py"
+    health_check: "not yet captured this check -- see tools/capture_source_sample.py"
 
   - id: bma_klongmap
     agency:
@@ -255,6 +435,118 @@ sources:
     last_status: {date: "2026-09-26", http: 403, note: "Blocked at the edge, not a bug in
       this repo's request (confirmed with full browser-like headers)."}
     variables: [water_level_m]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: union(local,origin)
+    contract_test: MISSING
+    health_check: "not yet captured this check -- see tools/capture_source_sample.py"
+
+  - id: bma_watermap
+    agency:
+      th: "สำนักการระบายน้ำ กรุงเทพมหานคร"
+      en: "Department of Drainage and Sewerage, BMA"
+    url: "https://weather.bangkok.go.th/water/PageMap/GoogleMap"
+    method: "POST, application/x-www-form-urlencoded body, single field `payload` (this
+      probe's finding: the page's own JS literal placeholder value
+      'TEST_DATA_GOES_HERE' returns the full, unfiltered 312-station set -- treated as
+      this source's 'get everything' payload, not reverse-engineered further; headers:
+      browser UA, Referer https://weather.bangkok.go.th/water/,
+      X-Requested-With: XMLHttpRequest, per docs/knowledge/BMA_WATER_MAP_PROBE.md §2)"
+    cadence: unknown -- not stated by the server; this repo's own collect.py --all
+      runs on demand (no fixed schedule, founder decision 2026-10-02), no evidence of a
+      faster useful refresh than that
+    format: json
+    auth: none
+    licence_status: {text: "RELAYED -- no dedicated terms-of-use/licence text found on
+      weather.bangkok.go.th/water/ during the 2026-09-27 probe (only a generic
+      page-footer copyright string). Same posture as bma_pumphistory.", unresolved: true}
+    trust_tier: official_telemetry
+    max_age_hours: 24
+    host_rule:
+      max_requests_per_run: 1
+      notes: "weather.bangkok.go.th IS a BMA host under this workspace's strict rule
+        (see bma_pumphistory's own note above -- confirmed per-path variation on this
+        exact host). Probed 2026-09-27: 200, JSON, 312 records, no 403/reset that run.
+        Same DORMANT-on-403 handling as bma_klongmap if this ever blocks: mark DORMANT
+        with the confirmed date, add to collect.py's DORMANT_NOT_IN_ALL, require an
+        explicit `--source bma_watermap` human-initiated re-check before probing again.
+        No retry loop, ever."
+    last_status: {date: "2026-09-27", http: 200, note: "Probe (docs/knowledge/
+      BMA_WATER_MAP_PROBE.md): 312 station records, 52 with a non-null
+      watergate01..06 gate-opening height in metres -- the first MEASURED gate-state
+      reading anywhere in this repo (replacing INFERRED reasoning for those stations,
+      see docs/LESSONS_nodes_2026-09-27.md §A). water_control present as a field on
+      every record but null for all 312 in the probe archive -- stored anyway, so a
+      future non-null value is picked up with no code change. First live collect.py
+      --source bma_watermap run: see docs/KG_VERIFY_2026-09-27.md (internal, not in this
+      public tree) / commit message for
+      the exact row counts."}
+    variables: [canal_water_level_m, gate_opening_m, water_control_m]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: MISSING
+    health_check: "not yet captured this check -- see tools/capture_source_sample.py"
+
+  - id: bma_station_detail
+    agency:
+      th: "สำนักการระบายน้ำ กรุงเทพมหานคร"
+      en: "Department of Drainage and Sewerage, BMA"
+    url: "https://weather.bangkok.go.th/water/StationDetail?id={water_id}"
+    method: "GET, `id` = a bma_watermap `water_id` (same integer id space, confirmed
+      1:1 join in docs/knowledge/BMA_STATION_DETAIL_PROBE.md §4). ONE GET per run, no
+      retry, browser UA + Referer https://weather.bangkok.go.th/water/. Rotates ONE
+      water_id per run (cursor: data/bma_station_detail_cursor.json, gitignored) -- a
+      full 312-station sweep takes ~312 on-demand runs -- no fixed wall-clock time
+      since collect.py --all has no schedule (founder decision 2026-10-02).
+      CORRECTED 2026-09-27: an earlier draft of this source proposed a 10-station batch
+      per run; this repo's own tests/test_registry.py::
+      test_bma_hosts_are_capped_at_one_request_per_run (pre-existing, workspace-wide
+      invariant) rejects that, and a live attempt at 10/run confirmed a real HTTP 403 on
+      the 3rd request that same run -- batch size is 1, matching the invariant and the
+      live evidence, not the original proposal. Water_id list is sourced from the most
+      recent cached bma_watermap raw snapshot (raw/live/bma_watermap/*.json) -- run
+      bma_watermap at least once before this source has anything to rotate over."
+    cadence: static/slow-changing fields (control/bank/bed levels, thresholds) --
+      not real-time telemetry, per docs/knowledge/BMA_STATION_DETAIL_PROBE.md §6
+    format: html (server-rendered; parsed with regex, see
+      tools/harvest/bma_station_detail_draft.py)
+    auth: none
+    licence_status: {text: "RELAYED -- no dedicated terms/licence text found, same
+      posture as bma_watermap.", unresolved: true}
+    trust_tier: official_telemetry
+    host_rule:
+      max_requests_per_run: 1
+      notes: "weather.bangkok.go.th BMA-host rule -- exactly 1 GET/run for this source
+        (1 water_id, no retry), matching tests/test_registry.py::
+        test_bma_hosts_are_capped_at_one_request_per_run. A non-200 this run is
+        skipped (not retried), left for its next turn in the rotation. Already added
+        to collect.py's DORMANT_NOT_IN_ALL after a confirmed 403 (see last_status) --
+        a human must re-check via an explicit `--source bma_station_detail` before
+        this runs again, same posture as bma_klongmap. No login/write path
+        (StationDetail/Login, /UpdateStationinfo) is ever called by this source --
+        read-only by design, per the draft parser's own scope note."
+    last_status: {date: "2026-09-27", http: 403, note: "First live collect.py --source
+      bma_station_detail run (attempted at the original 10/run design, before it was
+      corrected to 1/run -- see method notes above): 2 stations succeeded
+      (WL.BCN.01, WL.BCN.03 -- water_control 0.40 m each, VERIFIED-BMA-control) before
+      HTTP 403 on the 3rd water_id, confirming the burst-safety concern this repo's
+      test_registry.py already encoded. Batch size corrected to 1 after this; the
+      confirmed-working single-station probe (docs/knowledge/
+      BMA_STATION_DETAIL_PROBE.md, id=51/WL.SSB.12, water_control 0.70 m) is unaffected."}
+    variables: [water_control_m, warning_m, critical_m, warning_out01_m,
+      critical_out01_m, left_bank_m, right_bank_m, bed_bank_m, station_level_history_m]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: MISSING
+    health_check: "not yet captured this check -- see tools/capture_source_sample.py"
 
   - id: governor_shared_flooded_roads
     agency:
@@ -277,6 +569,13 @@ sources:
       (\"ลิงค์นั้นมาจาก ผู้ว่ากทม เชื่อถือได้ระดับหนึ่ง\" -- trusted to a degree, not
       unconditionally). Not yet imported into this run's store -- OPEN."}
     variables: [road_name, inferred_status]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: union(local,origin)
+    contract_test: MISSING
+    health_check: "not yet captured this check -- see tools/capture_source_sample.py"
 
   - id: rtsd_2010_ground_level_map
     agency:
@@ -295,6 +594,13 @@ sources:
       an earlier session -- reference only, not wired into observations/documents by
       this stage of the pipeline."}
     variables: []
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: union(local,origin)
+    contract_test: MISSING
+    health_check: "not yet captured this check -- see tools/capture_source_sample.py"
 
   - id: social_listening_google
     agency:
@@ -324,8 +630,8 @@ sources:
         apart. Stop immediately on a CAPTCHA challenge or an HTTP 429 -- no retry loop,
         same fail-closed discipline as every other source in this registry."
     last_status: {date: "2026-09-26", http: null, note: "Not yet run through
-      search_google() this session (playwright optional-import path untested against a
-      live Google page) -- two REAL manually-compiled snapshots exist instead, see
+      search_google() as of 2026-09-26 (playwright optional-import path untested against
+      a live Google page) -- two REAL manually-compiled snapshots exist instead, see
       docs/METHOD_social_listening.md and raw/community/."}
     variables: [community_report (ordinal state code, see social_listening.py::STATE_ORDER)]
     effectiveness:
@@ -334,6 +640,13 @@ sources:
         areas_covered_2026-09-26: ["สัมมากร (sammakorn)", "รามคำแหง 53 (ram53)"]
         method_evaluation_table: "method_evaluation table in data/observations.sqlite,
           written by `python3 social_listening.py --evaluate`"
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: union(local,origin)
+    contract_test: MISSING
+    health_check: "not yet captured this check -- see tools/capture_source_sample.py"
 
   - id: social_listening_paste
     agency:
@@ -359,7 +672,7 @@ sources:
     host_rule: {max_requests_per_run: 0, notes: "No fetcher -- this is intentional, not
       a gap. See method above."}
     last_status: {date: "2026-09-26", http: null, note: "Two real maintainer-supplied
-      compilations imported this session -- see raw/community/ and
+      compilations imported as of 2026-09-26 -- see raw/community/ and
       docs/METHOD_social_listening.md."}
     variables: [community_report (ordinal state code, see social_listening.py::STATE_ORDER)]
     effectiveness:
@@ -368,6 +681,13 @@ sources:
         areas_covered_2026-09-26: ["สัมมากร (sammakorn)", "รามคำแหง 53 (ram53)"]
         method_evaluation_table: "method_evaluation table in data/observations.sqlite,
           written by `python3 social_listening.py --evaluate`"
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: union(local,origin)
+    contract_test: MISSING
+    health_check: "not yet captured this check -- see tools/capture_source_sample.py"
 
   - id: openmeteo_forecast
     agency:
@@ -395,6 +715,13 @@ sources:
       (hourly.time/precipitation/precipitation_probability arrays, timezone-localised
       when `timezone=` is passed)."}
     variables: [precipitation_mm, precipitation_probability_pct]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: union(local,origin)
+    contract_test: tests/contract/test_openmeteo_forecast_contract.py
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
 
   - id: rid_flood_risk_map
     agency:
@@ -413,3 +740,1723 @@ sources:
       from an earlier session -- reference only, not wired into
       observations/documents by this stage of the pipeline."}
     variables: []
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: union(local,origin)
+    contract_test: MISSING
+    health_check: "not yet captured this check -- see tools/capture_source_sample.py"
+
+  - id: hii_dam
+    agency:
+      th: "สถาบันสารสนเทศทรัพยากรน้ำ (สสน.) และหน่วยงานเจ้าของเขื่อน -- ผ่าน thaiwater.net"
+      en: "Hydro-Informatics Institute (HII) and per-dam owning agency (RID/EGAT), via
+        thaiwater.net"
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/analyst/dam"
+    method: GET
+    cadence: "mixed -- dam_hourly/dam_daily near-real-time, dam_medium/dam_small_tele
+      daily (per-record dam_date/smalldam_datetime granularity)"
+    format: json
+    auth: none
+    licence_status: {text: "Same relayed/unconfirmed licence note as
+      thaiwater_canal_waterlevel.", unresolved: true}
+    trust_tier: official_telemetry
+    # Added 2026-09-27 (founder ask: "ให้ต่อของฟรีให้เสร็จก่อน" -- HII dam.json, 989
+    # records nationwide, join asset_id scheme dam:hii_dam:<id>; see docs/ASSETS.md's
+    # "HII dams and watergates" section for the full field-mapping this collector reuses).
+    host_rule: {max_requests_per_run: 1, notes: "Same host as thaiwater_canal_waterlevel."}
+    last_status: {date: "2026-09-27", http: 200, note: "989 records across 4 station
+      types (dam_hourly 17, dam_medium 862, dam_daily 50, dam_small_tele 60), real
+      dam_lat/dam_long or tele_station_lat/_long per record."}
+    variables: [dam_hourly_storage_pct, dam_daily_storage_pct, dam_medium_storage_pct,
+      dam_small_tele_storage_pct]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_wp2_additional_sources.py"
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
+
+  - id: hii_watergate
+    agency:
+      th: "สถาบันสารสนเทศทรัพยากรน้ำ (สสน.) และหน่วยงานเจ้าของประตูระบายน้ำ -- ผ่าน
+        thaiwater.net"
+      en: "Hydro-Informatics Institute (HII) and per-gate owning agency, via
+        thaiwater.net"
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/watergate_load"
+    method: GET
+    cadence: near-real-time
+    format: json
+    auth: none
+    licence_status: {text: "Same relayed/unconfirmed licence note as
+      thaiwater_canal_waterlevel.", unresolved: true}
+    trust_tier: official_telemetry
+    # Added 2026-09-27, same founder ask as hii_dam above -- 2,315 records nationwide,
+    # join asset_id scheme gate:hii_watergate:<station.id>. 139 rows with station.id==0
+    # (placeholder/incomplete census entries) are skipped by the parser, never stored.
+    host_rule: {max_requests_per_run: 1, notes: "Same host as thaiwater_canal_waterlevel."}
+    last_status: {date: "2026-09-27", http: 200, note: "2,315 records, real
+      tele_station_lat/_long on all but 139 placeholder rows (station.id==0). Two
+      anomalous raw coordinates found and rejected by `_valid_th_coord` -- see
+      docs/ASSETS.md ('BKK007' (0,0) sentinel, 'TN.10' 118.6N decimal-place error)."}
+    variables: [watergate_upstream_level_m, watergate_downstream_level_m]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_wp2_additional_sources.py"
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
+
+  - id: egat_water_crisis
+    agency:
+      th: "การไฟฟ้าฝ่ายผลิตแห่งประเทศไทย (กฟผ.) -- กองจัดการทรัพยากรน้ำ"
+      en: "Electricity Generating Authority of Thailand (EGAT) -- Water Resource
+        Management Division"
+    url: "http://water.egat.co.th/water_crisis.php"
+    method: GET (server-rendered HTML table, one row per EGAT-operated dam)
+    cadence: daily (header shows the report's own date, e.g. "26 ก.ย. 2569")
+    format: html
+    auth: none
+    licence_status: {text: "RELAYED, not independently confirmed against a formal
+      licence text -- founder-supplied URL, queued item #4,
+      docs/knowledge/FOUNDER_TASKS_2026-09-27.md.", unresolved: true}
+    trust_tier: official_report
+    # Added 2026-09-27 (founder-supplied URL probe: "ลองดูว่าอะไร ไปสกัดเอามาใช้
+    # ประโยชน์ได้บ้าง"). No coordinate on this page -- station_code left null; joins to
+    # a coordinate via hii_dam's dam_name_th match are a future task, not done here (no
+    # silent/fuzzy geocoding). Sibling URL tiwrm.hii.or.th/.../egat_dam.php returns a
+    # similar table for the same EGAT dams (more columns, but same underlying data) --
+    # not separately collected, would be duplicate coverage.
+    host_rule: {max_requests_per_run: 1, notes: "One GET per run, no retries."}
+    last_status: {date: "2026-09-27", http: 200, note: "Real per-dam table confirmed --
+      15 data columns after the dam name (storage level/mcm/%, usable-water this-yr/
+      last-yr, inflow/release today + past week, week-over-week change, remaining
+      intake capacity). Region-subheader rows (all-empty cells) skipped by the parser."}
+    variables: [egat_dam_storage_pct]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_remaining_wired_sources.py"
+    health_check: "not yet captured this check -- see tools/capture_source_sample.py"
+
+  - id: rid9_chonburi_rpt
+    agency:
+      th: "กรมชลประทาน -- สำนักงานชลประทานที่ 9 (ชลบุรี)"
+      en: "Royal Irrigation Department -- Regional Irrigation Office 9 (Chonburi)"
+    url: "http://irrigation.rid.go.th/rid9/rid9_new/rpt_show.php?dateid={buddhist_yyyymmdd}"
+    method: "GET, dateid param computed from today's date (Asia/Bangkok, Buddhist-era
+      year) -- see collect._rid9_dateid_th. Confirmed 2026-10-03: the dateid param alone
+      is sufficient, the page's own dm/dms params only change a display label."
+    cadence: daily
+    format: html (windows-874/cp874 encoded)
+    auth: none
+    licence_status: {text: "RELAYED, not independently confirmed against a formal
+      licence text -- no terms/licence link found on irrigation.rid.go.th during the
+      2026-10-03 check.", unresolved: true}
+    trust_tier: official_report
+    # Added 2026-10-03 (wire RID reachable-but-unwired sources). Real per-
+    # reservoir table, 61 rows across 2 size categories (large / medium+royally-
+    # initiated), basin Bang Pakong/eastern seaboard (Chonburi, Rayong, Chachoengsao,
+    # Prachinburi) -- NOT Chao Phraya/Bangkok, so this source is excluded from a
+    # sammakorn/ram53/bangkok_east `--refresh` via collect.AREA_RELEVANT_SOURCES (still
+    # reachable via --all or --source rid9_chonburi_rpt). No coordinate on this page --
+    # stored by name only, same posture as egat_water_crisis.
+    host_rule: {max_requests_per_run: 1, notes: "One GET per run, no retries. Not a BMA
+      host; this workspace's blanket no-retry discipline still applies."}
+    last_status: {date: "2026-10-03", http: 200, note: "61 reservoir rows (23 cells
+      each) confirmed via a real dateid-only GET; capacity/current-storage/rain/release
+      fields populated for most large reservoirs, many medium-reservoir cells blank on
+      this particular date (never fabricated -- stored as None/skipped)."}
+    variables: [rid9_reservoir_storage_mcm, rid9_reservoir_capacity_mcm,
+      rid9_reservoir_rain_daily_mm, rid9_reservoir_inflow_daily_mcm,
+      rid9_reservoir_release_mcm]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_rid9_chonburi_rpt.py"
+    health_check: "tests/contract/fixtures/rid9_chonburi_rpt_captured.sidecar.json
+      (real single-GET capture, 2026-10-03)"
+
+  - id: rid_app_reservoir
+    agency:
+      th: "กรมชลประทาน -- ระบบอ่างเก็บน้ำ (ระบบใหม่)"
+      en: "Royal Irrigation Department -- reservoir web-app (new system)"
+    url: "https://app.rid.go.th/reservoir/api/dams"
+    method: "POST, JSON body {\"date\": \"<YYYY-MM-DD>\"} (Asia/Bangkok today). Also
+      GETs the sibling api/alert endpoint, best-effort (see collect.
+      collect_rid_app_reservoir -- a failed/empty alert fetch never fails this source)."
+    cadence: daily
+    format: json
+    auth: none
+    licence_status: {text: "RELAYED, not independently confirmed against a formal
+      licence text -- no terms/licence link found on app.rid.go.th during the
+      2026-10-03 check.", unresolved: true}
+    trust_tier: official_report
+    # Added 2026-10-03 as the highest-value unwired RID source identified by the census
+    # sweep -- reservoir release/warning data with coordinates for the Chao Phraya-basin
+    # feeder dams
+    # เขื่อนภูมิพล/เขื่อนสิริกิติ์/เขื่อนป่าสักชลสิทธิ์). Field-overlaps hii_dam (storage/
+    # inflow/release for the same large-dam set, via HII telemetry instead of RID's own
+    # app) -- wired as an independent official cross-check, not merged into hii_dam's
+    # rows; a consumer wanting one authoritative reading resolves that itself.
+    host_rule: {max_requests_per_run: 2, notes: "One POST (api/dams) + one GET
+      (api/alert) per run, no retries."}
+    last_status: {date: "2026-10-03", http: 200, note: "35 dams across 6 regions
+      confirmed via a real POST (date=today); api/alert returned {\"Dam\":[],
+      \"Reservoir\":[]} (0 active alerts at capture time, not a failure)."}
+    variables: [rid_dam_capacity_mcm, rid_dam_storage_mcm, rid_dam_storage_pct_of_norm,
+      rid_dam_inflow_daily_mcm, rid_dam_release_daily_mcm, rid_dam_alert_count]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_rid_app_reservoir.py"
+    health_check: "tests/contract/fixtures/rid_app_reservoir_captured.sidecar.json
+      (real single-POST capture, 2026-10-03)"
+
+  - id: openmeteo_flood
+    agency:
+      th: "Open-Meteo (แบบจำลอง GloFAS เปิด) -- ไม่ใช่หน่วยงานไทย"
+      en: "Open-Meteo (open GloFAS global flood model) -- NOT a Thai government agency"
+    url: "https://flood-api.open-meteo.com/v1/flood?latitude=..&longitude=..&daily=river_discharge&timezone=Asia%2FBangkok"
+    method: "GET, one request per point per run (4 points -- see
+      collect.OPENMETEO_FLOOD_POINTS: C.2 นครสวรรค์, เขื่อนเจ้าพระยา, สัมมากร, บางไทร
+      (added 2026-09-27 per docs/knowledge/EASIEST_EXTERNAL_APIS_FOR_MISSING_INPUTS_
+      2026-09-27.md #2 -- secondary/cross-check Q_up, never a substitute for
+      hii_waterlevel_load's gauge readings)). No API key."
+    cadence: "daily model output"
+    format: json
+    auth: none
+    licence_status: {text: "Same RELAYED/unconfirmed posture as openmeteo_forecast.",
+      unresolved: true}
+    trust_tier: third_party
+    host_rule: {max_requests_per_run: 1, notes: "Not a BMA host; one GET per point per
+      run (4 points = 4 requests total per run), no retries."}
+    last_status: {date: "2026-09-27", http: 200, note: "Sample fetch (นครสวรรค์ point):
+      7-day daily river_discharge series in m3/s, no missing days."}
+    variables: [glofas_river_discharge_m3s]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_wp2_additional_sources.py"
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
+
+  - id: openmeteo_ensemble
+    agency:
+      th: "Open-Meteo (ผสมหลาย ensemble member เปิด) -- ไม่ใช่หน่วยงานไทย"
+      en: "Open-Meteo (open multi-member ensemble blend) -- NOT a Thai government agency"
+    url: "https://ensemble-api.open-meteo.com/v1/ensemble?latitude=..&longitude=..&hourly=precipitation&models=icon_seamless&timezone=Asia%2FBangkok&forecast_days=3"
+    method: "GET, one request per point per run (2 points -- Sammakorn + one upstream
+      point, see collect.OPENMETEO_ENSEMBLE_POINTS). No API key."
+    cadence: "hourly model output"
+    format: json
+    auth: none
+    licence_status: {text: "Same RELAYED/unconfirmed posture as openmeteo_forecast.",
+      unresolved: true}
+    trust_tier: third_party
+    host_rule: {max_requests_per_run: 1, notes: "Not a BMA host; one GET per point per
+      run (2 points = 2 requests total per run), no retries."}
+    last_status: {date: "2026-09-27", http: 200, note: "Sample fetch (Sammakorn point):
+      39 ensemble members + control run, hourly precipitation, this collector reports
+      the per-hour median/min/max across whichever members are present that hour."}
+    variables: [precipitation_ensemble_median_mm]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_wp2_additional_sources.py"
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
+
+  - id: openmeteo_marine
+    agency:
+      th: "Open-Meteo (แบบจำลองทะเลเปิด) -- ไม่ใช่หน่วยงานไทย"
+      en: "Open-Meteo (open marine/tide model) -- NOT a Thai government agency"
+    url: "https://marine-api.open-meteo.com/v1/marine?latitude=..&longitude=..&hourly=sea_level_height_msl&timezone=Asia%2FBangkok"
+    method: "GET, one request per run, fixed point near the Chao Phraya river-mouth bar
+      in the Gulf of Thailand. No API key."
+    cadence: "hourly model output"
+    format: json
+    auth: none
+    licence_status: {text: "Same RELAYED/unconfirmed posture as openmeteo_forecast.",
+      unresolved: true}
+    trust_tier: third_party
+    host_rule: {max_requests_per_run: 1, notes: "Not a BMA host; one GET per run, no
+      retries."}
+    last_status: {date: "2026-09-27", http: 200, note: "Sample fetch: 72h hourly
+      sea_level_height_msl series (tidal oscillation clearly visible in the sample,
+      -0.53m to +1.94m range)."}
+    variables: [sea_level_height_msl_m]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_wp2_additional_sources.py"
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
+
+  - id: nasa_power
+    agency:
+      th: "NASA POWER (แบบจำลอง/reanalysis เปิด) -- ไม่ใช่หน่วยงานไทย"
+      en: "NASA POWER (open reanalysis product) -- NOT a Thai government agency"
+    url: "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=PRECTOTCORR&community=AG&longitude=..&latitude=..&start=..&end=..&format=JSON"
+    method: "GET, one request per run, fixed Sammakorn point, 7-day trailing window.
+      No API key."
+    cadence: "daily"
+    format: json
+    auth: none
+    licence_status: {text: "NASA POWER data is documented as public domain
+      (power.larc.nasa.gov), not independently re-verified against a formal licence
+      text by this repo -- same RELAYED/unresolved posture as every other entry here.",
+      unresolved: true}
+    trust_tier: third_party
+    host_rule: {max_requests_per_run: 1, notes: "Not a BMA host; one GET per run, no
+      retries."}
+    last_status: {date: "2026-09-27", http: 200, note: "Sample fetch: PRECTOTCORR
+      (bias-corrected precip, mm/day) for 8 days, last 3 days = the feed's own -999.0
+      fill value (not yet processed upstream) -- skipped by the parser, never stored
+      as 0mm or -999mm."}
+    variables: [rain_24h_mm]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_wp2_additional_sources.py"
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
+
+  - id: openmeteo_multimodel
+    agency:
+      th: "Open-Meteo (6 แบบจำลองเปิด: ECMWF/GFS/ICON/JMA/GEM/Météo-France) -- ไม่ใช่กรม
+        อุตุนิยมวิทยา (TMD)"
+      en: "Open-Meteo (6 open model blend: ECMWF/GFS/ICON/JMA/GEM/Météo-France) -- NOT
+        the Thai Meteorological Department (TMD)"
+    url: "https://api.open-meteo.com/v1/forecast?latitude=..&longitude=..&hourly=precipitation&models=<model>&timezone=Asia%2FBangkok&forecast_days=7"
+    method: "GET, one request per model per run (6 models -- see
+      collect.OPENMETEO_MULTIMODEL_MODELS), fixed Sammakorn point. No API key."
+    cadence: "hourly model output, refreshed multiple times/day upstream"
+    format: json
+    auth: none
+    licence_status: {text: "Same RELAYED/unconfirmed posture as openmeteo_forecast.",
+      unresolved: true}
+    trust_tier: third_party
+    # Added 2026-09-27 (independent-review MUST-FIX #1): site/build_data.py's
+    # load_multimodel_hourly() already reads raw/forecast/openmeteo_<model>.json for
+    # the drain-timeline chart's 6-model median/min/max/JMA band, but no collector ever
+    # produced those files -- they were 2026-09-26 manual one-off fetches, absent on CI.
+    # This collector is the registry-driven replacement: writes the SAME
+    # raw/forecast/openmeteo_<model>.json paths build_data.py looks for, plus the usual
+    # raw/live archive + observations rows (see collect.collect_openmeteo_multimodel).
+    host_rule: {max_requests_per_run: 1, notes: "Not a BMA host; one GET per model per
+      run (6 models = 6 requests total per run), no retries."}
+    last_status: {date: "2026-09-27", http: null, note: "Not yet run live in this
+      environment -- shape confirmed against this repo's own existing
+      raw/forecast/openmeteo_ecmwf_ifs025.json manual snapshot (same API family/shape
+      as openmeteo_forecast, plus a models= param)."}
+    variables: [precipitation_forecast_mm]
+
+  # ---------------------------------------------------------------------------------
+  # 7-16 day forecast wave (2026-09-27) -- census + parser design already done in
+  # docs/knowledge/FORECAST_7DAY_SOURCES.md / sources/api_census_forecast7d.yaml /
+  # tools/harvest/forecast7d_draft.py; these 4 entries are the registry-driven wiring.
+  # Shared point set (8 points, all 4 sources): collect.FORECAST7D_POINTS.
+  # ---------------------------------------------------------------------------------
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_wp2_additional_sources.py"
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
+  - id: openmeteo_forecast16d
+    agency:
+      th: "Open-Meteo (9 แบบจำลองเปิดพร้อมกัน, models= ชัดเจน) -- ไม่ใช่ TMD"
+      en: "Open-Meteo /v1/forecast, daily precipitation_sum, forecast_days=16, explicit
+        models= (9 deterministic models) -- NOT the Thai Meteorological Department (TMD)"
+    url: "https://api.open-meteo.com/v1/forecast?latitude=..&longitude=..&daily=precipitation_sum&forecast_days=16&models=ecmwf_ifs025,gfs_seamless,icon_seamless,jma_seamless,gem_seamless,meteofrance_seamless,ukmo_seamless,knmi_seamless,cma_grapes_global&timezone=Asia%2FBangkok"
+    method: "GET, one request per point (8 points -- collect.FORECAST7D_POINTS), all 9
+      models in ONE response per point (not one request per model). No API key."
+    cadence: "model-dependent, 1h-6h update cycle upstream"
+    format: json
+    auth: none
+    licence_status: {text: "Open-Meteo non-commercial free use (attribution requested);
+      this repo is non-commercial.", unresolved: false}
+    trust_tier: third_party
+    host_rule: {max_requests_per_run: 1, notes: "Not a BMA host; one GET per point per
+      run (8 points = 8 requests total per run), no retries."}
+    last_status: {date: "2026-09-27", http: 200, note: "VERIFIED live this check at
+      Sammakorn + Nakhon Sawan (docs/knowledge/FORECAST_7DAY_SOURCES.md ss3) -- each
+      model's own real horizon ends well before day 16 for most models except
+      gfs_seamless/ecmwf_ifs025/knmi_seamless; see that doc's per-model horizon table."}
+    variables: [precipitation_forecast_daily_mm]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_wp2_additional_sources.py"
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
+
+  - id: openmeteo_ensemble_daily
+    agency:
+      th: "Open-Meteo (ให้บริการ NOAA GEFS 31 สมาชิก) -- ไม่ใช่ TMD"
+      en: "Open-Meteo Ensemble API (serves NOAA GEFS, 31 members), daily precipitation_sum"
+    url: "https://ensemble-api.open-meteo.com/v1/ensemble?latitude=..&longitude=..&daily=precipitation_sum&forecast_days=16&models=gfs_seamless&timezone=Asia%2FBangkok"
+    method: "GET, one request per point (8 points), all 31 members in ONE response. No
+      API key."
+    cadence: "6-hourly update"
+    format: json
+    auth: none
+    licence_status: {text: "Same as openmeteo_forecast16d.", unresolved: false}
+    trust_tier: third_party
+    host_rule: {max_requests_per_run: 1, notes: "Not a BMA host; one GET per point per
+      run (8 points = 8 requests total per run), no retries."}
+    last_status: {date: "2026-09-27", http: 200, note: "VERIFIED live this check at
+      Sammakorn -- 31 real per-member 7-day totals (15.4-75.2mm range), a genuinely
+      different signal from the deterministic multi-model spread (see
+      docs/knowledge/FORECAST_7DAY_SOURCES.md ss3)."}
+    variables: [precipitation_forecast_ensemble_daily_mm]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_wp2_additional_sources.py"
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
+
+  - id: metno_locationforecast
+    agency:
+      th: "MET Norway (สถาบันอุตุนิยมวิทยานอร์เวย์) -- ฐาน ECMWF, อิสระจาก Open-Meteo"
+      en: "MET Norway Locationforecast/2.0 compact -- free, no key, ECMWF-based, a
+        genuinely independent pipeline/ToS from Open-Meteo"
+    url: "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=..&lon=.."
+    method: "GET, one request per point (8 points). No API key, but MET Norway's ToS
+      requires an identifying User-Agent (collect.METNO_HEADERS, a project-level
+      string, never a personal name)."
+    cadence: "hourly steps, ~9.75-day horizon"
+    format: json
+    auth: "none (User-Agent identification required by ToS, not a key)"
+    licence_status: {text: "CC-BY-4.0 (MET Norway), free for any use with attribution,
+      incl. commercial.", unresolved: false}
+    trust_tier: third_party
+    host_rule: {max_requests_per_run: 1, notes: "Not a BMA host; one GET per point per
+      run (8 points = 8 requests total per run), no retries. Distinct honest User-Agent
+      per MET Norway's own ToS, not the shared GENERIC_HEADERS string."}
+    last_status: {date: "2026-09-27", http: 200, note: "VERIFIED live this check at
+      Sammakorn -- 90 hourly timesteps (9.75 days). Daily aggregation MUST keep only
+      non-overlapping next_6_hours blocks (hour%6==0) -- naive summing double/triple-
+      counts (see docs/knowledge/FORECAST_7DAY_SOURCES.md ss3 note)."}
+    variables: [precipitation_forecast_daily_mm]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_wp2_additional_sources.py"
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
+
+  - id: openmeteo_previous_runs
+    agency:
+      th: "Open-Meteo (ตรวจสอบความแม่นของโมเดลย้อนหลัง, GFS เทียบกับตัวเอง)"
+      en: "Open-Meteo Previous Runs API -- forecast-vs-later-self-estimate skill check"
+    url: "https://previous-runs-api.open-meteo.com/v1/forecast?latitude=..&longitude=..&hourly=precipitation,precipitation_previous_day1,precipitation_previous_day3&past_days=5&forecast_days=1&models=gfs_seamless"
+    method: "GET, ONE request, Sammakorn point ONLY (per founder brief -- not the shared
+      8-point set). No API key."
+    cadence: "n/a -- backward-looking"
+    format: json
+    auth: none
+    licence_status: {text: "Same as openmeteo_forecast16d.", unresolved: false}
+    trust_tier: third_party
+    host_rule: {max_requests_per_run: 1, notes: "Not a BMA host; ONE GET per run, no
+      retries."}
+    last_status: {date: "2026-09-27", http: 200, note: "VERIFIED live this check --
+      2026-09-26 current-best-estimate 117.4mm vs. GFS's own 1-day-ahead forecast of
+      27.2mm and 3-day-ahead of 11.4mm (4-10x MEASURED-vs-forecast underforecast, model
+      vs. itself, NOT vs. a gauge -- see docs/knowledge/FORECAST_7DAY_SOURCES.md ss4)."}
+    variables: [precipitation_skillcheck_daily_mm]
+
+# Static academic/institutional reference documents (not live-polled sources -- no
+# `sources:` entry above fits these, since `sources:` is scoped to things `collect.py`
+# fetches on a cadence via a URL). Kept as a clearly separated top-level list rather than
+# shoehorned into `sources:`. Every entry here must have a matching card in
+# `docs/knowledge/README.md` and, where the document was faithfully extracted, a
+# `docs/knowledge/<name>.md` writeup tagged RELAYED + date.
+  # ---- Added 2026-09-27 per docs/knowledge/EASIEST_EXTERNAL_APIS_FOR_MISSING_INPUTS_
+  # 2026-09-27.md (probe/census task) -- wiring done by this check, per its own §2/§3
+  # "Top 3 that should connect first" ranking + founder-approved follow-on additions
+  # (pressure, sst, oni; JMA/BoM MJO probed but not wired -- see notes below and
+  # docs/knowledge/api_census_additions_missing_inputs_2026-09-27.yaml) ----
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_wp2_additional_sources.py"
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
+
+  - id: hii_waterlevel_load
+    agency:
+      th: "HII (สสน.) และหน่วยงานเจ้าของสถานี -- ผ่าน thaiwater.net"
+      en: "HII (สสน.) and the owning agency per station -- via thaiwater.net"
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_load?basin_id=6,7,8,9,10,11,12,13,14,15,26&&start_date=YYYY-MM-DD%2000:00&&end_date=YYYY-MM-DD%2023:59"
+    method: "GET, one request per run, all 11 observed basin_id codes in one
+      comma-separated call (see parsers.HII_WATERLEVEL_LOAD_BASIN_IDS_OBSERVED). No API
+      key. Promoted from tools/harvest/hii_waterchart_draft.py's DRAFT parser (same
+      endpoint/fields) into parsers.py + collect.py."
+    cadence: near-real-time (station refresh interval not published)
+    format: json
+    auth: none
+    licence_status: {text: "Same RELAYED/unconfirmed posture as thaiwater_canal_waterlevel.",
+      unresolved: true}
+    trust_tier: official_telemetry
+    host_rule: {max_requests_per_run: 1, notes: "api-v3.thaiwater.net, not a BMA host --
+      one GET per run regardless (this repo's blanket no-retry rule)."}
+    last_status: {date: "2026-09-27", http: 200, note: "VERIFIED this check -- 380 rows,
+      C.35 discharge=1257.00 cms, C.36=691.00 cms, C.37=87.00 cms, C.13=1950.00 cms.
+      basin_id coverage is 11/25 basin_code observed -- OPEN whether this covers the
+      full nationwide basin list or which basin the C.29/C.29A stations belong to (not
+      found in this set). Join/dedup against thaiwater_waterlevel for stations present
+      in both is explicitly left OPEN -- both are stored as separate source_id rows, not
+      merged."}
+    variables: [discharge, waterlevel_msl]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_wp2_additional_sources.py"
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
+
+  - id: openmeteo_soil_moisture
+    agency:
+      th: "Open-Meteo (แบบจำลอง ECMWF/GFS ผิวดินเปิด) -- ไม่ใช่หน่วยงานไทย"
+      en: "Open-Meteo (open ECMWF/GFS land-surface model) -- NOT a Thai government agency"
+    url: "https://api.open-meteo.com/v1/forecast?latitude=..&longitude=..&hourly=soil_moisture_0_to_1cm,soil_moisture_1_to_3cm,soil_moisture_3_to_9cm&timezone=Asia%2FBangkok&forecast_days=3"
+    method: "GET, one request per point per run (3 points -- sammakorn, ram53,
+      bangkok_east, see collect.SOIL_MOISTURE_POINTS). No API key."
+    cadence: "hourly model output (forecast + past_days available)"
+    format: json
+    auth: none
+    licence_status: {text: "Same RELAYED/unconfirmed posture as openmeteo_forecast.",
+      unresolved: true}
+    trust_tier: third_party
+    host_rule: {max_requests_per_run: 1, notes: "Not a BMA host; one GET per point per
+      run (3 points = 3 requests total per run), no retries."}
+    last_status: {date: "2026-09-27", http: 200, note: "VERIFIED this check -- Sammakorn
+      point, 2026-09-27T00:00=0.495, T01:00=0.496 m3/m3. Grid-cell model estimate, not a
+      physical sensor -- every row tagged forecast-inferred per
+      units_datum_crosswalk.yaml grid_cell_vs_gauge_not_equal."}
+    variables: [soil_moisture_0_1cm, soil_moisture_1_3cm, soil_moisture_3_9cm]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_wp2_additional_sources.py"
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
+
+  - id: openmeteo_archive_precip
+    agency:
+      th: "Open-Meteo (ข้อมูลย้อนหลัง ERA5) -- ไม่ใช่หน่วยงานไทย"
+      en: "Open-Meteo Historical Weather API (ERA5-derived reanalysis) -- NOT a Thai
+        government agency"
+    url: "https://archive-api.open-meteo.com/v1/archive?latitude=..&longitude=..&start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&daily=precipitation_sum&timezone=Asia%2FBangkok"
+    method: "GET, one request per point per run (3 points, same as
+      openmeteo_soil_moisture), 30-day trailing window. No API key."
+    cadence: "daily, historical (not real-time)"
+    format: json
+    auth: none
+    licence_status: {text: "Same RELAYED/unconfirmed posture as openmeteo_forecast.",
+      unresolved: true}
+    trust_tier: third_party
+    host_rule: {max_requests_per_run: 1, notes: "Not a BMA host; one GET per point per
+      run (3 points = 3 requests total per run), no retries."}
+    last_status: {date: "2026-09-27", http: 200, note: "VERIFIED this check -- Sammakorn
+      point, 2026-08-28..2026-09-26 sum=493.5mm. Day-boundary caveat applies (see
+      units_datum_crosswalk.yaml day_boundary_mismatch)."}
+    variables: [precipitation_sum_daily_mm]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_wp2_additional_sources.py"
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
+
+  - id: gdacs_events
+    agency:
+      th: "GDACS (ระบบเตือนภัยและประสานงานภัยพิบัติโลก, EU JRC + UN OCHA) -- ไม่ใช่หน่วยงานไทย"
+      en: "GDACS (Global Disaster Alert and Coordination System, EU JRC + UN OCHA) -- NOT a Thai government agency"
+    url: "https://www.gdacs.org/gdacsapi/api/events/geteventlist/EVENTS4APP?country=Thailand&fromdate=YYYY-MM-DD&todate=YYYY-MM-DD"
+    method: "GET, one request per run. The `country=` param does NOT filter
+      server-side -- this repo's own parser filters client-side on iso3/country
+      (confirmed by direct observation, see parsers.parse_gdacs_events_thailand). No API
+      key."
+    cadence: "polled, ~100 most-recent global events per request"
+    format: json
+    auth: none
+    licence_status: {text: "Not independently re-verified against a formal licence text.",
+      unresolved: true}
+    trust_tier: third_party
+    host_rule: {max_requests_per_run: 1, notes: "Not a BMA host; one GET per run, no
+      retries."}
+    last_status: {date: "2026-09-27", http: 200, note: "VERIFIED this check -- 100
+      features returned, exactly 1 Thailand flood event found client-side (\"FL Flood in
+      Thailand\", fromdate 2026-08-18T01:00:00). Country-level trip-wire only, not
+      per-tambon/per-station."}
+    variables: [flood_event_tripwire]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: tests/contract/test_gdacs_events.py
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
+
+  - id: openmeteo_pressure
+    agency:
+      th: "Open-Meteo (9 แบบจำลองเปิดพร้อมกัน) -- ไม่ใช่ TMD"
+      en: "Open-Meteo /v1/forecast, hourly pressure_msl, past_days=7 +
+        forecast_days=16, explicit models= (9 deterministic models) -- NOT the Thai
+        Meteorological Department (TMD)"
+    url: "https://api.open-meteo.com/v1/forecast?latitude=..&longitude=..&hourly=pressure_msl&past_days=7&forecast_days=16&models=ecmwf_ifs025,gfs_seamless,icon_seamless,jma_seamless,gem_seamless,meteofrance_seamless,ukmo_seamless,knmi_seamless,cma_grapes_global&timezone=Asia%2FBangkok"
+    method: "GET, one request per point (3 points -- sammakorn, ram53, bangkok_east,
+      collect.SOIL_MOISTURE_POINTS reused), all 9 models in ONE response per point. No
+      API key. Founder addition 2026-09-27 (\"เอาเลย\") -- storm-track/pressure context,
+      DATA ONLY, no danger threshold derived here (a draft promoter is a separate
+      Toledo task per the founder's own instruction)."
+    cadence: "model-dependent, 1h-6h update cycle upstream"
+    format: json
+    auth: none
+    licence_status: {text: "Same RELAYED/unconfirmed posture as openmeteo_forecast16d.",
+      unresolved: true}
+    trust_tier: third_party
+    host_rule: {max_requests_per_run: 1, notes: "Not a BMA host; one GET per point per
+      run (3 points = 3 requests total per run), no retries."}
+    last_status: {date: "2026-09-27", http: 200, note: "Shape confirmed live this check
+      (pressure_msl_<model> column naming, same convention as
+      openmeteo_forecast16d's precipitation_sum_<model>)."}
+    variables: [pressure_msl]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_wp2_additional_sources.py"
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
+
+  - id: openmeteo_sst
+    agency:
+      th: "Open-Meteo (แบบจำลองทะเลเปิด) -- ไม่ใช่หน่วยงานไทย"
+      en: "Open-Meteo Marine API, hourly sea_surface_temperature -- NOT a Thai
+        government agency"
+    url: "https://marine-api.open-meteo.com/v1/marine?latitude=13.20,12.00,9.00&longitude=100.60,110.00,97.50&hourly=sea_surface_temperature&past_days=7&forecast_days=3&timezone=Asia%2FBangkok"
+    method: "GET, ONE multi-coordinate request per run covering all 3 sea points (upper
+      Gulf of Thailand, South China Sea off Vietnam, Andaman Sea -- see
+      parsers.OPENMETEO_SST_POINTS). Response is a JSON ARRAY, one object per point, in
+      request order -- not a dict keyed by name. No API key. Founder addition
+      2026-09-27 (\"เอาเลย เชื่อมเลย\"), data only, no threshold derived here."
+    cadence: "hourly model output"
+    format: json
+    auth: none
+    licence_status: {text: "Same RELAYED/unconfirmed posture as openmeteo_marine.",
+      unresolved: true}
+    trust_tier: third_party
+    host_rule: {max_requests_per_run: 1, notes: "Not a BMA host; ONE request per run
+      covers all 3 points (multi-coordinate), no retries."}
+    last_status: {date: "2026-09-27", http: 200, note: "Shape confirmed live this check
+      (JSON array of 3 per-point objects, hourly.sea_surface_temperature in degC)."}
+    variables: [sea_surface_temperature]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_wp2_additional_sources.py"
+    health_check: "not_applicable -- kb.py has no healthcheck subcommand yet (design M3, open item); the contract_test above replays a captured real response through the production parser, which is a contract-conformance check, not a health check"
+
+  - id: noaa_oni
+    agency:
+      th: "NOAA CPC (ศูนย์พยากรณ์ภูมิอากาศ) -- ดัชนี ENSO Oceanic Nino Index -- ไม่ใช่หน่วยงานไทย"
+      en: "NOAA CPC (Climate Prediction Center) -- ENSO Oceanic Nino Index -- NOT a Thai government agency"
+    url: "https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt"
+    method: "GET, one request AT MOST PER 24H (this check's own throttle -- see
+      collect.collect_noaa_oni / collect._last_fetch_age_hours; skips the network call
+      entirely, not just the DB write, if the last raw/live/noaa_oni/ fetch is under 24h
+      old). No API key. Founder addition 2026-09-27 (\"เอาเลย\"), data only, no
+      threshold derived here."
+    cadence: "monthly (3-month rolling season)"
+    format: text (whitespace-separated table)
+    auth: none
+    licence_status: {text: "US government public-domain data (NOAA), not independently
+      re-verified against a formal licence text by this repo.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "Not a BMA host; throttled to at most
+      1 request per 24h regardless (slow monthly index, host-courtesy), no retries."}
+    last_status: {date: "2026-09-27", http: 200, note: "VERIFIED this check -- latest
+      row JJA 2026, anom=1.80degC. A single ascending text table since 1950, ~23KB."}
+    variables: [oni]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_remaining_wired_sources.py"
+    health_check: "not yet captured this check -- see tools/capture_source_sample.py"
+
+  # --- candidate_unregistered rows ("named as a real gap, not claimed covered" --
+  # registered as placeholders only, no probe/wiring this check; a founder-visible
+  # capture via tools/capture_source_sample.py is required before any of these moves
+  # to kind: api) ---
+
+  - id: tmd_opendata
+    agency:
+      th: "กรมอุตุนิยมวิทยา (TMD) -- Open Data API"
+      en: "Thai Meteorological Department (TMD) -- Open Data API"
+    url: "https://data.tmd.go.th/api/"
+    method: "UNKNOWN -- requires an API key (TMD registration), not yet obtained.
+      This repo's own knowledge log records repeated prior fetch failures against
+      tmd.go.th (see docs/knowledge/card_experiment_external_7day_backtest_2026-09-26.md)
+      -- not re-probed this check."
+    cadence: "UNKNOWN -- not yet probed"
+    format: "UNKNOWN -- not yet probed"
+    auth: api_key
+    # Declared so the generic `auth: api_key` gate in
+    # collect.run() (`_missing_api_key_env`) knows which env var to look for on the
+    # CALLER's own machine, once/if a collector for this source is written -- we never
+    # read, store, or bundle this key ourselves (the self-install project decision).
+    key_env: TMD_OPENDATA_API_KEY
+    licence_status: {text: "Not investigated -- registration/terms not yet read.",
+      unresolved: true}
+    trust_tier: official_telemetry
+    host_rule: {max_requests_per_run: 1, notes: "Not probed this check -- one GET per
+      run once wired, same as every other source here."}
+    last_status: {date: "2026-10-02", http: null, note: "candidate_unregistered --
+      no live probe performed this check (TMD API-key registration explicitly
+      deferred out of this run's scope)."}
+    variables: []
+    kind: candidate_unregistered
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: MISSING
+    health_check: "not applicable -- candidate_unregistered, no live wiring yet"
+
+  - id: data_go_th_ckan
+    agency:
+      th: "data.go.th (ศูนย์กลางข้อมูลเปิดภาครัฐ) -- CKAN API"
+      en: "data.go.th (Thailand Open Government Data) -- CKAN API"
+    url: "https://data.go.th/api/3/action/package_search"
+    method: "UNKNOWN -- CKAN package_search exists publicly but which dataset(s) carry
+      live flood/water telemetry has not been surveyed this check."
+    cadence: "UNKNOWN -- not yet probed"
+    format: "UNKNOWN -- not yet probed"
+    auth: none
+    licence_status: {text: "Not investigated -- per-dataset licence varies on CKAN,
+      not yet read for any specific dataset.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "Not probed this check."}
+    last_status: {date: "2026-10-02", http: null, note: "candidate_unregistered --
+      no dataset selected or probed this check."}
+    variables: []
+    kind: candidate_unregistered
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: MISSING
+    health_check: "not applicable -- candidate_unregistered, no live wiring yet"
+
+  - id: gistda_portal
+    agency:
+      th: "สำนักงานพัฒนาเทคโนโลยีอวกาศและภูมิสารสนเทศ (GISTDA)"
+      en: "Geo-Informatics and Space Technology Development Agency (GISTDA)"
+    url: "https://disaster.gistda.or.th/"
+    method: "UNKNOWN -- portal investigation (API surface, auth requirement) not yet
+      done this check."
+    cadence: "UNKNOWN -- not yet probed"
+    format: "UNKNOWN -- not yet probed"
+    auth: "UNKNOWN -- not yet investigated"
+    licence_status: {text: "Not investigated.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "Not probed this check."}
+    last_status: {date: "2026-10-02", http: null, note: "candidate_unregistered --
+      portal investigation explicitly out of scope this check."}
+    variables: []
+    kind: candidate_unregistered
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: MISSING
+    health_check: "not applicable -- candidate_unregistered, no live wiring yet"
+
+  - id: ddpm_portal
+    agency:
+      th: "กรมป้องกันและบรรเทาสาธารณภัย (DDPM)"
+      en: "Department of Disaster Prevention and Mitigation (DDPM)"
+    url: "https://www.disaster.go.th/"
+    method: "UNKNOWN -- no API surface confirmed yet; DDPM's own typology/warning data
+      is currently referenced indirectly via other sources in this registry
+      (e.g. governor_shared_flooded_roads), not via a direct DDPM API."
+    cadence: "UNKNOWN -- not yet probed"
+    format: "UNKNOWN -- not yet probed"
+    auth: "UNKNOWN -- not yet investigated"
+    licence_status: {text: "Not investigated.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "Not probed this check."}
+    last_status: {date: "2026-10-02", http: null, note: "candidate_unregistered --
+      no direct DDPM API probed or wired this check."}
+    variables: []
+    kind: candidate_unregistered
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: MISSING
+    health_check: "not applicable -- candidate_unregistered, no live wiring yet"
+
+  # ============================================================
+  # 2026-10-03 pass -- reachable-but-unwired sources from sources/api_census.yaml
+  # (HII/thaiwater, GISTDA, TMD, DWR, Marine Department, MWA, BMA CKAN). Each one-GET
+  # probe was real (curl, 15s timeout, no retry) -- see api_census.yaml's own entries
+  # for the matching probed_at date.
+  # ============================================================
+
+  - id: hii_analyst_cctv
+    agency:
+      th: "สถาบันสารสนเทศทรัพยากรน้ำ (สสน., HII) -- แค็ตตาล็อกกล้อง CCTV, ผ่าน thaiwater.net"
+      en: "HII (สสน.), CCTV camera-station catalog, via thaiwater.net"
+    url: "https://api-v3.thaiwater.net/api/v1/thaiwater30/analyst/cctv"
+    method: "GET, one request per run, no API key."
+    cadence: "unknown -- a camera/station catalog, not a per-reading telemetry feed"
+    format: json
+    auth: none
+    licence_status: {text: "Same RELAYED/unconfirmed posture as thaiwater_canal_waterlevel
+      -- not independently re-checked for this endpoint specifically.", unresolved: true}
+    trust_tier: official_telemetry
+    host_rule: {max_requests_per_run: 1, notes: "api-v3.thaiwater.net, same host as the
+      other thaiwater30 sources -- one GET per run."}
+    last_status: {date: "2026-10-03", http: 200, note: "VERIFIED this check -- real
+      fetch, 169,458 bytes. No numeric reading on this endpoint -- camera/station
+      metadata only (id, title, coords, owning agency, feed URL); stored as one
+      document per camera, not an observation row."}
+    variables: []
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_hii_bma_gistda_sources.py"
+    health_check: "not_applicable -- same posture as every other wired source here"
+
+  - id: bma_pak_khlong_csv
+    agency:
+      th: "กรุงเทพมหานคร (data.bangkok.go.th CKAN)"
+      en: "Bangkok Metropolitan Administration, via data.bangkok.go.th CKAN resource"
+    url: "https://data.bangkok.go.th/dataset/0b2b0b13-62b1-4489-85ef-bb76a09898af/resource/b3cc65d5-52d9-42c5-91e9-4f0137b43ae8/download/river_pak_khlong.csv"
+    method: "GET, one request per run, no API key. Plain CSV download, not a JSON API."
+    cadence: "daily series that LAGS about 2 months behind real time (MEASURED
+      2026-10-03: the most recent row is still 2026-08-04, re-fetched and unchanged
+      from the 2026-10-03 capture) -- NOT a live/near-real-time feed, never described
+      as one. Whether the publisher refreshes this resource at all, or on what
+      schedule, is OPEN."
+    format: csv
+    auth: none
+    licence_status: {text: "data.bangkok.go.th portal licence not independently read this check -- RELAYED/unconfirmed, same posture as every other CKAN source here.",
+      unresolved: true}
+    trust_tier: official_telemetry
+    host_rule: {max_requests_per_run: 1, notes: "data.bangkok.go.th -- one GET per run."}
+    last_status: {date: "2026-10-03", http: 200, note: "VERIFIED this check -- real
+      fetch, 3,692 bytes, single-station daily max water level, 2026-01-01 through
+      2026-08-04 at capture time -- about 2 months stale already at capture time, see
+      cadence note above, not merely '>7d old at a later run'. Every row is stored
+      with status=stale, never dropped, and this source's own staleness is never
+      promoted to a fresher-looking state."}
+    variables: [river_max_water_level_daily_m]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_hii_bma_gistda_sources.py"
+    health_check: "not_applicable -- same posture as every other wired source here"
+
+  - id: bangkok_ckan_portal
+    agency:
+      th: "กรุงเทพมหานคร -- CKAN open-data portal (data.bangkok.go.th)"
+      en: "Bangkok Metropolitan Administration -- CKAN open-data portal"
+    url: "https://data.bangkok.go.th/api/3/action/package_search?q=%E0%B8%99%E0%B9%89%E0%B8%B3&rows=20"
+    method: "GET, one request per run, no API key. Standard CKAN package_search."
+    cadence: "n/a -- a dataset catalog, not a telemetry feed"
+    format: json
+    auth: none
+    licence_status: {text: "Per-dataset licence varies on CKAN; not read for every
+      matched dataset this check.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "data.bangkok.go.th -- one GET per run."}
+    last_status: {date: "2026-10-03", http: 200, note: "VERIFIED this check -- real
+      fetch, 28,502 bytes, a dataset-metadata catalog (names/orgs/resource counts/
+      resource URLs), not a numeric reading -- stored as one document per dataset so a
+      human/future collector can see what's published without this check guessing a
+      per-dataset parser."}
+    variables: []
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_hii_bma_gistda_sources.py"
+    health_check: "not_applicable -- same posture as every other wired source here"
+
+  - id: bangkok_floodgate_locations
+    agency:
+      th: "กรุงเทพมหานคร -- Open Data (data.bangkok.go.th)"
+      en: "Bangkok Metropolitan Administration -- Open Data portal"
+    url: "https://data.bangkok.go.th/dataset/83ae5639-a37f-4e19-bd37-e1c97930f39d/resource/42948cf7-0759-4719-a32f-8eeabd89b8ee/download/floodgate.csv"
+    method: "GET, one request per run, no API key. Plain CSV download."
+    cadence: "static asset inventory (gate locations + design thresholds), not a
+      telemetry feed -- no refresh schedule published."
+    format: csv
+    auth: none
+    licence_status: {text: "data.bangkok.go.th portal licence not independently read
+      this check -- RELAYED/unconfirmed, same posture as every other CKAN/Open-Data
+      source here.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "data.bangkok.go.th -- one GET per run."}
+    last_status: {date: "2026-10-03", http: 200, note: "VERIFIED this check -- real
+      fetch, real CSV with quoted multi-line Thai-text cells. A naive line-split
+      overcounts/undercounts against this shape -- the stdlib `csv` module parses 237
+      real rows (header excluded); 230 of those carry a lat/lon that parses into
+      Thailand's plausible envelope (see parsers.py's own coordinate-validation
+      helpers), one of which was a phone-number-shaped string in a `lat` cell. The
+      332-row figure from this check's own earlier census notes was a naive-line-count
+      artifact of the embedded newlines, not the real row count -- superseded here."}
+    variables: [floodgate_location]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_bangkok_floodgate_pump_sources.py"
+    health_check: "not_applicable -- same posture as every other wired source here"
+
+  - id: bangkok_pump_station_and_floodgate_physical_data
+    agency:
+      th: "กรุงเทพมหานคร -- Open Data (data.bangkok.go.th)"
+      en: "Bangkok Metropolitan Administration -- Open Data portal"
+    url: "https://data.bangkok.go.th/dataset/22475fbb-18ef-4705-9ce2-53f4907394e7/resource/0d645a7e-50f4-4c4f-ad1c-19db560b29c8/download/-.csv"
+    method: "GET, one request per run, no API key. Plain CSV download."
+    cadence: "static asset inventory (pump/gate counts + design thresholds), not a
+      telemetry feed -- no refresh schedule published."
+    format: csv
+    auth: none
+    licence_status: {text: "Same relayed/unconfirmed licence posture as
+      bangkok_floodgate_locations -- not independently re-checked for this resource
+      specifically.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "data.bangkok.go.th -- one GET per run."}
+    last_status: {date: "2026-10-03", http: 200, note: "VERIFIED this check -- real
+      fetch, same quoted-multi-line-cell shape as bangkok_floodgate_locations. The
+      stdlib `csv` module parses 438 real rows (header excluded); 429 carry a valid
+      lat/lon. The 1,157-row figure from this check's own earlier census notes was the
+      same naive-line-count artifact -- superseded here. Composite capacity/count
+      cells (e.g. \"35(3)+10(5)\") are kept verbatim in `provenance`, never summed or
+      guessed into one number."}
+    variables: [pump_station_location]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_bangkok_floodgate_pump_sources.py"
+    health_check: "not_applicable -- same posture as every other wired source here"
+
+  - id: gistda_flood_extent_api
+    agency:
+      th: "สำนักงานพัฒนาเทคโนโลยีอวกาศและภูมิสารสนเทศ (GISTDA)"
+      en: "Geo-Informatics and Space Technology Development Agency (GISTDA)"
+    url: "https://api-gateway.gistda.or.th/api/2.0/resources/gi-service/v1.1/disasters/flood-extent-1day"
+    method: "GET, one request per run, `api_key=` as a query parameter (reconciled
+      2026-10-03 with the OTHER GISTDA path already in this repo,
+      build_river_kg.py::overlay_gistda_flood, which is live-confirmed working this
+      way against a real key on GISTDA_BASE's sibling `/flood/30days` endpoint). The
+      ONLY real response this check has observed against THIS specific endpoint
+      (flood-extent-1day, 2026-09-27, with a key found in a public CKAN listing, NOT
+      reused as our own, and an earlier guessed `API-KEY` header) was HTTP 403
+      {\"code\":\"REFERER_REQUIRED\"}. The exact success-response shape for THIS
+      endpoint is still OPEN, not confirmed -- the query-param transport is confirmed
+      on the sibling endpoint, not this one specifically."
+    cadence: daily
+    format: json
+    auth: api_key
+    # So the generic `auth: api_key` gate in collect.run() (`_missing_api_key_env`) knows
+    # which env var to look for on the CALLER's own machine -- we never read, store, or
+    # bundle this key ourselves (the self-install project decision). An optional second
+    # env var, GISTDA_API_REFERER, carries whatever Referer value the caller's own key
+    # was issued against (read directly by the collector, not by this generic gate).
+    key_env: GISTDA_API_KEY
+    licence_status: {text: "Not investigated -- registration/terms not yet read.",
+      unresolved: true}
+    trust_tier: official_telemetry
+    host_rule: {max_requests_per_run: 1, notes: "api-gateway.gistda.or.th -- one GET per
+      run once a key is present."}
+    last_status: {date: "2026-10-03", http: null, note: "No key in this environment,
+      so no real fetch was attempted this run (status: not_fetched_missing_key, never
+      SAFE/FAIL -- see collect.CollectResult.__repr__). The collector IS implemented
+      (collect.collect_gistda_flood_extent_api) and wired into COLLECTORS, but NOT
+      live-verified against a real 200 response (see method note above). Stores the raw
+      response as a document, not typed observations, until a real success shape is
+      confirmed."}
+    variables: []
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: MISSING
+    health_check: "not_applicable -- no key available to this check, see last_status"
+
+  # ------------------------------------------------------------------
+  # Added 2026-10-03: the 6 remaining `needs_key` sources named in
+  # sources/api_census.yaml that have a documented, sanctioned (if sometimes slow)
+  # self-service or waitlist registration path -- unlike mwa_chaophraya_bigdata_api
+  # below, whose only known "key" is a leaked token with no sanctioned path at all.
+  # Each is read ONLY from the CALLER's own environment (never stored/bundled by us,
+  # the self-install project decision); a missing key reports UNKNOWN with the env var
+  # name, never SAFE/FAIL. None of these have a real key available to verify a
+  # success response against this check -- see each collector's own docstring in
+  # collect.py for exactly how far its implementation goes.
+  # ------------------------------------------------------------------
+
+  - id: google_flood_hub_api
+    agency:
+      th: "Google Research -- Flood Hub / Flood Forecasting API"
+      en: "Google Research -- Flood Hub / Flood Forecasting API"
+    url: "https://floodforecasting.googleapis.com/v1/floodStatus:searchLatestAndNextForecasts"
+    method: "GET, one request per run once a key is present. Access is PILOT-WAITLIST
+      ONLY (not instant self-service) -- Google reviews/prioritizes requests, per
+      sources/api_census.yaml. Still the CALLER's own key once granted, never ours."
+    cadence: daily
+    format: json
+    auth: api_key
+    key_env: GOOGLE_FLOOD_HUB_API_KEY
+    licence_status: {text: "Not investigated -- Google's own terms not yet read.",
+      unresolved: true}
+    trust_tier: third_party
+    host_rule: {max_requests_per_run: 1, notes: "floodforecasting.googleapis.com -- one
+      GET per run once a key is present."}
+    last_status: {date: "2026-10-03", http: null, note: "No key in this environment --
+      not fetched. collect.collect_google_flood_hub_api only confirms key presence this check (see its docstring); the real request shape for Thailand gauges is OPEN."}
+    variables: []
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: MISSING
+    health_check: "not_applicable -- no key available to this check, see last_status"
+
+  - id: cds_era5_reanalysis
+    agency:
+      th: "Copernicus Climate Change Service (C3S) / ECMWF"
+      en: "Copernicus Climate Change Service (C3S) / ECMWF"
+    url: "https://cds.climate.copernicus.eu/datasets/reanalysis-era5-land-timeseries"
+    method: "NOT a plain GET -- the real client is the `cdsapi` Python package's async
+      submit/poll/download flow. Free self-service CDS account + personal API key
+      (sources/api_census.yaml)."
+    cadence: "hourly, 1940-present, ~5 day latency"
+    format: "GRIB/NetCDF via cdsapi"
+    auth: api_key
+    key_env: CDSAPI_KEY
+    licence_status: {text: "Not investigated -- CDS licence/terms not yet read.",
+      unresolved: true}
+    trust_tier: third_party
+    host_rule: {max_requests_per_run: 1, notes: "cds.climate.copernicus.eu via the
+      cdsapi client -- one submit per run once a key is present (not implemented yet,
+      see collector docstring)."}
+    last_status: {date: "2026-10-03", http: null, note: "No key in this environment --
+      not fetched. collect.collect_cds_era5_reanalysis only confirms key presence this check; the submit/poll/download sequence itself is OPEN, future work."}
+    variables: []
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: MISSING
+    health_check: "not_applicable -- no key available to this check, see last_status"
+
+  - id: nasa_lhasa_landslide_nowcast
+    agency:
+      th: "NASA (GPM IMERG + SMAP, LHASA-2 model)"
+      en: "NASA -- LHASA-2 landslide nowcast"
+    url: "https://www.earthdata.nasa.gov/data/catalog/ges-disc-global-landslide-nowcast-2.0.0"
+    method: "Needs a free NASA Earthdata account (registration, not an instant API
+      key) to pull granules via a Bearer token. The exact per-granule GES DISC/OPeNDAP
+      URL for the daily 1km raster is OPEN, not confirmed (sources/api_census.yaml:
+      RELAYED, WebSearch only, never fetched this programme)."
+    cadence: daily
+    format: "1km raster (GeoTIFF/NetCDF, exact format OPEN)"
+    auth: api_key
+    key_env: NASA_EARTHDATA_TOKEN
+    licence_status: {text: "Not investigated -- NASA Earthdata terms not yet read.",
+      unresolved: true}
+    trust_tier: third_party
+    host_rule: {max_requests_per_run: 1, notes: "Not probed -- real granule URL still
+      OPEN, see method note."}
+    last_status: {date: "2026-10-03", http: null, note: "No key in this environment --
+      not fetched. collect.collect_nasa_lhasa_landslide_nowcast only confirms key
+      presence this check; the real granule URL this token would authorize against is
+      not yet confirmed."}
+    variables: []
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: MISSING
+    health_check: "not_applicable -- no key available to this check, see last_status"
+
+  - id: opentopography_copernicus_dem_glo30
+    agency:
+      th: "OpenTopography (Copernicus GLO-30 DEM mirror)"
+      en: "OpenTopography (Copernicus GLO-30 DEM mirror)"
+    url: "https://portal.opentopography.org/API/globaldem?demtype=COP30&south={s}&north={n}&west={w}&east={e}&outputFormat=GTiff&API_Key={key}"
+    method: "GET, one request per run once a key is present, `API_Key=` as a query
+      parameter. Free-with-key: OpenTopography issues a personal API key instantly on
+      signup, no payment/approval wait (sources/api_census.yaml). bbox fixed to a
+      Sammakorn-area box this check (OPEN: not yet confirmed against the full upstream
+      watershed)."
+    cadence: static (a terrain model, not a time series)
+    format: "GeoTIFF (DSM, incl. buildings/vegetation -- not bare-earth)"
+    auth: api_key
+    key_env: OPENTOPOGRAPHY_API_KEY
+    licence_status: {text: "Not investigated -- OpenTopography terms not yet read.",
+      unresolved: true}
+    trust_tier: third_party
+    host_rule: {max_requests_per_run: 1, notes: "portal.opentopography.org -- one GET
+      per run once a key is present."}
+    last_status: {date: "2026-10-03", http: null, note: "No key in this environment --
+      not fetched. collect.collect_opentopography_copernicus_dem_glo30 DOES perform
+      the real GET once a key is present (unlike the key-presence-only collectors
+      above) -- just not verified against a real 200 this check."}
+    variables: []
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: MISSING
+    health_check: "not_applicable -- no key available to this check, see last_status"
+
+  - id: gfw_data_api
+    agency:
+      th: "Global Forest Watch Data API"
+      en: "Global Forest Watch Data API"
+    url: "https://data-api.globalforestwatch.org/"
+    method: "Self-service signup (free-with-key, not a waitlist, per
+      sources/api_census.yaml). Exact auth transport (Bearer vs API-key header) and
+      dataset/query path for GLAD/RADD deforestation alerts near Sammakorn's upstream
+      watershed are OPEN, not confirmed this check."
+    cadence: "near-real-time (GLAD/RADD alerts) plus annual loss layers"
+    format: json
+    auth: api_key
+    key_env: GFW_API_KEY
+    licence_status: {text: "Not investigated -- GFW terms not yet read.",
+      unresolved: true}
+    trust_tier: third_party
+    host_rule: {max_requests_per_run: 1, notes: "Not probed -- auth transport still
+      OPEN, see method note."}
+    last_status: {date: "2026-10-03", http: null, note: "No key in this environment --
+      not fetched. collect.collect_gfw_data_api only confirms key presence this check;
+      the real auth transport and dataset/query path are OPEN."}
+    variables: []
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: MISSING
+    health_check: "not_applicable -- no key available to this check, see last_status"
+
+  - id: reliefweb_api_v2
+    agency:
+      th: "ReliefWeb (UN OCHA)"
+      en: "ReliefWeb (UN OCHA)"
+    url: "https://api.reliefweb.int/v2/disasters?appname={appname}&filter[field]=country&filter[value]=Thailand&query[value]=flood"
+    method: "GET, one request per run once an appname is present, as a query
+      parameter. `appname` is a free but NOT instant registration (sources/
+      api_census.yaml: 403 AccessDeniedHttpException without one) -- an identifier,
+      not a secret in the usual sense, but still read only from the caller's own
+      environment, same posture as every other key_env here."
+    cadence: "event-driven"
+    format: json
+    auth: api_key
+    key_env: RELIEFWEB_APPNAME
+    licence_status: {text: "Not investigated -- ReliefWeb terms not yet read.",
+      unresolved: true}
+    trust_tier: third_party
+    host_rule: {max_requests_per_run: 1, notes: "api.reliefweb.int -- one GET per run
+      once an appname is present."}
+    last_status: {date: "2026-10-03", http: null, note: "No registered appname in this
+      environment -- not fetched. collect.collect_reliefweb_api_v2 DOES perform the
+      real GET once an appname is present -- just not verified against a real 200
+      this check."}
+    variables: []
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: MISSING
+    health_check: "not_applicable -- no key available to this check, see last_status"
+
+  - id: mwa_chaophraya_bigdata_api
+    agency:
+      th: "การประปานครหลวง (MWA) -- Big Data API"
+      en: "Metropolitan Waterworks Authority (MWA) -- Big Data API"
+    url: "https://bigdata.mwa.co.th/data-service/internal/big-data/api/v1/.../data?token=..."
+    method: "DO NOT WIRE as of 2026-10-03 -- the URL path itself contains `/internal/`,
+      and the only known token for this endpoint was found embedded in a public CKAN
+      listing (sources/api_census.yaml, 2026-09-27), which this repo's own prior pass
+      already flagged as possibly a leaked long-lived credential rather than a
+      third-party-facing API key, and explicitly chose not to reuse. No sanctioned,
+      documented path to a caller-supplied key exists for this endpoint -- unlike
+      GISTDA/TMD, there is no public key-registration flow to point a caller at. Not
+      probed this check (deliberately, not from a budget constraint)."
+    cadence: unknown
+    format: json
+    auth: api_key
+    key_env: "NONE -- deliberately not assigned (see method note); do not add one
+      without a sanctioned, documented, non-leaked credential path from MWA."
+    licence_status: {text: "Not investigated.", unresolved: true}
+    trust_tier: official_telemetry
+    host_rule: {max_requests_per_run: 1, notes: "Not probed -- see method note."}
+    last_status: {date: "2026-10-03", http: null, note: "candidate_unregistered,
+      deliberately not wired -- see method note. No collector written."}
+    variables: []
+    kind: candidate_unregistered
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: MISSING
+    health_check: "not applicable -- deliberately not wired"
+
+  - id: mwa_chaophraya_level_csv
+    agency:
+      th: "การประปานครหลวง (MWA) -- opendata.mwa.co.th CKAN resource"
+      en: "Metropolitan Waterworks Authority (MWA), via opendata.mwa.co.th CKAN"
+    url: "https://opendata.mwa.co.th/dataset/4456d88e-70e7-46a2-9ee8-07710db56f93/resource/c4bc6658-09ab-4863-b96f-a41051fc2c37/download/chaophraya_level2567.csv"
+    method: "GET, no API key. NOT wired this check -- the file this check fetched
+      (2026-10-03, real fetch, 23,744,911 bytes, full download) is a STATIC full-year
+      archive (2567 BE = calendar 2024), 7 stations x 10-minute readings, last row dated
+      2024-12-31 -- i.e. this is a historical dataset, not a live/near-real-time feed, and
+      every row would be >7 days stale the instant it's stored. Also costly to re-fetch
+      in full every run (23.7 MB) for a file that may not even be the current year's
+      edition -- whether MWA republishes a 2026-dated sibling resource on this same CKAN
+      dataset page is OPEN, not checked this check."
+    cadence: "static historical archive (2024), not live"
+    format: csv
+    auth: none
+    licence_status: {text: "Not investigated.", unresolved: true}
+    trust_tier: official_telemetry
+    host_rule: {max_requests_per_run: 1, notes: "One full download already performed
+      2026-10-03 -- do not re-fetch in bulk; a future pass should first check for a
+      current-year sibling resource before deciding whether/how to wire this."}
+    last_status: {date: "2026-10-03", http: 200, note: "VERIFIED this check -- see method
+      note. 7 stations observed in the header row: T1/T2/T4 (tide-affected, negative
+      values), S1/S3/S4/S5/S6 (upstream)."}
+    variables: []
+    kind: candidate_unregistered
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: MISSING
+    health_check: "not applicable -- not wired, see method note"
+
+  - id: tmd_main_site
+    agency:
+      th: "กรมอุตุนิยมวิทยา (TMD)"
+      en: "Thai Meteorological Department (TMD)"
+    url: "https://www.tmd.go.th/"
+    method: "GET attempted 2026-10-03 -- failed with a LOCAL TLS verification error
+      (curl rc=60, \"unable to get local issuer certificate\") on this check's own
+      machine. This is OPEN, not a server-side finding -- it says nothing about whether
+      tmd.go.th's certificate chain is actually broken for a normally-configured client;
+      it was not retried (no-retry rule) and not investigated further this check."
+    cadence: n/a
+    format: html
+    auth: none
+    licence_status: {text: "Not investigated.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "Not successfully probed this check."}
+    last_status: {date: "2026-10-03", http: null, note: "candidate_unregistered --
+      local TLS error, see method note. tmd_opendata (already registered, key_env
+      TMD_OPENDATA_API_KEY) remains the only TMD path this repo has investigated for an
+      actual data API; this homepage is a portal, not a data source, regardless."}
+    variables: []
+    kind: candidate_unregistered
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: MISSING
+    health_check: "not applicable"
+
+  - id: dwr_ews_rain_daily
+    agency:
+      th: "กรมทรัพยากรน้ำ (DWR) -- Early Warning System"
+      en: "Department of Water Resources (DWR) -- Early Warning System"
+    url: "http://ews1.dwr.go.th/ews/rain_daily.php"
+    method: "GET attempted 2026-10-03, no API key -- received HTTP 200 and 5,589,462
+      bytes of HTML (a large server-rendered table), but the single request did not
+      finish within this check's 15s client timeout (curl rc=28, timed out) even though
+      the body WAS received -- borderline/slow on this run, not retried (no-retry rule).
+      Extracting a real per-station rain reading from a ~5.5MB HTML table is real
+      parser-writing work this check's budget did not cover -- NOT wired, not guessed at."
+    cadence: daily
+    format: html
+    auth: none
+    licence_status: {text: "Not investigated.", unresolved: true}
+    trust_tier: official_telemetry
+    host_rule: {max_requests_per_run: 1, notes: "ews1.dwr.go.th -- slow/large response,
+      give it a generous timeout (>15s) on any future probe, still no retry."}
+    last_status: {date: "2026-10-03", http: 200, note: "reachable (body received) but
+      not parsed -- see method note. candidate_unregistered pending a dedicated
+      HTML-table parser."}
+    variables: []
+    kind: candidate_unregistered
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: MISSING
+    health_check: "not applicable"
+
+  - id: dwr_main_site
+    agency:
+      th: "กรมทรัพยากรน้ำ (DWR)"
+      en: "Department of Water Resources (DWR)"
+    url: "https://www.dwr.go.th/"
+    method: "GET 2026-10-03, no API key -- HTTP 200 but only 313 bytes (a thin shell,
+      almost certainly a client-side redirect/frame rather than real page content).
+      Not investigated further this check."
+    cadence: n/a
+    format: html
+    auth: none
+    licence_status: {text: "Not investigated.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "www.dwr.go.th."}
+    last_status: {date: "2026-10-03", http: 200, note: "VERIFIED this check -- 313 bytes,
+      no visible content/data. candidate_unregistered."}
+    variables: []
+    kind: candidate_unregistered
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: MISSING
+    health_check: "not applicable"
+
+  - id: marine_imis
+    agency:
+      th: "กรมเจ้าท่า (Marine Department) -- IMIS"
+      en: "Marine Department -- Integrated Maritime Information System (IMIS)"
+    url: "http://imis.md.go.th/"
+    method: "GET 2026-10-03, no API key -- HTTP 200, 59,510 bytes of HTML. No JSON/CSV
+      API surfaced in this single GET (a portal/SPA shell); finding the actual backing
+      API (if any) would need browser-level network inspection, out of this check's
+      curl-only budget."
+    cadence: unknown
+    format: html
+    auth: none
+    licence_status: {text: "Not investigated.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "imis.md.go.th."}
+    last_status: {date: "2026-10-03", http: 200, note: "VERIFIED this check -- reachable
+      portal, no data API found this check. candidate_unregistered."}
+    variables: []
+    kind: candidate_unregistered
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: MISSING
+    health_check: "not applicable"
+
+  - id: marine_elaws
+    agency:
+      th: "กรมเจ้าท่า (Marine Department) -- ฐานข้อมูลกฎหมาย"
+      en: "Marine Department -- legal/regulations database (elaws.md.go.th)"
+    url: "https://elaws.md.go.th/"
+    method: "GET 2026-10-03, no API key -- HTTP 200, 8,548 bytes. This is a LEGAL-TEXT
+      portal (laws/regulations), not a telemetry or flood-data source -- low priority,
+      listed for completeness since it's a Marine Department web property this check's
+      census named."
+    cadence: n/a
+    format: html
+    auth: none
+    licence_status: {text: "Not investigated.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "elaws.md.go.th."}
+    last_status: {date: "2026-10-03", http: 200, note: "VERIFIED this check -- reachable,
+      no flood/water data (legal-text portal). candidate_unregistered, low priority."}
+    variables: []
+    kind: candidate_unregistered
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: MISSING
+    health_check: "not applicable"
+
+  # --- GOV9 pass (2026-10-03): 6 reachable-but-unwired sources named in
+  # sources/api_census.yaml, now wired. All 6 are OUTSIDE this repo's currently served
+  # areas (sammakorn/ram53/bangkok_east, all Chao Phraya basin) -- see
+  # collect.AREA_RELEVANT_SOURCES (empty set each). Wired for the founder's "sweep
+  # every reachable government API" goal, not because any currently answers a
+  # Sammakorn/Ram53 question. ---
+
+  - id: hii_mou_station_metadata
+    agency:
+      th: "สถาบันสารสนเทศทรัพยากรน้ำ (HII) -- สถานีโทรมาตรป่าต้นน้ำ (MOU)"
+      en: "Hydro-Informatics Institute (HII) -- watershed-forest (MOU) telemetry station metadata"
+    url: "https://data.hii.or.th/dataset/617d1a99-e1a3-49a8-b507-2ce6d6c081ec/resource/5301fd2c-3808-4a37-a62c-e50ea06c3cd5/download/0all_stn_metadata.csv"
+    method: "GET, one request per run, no API key. Plain CSV download."
+    cadence: "static/reference -- a station catalog, not a live reading"
+    format: csv
+    auth: none
+    licence_status: {text: "data.hii.or.th CKAN portal licence not independently read
+      this check -- RELAYED/unconfirmed, same posture as every other CKAN source here.",
+      unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "data.hii.or.th -- one GET per run."}
+    last_status: {date: "2026-10-03", http: 200, note: "VERIFIED this check -- real
+      fetch, 86,297 bytes, 259 nationwide station-metadata rows (code/name/lat/lon/
+      basin/province/type)."}
+    variables: [station_location]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_gov9_sources.py"
+    health_check: "not_applicable -- same posture as every other wired source here"
+
+  - id: dnp_yom_basin_telemetry
+    agency:
+      th: "กรมอุทยานแห่งชาติ สัตว์ป่า และพันธุ์พืช (DNP) -- สถานีโทรมาตรลุ่มน้ำยม"
+      en: "Dept. of National Parks (DNP) -- Yom-basin telemetry station list"
+    url: "https://catalog.dnp.go.th/dataset/5c2f7296-147f-4836-8fcb-05c6c176822b/resource/2e8161e9-c013-4ccf-be13-c9f8a7623d08/download/telemetering-system-33-station-yom-basin.csv"
+    method: "GET, one request per run, no API key. Plain CSV download."
+    cadence: "static station list -- 33 stations, Phayao province, Yom basin"
+    format: csv
+    auth: none
+    licence_status: {text: "catalog.dnp.go.th CKAN portal licence not independently
+      read this check.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "catalog.dnp.go.th -- one GET per run."}
+    last_status: {date: "2026-10-03", http: 200, note: "VERIFIED this check -- real
+      fetch, 10,479 bytes, 33 station rows; several carry status_th
+      'ไม่มีการอัปเดตข้อมูลแล้ว (offline)' (kept verbatim, never dropped). Yom basin
+      (Phayao) is OUTSIDE this repo's current area scope."}
+    variables: [station_location]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_gov9_sources.py"
+    health_check: "not_applicable -- same posture as every other wired source here"
+
+  - id: pcd_mwqi
+    agency:
+      th: "กรมควบคุมมลพิษ (PCD) -- ดัชนีคุณภาพน้ำทะเลรายสถานี (MWQI)"
+      en: "Pollution Control Dept (PCD) -- marine water quality index by station"
+    url: "https://pcd.gdcatalog.go.th/dataset/a7f08b13-2d47-4d3d-9fe3-ecf9b57943b8/resource/3356137b-3c56-4955-a9c2-098a7107656c/download/untitled.csv"
+    method: "GET, one request per run, no API key. Plain CSV download."
+    cadence: "annual, 2015-2024 series per station (BE year in the source CSV)"
+    format: csv
+    auth: none
+    licence_status: {text: "pcd.gdcatalog.go.th portal licence not independently read
+      this check.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "pcd.gdcatalog.go.th -- one GET per run."}
+    last_status: {date: "2026-10-03", http: 200, note: "VERIFIED this check -- real
+      fetch, 222,530 bytes, 2,089 annual station-year MWQI rows. No lat/lon column in
+      this CSV -- stored with lat/lon=None, never geocoded."}
+    variables: [marine_water_quality_index]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_gov9_sources.py"
+    health_check: "not_applicable -- same posture as every other wired source here"
+
+  - id: dmcr_marine_acidification
+    agency:
+      th: "กรมทรัพยากรทางทะเลและชายฝั่ง (DMCR) -- ทุ่นตรวจวัดความเป็นกรดของน้ำทะเล"
+      en: "Dept. of Marine and Coastal Resources (DMCR) -- marine acidification mooring CTD casts"
+    url: "https://dmcr.gdcatalog.go.th/dataset/69bccfdf-70a9-433c-9d38-c9ce3eb6a899/resource/d88f1886-5bd1-458f-8b0f-2ca1e3869dea/download/untitled.csv"
+    method: "GET, one request per run, no API key. Plain CSV download."
+    cadence: "historical mooring-cast series (2018 in this capture) -- not a live feed"
+    format: csv
+    auth: none
+    licence_status: {text: "dmcr.gdcatalog.go.th portal licence not independently read
+      this check.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "dmcr.gdcatalog.go.th -- one GET per run."}
+    last_status: {date: "2026-10-03", http: 200, note: "VERIFIED this check -- real
+      fetch, 115,484 bytes, 178 mooring-cast rows with a parsed pH (CTDTMP/CTDSAL/
+      PH_TOT)."}
+    variables: [marine_ph_tot]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_gov9_sources.py"
+    health_check: "not_applicable -- same posture as every other wired source here"
+
+  - id: royalrain_operations
+    agency:
+      th: "กรมฝนหลวงและการบินเกษตร -- ลำดับปฏิบัติการรายวัน"
+      en: "Royal Rainmaking and Agricultural Aviation Dept -- daily operation sequence log"
+    url: "https://rmo.royalrain.go.th/api/InfoServiceApi/dailyoperationsequenceinfo"
+    method: "GET, one request per run, no API key observed (none required in this
+      capture)."
+    cadence: "daily, nationwide cloud-seeding operation log"
+    format: json
+    auth: none
+    licence_status: {text: "rmo.royalrain.go.th API terms not independently read this check.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "rmo.royalrain.go.th -- one GET per run."}
+    last_status: {date: "2026-10-03", http: 200, note: "VERIFIED this check -- real
+      fetch, 14,584 bytes, 14 operation-unit rows for 2026-10-03, with real DMS
+      lat/lon on mission tracks where a mission actually flew. Nationwide
+      cloud-seeding log, NOT canal/flood telemetry -- never described as the latter."}
+    variables: [rainmaking_operation]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_gov9_sources.py"
+    health_check: "not_applicable -- same posture as every other wired source here"
+
+  - id: royalrain_agriculture_rainfall
+    agency:
+      th: "กรมฝนหลวงและการบินเกษตร -- สรุปพื้นที่เกษตรที่มีฝนตก"
+      en: "Royal Rainmaking and Agricultural Aviation Dept -- agriculture-area rainfall summary"
+    url: "https://rmo.royalrain.go.th/api/InfoServiceApi/summaryagricultureareainfo"
+    method: "GET, one request per run, no API key observed (none required in this
+      capture)."
+    cadence: "daily, nationwide (reports which provinces/districts saw rain on a
+      rain-seeding target area)"
+    format: json
+    auth: none
+    licence_status: {text: "rmo.royalrain.go.th API terms not independently read this check.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "rmo.royalrain.go.th -- one GET per run."}
+    last_status: {date: "2026-10-03", http: 200, note: "VERIFIED this check -- real
+      fetch, 6,743 bytes, 5 operation-center/unit rows for 2026-10-03. No lat/lon
+      field in this real payload -- has_coords is NOT claimed for this source
+      (corrects sources/api_census.yaml's earlier RELAYED/unconfirmed guess)."}
+    variables: []
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_gov9_sources.py"
+    health_check: "not_applicable -- same posture as every other wired source here"
+
+  # --- GOV9 follow-up pass (2026-10-03): resolved 3 CKAN dataset-landing-page rows
+  # left in sources/api_census.yaml's catalog_only pile to their real resource files
+  # via one `package_show` call each, then wired the 3 that resolved. All 3 are
+  # OUTSIDE this repo's currently served areas (see collect.AREA_RELEVANT_SOURCES). ---
+
+  - id: hii_water_level_catalog
+    agency:
+      th: "สถาบันสารสนเทศทรัพยากรน้ำ (HII)"
+      en: "Hydro-Informatics Institute (HII) -- nationwide water-level station catalog"
+    url: "https://data.hii.or.th/dataset/334aa20b-8187-430a-b8c5-d924f37334fe/resource/47274e2b-c905-4762-b025-11ca9067d107/download/0all_stn_metadata.csv"
+    method: "GET, one request per run, no API key. Plain CSV download."
+    cadence: "static/reference -- a station catalog, not a live reading"
+    format: csv
+    auth: none
+    licence_status: {text: "data.hii.or.th CKAN portal licence not independently read
+      this check -- RELAYED/unconfirmed, same posture as every other CKAN source here.",
+      unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "data.hii.or.th -- one GET per run."}
+    last_status: {date: "2026-10-03", http: 200, note: "VERIFIED this check -- real
+      fetch, 435,995 bytes, 1,396 nationwide station-metadata rows. Same CSV schema as
+      hii_mou_station_metadata (reuses that parser) but a different, larger station
+      set -- resolved from the census row's CKAN dataset-landing-page redirect via one
+      package_show call, not a duplicate of hii_mou_station_metadata (confirmed by
+      comparing both files' sha256)."}
+    variables: [station_location]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_gov9_sources.py"
+    health_check: "not_applicable -- same posture as every other wired source here"
+
+  - id: hii_reservoir_metadata
+    agency:
+      th: "สถาบันสารสนเทศทรัพยากรน้ำ (HII) -- ข้อมูลอ่างเก็บน้ำขนาดเล็ก"
+      en: "Hydro-Informatics Institute (HII) -- small-reservoir metadata catalog"
+    url: "https://data.hii.or.th/dataset/ffba6c62-b9df-4b46-86b6-361b615cbe40/resource/9a02d5b3-6019-4616-a4a9-5dfddb745e9d/download/reservoir_metadata.csv"
+    method: "GET, one request per run, no API key. Plain CSV download."
+    cadence: "static reference catalog, survey-dated per row"
+    format: csv
+    auth: none
+    licence_status: {text: "data.hii.or.th CKAN portal licence not independently read
+      this check.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "data.hii.or.th -- one GET per run."}
+    last_status: {date: "2026-10-03", http: 200, note: "VERIFIED this check -- real
+      fetch, 16,127 bytes, 65 small-reservoir rows with real lat/lon, survey date and
+      old/updated capacity (million cubic meters). Resolved as the sibling resource of
+      the hii_reservoir_elevation_capacity_curve census row's own CKAN dataset via one
+      package_show call -- that row's own portal-path URL still does not resolve to a
+      direct file and stays catalog_only."}
+    variables: [reservoir_capacity]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_gov9_sources.py"
+    health_check: "not_applicable -- same posture as every other wired source here"
+
+  - id: pcd_coastal_marine_quality
+    agency:
+      th: "กรมควบคุมมลพิษ (PCD) -- คุณภาพน้ำทะเลชายฝั่ง"
+      en: "Pollution Control Dept (PCD) -- coastal/marine water quality monitoring"
+    url: "https://pcd.gdcatalog.go.th/dataset/c8ec4520-0173-495f-a8f9-e9a9985dc9a3/resource/7e4a31ea-1e5a-4613-bfaa-3898175c1e9d/download/marine_water_quality_2568.csv"
+    method: "GET, one request per run, no API key. Plain CSV download."
+    cadence: "monitoring round (this file: BE 2568, i.e. 2025, latest round at capture
+      time). 4 earlier round files on the same dataset are real and resolvable the
+      same way but not wired this check -- OPEN for a future backfill."
+    format: csv
+    auth: none
+    licence_status: {text: "pcd.gdcatalog.go.th portal licence not independently read
+      this check.", unresolved: true}
+    trust_tier: official_report
+    host_rule: {max_requests_per_run: 1, notes: "pcd.gdcatalog.go.th -- one GET per run."}
+    last_status: {date: "2026-10-03", http: 200, note: "VERIFIED this check -- real
+      fetch, 104,138 bytes, 420 per-station readings, 419 with a parseable pH. No
+      lat/lon column in this CSV -- stored with lat/lon=None, never geocoded. Resolved
+      from the census row's CKAN dataset-landing-page redirect via one package_show
+      call, which named 5 real per-round resource files; this is the most recent."}
+    variables: [marine_ph_tot]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: "tests/contract/test_gov9_sources.py"
+    health_check: "not_applicable -- same posture as every other wired source here"
+
+reference_documents:
+  - id: rmutp_2012_bma_canal_scada
+    title:
+      th: "ระบบตรวจวัดระดับน้ำในคลองเขตพื้นที่กรุงเทพมหานคร"
+      en: "Novel Water Level Sensing for the Canals in Bangkok"
+    journal: "RMUTP Research Journal"
+    volume_issue: "Vol. 6, No. 1"
+    date: "2012-03"
+    institution: "คณะวิศวกรรมศาสตร์ มหาวิทยาลัยเทคโนโลยีราชมงคลพระนคร"
+    path: "raw/knowledge/rmutp_2012_bma_canal_scada.pdf"
+    write_up: "docs/knowledge/bma_canal_scada_rmutp2012.md"
+    trust_tier: RELAYED
+    ingested: "2026-09-27"
+    note: "2012 description of BMA flood-control-centre SCADA architecture (75-station
+      UHF telemetry system + 40-station GPRS/Modbus canal-regulation system). Not
+      re-verified against BMA's current (2026) architecture -- see the write-up's
+      section (e) for INSTINCT-tagged mapping to FloodConnect's observed anomalies and
+      section (f) for open questions to ask DDS/สนน."
+    kind: literature
+    schema_version: 1
+    imported_from: local
+
+  - id: hii_flood_area_monthly_risk
+    title:
+      th: "พื้นที่เสี่ยงน้ำท่วมรายเดือน/ตำบล (17 ปี, 2548-2564)"
+      en: "HII CKAN 'flood-area' -- monthly flood-risk frequency per tambon, 17-year
+        aggregate (2005-2021)"
+    institution: "สถาบันสารสนเทศทรัพยากรน้ำ (สสน., HII)"
+    date: "2005-2021 (aggregate period); dataset last updated per CKAN metadata"
+    path: "raw/hii_flood_area/monthly-flood-risk-area.csv (gitignored, re-downloadable
+      via tools/harvest/hii_flood_area_ckan.py)"
+    write_up: "docs/knowledge/hii_flood_area_2005_2021_east.yaml"
+    trust_tier: VERIFIED
+    ingested: "2026-09-27"
+    licence: "CC BY-NC (HII open data)"
+    licence_ruling: 'founder 2026-09-27: non-commercial use OK, commit + public page
+      (verbatim: "ใช้ได้เพราะอันนี้ไม่ใช่พาณิชย์ อัพขึ้น git ได้เลย")'
+    public_page: true
+    attribution_required: "ที่มา: สถาบันสารสนเทศทรัพยากรน้ำ (สสน.) — data.hii.or.th, CC BY-NC"
+    note: "FREQUENCY baseline (times flooded per month across 17 years), NOT a per-date
+      event record -- calibration prior for PROP-FLOOD-08 D_critical. Restricted to
+      east-side districts (Sammakorn's own neighbourhood, see the write-up's own
+      EAST_DISTRICTS_TH scope note), not a nationwide dump. See docs/knowledge/
+      EASIEST_EXTERNAL_APIS_FOR_MISSING_INPUTS_2026-09-27.md #9 for the probe context."
+    kind: literature
+    schema_version: 1
+    imported_from: local
+
+  - id: point_elevation_openmeteo
+    title:
+      th: "ระดับความสูงพื้นดิน (DEM 90m) รายจุด"
+      en: "Open-Meteo Elevation API -- point ground-level elevation (Copernicus GLO-90 DEM)"
+    institution: "Open-Meteo (re-serving Copernicus GLO-90 DEM) -- NOT a Thai government agency"
+    date: "2026-09-27"
+    path: "n/a -- static one-off harvest, not a raw download"
+    write_up: "sources/point_elevation_openmeteo.yaml (self-documenting via its own
+      _meta block; harvester: tools/harvest/point_elevation_openmeteo.py)"
+    trust_tier: VERIFIED
+    ingested: "2026-09-27"
+    note: "DEM SURFACE elevation, NOT a ม.รทก. survey benchmark -- never merged/averaged
+      with sources/bkk_district_elevation.yaml's RTSD-2010-survey values, kept as a
+      separate method. See docs/knowledge/EASIEST_EXTERNAL_APIS_FOR_MISSING_INPUTS_
+      2026-09-27.md #6."
+    kind: literature
+    schema_version: 1
+    imported_from: local
+
+  - id: ibtracs_bkk_500km
+    title:
+      th: "เส้นทางพายุหมุนเขตร้อนในรัศมี 500 กม. จากกรุงเทพฯ (2005-2025)"
+      en: "NOAA IBTrACS storm tracks within 500km of Bangkok, 2005-2025 (WP basin)"
+    institution: "NOAA / WMO (International Best Track Archive for Climate Stewardship)"
+    date: "2005-2025 (extract period)"
+    path: "raw/ibtracs/ibtracs.WP.list.v04r01.csv (gitignored, re-downloadable via
+      tools/harvest/ibtracs_bkk_500km.py)"
+    write_up: "sources/ibtracs_bkk_500km.yaml (self-documenting via its own _meta block)"
+    trust_tier: VERIFIED
+    ingested: "2026-09-27"
+    note: "DATA ONLY -- no danger threshold derived here (founder's own instruction, same
+      day as the pressure/sst additions). For later calibration against
+      urban_event_ledger, not itself an event-ledger row."
+    kind: literature
+    schema_version: 1
+    imported_from: local

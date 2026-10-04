@@ -1,0 +1,1453 @@
+{
+  "directed": true,
+  "multigraph": true,
+  "graph": {},
+  "nodes": [
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "จุดรับบริจาค ศูนย์การค้า Central Pattana",
+      "resource_type": "donation_intake_point",
+      "owner_agency": "AG_CENTRALPATTANA",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §3",
+      "id": "RES.DONATION_INTAKE.CENTRALPATTANA.01"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "ทับช้างบน",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WL.TPK.03"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "สนน. สำนักการระบายน้ำ + ศูนย์ควบคุมระบบป้องกันน้ำท่วม",
+      "agency_class": "state",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_DDS node, reused verbatim)",
+      "id": "AG_DDS"
+    },
+    {
+      "kind": "sensor",
+      "layer": "water",
+      "label_th": "เซนเซอร์ ปตร.ประเวศ-ลาดกระบัง (WL.PWT.04)",
+      "installed_on_node": "WL.PWT.04",
+      "owner_agency": "AG_DDS",
+      "visible_to": [
+        "AG_DDS"
+      ],
+      "sensor_status": "ok",
+      "tag": "RELAYED",
+      "source": "FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §5 (owned_by[NEW] AG_BMA_DDS reused as AG_DDS here)",
+      "id": "SENSOR.PWT.04"
+    },
+    {
+      "kind": "ministry",
+      "layer": "power",
+      "label_th": "ราชการส่วนท้องถิ่นรูปแบบพิเศษ (หมวดตามเอกสาร กพร. Joint KPI -- ไม่ใช่กระทรวง)",
+      "group_type": "local_government",
+      "tag": "RELAYED",
+      "source": "Lanner FB post ~27 ก.ย. 2569 -- กทม. listed as its own body, outside the 22 ส่วนราชการ count",
+      "id": "CATEGORY.LOCAL_GOV"
+    },
+    {
+      "kind": "sensor",
+      "layer": "water",
+      "label_th": "เซนเซอร์/สถานะสถานีสูบบึงรับน้ำสัมมากร 2, ST.SPS.03",
+      "installed_on_node": "ST.SPS.03",
+      "owner_agency": "AG_DDS",
+      "visible_to": [],
+      "sensor_status": "faulted",
+      "station_status_th": "ขัดข้อง",
+      "machine_count_total": null,
+      "machine_count_tag": "OPEN",
+      "tag": "OPEN",
+      "source": "docs/LAYER0_IN_OUT_CAPACITY.md §7 + independent review 2026-09-28 fix (same as SENSOR.SPS.01)",
+      "basis": "partly measured",
+      "id": "SENSOR.SPS.03"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "กฟน. การไฟฟ้านครหลวง",
+      "agency_class": "state",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_MEA node, reused verbatim -- the proposal doc's own §5/§7c called this a \"first missing node\"; it is NOT missing -- confirmed present in the DAG when this build actually checked. Treat that proposal line as superseded by this registry row.)\n",
+      "permanence": "permanent",
+      "permanence_level_tag": "INSTINCT -- state enterprise (รัฐวิสาหกิจ), level mapped to `local` for its Bangkok metropolitan service area rather than `national`, an approximate mapping onto this typology's 4-value vocabulary, not an exact fit\n",
+      "level": "local",
+      "id": "AG_MEA"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "ผู้ค้าส่งวัตถุดิบ (generic, ไม่ระบุชื่อร้าน)",
+      "agency_class": "commercial_operator",
+      "actor_type": "private_sector",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_private_sector_relief_2026-09-28.md §4",
+      "id": "AG_WHOLESALE_SUPPLIER"
+    },
+    {
+      "kind": "pond",
+      "layer": "water",
+      "label_th": "บึงหนองบอน",
+      "infra_class": "green_blue",
+      "phase": "normal",
+      "phase_tag": "INSTINCT",
+      "lat": 13.69544,
+      "lon": 100.66001,
+      "standard_class": "HY_WaterBody (OGC HY_Features, RELAYED)",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/bma_plan2569_retention_ponds.yaml capacity_list_appendix_ko seq=1 (VERIFIED, storage_m3=5,000,000, p78/ก-24) -- infra_class=green_blue per TDRI's green-blue/sponge-city framing (\"flooding-after-rain-bangkok-is...\", dated 30 มิ.ย. 2025 on the page but the page's own text references rain 24-26 ก.ย. 2569 -- OPEN date inconsistency, not resolved, both kept). Also referenced in structural_issues_2026-09-28.yaml S14 (pre-lowering ~5 ล้าน ลบ.ม. before the 25 ก.ย. 2569 rain, RELAYED).\n",
+      "id": "WL.NBN.01"
+    },
+    {
+      "area_id": "sammakorn",
+      "label_th": "node พื้นที่หมู่บ้านสัมมากร",
+      "status": "UNKNOWN",
+      "fresh": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [
+        "comms",
+        "coordination"
+      ],
+      "resources": [
+        {
+          "type": "boat",
+          "ref": "RES.TOOL.WATER_PUSH_BOAT",
+          "status": "UNKNOWN",
+          "condition_coordination_with_agency_required": true,
+          "condition_bridge_clearance_check": true,
+          "condition_crew_rotation_check": true,
+          "note_th": "เงื่อนไขก่อนใช้งานจริง (ไม่ใช่การยืนยันว่ามีเรือประจำอยู่ที่ซอมมากรวันนี้) -- ต้องประสานหน่วยงาน (BMA/DDS), ต้องตรวจระยะห่าง/ความสูงใต้สะพานก่อนวางเส้นทางเรือ, ต้องมีการหมุนเวียนลูกเรือหากทำงานต่อเนื่อง\n"
+        }
+      ],
+      "sustainment": {
+        "checked_at": null,
+        "fresh": false,
+        "physical_safety": "UNKNOWN",
+        "potable_water_for_horizon": "UNKNOWN",
+        "service_water_for_horizon": "UNKNOWN",
+        "food_for_horizon": "UNKNOWN",
+        "essential_medicine_for_horizon": "UNKNOWN",
+        "critical_power": "UNKNOWN",
+        "sanitation_hygiene": "UNKNOWN",
+        "communications": "UNKNOWN",
+        "vulnerable_support": "UNKNOWN",
+        "official_instruction": "NONE",
+        "resupply": {
+          "supplier_node": null,
+          "route_edges": [],
+          "official_movement_conflict": false
+        },
+        "escalation": {
+          "status": "UNKNOWN",
+          "fresh": false,
+          "verified": false
+        }
+      },
+      "self_help_kind": "zone",
+      "self_help_layer": 2,
+      "kind": "self_help_zone",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "sammakorn_zone"
+    },
+    {
+      "kind": "gate",
+      "layer": "water",
+      "label_th": "บางชัน ปตร.",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WL.SSB.09"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "ข้าวกล่อง 20,000 กล่อง/มื้อ (เขตลาดกระบัง)",
+      "resource_type": "food",
+      "quantity": 20000,
+      "unit": "กล่อง/มื้อ",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "owner_agency": "AG_DIST_NEIGH",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9)",
+      "id": "RES.MEAL_BOX.AG_BMA_KHET_LADKRABANG.01"
+    },
+    {
+      "kind": "sensor",
+      "layer": "water",
+      "label_th": "เซนเซอร์/สถานะสถานีสูบบึงรับน้ำสัมมากร 1, ST.SPS.04",
+      "installed_on_node": "ST.SPS.04",
+      "owner_agency": "AG_DDS",
+      "visible_to": [],
+      "sensor_status": "faulted",
+      "station_status_th": "ขัดข้อง",
+      "machine_count_total": null,
+      "machine_count_tag": "OPEN",
+      "tag": "OPEN",
+      "source": "docs/LAYER0_IN_OUT_CAPACITY.md §7 + independent review 2026-09-28 fix (same as SENSOR.SPS.01)",
+      "basis": "partly measured",
+      "id": "SENSOR.SPS.04"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "เรือผลักดันน้ำคลองแสนแสบ ใกล้จุดรับน้ำอุโมงค์พระราม 9 (ผลยังไม่วัดอิสระ)",
+      "resource_type": "watercraft",
+      "tool_class": "water_push_boat",
+      "generic_tool_ref": "RES.TOOL.WATER_PUSH_BOAT",
+      "mode": "boat",
+      "infra_class": "soft",
+      "infra_class_tag": "INSTINCT",
+      "quantity": null,
+      "unit": null,
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "owner_agency": "AG_OPERATOR_SAENSAEB_BOAT",
+      "owner_agency_tag": "RELAYED",
+      "effectiveness": "OPEN",
+      "deployment_note_th": "ใกล้จุดรับน้ำอุโมงค์แสนแสบ-ลาดพร้าว (alias candidate \"อุโมงค์พระราม 9\", tunnel:bma_dds:saensaeb_ladprao) -- ระยะทาง/จำนวนเรือ/ชั่วโมงหมุนเวียน ไม่ใส่ตัวเลขในชั้นนี้ ดูตัวเลขทั้งหมดใน docs/knowledge/card_tool_water_push_boats.md\n",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 4.3 (S11, JS100) + The Bangkok Insight 27 ก.ย. 2569 (https://www.thebangkokinsight.com/news/politics-general/general/ 1701479/) + MGR Online 27 ก.ย. 2569 (https://mgronline.com/business/detail/9690000094733) -- reuse-first: ถือเป็น real-world referent เดียวกันกับที่ S11/JS100 รายงานไว้ก่อนหน้า (ดูเหตุผลเต็มใน docs/knowledge/card_tool_water_push_boats.md §5), ไม่สร้าง node ใหม่ซ้ำ\n",
+      "note_th": "effect_measured: OPEN -- ยังไม่มีเกจอิสระของคลังนี้ยืนยันผลกระทบต่อทิศทาง/ระดับน้ำ; คำกล่าวอ้าง ของผู้ประกอบการเรื่องระดับน้ำลดลงเป็นคำให้สัมภาษณ์ ไม่ใช่ค่าวัดอิสระ (การ์ดความรู้ §1)\n",
+      "id": "RES.BOAT_PUSH.AG_UNKNOWN.01"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "รถยกสูง (GMC) เพิ่ม 15 คัน -- ต้องการ ไม่ใช่ยืนยันว่าจัดสรรแล้ว",
+      "resource_type": "vehicle",
+      "quantity": 15,
+      "unit": "คัน",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "owner_agency": "OPEN",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9, แถลง กทม. 28 ก.ย., รองผู้ว่าฯ ฝ่ายสาธารณสุข)",
+      "note_th": "owner_agency = OPEN เพราะแถลงการณ์ S9 ไม่ระบุหน่วยงานย่อยที่ถือครองรถจริง (อาจเป็น สนน. หรือ สำนักงานเขต) -- ห้ามเดา ดู edges/owned_by.yaml แถวคู่กัน (status OPEN เช่นกัน).\n",
+      "id": "RES.TRUCK_GMC.AG_BMA_DDS.01"
+    },
+    {
+      "kind": "pump",
+      "layer": "water",
+      "label_th": "สถานีสูบ ST.SPS.03",
+      "standard_class": "HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "MEASURED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml e_sammakornpond_wangyai control_structures field (3 pump codes declared on ONE edge -- per-station outlet split is OPEN, the shared wangyai outlet is the only one the source names)",
+      "condition": "OPEN",
+      "condition_note_th": "same Environman post as ST.SPS.01 -- ไม่ระบุสถานีที่แน่ชัด",
+      "id": "ST.SPS.03"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "คลองเปรมประชากร (+ คลองที่เชื่อมต่อ ดอนเมือง/หลักสี่/สายไหม/บางเขน/จตุจักร)",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "scope": "bangkok_north_mvp_stub",
+      "scope_note_th": "นอกขอบเขต MVP สัมมากร (Bangkok-north stub) -- จุดที่โพสต์ระบุว่าน้ำล้นขณะนี้: ดอนเมือง/เสนา/ วังหิน/พหลโยธิน/แจ้งวัฒนะ (ข้อความ ไม่ใช่ node แยกในงานนี้ -- ไม่มีรหัสสถานี/พิกัดให้)\n",
+      "tag": "OPEN",
+      "source": "Environman FB post 28 ก.ย. 2569 -- north-axis chain, stub only",
+      "id": "WATER.canal_prem_prachakon"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "คลองวังใหญ่บน",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "OPEN",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WATER.wangyai"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "JS100 Radio",
+      "agency_class": "media_radio",
+      "tag": "RELAYED",
+      "source": "FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §7a/§7b (S11, RELAYED)",
+      "id": "AG_JS100"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "แสนแสบ-เสรีไทย 24",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WL.SSB.08"
+    },
+    {
+      "kind": "tunnel",
+      "layer": "water",
+      "label_th": "อุโมงค์ระบายน้ำคลองแสนแสบและคลองลาดพร้าวลงสู่แม่น้ำเจ้าพระยา",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "alias_th": "\"อุโมงค์แสนเลิศ\" (docs/knowledge/card_official_2026-09-27_bma_saensaeb_tunnel_sideflow.md, match_confidence OPEN) และ \"อุโมงค์พระราม 9\" (candidate alias จาก Environman post นี้, OPEN เช่นกัน -- ทั้งสองชื่อยังไม่ยืนยันด้วยเอกสารทางการที่ระบุคู่กับ id นี้ตรง ๆ)\n",
+      "condition": "OPEN",
+      "condition_note_th": "\"บางสถานีสูบน้ำยังมีขยะจำนวนมากขวางทางระบาย\" (Environman post) -- ไม่ระบุสถานีที่แน่ชัด, ไม่ทราบว่ารวมจุดนี้หรือไม่ -- OPEN, ไม่เดา\n",
+      "tag": "RELAYED",
+      "source": "sources/capacity_ledger.yaml id=tunnel:bma_dds:saensaeb_ladprao (id เดิม, reuse ตรง ไม่สร้างซ้ำ) + Environman FB post 28 ก.ย. 2569 (ยืนยันการทำหน้าที่รับน้ำ 2 คลองลงเจ้าพระยา)\n",
+      "id": "tunnel:bma_dds:saensaeb_ladprao"
+    },
+    {
+      "kind": "tunnel",
+      "layer": "water",
+      "label_th": "อุโมงค์ระบายน้ำจากบึงหนองบอนลงสู่แม่น้ำเจ้าพระยา",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "sources/capacity_ledger.yaml id=tunnel:bma_dds:nongbon (id เดิม, reuse ตรง ไม่สร้างซ้ำ ไม่นำเลขความจุเข้ามา) -- ปิดช่องว่าง WL.NBN.01 orphan โดยต่อกับข้อความที่มีอยู่แล้วใน FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §5 (\"AG_BMA_DDS --operates--> บึงหนองบอน (WL.NBN.01) --controlled--> อุโมงค์ --controlled--> river\")\n",
+      "id": "tunnel:bma_dds:nongbon"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "ข้าวกล่อง 3,000 กล่อง/มื้อ (เขตบางกะปิ)",
+      "resource_type": "food",
+      "quantity": 3000,
+      "unit": "กล่อง/มื้อ",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "owner_agency": "AG_DIST_NEIGH",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9)",
+      "id": "RES.MEAL_BOX.AG_BMA_KHET_BANGKAPI.01"
+    },
+    {
+      "kind": "gate",
+      "layer": "water",
+      "label_th": "ประเวศ-ลาดกระบัง ปตร.",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WL.PWT.04"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "พระโขนง",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WL.PKN.01"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "แสนแสบ-บางกะปิ",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WL.SSB.07"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "เพจร้านค้าในพื้นที่ (ขอของบริจาคให้โรงเรียนสามแยกหลอแหล้)",
+      "agency_class": "local_shop",
+      "tag": "RELAYED",
+      "source": "FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §7a (S8, RELAYED, no shop name)",
+      "id": "AG_LOCAL_SHOP_SAMSAEK_LOR"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "ปลายทางใต้ (คลองพระองค์ฯ/ชายทะเล)",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "OPEN",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WATER.south_outlet"
+    },
+    {
+      "kind": "soi_surface",
+      "layer": "civil",
+      "label_th": "ซอย 17",
+      "standard_class": "HY_Features local_surface (RELAYED, extension)",
+      "tag": "RELAYED",
+      "source": "social_listening.py soi/area convention (FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §4a); this build declares the zone id, it does not re-run the live extractor",
+      "id": "SOI.SAMMAKORN.17"
+    },
+    {
+      "kind": "pump",
+      "layer": "water",
+      "label_th": "สถานีสูบ ST.SPS.01",
+      "standard_class": "HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "MEASURED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/build_data.py SAMMAKORN_CHAIN_NODES/SAMMAKORN_CHAIN_EDGES (pond_to_banma2/banma2_to_pond/banma2_to_saensaeb) + site/inputs/canals/east_chain.yaml e_banma_sammakornpond control_structures (\"Private pump ST.SPS.01 sits on this reach\")",
+      "condition": "OPEN",
+      "condition_note_th": "\"บางสถานีสูบน้ำยังมีขยะจำนวนมากขวางทางระบาย\" (Environman FB post 28 ก.ย. 2569, RELAYED) -- ไม่ระบุว่าเป็นสถานีใดใน 4 สถานี, ไม่เดา\n",
+      "id": "ST.SPS.01"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "ลาดกระบัง/สุวรรณภูมิ",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "OPEN",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WATER.ladkrabang"
+    },
+    {
+      "kind": "pump",
+      "layer": "water",
+      "label_th": "สถานีสูบน้ำพระโขนง",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "condition": "OPEN",
+      "condition_note_th": "\"บางสถานีสูบน้ำยังมีขยะจำนวนมากขวางทางระบาย\" (Environman post) -- ไม่ระบุสถานีที่แน่ชัด",
+      "tag": "MEASURED",
+      "source": "sources/capacity_ledger.yaml id=pump_station:water_station:1 (id เดิม, reuse ตรง)",
+      "id": "pump_station:water_station:1"
+    },
+    {
+      "kind": "gate",
+      "layer": "water",
+      "label_th": "มีนบุรี ปตร.แสนแสบ-มีนบุรี",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WL.SSB.10"
+    },
+    {
+      "kind": "warning_channel",
+      "layer": "power",
+      "label_th": "สายด่วน กทม. 1555",
+      "channel_type": "hotline",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14)",
+      "id": "WCH.HOTLINE_1555"
+    },
+    {
+      "kind": "agency",
+      "layer": "power",
+      "label_th": "ผู้ว่าฯ กทม. = ผู้อำนวยการ กทม.",
+      "agency_class": "state",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_BMA_GOV node, reused verbatim)",
+      "permanence": "permanent",
+      "permanence_level_tag": "INSTINCT",
+      "level": "local",
+      "capability_operational_policy": null,
+      "capability_roles_responsibilities": null,
+      "capability_action_plan": null,
+      "capability_monitoring_loop": null,
+      "capability_logistics": null,
+      "capability_training": null,
+      "capability_source": "TDRI (ดร.นิพนธ์ พัวพงศกร, 9 ธ.ค. 2025) -- same checklist, same OPEN status",
+      "id": "AG_BMA_GOV"
+    },
+    {
+      "kind": "pond",
+      "layer": "water",
+      "label_th": "บึงสัมมากร",
+      "standard_class": "HY_WaterBody (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "green_blue",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "east_chain_key_alias": "sammakorn_pond",
+      "alias_reconciliation_tag": "RELAYED-reconciled (site/build_data.py SAMMAKORN_CHAIN_NODES vs east_chain.yaml's own canal_oldcode:null for this key -- OPEN discrepancy, see docs/UNITS_AND_DATUMS.md)",
+      "id": "WL.SMK.01"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "คลองบ้านม้า",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "east_chain_key_alias": "banma",
+      "alias_reconciliation_tag": "RELAYED-reconciled (same discrepancy as sammakorn_pond)",
+      "id": "WL.BMA.02"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "ทีมลงพื้นที่ภาคประชาชน (generic role, ไม่ระบุชื่อบุคคล/กลุ่ม)",
+      "agency_class": "volunteer_informal",
+      "tag": "RELAYED",
+      "source": "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md -- generic observer role, reusable ที่อื่น",
+      "id": "CIV.FIELD_OBSERVER"
+    },
+    {
+      "kind": "open_sentinel",
+      "layer": "unknown",
+      "tag": "OPEN",
+      "label_th": "(ยังไม่ยืนยัน / unresolved)",
+      "source": "tools/typology/build_graph.py -- shared sentinel node for every unresolved edge target/source in the registry",
+      "id": "OPEN"
+    },
+    {
+      "kind": "sensor",
+      "layer": "water",
+      "label_th": "เซนเซอร์/สถานะสถานีสูบบึงสัมมากร (คลองบ้านม้า), ST.SPS.01",
+      "installed_on_node": "ST.SPS.01",
+      "owner_agency": "AG_DDS",
+      "visible_to": [],
+      "sensor_status": "faulted",
+      "station_status_th": "ขัดข้อง",
+      "machine_count_total": null,
+      "machine_count_tag": "OPEN",
+      "tag": "OPEN",
+      "source": "docs/LAYER0_IN_OUT_CAPACITY.md §7 (station-level MEASURED: ขัดข้อง) + independent review 2026-09-28 fix (per-station machine-count split OPEN, aggregate machine total 11 across ST.SPS.01-04 per BMA PumpHistory, not split per station in this static registry)\n",
+      "basis": "partly measured",
+      "id": "SENSOR.SPS.01"
+    },
+    {
+      "area_id": "khlongchan_flats",
+      "label_th": "ครัวกลางที่ชุมชนตั้งเอง (แฟลตคลองจั่น)",
+      "status": "UNKNOWN",
+      "fresh": false,
+      "capacity_persons": null,
+      "occupied_persons": null,
+      "services": [
+        "kitchen"
+      ],
+      "self_help_kind": "support",
+      "self_help_layer": 3,
+      "kind": "self_help_support",
+      "layer": "self_help",
+      "tag": "OPEN",
+      "source": "site/inputs/community/self_help_dag.yaml (imported from public/main 5364c23, 2026-09-28)",
+      "id": "khlongchan_flats_kitchen"
+    },
+    {
+      "kind": "pump",
+      "layer": "water",
+      "label_th": "สถานีสูบน้ำอุโมงค์พระโขนง",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "condition": "OPEN",
+      "condition_note_th": "\"บางสถานีสูบน้ำยังมีขยะจำนวนมากขวางทางระบาย\" (Environman post) -- ไม่ระบุสถานีที่แน่ชัด",
+      "tag": "MEASURED",
+      "source": "sources/capacity_ledger.yaml id=pump_station:water_station:2 (id เดิม, reuse ตรง)",
+      "id": "pump_station:water_station:2"
+    },
+    {
+      "kind": "warning_channel",
+      "layer": "power",
+      "label_th": "เพจ FB ศูนย์ป้องกันน้ำท่วม กทม.",
+      "channel_type": "facebook_page",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14)",
+      "id": "WCH.FB_FLOODCONTROL_BMA"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "นิติบุคคลหมู่บ้านจัดสรร / คณะกรรมการหมู่บ้านสัมมากร",
+      "agency_class": "juristic_village",
+      "tag": "VERIFIED",
+      "source": "docs/knowledge/water_system_dag.mmd (existing AG_ESTATE node, reused verbatim -- the proposal doc's §5 worked example proposed a new id AG_VILLAGE_JURISTIC_SAMMAKORN; this registry reuses the DAG's own existing AG_ESTATE instead, same real-world referent, per the reuse-first rule. Whether AG_ESTATE actually owns/operates ST.SPS.01-04 remains OPEN -- see edges/owned_by.yaml and edges/operates.yaml.)\n",
+      "permanence": "permanent",
+      "permanence_level_tag": "INSTINCT -- AG_ESTATE (นิติบุคคลหมู่บ้านจัดสรร) is a legally-constituted juristic person under land-allocation law, kept `permanent` rather than `ad_hoc` despite having no professional disaster-command staff of its own (a separate, still-OPEN question -- see structural_issues_2026-09-28.yaml ISSUE-DECISION-02)\n",
+      "level": "local",
+      "capability_operational_policy": null,
+      "capability_roles_responsibilities": null,
+      "capability_action_plan": null,
+      "capability_monitoring_loop": null,
+      "capability_logistics": null,
+      "capability_training": null,
+      "capability_source": "TDRI (ดร.นิพนธ์ พัวพงศกร, 9 ธ.ค. 2025) -- same checklist, same OPEN status",
+      "id": "AG_ESTATE"
+    },
+    {
+      "kind": "sensor",
+      "layer": "water",
+      "label_th": "เซนเซอร์/สถานะสถานีสูบบึงรับน้ำสัมมากร 4, ST.SPS.02",
+      "installed_on_node": "ST.SPS.02",
+      "owner_agency": "AG_DDS",
+      "visible_to": [],
+      "sensor_status": "faulted",
+      "station_status_th": "ขัดข้อง",
+      "machine_count_total": null,
+      "machine_count_tag": "OPEN",
+      "tag": "OPEN",
+      "source": "docs/LAYER0_IN_OUT_CAPACITY.md §7 + independent review 2026-09-28 fix (same as SENSOR.SPS.01)",
+      "basis": "partly measured",
+      "id": "SENSOR.SPS.02"
+    },
+    {
+      "kind": "warning_channel",
+      "layer": "power",
+      "label_th": "ศูนย์ควบคุมระบบป้องกันน้ำท่วม 0 2248 5115",
+      "channel_type": "hotline",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14)",
+      "id": "WCH.FLOOD_CONTROL_CENTER_HOTLINE"
+    },
+    {
+      "kind": "river",
+      "layer": "water",
+      "label_th": "แม่น้ำเจ้าพระยา",
+      "standard_class": "HY_WaterBody (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "source": "FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §5 worked example",
+      "id": "river:chao_phraya"
+    },
+    {
+      "kind": "pump",
+      "layer": "water",
+      "label_th": "สถานีสูบ ST.SPS.02",
+      "standard_class": "HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "MEASURED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml e_sammakornpond_wangyai control_structures field (3 pump codes declared on ONE edge -- per-station outlet split is OPEN, the shared wangyai outlet is the only one the source names)",
+      "condition": "OPEN",
+      "condition_note_th": "same Environman post as ST.SPS.01 -- ไม่ระบุสถานีที่แน่ชัด",
+      "id": "ST.SPS.02"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "จุดรับบริจาค ศูนย์ฝึกอาชีพเขตประเวศ",
+      "resource_type": "donation_intake_point",
+      "quantity": null,
+      "unit": null,
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "owner_agency": "AG_DIST_NEIGH",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9)",
+      "id": "RES.DONATION_INTAKE.KHET_PRAWET_VOCTRAIN.01"
+    },
+    {
+      "kind": "sensor",
+      "layer": "water",
+      "label_th": "เซนเซอร์ ปตร.แสนแสบ-มีนบุรี (WL.SSB.10)",
+      "installed_on_node": "WL.SSB.10",
+      "owner_agency": "AG_DDS",
+      "visible_to": [
+        "AG_DDS",
+        "AG_DDPM"
+      ],
+      "sensor_status": "ok",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ISSUE-AGENCY-01 (S1: รศ.ดร.เสรี ศุภราทิตย์, รายการโหนกระแส -- เซนเซอร์แสนแสบเป็นของ กทม. ไม่ใช่ ปภ.) + THAI_WATER_GOVERNANCE_MAP.md §(1) (สนน. เก็บสถานะ SCADA ภายใน)\n",
+      "note_th": "visible_to=[AG_DDS, AG_DDPM] คือ \"ใครเห็นได้\" ตามคำอธิบายของ S1 (ปภ. ไม่รู้ว่าเซนเซอร์เป็นของ ใคร ไม่ใช่ว่าเห็นค่าไม่ได้เลย) -- RELAYED จากความเห็นผู้เชี่ยวชาญคนเดียว ไม่ใช่ตัวบทกฎหมาย.\n",
+      "id": "SENSOR.SSB.10"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "ผู้ประกอบการเรือโดยสารคลองแสนแสบ (ผู้นำเรือมาช่วยผลักดันน้ำ, ไม่ระบุชื่อบุคคล/บริษัท)",
+      "agency_class": "commercial_operator",
+      "tag": "RELAYED",
+      "source": "The Bangkok Insight 27 ก.ย. 2569 (https://www.thebangkokinsight.com/news/politics-general/general/1701479/) + MGR Online 27 ก.ย. 2569 (https://mgronline.com/business/detail/9690000094733)\n",
+      "note_th": "id นี้ใช้แทน founder's ask ตั้งต้น `CIV.OPERATOR.SAENSAEB_BOAT` -- คลังนี้ไม่มี node kind/id prefix CIV.* อยู่จริงที่ไหนเลย (ตรวจแล้ว) มีแต่ kind=agency/layer=civil/agency_class ตาม แบบ AG_ESTATE/AG_FB_ADMIN/AG_JS100 -- ดูเหตุผลเต็มใน docs/knowledge/ card_tool_water_push_boats.md §5\n",
+      "id": "AG_OPERATOR_SAENSAEB_BOAT"
+    },
+    {
+      "kind": "warning_channel",
+      "layer": "power",
+      "label_th": "LINE @Traffyfondue",
+      "channel_type": "line_oa",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14)",
+      "id": "WCH.LINE_TRAFFYFONDUE"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "แสนแสบ ตอนใน (คลองตัน)",
+      "standard_class": "HY_WaterBody/HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "RELAYED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml (declared chain)",
+      "id": "WL.SSB.04"
+    },
+    {
+      "kind": "pump",
+      "layer": "water",
+      "label_th": "สถานีสูบ ST.SPS.04",
+      "standard_class": "HY_HydroNexus (OGC HY_Features, RELAYED)",
+      "tag": "MEASURED",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "source": "site/inputs/canals/east_chain.yaml e_sammakornpond_wangyai control_structures field (3 pump codes declared on ONE edge -- per-station outlet split is OPEN, the shared wangyai outlet is the only one the source names)",
+      "condition": "OPEN",
+      "condition_note_th": "same Environman post as ST.SPS.01 -- ไม่ระบุสถานีที่แน่ชัด",
+      "id": "ST.SPS.04"
+    },
+    {
+      "kind": "resource",
+      "layer": "resource",
+      "label_th": "จุดรับบริจาค ศาลาว่าการ กทม. (ดินแดง)",
+      "resource_type": "donation_intake_point",
+      "quantity": null,
+      "unit": null,
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "owner_agency": "AG_BMA_GOV",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9)",
+      "id": "RES.DONATION_INTAKE.CITYHALL_DINDAENG.01"
+    },
+    {
+      "kind": "agency",
+      "layer": "civil",
+      "label_th": "กลุ่มอาสาขี่มอเตอร์ไซค์ริมคลอง (สัมมากร, ไม่มีองค์กรทางการ)",
+      "agency_class": "volunteer_informal",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md §7a/§7d (S10-adjacent community report; not one of the 6 founder-pasted sources S1-S6 -- carried from the independent structural-issues review, RELAYED, no organisation name known -- new id, no existing DAG node covers this actor)\n",
+      "id": "AG_VOLUNTEER_MOTOSAI_SAMMAKORN"
+    },
+    {
+      "kind": "canal_reach",
+      "layer": "water",
+      "label_th": "จุดบรรจบคลองลาดพร้าว-คลองแสนแสบ ที่บึงพระราม 9",
+      "infra_class": "grey",
+      "infra_class_tag": "INSTINCT",
+      "position_note_th": "OPEN precision -- วางไว้ระหว่าง WL.SSB.07 (บางกะปิ) กับ WL.SSB.04 (ตอนใน/คลองตัน) โดย อนุมานจากภูมิศาสตร์คร่าว ๆ (บึงพระราม 9/ห้วยขวาง อยู่ระหว่างบางกะปิกับคลองตัน) ไม่ใช่การจับคู่ พิกัดที่สำรวจจริง -- เชื่อมเป็น inflow เพิ่มเข้า WL.SSB.04 โดยไม่แก้/ลบ edge เดิม e_ssb07_ssb04 ที่มีอยู่แล้ว (คงเส้นทางที่ test เดิมตรวจอยู่).\n",
+      "tag": "OPEN",
+      "source": "Environman FB post 28 ก.ย. 2569 (คลองลาดพร้าวบรรจบคลองแสนแสบที่บึงพระราม 9)",
+      "id": "WL.CONFLUENCE.LPR_SSB.01"
+    },
+    {
+      "kind": "soi_surface",
+      "layer": "civil",
+      "label_th": "ซอย 18",
+      "standard_class": "HY_Features local_surface (RELAYED, extension)",
+      "tag": "RELAYED",
+      "source": "social_listening.py soi/area convention (FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §4a); this build declares the zone id, it does not re-run the live extractor",
+      "id": "SOI.SAMMAKORN.18"
+    },
+    {
+      "kind": "warning_channel",
+      "layer": "power",
+      "label_th": "Traffy Fondue",
+      "channel_type": "app",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14)",
+      "id": "WCH.TRAFFY_FONDUE"
+    }
+  ],
+  "edges": [
+    {
+      "tag": "RELAYED",
+      "source": "RES.DONATION_INTAKE.CENTRALPATTANA.01",
+      "kind": "supplies",
+      "target": "OPEN",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_DDS",
+      "kind": "operates",
+      "target": "WL.SSB.10",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_DDS",
+      "kind": "operates",
+      "target": "WL.PWT.04",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "SENSOR.PWT.04",
+      "kind": "owned_by",
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "tag": "VERIFIED",
+      "source": "SENSOR.SPS.03",
+      "kind": "owned_by",
+      "contradicted": true,
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "instruction": "OPEN -- ไม่มีช่องทางที่ยืนยันได้ว่า AG_MEA เตือน/ตอบกลับซ.17/18 โดยตรง",
+      "datum": "OPEN",
+      "area": "OPEN",
+      "lead_time": "OPEN",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "OPEN",
+      "source": "AG_MEA",
+      "kind": "warns",
+      "target": "OPEN",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_WHOLESALE_SUPPLIER",
+      "kind": "supplies",
+      "target": "AG_ESTATE",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "WL.NBN.01",
+      "kind": "flows_to",
+      "target": "tunnel:bma_dds:nongbon",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "sammakorn_zone",
+      "kind": "reports_to",
+      "target": "AG_ESTATE",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "sammakorn_zone",
+      "kind": "reports_to",
+      "target": "AG_BMA_GOV",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "sammakorn_zone",
+      "kind": "reports_to",
+      "target": "AG_MEA",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WL.SSB.09",
+      "target": "WL.SSB.08",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "RES.MEAL_BOX.AG_BMA_KHET_LADKRABANG.01",
+      "kind": "supplies",
+      "target": "OPEN",
+      "key": 0
+    },
+    {
+      "tag": "VERIFIED",
+      "source": "SENSOR.SPS.04",
+      "kind": "owned_by",
+      "contradicted": true,
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "RES.BOAT_PUSH.AG_UNKNOWN.01",
+      "kind": "supplies",
+      "target": "WL.SSB.10",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "RES.BOAT_PUSH.AG_UNKNOWN.01",
+      "kind": "supplies",
+      "target": "tunnel:bma_dds:saensaeb_ladprao",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "RES.TRUCK_GMC.AG_BMA_DDS.01",
+      "kind": "supplies",
+      "target": "OPEN",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "OPEN",
+      "source": "ST.SPS.03",
+      "target": "WATER.wangyai",
+      "key": 0
+    },
+    {
+      "tag": "VERIFIED",
+      "source": "ST.SPS.03",
+      "kind": "owned_by",
+      "contradicted": true,
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "WATER.canal_prem_prachakon",
+      "kind": "flows_to",
+      "target": "river:chao_phraya",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "OPEN",
+      "source": "WATER.wangyai",
+      "target": "WL.TPK.03",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_JS100",
+      "kind": "reports_to",
+      "target": "RES.BOAT_PUSH.AG_UNKNOWN.01",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WL.SSB.08",
+      "target": "WL.SSB.07",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "tunnel:bma_dds:saensaeb_ladprao",
+      "kind": "flows_to",
+      "target": "pump_station:water_station:2",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "tunnel:bma_dds:nongbon",
+      "kind": "flows_to",
+      "target": "river:chao_phraya",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "RES.MEAL_BOX.AG_BMA_KHET_BANGKAPI.01",
+      "kind": "supplies",
+      "target": "OPEN",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WL.PWT.04",
+      "target": "WATER.ladkrabang",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "WL.PWT.04",
+      "kind": "owned_by",
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "MEASURED",
+      "source": "WL.PKN.01",
+      "target": "river:chao_phraya",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "WL.PKN.01",
+      "kind": "flows_to",
+      "target": "pump_station:water_station:1",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WL.SSB.07",
+      "target": "WL.SSB.04",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_LOCAL_SHOP_SAMSAEK_LOR",
+      "kind": "reports_to",
+      "target": "OPEN",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "OPEN",
+      "source": "WATER.south_outlet",
+      "target": "river:chao_phraya",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "OPEN",
+      "source": "SOI.SAMMAKORN.17",
+      "target": "WL.SMK.01",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "SOI.SAMMAKORN.17",
+      "kind": "reports_to",
+      "target": "WL.SMK.01",
+      "key": 1
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "ST.SPS.01",
+      "target": "WL.BMA.02",
+      "key": 0
+    },
+    {
+      "tag": "VERIFIED",
+      "source": "ST.SPS.01",
+      "kind": "owned_by",
+      "contradicted": true,
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WATER.ladkrabang",
+      "target": "WATER.south_outlet",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "pump_station:water_station:1",
+      "kind": "flows_to",
+      "target": "river:chao_phraya",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WL.SSB.10",
+      "target": "WL.SSB.09",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "WL.SSB.10",
+      "kind": "owned_by",
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_BMA_GOV",
+      "kind": "decides",
+      "target": "WL.SSB.10",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_BMA_GOV",
+      "kind": "decides",
+      "target": "WL.PWT.04",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_BMA_GOV",
+      "kind": "part_of",
+      "target": "CATEGORY.LOCAL_GOV",
+      "key": 0
+    },
+    {
+      "instruction": "รับแจ้งเหตุ/ส่งต่อประกาศเฝ้าระวังผ่านแอป",
+      "datum": "OPEN",
+      "area": "OPEN",
+      "lead_time": "OPEN",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_BMA_GOV",
+      "kind": "warns",
+      "target": "WCH.TRAFFY_FONDUE",
+      "key": 0
+    },
+    {
+      "instruction": "รับแจ้งเหตุ/ส่งต่อประกาศเฝ้าระวังผ่าน LINE OA",
+      "datum": "OPEN",
+      "area": "OPEN",
+      "lead_time": "OPEN",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_BMA_GOV",
+      "kind": "warns",
+      "target": "WCH.LINE_TRAFFYFONDUE",
+      "key": 0
+    },
+    {
+      "instruction": "รับแจ้งเหตุ/ให้ข้อมูลสถานการณ์ทั่วไปทางโทรศัพท์",
+      "datum": "OPEN",
+      "area": "OPEN",
+      "lead_time": "OPEN",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_BMA_GOV",
+      "kind": "warns",
+      "target": "WCH.HOTLINE_1555",
+      "key": 0
+    },
+    {
+      "instruction": "ประกาศเฝ้าระวัง/สถานะบึงหนองบอนและแผนลดระดับล่วงหน้า",
+      "datum": "OPEN",
+      "area": "OPEN",
+      "lead_time": "OPEN",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_BMA_GOV",
+      "kind": "warns",
+      "target": "WCH.FB_FLOODCONTROL_BMA",
+      "key": 0
+    },
+    {
+      "instruction": "ติดต่อศูนย์ควบคุมระบบป้องกันน้ำท่วมโดยตรง",
+      "datum": "OPEN",
+      "area": "OPEN",
+      "lead_time": "OPEN",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_BMA_GOV",
+      "kind": "warns",
+      "target": "WCH.FLOOD_CONTROL_CENTER_HOTLINE",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WL.SMK.01",
+      "target": "ST.SPS.01",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "OPEN",
+      "source": "WL.SMK.01",
+      "target": "ST.SPS.02",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "OPEN",
+      "source": "WL.SMK.01",
+      "target": "ST.SPS.03",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "OPEN",
+      "source": "WL.SMK.01",
+      "target": "ST.SPS.04",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "edge_subkind": "backflow-risk",
+      "source": "WL.BMA.02",
+      "target": "WL.SMK.01",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WL.BMA.02",
+      "target": "WL.SSB.08",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "CIV.FIELD_OBSERVER",
+      "kind": "reports_to",
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "OPEN",
+      "kind": "operates",
+      "target": "ST.SPS.01",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "OPEN",
+      "kind": "operates",
+      "target": "ST.SPS.02",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "OPEN",
+      "kind": "operates",
+      "target": "ST.SPS.03",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "OPEN",
+      "kind": "operates",
+      "target": "ST.SPS.04",
+      "key": 0
+    },
+    {
+      "tag": "VERIFIED",
+      "source": "SENSOR.SPS.01",
+      "kind": "owned_by",
+      "contradicted": true,
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "pump_station:water_station:2",
+      "kind": "flows_to",
+      "target": "river:chao_phraya",
+      "key": 0
+    },
+    {
+      "instruction": "เฝ้าระวัง ยกของขึ้นที่สูง",
+      "datum": "OPEN",
+      "area": "SOI.SAMMAKORN.17",
+      "lead_time": "OPEN",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "WCH.FB_FLOODCONTROL_BMA",
+      "note_th": "คำว่า \"เฝ้าระวัง\" เป็นตัวอย่างจริงของปัญหาชั้น 5.1 (ไม่ actionable) แม้จะมี instruction ประกอบ (ยกของขึ้นที่สูง) -- เก็บ instruction ตามคำจริงในแถลงการณ์ ไม่ได้เกลาคำใหม่ datum/ lead_time เป็น OPEN จริง -- แถลงการณ์ไม่ระบุระดับอ้างอิง/เวลานำหน้าเลย (TDRI framing: คำเตือนที่ดีต้องมี datum, area, safe destination/route, lead time)\n",
+      "kind": "warns",
+      "target": "SOI.SAMMAKORN.17",
+      "key": 0
+    },
+    {
+      "instruction": "เฝ้าระวัง ยกของขึ้นที่สูง",
+      "datum": "OPEN",
+      "area": "SOI.SAMMAKORN.18",
+      "lead_time": "OPEN",
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "WCH.FB_FLOODCONTROL_BMA",
+      "kind": "warns",
+      "target": "SOI.SAMMAKORN.18",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "AG_ESTATE",
+      "kind": "reports_to",
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_ESTATE",
+      "kind": "supplies",
+      "target": "SOI.SAMMAKORN.17",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_ESTATE",
+      "kind": "supplies",
+      "target": "SOI.SAMMAKORN.18",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_ESTATE",
+      "kind": "supplies",
+      "target": "khlongchan_flats_kitchen",
+      "key": 0
+    },
+    {
+      "tag": "VERIFIED",
+      "source": "SENSOR.SPS.02",
+      "kind": "owned_by",
+      "contradicted": true,
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "OPEN",
+      "source": "ST.SPS.02",
+      "target": "WATER.wangyai",
+      "key": 0
+    },
+    {
+      "tag": "VERIFIED",
+      "source": "ST.SPS.02",
+      "kind": "owned_by",
+      "contradicted": true,
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "RES.DONATION_INTAKE.KHET_PRAWET_VOCTRAIN.01",
+      "kind": "supplies",
+      "target": "OPEN",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "SENSOR.SSB.10",
+      "kind": "owned_by",
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_OPERATOR_SAENSAEB_BOAT",
+      "kind": "operates",
+      "target": "RES.BOAT_PUSH.AG_UNKNOWN.01",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "AG_OPERATOR_SAENSAEB_BOAT",
+      "kind": "reports_to",
+      "target": "AG_BMA_GOV",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "AG_OPERATOR_SAENSAEB_BOAT",
+      "kind": "reports_to",
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "RELAYED",
+      "source": "WL.SSB.04",
+      "target": "WL.PKN.01",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "WL.SSB.04",
+      "kind": "flows_to",
+      "target": "tunnel:bma_dds:saensaeb_ladprao",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "OPEN",
+      "source": "ST.SPS.04",
+      "target": "WATER.wangyai",
+      "key": 0
+    },
+    {
+      "tag": "VERIFIED",
+      "source": "ST.SPS.04",
+      "kind": "owned_by",
+      "contradicted": true,
+      "target": "AG_DDS",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "RES.DONATION_INTAKE.CITYHALL_DINDAENG.01",
+      "kind": "supplies",
+      "target": "OPEN",
+      "key": 0
+    },
+    {
+      "phase": "incident",
+      "phase_tag": "INSTINCT",
+      "tag": "RELAYED",
+      "source": "AG_VOLUNTEER_MOTOSAI_SAMMAKORN",
+      "kind": "supplies",
+      "target": "SOI.SAMMAKORN.17",
+      "key": 0
+    },
+    {
+      "tag": "OPEN",
+      "source": "WL.CONFLUENCE.LPR_SSB.01",
+      "kind": "flows_to",
+      "target": "WL.SSB.04",
+      "key": 0
+    },
+    {
+      "kind": "flows_to",
+      "tag": "OPEN",
+      "source": "SOI.SAMMAKORN.18",
+      "target": "WL.SMK.01",
+      "key": 0
+    },
+    {
+      "tag": "RELAYED",
+      "source": "SOI.SAMMAKORN.18",
+      "kind": "reports_to",
+      "target": "WL.SMK.01",
+      "key": 1
+    }
+  ]
+}

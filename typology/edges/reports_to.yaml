@@ -1,0 +1,92 @@
+# typology/edges/reports_to.yaml -- edge_kind=reports_to, from_kind=community
+# (person/page, NOT agency) -> to_kind in {node, zone}, many->many (proposal §2/§4a --
+# reuses social_listening.py's soi extraction/area convention for the SOI.* id scheme;
+# this build does not re-run social_listening.py itself, it only declares the two
+# Sammakorn zone ids that appear in this check's worked Sammakorn chain).
+schema_version: 1
+doc_kind: typology_edge_registry
+edge_kind: reports_to
+status_th: >
+  รายงานชุมชนผูกกับ social_listening.py soi extraction (SOI.<AREA>.<slug> ตาม §4a ของข้อเสนอ) --
+  ไม่ได้รันตัว extractor จริงในงานนี้ ประกาศแค่ 2 zone ที่ใช้ในสายสัมมากรของงานนี้.
+rows:
+  - from: SOI.SAMMAKORN.17
+    to: WL.SMK.01
+    tag: RELAYED
+    source: >
+      FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §5 (soi surface drains toward
+      the village pond, reuses social_listening.py's soi/area convention)
+  - from: SOI.SAMMAKORN.18
+    to: WL.SMK.01
+    tag: RELAYED
+    source: "FLOW_STALL_TYPOLOGY_EXTENSION_PROPOSAL_2026-09-28.md §5"
+  - from: AG_FB_ADMIN
+    to: AG_BMA_MED
+    tag: RELAYED
+    source: >
+      STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9: ทีม กทม. ไล่เคสผู้ป่วยที่พบจากโซเชียลมีเดีย
+      โดยเฉพาะ -- หลักฐานตรงที่สุดว่าโซเชียลเป็น intake channel โดยพฤตินัยของภาครัฐ)
+  - from: AG_LOCAL_SHOP_SAMSAEK_LOR
+    to: "OPEN"
+    tag: RELAYED
+    source: >
+      STRUCTURAL_ISSUES_2026-09-28.md §7a/§7d (S8: เพจร้านค้าขอของบริจาคให้โรงเรียนสามแยกหลอแหล้ --
+      ปลายทางที่รับเรื่องจริง (โรงเรียน = node ประเภทใดยังไม่ประกาศในคลังนี้) ไม่ระบุ)
+  - from: AG_JS100
+    to: RES.BOAT_PUSH.AG_UNKNOWN.01
+    tag: RELAYED
+    source: >
+      completeness pass 2026-09-28 -- JS100 Radio is the ONLY source this repo has for the
+      Saen Saep boat-push resource (STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 4.3, S11), a
+      media-report relationship (reports_to), not an operator claim -- resolves AG_JS100's
+      prior orphan status with the same source already cited for RES.BOAT_PUSH itself.
+  - from: AG_OPERATOR_SAENSAEB_BOAT
+    to: AG_BMA_GOV
+    tag: RELAYED
+    source: >
+      docs/knowledge/card_tool_water_push_boats.md §1 -- คำให้สัมภาษณ์ของผู้ประกอบการเองว่าได้
+      ประสาน/ได้รับความเห็นชอบจาก กทม. ก่อนดำเนินการ (RELAYED, ไม่ใช่คำยืนยันจาก กทม. โดยตรง
+      ในแหล่งเดียวกัน)
+  - from: AG_OPERATOR_SAENSAEB_BOAT
+    to: AG_DDS
+    tag: OPEN
+    source: >
+      ไม่มีแหล่งใดที่ค้นในงานนี้ยืนยันการประสานงานกับ สนน. (AG_DDS) โดยตรง -- คงเป็น OPEN ไม่เดา
+  - from: AG_PRD
+    to: AG_CLIMATE_COMMS_CENTRE
+    tag: RELAYED
+    source: >
+      ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569 -- พีอาร์ดีเป็นช่องทางพันธมิตรที่ประสาน/ส่งต่อข้อมูลชุด
+      เดียวกันของศูนย์ (channel-partner coordination, ไม่ใช่สายบังคับบัญชา)
+  - from: AG_MCOT
+    to: AG_CLIMATE_COMMS_CENTRE
+    tag: RELAYED
+    source: "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569 -- อสมทเป็นช่องทางพันธมิตรเช่นเดียวกับพีอาร์ดี"
+  - from: AG_PM_SPOKES
+    to: AG_CLIMATE_COMMS_CENTRE
+    tag: RELAYED
+    source: "ข่าวแถลงกระทรวงดีอี 28 ก.ย. 2569 -- โฆษกสำนักนายกฯ ประสานส่งต่อข้อความชุดเดียวกัน"
+  - from: AG_SYSTRONICS
+    to: AG_MHESI
+    tag: RELAYED
+    source: "docs/knowledge/card_tool_rescue_drones_romklao_2569.md §1 -- บริษัทประสานกับ อว. ผู้นำปฏิบัติการ"
+  - from: AG_SOP
+    to: AG_MHESI
+    tag: RELAYED
+    source: "docs/knowledge/card_tool_rescue_drones_romklao_2569.md §1 -- สอป. ประสานกับ อว."
+  - from: AG_RESCUE_ROMSAI
+    to: AG_MSDHS
+    tag: RELAYED
+    source: "docs/knowledge/card_tool_rescue_drones_romklao_2569.md §1 -- มูลนิธิกู้ภัยประสานกับ พม."
+  - from: CIV.FIELD_OBSERVER
+    to: AG_DDS
+    tag: OPEN
+    source: "docs/knowledge/card_paakklongbangtalad_intake_starved_2569.md §3 -- ไม่มีแหล่งยืนยันว่า สนน. ได้รับรายงานนี้จริง"
+  - from: AG_TELCO_AIS
+    to: AG_NBTC
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §1"
+  - from: AG_TELCO_TRUE
+    to: AG_NBTC
+    tag: RELAYED
+    source: "docs/knowledge/card_private_sector_relief_2026-09-28.md §1"

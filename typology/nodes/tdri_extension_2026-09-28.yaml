@@ -1,0 +1,145 @@
+# typology/nodes/tdri_extension_2026-09-28.yaml -- founder ask (verbatim): "สกัดเพื่อเสริม
+# typology ที่ยังขาดอยู่ เอาแค่ส่วนสำคัญ" (extract only what fills a real gap). Source: 3 TDRI
+# (สถาบันวิจัยเพื่อการพัฒนาประเทศไทย) public think-tank articles, tag RELAYED throughout --
+#   - "permanent-disaster-management..." (ดร.นิพนธ์ พัวพงศกร, 9 ธ.ค. 2025)
+#   - "anatomy-of-preventable-ruin..." (ณัฐสิฏ รักษ์เกียรติวงศ์, 3 ธ.ค. 2025)
+#   - "flooding-after-rain-bangkok-is..." (sponge-city/green-blue infra article, dated
+#     30 มิ.ย. 2025 on the page itself, but its own text references rain events dated
+#     24-26 ก.ย. 2569 -- **date inconsistency, flagged OPEN, NOT resolved** -- the page may
+#     have been edited after its stated publish date; both dates kept, neither picked.)
+#   (URL stubs as given by the founder: tdri.or.th/.../permanent-disaster-management...,
+#   /anatomy-of-preventable-ruin..., /flooding-after-rain-bangkok-is... -- full URLs not
+#   independently fetched in this check, cite title+date+stub only)
+#
+# Structure only extracted -- NO criticism of named individuals (Hat Yai mayor, named
+# ministers) carried into the graph, per founder's explicit rule. Hat Yai itself is
+# next-version scope -- recorded as ONE cross-case lesson row only (see
+# docs/knowledge/structural_issues_2026-09-28.yaml ISSUE-LESSON-HATYAI), not modelled here.
+schema_version: 1
+doc_kind: typology_node_registry
+status_th: >
+  ส่วนขยายจาก TDRI 3 บทความ -- เติม node ที่ขาด (basin-tier committee, ad-hoc command example,
+  green-blue infra) เท่านั้น ไม่สรุปเนื้อหาบทความ.
+rows:
+  # -- PERMANENCE + basin-level tier: reused from water_system_dag.mmd, first time
+  # registered in this typology's own node registry --
+  - id: AG_BASIN_CMT
+    kind: agency
+    layer: power
+    label_th: "คณะกรรมการลุ่มน้ำ (36 ลุ่มน้ำ ตาม พ.ร.บ.ทรัพยากรน้ำ 2561)"
+    agency_class: state
+    permanence: permanent
+    level: basin
+    tag: RELAYED
+    source: >
+      docs/knowledge/water_system_dag.mmd (existing AG_BASIN_CMT node, reused verbatim) --
+      permanence/level per TDRI (ดร.นิพนธ์ พัวพงศกร, tdri.or.th/.../permanent-disaster-
+      management..., 9 ธ.ค. 2025): a STATUTORY basin-tier body (permanent, not ศูนย์เฉพาะกิจ),
+      sitting between ministry and local per that article's structure -- this fills the
+      "basin-level tier between ministry and local" gap the TDRI article names.
+  - id: AG_REGCOM
+    kind: agency
+    layer: power
+    label_th: "คณะกรรมการอุทกภัยและภัยแล้งระดับภูมิภาค 5 คณะ (คำสั่งสำนักนายกฯ 275/2569)"
+    agency_class: state
+    permanence: ad_hoc
+    level: basin
+    capability_operational_policy: null
+    capability_roles_responsibilities: null
+    capability_action_plan: null
+    capability_monitoring_loop: null
+    capability_logistics: null
+    capability_training: null
+    capability_source: >
+      TDRI (ดร.นิพนธ์ พัวพงศกร, 9 ธ.ค. 2025) 6-element C3 checklist -- OPEN for this ad-hoc
+      body, no source states these
+    tag: RELAYED
+    source: >
+      docs/knowledge/water_system_dag.mmd (existing AG_REGCOM node, reused verbatim) --
+      permanence=ad_hoc per TDRI's ศูนย์เฉพาะกิจ distinction (ดร.นิพนธ์ พัวพงศกร, 9 ธ.ค. 2025:
+      "โครงสร้างบัญชาการถาวร-มืออาชีพ vs. ศูนย์เฉพาะกิจ" -- a body created by a PM standing
+      order for regional flood/drought coordination is the ad-hoc case this article warns
+      against, kept distinct from AG_BASIN_CMT's statutory permanence above); level=basin
+      is an INSTINCT approximation of "ระดับภูมิภาค" (regional) onto this typology's 4-value
+      level vocabulary (national/ministry/basin/local) -- the article's own term is
+      "ภูมิภาค", not "ลุ่มน้ำ", flagged here as an approximate mapping, not an exact one.
+
+  # -- INFRASTRUCTURE kind (green-blue): บึงหนองบอน already exists in this repo's OWN data
+  # (docs/knowledge/bma_plan2569_retention_ponds.yaml capacity_list_appendix_ko seq 1,
+  # VERIFIED, 5,000,000 m3, ประเวศ 13.695440/100.660010) but had NO node anywhere in this
+  # typology or its water layer until now -- a real, sourced gap this TDRI-triggered pass
+  # closes with the repo's own pre-existing data, not new data from TDRI itself.
+  - id: WL.NBN.01
+    kind: pond
+    layer: water
+    label_th: "บึงหนองบอน"
+    infra_class: green_blue
+    phase: normal
+    phase_tag: INSTINCT
+    lat: 13.695440
+    lon: 100.660010
+    standard_class: "HY_WaterBody (OGC HY_Features, RELAYED)"
+    tag: VERIFIED
+    source: >
+      docs/knowledge/bma_plan2569_retention_ponds.yaml capacity_list_appendix_ko seq=1
+      (VERIFIED, storage_m3=5,000,000, p78/ก-24) -- infra_class=green_blue per TDRI's
+      green-blue/sponge-city framing ("flooding-after-rain-bangkok-is...", dated
+      30 มิ.ย. 2025 on the page but the page's own text references rain 24-26 ก.ย. 2569 --
+      OPEN date inconsistency, not resolved, both kept). Also referenced in
+      structural_issues_2026-09-28.yaml S14 (pre-lowering ~5 ล้าน ลบ.ม. before the 25 ก.ย.
+      2569 rain, RELAYED).
+  - id: GI.CHULA_CENTENARY_PARK
+    kind: resource
+    layer: resource
+    label_th: "อุทยาน 100 ปี จุฬาฯ (green-blue infrastructure example, TDRI)"
+    resource_type: green_infrastructure
+    infra_class: green_blue
+    phase: normal
+    phase_tag: INSTINCT
+    quantity: null
+    unit: null
+    owner_agency: "OPEN"
+    tag: RELAYED
+    source: >
+      TDRI "flooding-after-rain-bangkok-is..." (dated 30 มิ.ย. 2025 on the page, page text
+      references 24-26 ก.ย. 2569 rain -- OPEN date inconsistency, both kept) -- Bangkok
+      green-blue/porous-surface example named in the article; not linked to any specific
+      water node in this graph (no connectivity data in this check's sources). phase=normal:
+      permanent standing infrastructure, not incident-specific.
+  - id: GI.BENJAKITTI_FOREST_PARK
+    kind: resource
+    layer: resource
+    label_th: "สวนป่าเบญจกิติ (green-blue infrastructure example, TDRI)"
+    resource_type: green_infrastructure
+    infra_class: green_blue
+    phase: normal
+    phase_tag: INSTINCT
+    quantity: null
+    unit: null
+    owner_agency: "OPEN"
+    tag: RELAYED
+    source: "TDRI \"flooding-after-rain-bangkok-is...\" (same article/date-inconsistency note as GI.CHULA_CENTENARY_PARK)"
+
+  # -- INFRASTRUCTURE kind (soft): warning literacy / community communication in normal
+  # time -- the article names this as a THIRD infrastructure category (alongside
+  # grey/green-blue), distinct from the warning_channel node kind (a channel is the
+  # MECHANISM a warning travels through; "soft infrastructure" here is the underlying
+  # community capacity/literacy to understand and act on it, per the article's own
+  # framing) -- genuinely no instance data in this repo's sources beyond the concept
+  # itself, kept OPEN.
+  - id: RES.COMMUNITY_WARNING_LITERACY.SAMMAKORN.01
+    kind: resource
+    layer: resource
+    label_th: "ความรู้เท่าทันการเตือนภัย/การสื่อสารชุมชนในภาวะปกติ (soft infrastructure, สัมมากร)"
+    resource_type: soft_infrastructure
+    infra_class: soft
+    phase: normal
+    phase_tag: INSTINCT
+    quantity: null
+    unit: null
+    owner_agency: "OPEN"
+    tag: OPEN
+    source: >
+      TDRI "flooding-after-rain-bangkok-is..." (soft-infrastructure framing) -- no
+      instance-level evidence in this repo's sources for Sammakorn specifically (e.g. a
+      documented drill/literacy programme); kept OPEN, not invented.

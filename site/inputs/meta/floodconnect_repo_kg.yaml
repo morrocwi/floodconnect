@@ -2,9 +2,73 @@
 # Canonical meta-layer for AI/human orientation.
 # This graph describes repository concepts, source-of-truth artifacts, dependencies,
 # epistemic boundaries, and recommended read paths. It contains NO live flood claim.
-version: "1.0"
+version: "1.5"
 status: "canonical_repo_meta_graph"
-updated_at: "2026-09-29"
+updated_at: "2026-10-03"
+
+lineage:
+  - version: "1.5"
+    date: "2026-10-03"
+    reason: >-
+      correction to the 1.4 entry below (checker MED item 3, this check):
+      that entry said CI builds the public page "from ... the tracked
+      `site/dist/api/v1/` snapshot" -- this overclaimed what
+      site/build_data.py and site/build_page.py actually read.
+      MEASURED: neither script reads site/dist/api/v1/ at all; they read
+      the gitignored data/observations.sqlite and raw/ caches (absent on a
+      fresh runner) plus tracked site/inputs/**/sources/*.yaml. CI is built
+      from TRACKED INPUTS ONLY, and a fresh runner's page therefore shows
+      the no-current-data/staleness state. site/dist/api/v1/** is a tracked
+      snapshot this build does not regenerate -- it is uploaded unchanged
+      alongside the page, passed through as-is. The 1.4 entry is left
+      unedited below (lineage events are a historical record); this entry
+      is the correction. No canonical node added/removed; CI-structure
+      wording only.
+  - version: "1.4"
+    date: "2026-10-03"
+    reason: >-
+      project decision 2026-10-03 ("เอาออก (แนะนำ)"): removed the `build` job's
+      "Collect live snapshots" step (`collect.py --all`) from
+      .github/workflows/floodconnect.yml -- CI no longer performs any
+      server-side live fetch on infrastructure we operate. CI is now
+      validate + full regression + build the public page from whatever is
+      already committed to the repo (the tracked `site/dist/api/v1/`
+      snapshot and other tracked data), never a live upstream call of its
+      own; deploy gating (needs.build.result == 'success') is unchanged.
+      Every live fetch is caller-side only, per the self-install founder
+      ruling. The CI node's summary below is updated to match. No canonical
+      node added or removed; CI-structure only.
+  - version: "1.3"
+    date: "2026-10-02"
+    reason: >-
+      2026-10-02: renamed the root HydroRIVERS river-flow
+      builder build_kg.py -> build_river_kg.py so it no longer shares a name with
+      tools/kg/build_kg.py (the nationwide knowledge-graph builder) -- two different
+      scripts, two different graphs, now two different names. Every reference across
+      docs/tests/comments updated to match; tools/kg/build_kg.py's own name and imports
+      are unchanged. canonical_artifacts for the river-KG node updated accordingly. No
+      node added or removed; artifact-pointer only.
+  - version: "1.2"
+    date: "2026-10-02"
+    reason: >-
+      founder decision 2026-10-02: on-demand only. Removed the `*/30 * * * *` schedule trigger from
+      .github/workflows/floodconnect.yml entirely -- the pipeline is on-demand only
+      (push to main or manual workflow_dispatch), per founder decision 2026-10-02. With
+      the schedule gone, build/deploy now use one gating rule for every non-PR trigger
+      (needs.validate.result == 'success'), removing the former schedule/workflow_dispatch
+      special case this file's v1.1 entry described. deploy's `if` also now requires
+      `always() && needs.build.result == 'success'` so it is never silently skipped when
+      build actually succeeded. No canonical node added or removed; CI-structure only.
+  - version: "1.1"
+    date: "2026-10-02"
+    reason: >-
+      added a `validate` job (RKG+claims+pytest) ahead of build/deploy in
+      .github/workflows/floodconnect.yml, with build/deploy gated on validate for
+      push/workflow_dispatch but not for schedule (a data-dependent test pair can fail
+      without freezing the live page). The 30-min schedule cron itself was left
+      UNCHANGED at this point -- that edit was pending a separate founder decision on
+      the schedule cadence (resolved in the v1.2 entry above). No canonical node added
+      or removed; this bump covers the CI-structure change only.
 
 purpose:
   - "let a new AI understand FloodConnect without scanning the whole repository"
@@ -30,6 +94,7 @@ meta_invariants:
 
 ai_boot_sequence:
   - "AGENTS.md"
+  - "AI.md"
   - "docs/AI_ENTRYPOINT.md"
   - "site/inputs/meta/floodconnect_repo_kg.yaml"
   - "README.md"
@@ -260,7 +325,7 @@ nodes:
     kind: GRAPH
     label: "Thailand River Flow-Propagation Knowledge Graph"
     epistemic_class: STATIC_TOPOLOGY
-    canonical_artifacts: [build_kg.py]
+    canonical_artifacts: [build_river_kg.py]
     outputs: [output/thailand_river_flow.graphml, output/thailand_river_flow.jsonld]
     key_boundary: "HydroRIVERS topology / NEXT_DOWN; not a flood forecast."
 
@@ -444,8 +509,9 @@ nodes:
     kind: REGISTRY
     label: "Operational Source Registry"
     epistemic_class: POLICY_SCHEMA
-    canonical_artifacts: [sources/registry.yaml]
-    summary: "Agency/source URL, cadence, auth, licence, trust tier and host-safety rules."
+    canonical_artifacts: [sources/registry.yaml, sources/api_census.yaml]
+    summary: "Agency/source URL, cadence, auth, licence, trust tier and host-safety rules. sources/api_census.yaml is the wider 162-entry government/third-party sweep this registry's 44 wired sources are drawn from -- closed out 2026-10-03 (0 entries left `unknown`); it is a census of what was observed, never itself a claim that an entry should be ingested."
+    key_boundary: "a `reachable`/`needs_key` census row is not an ingestion decision; only sources/registry.yaml entries are actually wired into collect.py."
 
 
   SOCIAL_LISTENING:
@@ -546,7 +612,7 @@ nodes:
     label: "FloodConnect CI / Pages"
     epistemic_class: EXECUTABLE_MODEL
     canonical_artifacts: [.github/workflows/floodconnect.yml]
-    summary: "Tests critical invariants and rebuilds public page on schedule."
+    summary: "Tests critical invariants and rebuilds public page on demand (push to main / workflow_dispatch) from tracked inputs only (site/inputs, sources/*.yaml); the public page shows no-current-data/staleness unless refreshed caller-side; api/v1 JSONs are passed through unchanged. No schedule, no server-side live fetch -- every live fetch is caller-side only."
 
   SITE:
     kind: OUTPUT
@@ -557,6 +623,121 @@ nodes:
       - site/build_page.py
       - site/DATA_README.md
     summary: "Cached/curated presentation layer; must not invent risk score or unsupported operational truth."
+
+  # --- New nodes below (added 2026-10-02): local-only clusters that had no RKG node
+  # at all before this check (VERIFIED by direct grep of every local-only .py file's
+  # basename against this file, pre-pass). No twin exists on either side for these --
+  # they are additive, not merges.
+
+  KB:
+    kind: OUTPUT
+    label: "Knowledge-Base CLI / Question-Bank Coverage / Minimal AI Entrypoint"
+    epistemic_class: DOCUMENTATION
+    canonical_artifacts:
+      - kb.py
+      - docs/knowledge/README.md
+      - docs/knowledge/INDEX.yaml
+      - docs/knowledge/WATER_MANAGER_QUESTION_BANK.md
+      - AI.md
+      - docs/AI_INTERFACE.md
+      - tools/mcp/floodconnect_mcp.py
+      - tools/api/export_api.py
+      - skills/floodconnect/SKILL.md
+    summary: "python3 kb.py find/status/reindex over docs/knowledge/*.md; reports coverage against the question bank. Also hosts `kb.py answer`/`compute` (see AI.md): a minimal compute entrypoint composing existing readout/accountability/community_dag outputs into one envelope -- it REUSES those modules' own epistemic tags verbatim, it never computes a new flood-state claim of its own. The MCP stdio server and static api/v1 export are merged in at file level alongside it; api/v1 and MCP read the last `tools/api/export_api.py` snapshot of the build artifacts kb.py reads live, so their freshness can lag kb.py's, and MCP's own route tool calls `community_dag.find_safe_route` rather than re-implementing it -- AI.md names all three as the entrypoint's three routes and is the single place the shared reasoning rules are stated."
+    key_boundary: "a found/indexed document != that document's claims being verified; kb.py only locates, counts, and composes existing tagged outputs -- see AGENTS.md note on hand-editing INDEX.yaml being forbidden. `skills/floodconnect/SKILL.md` and `docs/AI_INTERFACE.md` point to AI.md for the reasoning rules rather than restating them -- a rules edit happens in exactly one file."
+
+  EXPERIENCE_LOG:
+    kind: OUTPUT
+    label: "Field/Community Experience Log"
+    epistemic_class: FIELD_EVIDENCE
+    canonical_artifacts:
+      - experience_log.py
+      - docs/knowledge/experience/README.md
+    summary: "Structured store for field/community-report evidence distinct from docs/knowledge/'s RELAYED document cards."
+    key_boundary: "a logged experience entry is evidence input, not automatically verified operational truth (same boundary as SOCIAL_LISTENING)."
+
+  ASSETS_REGISTRY:
+    kind: REGISTRY
+    label: "Physical/Operational Assets Registry"
+    epistemic_class: FIELD_EVIDENCE
+    canonical_artifacts:
+      - assets_registry.py
+      - tests/test_assets_registry.py
+    summary: "Builds/queries the VERIFIED-asset database (pumps, gates, stations, etc.) from harvested CSV/plan sources into data/assets.sqlite."
+    key_boundary: "an asset existing in the registry != that asset's current operational status; status comes from LIVE_DATA_SYSTEM, not this registry."
+
+  BACKTEST:
+    kind: OUTPUT
+    label: "Backtest / Forward-Forecast Tooling"
+    epistemic_class: PROPOSAL
+    canonical_artifacts:
+      - tools/backtest/run_backtest.py
+      - tools/backtest/run_backtest_v1.py
+      - tools/backtest/run_backtest_v2.py
+      - tools/backtest/prop_flood_06.py
+      - tools/backtest/prop_flood_06_v3.py
+      - tools/backtest/prop_flood_06_v5.py
+      - tools/backtest/forward_forecast_bkk_10day.py
+      - tools/backtest/score_forward_forecast.py
+    summary: "Historical replay + locked prospective-forecast tooling feeding PROSPECTIVE_EXPERIMENTS' timestamped experiment docs."
+    key_boundary: "a backtest/forward-forecast result is PROPOSAL tier until locked as an experiment doc (see PROSPECTIVE_EXPERIMENTS); never cite a backtest script's live output as a production forecast."
+
+  HARVEST:
+    kind: DATA_PIPELINE
+    label: "One-shot Harvest Scripts"
+    epistemic_class: FIELD_EVIDENCE
+    canonical_artifacts:
+      - tools/harvest/bma_drain_pipes.py
+      - tools/harvest/bma_maplet_draft.py
+      - tools/harvest/bma_station_detail_draft.py
+      - tools/harvest/dwr_subbasin.py
+      - tools/harvest/hii_flood_area_ckan.py
+      - tools/harvest/hii_waterchart_draft.py
+      - tools/harvest/ibtracs_bkk_500km.py
+      - tools/harvest/point_elevation_openmeteo.py
+      - tools/harvest/wikipedia_canals.py
+    summary: "One-off/manual pull-and-cache scripts for sources not (yet) wired into collect.py --all's recurring sweep; feeds ASSETS_REGISTRY and SOURCE_REGISTRY candidate rows."
+    key_boundary: "a harvested cache file is a point-in-time pull, not a live-refreshed source; see each script's own module docstring for last-run date."
+
+  LAYER0:
+    kind: OUTPUT
+    label: "Layer-0 Capacity/Block Rendering"
+    epistemic_class: PROPOSAL
+    canonical_artifacts:
+      - tools/layer0/in_out_capacity.py
+      - tools/layer0/render_block.py
+    summary: "Renders per-block in/out drainage-capacity readouts, downstream of DRAINAGE_CAPACITY_INPUTS."
+    key_boundary: "a rendered block capacity figure inherits DRAINAGE_CAPACITY_INPUTS' own epistemic tier; this module adds no new measurement."
+
+  RISKMAP:
+    kind: OUTPUT
+    label: "Sub-basin Risk Map"
+    epistemic_class: PROPOSAL
+    canonical_artifacts:
+      - tools/riskmap/subbasin_risk.py
+    summary: "Sub-basin-level risk rendering, downstream of HIERARCHICAL_FLOOD_ZOOM/WATER_BALANCE."
+    key_boundary: "a rendered risk map is a PROPOSAL-tier readout aid, never a safety certification or evacuation instruction (same boundary as every other FloodConnect output)."
+
+  HEROMAP:
+    kind: OUTPUT
+    label: "Sammakorn Hero/Overview Map"
+    epistemic_class: DOCUMENTATION
+    canonical_artifacts:
+      - tools/heromap/sammakorn_map.py
+    summary: "Renders the Sammakorn-area overview map used on the public page's top section."
+    key_boundary: "a map rendering != a safety claim about any node/route shown on it."
+
+  RECONCILE:
+    kind: DATA_PIPELINE
+    label: "History Replay / Signal Reconciliation"
+    epistemic_class: FIELD_EVIDENCE
+    canonical_artifacts:
+      - readout_history.py
+      - finite_temporal_ledger.py
+      - dem_signal_check.py
+      - klongmap_local_prior_experiment.py
+    summary: "Replays readout_log for trend/history (readout_history.py, computes nothing new, picks no winner between runs -- AGENTS.md §3), plus signal/DEM/local-prior reconciliation checks grouped here as the closest existing boundary (tag INSTINCT -- a judgment call grouping four otherwise-uncategorized local-only scripts by shared 'reconcile past readings' shape, not a pre-existing repo term)."
+    key_boundary: "a reconciliation/history-replay result is read-only over existing readout_log rows; it must never retroactively alter a stored observation (append-only rule, AGENTS.md §2)."
 
 edges:
   - {from: AGENT_COORDINATION, relation: USES_CANONICAL_NODE_IDS_FROM, to: REPO_KG}
@@ -591,6 +772,22 @@ edges:
   - {from: FC_ROOT, relation: CONTAINS, to: TDLC}
   - {from: FC_ROOT, relation: CONTAINS, to: UNIFIED_CRISIS}
   - {from: FC_ROOT, relation: CONTAINS, to: GOVERNANCE}
+
+  # New edges (added 2026-10-02) for the new local-only-cluster nodes above.
+  - {from: FC_ROOT, relation: CONTAINS, to: KB}
+  - {from: FC_ROOT, relation: CONTAINS, to: EXPERIENCE_LOG}
+  - {from: FC_ROOT, relation: CONTAINS, to: ASSETS_REGISTRY}
+  - {from: FC_ROOT, relation: CONTAINS, to: BACKTEST}
+  - {from: FC_ROOT, relation: CONTAINS, to: HARVEST}
+  - {from: FC_ROOT, relation: CONTAINS, to: RECONCILE}
+  - {from: HARVEST, relation: FEEDS, to: ASSETS_REGISTRY}
+  - {from: HARVEST, relation: FEEDS, to: SOURCE_REGISTRY}
+  - {from: DRAINAGE_CAPACITY_INPUTS, relation: PROVIDES_CONTEXT_TO, to: LAYER0}
+  - {from: HIERARCHICAL_FLOOD_ZOOM, relation: PROVIDES_CONTEXT_TO, to: RISKMAP}
+  - {from: WATER_BALANCE, relation: PROVIDES_CONTEXT_TO, to: RISKMAP}
+  - {from: SITE, relation: CONTAINS, to: HEROMAP}
+  - {from: PROSPECTIVE_EXPERIMENTS, relation: PRODUCED_BY, to: BACKTEST}
+  - {from: RECONCILE, relation: READS, to: LIVE_DATA_SYSTEM}
 
   - {from: RIVER_KG, relation: PROVIDES_TOPOLOGY_TO, to: LIVE_DATA_SYSTEM}
   - {from: RIVER_KG, relation: PROVIDES_CONTEXT_TO, to: BANGKOK_CANAL_KG}
@@ -732,7 +929,7 @@ question_routes:
 
   river_or_downstream_connectivity:
     start_nodes: [RIVER_KG]
-    read: [build_kg.py, README.md]
+    read: [build_river_kg.py, README.md]
     rule: "topology answer only unless current hydrology is separately supplied"
 
   bangkok_canal_connectivity:

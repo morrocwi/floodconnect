@@ -1,0 +1,1011 @@
+schema_version: 1
+ledger_kind: urban_flood_event_ledger
+append_only: true
+schema_description: 'Binary urban-flooding ground-truth ledger, append-only, adopted from docs/knowledge/card_thirdparty_urban_event_layer_and_zoom_2026-09-27.md
+  §2.1 (the review''s proposed schema for the one real gap that card found: an ''urban flooding occurred''
+  event record separate from data/observations.sqlite''s observations/contradictions tables). One row
+  per event, one event may cover a city, a BMA flood-road district code, or a single PROP-FLOOD-06 node
+  -- see unit_scope. observed_y_t (urban_flood_observed) and official_disaster_declared are ALWAYS separate
+  fields, never merged, per the founder''s contradiction-first rule (CO_FORECAST_PROTOCOL.md §2b).'
+fields:
+- 'event_id: string, unique, never reused (append-only key)'
+- 'unit_scope: city | district | node'
+- 'unit: free-text identifier for the scope (city name, BMA flood-road district code, or PROP-FLOOD-06
+  unit id)'
+- 't_onset_observed: ISO8601 timestamp of the first evidence row supporting urban_flood_observed (never
+  the same as t_onset_official)'
+- 't_onset_official: ISO8601 timestamp of an official declaration, or null if none'
+- 'evidence: list of {class, source, detail/value, observed_at_utc, tag} -- class is one of road_telemetry
+  | canal_overbank | evacuation_shelter | community_reports_consistent | media | satellite'
+- 'urban_flood_observed: true | false | UNCERTAIN -- the binary ground-truth call itself'
+- 'official_disaster_declared: true | false | OPEN -- a regulatory/administrative fact, kept separate
+  from urban_flood_observed even when both are true'
+- 'declaring_agency: string or null'
+- 'warnings: list of {issuer, issued_at, scope, text, lead_time_h, lead_time_note, tag} -- scope is regional_class
+  | node_specific (mandatory, per TODO #51: prevents a coarse citywide warning''s lead time from being
+  laundered into a node''s achieved lead)'
+- 'notes: free text'
+- 'contradictions: list of {description, tag} -- rows where this repo''s own data disagrees with a third-party/relayed
+  claim; never resolved by silent preference'
+- 'tag: VERIFIED | MEASURED | RELAYED | INSTINCT | OPEN -- mandatory on every event row AND on every evidence/warning
+  sub-row (a row-level tag never upgrades a sub-row''s own weaker tag)'
+decision_rule:
+  chosen:
+    name: road_telemetry_district_cluster_v1
+    threshold_cm: 10.0
+    min_roads: 3
+    window_hours: 6.0
+    tag: INSTINCT
+  statement: urban_flood_observed = true for a district-day cluster when >= min_roads distinct thaiwater_flood_road
+    stations sharing a BMA flood-road district code (the middle segment of station_code, e.g. FL.BKP.04
+    -> district BKP) report value_cm >= threshold_cm within window_hours of each other, chain-clustered
+    (consecutive qualifying readings <= window_hours apart join the same cluster).
+  calibration_note: OPEN -- threshold_cm=10, min_roads=3, window_hours=6 chosen as a first pass because
+    it produces a plausible-looking event count (25 district-events in the only year this source actually
+    holds data, 2026) without collapsing to near-zero (min_roads=5) or exploding toward single-road noise
+    (min_roads=2). This is INSTINCT, not derived from any registered threshold -- founder should confirm
+    or adjust against the alternatives matrix below before this rule is treated as final.
+  alternatives_matrix:
+  - threshold_cm: 10.0
+    min_roads: 2
+    window_hours: 6.0
+    total_events: 32
+    by_year:
+      2026: 32
+    chosen: false
+  - threshold_cm: 10.0
+    min_roads: 3
+    window_hours: 6.0
+    total_events: 25
+    by_year:
+      2026: 25
+    chosen: true
+  - threshold_cm: 10.0
+    min_roads: 5
+    window_hours: 6.0
+    total_events: 13
+    by_year:
+      2026: 13
+    chosen: false
+  - threshold_cm: 20.0
+    min_roads: 2
+    window_hours: 6.0
+    total_events: 23
+    by_year:
+      2026: 23
+    chosen: false
+  - threshold_cm: 20.0
+    min_roads: 3
+    window_hours: 6.0
+    total_events: 16
+    by_year:
+      2026: 16
+    chosen: false
+  - threshold_cm: 20.0
+    min_roads: 5
+    window_hours: 6.0
+    total_events: 11
+    by_year:
+      2026: 11
+    chosen: false
+  - threshold_cm: 30.0
+    min_roads: 2
+    window_hours: 6.0
+    total_events: 4
+    by_year:
+      2026: 4
+    chosen: false
+  - threshold_cm: 30.0
+    min_roads: 3
+    window_hours: 6.0
+    total_events: 0
+    by_year: {}
+    chosen: false
+  - threshold_cm: 30.0
+    min_roads: 5
+    window_hours: 6.0
+    total_events: 0
+    by_year: {}
+    chosen: false
+  data_note: 'MEASURED 2026-09-27: source thaiwater_flood_road holds 7,699 rows total (2019-01-30 .. 2026-09-27),
+    but only 10 rows fall outside 2026 (1 in 2019, 2 each in 2021/2022/2023/2025, all value=0) -- isolated
+    probe/test fetches, not a real historical archive. 7,689 of 7,699 rows (99.87%) are from 2026. Every
+    candidate district-event below is therefore 2026-only; this is a measured gap in what this source
+    holds, NOT a claim that Bangkok roads had zero flooding 2019-2025 -- the historical case-card events
+    (2554, 2565, 2567 x2) below cover some of that gap via RELAYED news synthesis, at city/regional grain
+    only, not per-road.'
+events:
+- event_id: bkp_bangkapi_2026-09-25
+  unit_scope: district
+  unit: BKP (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-25T13:05:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '8 distinct BKP roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1:
+      threshold_cm=10, min_roads=3, window_hours=6) -- roads include FL.BKP.04 (ถ.รามคำแหง ตรงข้าม ซ.53),
+      FL.BKP.05 (ถ.รามคำแหง ตรงข้าม ซ.43), FL.BKP.03 (ถ.นวมินทร์ แยกบางกะปิ)'
+    value_cm: 20.0
+    observed_at_utc: '2026-09-25T13:05:00+00:00'
+    tag: MEASURED
+  - class: community_reports_consistent
+    source: community_report
+    detail: Sammakorn (soi 50) first report tagged เข้าบ้าน -- see node event sammakorn_2026-09-26 for
+      the node-specific row
+    observed_at_utc: '2026-09-25T21:00:00+00:00'
+    tag: MEASURED
+  - class: media
+    source: RELAYED-third-party-paste (BMA-attributed onset times, not this repo's own archive -- see
+      contradictions)
+    detail: third-party paste cites BMA-record road-flooding onset times 14:45 and 15:55 for this event
+      window; local/UTC convention of those two timestamps is not stated in the paste and could not be
+      resolved against any archive this repo holds
+    observed_at_utc: null
+    tag: RELAYED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings:
+  - issuer: TMD
+    issued_at: '2026-09-21T17:00:00+07:00'
+    scope: regional_class
+    text: หมวดฝนหนัก-หนักมาก 23-27 ก.ย. รวมกรุงเทพมหานคร (regional/citywide rain-category forecast, not
+      a point forecast for any single road or district)
+    lead_time_h: 107.0
+    lead_time_note: T0_value (2026-09-25T21:00:00Z, Sammakorn community report) minus issued_at (2026-09-21T10:00:00Z)
+      = 107h. This is the lead of a CITYWIDE rain-category warning, not an achieved lead for this district
+      or for Sammakorn specifically -- never substitute this number for the node-specific achieved lead
+      below.
+    tag: RELAYED
+  - issuer: this repo's own thaiwater_canal_waterlevel collector
+    issued_at: '2026-09-25T13:05:00+00:00'
+    scope: node_specific
+    text: First archived canal-waterlevel readings near Sammakorn/Ram53 at T-7.92h before T0 -- readings
+      themselves are MEASURED, but no registered PROP-FLOOD threshold combined them into an action_label
+      at that run_time (tier recorded OPEN in raw/backtests/sammakorn_7day_real_2026-09-27.jsonl) -- this
+      is an available signal, not a fired warning.
+    lead_time_h: 7.92
+    lead_time_note: T0_value (2026-09-25T21:00:00Z) minus run_time (2026-09-25T13:05:00Z) = 7.92h. This
+      is when the data existed, not when any action_label was raised -- the backtest's own achieved EARLY_MOVE
+      lead for Sammakorn is -9h (a MISS), see docs/experiments/2026-09-27-sammakorn-7day-backtest-REAL.md
+      §5.
+    tag: MEASURED
+    onset_censoring: left_censored
+    first_fetch_utc: '2026-09-26T07:51:01.583905+00:00'
+  notes: 'Scale-mixing guard (per docs/knowledge/card_thirdparty_urban_event_layer_and_zoom_2026-09-27.md
+    §1, TODO #54): the 107h TMD lead and the 7.92h node signal-availability lead measure different things
+    (regional-class category warning vs. node-specific data availability) and must never be reported as
+    the same number. Neither equals the backtest''s own achieved EARLY_MOVE lead for Sammakorn (-9h, a
+    MISS) -- three distinct numbers, kept distinct. LEFT-CENSORING (added 2026-09-27, correction pass):
+    this event''s t_onset_observed predates this repo''s own first-ever fetch of thaiwater_flood_road
+    (2026-09-26T08:25:26.071750+00:00) -- the DB only proves ''already flooded no later than t_onset_observed'',
+    never a true start time. See onset_censoring/first_fetch_utc fields.'
+  contradictions:
+  - description: This repo's own thaiwater_flood_road onset for BKP district is 2026-09-25T13:05:00Z (20:05
+      ICT). A third-party paste attributes BMA-record onset times of 14:45 and 15:55 to this event without
+      stating whether those are ICT or UTC, or which calendar day. Under either reading (25 Sep ICT, which
+      would be ~5-6h earlier than this repo's own onset; or 26 Sep, which would be a full day later),
+      the two times differ from this repo's own MEASURED onset by well over 1h. Kept as a contradiction
+      row, not merged or reconciled -- neither value is deleted or silently preferred.
+    tag: OPEN
+    status: compatible_left_censored
+    note: 'Correction 2026-09-27: this repo''s own onset (13:05Z) is LEFT-CENSORED (first collector fetch
+      of thaiwater_flood_road was 2026-09-26T08:25:26Z, after this observed_at_utc) -- our onset is only
+      an upper bound on the true start time. The RELAYED BMA times (14:45/15:55 ICT) are each EARLIER
+      than our upper bound under the most direct reading (25 Sep ICT), so they are COMPATIBLE with (not
+      contradicted by) a true onset our own data cannot rule out -- kept as a contradiction row (not deleted,
+      not merged) because the timezone/date of the BMA-record times themselves is still unresolved.'
+  tag: MEASURED
+  onset_censoring: left_censored
+  first_fetch_utc: '2026-09-26T08:25:26.071750+00:00'
+- event_id: sammakorn_2026-09-26
+  unit_scope: node
+  unit: sammakorn (PROP-FLOOD-06 unit id, soi 50 / Ram53 neighbourhood)
+  t_onset_observed: '2026-09-25T21:00:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: community_reports_consistent
+    source: community_report
+    detail: First community report tagged เข้าบ้าน, soi 50 -- T0 convention per docs/T7_T0_DATA_PLAN.md
+      §2 ("first community report tagged เข้าบ้าน")
+    value: เข้าบ้านตั้งแต่ตี 4
+    observed_at_utc: '2026-09-25T21:00:00+00:00'
+    tag: MEASURED
+  - class: canal_overbank
+    source: thaiwater_canal_waterlevel
+    detail: Canal-level readings near Sammakorn/Ram53 archived from T-7.92h; levels MEASURED but no registered
+      PROP-FLOOD-06 threshold fired at that run_time (tier OPEN in the real backtest log) -- one reading
+      (-0.21m) is flagged SUSPECT/excluded as a physics-neighbour-inconsistent anchor, kept in the record
+      rather than deleted.
+    observed_at_utc: '2026-09-25T13:05:00+00:00'
+    tag: MEASURED
+    onset_censoring: left_censored
+    first_fetch_utc: '2026-09-26T07:51:01.583905+00:00'
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: BKP district-wide road cluster (this repo's own onset) reaches this event's district context
+      -- see bkp_bangkapi_2026-09-25 for the full district-level row.
+    observed_at_utc: '2026-09-25T13:05:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings:
+  - issuer: this repo's own thaiwater_canal_waterlevel collector
+    issued_at: '2026-09-25T13:05:00+00:00'
+    scope: node_specific
+    text: Canal-level signal available (see evidence above); no action_label fired at this run_time --
+      tier recorded OPEN, not a warn/critical crossing.
+    lead_time_h: 7.92
+    lead_time_note: 'Signal-availability lead only, not an achieved warning lead. The backtest''s own
+      achieved EARLY_MOVE lead is -9h (MISS): the neighbour-node (ram53) signal was actually recorded
+      by this repo at run_time 2026-09-26T06:00:00Z, 9h AFTER T0, per raw/backtests/sammakorn_7day_real_2026-09-27.jsonl.'
+    tag: MEASURED
+    onset_censoring: left_censored
+    first_fetch_utc: '2026-09-26T07:51:01.583905+00:00'
+  - issuer: TMD
+    issued_at: '2026-09-21T17:00:00+07:00'
+    scope: regional_class
+    text: หมวดฝนหนัก-หนักมาก 23-27 ก.ย. รวมกรุงเทพมหานคร -- regional category warning, not specific to
+      Sammakorn or Ram53.
+    lead_time_h: 107.0
+    lead_time_note: Regional-class lead, RELAYED (no archive of this warning exists in this repo's own
+      raw/live/tmd_* -- see docs/T7_T0_DATA_PLAN.md §1). Never substitute for the node's own achieved
+      lead (-9h, MISS).
+    tag: RELAYED
+  notes: 'Achieved EARLY_MOVE lead for this node is -9h (a MISS, action came after T0), per docs/experiments/2026-09-27-sammakorn-7day-backtest-REAL.md
+    §5 -- recorded here as a cross-reference, not recomputed. This ledger row exists to give that backtest
+    an explicit binary urban_flood_observed=true anchor, separate from the tier/mode readout. LEFT-CENSORING
+    (added 2026-09-27, correction pass): the canal-waterlevel reading cited above (observed_at_utc 2026-09-25T13:05:00Z)
+    predates this repo''s own first-ever fetch of thaiwater_canal_waterlevel (2026-09-26T07:51:01.583905+00:00)
+    -- the T-7.92h figure is a left-censored data-availability window, not a confirmed onset of the canal
+    signal itself.'
+  contradictions: []
+  tag: MEASURED
+  onset_censoring_canal_signal: left_censored
+  first_fetch_utc_canal: '2026-09-26T07:51:01.583905+00:00'
+- event_id: bangkok_citywide_disaster_declared_2026-09-27
+  unit_scope: city
+  unit: กรุงเทพมหานคร (all 50 districts)
+  t_onset_observed: '2026-09-25T13:00:00+00:00'
+  t_onset_official: '2026-09-27T00:00:00+07:00'
+  evidence:
+  - class: media
+    source: docs/knowledge/case_bkk_2569.md (citing pptvhd36.com)
+    detail: กทม. ประกาศทั้ง 50 เขตเป็นพื้นที่ประสบสาธารณภัย -- เปิดขั้นตอนแจ้งความเสียหาย/ขอรับความช่วยเหลือผ่านสำนักงานเขต
+    observed_at_utc: null
+    tag: RELAYED
+  urban_flood_observed: true
+  official_disaster_declared: true
+  declaring_agency: กรุงเทพมหานคร (BMA) -- exact declaring office/order not further resolved in this check,
+    OPEN
+  warnings: []
+  notes: official_disaster_declared=true kept as a SEPARATE field from this repo's own observed onsets
+    (t_onset_observed here is the earliest BKP-district road-telemetry onset, 2026-09-25T13:05Z minus
+    the WTL/LKB near-tie at 13:00Z -- 2026-09-25T13:00:00Z used here) -- the declaration itself lags the
+    first MEASURED road-flood readout by roughly 1 day 11h, never merged into a single number.
+  contradictions: []
+  tag: RELAYED
+- event_id: lkb_2026-09-25_1300
+  unit_scope: district
+  unit: LKB (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-25T13:00:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '4 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-25T13:00:00+00:00 .. 2026-09-25T13:10:00+00:00; roads: FL.LKB.01, FL.LKB.03,
+      FL.LKB.09, FL.LKB.10'
+    observed_at_utc: '2026-09-25T13:00:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: 'Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count. LEFT-CENSORING (added 2026-09-27, correction pass): this event''s t_onset_observed predates
+    this repo''s own first-ever fetch of thaiwater_flood_road (2026-09-26T08:25:26.071750+00:00) -- the
+    DB only proves ''already flooded no later than t_onset_observed'', never a true start time. See onset_censoring/first_fetch_utc
+    fields.'
+  contradictions: []
+  tag: MEASURED
+  onset_censoring: left_censored
+  first_fetch_utc: '2026-09-26T08:25:26.071750+00:00'
+- event_id: wtl_2026-09-25_1300
+  unit_scope: district
+  unit: WTL (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-25T13:00:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '4 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-25T13:00:00+00:00 .. 2026-09-25T13:10:00+00:00; roads: FL.WTL.03, FL.WTL.04,
+      FL.WTL.08, FL.WTL.09'
+    observed_at_utc: '2026-09-25T13:00:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: 'Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count. LEFT-CENSORING (added 2026-09-27, correction pass): this event''s t_onset_observed predates
+    this repo''s own first-ever fetch of thaiwater_flood_road (2026-09-26T08:25:26.071750+00:00) -- the
+    DB only proves ''already flooded no later than t_onset_observed'', never a true start time. See onset_censoring/first_fetch_utc
+    fields.'
+  contradictions: []
+  tag: MEASURED
+  onset_censoring: left_censored
+  first_fetch_utc: '2026-09-26T08:25:26.071750+00:00'
+- event_id: bka_2026-09-25_1305
+  unit_scope: district
+  unit: BKA (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-25T13:05:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '3 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-25T13:05:00+00:00 .. 2026-09-25T13:05:00+00:00; roads: FL.BKA.03, FL.BKA.06,
+      FL.BKA.08'
+    observed_at_utc: '2026-09-25T13:05:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: 'Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count. LEFT-CENSORING (added 2026-09-27, correction pass): this event''s t_onset_observed predates
+    this repo''s own first-ever fetch of thaiwater_flood_road (2026-09-26T08:25:26.071750+00:00) -- the
+    DB only proves ''already flooded no later than t_onset_observed'', never a true start time. See onset_censoring/first_fetch_utc
+    fields.'
+  contradictions: []
+  tag: MEASURED
+  onset_censoring: left_censored
+  first_fetch_utc: '2026-09-26T08:25:26.071750+00:00'
+- event_id: bkm_2026-09-25_1305
+  unit_scope: district
+  unit: BKM (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-25T13:05:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '3 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-25T13:05:00+00:00 .. 2026-09-25T13:10:00+00:00; roads: FL.BKM.01, FL.BKM.04,
+      FL.BKM.06'
+    observed_at_utc: '2026-09-25T13:05:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: 'Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count. LEFT-CENSORING (added 2026-09-27, correction pass): this event''s t_onset_observed predates
+    this repo''s own first-ever fetch of thaiwater_flood_road (2026-09-26T08:25:26.071750+00:00) -- the
+    DB only proves ''already flooded no later than t_onset_observed'', never a true start time. See onset_censoring/first_fetch_utc
+    fields.'
+  contradictions: []
+  tag: MEASURED
+  onset_censoring: left_censored
+  first_fetch_utc: '2026-09-26T08:25:26.071750+00:00'
+- event_id: lpw_2026-09-25_1305
+  unit_scope: district
+  unit: LPW (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-25T13:05:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '4 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-25T13:05:00+00:00 .. 2026-09-25T13:10:00+00:00; roads: FL.LPW.02, FL.LPW.03,
+      FL.LPW.04, FL.LPW.07'
+    observed_at_utc: '2026-09-25T13:05:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: 'Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count. LEFT-CENSORING (added 2026-09-27, correction pass): this event''s t_onset_observed predates
+    this repo''s own first-ever fetch of thaiwater_flood_road (2026-09-26T08:25:26.071750+00:00) -- the
+    DB only proves ''already flooded no later than t_onset_observed'', never a true start time. See onset_censoring/first_fetch_utc
+    fields.'
+  contradictions: []
+  tag: MEASURED
+  onset_censoring: left_censored
+  first_fetch_utc: '2026-09-26T08:25:26.071750+00:00'
+- event_id: pwt_2026-09-25_1305
+  unit_scope: district
+  unit: PWT (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-25T13:05:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '3 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-25T13:05:00+00:00 .. 2026-09-25T13:10:00+00:00; roads: FL.PWT.02, FL.PWT.03,
+      FL.PWT.04'
+    observed_at_utc: '2026-09-25T13:05:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: 'Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count. LEFT-CENSORING (added 2026-09-27, correction pass): this event''s t_onset_observed predates
+    this repo''s own first-ever fetch of thaiwater_flood_road (2026-09-26T08:25:26.071750+00:00) -- the
+    DB only proves ''already flooded no later than t_onset_observed'', never a true start time. See onset_censoring/first_fetch_utc
+    fields.'
+  contradictions: []
+  tag: MEASURED
+  onset_censoring: left_censored
+  first_fetch_utc: '2026-09-26T08:25:26.071750+00:00'
+- event_id: slg_2026-09-25_1305
+  unit_scope: district
+  unit: SLG (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-25T13:05:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '3 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-25T13:05:00+00:00 .. 2026-09-25T13:05:00+00:00; roads: FL.SLG.04, FL.SLG.05,
+      FL.SLG.06'
+    observed_at_utc: '2026-09-25T13:05:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: 'Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count. LEFT-CENSORING (added 2026-09-27, correction pass): this event''s t_onset_observed predates
+    this repo''s own first-ever fetch of thaiwater_flood_road (2026-09-26T08:25:26.071750+00:00) -- the
+    DB only proves ''already flooded no later than t_onset_observed'', never a true start time. See onset_censoring/first_fetch_utc
+    fields.'
+  contradictions: []
+  tag: MEASURED
+  onset_censoring: left_censored
+  first_fetch_utc: '2026-09-26T08:25:26.071750+00:00'
+- event_id: bkp_2026-09-26_0645
+  unit_scope: district
+  unit: BKP (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-26T06:45:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '9 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-26T06:45:00+00:00 .. 2026-09-26T14:40:00+00:00; roads: FL.BKP.03, FL.BKP.04,
+      FL.BKP.05, FL.BKP.07, FL.BKP.08, FL.BKP.09, FL.BKP.10, FL.BKP.11, FL.BKP.12'
+    observed_at_utc: '2026-09-26T06:45:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: 'Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count. LEFT-CENSORING (added 2026-09-27, correction pass): this event''s t_onset_observed predates
+    this repo''s own first-ever fetch of thaiwater_flood_road (2026-09-26T08:25:26.071750+00:00) -- the
+    DB only proves ''already flooded no later than t_onset_observed'', never a true start time. See onset_censoring/first_fetch_utc
+    fields.'
+  contradictions: []
+  tag: MEASURED
+  onset_censoring: left_censored
+  first_fetch_utc: '2026-09-26T08:25:26.071750+00:00'
+- event_id: ctc_2026-09-26_0905
+  unit_scope: district
+  unit: CTC (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-26T09:05:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '10 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-26T09:05:00+00:00 .. 2026-09-27T14:30:00+00:00; roads: FL.CTC.01, FL.CTC.04,
+      FL.CTC.06, FL.CTC.07, FL.CTC.08, FL.CTC.10, FL.CTC.11, FL.CTC.12, FL.CTC.13, FL.CTC.15'
+    observed_at_utc: '2026-09-26T09:05:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count.
+  contradictions: []
+  tag: MEASURED
+- event_id: lkb_2026-09-26_0910
+  unit_scope: district
+  unit: LKB (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-26T09:10:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '5 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-26T09:10:00+00:00 .. 2026-09-26T14:40:00+00:00; roads: FL.LKB.01, FL.LKB.03,
+      FL.LKB.05, FL.LKB.09, FL.LKB.10'
+    observed_at_utc: '2026-09-26T09:10:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count.
+  contradictions: []
+  tag: MEASURED
+- event_id: wtl_2026-09-26_0910
+  unit_scope: district
+  unit: WTL (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-26T09:10:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '6 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-26T09:10:00+00:00 .. 2026-09-27T14:30:00+00:00; roads: FL.WTL.03, FL.WTL.04,
+      FL.WTL.06, FL.WTL.08, FL.WTL.09, FL.WTL.10'
+    observed_at_utc: '2026-09-26T09:10:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count.
+  contradictions: []
+  tag: MEASURED
+- event_id: bka_2026-09-26_0910
+  unit_scope: district
+  unit: BKA (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-26T09:10:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '7 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-26T09:10:00+00:00 .. 2026-09-26T14:40:00+00:00; roads: FL.BKA.03, FL.BKA.04,
+      FL.BKA.05, FL.BKA.06, FL.BKA.07, FL.BKA.08, FL.BKA.09'
+    observed_at_utc: '2026-09-26T09:10:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count.
+  contradictions: []
+  tag: MEASURED
+- event_id: bkm_2026-09-26_0910
+  unit_scope: district
+  unit: BKM (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-26T09:10:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '6 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-26T09:10:00+00:00 .. 2026-09-27T14:30:00+00:00; roads: FL.BKM.01, FL.BKM.02,
+      FL.BKM.03, FL.BKM.04, FL.BKM.05, FL.BKM.06'
+    observed_at_utc: '2026-09-26T09:10:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count.
+  contradictions: []
+  tag: MEASURED
+- event_id: dmg_2026-09-26_0910
+  unit_scope: district
+  unit: DMG (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-26T09:10:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '3 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-26T09:10:00+00:00 .. 2026-09-26T14:40:00+00:00; roads: FL.DMG.01, FL.DMG.02,
+      FL.DMG.03'
+    observed_at_utc: '2026-09-26T09:10:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count.
+  contradictions: []
+  tag: MEASURED
+- event_id: lpw_2026-09-26_0910
+  unit_scope: district
+  unit: LPW (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-26T09:10:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '6 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-26T09:10:00+00:00 .. 2026-09-26T14:40:00+00:00; roads: FL.LPW.02, FL.LPW.03,
+      FL.LPW.04, FL.LPW.05, FL.LPW.06, FL.LPW.07'
+    observed_at_utc: '2026-09-26T09:10:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count.
+  contradictions: []
+  tag: MEASURED
+- event_id: pwt_2026-09-26_0910
+  unit_scope: district
+  unit: PWT (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-26T09:10:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '3 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-26T09:10:00+00:00 .. 2026-09-26T14:40:00+00:00; roads: FL.PWT.02, FL.PWT.03,
+      FL.PWT.04'
+    observed_at_utc: '2026-09-26T09:10:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count.
+  contradictions: []
+  tag: MEASURED
+- event_id: slg_2026-09-26_0910
+  unit_scope: district
+  unit: SLG (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-26T09:10:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '5 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-26T09:10:00+00:00 .. 2026-09-27T14:30:00+00:00; roads: FL.SLG.01, FL.SLG.02,
+      FL.SLG.04, FL.SLG.05, FL.SLG.06'
+    observed_at_utc: '2026-09-26T09:10:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count.
+  contradictions: []
+  tag: MEASURED
+- event_id: ddg_2026-09-26_0910
+  unit_scope: district
+  unit: DDG (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-26T09:10:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '3 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-26T09:10:00+00:00 .. 2026-09-26T12:25:00+00:00; roads: FL.DDG.05, FL.DDG.08,
+      FL.DDG.12'
+    observed_at_utc: '2026-09-26T09:10:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count.
+  contradictions: []
+  tag: MEASURED
+- event_id: lsi_2026-09-26_0910
+  unit_scope: district
+  unit: LSI (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-26T09:10:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '3 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-26T09:10:00+00:00 .. 2026-09-27T14:30:00+00:00; roads: FL.LSI.02, FL.LSI.06,
+      FL.LSI.07'
+    observed_at_utc: '2026-09-26T09:10:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count.
+  contradictions: []
+  tag: MEASURED
+- event_id: lkb_2026-09-27_0310
+  unit_scope: district
+  unit: LKB (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-27T03:10:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '5 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-27T03:10:00+00:00 .. 2026-09-27T14:05:00+00:00; roads: FL.LKB.01, FL.LKB.03,
+      FL.LKB.05, FL.LKB.09, FL.LKB.10'
+    observed_at_utc: '2026-09-27T03:10:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count.
+  contradictions: []
+  tag: MEASURED
+- event_id: bka_2026-09-27_0310
+  unit_scope: district
+  unit: BKA (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-27T03:10:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '7 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-27T03:10:00+00:00 .. 2026-09-27T14:05:00+00:00; roads: FL.BKA.03, FL.BKA.04,
+      FL.BKA.05, FL.BKA.06, FL.BKA.07, FL.BKA.08, FL.BKA.09'
+    observed_at_utc: '2026-09-27T03:10:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count.
+  contradictions: []
+  tag: MEASURED
+- event_id: bkp_2026-09-27_0310
+  unit_scope: district
+  unit: BKP (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-27T03:10:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '7 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-27T03:10:00+00:00 .. 2026-09-27T14:05:00+00:00; roads: FL.BKP.04, FL.BKP.05,
+      FL.BKP.07, FL.BKP.08, FL.BKP.09, FL.BKP.10, FL.BKP.12'
+    observed_at_utc: '2026-09-27T03:10:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count.
+  contradictions: []
+  tag: MEASURED
+- event_id: dmg_2026-09-27_0310
+  unit_scope: district
+  unit: DMG (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-27T03:10:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '3 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-27T03:10:00+00:00 .. 2026-09-27T14:05:00+00:00; roads: FL.DMG.01, FL.DMG.02,
+      FL.DMG.03'
+    observed_at_utc: '2026-09-27T03:10:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count.
+  contradictions: []
+  tag: MEASURED
+- event_id: lpw_2026-09-27_0310
+  unit_scope: district
+  unit: LPW (BMA flood-road district code; Thai district name not resolved in this check, OPEN)
+  t_onset_observed: '2026-09-27T03:10:00+00:00'
+  t_onset_official: null
+  evidence:
+  - class: road_telemetry
+    source: thaiwater_flood_road
+    detail: '6 distinct roads reached >=10cm within the 6h clustering window (rule road_telemetry_district_cluster_v1);
+      cluster span 2026-09-27T03:10:00+00:00 .. 2026-09-27T14:05:00+00:00; roads: FL.LPW.02, FL.LPW.03,
+      FL.LPW.04, FL.LPW.05, FL.LPW.06, FL.LPW.07'
+    observed_at_utc: '2026-09-27T03:10:00+00:00'
+    tag: MEASURED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: Derived candidate from tools/backtest/urban_event_ledger.py --list-candidates; part of the same
+    24-26 Sep 2569 Bangkok-wide event window as bkp_bangkapi_2026-09-25 for events onset 25-26 Sep, and
+    a later 27 Sep cluster for the tail entries -- not independently investigated beyond the road-telemetry
+    count.
+  contradictions: []
+  tag: MEASURED
+- event_id: bangkok_chaophraya_2554
+  unit_scope: city
+  unit: ลุ่มเจ้าพระยา / กรุงเทพมหานคร
+  t_onset_observed: '2554-10-01T00:00:00+07:00'
+  t_onset_official: '2554-11-01T00:00:00+07:00'
+  evidence:
+  - class: media
+    source: docs/knowledge/case_2554_chaophraya_bangkok.md
+    detail: มหาอุทกภัย 2554 -- มวลน้ำไหลผ่านนครสวรรค์ -> อยุธยา -> ปทุมธานี เข้าคลองรังสิต/ประตูน้ำจุฬาลงกรณ์
+      ก่อนเข้ากรุงเทพมหานคร; ศปภ. ประกาศคำสั่งนายกฯ ให้ กทม. เปิดประตูระบายน้ำ พ.ย. 2554
+    observed_at_utc: null
+    tag: RELAYED
+  urban_flood_observed: true
+  official_disaster_declared: true
+  declaring_agency: ศปภ. (ศูนย์ปฏิบัติการช่วยเหลือผู้ประสบอุทกภัย)
+  warnings: []
+  notes: Whole card is RELAYED (news-article synthesis, not an original government document this repo
+    verified against source) -- dates are approximate month-level anchors, not precise onset timestamps;
+    see the card itself for the day-by-day table.
+  contradictions: []
+  tag: RELAYED
+- event_id: chiangmai_ping_2567
+  unit_scope: city
+  unit: เชียงใหม่ (แม่น้ำปิงล้นตลิ่ง)
+  t_onset_observed: '2567-09-24T00:00:00+07:00'
+  t_onset_official: null
+  evidence:
+  - class: media
+    source: docs/knowledge/case_chiangmai_2567.md
+    detail: แม่น้ำปิงล้นตลิ่งระดับ "สีส้ม" 24 ก.ย. 2567; ผู้ว่าฯ รายงานระดับน้ำปิงพีค 4.93 ม. ที่ 25 ก.ย.
+      2567 03:00 น. (สูงกว่าสถิติ 2554 ที่ 4.90 ม.); น้ำท่วมขังย่านเศรษฐกิจ ไม่ต่ำกว่า 6 วัน
+    observed_at_utc: null
+    tag: RELAYED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: Whole card is RELAYED (news-article synthesis).
+  contradictions: []
+  tag: RELAYED
+- event_id: hatyai_2553
+  unit_scope: city
+  unit: หาดใหญ่
+  t_onset_observed: '2553-10-31T00:00:00+07:00'
+  t_onset_official: null
+  evidence:
+  - class: media
+    source: docs/knowledge/case_hatyai_2553_2565.md
+    detail: น้ำท่วมหาดใหญ่ 31 ต.ค.-3 พ.ย. 2553; ระดับน้ำพีค 10.25 ม. -- ยังไม่ได้ WebFetch อ่านเอกสาร
+      RID เต็ม (water.rid.go.th)
+    observed_at_utc: null
+    tag: RELAYED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: Whole card is RELAYED; the RID PDF that would upgrade this to VERIFIED has not been fetched/read
+    in this repo yet (per the card's own caveat).
+  contradictions: []
+  tag: RELAYED
+- event_id: hatyai_2565
+  unit_scope: city
+  unit: หาดใหญ่
+  t_onset_observed: '2565-11-01T00:00:00+07:00'
+  t_onset_official: null
+  evidence:
+  - class: media
+    source: docs/knowledge/case_hatyai_2553_2565.md
+    detail: น้ำท่วมหาดใหญ่รุนแรงที่สุดในรอบที่มีการบันทึก พ.ย. 2565 -- ระดับน้ำ 11.66 ม. (สูงกว่าพีค 2553
+      เกือบ 1.5 ม.); น้ำเข้าเมืองจากเส้นทางใหม่ (เขาคอหงส์) ที่ระบบเตือนภัย เดิมไม่ครอบคลุม
+    observed_at_utc: null
+    tag: RELAYED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings: []
+  notes: Whole card is RELAYED.
+  contradictions: []
+  tag: RELAYED
+- event_id: nan_2567
+  unit_scope: city
+  unit: น่าน (14 อำเภอ)
+  t_onset_observed: '2567-08-19T00:00:00+07:00'
+  t_onset_official: null
+  evidence:
+  - class: media
+    source: docs/knowledge/case_nan_2567.md
+    detail: น้ำท่วมน่าน 19-30 ส.ค. 2567 -- 14 อำเภอ 82 ตำบล 670 หมู่บ้าน เสียชีวิต 3 ราย ผู้ประสบภัย 32,434
+      ครัวเรือน (134,472 คน); ฝนจริงตกถึง 388 มม. ขณะที่แบบจำลอง พยากรณ์ไว้เพียง 80 มม.
+    observed_at_utc: null
+    tag: RELAYED
+  urban_flood_observed: true
+  official_disaster_declared: OPEN
+  declaring_agency: null
+  warnings:
+  - issuer: กรมอุตุฯ + ปภ.
+    issued_at: '2567-08-18T00:00:00+07:00'
+    scope: regional_class
+    text: คำเตือนล่วงหน้าออกแล้ว แต่บทความระบุว่า "ไม่มีแผนเตรียมการรับมือสถานการณ์" ในทางปฏิบัติ
+    lead_time_h: null
+    lead_time_note: Precise onset/issue timestamps not available at hour resolution in the source card
+      -- lead_time_h left null rather than guessed.
+    tag: RELAYED
+  notes: Whole card is RELAYED (news synthesis on top of an academic-article card).
+  contradictions: []
+  tag: RELAYED
+data_quality_flags:
+  flat_20cm_placeholder_suspect:
+    tag: OPEN
+    candidate_status: SUSPECT_placeholder
+    measured_2026_09_27: 884 thaiwater_flood_road rows carry value == 20.0 cm exactly; 883 of those 884
+      are on station_name values ending in ' *' (a starred suffix used by the source for a subset of stations).
+      A flat, exact 20.0 recurring across many distinct starred stations/timestamps is more consistent
+      with a category/placeholder code from the upstream API than with 883 independently measured readings
+      landing on the exact same value -- flagged SUSPECT, kept in the record, never deleted or excluded
+      from the event-clustering rule above.
+    counts:
+      rows_value_eq_20: 884
+      rows_value_eq_20_on_starred_station_name: 883
+      rows_value_eq_20_on_non_starred_station_name: 1
+  onset_censoring:
+    tag: MEASURED
+    note: 9 of 32 events (all district-events with t_onset_observed before 2026-09-26T08:25:26.071750+00:00,
+      this repo's own first-ever fetch of thaiwater_flood_road) are onset_censoring=left_censored -- see
+      each event's own onset_censoring/first_fetch_utc fields. sammakorn_2026-09-26's canal-waterlevel
+      evidence is separately left-censored against thaiwater_canal_waterlevel's own first fetch (2026-09-26T07:51:01.583905+00:00)
+      -- see its onset_censoring_canal_signal/first_fetch_utc_canal fields. Computed automatically by
+      tools/backtest/urban_event_ledger.py's derive_events_from_flood_road() as of the 2026-09-27 correction
+      pass; a manually authored event row (e.g. the historical case-card RELAYED rows) does not carry
+      these fields since they were never derived from this repo's own collector.

@@ -1,0 +1,11 @@
+{
+  "source_id": "royalrain_agriculture_rainfall",
+  "url": "https://rmo.royalrain.go.th/api/InfoServiceApi/summaryagricultureareainfo",
+  "captured_at": "2026-10-03T09:41:11Z",
+  "sha256": "5dff2646e1b698cf1783f2e4690a91ed2d3f3547b250251597f22169662db291",
+  "http_status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "fixture_ext": "json",
+  "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+  "parser_version": "v1"
+}

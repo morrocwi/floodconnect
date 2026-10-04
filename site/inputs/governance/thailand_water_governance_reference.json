@@ -150,34 +150,6 @@
   },
   "verified_anchors": [
     {
-      "id": "nwc",
-      "name_th": "คณะกรรมการทรัพยากรน้ำแห่งชาติ (กนช.)",
-      "verified": true,
-      "verification_note": "พ.ร.บ.ทรัพยากรน้ำ พ.ศ. 2561 มาตรา 9 จัดให้มี กนช. และกำหนดให้นายกรัฐมนตรีเป็นประธาน",
-      "official_sources": [
-        "https://twuo.onwr.go.th/storage/data/type_22/158529_1689566916.pdf"
-      ]
-    },
-    {
-      "id": "onwr",
-      "name_th": "สำนักงานทรัพยากรน้ำแห่งชาติ (สทนช.)",
-      "name_en": "Office of the National Water Resources",
-      "verified": true,
-      "parent_th": "สำนักนายกรัฐมนตรี",
-      "roles": [
-        "ฝ่ายเลขานุการ/หน่วยกลางเชิงบูรณาการของคณะกรรมการทรัพยากรน้ำแห่งชาติ",
-        "สนับสนุนการจัดทำและบูรณาการแผนปฏิบัติการด้านทรัพยากรน้ำและงบประมาณ",
-        "สนับสนุนการประสานงานระดับลุ่มน้ำและภาวะวิกฤตตามกรอบกฎหมาย"
-      ],
-      "official_sources": [
-        "https://twuo.onwr.go.th/storage/data/type_22/158529_1689566916.pdf",
-        "https://onwr4.onwr.go.th/wp-content/uploads/2025/04/TWP-%E0%B8%84%E0%B8%B9%E0%B9%88%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%88%E0%B8%B1%E0%B8%94%E0%B8%97%E0%B8%B3%E0%B9%81%E0%B8%9C%E0%B8%99%E0%B8%9B%E0%B8%8F%E0%B8%B4%E0%B8%9A%E0%B8%B1%E0%B8%95%E0%B8%B4%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%94%E0%B9%89%E0%B8%B2%E0%B8%99%E0%B8%97%E0%B8%A3%E0%B8%B1%E0%B8%9E%E0%B8%A2%E0%B8%B2-2.pdf"
-      ],
-      "flood_warning_roles": [
-        "NATIONAL_WATER_INTEGRATOR"
-      ]
-    },
-    {
       "id": "basin_committees",
       "name_th": "คณะกรรมการลุ่มน้ำ",
       "verified": true,
@@ -185,84 +157,6 @@
       "verification_note": "เอกสาร สทนช. อ้างอิงพระราชกฤษฎีกากำหนดลุ่มน้ำ พ.ศ. 2564 ซึ่งแบ่งลุ่มน้ำของประเทศไทยเป็น 22 ลุ่มน้ำ",
       "official_sources": [
         "https://snwrc.onwr.go.th/wp-content/uploads/2025/04/%E0%B8%84%E0%B8%B9%E0%B9%88%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B9%84%E0%B8%94%E0%B9%89%E0%B8%A1%E0%B8%B2%E0%B8%8B%E0%B8%B6%E0%B9%88%E0%B8%87%E0%B8%81%E0%B8%A3%E0%B8%A3%E0%B8%A1%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%A5%E0%B8%B8%E0%B9%88%E0%B8%A1%E0%B8%99%E0%B9%89%E0%B8%B3%E0%B8%AF-%E0%B8%9B%E0%B8%A3%E0%B8%B1%E0%B8%9A%E0%B8%9B%E0%B8%A3_compressed.pdf"
-      ]
-    },
-    {
-      "id": "rid",
-      "name_th": "กรมชลประทาน",
-      "verified": true,
-      "roles": [
-        "บริหารจัดการน้ำเพื่อการเกษตร อุปโภคบริโภค อุตสาหกรรม การคมนาคมทางน้ำ พลังงาน และระบบนิเวศในภารกิจชลประทาน",
-        "ป้องกันและบรรเทาภัยอันเกิดจากน้ำในขอบเขตภารกิจ"
-      ],
-      "official_sources": [
-        "https://www2.rid.go.th/web-upload/1xff0d34e409a13ef56eea54c52a291126/202506/m_page/7/49/file_download/c8ed7b1c85fbd197e5f204e491a96d34.pdf"
-      ],
-      "flood_warning_roles": [
-        "IRRIGATION_WATER_SYSTEM_OPERATOR"
-      ]
-    },
-    {
-      "id": "dwr",
-      "name_th": "กรมทรัพยากรน้ำ",
-      "verified": true,
-      "roles": [
-        "พัฒนา อนุรักษ์ ฟื้นฟู และบริหารจัดการทรัพยากรน้ำตามภารกิจกรม",
-        "จัดทำข้อมูล มาตรฐาน เฝ้าระวัง และเตือนภัยที่เกี่ยวข้อง"
-      ],
-      "official_sources": [
-        "https://www.dwr.go.th/QAndA.php"
-      ],
-      "flood_warning_roles": [
-        "FLASH_FLOOD_WATERSHED_EWS"
-      ]
-    },
-    {
-      "id": "tmd",
-      "name_th": "กรมอุตุนิยมวิทยา",
-      "verified": true,
-      "roles": [
-        "ตรวจอากาศ พยากรณ์อากาศ และออกคำเตือนภัยธรรมชาติทางอุตุนิยมวิทยา"
-      ],
-      "official_sources": [
-        "https://tmd.go.th/department/core-mission"
-      ],
-      "flood_warning_roles": [
-        "METEOROLOGICAL_OBSERVER_FORECASTER"
-      ]
-    },
-    {
-      "id": "gistda",
-      "name_th": "สำนักงานพัฒนาเทคโนโลยีอวกาศและภูมิสารสนเทศ (องค์การมหาชน)",
-      "short_name": "GISTDA",
-      "verified": true,
-      "roles": [
-        "ติดตามและเผยแพร่ข้อมูลพื้นที่น้ำท่วมจากข้อมูลดาวเทียม/ภูมิสารสนเทศ"
-      ],
-      "official_sources": [
-        "https://www.gistda.or.th/th/news-category/situation/water-situation/",
-        "https://disaster.gistda.or.th/landing/services"
-      ],
-      "flood_warning_roles": [
-        "REMOTE_SENSING_FLOOD_OBSERVER"
-      ]
-    },
-    {
-      "id": "ddpm_ndwc",
-      "name_th": "กรมป้องกันและบรรเทาสาธารณภัย / ศูนย์เตือนภัยพิบัติแห่งชาติ",
-      "name_en": "Department of Disaster Prevention and Mitigation / National Disaster Warning Center",
-      "verified": true,
-      "node_kind": "agency_or_subagency",
-      "roles": [
-        "เฝ้าระวังและแจ้งเตือนสาธารณภัยต่อประชาชนผ่านระบบ/ช่องทางเตือนภัย",
-        "เผยแพร่ข้อมูลการแจ้งเตือนสาธารณภัย รวมถึง Cell Broadcast"
-      ],
-      "flood_warning_roles": [
-        "NATIONAL_PUBLIC_WARNING_DISSEMINATOR"
-      ],
-      "official_sources": [
-        "https://catalog.disaster.go.th/th/organization/dpm019",
-        "https://catalog.disaster.go.th/th/dataset/cell-broadcast"
       ]
     },
     {
@@ -291,6 +185,55 @@
       ]
     },
     {
+      "id": "ddpm_ndwc",
+      "name_th": "กรมป้องกันและบรรเทาสาธารณภัย / ศูนย์เตือนภัยพิบัติแห่งชาติ",
+      "name_en": "Department of Disaster Prevention and Mitigation / National Disaster Warning Center",
+      "verified": true,
+      "node_kind": "agency_or_subagency",
+      "roles": [
+        "เฝ้าระวังและแจ้งเตือนสาธารณภัยต่อประชาชนผ่านระบบ/ช่องทางเตือนภัย",
+        "เผยแพร่ข้อมูลการแจ้งเตือนสาธารณภัย รวมถึง Cell Broadcast"
+      ],
+      "flood_warning_roles": [
+        "NATIONAL_PUBLIC_WARNING_DISSEMINATOR"
+      ],
+      "official_sources": [
+        "https://catalog.disaster.go.th/th/organization/dpm019",
+        "https://catalog.disaster.go.th/th/dataset/cell-broadcast"
+      ]
+    },
+    {
+      "id": "dwr",
+      "name_th": "กรมทรัพยากรน้ำ",
+      "verified": true,
+      "roles": [
+        "พัฒนา อนุรักษ์ ฟื้นฟู และบริหารจัดการทรัพยากรน้ำตามภารกิจกรม",
+        "จัดทำข้อมูล มาตรฐาน เฝ้าระวัง และเตือนภัยที่เกี่ยวข้อง"
+      ],
+      "official_sources": [
+        "https://www.dwr.go.th/QAndA.php"
+      ],
+      "flood_warning_roles": [
+        "FLASH_FLOOD_WATERSHED_EWS"
+      ]
+    },
+    {
+      "id": "gistda",
+      "name_th": "สำนักงานพัฒนาเทคโนโลยีอวกาศและภูมิสารสนเทศ (องค์การมหาชน)",
+      "short_name": "GISTDA",
+      "verified": true,
+      "roles": [
+        "ติดตามและเผยแพร่ข้อมูลพื้นที่น้ำท่วมจากข้อมูลดาวเทียม/ภูมิสารสนเทศ"
+      ],
+      "official_sources": [
+        "https://www.gistda.or.th/th/news-category/situation/water-situation/",
+        "https://disaster.gistda.or.th/landing/services"
+      ],
+      "flood_warning_roles": [
+        "REMOTE_SENSING_FLOOD_OBSERVER"
+      ]
+    },
+    {
       "id": "hii",
       "name_th": "สถาบันสารสนเทศทรัพยากรน้ำ (องค์การมหาชน)",
       "name_en": "Hydro-Informatics Institute (Public Organization)",
@@ -315,6 +258,34 @@
       ]
     },
     {
+      "id": "nwc",
+      "name_th": "คณะกรรมการทรัพยากรน้ำแห่งชาติ (กนช.)",
+      "verified": true,
+      "verification_note": "พ.ร.บ.ทรัพยากรน้ำ พ.ศ. 2561 มาตรา 9 จัดให้มี กนช. และกำหนดให้นายกรัฐมนตรีเป็นประธาน",
+      "official_sources": [
+        "https://twuo.onwr.go.th/storage/data/type_22/158529_1689566916.pdf"
+      ]
+    },
+    {
+      "id": "onwr",
+      "name_th": "สำนักงานทรัพยากรน้ำแห่งชาติ (สทนช.)",
+      "name_en": "Office of the National Water Resources",
+      "verified": true,
+      "parent_th": "สำนักนายกรัฐมนตรี",
+      "roles": [
+        "ฝ่ายเลขานุการ/หน่วยกลางเชิงบูรณาการของคณะกรรมการทรัพยากรน้ำแห่งชาติ",
+        "สนับสนุนการจัดทำและบูรณาการแผนปฏิบัติการด้านทรัพยากรน้ำและงบประมาณ",
+        "สนับสนุนการประสานงานระดับลุ่มน้ำและภาวะวิกฤตตามกรอบกฎหมาย"
+      ],
+      "official_sources": [
+        "https://twuo.onwr.go.th/storage/data/type_22/158529_1689566916.pdf",
+        "https://onwr4.onwr.go.th/wp-content/uploads/2025/04/TWP-%E0%B8%84%E0%B8%B9%E0%B9%88%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%88%E0%B8%B1%E0%B8%94%E0%B8%97%E0%B8%B3%E0%B9%81%E0%B8%9C%E0%B8%99%E0%B8%9B%E0%B8%8F%E0%B8%B4%E0%B8%9A%E0%B8%B1%E0%B8%95%E0%B8%B4%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%94%E0%B9%89%E0%B8%B2%E0%B8%99%E0%B8%97%E0%B8%A3%E0%B8%B1%E0%B8%9E%E0%B8%A2%E0%B8%B2-2.pdf"
+      ],
+      "flood_warning_roles": [
+        "NATIONAL_WATER_INTEGRATOR"
+      ]
+    },
+    {
       "id": "province_district_local_authority",
       "name_th": "จังหวัด / อำเภอ / องค์กรปกครองส่วนท้องถิ่น",
       "name_en": "Provincial / District / Local Administrative Authorities",
@@ -331,6 +302,35 @@
         "https://www.disaster.go.th/apiv1/clickdownload/download/1368"
       ],
       "verification_note": "Actor-class node, not one legal entity. Used as a canonical governance reference for last-mile warning/response roles; actual authority must be resolved to the current province/district/local jurisdiction."
+    },
+    {
+      "id": "rid",
+      "name_th": "กรมชลประทาน",
+      "verified": true,
+      "roles": [
+        "บริหารจัดการน้ำเพื่อการเกษตร อุปโภคบริโภค อุตสาหกรรม การคมนาคมทางน้ำ พลังงาน และระบบนิเวศในภารกิจชลประทาน",
+        "ป้องกันและบรรเทาภัยอันเกิดจากน้ำในขอบเขตภารกิจ"
+      ],
+      "official_sources": [
+        "https://www2.rid.go.th/web-upload/1xff0d34e409a13ef56eea54c52a291126/202506/m_page/7/49/file_download/c8ed7b1c85fbd197e5f204e491a96d34.pdf"
+      ],
+      "flood_warning_roles": [
+        "IRRIGATION_WATER_SYSTEM_OPERATOR"
+      ]
+    },
+    {
+      "id": "tmd",
+      "name_th": "กรมอุตุนิยมวิทยา",
+      "verified": true,
+      "roles": [
+        "ตรวจอากาศ พยากรณ์อากาศ และออกคำเตือนภัยธรรมชาติทางอุตุนิยมวิทยา"
+      ],
+      "official_sources": [
+        "https://tmd.go.th/department/core-mission"
+      ],
+      "flood_warning_roles": [
+        "METEOROLOGICAL_OBSERVER_FORECASTER"
+      ]
     }
   ],
   "unresolved_abbreviations_preserved_verbatim": [
@@ -350,5 +350,6 @@
       "flood_warning_actor_typology": "site/inputs/governance/flood_warning_actor_typology.yaml"
     },
     "invariant": "Role overlays MUST reference canonical actor IDs from verified_anchors; do not duplicate agency identity/name/source blocks in overlays."
-  }
+  },
+  "convergence_note": "union-merged 2026-10-02 from local (as_of 2026-09-28, 7 anchors) + origin/main 17b9c3a (as_of 2026-09-29, 11 anchors); 0 field-value contradictions found this check; provenance kept in an internal local-only team record."
 }

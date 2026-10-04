@@ -1,0 +1,702 @@
+# New file only, added 2026-09-27 (BMA flood plan 2569 extraction). Not merged into any registry; not committed as part of this change.
+meta:
+  document: แผนปฏิบัติการป้องกันและแก้ไขปัญหาน้ำท่วมกรุงเทพมหานคร เนื่องจากน้ำฝนและน้ำหนุน ประจำปี 2569 (ในส่วนความรับผิดชอบของสำนักการระบายน้ำ กรุงเทพมหานคร)
+  issuer: สำนักการระบายน้ำ กรุงเทพมหานคร (BMA Department of Drainage and Sewerage)
+  source_file_public: dds.bangkok.go.th public_content 0011290_1.pdf (322 pages; print stamp on p1 dated 23 พ.ค. 2569)
+  page_convention: '`page` = PDF page number (1-based, physical). Printed appendix page labels (ก-1, ข-5, ง-25, จ-3, ฉ-13 ...) are given in `printed_page` where the parser could read them.'
+  extraction_method: pdftotext -layout text layer, regex row parser (no OCR). `raw` is the verbatim text-layer line(s) the row came from; values are copied as printed, no unit conversion.
+  glyph_note: 'The text layer renders some Thai glyphs inconsistently: in ch.1/appendix ง ''ำ'' often appears as ''า'' (น้า = น้ำ, ลาดับ = ลำดับ), in appendix ข ''า'' often appears as ''ำ'' (บำงกะปิ = บางกะปิ). `raw` keeps
+    the layer as-is; `name`/`district` are lightly normalised only where the mapping is unambiguous (see `normalise()` in the extractor).'
+  tag_default: VERIFIED (read from the text layer of the official PDF; parser-mapped fields carry parse_confidence)
+  purpose: 'Everything this plan says about the Sammakorn (สัมมากร, รามคำแหง 112, เขตสะพานสูง) unit, to fill the PROP-FLOOD-06 sammakorn unit (FOUNDER_TASKS #19: A_U_km2 / c_U / D_H missing). Founder pointer: ''มีรายละเอียดและขนาดคลองต่างๆชัดเจน
+    และมีตำแหน่งของบึงสัมมากรด้วยว่าเป็นแก้มลิง''.'
+pond:
+  name_as_printed: บึงรับน้ำหมู่บ้านสัมมากร
+  storage_m3: 227200
+  list_position: ลำดับที่ 25 ของ 35 แก้มลิงฝั่งพระนคร
+  page: 79
+  printed_page: ก-25
+  raw: 25 | บึงรับน้ำหมู่บ้านสัมมากร | 227,200
+  table_header_as_printed: ลำดับที่ | แก้มลิง | ปริมาตรเก็บกัก (ลบ.ม.)
+  columns_available: capacity only -- this list has no canal/pump/level/district/lat/lon columns
+  coordinates_in_plan: none in the pond lists; nearest official point = WL.SMK.01 gauge (p257) and สถานีสูบน้ำบึงที่ 2 (p191)
+  tag: VERIFIED
+  status_quote_p83: มีบึงหมู่บ้านเอกชนที่อนุญาตให้เข้าไปดำเนินการ ได้แก่ บึงหมู่บ้านสัมมากร เขตสะพานสูง หมู่บ้านศุภาลัย เขตมีนบุรี หมู่บ้านเมืองทองการ์เด้น หมู่บ้านเมืองทอง 2/1 และหมู่บ้านเมืองทอง 2/2 เขตประเวศ ซึ่งช่วยแก้ไขปัญหาน้ำท่วมใน
+    หมู่บ้านดังกล่าวและบริเวณพื้นที่ใกล้เคียง
+  what_bma_is_allowed_to_do_quote_p83: พื้นที่แก้มลิงเอกชน ซึ่งเป็นที่ลุ่ม บึง สระ ทะเลสาบ แอ่งน้ำ ที่อยู่ในพื้นที่เอกชน เช่นบึงทะเลสาบหมู่บ้านจัดสรร กรุงเทพมหานครได้เข้าไปติดต่อประสานเจ้าของบึง ขอใช้เป็นแก้มลิงเพื่อรองรับน้ำในฤดูฝน
+    โดยประสานเข้าไปปรับปรุงบึง ก่อสร้างบ่อสูบน้ำ ประตูระบายน้ำ พร้อมติดตั้งเครื่องสูบน้ำ เพื่อลดระดับน้ำในบึงดังกล่าว เตรียมรองรับฝนตกในช่วงฤดูฝน
+  reading: 'Ownership private (หมู่บ้าน), operation by BMA with the owner''s permission (improve pond, build pump pit/gate, install pumps, pre-lower the level before rain). This is the ''แก้มลิง'' status the founder asked
+    to confirm: VERIFIED.'
+gauge_WL_SMK_01:
+  plan_row:
+    seq: 176
+    code: WL.SMK.01
+    name: จุดวัดบึงรับน้ำหมู่บ้านสัมมากร ตอนสถานีสูบน้ำบึงที่ 2 คลองบ้านม้า 2
+    lat: 13.767
+    lon: 100.67716
+    district: null
+    flags: null
+    station_type: WL
+    section: 5. สถานีเครือข่ายระบบตรวจวัดระดับน้ำ จำนวน 310 แห่ง
+    subsection: 5.1 พื้นที่ฝั่งตะวันออก จำนวน 232 แห่ง
+    page: 257
+    printed_page: ฉ-17
+    raw: 176 | WL.SMK.01 | จุดวัดบึงรับน้ำหมู่บ้านสัมมากร ตอนสถานีสูบน้ำบึงที่ 2 คลองบ้านม้า 2 | 13.76700 | 100.67716
+    tag: VERIFIED
+    repo_match:
+      source: bma_watermap (data/observations.sqlite)
+      repo_lat: 13.76676
+      repo_lon: 100.67784
+      offset_m: 78.1
+  repo_bma_watermap:
+    lat: 13.76676
+    lon: 100.67784
+  offset_m: 78.1
+  verdict: 'offset ~78 m (<100 m): same station, coordinate rounding/placement difference -- flag, not contradiction'
+  hii_normal_level: none (WL.SMK.01 not among the 6 canals in canal_normal_levels.yaml)
+gauge_WL_BMA_02:
+  plan_row:
+    seq: 39
+    code: WL.BMA.02
+    name: จุดวัดคลองบ้านม้า ตอนถนนรามคำแหง
+    lat: 13.77273
+    lon: 100.66595
+    district: null
+    flags: null
+    station_type: WL
+    section: 5. สถานีเครือข่ายระบบตรวจวัดระดับน้ำ จำนวน 310 แห่ง
+    subsection: 5.1 พื้นที่ฝั่งตะวันออก จำนวน 232 แห่ง
+    page: 254
+    printed_page: ฉ-14
+    raw: 39 | WL.BMA.02 | จุดวัดคลองบ้านม้า ตอนถนนรามคำแหง | 13.77273 | 100.66595
+    tag: VERIFIED
+    repo_match:
+      source: bma_watermap (data/observations.sqlite)
+      repo_lat: 13.77281
+      repo_lon: 100.66569
+      offset_m: 29.5
+  repo_bma_watermap:
+    lat: 13.77281
+    lon: 100.66569
+    warning: 2.14
+    critical: 2.68
+    name: จุดวัดคลองบ้านม้า ตอนถนนรามคำแหง
+  note: 'repo warning 2.14 / critical 2.68 are far above every ง-table threshold on this canal (+0.40/+0.50 at สถานีสูบน้ำคลองบ้านม้า 2) -- OPEN: different datum (local staff gauge vs ม.รทก.) or stale metadata'
+pump_stations_p191:
+  rows:
+  - seq: 28
+    name: สถานีสูบน้ำคลองบ้านม้า 2
+    district: สะพานสูง
+    group: กลุ่มงานระบบควบคุมน้ำตะวันออก
+    lat: 13.7763
+    lon: 100.6713
+    capacity_m3s_parsed: 4.0
+    pump_config_as_printed: 4(1)
+    pumps_count_parsed: 4
+    capacity_from_config_m3s: 4.0
+    levels_on_row_as_printed:
+    - '+0.40'
+    - '+0.50'
+    - '-1.00'
+    - '-0.50'
+    - '+0.40'
+    operating_rule_phrases: null
+    phone_as_printed:
+    - 0-2543-8365
+    - 0-2181-0076
+    page: 191
+    printed_page: ง-25
+    raw_block: เขตสะพานสูง ¦ 4 | 0-2543-8365 ¦ 28 | สถานีสูบน้าคลองบ้านม้า 2 | 4 | +0.40 | +0.50 | -1.00 | -0.50 | +0.40 | 13.7763,100.6713 ¦ 4(1) | 0-2181-0076 ¦ สถานีสูบน้าบึงที่ 1 | 2 | 0-2543-8365
+    tag: VERIFIED
+    parse_confidence: high
+    warning_level_m_msl: 0.4
+    critical_level_m_msl: 0.5
+    control_plan_A_m_msl: -1.0
+    control_plan_B_m_msl: -0.5
+    control_plan_C_m_msl: 0.4
+    capacity_check: agrees with pump config sum
+    repo_match:
+      asset_id: pump_station:pumphistory:ST.SPS.01
+      class: pump_station
+      repo_name: สถานีสูบน้ำคลองบ้านม้า 2
+      offset_m: 0.0
+      repo_capacity_m3s: null
+      repo_pumps_total: 4
+    override_note: name/values transcribed by the worker from the text layer of this page (not parser output)
+    structure_kind: pump_station
+    row_id: bma_plan2569:ctrl:p191:28
+  - seq: 29
+    name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง
+    district: สะพานสูง
+    group: กลุ่มงานระบบควบคุมน้ำตะวันออก
+    lat: 13.7706
+    lon: 100.6798
+    capacity_m3s_parsed: 1.0
+    pump_config_as_printed: 2(0.5)
+    pumps_count_parsed: 2
+    capacity_from_config_m3s: 1.0
+    levels_on_row_as_printed: []
+    operating_rule_phrases:
+    - ประตูระบายน้ำ เปิด - ปิด ตามสภาพน้ำและระดับน้ำ
+    - ตามสภาพน้ำและระดับน้ำ
+    phone_as_printed:
+    - 0-2181-0076
+    - 0-2543-8365
+    page: 191
+    printed_page: ง-25
+    raw_block: 4(1) | 0-2181-0076 ¦ สถานีสูบน้าบึงที่ 1 | 2 | 0-2543-8365 ¦ 29 | 1 | ประตูระบายน้า เปิด - ปิด ตามสภาพน้าและระดับน้า | 13.7706,100.6798 ¦ ตอนคลองสะพานสูง | 2(0.5) | 0-2181-0076 ¦ สถานีสูบน้าบึงที่ 2 | 3 | 0-2543-8365
+    tag: VERIFIED
+    parse_confidence: high
+    repo_match:
+      asset_id: pump_station:pumphistory:ST.SPS.04
+      class: pump_station
+      repo_name: สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง
+      offset_m: 0.0
+      repo_capacity_m3s: null
+      repo_pumps_total: 2
+    override_note: name/values transcribed by the worker from the text layer of this page (not parser output)
+    structure_kind: pump_station
+    row_id: bma_plan2569:ctrl:p191:29
+  - seq: 30
+    name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2
+    district: สะพานสูง
+    group: กลุ่มงานระบบควบคุมน้ำตะวันออก
+    lat: 13.767
+    lon: 100.6771
+    capacity_m3s_parsed: 0.75
+    pump_config_as_printed: 3(0.25)
+    pumps_count_parsed: 3
+    capacity_from_config_m3s: 0.75
+    levels_on_row_as_printed: []
+    operating_rule_phrases:
+    - ประตูระบายน้ำ เปิด - ปิด ตามสภาพน้ำและระดับน้ำ
+    - ตามสภาพน้ำและระดับน้ำ
+    phone_as_printed:
+    - 0-2181-0076
+    - 0-2543-8365
+    page: 191
+    printed_page: ง-25
+    raw_block: ตอนคลองสะพานสูง | 2(0.5) | 0-2181-0076 ¦ สถานีสูบน้าบึงที่ 2 | 3 | 0-2543-8365 ¦ 30 | 0.75 | ประตูระบายน้า เปิด - ปิด ตามสภาพน้าและระดับน้า | 13.7670,100.6771 ¦ ตอนคลองบ้านม้า 2 | 3(0.25) | 0-2181-0076 ¦ สถานีสูบน้าบึงที่
+      4 | 2 | 0-2543-8365
+    tag: VERIFIED
+    parse_confidence: high
+    capacity_check: agrees with pump config sum
+    repo_match:
+      asset_id: pump_station:pumphistory:ST.SPS.03
+      class: pump_station
+      repo_name: สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2
+      offset_m: 0.0
+      repo_capacity_m3s: null
+      repo_pumps_total: 3
+    override_note: name/values transcribed by the worker from the text layer of this page (not parser output)
+    structure_kind: pump_station
+    row_id: bma_plan2569:ctrl:p191:30
+  - seq: 31
+    name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวังใหญ่
+    district: สะพานสูง
+    group: กลุ่มงานระบบควบคุมน้ำตะวันออก
+    lat: 13.7555
+    lon: 100.6795
+    capacity_m3s_parsed: 2.0
+    pump_config_as_printed: 2(1)
+    pumps_count_parsed: 2
+    capacity_from_config_m3s: 2.0
+    levels_on_row_as_printed: []
+    operating_rule_phrases:
+    - ประตูระบายน้ำ เปิด - ปิด ตามสภาพน้ำและระดับน้ำ
+    - ตามสภาพน้ำและระดับน้ำ
+    phone_as_printed:
+    - 0-2181-0076
+    - 0-2543-8365
+    page: 191
+    printed_page: ง-25
+    raw_block: ตอนคลองบ้านม้า 2 | 3(0.25) | 0-2181-0076 ¦ สถานีสูบน้าบึงที่ 4 | 2 | 0-2543-8365 ¦ 31 | 2 | ประตูระบายน้า เปิด - ปิด ตามสภาพน้าและระดับน้า | 13.7555,100.6795 ¦ ตอนคลองวังใหญ่ | 2(1) | 0-2181-0076
+    tag: VERIFIED
+    parse_confidence: high
+    capacity_check: agrees with pump config sum
+    repo_match:
+      asset_id: pump_station:pumphistory:ST.SPS.02
+      class: pump_station
+      repo_name: สถานีสูบน้ำบึงที่ 4 ตอนคลองวัดใหญ่
+      offset_m: 0.0
+      repo_capacity_m3s: null
+      repo_pumps_total: 2
+    override_note: name/values transcribed by the worker from the text layer of this page (not parser output)
+    structure_kind: pump_station
+    row_id: bma_plan2569:ctrl:p191:31
+  identity_with_repo: names AND coordinates identical to data/observations.sqlite assets pump_station:pumphistory:ST.SPS.01 (คลองบ้านม้า 2, 13.7763/100.6713), ST.SPS.03 (บึงที่ 2, 13.767/100.6771), ST.SPS.04 (บึงที่ 1, 13.7706/100.6798),
+    ST.SPS.02 (บึงที่ 4, 13.7555/100.6795). Repo had pumps_total but capacity null; plan gives capacity 4 / 0.75 / 1 / 2 m3/s and pump configs 4(1) / 3(0.25) / 2(0.5) / 2(1).
+  ownership_finding: listed under สนน. กลุ่มงานระบบควบคุมน้ำตะวันออก (p191, ง-25) => BMA-operated. CONTRADICTS AGENTS.md §8 'Sammakorn village's own pumps, not BMA's'. OPEN pending founder/BMA confirmation, but the plan is
+    the primary official record.
+  thresholds_p191:
+    สถานีสูบน้ำคลองบ้านม้า 2:
+      warning: 0.4
+      critical: 0.5
+      plan_A: -1.0
+      plan_B: -0.5
+      plan_C: 0.4
+      unit: ม.รทก.
+    บึงที่ 1/2/4: ประตูระบายน้ำ เปิด - ปิด ตามสภาพน้ำและระดับน้ำ (no numeric level printed)
+canal_ban_ma_reaches:
+  rows:
+  - seq: 14
+    name: คลองบ้านม้า
+    from_to: คลองแสนแสบ / คลองลำบึงบ้านม้า
+    width_m_as_printed: 7 - 25
+    length_m_as_printed: 5,930
+    dredge_level_m_msl_as_printed: '-2.00'
+    district: บางกะปิ
+    lat: 13.775187
+    lon: 100.66475
+    mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+    group: กลุ่มงานบำรุงรักษาคลอง 2
+    area: พื้นที่บำรุงรักษา 2 (ต่อ)
+    page: 103
+    printed_page: ข-11
+    raw: 14 | คลองบ้านม้า | คลองแสนแสบ | คลองลาบึงบ้านม้า | 7 - 25 | 5,930 | -2.00 | บางกะปิ | 13.775187 100.66475
+    tag: VERIFIED
+    parse_confidence: high
+    length_m: 5930.0
+  - seq: null
+    name: คลองบ้านม้า
+    from_to: null
+    width_m_as_printed: 6-8
+    length_m_as_printed: 1,886
+    dredge_level_m_msl_as_printed: '-2.00'
+    district: สะพานสูง
+    lat: 13.754889
+    lon: 100.693667
+    mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+    group: กลุ่มงานบำรุงรักษาคลอง 3
+    area: พื้นที่บำรุงรักษา 2
+    page: 105
+    printed_page: null
+    raw: คลองบ้านม้า | 6-8 | 1,886 -2.00 | สะพานสูง | 13.754889 | 100.693667
+    tag: VERIFIED
+    parse_confidence: medium
+    length_m: 1886.0
+  - seq: 4
+    name: คลองทับช้างบน
+    from_to: คลองลำต้นอ้อคลองประเวศ
+    width_m_as_printed: 8 - 24
+    length_m_as_printed: 4,801
+    dredge_level_m_msl_as_printed: '-2.00'
+    district: สะพานสูง
+    lat: 13.756694
+    lon: 100.706528
+    mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+    group: กลุ่มงานบำรุงรักษาคลอง 3
+    area: พื้นที่บำรุงรักษา 2
+    page: 105
+    printed_page: null
+    raw: 4 | คลองทับช้างบน | คลองลาต้นอ้อคลองประเวศ | 8 - 24 | 4,801 -2.00 | สะพานสูง | 13.756694 | 100.706528
+    tag: VERIFIED
+    parse_confidence: high
+    length_m: 4801.0
+  - seq: 8
+    name: คลองบ้านม้า
+    from_to: คลองลำบึง / คลองประเวศ
+    width_m_as_printed: 8 - 10
+    length_m_as_printed: 2,209
+    dredge_level_m_msl_as_printed: '-2.00'
+    district: สะพานสูง
+    lat: 13.739944
+    lon: 100.664194
+    mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+    group: กลุ่มงานบำรุงรักษาคลอง 3
+    area: พื้นที่บำรุงรักษา 2
+    page: 105
+    printed_page: null
+    raw: 8 | คลองบ้านม้า | คลองลาบึง | คลองประเวศ 8 - 10 | 2,209 | -2.00 | สะพานสูง | 13.739944 100.664194
+    tag: VERIFIED
+    parse_confidence: high
+    length_m: 2209.0
+  - seq: 16
+    name: คลองลาบ้านม้า สารองแบ่งเขต คลองจวน
+    from_to: null
+    width_m_as_printed: 10 - 30
+    length_m_as_printed: 3,675
+    dredge_level_m_msl_as_printed: '-2.00'
+    district: สวนหลวง
+    lat: 13.7288
+    lon: 100.649467
+    mission: ภารกิจเปิดทางน้ำไหลขุดลอกคูและคลอง ประจำปี 2569
+    group: กลุ่มงานบำรุงรักษาคลอง 3
+    area: พื้นที่บำรุงรักษา 2
+    page: 105
+    printed_page: null
+    raw: 16 | คลองลาบ้านม้า สารองแบ่งเขต คลองจวน | 10 - 30 | 3,675 | -2.00 | สวนหลวง 13.728800 100.649467
+    tag: VERIFIED
+    parse_confidence: high
+    length_m: 3675.0
+  - seq: 1
+    name: คลองแสนแสบ คลองบ้านม้า คลองลาดบัวขาว
+    from_to: null
+    width_m_as_printed: 20 - 35
+    length_m_as_printed: 5,150
+    dredge_level_m_msl_as_printed: '-2.50'
+    district: สะพานสูง
+    lat: 13.775333
+    lon: 100.664722
+    mission: ภารกิจรักษาความสะอาดคูคลอง ประจำปี 2569
+    group: กลุ่มงานบำรุงรักษาคลอง 3
+    area: พื้นที่บำรุงรักษา 2
+    page: 107
+    printed_page: null
+    raw: 1 คลองแสนแสบ คลองบ้านม้า คลองลาดบัวขาว 20 - 35 5,150 -2.50 สะพานสูง 13.775333 100.664722
+    tag: VERIFIED
+    parse_confidence: high
+    length_m: 5150.0
+  summary:
+  - canal: คลองบ้านม้า
+    reach: คลองแสนแสบ → คลองลำบึงบ้านม้า
+    width_m: 7 - 25
+    length_m: 5930
+    dredge_level_m_msl: -2.0
+    district: บางกะปิ
+    lat: 13.775187
+    lon: 100.66475
+    page: 103
+    printed_page: ข-11
+    tag: VERIFIED
+  - canal: คลองบ้านม้า
+    reach: คลองลำบึงบ้านม้า → คลองประเวศบุรีรมย์
+    width_m: 8 - 10
+    length_m: 2209
+    dredge_level_m_msl: -2.0
+    district: สะพานสูง/ประเวศ
+    lat: 13.739944
+    lon: 100.664194
+    page: 105
+    printed_page: ข-13
+    tag: VERIFIED
+  - canal: คลองลำบึงบ้านม้า
+    reach: ลำรางแบ่งเขตสวนหลวงกับเขตบางกะปิ → คลองจวน
+    width_m: 10 - 30
+    length_m: 3675
+    dredge_level_m_msl: -2.5
+    district: สวนหลวง
+    lat: 13.7288
+    lon: 100.649467
+    page: 102
+    printed_page: ข-10
+    tag: VERIFIED
+    note: printed length '3.675' (dot) on p102
+  - canal: คลองลำบ้านม้า
+    reach: สำรองแบ่งเขตสวนหลวงกับเขตบางกะปิ → คลองจวน
+    width_m: 10 - 30
+    length_m: 3675
+    dredge_level_m_msl: -2.0
+    district: สวนหลวง
+    lat: 13.7288
+    lon: 100.649467
+    page: 105
+    printed_page: ข-13
+    tag: VERIFIED
+    note: same reach listed by two maintenance groups with dredge level -2.50 (p102) vs -2.00 (p105) -- intra-document inconsistency, OPEN
+  - canal: คลองวังใหญ่บัว
+    reach: คลองทับช้างล่าง → คลองบ้านม้า
+    width_m: 6-8
+    length_m: 1886
+    dredge_level_m_msl: -2.0
+    district: สะพานสูง
+    lat: 13.754889
+    lon: 100.693667
+    page: 105
+    printed_page: ข-13
+    tag: VERIFIED
+  - canal: คลองทับช้างล่าง
+    reach: คลองทับช้างบน → คลองลาดบัวขาว
+    width_m: 6 - 10
+    length_m: 6096
+    dredge_level_m_msl: -2.0
+    district: สะพานสูง/ประเวศ
+    lat: 13.729722
+    lon: 100.692222
+    page: 105
+    tag: VERIFIED
+  - canal: คลองแสนแสบ
+    reach: คลองบ้านม้า → คลองลาดบัวขาว
+    width_m: 20 - 35
+    length_m: 5150
+    dredge_level_m_msl: -2.5
+    district: สะพานสูง
+    lat: 13.775333
+    lon: 100.664722
+    page: 107
+    printed_page: ข-15
+    tag: VERIFIED
+  - canal: คลองแสนแสบ
+    reach: คลองลาดพร้าว → คลองบ้านม้า
+    width_m: 20 - 35
+    length_m: 7815
+    dredge_level_m_msl: -4.5
+    district: บางกะปิ
+    lat: 13.751042
+    lon: 100.604061
+    page: 101
+    printed_page: ข-9
+    tag: VERIFIED
+  naming_note: The plan's canal tables say 'คลองบ้านม้า'; 'คลองบ้านม้า 2' appears only in the station names (สถานีสูบน้ำคลองบ้านม้า 2, WL.SMK.01 'ตอนสถานีสูบน้ำบึงที่ 2 คลองบ้านม้า 2'). Whether 'บ้านม้า 2' is a distinct branch
+    or a local name for the reach past Sammakorn is OPEN in this document.
+  dredging_project_p50: ขุดลอกคลองลำบึงบ้านม้าจากคลองบ้านม้าถึงคลองจวน 7,189,000 บาท (งานระบบคลอง ลำดับ 18, p50)
+sub_polder:
+  candidates:
+  - seq: 9
+    name: พื้นที่บริหารจัดการน้ำท่วมรามคำแหง เขตบางกะปิ และเขตสวนหลวง
+    area_km2: 11.447
+    districts:
+    - บางกะปิ
+    - สวนหลวง
+    page: 24
+    printed_page: null
+    raw: 9 | พื้นที่บริหารจัดการน้าท่วมรามคาแหง เขตบางกะปิ และเขตสวนหลวง | 11.447
+    tag: VERIFIED
+  - seq: 21
+    name: พื้นที่บริหารจัดการน้ำท่วมถนนพัฒนาการ เขตสวนหลวง เขตประเวศ เขตสะพานสูง และเขตบางกะปิ
+    area_km2: 19.263
+    districts:
+    - บางกะปิ
+    - ประเวศ
+    - สวนหลวง
+    - สะพานสูง
+    page: 24
+    printed_page: null
+    raw: 21 | พื้นที่บริหารจัดการน้าท่วมถนนพัฒนาการ เขตสวนหลวง เขตประเวศ เขตสะพานสูง | 19.263
+    tag: VERIFIED
+  - seq: 26
+    name: พื้นที่บริหารจัดการน้ำท่วมถนนรามคำแหง ถนนร่มเกล้า ถนนศรีนครินทร์-ร่มเกล้า ถนนสุวินทวงศ์ ถนนราชอุทิศ เขตมีนบุรี เขตลาดกระบัง เขตสะพานสูง เขตบางกะปิ
+    area_km2: 79.802
+    districts:
+    - บางกะปิ
+    - มีนบุรี
+    - ลาดกระบัง
+    - สะพานสูง
+    page: 25
+    printed_page: 1-9
+    raw: 26 | พื้นที่บริหารจัดการน้าท่วมถนนรามคาแหง ถนนร่มเกล้า ถนนศรีนครินทร์-ร่มเกล้า | 79.802
+    tag: VERIFIED
+  verdict: 'INSTINCT: Sammakorn (รามคำแหง 112, สะพานสูง) most likely lies in sub-polder 26 (ถนนรามคำแหง ถนนร่มเกล้า ... เขตมีนบุรี เขตลาดกระบัง เขตสะพานสูง เขตบางกะปิ และเขตประเวศ, 79.802 km2) -- boundary map at https://u.bangkok.go.th/floodgis,
+    not resolved here (OPEN). A_U_km2 for the sammakorn unit is NOT this polder''s area.'
+flood_risk_points_ramkhamhaeng_p121:
+- seq: 153
+  location: ถนนรามคำแหง ช่วงตรงข้ามซอยรามคำแหง 43
+  district: บางกะปิ
+  lat: 13.7586
+  lon: 100.61663
+  printed_under_Latitude_header: '100.61663'
+  printed_under_Longitude_header: '13.75860'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (39 จุด)
+  page: 121
+  printed_page: null
+  raw: 153 | ถนนรามคำแหง ช่วงตรงข้ามซอยรามคำแหง 43 | 100.61663 | 13.75860
+  tag: VERIFIED
+- seq: 154
+  location: ถนนรามคำแหง ช่วงตรงข้ามซอยรามคำแหง 53
+  district: บางกะปิ
+  lat: 13.75977
+  lon: 100.62029
+  printed_under_Latitude_header: '100.62029'
+  printed_under_Longitude_header: '13.75977'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (39 จุด)
+  page: 121
+  printed_page: null
+  raw: 154 | ถนนรามคำแหง ช่วงตรงข้ามซอยรามคำแหง 53 | 100.62029 | 13.75977
+  tag: VERIFIED
+- seq: 155
+  location: ถนนรามคำแหง ช่วงซอยรามคำแหง 33
+  district: บางกะปิ
+  lat: 13.75618
+  lon: 100.61425
+  printed_under_Latitude_header: '100.61425'
+  printed_under_Longitude_header: '13.75618'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (39 จุด)
+  page: 121
+  printed_page: null
+  raw: 155 | ถนนรามคำแหง ช่วงซอยรามคำแหง 33 | 100.61425 | 13.75618
+  tag: VERIFIED
+- seq: 156
+  location: ถนนรามคำแหง ช่วงซอยรามคำแหง 20
+  district: บางกะปิ
+  lat: 13.75427
+  lon: 100.61253
+  printed_under_Latitude_header: '100.61253'
+  printed_under_Longitude_header: '13.75427'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (39 จุด)
+  page: 121
+  printed_page: null
+  raw: 156 | ถนนรามคำแหง ช่วงซอยรามคำแหง 20 | 100.61253 | 13.75427
+  tag: VERIFIED
+- seq: 157
+  location: ถนนหัวหมาก ช่วงซอยรามคำแหง 24 แยก 18
+  district: บางกะปิ
+  lat: 13.75343
+  lon: 100.62143
+  printed_under_Latitude_header: '100.62143'
+  printed_under_Longitude_header: '13.75343'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (39 จุด)
+  page: 121
+  printed_page: null
+  raw: 157 | ถนนหัวหมาก ช่วงซอยรามคำแหง 24 แยก 18 | 100.62143 | 13.75343
+  tag: VERIFIED
+- seq: 158
+  location: ถนนรามคำแหง ช่วงซอยรามคำแหง 33
+  district: บางกะปิ
+  lat: 13.75704
+  lon: 100.61345
+  printed_under_Latitude_header: '100.61345'
+  printed_under_Longitude_header: '13.75704'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (39 จุด)
+  page: 121
+  printed_page: null
+  raw: 158 | ถนนรามคำแหง ช่วงซอยรามคำแหง 33 | 100.61345 | 13.75704
+  tag: VERIFIED
+- seq: 161
+  location: ถนนรามคำแหง ซอยรามคำแหง24 หน้ำหอพักบ้านเรือทอง
+  district: บางกะปิ
+  lat: 13.75406
+  lon: 100.61495
+  printed_under_Latitude_header: '100.61495'
+  printed_under_Longitude_header: '13.75406'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (39 จุด)
+  page: 121
+  printed_page: null
+  raw: 161 | ถนนรามคำแหง ซอยรามคำแหง24 หน้าหอพักบ้านเรือทอง | 100.61495 | 13.75406
+  tag: VERIFIED
+- seq: 164
+  location: ถนนรามคำแหง ช่วงซอยรามคำแหง 19/1
+  district: บางกะปิ
+  lat: 13.75344
+  lon: 100.61137
+  printed_under_Latitude_header: '100.61137'
+  printed_under_Longitude_header: '13.75344'
+  coord_columns_swapped_in_print: true
+  side: พื้นที่ฝั่งพระนคร (191 จุด)
+  district_group: กลุ่มเขตกรุงเทพตะวันออก (39 จุด)
+  page: 121
+  printed_page: null
+  raw: 164 | ถนนรามคำแหง ช่วงซอยรามคำแหง 19/1 | 100.61137 | 13.75344
+  tag: VERIFIED
+pump_install_plan_rows_saphansung:
+- seq: 39
+  name: บ่อสูบน้ำหมู่บ้านนักกีฬา 3
+  district: สะพานสูง
+  group: กลุ่มงานอุโมงค์ระบายน้ำ(ธนบุรี) สคน.
+  units:
+  - size_inch_as_printed: '12'
+    capacity_each_m3s: 0.2
+    count: 1
+    capacity_total_m3s: 0.2
+  lat: 13.744012
+  lon: 100.689025
+  page: 233
+  printed_page: จ-23
+  raw:
+  - 39 | บ่อสูบน้ำหมู่บ้านนักกีฬา 3 | 12 | 0.20 | 1 | 0.20 | 13.744012 | 100.689025
+  tag: VERIFIED
+  pumps_total: 1
+  capacity_total_m3s: 0.2
+- seq: 40
+  name: บ่อสูบน้ำหมู่บ้านนักกีฬา 5 (คลองทับช้างล่าง)
+  district: สะพานสูง
+  group: กลุ่มงานอุโมงค์ระบายน้ำ(ธนบุรี) สคน.
+  units:
+  - size_inch_as_printed: '16'
+    capacity_each_m3s: 0.35
+    count: 1
+    capacity_total_m3s: 0.35
+  - size_inch_as_printed: '20'
+    capacity_each_m3s: 0.5
+    count: 2
+    capacity_total_m3s: 1.0
+  lat: 13.745238
+  lon: 100.689379
+  page: 233
+  printed_page: จ-23
+  raw:
+  - 40 | บ่อสูบน้ำหมู่บ้านนักกีฬา 5 (คลองทับช้างล่าง) | 16 | 0.35 | 1 | 0.35 | 13.745238 | 100.689379
+  - 20 | 0.50 | 2 | 1.00
+  tag: VERIFIED
+  pumps_total: 3
+  capacity_total_m3s: 1.35
+- seq: 41
+  name: บ่อสูบน้ำหมู่บ้านนักกีฬา 12
+  district: สะพานสูง
+  group: กลุ่มงานอุโมงค์ระบายน้ำ(ธนบุรี) สคน.
+  units:
+  - size_inch_as_printed: '14'
+    capacity_each_m3s: 0.3
+    count: 1
+    capacity_total_m3s: 0.3
+  lat: 13.740655
+  lon: 100.696993
+  page: 233
+  printed_page: จ-23
+  raw:
+  - 41 | บ่อสูบน้ำหมู่บ้านนักกีฬา 12 | 14 | 0.30 | 1 | 0.30 | 13.740655 | 100.696993
+  tag: VERIFIED
+  pumps_total: 1
+  capacity_total_m3s: 0.3
+- seq: 42
+  name: บ่อสูบน้ำหมู่บ้านนักกีฬา 21 ง.
+  district: สะพานสูง
+  group: กลุ่มงานอุโมงค์ระบายน้ำ(ธนบุรี) สคน.
+  units:
+  - size_inch_as_printed: '20'
+    capacity_each_m3s: 0.5
+    count: 1
+    capacity_total_m3s: 0.5
+  lat: 13.746518
+  lon: 100.701141
+  page: 233
+  printed_page: จ-23
+  raw:
+  - 42 | บ่อสูบน้ำหมู่บ้านนักกีฬา 21 ง. | 20 | 0.50 | 1 | 0.50 | 13.746518 | 100.701141
+  tag: VERIFIED
+  pumps_total: 1
+  capacity_total_m3s: 0.5
+- seq: 43
+  name: บ่อสูบน้ำเคหะธานี 4
+  district: สะพานสูง
+  group: กลุ่มงานอุโมงค์ระบายน้ำ(ธนบุรี) สคน.
+  units:
+  - size_inch_as_printed: '12'
+    capacity_each_m3s: 0.2
+    count: 1
+    capacity_total_m3s: 0.2
+  lat: 13.784888
+  lon: 100.706302
+  page: 233
+  printed_page: จ-23
+  raw:
+  - 43 | บ่อสูบน้ำเคหะธานี 4 | 12 | 0.20 | 1 | 0.20 | 13.784888 | 100.706302
+  tag: VERIFIED
+  pumps_total: 1
+  capacity_total_m3s: 0.2
+for_PROP_FLOOD_06:
+  C_H_storage_m3: 227200
+  pump_out_capacity_m3s:
+    คลองบ้านม้า 2: 4.0
+    บึงที่ 1: 1.0
+    บึงที่ 2: 0.75
+    บึงที่ 4: 2.0
+    sum: 7.75
+  A_U_km2: OPEN (not in plan)
+  c_U: OPEN
+  D_H: OPEN (no pond depth/area in plan)
+  operating_levels_m_msl: เตือนภัย +0.40 / วิกฤติ +0.50 at สถานีสูบน้ำคลองบ้านม้า 2
+  toledo: no equation adopted; values are inputs only

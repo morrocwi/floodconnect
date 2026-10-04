@@ -1,0 +1,70 @@
+# typology/nodes/warning_channels.yaml -- `warning_channel` node kind (proposal §1/§2),
+# `phase` (normal|pre_event|incident|post_event, added 2026-09-28) applies TDRI's disaster-
+# cycle vocabulary (ณัฐสิฏ รักษ์เกียรติวงศ์, tdri.or.th/.../anatomy-of-preventable-ruin...,
+# 3 ธ.ค. 2025: ภาวะปกติ/ก่อนเกิดเหตุ/เกิดเหตุ/หลังเกิดเหตุ) to each row -- every channel below
+# is cited from S9/S14 in the middle of the active 25-28 ก.ย. 2569 flood, so `phase: incident`
+# throughout, tag INSTINCT (this check's own classification, TDRI did not name these specific
+# channels).
+# separated from `agency` because one agency issues warnings through several channels at
+# once (S14: BMA used 5 channels simultaneously) -- see FLOW_STALL_TYPOLOGY_EXTENSION_
+# PROPOSAL_2026-09-28.md §1 for the reasoning (CAP 1.2 models sender/channel separately too).
+schema_version: 1
+doc_kind: typology_node_registry
+status_th: >
+  ทะเบียน node kind warning_channel -- ชั้นข้อมูลใหม่ ยังไม่มี collector อัตโนมัติ ตัวอย่างทุกแถวมาจาก
+  S14 (แถลงทางการ กทม. 25 ก.ย. 2569) เท่านั้น.
+rows:
+  - id: WCH.TRAFFY_FONDUE
+    kind: warning_channel
+    layer: power
+    label_th: "Traffy Fondue"
+    channel_type: app
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14)"
+  - id: WCH.LINE_TRAFFYFONDUE
+    kind: warning_channel
+    layer: power
+    label_th: "LINE @Traffyfondue"
+    channel_type: line_oa
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14)"
+  - id: WCH.HOTLINE_1555
+    kind: warning_channel
+    layer: power
+    label_th: "สายด่วน กทม. 1555"
+    channel_type: hotline
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14)"
+  - id: WCH.HOTLINE_1669
+    kind: warning_channel
+    layer: power
+    label_th: "สายด่วนการแพทย์ฉุกเฉิน 1669"
+    channel_type: hotline
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 6.3 (S9)"
+  - id: WCH.FB_FLOODCONTROL_BMA
+    kind: warning_channel
+    layer: power
+    label_th: "เพจ FB ศูนย์ป้องกันน้ำท่วม กทม."
+    channel_type: facebook_page
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14)"
+  - id: WCH.FLOOD_CONTROL_CENTER_HOTLINE
+    kind: warning_channel
+    layer: power
+    label_th: "ศูนย์ควบคุมระบบป้องกันน้ำท่วม 0 2248 5115"
+    channel_type: hotline
+    phase: incident
+    phase_tag: INSTINCT
+    tag: RELAYED
+    source: "STRUCTURAL_ISSUES_2026-09-28.md ภาคผนวก 2.6 (S14)"

@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="css/style.css" type="text/css" />
+<link rel="stylesheet" href="css/CSS_w3.css">
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/jquery-ui.js"></script>
+<link rel="stylesheet" href="css/uithemes/redmond/jquery-ui.css">
+<title>สถานการณ์น้ำในอ่างเก็บน้ำ กฟผ.</title>
+</head>
+﻿<style>
+.responsive {
+  width: 100%;
+  height: auto;
+}
+</style>
+<body>
+<div align="center">
+	<img src="images/banner_dbwrm.png"class="responsive" >
+</div>
+<div align="center"><h2><font color="#3333CC">สถานการณ์น้ำในอ่างเก็บน้ำ กฟผ.<br />01 ตุลาคม 2569 เวลา 24.00 น.</font></h2></div>
+
+
+
+<form id="stat" name="stat" method="post" action="">
+<div align="center">ข้อมูลย้อนหลัง: วัน <input type="text" id="from" name="from" value="01/10/2026"> <input type="submit" name="submit" value="ตกลง" ></div>
+</form>
+
+
+
+
+<script type="text/javascript">
+			
+        $(document).ready(function () {  
+  
+			$( "#from" ).datepicker({
+			  defaultDate: "+1w",
+			  changeMonth: true,
+			  numberOfMonths: 1,
+			  dateFormat: "dd/mm/yy",
+			  maxDate: '0'
+			});
+		});
+	</script>
+
+
+
+<span style="background:#FFCCCC;"></span>
+<table align="center" style="width:80%">
+  <tr>
+    <td rowspan="2" align="center" style=" background:#0099CC;"><p1>เขื่อน</p1></td>
+    <td align="center" style="width: 100px; background:#0099CC;"><p1>ระดับเก็บกัก<br />01 ต.ค. 2569</p1></td>
+    <td colspan="2" align="center" style="width: 100px; background:#0099CC;"><p1>ปริมาณน้ำกักเก็บ<br />01 ต.ค. 2569</p1></td>
+    <td colspan="2" align="center" style="width: 100px; background:#0099CC;"><p1>ปริมาณน้ำใช้งานได้<br />01 ต.ค. 2569</p1></td>
+    <td colspan="2" align="center" style="width: 100px; background:#0099CC;"><p1>ปริมาณน้ำใช้งานได้<br />01 ต.ค. 2568</p1></td>
+    <td colspan="2" align="center" style="width: 100px; background:#0099CC;"><p1>น้ำใช้งานได้ปีนี้<br />เทียบกับปีก่อน</p1></td>
+    <td colspan="2" align="center" style="width: 100px; background:#0099CC;"><p1>นำไหลเข้า-ระบาย<br />01 ต.ค. 2569</p1></td>
+    <td colspan="2" align="center" style="width: 100px; background:#0099CC;"><p1>น้ำไหลเข้าระบายสัปดาห์ก่อน<br />( 25 ก.ย. - 01 ต.ค. 2569 )</p1></td>
+    <td align="center" style="width: 100px; background:#0099CC;"><p1>ปริมาณน้ำเพิ่ม/ลด<br />จากสัปดาห์ก่อน</p1></td>
+    <td align="center" style="width: 100px; background:#0099CC;"><p1>รับน้ำได้อีก</p1></td>
+  </tr>
+
+
+<div align="right"><a href="water_crisis_year.php" class="link"  target ="_blank">เลือกปีเพื่อเปรียบเทียบ >></a></div>
+
+
+  <tr>
+  <td align="center" style=" background:#0099CC;"><p1>(ม.รทก.)</p1></td>
+  <td align="center" style="width: 100px; background:#0099CC;"><p1>ล้าน ลบ.ม.</p1></td>
+  <td align="center" style=" background:#0099CC;"><p1>%</p1></td>
+  <td align="center" style=" background:#0099CC;"><p1>(ล้าน ลบ.ม.)</p1></td>
+  <td align="center" style=" background:#0099CC;"><p1>% ของความจุ<br />ใช้งานได้</p1></td>
+  <td align="center" style=" background:#0099CC;"><p1>(ล้าน ลบ.ม.)</p1></td>
+  <td align="center" style=" background:#0099CC;"><p1>% ของความจุ<br />ใช้งานได้</p1></td>
+  <td align="center" style=" background:#0099CC;"><p1>(ล้าน ลบ.ม.)</p1></td>
+  <td align="center" style=" background:#0099CC;"><p1>%</p1></td>
+  <td align="center" style=" background:#0099CC;"><p1>น้ำไหลเข้า<br />(ล้าน ลบ.ม.)</p1></td>
+  <td align="center" style=" background:#0099CC;"><p1>น้ำระบาย<br />(ล้าน ลบ.ม.)</p1></td>
+  <td align="center" style=" background:#0099CC;"><p1>น้ำไหลเข้ารวม<br />(ล้าน ลบ.ม.)</p1></td>
+  <td align="center" style=" background:#0099CC;"><p1>น้ำระบายรวม<br />(ล้าน ลบ.ม.)</p1></td>
+  <td align="center" style="width: 100px; background:#0099CC;"><p1>ล้าน ลบ.ม.</p1></td> 
+  <td align="center" style="width: 100px; background:#0099CC;"><p1>ล้าน ลบ.ม.</p1></td>
+    
+  </tr>
+  <tr>
+    <td align="center" style="background:#87CEEB;"><p5><u>ภาคเหนือ</u></p5></td>
+    <td align="center" style="background:#87CEEB;"><p4></p4></td>
+    <td align="center" style="background:#87CEEB;"><p4></p4></td>
+    <td align="center" style="background:#87CEEB;"><p4></p4></td>
+    <td align="center" style="background:#87CEEB;"><p4></p4></td>
+    <td align="center" style="background:#87CEEB;"><p4></p4></td>
+    <td align="center" style="background:#87CEEB;"><p4></p4></td>
+    <td align="center" style="background:#87CEEB;"><p4></p4></td>
+    <td align="center" style="background:#87CEEB;"><p4></p4></td>
+    <td align="center" style="background:#87CEEB;"><p4></p4></td>
+    <td align="center" style="background:#87CEEB;"><p4></p4></td>
+    <td align="center" style="background:#87CEEB;"><p4></p4></td>
+    <td align="center" style="background:#87CEEB;"><p4></p4></td>
+    <td align="center" style="background:#87CEEB;"><p4></p4></td>
+    <td align="center" style="background:#87CEEB;"><p4></p4></td>
+    <td align="center" style="background:#87CEEB;"><p4></p4></td>
+  </tr>
+   <tr>
+    <td style="background:#E6E6FA;"><p4>ภูมิพล</p4></td>
+    <td align="center" style="background:#E6E6FA;"><p4>244.18</p4></td>
+    <td align="center" style="background:#E6E6FA;"><p4>8,974</p4></td>
+    <td align="center" style="background:#E6E6FA;"><p4>66.66</p4></td>
+    <td align="center" style="background:#E6E6FA;"><p4>5,174</p4></td>
+    <td align="center" style="background:#E6E6FA;"><p4>53.55</p4></td>
+    <td align="center" style="background:#E6E6FA;"><p4>7,849    </p4></td>
+    <td align="center" style="background:#E6E6FA;"><p4>81.23</p4></td>
+    
+    <td align="center" style="background:#E6E6FA;"><p2>-2,675</p2></td><td align="center" style="background:#E6E6FA;"><p2>-34.08</p2></td>    <td align="center" style="background:#E6E6FA;"><p4>69.31</p4></td>
+    <td align="center" style="background:#E6E6FA;"><p7>0.00</p7></td>
+    <td align="center" style="background:#E6E6FA;"><p4>582.12</p4></td>
+    <td align="center" style="background:#E6E6FA;"><p7>14.29</p7></td>
+    <td align="center" style="background:#E6E6FA;"><p4>563.67</p4></td>
+    <td align="center" style="background:#E6E6FA;"><p4>4,488</p4></td>
+    
+  </tr>
+  
+  
+
+  
+  
+  
+  <tr>
+    <td><p20>เขื่อนแม่ปิงตอนล่าง</p20></td>
+    <td align="center" ><p4>140.28</p4></td>
+    <td align="center" ><p4>4.94</p4></td>
+    <td align="center" ><p4>100.41</p4></td>
+    <td align="center" ><p4>4.94</p4></td>
+    <td align="center" ><p4>100.41</p4></td>
+    <td align="center" ><p4>4.89    </p4></td>
+    <td align="center" ><p4>99.39</p4></td>
+    
+    <td align="center" ><p4>0.05</p4></td><td align="center" ><p4>1.02</p4></td>    <td align="center" ><p7>0.00</p4></td>
+    <td align="center" ><p4>0.00</p7></td>
+    <td align="center" ><p7>14.29</p4></td>
+    <td align="center" ><p4>14.00</p7></td>
+    <td align="center" ><p4>0.33</p4></td>
+    <td align="center" ><p4>-0.02</p4></td>
+    
+  </tr>
+  
+    
+  
+  <tr>
+    <td style="background:#E6E6FA;"><p4>สิริกิติ์</p4></td>
+    <td align="center" style="background:#E6E6FA;"><p4>154.46</p4></td>
+    <td align="center" style="background:#E6E6FA;"><p4>7,657</p4></td>
+    <td align="center" style="background:#E6E6FA;"><p4>80.52</p4></td>
+    <td align="center" style="background:#E6E6FA;"><p4>4,807</p4></td>
+    <td align="center" style="background:#E6E6FA;"><p4>72.18</p4></td>
+    <td align="center" style="background:#E6E6FA;"><p4>6,125    </p4></td>
+    <td align="center" style="background:#E6E6FA;"><p4>91.96</p4></td>
+    
+    <td align="center" style="background:#E6E6FA;"><p2>-1,318</p2></td><td align="center" style="background:#E6E6FA;"><p2>-21.51</p2></td>    <td align="center" style="background:#E6E6FA;"><p4>17.10</p4></td>
+    <td align="center" style="background:#E6E6FA;"><p4>7.01</p7></td>
+    <td align="center" style="background:#E6E6FA;"><p4>137.85</p4></td>
+    <td align="center" style="background:#E6E6FA;"><p4>51.06</p7></td>
+    <td align="center" style="background:#E6E6FA;"><p4>81.44</p4></td>
+    <td align="center" style="background:#E6E6FA;"><p4>1,853</p4></td>
+    
+  </tr>
+  
+    
+  
+  <tr>
+    <td align="right" style="background:#FFCCCC;"><p4>รวม</p4></td>
+    <td align="center" style="background:#FFCCCC;"></td>
+    <td align="center" style="background:#FFCCCC;"><p4>16,636</p4></td>
+    <td align="center" style="background:#FFCCCC;"><p4>72.40</p4></td>
+    <td align="center" style="background:#FFCCCC;"><p4>9,986</p4></td>
+    <td align="center" style="background:#FFCCCC;"><p4>61.16</p4></td>
+    <td align="center" style="background:#FFCCCC;"><p4>13,978</p4></td>
+    <td align="center" style="background:#FFCCCC;"><p4>85.62</p4></td>
+    
+    <td align="center" style="background:#FFCCC

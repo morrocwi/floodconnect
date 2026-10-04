@@ -1,0 +1,6 @@
+﻿No.,Survey date,ID,CODE,Water Resources Name,Subdistrict,District,Province,latitude,longitude,old capacity (million cubic meters),Updated capacity (million cubic meters),old benefited area (rai),Surveyor’s comments,BM (Static),"spillway
+ (m.MSL)", Crest of Dam, Depth (m.MSL),"Maximum Water Surface
+ (cubic.meter)",telephone signal,Remarks,
+1,26/5/2025,,,อ่างเก็บน้ำแม่จอก,หัวทุ่ง,ลอง,แพร่,18.082679,99.763592,0.148,0.111,1200,,,223.508,224.249,215.80,"110,912.55",มี,,
+2,28/5/2025,1601370,RES048,อ่างเก็บน้ำแม่กะต๋อม,ป่าสัก,วังชิ้น,แพร่,17.820601,99.469000,0.967,0.877,800,,,209.987,211.687,199.60,"876,775.95",ไม่มี,,
+3,19/5/2025,1601367,RES045,อ่างเก็บน้ำแม่จั๊วะ,แม่จั๊วะ,เด่นชัย,แพร่,17.961805,100.09264,2.600,1.425,750,,,191.55,194.41,173.80,"1,424,787.33",มี,,

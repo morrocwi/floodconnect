@@ -1,0 +1,11 @@
+{
+  "source_id": "openmeteo_multimodel",
+  "url": "https://api.open-meteo.com/v1/forecast?latitude=13.758235&longitude=100.676084&hourly=precipitation&models=icon_seamless&timezone=Asia%2FBangkok&forecast_days=7",
+  "captured_at": "2026-10-02T07:44:44Z",
+  "sha256": "bb5af4fe3b2316c6db5355a9cd81d42e71304626cf538ac6d55824964d340fc3",
+  "http_status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "fixture_ext": "json",
+  "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+  "parser_version": "v1"
+}

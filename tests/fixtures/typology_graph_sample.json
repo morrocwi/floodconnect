@@ -1,0 +1,11 @@
+{
+  "directed": true,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {"kind": "pond", "layer": "water", "label_th": "บึงสัมมากร (ทดสอบ)", "standard_class": "HY_WaterBody", "tag": "RELAYED", "infra_class": "green_blue", "source": "test-fixture", "id": "WL.SMK.01"}
+  ],
+  "edges": [
+    {"source": "WL.SMK.01", "target": "WL.SSB.08"}
+  ]
+}

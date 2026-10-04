@@ -1,0 +1,79 @@
+{
+ "latitude": 13.75,
+ "longitude": 100.75,
+ "generationtime_ms": 6.057381629943848,
+ "utc_offset_seconds": 0,
+ "timezone": "GMT",
+ "timezone_abbreviation": "GMT",
+ "elevation": 4.0,
+ "daily_units": {
+  "time": "iso8601",
+  "precipitation_sum_ecmwf_ifs025": "mm",
+  "precipitation_sum_gfs_seamless": "mm",
+  "precipitation_sum_icon_seamless": "mm",
+  "precipitation_sum_jma_seamless": "mm",
+  "precipitation_sum_gem_seamless": "mm",
+  "precipitation_sum_ukmo_seamless": "mm",
+  "precipitation_sum_meteofrance_seamless": "mm",
+  "precipitation_sum_bom_access_global": "mm",
+  "precipitation_sum_cma_grapes_global": "mm",
+  "precipitation_sum_knmi_seamless": "mm"
+ },
+ "daily": {
+  "time": [
+   "2026-09-27",
+   "2026-09-28",
+   "2026-09-29"
+  ],
+  "precipitation_sum_ecmwf_ifs025": [
+   52.0,
+   14.9,
+   3.2
+  ],
+  "precipitation_sum_gfs_seamless": [
+   31.3,
+   7.9,
+   2.2
+  ],
+  "precipitation_sum_icon_seamless": [
+   40.4,
+   18.5,
+   1.9
+  ],
+  "precipitation_sum_jma_seamless": [
+   36.6,
+   11.4,
+   2.6
+  ],
+  "precipitation_sum_gem_seamless": [
+   53.1,
+   19.2,
+   0.0
+  ],
+  "precipitation_sum_ukmo_seamless": [
+   48.7,
+   31.7,
+   0.7
+  ],
+  "precipitation_sum_meteofrance_seamless": [
+   36.2,
+   7.6,
+   0.0
+  ],
+  "precipitation_sum_bom_access_global": [
+   null,
+   null,
+   null
+  ],
+  "precipitation_sum_cma_grapes_global": [
+   50.0,
+   9.5,
+   0.1
+  ],
+  "precipitation_sum_knmi_seamless": [
+   51.1,
+   13.4,
+   4.4
+  ]
+ }
+}
