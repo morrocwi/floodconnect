@@ -1,5 +1,5 @@
 claim_id: "20261005-floodconnect-pause-claim"
-status: ACTIVE
+status: RELEASED
 writer: "ai-worker"
 branch: "agent/ai-worker/floodconnect-pause"
 base_sha: "5301cd6b89c51bc183a60f89ef200dde3b5148c8"
