@@ -117,8 +117,10 @@ intent: >
   pump telemetry was fresh but a FAR (15-50 km) nationwide basin-resolution station
   existed too -- `readout.build_readout`'s nationwide block now also checks whether
   this point's own LOCAL factor-4 reading (near_canal/near_pumps) is fresh, and
-  excludes every nationwide row from deciding when it is (still shown as reference
-  evidence); a new regression test
+  excludes every nationwide BASIN-resolution row from deciding when it is (still
+  shown as reference evidence; corrected in the fifth pass below -- this pass's own
+  code excluded every nationwide row, station-resolution included, which was over-
+  broad); a new regression test
   (tests/test_readout.py::test_sammakorn_local_fresh_canal_excludes_far_nationwide_basin_row)
   pins this. The "situation_level label wording is OPEN/unreachable" sentence above
   was also wrong -- the agency's own Thai label and colour for codes 0-5 are now
@@ -162,6 +164,38 @@ intent: >
   (tests/test_readout.py) pin that a same-sub_basin GREEN row never decides GREEN
   alone and that a same-sub_basin flood-status row DOES decide, carrying
   `resolution=basin`.
+
+  Fifth pass on this same branch: the fourth pass's own local-vs-nationwide fix went
+  too far -- it suppressed EVERY
+  nationwide row, including a station-resolution row sitting at 0.0 km on a fresh
+  agency OVERBANK status, whenever ANY local canal/pump reading was fresh, even one
+  with no colour-bearing status at all. `readout.build_readout`'s
+  `_local_factor4_decides` flag is now set only when a local reading is fresh AND
+  classifies to a real colour (`floodconnect_model.classify() != "UNKNOWN"`), and
+  when set it suppresses only a BASIN-resolution nationwide row -- a
+  STATION-resolution row (<=10 km) always decides alongside the local rows, worst
+  colour wins; a new test (tests/test_readout.py) pins a fresh local NORMAL reading
+  plus a fresh station-resolution OVERBANK row at 0-2 km deciding RED. Each excluded
+  nationwide row now also carries an `exclude_reason` (`basin_local_present` or
+  `basin_never_green`), and `kb.py`'s evidence printer gives it its own honest
+  reason text instead of the geo-exclusion ("outside radius/no coordinate") label it
+  was wrongly grouped under before. `next_action.dual_state.confidence` (`HIGH`/
+  `LOW`) is new this pass -- `HIGH` when a deciding row is station-resolution or
+  local, `LOW` when every deciding row is basin-resolution only; the key is omitted
+  entirely (read as `NONE`) when `current_local_state` is `UNKNOWN`, the same
+  never-a-null-placeholder convention `dual_state.resolution`/`dist_km` already use
+  -- with its own tests (tests/test_kb.py, tests/test_kb_answer.py) and
+  `docs/INDICATORS.md` section 9 updated to describe it next to the pre-existing
+  by-hand module's separate `confidence` field. `docs/INDICATORS.md` section 1
+  gained the agency's own `situation_level` legend table and citation, stated that
+  mapping code 4 to YELLOW and 1/2/3 to GREEN is FloodConnect's own choice (the
+  agency colours code 4 blue and does not call it a warning), and warned that code
+  1's label "น้อยวิกฤต" means critically LOW water, not RED. `system_capabilities.json`,
+  section 11, and `CHANGELOG.md` are reworded to say every fresh station within
+  10 km decides (worst colour wins), not just the nearest one, and the forecast-snap
+  caveat is added next to the "fetched and read at the queried coordinate" claim.
+  `tools/kg/*` and `output/*.graphml`/`*.jsonld` remain untouched, per the
+  orchestrator's instruction.
 created_at: "2026-10-04T20:40:00+07:00"
 expires_at: null
 reviewers: []

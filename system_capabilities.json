@@ -261,7 +261,7 @@
       "id": "nationwide_coarse",
       "name_th": "ทั่วประเทศไทย (ความละเอียดหยาบ)",
       "status": "measured (v0.1.2)",
-      "resolution": "station (<=10 km, same river/canal) or basin (<=50 km, same sub_basin_id, never decides GREEN alone) -- see docs/INDICATORS.md section 11",
+      "resolution": "every fresh station within 10 km decides, worst colour wins (not just the nearest, not same river/canal) -- failing that, a same-sub_basin_id basin reading within 50 km, which never decides GREEN alone -- see docs/INDICATORS.md section 11",
       "source": "thaiwater_waterlevel (nationwide HII/RID/EGAT/FOP telemetry, api-v3.thaiwater.net)"
     }
   ],

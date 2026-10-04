@@ -527,20 +527,28 @@ def build_readout(conn, centre_lat: float, centre_lon: float, radius_km: float,
     # value) sat in the "live drainage table" indistinguishable from a fresh reading.
     _key = lambda o: o.get("station_code") or o.get("station_name")
     # Tracks whether a LOCAL (already-geolocated, already radius-filtered to this
-    # point) factor-4 reading is fresh -- used below to stop the nationwide
-    # thaiwater_waterlevel block (stations up to 50 km away) from outranking a
-    # point's own close-by canal/pump telemetry. Regression, found by independent
-    # review (2026-10-04): before this flag, Sammakorn's own fresh canal stations
-    # didn't count toward `_has_fresh_station` (that check only looked at the
-    # nationwide thaiwater_waterlevel source), so a RED basin-resolution row 15-26 km
-    # away on an unrelated canal could flip Sammakorn from YELLOW to RED even though
-    # Sammakorn's own nearby stations were fresh and said otherwise.
+    # point) factor-4 reading is fresh AND carries a colour-bearing status (classify()
+    # != UNKNOWN) -- used below to stop a nationwide BASIN-resolution row (same
+    # sub_basin_id, up to 50 km away, a different water body) from outranking a
+    # point's own close-by canal/pump telemetry. A nationwide STATION-resolution row
+    # (<=10 km, `NATIONWIDE_RIVER_RADIUS_KM`) is never suppressed by this flag -- it
+    # decides together with the local rows, worst colour wins. Without this flag at
+    # all, Sammakorn's own fresh canal stations didn't count toward
+    # `_has_fresh_station` (that check only looked at the nationwide
+    # thaiwater_waterlevel source), so a RED basin-resolution row 15-26 km away on an
+    # unrelated canal could flip Sammakorn from YELLOW to RED even though Sammakorn's
+    # own nearby stations were fresh and said otherwise. An earlier version of this
+    # same flag suppressed EVERY nationwide row once set, station-resolution included
+    # -- a station sitting at 0.0 km on a fresh agency OVERBANK status must still
+    # decide even when a local reading is also fresh, so the flag now only ever
+    # suppresses a BASIN-resolution row, and only sets at all when the local reading's
+    # own status actually carries a colour (not a sensor-fault word or similar).
     _local_factor4_decides = False
     for o in _latest_by_composite_key(near_canal, _key).values():
         fresh, age_h = lwl.is_fresh(o["observed_at_utc"], staleness_reference_utc,
                                     _max_age("thaiwater_canal_waterlevel"), future_tolerance_h=future_tolerance_h)
         stale = not fresh
-        if fresh:
+        if fresh and _fm.classify(o.get("status")) != "UNKNOWN":
             _local_factor4_decides = True
         f4["measured"].append({
             "station": o.get("station_name") or o.get("station_code"),
@@ -552,7 +560,7 @@ def build_readout(conn, centre_lat: float, centre_lon: float, radius_km: float,
         fresh, age_h = lwl.is_fresh(o["observed_at_utc"], staleness_reference_utc,
                                     _max_age("bma_pumphistory"), future_tolerance_h=future_tolerance_h)
         stale = not fresh
-        if fresh:
+        if fresh and _fm.classify(o.get("status")) != "UNKNOWN":
             _local_factor4_decides = True
         f4["measured"].append({
             "station": o.get("station_name") or o.get("station_code"),
@@ -573,7 +581,11 @@ def build_readout(conn, centre_lat: float, centre_lon: float, radius_km: float,
     # nationwide row of either resolution is ALSO excluded from the decision (still
     # shown as reference evidence) whenever this point's own LOCAL factor-4 reading
     # (near_canal/near_pumps, already geolocated+radius-filtered to this point) is
-    # fresh -- see `_local_factor4_decides` above.
+    # fresh AND colour-bearing -- see `_local_factor4_decides` above. A nationwide
+    # STATION-resolution row (<=10 km) is never excluded by `_local_factor4_decides` --
+    # only a basin-resolution row (same sub_basin_id, 10-50 km, a different water
+    # body) is, since a close station-resolution reading is as local as the point's
+    # own canal/pump telemetry and must decide alongside it, worst colour wins.
     near_wl_basin = store.query_observations(
         conn, source_id="thaiwater_waterlevel",
         near=(centre_lat, centre_lon, NATIONWIDE_BASIN_RADIUS_KM), limit=2000)
@@ -607,17 +619,22 @@ def build_readout(conn, centre_lat: float, centre_lon: float, radius_km: float,
         status_word = o.get("status")
         level = _fm.classify(status_word)
         decides = not r["stale"]
+        exclude_reason = None
         if resolution == "basin" and level == "GREEN":
             # basin resolution can never decide GREEN on its own -- see this block's
             # own comment above.
             decides = False
-        if _local_factor4_decides:
+            exclude_reason = "basin_never_green"
+        if _local_factor4_decides and resolution == "basin":
             # A local (Bangkok canal/pump, already-geolocated-and-radius-filtered)
-            # reading already decides this point -- a nationwide row up to 50 km away
-            # is shown as reference evidence only, never lets a far station override
-            # the point's own close telemetry. See this block's comment above.
+            # colour-bearing reading already decides this point -- a basin-resolution
+            # row (10-50 km away, a different water body) is shown as reference
+            # evidence only, never lets a far basin row override the point's own
+            # close telemetry. A station-resolution row (<=10 km) is NOT suppressed
+            # by this flag -- see this block's comment above.
             decides = False
-        f4["measured"].append({
+            exclude_reason = "basin_local_present"
+        row = {
             "station": o.get("station_name") or o.get("station_code"),
             "value": o.get("value"), "unit": "m", "status": status_word,
             "observed_at_utc": o["observed_at_utc"], "age_h": r["age_h"],
@@ -626,7 +643,10 @@ def build_readout(conn, centre_lat: float, centre_lon: float, radius_km: float,
             "dist_km": round(r["dist_km"], 2), "resolution": resolution,
             "agency": prov.get("agency"), "agency_shortname": prov.get("agency_shortname"),
             "province_th": prov.get("province_th"), "river_name": prov.get("river_name"),
-        })
+        }
+        if exclude_reason is not None:
+            row["exclude_reason"] = exclude_reason
+        f4["measured"].append(row)
     if not _wl_candidates:
         f4["missing"].append({
             "note": (f"No nationwide thaiwater_waterlevel station within "

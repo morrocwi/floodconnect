@@ -14,13 +14,18 @@ only what actually shipped and is tested in this repository — never a plan (se
   reading, not just the two Bangkok MVP areas (Sammakorn village, Soi Ramkhamhaeng 53,
   which keep their existing household/node-level detail, unchanged). Resolution is
   **coarse (station or basin), never household-level**, outside those two areas:
-  - **Station resolution:** the nearest `thaiwater_waterlevel` station within 10 km
-    (any water body, not checked against `river_name`) decides, if fresh.
+  - **Station resolution:** every fresh `thaiwater_waterlevel` station within 10 km
+    (any water body, not checked against `river_name`) decides, worst colour wins —
+    not just the nearest one (Chanthaburi has 3 deciding stations at once).
   - **Basin resolution:** failing that, a fresh reading sharing the NEAREST station's
     own `sub_basin_id` (a stand-in for "same basin", not a check that both stations
     sit on the same named river) within 50 km decides — but can **never** produce
     GREEN on its own (it can still raise YELLOW/RED), and only when no local
-    factor-4 source (Bangkok canal/pump telemetry) already decided this point.
+    colour-bearing factor-4 source (Bangkok canal/pump telemetry) already decided
+    this point. A local reading never suppresses a nationwide STATION-resolution
+    row (<=10 km) this way — only a basin-resolution one — so a station sitting at
+    0.0 km on a fresh agency OVERBANK status still decides even when the point also
+    has fresh local telemetry.
   - No fresh reading within 50 km sharing that sub-basin → `UNKNOWN` (never GREEN by
     default).
   - Both radii are FloodConnect's own stated design choice (`docs/INDICATORS.md` §11),
@@ -39,8 +44,11 @@ only what actually shipped and is tested in this repository — never a plan (se
 - `floodconnect_model.STATUS_TO_LEVEL`: the ONE closed status-word → colour map this
   repository uses. `readout.py` and `kb.py` now read their `*_LIKE_STATUS` sets off it
   instead of keeping separate copies.
-- The 16-day forecast (`forward_hazard`) is now fetched and read at the EXACT queried
-  coordinate for any `lat,lon`, not only the 11 previously hardcoded forecast points.
+- The 16-day forecast (`forward_hazard`) is now fetched and read at the queried
+  coordinate for any `lat,lon`, not only the 11 previously hardcoded forecast points
+  — EXCEPT a point within the snap radius of one of those named points, which is
+  still read under that named point (e.g. a Chiang Mai-area query prints "จุด
+  chiangmai", not its own raw coordinate).
 - Accountability for a nationwide (non-MVP-area) point is now **text**: the deciding
   station's own feed-published province and owning agency — never a fabricated phone
   number, never a graph lookup (the governance knowledge graph is a separate,

@@ -62,6 +62,33 @@ and is never silently re-expressed as RED/YELLOW/GREEN/UNKNOWN.**
   bulletin, and (v0.1.2 nationwide) `thaiwater_waterlevel`'s own `situation_level`/
   `diff_wl_bank_text` (see §7 below for exactly how that feed maps to a status word).
 - **Thresholds:** the agency's own status word only — never a number this project invents.
+- **`thaiwater_situation_N` legend — the agency's own label/range/colour (VERIFIED,
+  fetched from the public bundle `https://www.thaiwater.net/dist/js/app.chunk.js`,
+  captured 2026-10-04; `storage_percent` bands in the live feed match these ranges
+  exactly):**
+
+  | Code | Agency label (TH) | `storage_percent` range | Agency colour |
+  |---|---|---|---|
+  | 0 | ไม่มีข้อมูล | – | grey `#BDBDBD` |
+  | 1 | น้อยวิกฤต | ≤10 | orange `#db802b` |
+  | 2 | น้อย | >10–30 | yellow `#ffc000` |
+  | 3 | ปกติ | >30–70 | green `#00b050` |
+  | 4 | มาก | >70–100 | **blue** `#003cfa` |
+  | 5 | ล้นตลิ่ง | >100 | red `#ff0000` |
+
+  **Codes 4→`YELLOW` and 1/2/3→`GREEN` below are FloodConnect's OWN conservative
+  mapping, not the agency's.** The agency colours level 4 ("มาก"/high) BLUE and does
+  not call it a warning at all; mapping it to `YELLOW` here is this project's
+  judgment call that a high-but-not-overbank reading deserves a watch. Likewise 1/2
+  ("น้อยวิกฤต"/"น้อย") → `GREEN` is this project's own choice that low water is not a
+  flood signal, not an agency claim.
+
+  **⚠ `น้อยวิกฤต` (code 1) means critically LOW water, not a flood risk — it is NOT
+  `RED`.** The label contains the Thai word "วิกฤต" ("critical"), but an AI or human
+  reading `diff_wl_bank_text`/labels by hand must not pattern-match that word onto
+  `RED` here; code 1 maps to `GREEN` (see `docs/NEAREST_STATION_RECIPE.md`). Only the
+  distinct keys `วิกฤต`/`วิกฤติ`/`ระดับน้ำวิกฤติ`/`thaiwater_situation_5` (code 5,
+  overbank) are `RED`.
 - **Colour/level mapping (founder ruling 2026-10-04, verbatim "WATCH = YELLOW (แนะนำ)";
   fix 2026-10-04, regate finding #2: `NO_THRESHOLD` moved OUT of the GREEN set — a
   station with no agency level published at all has no basis for GREEN):**
@@ -77,9 +104,9 @@ and is never silently re-expressed as RED/YELLOW/GREEN/UNKNOWN.**
 - **Freshness rule:** only rows within the source's own `max_age_hours`
   (`sources/registry.yaml`, 24 h for the sources feeding this indicator today) are
   counted; a stale row is shown but excluded from the classification.
-- **Confidence:** this field alone carries no separate confidence label in `kb.py`'s
-  production answer today — see §9 `one_decision` for the only place confidence is
-  produced, and only via the by-hand companion module.
+- **Confidence:** `next_action.dual_state.confidence` (shipped v0.1.2, `kb.py`'s
+  production answer) — `HIGH`/`LOW`, absent (read as `NONE`) when `UNKNOWN`; see §9
+  for the exact rule and §11 for station vs. basin resolution.
 - **Resolution label:** **station-level**, not household-level — "ประเมินระดับสถานี
   ใกล้เคียง ไม่ใช่ระดับบ้าน". Today's v0.1.x answer is scoped to two Bangkok sites
   (Sammakorn, Soi Ramkhamhaeng 53) at station/node resolution; nationwide coarse
@@ -281,14 +308,53 @@ and is never silently re-expressed as RED/YELLOW/GREEN/UNKNOWN.**
 - **One line:** one plain decision in words, with a confidence label, instead of making
   the reader combine several numbers themselves.
 - **ความหมายสั้น:** คำตัดสินใจเดียวเป็นคำพูดธรรมดา พร้อมระดับความมั่นใจ ไม่ต้องให้ผู้อ่านรวมตัวเลขเอง
-- **Exact definition:** `floodconnect_model.one_decision(inputs)` — the six-step by-hand
-  procedure in `docs/EQUATIONS_FOR_AI.md` §5: an official status word (§1) always
-  outranks the trend computed from §3/§4; without one, `RISING` alone is at least
-  `YELLOW`, never `GREEN`.
+- **Two separate confidence fields exist — do not conflate them:**
+  1. `next_action.dual_state.confidence` — `kb.py`'s own production CLI/MCP/JSON
+     answer (shipped v0.1.2). Rule below.
+  2. `floodconnect_model.one_decision(inputs).confidence` — the by-hand companion
+     module's own six-step procedure (`docs/EQUATIONS_FOR_AI.md` §5), a separate
+     `HIGH`/`MEDIUM`/`LOW`/`NONE` vocabulary for a tool-less AI working from §3/§4's
+     trend. Described below the production field.
+
+### `next_action.dual_state.confidence` (production, `kb.py`)
+
+- **Exact definition:** a resolution-based confidence label for whatever colour
+  `current_local_state` (§1) decided, computed in `kb._answer_state` from the
+  UNCAPPED deciding-evidence list (never the token-budget-capped sample), then
+  carried into `next_action.dual_state` by `kb._answer_next_action`.
+- **Levels:** `HIGH` / `LOW` / `NONE` — never `MEDIUM` (that value belongs only to
+  the by-hand module's separate field below).
+- **JSON path:** `next_action.dual_state.confidence` in `kb.py`'s `answer` output
+  (CLI `--json` / MCP `floodconnect_answer`) — **present only as `HIGH`/`LOW`; `NONE`
+  is never written as a literal key, the same convention `dual_state.resolution`/
+  `dist_km` already use (never a `null` placeholder on every answer). A caller must
+  treat a MISSING `confidence` key as `NONE` — exactly the same way it already must
+  for a missing `resolution`.**
+- **Rule:**
+  - `HIGH` — at least one deciding row is a fresh agency status word read at
+    **station resolution** (a nationwide `thaiwater_waterlevel` row within
+    `NATIONWIDE_RIVER_RADIUS_KM` = 10 km, §11) or a **local** reading (the two MVP
+    areas' own already-radius-filtered Bangkok canal/pump/DDS source, which carries
+    no `resolution` field at all — as close as a reading gets).
+  - `LOW` — every deciding row is nationwide **basin resolution** only (§11: same
+    `sub_basin_id`, 10–50 km, a different water body) — no station-resolution or
+    local reading decided.
+  - `NONE` (key absent) — `current_local_state == UNKNOWN` (forced, regardless of
+    what the evidence says) — covers both "nothing decided" and the fault-only-
+    sensor exclusion case (§1), where a deciding row can technically exist yet the
+    state still classifies `UNKNOWN`.
+
+### `floodconnect_model.one_decision(inputs).confidence` (by-hand companion module)
+
+- **Exact definition:** `floodconnect_model.one_decision(inputs)` — the six-step
+  by-hand procedure in `docs/EQUATIONS_FOR_AI.md` §5: an official status word (§1)
+  always outranks the trend computed from §3/§4; without one, `RISING` alone is at
+  least `YELLOW`, never `GREEN`.
 - **Unit:** none (categorical `level` + free text `decision`/`why`).
 - **Levels:** `level` — `RED` / `YELLOW` / `GREEN` / `UNKNOWN` (the colour contract
   above, the only other field it applies to besides §1). `confidence` — `HIGH` /
-  `MEDIUM` / `LOW` / `NONE` (its own closed vocabulary, never the colour contract).
+  `MEDIUM` / `LOW` / `NONE` (its own closed vocabulary, never the colour contract,
+  and never the same field as `dual_state.confidence` above).
   `gate` — `LICENSED_WITHIN_ENVELOPE` / `REFUSED`.
 - **JSON path:** not in `kb.py`'s `answer` JSON — by-hand companion module only:
   `floodconnect_model.one_decision(inputs)` returns
@@ -298,13 +364,12 @@ and is never silently re-expressed as RED/YELLOW/GREEN/UNKNOWN.**
   figure):**
   - `HIGH` — a fresh official status word backed the call.
   - `MEDIUM` — no official status word; the call came from the trend (`Δk`/`Tk`) alone.
-  - `LOW` — basin-level-only resolution (§11, shipped in v0.1.2): no fresh station
-    within 10 km, only a same-sub_basin reading within 50 km decided.
+  - `LOW` — basin-level-only resolution (§11): no fresh station within 10 km, only a
+    same-sub_basin reading within 50 km decided.
   - `NONE` — no current reading at all (`h_t` missing) or a stale reading.
 - **Status in this release:** implemented and tested in the by-hand companion module
   (`floodconnect_model.py`), pinned against `kb.py`'s own classifier for the status-word
-  case. `kb.py`'s production CLI/MCP answer does not yet surface a separate `confidence`
-  field of its own — see `docs/EQUATIONS_FOR_AI.md` for how to run this by hand today.
+  case — see `docs/EQUATIONS_FOR_AI.md` for how to run this by hand.
 - **Does NOT mean:** a safety certification — `gate=LICENSED_WITHIN_ENVELOPE` means "a
   real, fresh reading backed this", never "safe"; `gate=REFUSED` is the honest default
   whenever there is nothing fresh to decide from.
@@ -327,11 +392,13 @@ resolution is **station or basin (coarse zoom: nearest telemetry station/basin),
 household-level**. Nationwide ≠ household detail; do not claim street-level precision
 outside the two MVP areas.
 
-- **Station resolution** (every indicator above, at its best): the NEAREST
+- **Station resolution** (every indicator above, at its best): EVERY fresh
   `thaiwater_waterlevel` station within **10 km** (any water body — this is not
   checked against `river_name`, despite some older wording in this repo's docs)
-  decided it, if fresh. Declared radius, this project's own design choice
-  (`readout.NATIONWIDE_RIVER_RADIUS_KM`) — never an agency threshold.
+  decides, worst colour wins (e.g. Chanthaburi: 3 stations within 10 km decided at
+  once). Declared radius, this project's own design choice
+  (`readout.NATIONWIDE_RIVER_RADIUS_KM`) — never an agency threshold, and never just
+  "the nearest one" despite some older wording in this repo's docs.
 - **Basin resolution** (coarser, lower confidence): no fresh station within 10 km, but
   a fresh station sharing the NEAREST station's own `sub_basin_id` (a stand-in for
   "same basin" — the two stations are not checked against a shared named river)
@@ -348,10 +415,16 @@ outside the two MVP areas.
   the deciding row also shows `dist_km`/`resolution` now, not just the station name.
 - The two Bangkok household areas (Sammakorn village, Soi Ramkhamhaeng 53) keep their
   existing node-level detail (fixed station lists, canal/pump sources) as the
-  decision for those two areas whenever a local (Bangkok canal/pump) source already
-  decided the point — a basin-resolution nationwide row never overrides an already-
-  decided local reading there, but a fresh nationwide station/basin row is still
-  shown as reference evidence.
+  decision for those two areas whenever a local (Bangkok canal/pump) reading is fresh
+  AND carries a colour-bearing status word — but only a **basin-resolution**
+  nationwide row is stopped from deciding in that case; a nationwide
+  **station-resolution** row (<=10 km) decides together with the local rows, worst
+  colour wins (fix, 2026-10-04: an earlier version of this suppression wrongly
+  excluded a station-resolution row sitting at 0.0 km on a fresh agency OVERBANK
+  status, whenever ANY local row was fresh). A basin-resolution row suppressed this
+  way is still shown as reference evidence, with its own CLI reason text
+  ("ระดับลุ่มน้ำ ไม่ใช้เมื่อมีข้อมูลคลองในพื้นที่" — basin-level, not used when local canal
+  data exists) distinct from a genuinely-stale or geo-excluded row's reason.
 - `distance_to_bank_m`/`bank_fill_percent` (§7/§8) stay relayed-in-`provenance`-only,
   not wired into a numeric threshold of their own (Toledo-first: no invented cutoff);
   the agency's own `situation_level`/`diff_wl_bank_text` words are what §1 actually

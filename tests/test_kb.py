@@ -175,3 +175,61 @@ def test_nationwide_accountability_fallback_relays_province_from_trimmed_evidenc
     assert result is not None
     assert "เชียงใหม่" in result["owner_agencies"][0]
     assert "ไม่ทราบจังหวัด" not in result["owner_agencies"][0]
+
+
+# --- next_action.dual_state.confidence (HIGH/LOW/NONE), shipped v0.1.2 ------------------
+# Real end-to-end computation of `_answer_state`'s own `resolution_confidence` (from a
+# real DB + readout.build_readout, HIGH for station-resolution, LOW for basin-only) is
+# covered in tests/test_kb_answer.py (which already has the `fresh_state_db` fixture
+# this needs). The tests below are narrower: they pin `_answer_next_action`'s own
+# wiring -- that it READS `state_answer['resolution_confidence']` into
+# `dual_state.confidence` and FORCES it to NONE whenever `current_local_state` is
+# UNKNOWN, regardless of what that field says -- without needing a DB at all.
+
+def test_dual_state_confidence_high_for_station_resolution_decision(monkeypatch):
+    """`kb._answer_next_action`'s `dual_state.confidence` reads
+    `state_answer['resolution_confidence']` and keeps it when the state is not
+    UNKNOWN."""
+    import community_dag
+    monkeypatch.setattr(community_dag, "find_safe_route", lambda *a, **k: {
+        "found": False, "path": None, "reason": "test stub", "tag": "OPEN"})
+    state_answer = {"status_counts": {"OVERBANK": 1}, "evidence": [],
+                     "resolution_confidence": "HIGH", "notes": []}
+    hazard_answer = {"per_model": []}
+    result = kb._answer_next_action(
+        None, state_answer=state_answer, hazard_answer=hazard_answer,
+        accountability_answer=None, lat=13.0, lon=100.0, verbose=False)
+    assert result["dual_state"]["current_local_state"] == "RED"
+    assert result["dual_state"]["confidence"] == "HIGH"
+
+
+def test_dual_state_confidence_low_when_resolution_confidence_low(monkeypatch):
+    import community_dag
+    monkeypatch.setattr(community_dag, "find_safe_route", lambda *a, **k: {
+        "found": False, "path": None, "reason": "test stub", "tag": "OPEN"})
+    state_answer = {"status_counts": {"OVERBANK": 1}, "evidence": [],
+                     "resolution_confidence": "LOW", "notes": []}
+    hazard_answer = {"per_model": []}
+    result = kb._answer_next_action(
+        None, state_answer=state_answer, hazard_answer=hazard_answer,
+        accountability_answer=None, lat=13.0, lon=100.0, verbose=False)
+    assert result["dual_state"]["confidence"] == "LOW"
+
+
+def test_dual_state_confidence_none_when_state_unknown_even_if_resolution_confidence_set(
+        monkeypatch):
+    """Forced override: `current_local_state == UNKNOWN` must always win, even if
+    `resolution_confidence` itself was somehow set to something else -- covers the
+    fault-only-sensor-exclusion case (§1) where a deciding row can exist in `evidence`
+    yet the state still classifies UNKNOWN."""
+    import community_dag
+    monkeypatch.setattr(community_dag, "find_safe_route", lambda *a, **k: {
+        "found": False, "path": None, "reason": "test stub", "tag": "OPEN"})
+    state_answer = {"status_counts": {}, "evidence": [],
+                     "resolution_confidence": "HIGH", "notes": []}
+    hazard_answer = {"per_model": []}
+    result = kb._answer_next_action(
+        None, state_answer=state_answer, hazard_answer=hazard_answer,
+        accountability_answer=None, lat=13.0, lon=100.0, verbose=False)
+    assert result["dual_state"]["current_local_state"] == "UNKNOWN"
+    assert result["dual_state"].get("confidence", "NONE") == "NONE"

@@ -1067,6 +1067,13 @@ def _trim_evidence(evidence: list[dict]) -> list[dict]:
             # the default, non-verbose path) always fell back to "ไม่ทราบจังหวัด
             # [OPEN]" even when the feed's own geocode province was known.
             row["province_th"] = e["province_th"]
+        if e.get("exclude_reason") is not None:
+            # A basin-resolution row excluded because a local reading already
+            # decides (or because it is basin+GREEN) must stay distinguishable from
+            # a geo-excluded row (canal_outer/no-coordinate/outside-radius) --
+            # `cmd_answer`'s evidence printer below reads this field to pick the
+            # correct, honest reason text per row.
+            row["exclude_reason"] = e["exclude_reason"]
         out.append(row)
     return out
 
@@ -1278,6 +1285,13 @@ def _answer_state(lat: float, lon: float, radius_km: float = 3.0,
             # ("values that exist but are too old"), which is simply false for a fresh
             # row.
             "stale": is_stale,
+            # A THIRD, distinct exclusion reason -- a basin-resolution nationwide row
+            # (fresh, in-radius, has a coordinate) that a local colour-bearing
+            # reading or its own GREEN level stops from deciding (see readout.py's
+            # nationwide block). Present only on such a row; absent (None) for a
+            # geo-excluded or stale row, so the printer below can tell all three
+            # cases apart.
+            "exclude_reason": row.get("exclude_reason"),
         })
         if is_stale:
             stale_count += 1
@@ -1322,7 +1336,27 @@ def _answer_state(lat: float, lon: float, radius_km: float = 3.0,
     # this condition stays False -- the fault-vs-UNKNOWN exclusion happens downstream
     # in `_classify_current_local_state`, not here.
     refresh_suggested = not status_counts and (stale_count > 0 or not evidence)
-    return {
+    # A confidence label for the colour `status_counts` decides,
+    # per the founder's "one decision, with confidence" spec -- HIGH when at least one
+    # DECIDING row (used_for_decision=True) is a fresh agency word read at station
+    # resolution (a nationwide row within NATIONWIDE_RIVER_RADIUS_KM) or a local,
+    # already-radius-filtered Bangkok canal/pump/DDS reading (no `resolution` field at
+    # all -- as close as a reading gets); LOW when every deciding row is nationwide
+    # BASIN resolution only (same sub_basin_id, 10-50 km, a different water body);
+    # NONE when nothing decided. Computed from the UNCAPPED `evidence` list (before
+    # `_trim_evidence`'s cap) so a non-verbose answer's small sample never changes this
+    # label. `_answer_next_action` turns this into `dual_state["confidence"]`, forcing
+    # it to NONE whenever `current_local_state` itself is UNKNOWN (e.g. the fault-only-
+    # sensor case below, where a deciding row can exist in `evidence` yet the state
+    # still classifies UNKNOWN) -- see that function for the override.
+    _deciding_for_confidence = [e for e in evidence if e.get("used_for_decision")]
+    if not _deciding_for_confidence:
+        resolution_confidence = "NONE"
+    elif any(e.get("resolution") != "basin" for e in _deciding_for_confidence):
+        resolution_confidence = "HIGH"
+    else:
+        resolution_confidence = "LOW"
+    out = {
         "tag": overall.get("tag", "INSTINCT"),
         "notes": notes,
         "contradiction_count": len(full.get("contradictions", [])),
@@ -1335,6 +1369,13 @@ def _answer_state(lat: float, lon: float, radius_km: float = 3.0,
         "stale_count": stale_count,
         "refresh_suggested": refresh_suggested,
     }
+    # Same never-a-NONE-placeholder convention as `dual_state.confidence`/
+    # `dual_state.resolution` (see `_answer_next_action`): omit the key entirely on
+    # the common "nothing decided yet" answer rather than spend tokens on every
+    # single call stating a confidence for a colour that was never even reached.
+    if resolution_confidence != "NONE":
+        out["resolution_confidence"] = resolution_confidence
+    return out
 
 
 def _answer_hazard(
@@ -2216,6 +2257,23 @@ def _answer_next_action(
         "current_local_state": _classify_current_local_state(state_answer),
         "forward_hazard": _classify_forward_hazard(hazard_answer),
     }
+    # HIGH/LOW confidence per `_answer_state`'s own `resolution_confidence`
+    # (computed there from the UNCAPPED evidence list -- see its docstring), forced to
+    # NONE whenever `current_local_state` is UNKNOWN regardless of what that field
+    # says (covers the fault-only-sensor-exclusion case, where a deciding row can
+    # exist in `evidence` yet classification still lands on UNKNOWN). Same convention
+    # as `resolution`/`dist_km` right below: NONE is never written as a literal key
+    # (every UNKNOWN answer would otherwise carry a useless `"confidence": "NONE"` on
+    # every single call, costing real tokens for no information -- UNKNOWN already
+    # says there is no basis for a colour, so there is no basis for a confidence in
+    # one either) -- `confidence` is present (`HIGH`/`LOW`) only when
+    # `current_local_state` actually decided to something. A caller reading only
+    # `dual_state.confidence` should treat a missing key as `NONE`, the same way it
+    # already must for a missing `resolution`.
+    _confidence = ("NONE" if dual_state["current_local_state"] == "UNKNOWN"
+                   else (state_answer or {}).get("resolution_confidence", "NONE"))
+    if _confidence != "NONE":
+        dual_state["confidence"] = _confidence
     # fix (2026-10-04, independent review item 5): `dual_state` carried a bare colour
     # with no resolution/confidence label, so a caller reading ONLY this top-level
     # field had no way to tell a close "station"-resolution reading from a far
@@ -3146,16 +3204,27 @@ def cmd_answer(args) -> int:
         return f"    - {e.get('station')}: {val}[{e.get('status')}] (age={_age_str}){tail}{_geo}"
 
     # fix (2026-10-04): a `used_for_decision=False` row is excluded for
-    # ONE of two different reasons -- genuinely too old (`stale=True`) OR fresh but
-    # geo-excluded (canal_outer / no coordinate / outside radius, `stale=False`).
-    # MEASURED later: 10 fresh (4.8h old) geo-excluded DDS rows
-    # were printed under a single "ค่าที่มีแต่เก่าเกินเกณฑ์" ("too old") label, which is
-    # false for a fresh row. The two reasons now get two separate, honest labels.
+    # one of THREE different reasons -- genuinely too old (`stale=True`), fresh but
+    # geo-excluded (canal_outer / no coordinate / outside radius, `stale=False`, no
+    # `exclude_reason`), or fresh and in-radius but a basin-resolution nationwide row
+    # that a local reading/its own GREEN level stops from deciding (`stale=False`,
+    # `exclude_reason` set -- see readout.py's nationwide block). MEASURED earlier: 10
+    # fresh (4.8h old) geo-excluded DDS rows were printed under a single
+    # "ค่าที่มีแต่เก่าเกินเกณฑ์" ("too old") label, which is false for a fresh row; a
+    # basin-resolution row excluded for a THIRD reason (local telemetry already
+    # decides, or basin-never-GREEN) used to be printed under that same geo label
+    # ("นอกรัศมี/ไม่มีพิกัด" -- outside radius/no coordinate), which is also false -- the
+    # row IS in radius and DOES have a coordinate. Each reason now gets its own,
+    # honest label.
     _used = [e for e in _evidence if e.get("used_for_decision")]
     _not_used_stale = [e for e in _evidence
                         if not e.get("used_for_decision") and e.get("stale")]
+    _not_used_basin = [e for e in _evidence
+                        if not e.get("used_for_decision") and not e.get("stale")
+                        and e.get("exclude_reason")]
     _not_used_geo = [e for e in _evidence
-                      if not e.get("used_for_decision") and not e.get("stale")]
+                      if not e.get("used_for_decision") and not e.get("stale")
+                      and not e.get("exclude_reason")]
     if _used:
         print("  หลักฐานที่ใช้ตัดสิน (used_for_decision=true):")
         for e in _used:
@@ -3164,6 +3233,15 @@ def cmd_answer(args) -> int:
         print("  ค่าที่มีแต่เก่าเกินเกณฑ์ -- ไม่ถูกใช้ตัดสิน (stale=true, used_for_decision=false):")
         for e in _not_used_stale:
             print(_fmt_evidence_line(e) + " -- เก่าเกินเกณฑ์ ไม่ถูกใช้ตัดสิน")
+    if _not_used_basin:
+        print("  ค่าสดระดับลุ่มน้ำ (basin resolution) -- ไม่ถูกใช้ตัดสิน (stale=false, "
+              "used_for_decision=false):")
+        for e in _not_used_basin:
+            if e.get("exclude_reason") == "basin_local_present":
+                _why = "ระดับลุ่มน้ำ ไม่ใช้เมื่อมีข้อมูลคลองในพื้นที่"
+            else:
+                _why = "ระดับลุ่มน้ำ ตัดสิน GREEN เองไม่ได้"
+            print(_fmt_evidence_line(e) + f" -- {_why}")
     if _not_used_geo:
         print("  ค่าสดแต่อยู่นอกรัศมี/ไม่มีพิกัดยืนยัน -- ไม่ถูกใช้ตัดสิน (stale=false, "
               "used_for_decision=false):")
