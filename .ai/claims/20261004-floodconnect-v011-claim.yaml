@@ -1,0 +1,115 @@
+claim_id: "20261004-floodconnect-v011-claim"
+status: ACTIVE
+writer: "ai-worker"
+branch: "agent/ai-worker/floodconnect-v0.1.1"
+base_sha: "df9fe2c49830a779400b077bdcd7f2e76f8e2d68"
+nodes:
+  - FC_ROOT
+  - AGENT_COORDINATION
+  - LIVE_DATA_SYSTEM
+  - REPO_KG
+  - RAW_STAGE_FORECAST
+  - KB
+  - CI
+  - SITE
+artifacts:
+  - README.md
+  - AI.md
+  - AGENTS.md
+  - START_HERE.md
+  - ARCHITECTURE.md
+  - ROADMAP.md
+  - docs/AI_INTERFACE.md
+  - docs/DATA_SYSTEM.md
+  - docs/AI_ENTRYPOINT.md
+  - docs/ARCHITECTURE_world_frameworks.md
+  - docs/handoff/NEXT_AI_HANDOFF.md
+  - site/inputs/meta/floodconnect_repo_kg.yaml
+  - site/inputs/README.md
+  - site/landing/index.html
+  - site/landing/floodconnect-infographic.jpg
+  - skills/floodconnect/SKILL.md
+  - raw_stage_forecast.py
+  - llms.txt
+  - docs/EVIDENCE.md
+  - examples/README.md
+  - examples/answer_sammakorn.EXAMPLE-2026-10-04.json
+  - system_capabilities.json
+  - kb.py
+  - readout.py
+  - collect.py
+  - dem_signal_check.py
+  - klongmap_local_prior_experiment.py
+  - tools/mcp/floodconnect_mcp.py
+  - .github/workflows/pages-landing.yml
+  - tests/test_kb_answer.py
+  - tests/test_collect.py
+  - tests/test_floodconnect_mcp.py
+  - tests/test_freshness_gate_2026-10-03.py
+  - pyproject.toml
+  - docs/AI_TIERS.md
+  - docs/EQUATIONS_FOR_AI.md
+  - skills/floodconnect/references/sammakorn_worked_example.md
+  - skills/floodconnect/references/upstream_recipes.md
+  - docs/knowledge/card_api_2026-09-27_hii_waterchart_basin.md
+  - floodconnect_model.py
+  - model_spec.json
+  - store.py
+  - tools/kg/accountability.py
+  - tests/test_floodconnect_model.py
+  - tests/test_cmd_connectors.py
+  - tests/test_accountability.py
+intent: >
+  v0.1.1 external-AI-readability fixes identified from a free-AI (no code
+  execution) evaluation of the released v0.1.0 repo, PLUS fixes from an
+  independent post-release review of this same working branch (not
+  doc-only): purge every hosted/scheduled-API-looking surface
+  (docs/AI_INTERFACE.md's "GET /api/v1/..." framing, docs/DATA_SYSTEM.md's
+  tracked-snapshot wording, the agent-facing reference doc's
+  static-JSON-fetch instructions) and replace with local-export wording;
+  align the "forecast" framing across README/AI.md/AGENTS.md/release
+  wording so it matches the release notes (rain-per-model only, not a
+  flood-depth forecast, water-debt/Jev outlook is a v0.2 research
+  direction, not shipped); add a docstring banner to raw_stage_forecast.py
+  marking it a standalone, uncalled experiment; add a new llms.txt
+  entrypoint and docs/EVIDENCE.md page (built only from numbers already
+  measured and committed in existing experiment/backtest docs, re-verified
+  against their source files, negatives shown first, no re-running of any
+  model); add a static `site/landing/` explainer page (no data) served by
+  a new, minimal `pages-landing.yml` workflow (KB/CI/SITE nodes); a REAL
+  code change, not doc-only: `_classify_current_local_state`
+  (kb.py/readout.py) reclassifies a bare station WATCH reading as
+  `current_local_state=YELLOW` instead of RED (founder ruling 2026-10-04,
+  "WATCH = YELLOW"), `_answer_next_action` gains a YELLOW/WATCH-specific
+  MEASURED action and an updated RED source label
+  (readout.CRITICAL_LIKE_STATUS, not FLOOD_LIKE_STATUS); `collect.py`
+  gains a bbox-scoped refresh path exercised by `tools/mcp/floodconnect_mcp.py`
+  and `refresh_suggested` plumbing already present in `_answer_state`/
+  `_answer_hazard`; ROADMAP.md re-sequences V8 (Toledo registration) and V6
+  (water debt) to right after v0.2.0 and folds the Jev envelope/`--level`/
+  coarse-nationwide V4 into v0.2.0 itself, per founder ruling 2026-10-04; no
+  new Toledo equation, no new live-data claim, no change to
+  DSVA_DECISION_MODEL or any Toledo-registered object. File-level change,
+  no history rewrite; stops before any public push per the local/public
+  split rule -- publishing happens only after review of this branch.
+created_at: "2026-10-04T15:50:00+07:00"
+updated_at: "2026-10-04T18:20:00+07:00"
+expires_at: null
+reviewers: []
+supersedes: null
+note: "Amended in place again (still ACTIVE, not yet released/merged to main on
+  its own) for the FIX B pass: parallel+TTL-cached live refresh in collect.py
+  (one daemon thread per source, a Semaphore(max_workers) concurrency cap, a
+  per-batch wall-clock budget, a point-scoped cache key so two areas never
+  share one source's cache entry), WAL mode + a 30s busy_timeout in
+  store.connect() (needed for those concurrent writers), a streaming
+  --live progress printer for `kb.py connectors`, a fallback in
+  tools/kg/accountability.py's CLI matching kb.py's own fresh-install
+  fallback for sammakorn/ram53, a plain-language note on `floodconnect_
+  get_area_state` when water_balance REFUSES, bma_pumphistory marked
+  DORMANT_PERMANENT_404 (MEASURED HTTP 404), and a new
+  floodconnect_model.py + model_spec.json (pure stdlib, no DB/network) for a
+  sandbox AI to compute PROP-FLOOD-01/02 and the GREEN/YELLOW/RED
+  classification by hand -- classify_counts() is tested against kb.py's own
+  real classifier for the same inputs. No push performed; see
+  docs/handoff/NEXT_AI_HANDOFF.md for the corrected v0.1.1 summary."
