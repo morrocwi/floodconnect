@@ -262,10 +262,10 @@ def test_answer_sources_is_exact_positive_allowlist():
     gdacs_events/noaa_oni/openmeteo_sst/data_go_th_ckan/marine_imis, survived the old
     "everything minus exclusions" filter for a plain sammakorn answer)."""
     expected = {
-        "thaiwater_canal_waterlevel", "bma_pumphistory", "thaiwater_flood_road",
-        "dds_daily_pdf", "dds_tide_pdf", "dds_flood_report", "thaiwater_rain_24h",
-        "bma_watermap", "openmeteo_forecast16d", "metno_locationforecast",
-        "social_listening_google", "social_listening_paste",
+        "thaiwater_canal_waterlevel", "thaiwater_waterlevel", "bma_pumphistory",
+        "thaiwater_flood_road", "dds_daily_pdf", "dds_tide_pdf", "dds_flood_report",
+        "thaiwater_rain_24h", "bma_watermap", "openmeteo_forecast16d",
+        "metno_locationforecast", "social_listening_google", "social_listening_paste",
     }
     assert set(collect.ANSWER_SOURCES) == expected
     reg = collect.load_registry()

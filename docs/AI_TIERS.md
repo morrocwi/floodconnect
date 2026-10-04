@@ -27,7 +27,9 @@ not a live data endpoint and must never be treated as one.
 `docs/INDICATORS.md`.** Closed set: `current_local_state`, `forward_hazard`,
 `rise_rate_dk`, `time_to_threshold_tk`, `rain_24h_mm`, `rain_7day_per_model_mm`,
 `distance_to_bank_m`, `bank_fill_percent`, `one_decision` (+ `confidence`),
-`water_debt` (planned v0.2+). RED/YELLOW/GREEN/UNKNOWN only — UNKNOWN is never SAFE.
+`water_debt` (planned v0.2+). `current_local_state`/`one_decision.level` use
+RED/YELLOW/GREEN/UNKNOWN only (UNKNOWN is never SAFE) — every OTHER indicator has its
+own closed vocabulary, see `docs/INDICATORS.md`'s colour-contract scope note.
 
 ## T0 — search snippet, no browsing
 

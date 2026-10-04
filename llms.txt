@@ -20,16 +20,17 @@ T5 สคริปต์/นักพัฒนาที่เรียกผ่�
 ```
 
 > A One-Decision Network for flood water: a flood/canal/pump readout layer for your
-> home AI. **Target: all of Thailand** — any lat,lon, at a coarse basin/province zoom
-> (nationwide coverage is in progress, ROADMAP.md v0.2.0). v0.1.x ships household/node
-> detail for two Bangkok sites only (Sammakorn village, Soi Ramkhamhaeng 53) — never
-> call this project Bangkok-only. You install it and compute on your own machine;
-> nothing here is hosted, and nothing runs on a schedule.
+> home AI. **Target: all of Thailand — shipped in v0.1.2.** Any lat,lon gets a real
+> reading at a coarse station/basin zoom, from the nationwide `thaiwater_waterlevel`
+> telemetry feed. Household/node detail stays two Bangkok sites only (Sammakorn
+> village, Soi Ramkhamhaeng 53), unchanged — never call this project Bangkok-only. You
+> install it and compute on your own machine; nothing here is hosted, and nothing runs
+> on a schedule.
 
 > เครือข่ายการตัดสินใจหนึ่งเดียวสำหรับสถานการณ์น้ำ: เครื่องมืออ่านค่าน้ำ/คลอง/ปั๊ม สำหรับ AI
-> ของคุณเอง **เป้าหมาย: ทั่วประเทศไทย** — ทุกพิกัด lat,lon ที่ระดับหยาบ (ลุ่มน้ำ/จังหวัด) ความ
-> ครอบคลุมทั่วประเทศกำลังดำเนินการ (ดู ROADMAP.md v0.2.0) v0.1.x เปิดใช้ละเอียดระดับบ้าน/โหนด
-> เฉพาะ 2 พื้นที่ในกรุงเทพฯ (หมู่บ้านสัมมากร, ซอยรามคำแหง 53) — อย่าเรียกโครงการนี้ว่าเฉพาะ กทม.
+> ของคุณเอง **เป้าหมาย: ทั่วประเทศไทย — เปิดใช้แล้วใน v0.1.2** ทุกพิกัด lat,lon ตอบได้จริงที่ระดับ
+> หยาบ (สถานี/ลุ่มน้ำ) จากฐานข้อมูลสถานีทั่วประเทศ ความละเอียดระดับบ้าน/โหนดยังคงเฉพาะ 2 พื้นที่
+> ในกรุงเทพฯ (หมู่บ้านสัมมากร, ซอยรามคำแหง 53) — อย่าเรียกโครงการนี้ว่าเฉพาะ กทม.
 > ติดตั้งและคำนวณบนเครื่องของคุณเอง ไม่มีการโฮสต์ ไม่มีจังหวะอัปเดตตายตัว
 
 **The flood indicators — full dictionary in `docs/INDICATORS.md`.** Closed set:
@@ -55,9 +56,11 @@ method deterministically — see "## How to get an answer" below. **No tool acce
 all** (you are a browsing-only chat AI, T0/T1 above)? Follow
 `docs/NEAREST_STATION_RECIPE.md` — the same official sources and rules, step by step,
 done by hand: fetch `api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel`
-(nationwide, no key) or the BMA Bangkok pages, pick the nearest station within ~3 km on
-the same water body, read the agency's own status word or bank/ground-level fields,
-check freshness, classify — never invent a station or a number.
+(nationwide, no key) or the BMA Bangkok pages, pick the nearest station within 10 km
+(same river, else same sub-basin within 50 km, "basin" resolution, never GREEN on its
+own) on the same water body, read the agency's own status word
+(`situation_level`/`diff_wl_bank_text`) or bank/ground-level fields, check freshness,
+classify — never invent a station or a number.
 
 ## ให้วิธีคิด ไม่ใช่บริการข้อมูลโฮสต์กลาง (founder ruling 2026-10-04)
 

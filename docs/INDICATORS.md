@@ -31,7 +31,8 @@ and is never silently re-expressed as RED/YELLOW/GREEN/UNKNOWN.**
 | `GREEN` | Normal, **and** there is a fresh, real reading backing that call. |
 | `UNKNOWN` | No fresh basis to call GREEN/YELLOW/RED. **UNKNOWN is never treated as safe.** |
 
-**แผนที่สีเดียว ใช้กับทุกตัวชี้วัด ไม่มีข้อยกเว้น:**
+**สีแดง/เหลือง/เขียว/ไม่ทราบ ใช้กับ `current_local_state` และ `one_decision.level`
+เท่านั้น — ตัวชี้วัดอื่นมีค่าของตัวเอง (ดูหัวข้อ "Levels" ของแต่ละตัวชี้วัดด้านล่าง):**
 
 | สี | ความหมาย |
 |---|---|
@@ -55,18 +56,24 @@ and is never silently re-expressed as RED/YELLOW/GREEN/UNKNOWN.**
 - **Levels:** `RED` / `YELLOW` / `GREEN` / `UNKNOWN` (the colour contract above).
 - **JSON path:** `next_action.dual_state.current_local_state` in `kb.py`'s `answer`
   output (CLI `--json` / MCP `floodconnect_answer`).
-- **Input source:** `readout.FLOOD_LIKE_STATUS` / `NORMAL_LIKE_STATUS` /
-  `CRITICAL_LIKE_STATUS` and `site/build_data.py`'s `_DDS_STATUS_TH`, fed by
-  `live_water_level.py` station rows and the BMA DDS bulletin.
+- **Input source:** `floodconnect_model.STATUS_TO_LEVEL` (the ONE closed status-word
+  map, v0.1.2 — `readout.py`/`kb.py` read their sets off it) plus `site/build_data.py`'s
+  `_DDS_STATUS_TH`, fed by `live_water_level.py`/BMA station rows, the BMA DDS
+  bulletin, and (v0.1.2 nationwide) `thaiwater_waterlevel`'s own `situation_level`/
+  `diff_wl_bank_text` (see §7 below for exactly how that feed maps to a status word).
 - **Thresholds:** the agency's own status word only — never a number this project invents.
-- **Colour/level mapping (founder ruling 2026-10-04, verbatim "WATCH = YELLOW (แนะนำ)"):**
+- **Colour/level mapping (founder ruling 2026-10-04, verbatim "WATCH = YELLOW (แนะนำ)";
+  fix 2026-10-04, regate finding #2: `NO_THRESHOLD` moved OUT of the GREEN set — a
+  station with no agency level published at all has no basis for GREEN):**
   - `RED` — any agency-declared critical/overflow word present (`CRITICAL`, `OVERBANK`,
-    `ระดับน้ำวิกฤติ`).
-  - `YELLOW` — `WATCH`/เฝ้าระวัง present, or any status word not in the normal-like or
-    critical-like sets.
-  - `GREEN` — every status word present is normal-like (`NORMAL`, `NO_THRESHOLD`,
-    `ระดับน้ำปกติ`), and at least one such row is fresh.
-  - `UNKNOWN` — no status word at all, or every fresh row was a sensor fault.
+    `ระดับน้ำวิกฤติ`, `วิกฤต(ิ)`, `thaiwater_situation_5`, or `diff_wl_bank_text`
+    starting with "ล้นตลิ่ง").
+  - `YELLOW` — `WATCH`/เฝ้าระวัง/เตือนภัย/`thaiwater_situation_4` present, or any status
+    word not in the normal-like, critical-like, or no-basis sets.
+  - `GREEN` — every status word present is normal-like (`NORMAL`, `ปกติ`,
+    `ระดับน้ำปกติ`, `thaiwater_situation_1/2/3`), and at least one such row is fresh.
+  - `UNKNOWN` — no status word at all, every fresh row was a sensor fault, or every
+    fresh row's only status is `NO_THRESHOLD` (no agency level published at all).
 - **Freshness rule:** only rows within the source's own `max_age_hours`
   (`sources/registry.yaml`, 24 h for the sources feeding this indicator today) are
   counted; a stale row is shown but excluded from the classification.
@@ -219,20 +226,23 @@ and is never silently re-expressed as RED/YELLOW/GREEN/UNKNOWN.**
 - **Unit:** m.
 - **Levels:** a numeric value where wired, otherwise `OPEN` — no colour/level vocabulary
   of its own, never re-expressed as RED/YELLOW/GREEN/UNKNOWN.
-- **JSON path:** not yet wired into any field of `kb.py`'s `answer` JSON — see "Status"
-  below.
-- **Input source:** the nationwide `thaiwater_waterlevel` feed's `station.min_bank` and
-  `diff_wl_bank` fields.
-- **Status in this release: NOT YET WIRED into the decision path.** This project's
-  `observations.bank`/`observations.critical`/`observations.status` columns are collected
-  as `NULL` for this source today — the parser keeps the agency's raw fields on capture,
-  but `collect.py` does not yet fill these columns from them, and this source is not yet
-  in `collect.ANSWER_SOURCES`. Shown here, in the dictionary, exactly as `OPEN` so no
-  caller invents a value for it before the wiring lands (tracked for the nationwide
-  coarse-zoom follow-up, see §11).
-- **Resolution label:** single-station, where wired.
-- **Does NOT mean:** usable today for any station outside the two MVP household areas —
-  do not report a number for this field until the wiring above is actually merged.
+- **JSON path:** `state.evidence[*]` rows do not carry this field directly yet (they
+  carry `value`/`status`/`dist_km`/`resolution`) — a caller wanting the metre figure
+  reads `collect.collect_thaiwater_waterlevel`'s stored `provenance.diff_wl_bank` for
+  that row, or computes it itself from `observations.bank` minus `value`.
+- **Input source:** the nationwide `thaiwater_waterlevel` feed's **top-level**
+  `diff_wl_bank`/`diff_wl_bank_text` fields (NOT under `station` — fix, 2026-10-04,
+  regate finding #5, exact path MEASURED against the live feed 2026-10-04) and
+  `station.min_bank`.
+- **Status in this release (v0.1.2): the agency word this field's SIGN comes from
+  (`diff_wl_bank_text` starting "ล้นตลิ่ง") now drives `current_local_state` directly
+  (§1, `OVERBANK` → RED) for every point in Thailand via `thaiwater_waterlevel` — see
+  §11. The METRE VALUE itself (`distance_to_bank_m` as a standalone number) is still
+  relayed only in `provenance`, not surfaced as its own top-level answer field.**
+- **Resolution label:** station or basin, per §11 — never promoted past what the
+  deciding row's own `resolution` says.
+- **Does NOT mean:** a number this project computed — it is the agency's own
+  `diff_wl_bank`, relayed.
 
 ## 8. `bank_fill_percent`
 
@@ -252,12 +262,19 @@ and is never silently re-expressed as RED/YELLOW/GREEN/UNKNOWN.**
 - **Unit:** %.
 - **Levels:** a numeric value where wired, otherwise `OPEN` — no colour/level vocabulary
   of its own, never re-expressed as RED/YELLOW/GREEN/UNKNOWN.
-- **JSON path:** not yet wired into any field of `kb.py`'s `answer` JSON — see "Status"
-  below.
-- **Input source:** the nationwide `thaiwater_waterlevel` feed's `storage_percent`,
-  `min_bank`, `ground_level` fields.
-- **Status in this release: NOT YET WIRED**, same status as §7 — see §11.
-- **Does NOT mean:** usable today outside the wiring described in §7/§11.
+- **JSON path:** not a standalone top-level answer field in v0.1.2 — relayed in
+  `collect.collect_thaiwater_waterlevel`'s stored `provenance.storage_percent` for the
+  row (same `provenance` a caller already reads for §7).
+- **Input source:** the nationwide `thaiwater_waterlevel` feed's **top-level**
+  `storage_percent` field (fix, 2026-10-04, regate finding #5: not nested under
+  `station`), plus `station.min_bank`/`station.ground_level`.
+- **Status in this release:** relayed in `provenance`, not yet its own top-level
+  answer field — the agency's own `situation_level` code (which this same feed
+  publishes, and which correlates with `storage_percent`'s bins, MEASURED 2026-10-04 on
+  one live capture) is what drives §1's colour today, not a `bank_fill_percent`
+  numeric cutoff of this project's own choosing (Toledo-first: no invented threshold).
+- **Does NOT mean:** a numeric cutoff this project chose — any percent-based colour
+  rule would be an invented threshold; §1 never uses one.
 
 ## 9. `one_decision` + `confidence`
 
@@ -303,15 +320,39 @@ and is never silently re-expressed as RED/YELLOW/GREEN/UNKNOWN.**
 
 ## 11. Resolution label — read this before trusting any field above
 
-Every indicator above is **station/node-resolution**, scoped to the two Bangkok MVP
-areas (Sammakorn village, Soi Ramkhamhaeng 53) in v0.1.x. **Nationwide coarse-zoom
-(basin/province/district) resolution — reading the nationwide `thaiwater_waterlevel`
-feed for any point in Thailand, picking the nearest station within a radius on the same
-water body, and wiring §7/§8 into the decision path — is a separate, larger piece of
-work that this release (v0.1.2) does NOT ship.** Calling any indicator above
-"nationwide" or "household-level" outside the two named areas is an overclaim; say so
-plainly instead. See `ROADMAP.md` for when nationwide coarse-zoom is scheduled.
+**v0.1.2 (founder ruling 2026-10-04, "ทำเลย v0.1.2 ทั้งประเทศ"): a nationwide COARSE
+path is now shipped.** `current_local_state`/`forward_hazard`/accountability work for
+ANY `lat,lon` in Thailand, not only the two named Bangkok household areas — but the
+resolution is **station or basin (coarse zoom: nearest telemetry station/basin), never
+household-level**. Nationwide ≠ household detail; do not claim street-level precision
+outside the two MVP areas.
 
-**ภาษาไทยอย่างง่าย:** ตัวชี้วัดทั้งหมดข้างบนนี้ ตอนนี้ใช้ได้จริงเฉพาะสองพื้นที่ในกรุงเทพฯ
-(สัมมากร, ซอยรามคำแหง 53) ที่ความละเอียดระดับสถานี/โหนด ส่วนการขยายไปทั่วประเทศแบบหยาบ
-(ระดับลุ่มน้ำ/จังหวัด/อำเภอ) ยังไม่ได้ทำในรุ่นนี้ — อย่าบอกว่าทุกจุดในประเทศไทยใช้ได้แล้ว
+- **Station resolution** (every indicator above, at its best): a fresh
+  `thaiwater_waterlevel` row within **10 km** (river) decided it. Declared radius, this
+  project's own design choice (`readout.NATIONWIDE_RIVER_RADIUS_KM`) — never an agency
+  threshold.
+- **Basin resolution** (coarser, lower confidence): no fresh station within 10 km, but
+  a fresh station on the **same `sub_basin_id`** within **50 km**
+  (`readout.NATIONWIDE_BASIN_RADIUS_KM`, also this project's own design choice) exists.
+  A basin-resolution row **can never decide GREEN** on its own (far + "normal" is not a
+  clearance) — it is shown, with `resolution: "basin"`, but excluded from the decision
+  when its own classified level is GREEN; it still raises YELLOW/RED normally.
+- **No resolution at all:** no fresh station within 50 km on the same sub-basin —
+  `current_local_state` stays `UNKNOWN`, same as always (UNKNOWN is never SAFE).
+- Every `state.evidence` row a nationwide query returns carries `dist_km` and
+  `resolution` (`"station"` or `"basin"`) alongside the station name/status/agency —
+  never a bare number with no named source.
+- The two Bangkok household areas (Sammakorn village, Soi Ramkhamhaeng 53) are
+  **unchanged** — they keep their existing node-level detail (fixed station lists,
+  canal/pump sources), untouched by this nationwide addition.
+- `distance_to_bank_m`/`bank_fill_percent` (§7/§8) stay relayed-in-`provenance`-only,
+  not wired into a numeric threshold of their own (Toledo-first: no invented cutoff);
+  the agency's own `situation_level`/`diff_wl_bank_text` words are what §1 actually
+  reads. Accountability for a nationwide point is TEXT only (the deciding station's own
+  feed-published province + owning agency) — never a graph lookup; that is a separate,
+  not-yet-built piece of work (`tools/kg/*`, a different repo scope).
+
+**ภาษาไทยอย่างง่าย:** v0.1.2 ตอบได้ทั่วประเทศแล้ว (ความละเอียดระดับสถานี/ลุ่มน้ำ ไม่ใช่
+ระดับบ้าน) โดยหาสถานีที่สดที่สุดในรัศมี 10 กม. ก่อน ถ้าไม่มีจึงหาสถานีลุ่มน้ำเดียวกันในรัศมี 50
+กม. (ซึ่งจะไม่ให้ค่าเขียวเองได้) ถ้าไม่มีทั้งสองอย่างคือ "ไม่ทราบ" เหมือนเดิม — สองพื้นที่ในกรุงเทพฯ
+(สัมมากร, ซอยรามคำแหง 53) ยังคงรายละเอียดระดับบ้านเดิม ไม่เปลี่ยนแปลง

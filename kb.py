@@ -582,12 +582,40 @@ def _coordinate_point_id(lat: float, lon: float) -> str:
     return f"coord_{lat:.3f}_{lon:.3f}"
 
 
+def _coord_point_has_cached_rows(point_id: str) -> bool:
+    """True if `data/observations.sqlite` already has at least one
+    openmeteo_forecast16d/metno_locationforecast row cached for this exact `coord_*`
+    point id (regardless of freshness -- `_forecast_rows_by_model` applies its own
+    freshness gate afterwards). Used only to answer "has this point ever been
+    refreshed", never to decide freshness itself."""
+    if not DB_PATH.exists():
+        return False
+    try:
+        conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
+        row = conn.execute(
+            """SELECT 1 FROM observations
+               WHERE source_id IN ('openmeteo_forecast16d', 'metno_locationforecast')
+               AND station_code LIKE ? LIMIT 1""",
+            (f"{point_id}:%",),
+        ).fetchone()
+        return row is not None
+    except sqlite3.Error:  # pragma: no cover - defensive
+        return False
+
+
 def _resolve_forecast_point(at: str, lat: float, lon: float) -> "tuple[str, bool]":
     """Resolves (at, lat, lon) to (point_id, within_range). `within_range` is False
     when `at` is not itself a known point id AND the nearest `_FORECAST_KNOWN_POINTS`
     entry is more than `_FORECAST_POINT_SNAP_RADIUS_KM` away -- see the fix note above.
     Shared by `cmd_forecast` and `_answer_hazard` so the two call sites can never
-    diverge on this cap."""
+    diverge on this cap.
+
+    v0.1.2 (design review item 5): a point outside every declared radius is no longer
+    an unconditional refusal -- if this exact coordinate's OWN `coord_*` point already
+    has a forecast cached (because a `refresh=True` call just fetched it there, see
+    `build_answer`'s `points_by_source` fix), that point is `within_range=True` on its
+    own terms, never borrowing a different named point's hazard. A point truly never
+    refreshed yet still returns `within_range=False` (honest UNKNOWN, unchanged)."""
     if at in _FORECAST_KNOWN_POINTS:
         return at, True
     import live_water_level as lwl_mod
@@ -597,7 +625,10 @@ def _resolve_forecast_point(at: str, lat: float, lon: float) -> "tuple[str, bool
     nearest_km = lwl_mod.haversine_km(lat, lon, *_FORECAST_KNOWN_POINTS[nearest_id])
     if nearest_km <= _FORECAST_POINT_SNAP_RADIUS_KM:
         return nearest_id, True
-    return _coordinate_point_id(lat, lon), False
+    coord_id = _coordinate_point_id(lat, lon)
+    if _coord_point_has_cached_rows(coord_id):
+        return coord_id, True
+    return coord_id, False
 
 
 _FORECAST_MODEL_LABEL_TH = {
@@ -959,6 +990,15 @@ _TOP_N_SOURCES_IN_SUMMARY = 3
 # =True` returns every row with every field, uncapped, same as `notes`.
 _TOP_N_EVIDENCE_DECIDING_IN_SUMMARY = 1
 _TOP_N_EVIDENCE_STALE_IN_SUMMARY = 0
+# v0.1.2 nationwide one-path: a basin-resolution row whose own classified level is
+# GREEN is excluded from DECIDING the colour (never "far + normal" -> clearance, see
+# readout.build_readout's nationwide block) but it is still FRESH, real evidence, not
+# a stale/too-old row -- it must not fall into the same `_TOP_N_EVIDENCE_STALE_IN_
+# SUMMARY=0` bucket that hides genuinely stale rows, or a Sai-Buri-shaped point (no
+# station within range, a fresh basin reference further out) would show NO evidence
+# at all in the default answer. Capped separately, small, since this is a reference
+# only, never a second decision path.
+_TOP_N_EVIDENCE_NATIONWIDE_REFERENCE_IN_SUMMARY = 2
 
 
 def _trim_evidence(evidence: list[dict]) -> list[dict]:
@@ -991,18 +1031,36 @@ def _trim_evidence(evidence: list[dict]) -> list[dict]:
     deciding_sorted = sorted(
         deciding_all, key=lambda e: 0 if e.get("status") in flood_like else 1)
     deciding = deciding_sorted[:_TOP_N_EVIDENCE_DECIDING_IN_SUMMARY]
-    stale = [e for e in evidence if not e.get("used_for_decision")][
+    not_deciding = [e for e in evidence if not e.get("used_for_decision")]
+    # v0.1.2: a fresh nationwide row excluded only by the basin/GREEN cap (never
+    # actually stale) is a distinct bucket from genuinely-stale rows -- see
+    # `_TOP_N_EVIDENCE_NATIONWIDE_REFERENCE_IN_SUMMARY`'s own comment.
+    nationwide_reference = [e for e in not_deciding
+                             if e.get("resolution") and not e.get("stale")][
+        :_TOP_N_EVIDENCE_NATIONWIDE_REFERENCE_IN_SUMMARY]
+    stale = [e for e in not_deciding if e not in nationwide_reference][
         :_TOP_N_EVIDENCE_STALE_IN_SUMMARY]
     out = []
-    for e in deciding + stale:
+    for e in deciding + nationwide_reference + stale:
         age_h = e.get("age_h")
-        out.append({
+        row = {
             "station": e.get("station"),
             "status": e.get("status"),
             "age_h": round(age_h, 1) if isinstance(age_h, (int, float)) else age_h,
             "used_for_decision": e.get("used_for_decision"),
             "stale": e.get("stale", e.get("used_for_decision") is False),
-        })
+        }
+        # v0.1.2 nationwide one-path: a nationwide-source row carries dist_km/
+        # resolution/agency -- kept in the capped summary too (never dropped) so a
+        # default (non-verbose) answer still names which station decided and how far
+        # it is, per the founder's own clarity requirement.
+        if e.get("dist_km") is not None:
+            row["dist_km"] = e["dist_km"]
+        if e.get("resolution") is not None:
+            row["resolution"] = e["resolution"]
+        if e.get("agency") is not None:
+            row["agency"] = e["agency"]
+        out.append(row)
     return out
 
 
@@ -1181,6 +1239,13 @@ def _answer_state(lat: float, lon: float, radius_km: float = 3.0,
             "observed_at_utc": row.get("observed_at_utc"),
             "age_h": row.get("age_h"),
             "scope_note": row.get("scope_note"),
+            # v0.1.2 nationwide one-path (readout.build_readout's thaiwater_waterlevel
+            # block): these four keys are present only on a nationwide-source row;
+            # a Bangkok canal/pump/DDS row leaves them None/absent upstream, unchanged.
+            "dist_km": row.get("dist_km"),
+            "resolution": row.get("resolution"),
+            "agency": row.get("agency"),
+            "province_th": row.get("province_th"),
             "used_for_decision": decides,
             # fix (2026-10-04): explicit, structured flag for WHY a row
             # isn't used -- a `used_for_decision=False` row can be excluded either
@@ -1526,6 +1591,39 @@ def _accountability_fallback(at: str, refused_text: "str | None" = None,
     }
 
 
+def _nationwide_accountability_fallback(state_answer: "dict | None") -> "dict | None":
+    """v0.1.2 nationwide one-path accountability (founder ruling 2026-10-04): the
+    deciding nationwide station's own province (verbatim from the feed's geocode) and
+    owning agency (verbatim from the feed's `agency` field), as plain TEXT -- never a
+    graph lookup (that is `tools/kg/*`'s own scope, a different worktree, not touched
+    here) and never an invented provincial-disaster-office phone number (that pointer
+    stays OPEN; the caller's own AI looks it up). Returns `None` (caller keeps its own
+    OPEN refusal) when `state_answer` has no deciding nationwide-source row with a
+    province/agency to relay -- this never fabricates a province from a stale or
+    non-deciding row."""
+    evidence = (state_answer or {}).get("evidence") or []
+    deciding = [e for e in evidence
+                if e.get("used_for_decision") and (e.get("province_th") or e.get("agency"))]
+    if not deciding:
+        return None
+    # Nearest (smallest dist_km) deciding row -- same "the strongest/nearest anchor
+    # decides" posture as the state classification itself.
+    deciding.sort(key=lambda e: e.get("dist_km") if e.get("dist_km") is not None else 1e9)
+    row = deciding[0]
+    province = row.get("province_th") or "ไม่ทราบจังหวัด [OPEN]"
+    agency = row.get("agency") or "ไม่ทราบหน่วยงาน [OPEN]"
+    station = row.get("station") or "สถานีที่ใช้ตัดสิน"
+    return {
+        "tag": "RELAYED",
+        "basis": "nationwide_station_geocode",
+        "owner_agencies": [f"{agency} ({station}, จังหวัด{province})"],
+        "self_help_actions": [],
+        "note": (f"จังหวัด{province} และหน่วยงานเจ้าของสถานี ({agency}) มาจาก geocode/agency "
+                 "ของสถานีที่ใช้ตัดสินสถานะนี้โดยตรง (relayed, ไม่ใช่ graph lookup) -- "
+                 "เบอร์ ปภ. จังหวัด ยังไม่ยืนยัน [OPEN], ให้ AI ของผู้ใช้ค้นหาเอง"),
+    }
+
+
 def _answer_accountability(at: str, verbose: bool = True) -> dict:
     """Who is responsible / overlapping authority / self-help options -- reuses
     tools.kg.accountability.build_result verbatim (no re-derivation). Compacted to the
@@ -1695,15 +1793,15 @@ def _flood_like_normal_like_status_words() -> "tuple[set, set, set]":
     GREEN/YELLOW/RED classification reads, never a second, possibly-divergent copy of
     this set.
 
-    Reuses readout.py's own `FLOOD_LIKE_STATUS`/`NORMAL_LIKE_STATUS`/
-    `CRITICAL_LIKE_STATUS` (English station-status words) plus the two exact BMA DDS
-    Thai keys ("ระดับน้ำวิกฤติ"/"ระดับน้ำปกติ") already registered in
-    `site/build_data.py`'s `_DDS_STATUS_TH` mapping -- never a new standalone status
-    word. Returns `(set(), set(), set())` (never raises) if either module is
-    unavailable; callers must treat that as "nothing recognised as
-    flood-like/normal-like/critical-like this check", the same fail-open-to-neutral
-    behaviour `_classify_current_local_state` already had before this helper was
-    factored out.
+    Reuses `floodconnect_model.py`'s own `STATUS_TO_LEVEL`-derived
+    `NORMAL_LIKE_STATUS`/`CRITICAL_LIKE_STATUS` (the ONE closed status-word map, v0.1.2
+    -- see that module) plus the two exact BMA DDS Thai keys ("ระดับน้ำวิกฤติ"/
+    "ระดับน้ำปกติ") already registered in `site/build_data.py`'s `_DDS_STATUS_TH`
+    mapping -- never a new standalone status word. Returns `(set(), set(), set())`
+    (never raises) if either module is unavailable; callers must treat that as "nothing
+    recognised as flood-like/normal-like/critical-like this check", the same
+    fail-open-to-neutral behaviour `_classify_current_local_state` already had before
+    this helper was factored out.
 
     `critical_like` is the agency-declared critical/overflow subset (founder ruling
     2026-10-04, verbatim: "WATCH = YELLOW (แนะนำ)") -- it drives RED on its own;
@@ -1711,7 +1809,7 @@ def _flood_like_normal_like_status_words() -> "tuple[set, set, set]":
     prioritisation and the community-report "agreement" check in readout.py, which
     this ruling does not touch."""
     try:
-        import readout as readout_mod
+        import floodconnect_model as fm_mod
     except Exception:  # pragma: no cover - defensive
         return set(), set(), set()
     dds_status_map: dict = {}
@@ -1726,12 +1824,13 @@ def _flood_like_normal_like_status_words() -> "tuple[set, set, set]":
     # standalone status word.
     thai_flood_keys = {"ระดับน้ำวิกฤติ"} & set(dds_status_map)
     thai_normal_keys = {"ระดับน้ำปกติ"} & set(dds_status_map)
-    flood_like = set(readout_mod.FLOOD_LIKE_STATUS) | thai_flood_keys
-    normal_like = set(readout_mod.NORMAL_LIKE_STATUS) | thai_normal_keys
+    flood_like = (set(fm_mod.CRITICAL_LIKE_STATUS) | set(fm_mod.WATCH_LIKE_STATUS)
+                  | thai_flood_keys)
+    normal_like = set(fm_mod.NORMAL_LIKE_STATUS) | thai_normal_keys
     # The Thai BMA DDS critical key ("ระดับน้ำวิกฤติ") is itself an agency-declared
     # critical reading, so it belongs in critical_like too -- there is no separate Thai
     # "overbank" key published by that source today.
-    critical_like = set(getattr(readout_mod, "CRITICAL_LIKE_STATUS", set())) | thai_flood_keys
+    critical_like = set(fm_mod.CRITICAL_LIKE_STATUS) | thai_flood_keys
     return flood_like, normal_like, critical_like
 
 
@@ -1771,10 +1870,19 @@ def _classify_current_local_state(state_answer: dict | None) -> str:
         return "UNKNOWN"
 
     fault_statuses = getattr(lwl_mod, "SENSOR_FAULT_STATUS_TH", set())
-    effective = {st: n for st, n in counts.items() if st not in fault_statuses}
+    try:
+        import floodconnect_model as fm_mod
+        unknown_like = set(getattr(fm_mod, "UNKNOWN_LIKE_STATUS", set()))
+    except Exception:  # pragma: no cover - defensive
+        unknown_like = set()
+    effective = {st: n for st, n in counts.items()
+                 if st not in fault_statuses and st not in unknown_like}
     if not effective:
-        # every fresh row this check was a sensor/equipment fault -- no trustworthy
-        # reading exists, which is UNKNOWN, never a fabricated YELLOW/GREEN.
+        # every fresh row this check was a sensor/equipment fault, or carried no
+        # agency threshold at all (e.g. NO_THRESHOLD) -- no trustworthy basis for a
+        # colour exists, which is UNKNOWN, never a fabricated YELLOW/GREEN (fixed
+        # 2026-10-04, regate finding #2: NO_THRESHOLD used to be folded into
+        # normal_like/GREEN here with no basis at all).
         return "UNKNOWN"
 
     _flood_like, normal_like, critical_like = _flood_like_normal_like_status_words()
@@ -2683,6 +2791,16 @@ def _refresh_relevant_sources(area_id: str | None = None, verbose: bool = False,
     if area_id in collect_mod.FORECAST7D_POINTS:
         one_point = {area_id: collect_mod.FORECAST7D_POINTS[area_id]}
         points_by_source = {sid: one_point for sid in collect_mod.POINT_FILTERABLE_SOURCES}
+    elif lat is not None and lon is not None:
+        # v0.1.2 nationwide one-path (design review item 5): a bare lat,lon that is
+        # NOT one of the named FORECAST7D_POINTS still gets its own forecast fetched,
+        # at exactly this coordinate's own `coord_*` point id -- never silently
+        # skipped (which previously left `openmeteo_forecast16d`/
+        # `metno_locationforecast` unfetched for every point outside the 11
+        # hardcoded areas) and never borrowed from a different, named point.
+        coord_id = _coordinate_point_id(lat, lon)
+        one_point = {coord_id: (lat, lon)}
+        points_by_source = {sid: one_point for sid in collect_mod.POINT_FILTERABLE_SOURCES}
     # FIX B item 1 (2026-10-04, SPEED): `parallel=True` fetches every one of these
     # sources concurrently via `collect.run`'s own thread pool (one request each, no
     # retry, bounded to a 20s per-source wall-clock budget -- see `collect.run`'s own
@@ -2808,6 +2926,18 @@ def build_answer(at: str, refresh: bool = False, on_refresh_progress=None,
     state_answer = _answer_state(lat, lon, verbose=verbose)
     hazard_answer = _answer_hazard(area_id or at, lat, lon)
     accountability_answer = _answer_accountability(area_id or at, verbose=verbose)
+    if area_id is None and accountability_answer.get("tag") == "OPEN":
+        # v0.1.2 nationwide one-path (founder ruling 2026-10-04): a bare lat,lon
+        # outside the two MVP areas has no governance-graph/district fallback (those
+        # are sammakorn/ram53-only, see `_ACCOUNTABILITY_FALLBACK`) -- this repo does
+        # NOT build a province-level governance KG (that is the other worktree's own
+        # scope, tools/kg/*). For v0.1.2, accountability for a nationwide point is
+        # TEXT ONLY: the deciding nationwide station's own province (its feed
+        # geocode, as published) and owning agency (its feed `agency`) -- never a
+        # graph lookup, never an invented "ปภ. จังหวัด" phone number.
+        _nationwide = _nationwide_accountability_fallback(state_answer)
+        if _nationwide is not None:
+            accountability_answer = _nationwide
     cctv_answer = _answer_cctv(lat, lon)
     # Classification and `next_action` always see the FULL `hazard_answer`
     # (`_classify_forward_hazard`/`_answer_next_action` run on the uncapped per_model

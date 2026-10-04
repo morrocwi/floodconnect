@@ -80,7 +80,9 @@ def test_classify_single_word():
     assert fm.classify("OVERBANK") == "RED"
     assert fm.classify("WATCH") == "YELLOW"
     assert fm.classify("NORMAL") == "GREEN"
-    assert fm.classify("NO_THRESHOLD") == "GREEN"
+    # Fix (2026-10-04, regate finding #2): a station with no agency threshold
+    # published at all carries no basis for GREEN -- it is UNKNOWN, never GREEN.
+    assert fm.classify("NO_THRESHOLD") == "UNKNOWN"
     assert fm.classify(None) == "UNKNOWN"
     assert fm.classify("SOME_UNRECOGNISED_WORD") == "UNKNOWN"
 
@@ -104,6 +106,18 @@ def test_classify_matches_kb_for_shared_status_words():
         ours = fm.classify_counts(status_counts)
         theirs = kb._classify_current_local_state({"status_counts": status_counts})
         assert ours == theirs, f"{status_counts}: floodconnect_model={ours!r} kb.py={theirs!r}"
+
+
+def test_classify_counts_no_threshold_only_is_unknown_never_green():
+    """Regate finding #2's acceptance test: a station whose only published status is
+    `NO_THRESHOLD` (no agency level at all) must be UNKNOWN, never GREEN -- fixed in
+    v0.1.2 (v0.1.1 put `NO_THRESHOLD` in the GREEN/normal-like set with no basis)."""
+    assert fm.classify_counts({"NO_THRESHOLD": 1}) == "UNKNOWN"
+    assert fm.classify_counts({"NO_THRESHOLD": 5}) == "UNKNOWN"
+    assert kb._classify_current_local_state({"status_counts": {"NO_THRESHOLD": 1}}) == "UNKNOWN"
+    # A mix with a real NORMAL reading is still GREEN -- NO_THRESHOLD rows are
+    # discarded, not promoted into evidence either way.
+    assert fm.classify_counts({"NORMAL": 3, "NO_THRESHOLD": 1}) == "GREEN"
 
 
 # ---------------------------------------------------------------------------

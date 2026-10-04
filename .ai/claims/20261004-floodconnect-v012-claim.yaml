@@ -19,6 +19,16 @@ artifacts:
   - kb.py
   - tests/test_floodconnect_model.py
   - tests/test_kb_answer.py
+  - parsers.py
+  - collect.py
+  - readout.py
+  - floodconnect_model.py
+  - sources/registry.yaml
+  - tests/test_collect.py
+  - pyproject.toml
+  - CHANGELOG.md
+  - ROADMAP.md
+  - tools/mcp/floodconnect_mcp.py
 intent: >
   v0.1.2, scoped per founder ruling 2026-10-04 ("ที่สำคัญคือให้ ตัวชี้วัดนี้น้ำน้ำท่วมต้องชัด"
   -- the flood indicators must be clear): a single closed indicators dictionary
@@ -54,15 +64,47 @@ intent: >
   all now frame FloodConnect as the method (never a hosted geocoding/POI service) and
   link that recipe.
 
-  Still does NOT attempt the separate founder ruling in the same message about a
-  nationwide coarse-zoom (basin/province) generic read path across
-  parsers.py/collect.py/readout.py/kb.py with 5-region fixtures and live CLI runs --
-  that is materially larger surgery on the live decision path (parser field additions,
-  a new normalise/classify loop, new ANSWER_SOURCES wiring, agency-legend
-  verification, nationwide regression) than either pass on this branch has had scope
-  to do safely; it stays a dedicated follow-up and is not claimed as done here.
-  File-level change only, no history rewrite, stops before any public push per the
-  local/public split rule.
+  Third pass on this same branch (founder ruling 2026-10-04, "ทำเลย v0.1.2
+  ทั้งประเทศ"): the nationwide coarse-zoom generic read path IS now built, closing the
+  gap the second pass above declared out of scope. `parsers.parse_thaiwater_waterlevel`
+  now keeps `min_bank`/`ground_level`/`critical_level_msl`/`situation_level`/
+  `diff_wl_bank`/`diff_wl_bank_text`/`river_name`/`sub_basin_id`/`basin_id`/agency/
+  geocode/previous-value (exact paths MEASURED against one live GET, 2026-10-04 --
+  `diff_wl_bank`/`diff_wl_bank_text`/`situation_level`/`storage_percent` are TOP-LEVEL,
+  not under `station`). `collect.collect_thaiwater_waterlevel` fills
+  `observations.bank`/`critical`/`status` (status = the agency's own verbatim code,
+  `thaiwater_situation_<n>`, or `OVERBANK` when `diff_wl_bank_text` itself says
+  "ล้นตลิ่ง") and the source is in `collect.ANSWER_SOURCES` with an explicit
+  `max_age_hours: 24` in `sources/registry.yaml`. `floodconnect_model.STATUS_TO_LEVEL`
+  is now the ONE closed status-word map (readout.py/kb.py read their sets off it,
+  removing the previous duplicate copies) -- `NO_THRESHOLD` moved OUT of the
+  normal-like/GREEN set into UNKNOWN (a real pre-existing bug this pass also fixed,
+  the station carried no agency basis for GREEN at all). `readout.build_readout`
+  gained one nationwide factor-4 block: nearest fresh station within 10 km decides at
+  "station" resolution; failing that, a same-`sub_basin_id` station within 50 km
+  decides at "basin" resolution, which can never produce GREEN on its own. Forecast
+  (`_resolve_forecast_point`/`_refresh_relevant_sources`) now fetches and reads at the
+  exact queried coordinate for ANY lat,lon, not only the 11 hardcoded points.
+  Accountability for a nationwide (non-MVP-area) point is TEXT ONLY -- the deciding
+  station's own feed-published province + owning agency -- never a graph lookup
+  (`tools/kg/*` is a different worktree's scope, not touched). Bangkok/Sammakorn/
+  Ram53 behaviour is unchanged (regression-tested). `pyproject.toml` and
+  `tools/mcp/floodconnect_mcp.py`'s `serverInfo.version` are bumped to 0.1.2;
+  `CHANGELOG.md` is new; README/llms.txt/docs/INDICATORS.md section 11/ROADMAP.md/
+  system_capabilities.json `areas_covered` are updated to say nationwide COARSE
+  (station/basin, never household) coverage is now shipped, not "in progress".
+  `distance_to_bank_m`/`bank_fill_percent` (section 7/8) stay relayed-in-provenance
+  only, not a standalone top-level answer field or a numeric colour cutoff (Toledo-
+  first: no invented threshold) -- the agency's own `situation_level`/
+  `diff_wl_bank_text` words are what actually drives the colour. `situation_level`'s
+  own Thai label wording per code was NOT independently confirmed (the thaiwater.net
+  legend page is JS-rendered, unreachable by a plain GET) -- the 1-5 ORDINAL direction
+  used for colour is MEASURED (co-occurrence with `diff_wl_bank_text`/`storage_percent`
+  on one live capture, 2026-10-04), the exact label text is OPEN, stated as such in
+  docs/INDICATORS.md. `tools/kg/*` and `output/*.graphml`/`*.jsonld` are untouched (a
+  different worktree's scope) per the orchestrator's instruction. File-level change
+  only, no history rewrite, stops before any public push per the local/public split
+  rule.
 created_at: "2026-10-04T20:40:00+07:00"
 expires_at: null
 reviewers: []

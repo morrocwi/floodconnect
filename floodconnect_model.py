@@ -29,24 +29,52 @@ Constraints (deliberate, do not relax):
     |Δk| <= ε) IS a real measured zero-like state and is reported as such; a *missing*
     reading is a different thing and must never be reported as flat.
   - `classify()` must agree with `kb.py`'s own `_classify_current_local_state` for the
-    same English station-status words on the same inputs -- see
+    same station-status words on the same inputs -- see
     `tests/test_floodconnect_model.py::test_classify_matches_kb_for_shared_status_words`.
-    The three words it hardcodes below (`CRITICAL`, `OVERBANK`, `WATCH`) plus the two
-    normal-like words (`NORMAL`, `NO_THRESHOLD`) are copied, not re-derived, from
-    `readout.py`'s own `CRITICAL_LIKE_STATUS`/`FLOOD_LIKE_STATUS`/`NORMAL_LIKE_STATUS` --
-    if those sets ever change, this module's copy and its test must be updated together.
+    `STATUS_TO_LEVEL` below (v0.1.2) is this repository's ONE closed status-word map;
+    `readout.py` and `kb.py` read the three derived sets off it instead of keeping a
+    second copy. `NO_THRESHOLD` (no agency level published at all) is deliberately
+    UNKNOWN, never GREEN -- fixed in v0.1.2, see `STATUS_TO_LEVEL`'s own comment.
 """
 
 from __future__ import annotations
 
-# Copied from readout.py's own CRITICAL_LIKE_STATUS / FLOOD_LIKE_STATUS /
-# NORMAL_LIKE_STATUS (English station-status words only -- this module never reaches for
-# the Thai BMA DDS keys or the sensor-fault exclusion kb.py's real classifier also
-# applies; those need a DB/live_water_level.py import this module deliberately avoids).
-# See this file's own module docstring for why these are a deliberate, tracked copy.
-CRITICAL_LIKE_STATUS = {"CRITICAL", "OVERBANK"}
-WATCH_LIKE_STATUS = {"WATCH"}
-NORMAL_LIKE_STATUS = {"NORMAL", "NO_THRESHOLD"}
+# STATUS_TO_LEVEL -- the ONE closed status-word -> colour map this repository uses
+# (v0.1.2, regate finding #2/#5): readout.py and kb.py import the three derived sets
+# below instead of keeping their own copy. Every word here is either an agency
+# station-status word this repo already classified before v0.1.2 (CRITICAL/OVERBANK/
+# WATCH/NORMAL, BMA DDS "วิกฤต(ิ)"/"เตือนภัย"/"ปกติ") or a `thaiwater_situation_N`
+# code this repo now STORES verbatim in `observations.status` (see
+# `collect.collect_thaiwater_waterlevel`). The 1-5 ordinal direction is MEASURED
+# (2026-10-04, one live GET of api-v3.thaiwater.net .../public/waterlevel, 808
+# stations): `situation_level == 5` co-occurred with `diff_wl_bank_text` == "ล้นตลิ่ง
+# (ม.)" (the agency's own overflow word) in every checked record, and
+# `storage_percent` (bank-fill %, also agency-published) rises monotonically with the
+# code (1: <10%, 2: 10-30%, 3: 30-70%, 4: 70-100%, 5: >100%/overflow). The exact Thai
+# label text thaiwater.net itself prints for levels 1-4 was NOT independently
+# confirmed (the legend page is JS-rendered; a plain GET could not read it) -- that
+# label wording is OPEN, see docs/INDICATORS.md; the ORDINAL mapping below is
+# MEASURED-derived, not a guessed label.
+#
+# `NO_THRESHOLD` (no agency level published at all for this station) is deliberately
+# ABSENT from every colour-bearing set -- it is UNKNOWN (fixed from v0.1.1's bug,
+# which put it in the normal-like/GREEN set with no basis at all).
+STATUS_TO_LEVEL: dict = {
+    "CRITICAL": "RED", "OVERBANK": "RED",
+    "วิกฤต": "RED", "วิกฤติ": "RED", "ระดับน้ำวิกฤติ": "RED",
+    "thaiwater_situation_5": "RED",
+    "WATCH": "YELLOW", "เตือนภัย": "YELLOW", "ระดับน้ำเตือนภัย": "YELLOW",
+    "thaiwater_situation_4": "YELLOW",
+    "NORMAL": "GREEN", "ปกติ": "GREEN", "ระดับน้ำปกติ": "GREEN",
+    "thaiwater_situation_1": "GREEN", "thaiwater_situation_2": "GREEN",
+    "thaiwater_situation_3": "GREEN",
+}
+CRITICAL_LIKE_STATUS = {k for k, v in STATUS_TO_LEVEL.items() if v == "RED"}
+WATCH_LIKE_STATUS = {k for k, v in STATUS_TO_LEVEL.items() if v == "YELLOW"}
+NORMAL_LIKE_STATUS = {k for k, v in STATUS_TO_LEVEL.items() if v == "GREEN"}
+# Status words that carry NO basis for a colour at all (never GREEN, never YELLOW) --
+# excluded from a multi-station count rather than driving YELLOW-by-default.
+UNKNOWN_LIKE_STATUS = {"NO_THRESHOLD"}
 
 
 def delta_k(h_t: float | None, h_t_minus_k: float | None, epsilon: float) -> dict:
@@ -100,21 +128,16 @@ def time_to_threshold(h_t: float, delta: dict, theta: float, k: float = 1.0,
 
 def classify(status_word: str | None) -> str:
     """Map one agency-declared station-status word onto the closed GREEN/YELLOW/RED/
-    UNKNOWN vocabulary -- CRITICAL/OVERBANK -> RED, WATCH -> YELLOW, a recognised
-    normal-like word -> GREEN, anything else (including None, an unrecognised word, or a
-    sensor-fault word) -> UNKNOWN. This is a single-word simplification of `kb.py`'s own
-    `_classify_current_local_state`, which runs over a station's full `status_counts` --
-    see `classify_counts()` below for the multi-station form, which is what the shared
-    test actually pins against `kb.py`."""
+    UNKNOWN vocabulary via `STATUS_TO_LEVEL` -- CRITICAL/OVERBANK/thaiwater_situation_5
+    -> RED, WATCH/thaiwater_situation_4 -> YELLOW, a recognised normal-like word
+    (including thaiwater_situation_1/2/3) -> GREEN, anything else (including None, an
+    unrecognised word, `NO_THRESHOLD`, or a sensor-fault word) -> UNKNOWN. This is a
+    single-word simplification of `kb.py`'s own `_classify_current_local_state`, which
+    runs over a station's full `status_counts` -- see `classify_counts()` below for the
+    multi-station form, which is what the shared test actually pins against `kb.py`."""
     if not status_word:
         return "UNKNOWN"
-    if status_word in CRITICAL_LIKE_STATUS:
-        return "RED"
-    if status_word in NORMAL_LIKE_STATUS:
-        return "GREEN"
-    if status_word in WATCH_LIKE_STATUS:
-        return "YELLOW"
-    return "UNKNOWN"
+    return STATUS_TO_LEVEL.get(status_word, "UNKNOWN")
 
 
 def classify_counts(status_counts: dict) -> str:
@@ -122,15 +145,21 @@ def classify_counts(status_counts: dict) -> str:
     `_classify_current_local_state` rule exactly for the English status-word sets this
     module hardcodes (no Thai DDS keys, no sensor-fault exclusion -- those require a
     DB/live_water_level.py import this stdlib-only module deliberately avoids; see the
-    module docstring): any agency-declared critical/overflow word present -> RED; every
-    word present is normal-like -> GREEN; an empty `status_counts` -> UNKNOWN; anything
-    else (a WATCH word, or a mix) -> YELLOW."""
+    module docstring): any agency-declared critical/overflow word present -> RED;
+    discard `UNKNOWN_LIKE_STATUS` words (no basis at all, e.g. `NO_THRESHOLD`) first --
+    if nothing informative remains, or `status_counts` was empty, -> UNKNOWN; every
+    remaining word is normal-like -> GREEN; anything else (a WATCH word, or a mix)
+    -> YELLOW. Fix (2026-10-04, regate finding #2): a station with NO agency threshold
+    published at all is no longer GREEN -- it carries no basis for that colour."""
     if not status_counts:
         return "UNKNOWN"
     words = set(status_counts)
     if words & CRITICAL_LIKE_STATUS:
         return "RED"
-    if words <= NORMAL_LIKE_STATUS:
+    informative = words - UNKNOWN_LIKE_STATUS
+    if not informative:
+        return "UNKNOWN"
+    if informative <= NORMAL_LIKE_STATUS:
         return "GREEN"
     return "YELLOW"
 

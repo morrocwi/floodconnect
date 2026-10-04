@@ -136,13 +136,27 @@ _DDS_GATE_COORDS = {
 CANAL_VALUE_DIFF_NOTE_M = 0.05  # a plain diff-detection cutoff for WHETHER to log a
                                  # contradiction row -- not a risk score/threshold
 
+# Nationwide one-path radii (v0.1.2, FloodConnect's own design choice -- declared in
+# docs/INDICATORS.md, NOT an agency threshold): a river-telemetry station decides at
+# "station" resolution within this radius; only when nothing is fresh that close does
+# a same-sub_basin station within the wider radius decide, at "basin" resolution
+# (which can never produce GREEN -- see build_readout's nationwide block below).
+NATIONWIDE_RIVER_RADIUS_KM = 10.0
+NATIONWIDE_BASIN_RADIUS_KM = 50.0
+
 # เสียงจากอินเทอร์เน็ต (social listening) -- see social_listening.py's module docstring for
 # what makes this layer different from generic social listening (place+state+time only, no
 # names, verifiable states not sentiment, always read next to official stations below).
 SOCIAL_LISTENING_SOURCES = ("social_listening_google", "social_listening_paste")
 FLOODING_STATES = {"house", "garage", "road", "canal_overbank", "pond_overflow", "rising"}
-NORMAL_LIKE_STATUS = {"NORMAL", "NO_THRESHOLD"}
-FLOOD_LIKE_STATUS = {"WATCH", "CRITICAL", "OVERBANK"}
+# v0.1.2 (regate finding #4): these three sets are no longer a second hardcoded copy --
+# they are read off `floodconnect_model.py`'s own `STATUS_TO_LEVEL`, this repository's
+# ONE closed status-word map (see that module). This also means the nationwide
+# `thaiwater_situation_1..5` codes this file's own factor-4 loop below now stores
+# participate in the same community-report "agreement" check as the English words did
+# before, with no separate wiring needed.
+import floodconnect_model as _fm
+NORMAL_LIKE_STATUS = set(_fm.NORMAL_LIKE_STATUS)
 # Subset of FLOOD_LIKE_STATUS that is an agency-declared critical/overflow reading
 # (`live_water_level.classify_status`'s own top two bands: value >= critical, or
 # value >= bank i.e. the canal has topped its bank) -- founder ruling 2026-10-04
@@ -152,7 +166,8 @@ FLOOD_LIKE_STATUS = {"WATCH", "CRITICAL", "OVERBANK"}
 # as YELLOW via `kb._classify_current_local_state`'s fall-through. This is strictly
 # smaller than FLOOD_LIKE_STATUS, which keeps its original (wider) meaning for the
 # community-report "agreement" check above -- that check is unaffected by this ruling.
-CRITICAL_LIKE_STATUS = {"CRITICAL", "OVERBANK"}
+CRITICAL_LIKE_STATUS = set(_fm.CRITICAL_LIKE_STATUS)
+FLOOD_LIKE_STATUS = set(_fm.CRITICAL_LIKE_STATUS) | set(_fm.WATCH_LIKE_STATUS)
 
 
 def _fmt(v, nd=2):
@@ -531,6 +546,71 @@ def build_readout(conn, centre_lat: float, centre_lon: float, radius_km: float,
             "observed_at_utc": o["observed_at_utc"], "age_h": age_h,
             "source": "bma_pumphistory", "tag": "STALE" if stale else "MEASURED",
         })
+    # --- Nationwide river/canal telemetry (v0.1.2, founder ruling 2026-10-04: "ทำเลย
+    # v0.1.2 ทั้งประเทศ") -- same factor 4 (drainage), one generic path for EVERY
+    # point in Thailand, not only the Bangkok-area sources above. Selection per
+    # docs/INDICATORS.md §"nationwide resolution" (FloodConnect's own design choice,
+    # not an agency threshold): the nearest fresh station within RIVER_RADIUS_KM
+    # decides at "station" resolution; only when NONE is fresh within that radius does
+    # a same-sub_basin station within BASIN_RADIUS_KM decide, at "basin" resolution,
+    # and a basin-resolution row can never contribute a GREEN (far + "normal" is not a
+    # clearance) -- it is still shown, just excluded from the decision
+    # (`used_for_decision=False`) when its own classified level is GREEN.
+    near_wl_basin = store.query_observations(
+        conn, source_id="thaiwater_waterlevel",
+        near=(centre_lat, centre_lon, NATIONWIDE_BASIN_RADIUS_KM), limit=2000)
+    _wl_candidates = []
+    for o in _latest_by_composite_key(near_wl_basin, _key).values():
+        d = dist_km(o)
+        if d is None:
+            continue
+        fresh, age_h = lwl.is_fresh(o["observed_at_utc"], staleness_reference_utc,
+                                    _max_age("thaiwater_waterlevel"), future_tolerance_h=future_tolerance_h)
+        try:
+            prov = json.loads(o.get("provenance_json") or "{}")
+        except (TypeError, ValueError):
+            prov = {}
+        _wl_candidates.append({"o": o, "dist_km": d, "stale": not fresh, "age_h": age_h,
+                                "prov": prov})
+    _wl_candidates.sort(key=lambda r: r["dist_km"])
+    _station_rows = [r for r in _wl_candidates if r["dist_km"] <= NATIONWIDE_RIVER_RADIUS_KM]
+    _has_fresh_station = any(not r["stale"] for r in _station_rows)
+    _basin_rows = []
+    if not _has_fresh_station and _wl_candidates:
+        _basin_ref = _wl_candidates[0]["prov"].get("sub_basin_id")
+        if _basin_ref is not None:
+            _basin_rows = [r for r in _wl_candidates
+                            if r["dist_km"] > NATIONWIDE_RIVER_RADIUS_KM
+                            and r["dist_km"] <= NATIONWIDE_BASIN_RADIUS_KM
+                            and r["prov"].get("sub_basin_id") == _basin_ref]
+    for r in _station_rows + _basin_rows:
+        o, prov = r["o"], r["prov"]
+        resolution = "station" if r["dist_km"] <= NATIONWIDE_RIVER_RADIUS_KM else "basin"
+        status_word = o.get("status")
+        level = _fm.classify(status_word)
+        decides = not r["stale"]
+        if resolution == "basin" and level == "GREEN":
+            # basin resolution can never decide GREEN on its own -- see this block's
+            # own comment above.
+            decides = False
+        f4["measured"].append({
+            "station": o.get("station_name") or o.get("station_code"),
+            "value": o.get("value"), "unit": "m", "status": status_word,
+            "observed_at_utc": o["observed_at_utc"], "age_h": r["age_h"],
+            "source": "thaiwater_waterlevel", "tag": "STALE" if r["stale"] else "MEASURED",
+            "used_for_decision": decides,
+            "dist_km": round(r["dist_km"], 2), "resolution": resolution,
+            "agency": prov.get("agency"), "agency_shortname": prov.get("agency_shortname"),
+            "province_th": prov.get("province_th"), "river_name": prov.get("river_name"),
+        })
+    if not _wl_candidates:
+        f4["missing"].append({
+            "note": (f"No nationwide thaiwater_waterlevel station within "
+                     f"{NATIONWIDE_BASIN_RADIUS_KM} km of this point -- current_local_state "
+                     "stays UNKNOWN at this resolution."),
+            "tag": "OPEN",
+        })
+
     dds_canal = [o for o in dds_obs if o["variable"] == "canal_level_0700_m"]
     # fix, re-fixed 2026-10-04 (see the long comment on `_DDS_GATE_COORDS` above
     # for the full story -- the first attempt, 40km-of-central-Bangkok + canal-name

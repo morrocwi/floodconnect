@@ -44,7 +44,7 @@ These are the SAME sources FloodConnect's own collector (`collect.py`, registere
 
 | Coverage | Source | What it gives you |
 |---|---|---|
-| **All of Thailand** (any river/canal telemetry gauge) | `https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel` (public JSON, no key) — Hydro-Informatics Institute (HII)/สสน., via thaiwater.net | Every station's `station.tele_station_lat`/`tele_station_long` (coordinate), `station.tele_station_name.th` (name), `waterlevel_msl` (current reading), `storage_percent`, `station.min_bank`/`ground_level` where the agency publishes them, `geocode.province_name.th` |
+| **All of Thailand** (any river/canal telemetry gauge) | `https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel` (public JSON, no key) — Hydro-Informatics Institute (HII)/RID/EGAT/FOP, via thaiwater.net | Every station's `station.tele_station_lat`/`tele_station_long` (coordinate), `station.tele_station_name.th` (name), `waterlevel_msl` (current reading); **top-level** (not under `station`) `situation_level` (1-5 agency code), `diff_wl_bank`/`diff_wl_bank_text`, `storage_percent`; `station.min_bank`/`ground_level`/`critical_level_msl` where the agency publishes them; `geocode.province_name.th` (exact paths MEASURED against the live feed, 2026-10-04) |
 | **Bangkok metro canals/pumps specifically** | `weather.bangkok.go.th/water/...` (BMA canal-level map) and `dds.bangkok.go.th` (BMA daily flood bulletin, PDF) | Thai status words (`ระดับน้ำปกติ`/normal, `ระดับน้ำวิกฤติ`/critical) per gate, tide bulletin |
 
 A chat AI with browsing (T1) can open these pages/endpoints directly and read the JSON
@@ -59,25 +59,43 @@ front of you.**
    about — a station 2 km away on a different, unconnected canal tells you nothing
    about your point's level (this is why FloodConnect's own `_answer_state` scopes by
    a radius AND, where known, a canal/zone id — never distance alone).
-3. Default radius: **3 km** (FloodConnect's own default, `_answer_state`'s
-   `radius_km`) — widen only if you have no station at all within that radius, and say
-   so plainly ("nearest station is Xkm away, outside the normal radius").
+3. Nationwide radii (FloodConnect's own design choice, `docs/INDICATORS.md` §11 —
+   NOT an agency threshold): **10 km** on the same river/canal decides at "station"
+   resolution; only when nothing fresh is that close, a station on the **same
+   sub-basin** within **50 km** decides at "basin" resolution, and a basin-resolution
+   reading can **never** be reported GREEN on its own (far + "normal" is not a
+   clearance) — it can still back a YELLOW/RED. The two Bangkok household areas use a
+   tighter 3 km radius (`_answer_state`'s own default), unchanged.
 4. If two sources disagree about the same station, **report both**, tagged, never pick
-   one silently (`feedback-floodconnect-conflicting-data-rule`, applies to any AI
-   relaying this data, not only this repo's own code).
+   one silently — see `AI.md`'s conflicting-data rule, which applies to any AI relaying
+   this data, not only this repo's own code.
 
 ## Step 4 — read the agency's own status, never invent a threshold
 
-- If the station/bulletin carries its own status word (`ระดับน้ำวิกฤติ`/critical,
-  `เฝ้าระวัง`/watch, `ระดับน้ำปกติ`/normal) — **use that word**, mapped per
-  `docs/INDICATORS.md` §1's colour rule (critical→RED, watch→YELLOW, normal→GREEN).
-- If only a raw number is published (`waterlevel_msl`) with the agency's own
-  `min_bank`/`ground_level` fields, you may compute `distance_to_bank_m` /
-  `bank_fill_percent` exactly as `docs/INDICATORS.md` §7/§8 define them — **both from
-  the agency's own fields, never a number you choose**.
-- No status word AND no bank/ground-level fields for that station → the honest answer
-  is **`UNKNOWN`**, not GREEN. `docs/INDICATORS.md`'s rule applies to every AI doing
-  this by hand too: **UNKNOWN is never SAFE.**
+Copy of `docs/INDICATORS.md` §1's full mapping (the ONE closed status-word rule this
+repo uses, `floodconnect_model.STATUS_TO_LEVEL` — read that map itself before relying on
+this summary, it is the source of truth):
+
+- `diff_wl_bank_text` starting **"ล้นตลิ่ง"** (the agency's own, directly-observed
+  overflow word) → **RED**. This is the strongest, most-verified signal this feed gives
+  — always check it first, regardless of `situation_level`.
+- A station/bulletin status word of `วิกฤต`/`วิกฤติ`/`ระดับน้ำวิกฤติ`/critical → **RED**.
+- `เตือนภัย`/`เฝ้าระวัง`/watch → **YELLOW**.
+- `ปกติ`/`ระดับน้ำปกติ`/normal → **GREEN**.
+- The nationwide feed's own `situation_level` code (1-5): this project's own live
+  measurement (2026-10-04, one capture) found `situation_level == 5` always matched
+  `diff_wl_bank_text` == overflow, and the code rises monotonically with
+  `storage_percent` — so `5` → RED, `4` → YELLOW, `1`/`2`/`3` → GREEN (same mapping
+  `STATUS_TO_LEVEL` uses as `thaiwater_situation_<n>`). The EXACT Thai label text
+  thaiwater.net itself prints for each code was **not independently confirmed** (OPEN)
+  — relay the bare code alongside your colour, never claim the label wording as fact.
+- A bare bank number on its own (`min_bank`, `critical_level_msl`, or a computed
+  `distance_to_bank_m`/`bank_fill_percent`, §7/§8) **never sets a colour by itself** —
+  show the number, but the colour comes from one of the status words/codes above, or
+  stays `UNKNOWN`.
+- No status word, no `situation_level`, AND no bank/ground-level fields for that
+  station → the honest answer is **`UNKNOWN`**, not GREEN. `docs/INDICATORS.md`'s rule
+  applies to every AI doing this by hand too: **UNKNOWN is never SAFE.**
 - Check the reading's own timestamp against the registry's `max_age_hours` (24h for
   the sources above) before using it — a reading older than that is shown, not
   classified as current.

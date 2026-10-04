@@ -33,12 +33,16 @@ are — a readout, never a flood-depth prediction, never a safety certification.
 อัปเดตตายตัว ทุกค่าติดป้ายความน่าเชื่อถือของตัวเอง เป็นการอ่านค่า ไม่ใช่การพยากรณ์ความลึกน้ำท่วม
 และไม่ใช่การยืนยันความปลอดภัย**
 
-**Target: all of Thailand.** v0.1.x ships two Bangkok sites in household/node-level
-detail (Sammakorn village, Soi Ramkhamhaeng 53); nationwide coverage at coarse
-basin/province zoom is in progress (ROADMAP.md v0.2.0) — never call this product
-Bangkok-only. **เป้าหมาย: ทั่วประเทศไทย** v0.1.x เปิดใช้ละเอียดระดับบ้าน/โหนดเฉพาะสองพื้นที่
-ใน กทม. ส่วนความครอบคลุมทั่วประเทศแบบหยาบ (ระดับลุ่มน้ำ/จังหวัด) กำลังดำเนินการ — อย่าเรียก
-โครงการนี้ว่าเฉพาะ กทม.
+**Target: all of Thailand — shipped in v0.1.2.** Any `lat,lon` in Thailand now gets a
+real `current_local_state` reading at COARSE (station/basin) resolution, from the
+nationwide `thaiwater_waterlevel` telemetry feed — never household-level outside the
+two named Bangkok sites. Two Bangkok sites (Sammakorn village, Soi Ramkhamhaeng 53)
+keep their existing household/node-level detail, unchanged. See `docs/INDICATORS.md`
+§11 for exactly how station vs. basin resolution works and `docs/NEAREST_STATION_
+RECIPE.md` for the by-hand method. Never call this product Bangkok-only.
+**เป้าหมาย: ทั่วประเทศไทย — เปิดใช้แล้วใน v0.1.2** ทุกพิกัดในประเทศไทยตอบได้จริงที่ความละเอียด
+หยาบ (ระดับสถานี/ลุ่มน้ำ) จากฐานข้อมูลสถานีวัดระดับน้ำทั่วประเทศ — ไม่ใช่ระดับบ้านนอกสองพื้นที่
+ในกรุงเทพฯ ที่ยังคงรายละเอียดระดับบ้าน/โหนดเดิม
 
 **The flood indicators — see `docs/INDICATORS.md` for the full dictionary, every name,
 colour, source, threshold and worked example.** The closed set: `current_local_state`,
@@ -160,9 +164,10 @@ depth number — **"never averaged" also means never a combined min–max "range
 models either; relay each model's own `tomorrow_mm`/`7day_total_mm` by name, e.g. "JMA
 23.9 mm, CMA 2.4 mm, ECMWF 0.0 mm" — do not invent a single "X–Y mm" figure spanning
 them, that figure belongs to no model and is not in the output**); not a hosted
-service (install and compute yourself); not yet
-nationwide at household detail (two Bangkok sites only in v0.1.x — see the target
-line above); not yet running the full Water-Debt/Jev/DSVA decision model described in
+service (install and compute yourself); not nationwide at household detail (coarse
+station/basin resolution nationwide since v0.1.2; household/node detail stays two
+Bangkok sites only — see the target line above); not yet running the full
+Water-Debt/Jev/DSVA decision model described in
 `ARCHITECTURE.md` (that is a v0.2+ design target — see §9's implemented-vs-planned
 table); peers above are named only where independently verified, in neutral terms,
 never as a negative claim about a named competitor.

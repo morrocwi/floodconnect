@@ -1,8 +1,8 @@
 {
   "$comment": "Machine-readable capability map for FloodConnect. For a strong AI that can parse JSON and wants to know exactly what exists, what is live-vs-local-vs-forecast-vs-hindcast, and what is legacy. A weak/browse-only AI should read llms.txt instead -- this file assumes you can read docs/EVIDENCE.md and the cited source files, not just this one.",
   "project": "FloodConnect",
-  "pyproject_version": "0.1.1",
-  "note_on_version": "pyproject.toml declares 0.1.1; this file and its sibling first-contact docs are being prepared for the next tagged release (v0.1.1, started as first-contact-readability fixes, then picked up real code changes -- the WATCH=YELLOW reclassification, a bbox-scoped refresh path, and a new static landing page -- see .ai/claims/20261004-floodconnect-v011-claim.yaml for the authoritative scope, never 'doc-only'). Check `git tag` / the GitHub Releases page for the actually-released tag; do not trust this field alone.",
+  "pyproject_version": "0.1.2",
+  "note_on_version": "pyproject.toml declares 0.1.2; this file and its sibling first-contact docs describe v0.1.2 -- the nationwide coarse (station/basin) path for current_local_state/forward_hazard/accountability, plus the NO_THRESHOLD/UNKNOWN colour fix (see CHANGELOG.md and .ai/claims/ for the authoritative scope, never 'doc-only'). Check `git tag` / the GitHub Releases page for the actually-released tag; do not trust this field alone.",
   "hosting": {
     "live": false,
     "hosted_api": false,
@@ -12,8 +12,16 @@
   },
   "method_not_data_service": {
     "_purpose": "Founder ruling 2026-10-04, verbatim: 'ให้การหาพิกัด และ สิ่งต่างๆที่ใกล้ๆ เป็นหน้าที่ของเอไอของใครของมันแทนดีไหม' + 'เราแค่ให้เป็นแนวทาง' + 'เอาเลย' -- FloodConnect gives the METHOD (which sources to read, how to pick the nearest station, the equations/thresholds, the honesty rules), never a hosted place/POI lookup.",
-    "we_never_do": ["geocoding (place name -> lat,lon)", "nearby-POI lookup (shelters, hospitals, routes)", "hold a place/POI database"],
-    "your_ai_does": ["geocode the place yourself before calling us", "find nearby POIs yourself", "with no tool access at all, follow the recipe doc below by hand against the same official sources"],
+    "we_never_do": [
+      "geocoding (place name -> lat,lon)",
+      "nearby-POI lookup (shelters, hospitals, routes)",
+      "hold a place/POI database"
+    ],
+    "your_ai_does": [
+      "geocode the place yourself before calling us",
+      "find nearby POIs yourself",
+      "with no tool access at all, follow the recipe doc below by hand against the same official sources"
+    ],
     "cli_mcp_role": "an OPTIONAL deterministic helper: given lat,lon, it applies this same method for you (nearest station -> agency thresholds -> freshness -> classification)",
     "recipe_for_chat_ai_with_no_tool": "docs/NEAREST_STATION_RECIPE.md"
   },
@@ -98,54 +106,112 @@
       {
         "id": "T0",
         "name": "search/summary snippet, no browsing",
-        "examples": ["a search engine's AI answer box"],
+        "examples": [
+          "a search engine's AI answer box"
+        ],
         "can": [],
-        "must_not": ["answer a flood question as if a cached snippet were current"],
+        "must_not": [
+          "answer a flood question as if a cached snippet were current"
+        ],
         "first_step": null,
         "expected_output": "defer to the user; cannot run FloodConnect"
       },
       {
         "id": "T1",
         "name": "online chat session with browsing, cannot run a local program or a local stdio MCP server",
-        "examples": ["free web ChatGPT", "Gemini", "Claude.ai"],
-        "can": ["explain what FloodConnect is", "give official numbers/sources", "guide install or hand off to T2/T3"],
-        "must_not": ["say or imply SAFE/ปลอดภัย", "claim a schedule, cron, or server-side live feed of ours", "claim a validated water-level or flood-depth forecast", "present a dated example in this repo as current"],
+        "examples": [
+          "free web ChatGPT",
+          "Gemini",
+          "Claude.ai"
+        ],
+        "can": [
+          "explain what FloodConnect is",
+          "give official numbers/sources",
+          "guide install or hand off to T2/T3"
+        ],
+        "must_not": [
+          "say or imply SAFE/ปลอดภัย",
+          "claim a schedule, cron, or server-side live feed of ours",
+          "claim a validated water-level or flood-depth forecast",
+          "present a dated example in this repo as current"
+        ],
         "first_step": "read llms.txt",
         "expected_output": "plain explanation + official numbers + exact next step"
       },
       {
         "id": "T2",
         "name": "desktop chat app with the FloodConnect MCP connector configured",
-        "examples": ["Claude Desktop + MCP"],
-        "can": ["call floodconnect_answer with the right area", "relay state/hazard/accountability/next_action/cctv with real tags"],
-        "must_not": ["answer without calling the tool", "invent a value/tag/URL not in the JSON", "relay UNKNOWN/OPEN as safe", "pass a refresh argument (the tool takes offline/verbose, not refresh)"],
+        "examples": [
+          "Claude Desktop + MCP"
+        ],
+        "can": [
+          "call floodconnect_answer with the right area",
+          "relay state/hazard/accountability/next_action/cctv with real tags"
+        ],
+        "must_not": [
+          "answer without calling the tool",
+          "invent a value/tag/URL not in the JSON",
+          "relay UNKNOWN/OPEN as safe",
+          "pass a refresh argument (the tool takes offline/verbose, not refresh)"
+        ],
         "first_step": "call the MCP tool before answering",
         "expected_output": "the tool's real fields, each with its real tag and data age"
       },
       {
         "id": "T3",
         "name": "coding/terminal agent with a shell",
-        "examples": ["Codex CLI", "Claude Code"],
-        "can": ["install from a fresh clone", "run floodconnect answer/forecast/connectors", "run the test suite"],
-        "must_not": ["use the wrong/no command", "invent a value or test count not in real stdout", "expect --refresh to do anything (deprecated no-op; refresh is already the default, --offline is the real opt-out)"],
+        "examples": [
+          "Codex CLI",
+          "Claude Code"
+        ],
+        "can": [
+          "install from a fresh clone",
+          "run floodconnect answer/forecast/connectors",
+          "run the test suite"
+        ],
+        "must_not": [
+          "use the wrong/no command",
+          "invent a value or test count not in real stdout",
+          "expect --refresh to do anything (deprecated no-op; refresh is already the default, --offline is the real opt-out)"
+        ],
         "first_step": "read README.md / AI.md / llms.txt before running anything",
         "expected_output": "real stdout relayed faithfully, tags and freshness intact"
       },
       {
         "id": "T4",
         "name": "co-work / computer-use agent with files and apps",
-        "examples": ["Cowork-style agents"],
-        "can": ["everything T3", "prepare household checklists/files", "set a LOCAL (user-device) reminder to re-run floodconnect answer"],
-        "must_not": ["set a server-side/shared schedule", "claim a planned feature (e.g. a dedicated floodconnect watch command) already works"],
+        "examples": [
+          "Cowork-style agents"
+        ],
+        "can": [
+          "everything T3",
+          "prepare household checklists/files",
+          "set a LOCAL (user-device) reminder to re-run floodconnect answer"
+        ],
+        "must_not": [
+          "set a server-side/shared schedule",
+          "claim a planned feature (e.g. a dedicated floodconnect watch command) already works"
+        ],
         "first_step": "same as T3, then confirm where the user wants a local reminder",
         "expected_output": "T3's honest answer plus a user-local file/reminder"
       },
       {
         "id": "T5",
         "name": "developer/API integrator",
-        "examples": ["agent frameworks", "scripts"],
-        "can": ["call the CLI/MCP programmatically", "read this file for current features", "respect the token ceiling"],
-        "must_not": ["call a hosted live-data endpoint (none exists)", "hard-code a result instead of calling the tool", "claim a planned feature (L2/L3 levels, the one-decision envelope, floodconnect watch) already ships"],
+        "examples": [
+          "agent frameworks",
+          "scripts"
+        ],
+        "can": [
+          "call the CLI/MCP programmatically",
+          "read this file for current features",
+          "respect the token ceiling"
+        ],
+        "must_not": [
+          "call a hosted live-data endpoint (none exists)",
+          "hard-code a result instead of calling the tool",
+          "claim a planned feature (L2/L3 levels, the one-decision envelope, floodconnect watch) already ships"
+        ],
         "first_step": "read system_capabilities.json, then call the CLI/MCP",
         "expected_output": "structured JSON with the same tags/freshness fields as every tier sees"
       }
@@ -158,7 +224,13 @@
       "https://raw.githubusercontent.com/morrocwi/floodconnect/main/model_spec.json"
     ],
     "raw_urls_note": "resolve once this release reaches the public main branch -- not yet true as of this field's own writing; a 404 means it has not landed there yet",
-    "functions": ["delta_k", "time_to_threshold", "classify", "classify_counts", "one_decision"],
+    "functions": [
+      "delta_k",
+      "time_to_threshold",
+      "classify",
+      "classify_counts",
+      "one_decision"
+    ],
     "guarantee": "classify_counts() gives the SAME result as kb.py's real _classify_current_local_state for the same status_counts input -- see tests/test_floodconnect_model.py"
   },
   "token_levels": {
@@ -173,18 +245,54 @@
     "L3_deep": "planned (v0.2+) -- full evidence, per-model forecast detail, water-debt ledger, Toledo derivation trail, ceiling 100,000 (no test or code path exists for this yet -- OPEN, do not cite a number for it)"
   },
   "areas_covered": [
-    {"id": "sammakorn", "name_th": "หมู่บ้านสัมมากร", "status": "measured"},
-    {"id": "ram53", "name_th": "ซอยรามคำแหง 53", "status": "measured"}
+    {
+      "id": "sammakorn",
+      "name_th": "หมู่บ้านสัมมากร",
+      "status": "measured",
+      "resolution": "household/node"
+    },
+    {
+      "id": "ram53",
+      "name_th": "ซอยรามคำแหง 53",
+      "status": "measured",
+      "resolution": "household/node"
+    },
+    {
+      "id": "nationwide_coarse",
+      "name_th": "ทั่วประเทศไทย (ความละเอียดหยาบ)",
+      "status": "measured (v0.1.2)",
+      "resolution": "station (<=10 km, same river/canal) or basin (<=50 km, same sub_basin_id, never decides GREEN alone) -- see docs/INDICATORS.md section 11",
+      "source": "thaiwater_waterlevel (nationwide HII/RID/EGAT/FOP telemetry, api-v3.thaiwater.net)"
+    }
   ],
-  "areas_not_covered": "any place other than the two above -- see README.md section 3, docs/MVP_SCOPE_2026-09-27.md",
+  "areas_not_covered": "household/node-level detail anywhere other than the two named Bangkok sites above -- see README.md section 3, docs/MVP_SCOPE_2026-09-27.md. Nationwide coverage outside those two sites is coarse (station/basin) only, never household-level.",
   "legacy_or_experiment_files_at_repo_root": {
     "statement": "36 tracked .py files sit at repo root. Most are either the product path or a named experiment/proposal module, not junk -- but none of them should be read in isolation to judge the project. See README.md's repository map and docs/AI_ENTRYPOINT.md's question-routing table before concluding anything from a single file.",
-    "product_path_core": ["kb.py", "readout.py", "community_dag.py", "collect.py", "parsers.py", "store.py", "live_water_level.py"],
-    "proposal_or_experiment_examples": ["raw_stage_forecast.py", "water_balance.py", "canal_graph.py", "burden_ledger.py", "hierarchical_flood_zoom.py", "klongmap_local_prior_experiment.py", "dsva_decision.py"],
+    "product_path_core": [
+      "kb.py",
+      "readout.py",
+      "community_dag.py",
+      "collect.py",
+      "parsers.py",
+      "store.py",
+      "live_water_level.py"
+    ],
+    "proposal_or_experiment_examples": [
+      "raw_stage_forecast.py",
+      "water_balance.py",
+      "canal_graph.py",
+      "burden_ledger.py",
+      "hierarchical_flood_zoom.py",
+      "klongmap_local_prior_experiment.py",
+      "dsva_decision.py"
+    ],
     "full_routing_table": "docs/AI_ENTRYPOINT.md section 3"
   },
   "dated_build_inputs_not_current": {
-    "paths": ["site/inputs/**", "output/**"],
+    "paths": [
+      "site/inputs/**",
+      "output/**"
+    ],
     "statement": "These are committed, dated inputs used to build the public explainer page and the typology graphs. None of them is a current flood reading. See site/inputs/README.md."
   },
   "licence": {
@@ -197,25 +305,174 @@
     "doc": "docs/INDICATORS.md",
     "color_contract": {
       "_purpose": "RED/YELLOW/GREEN/UNKNOWN is NOT a universal rule over every indicator below -- fix (2026-10-04, review finding #3): it applies ONLY to the two fields named here. Every other indicator has its own closed 'levels' list on its own entry below; read that entry's 'levels', never assume RED/YELLOW/GREEN/UNKNOWN.",
-      "applies_to": ["next_action.dual_state.current_local_state", "one_decision.level (floodconnect_model.py, by-hand only)"],
-      "levels": ["RED", "YELLOW", "GREEN", "UNKNOWN"]
+      "applies_to": [
+        "next_action.dual_state.current_local_state",
+        "one_decision.level (floodconnect_model.py, by-hand only)"
+      ],
+      "levels": [
+        "RED",
+        "YELLOW",
+        "GREEN",
+        "UNKNOWN"
+      ]
     },
     "names": [
-      {"name": "current_local_state", "unit": "categorical", "levels": ["RED", "YELLOW", "GREEN", "UNKNOWN"], "status": "implemented", "resolution": "station", "json_path": "next_action.dual_state.current_local_state", "doc_section": "1"},
-      {"name": "forward_hazard", "unit": "categorical", "levels": ["ACTIVE", "NONE", "UNKNOWN"], "status": "implemented", "resolution": "coordinate", "json_path": "next_action.dual_state.forward_hazard", "doc_section": "2"},
-      {"name": "rise_rate_dk", "unit": "m per k ticks", "levels": ["RISING", "FALLING", "FLAT", "NO_READOUT"], "status": "implemented_in_by_hand_module_only -- not in kb.py's answer JSON", "resolution": "station", "toledo_id": "PROP-FLOOD-01", "json_path": "floodconnect_model.delta_k(...).trend (by-hand only)", "doc_section": "3"},
-      {"name": "time_to_threshold_tk", "unit": "ticks", "levels": ["<numeric value>", "REFUSED/UNRESOLVED", "REFUSED/NOT_APPLICABLE"], "status": "implemented_in_by_hand_module_only -- not in kb.py's answer JSON", "resolution": "station", "toledo_id": "PROP-FLOOD-02", "json_path": "floodconnect_model.time_to_threshold(...) (by-hand only)", "doc_section": "4"},
-      {"name": "rain_24h_mm", "unit": "mm", "levels": ["<numeric value>"], "status": "implemented_in_readout_py_only -- not in kb.py's answer JSON", "resolution": "area/bulletin", "json_path": "readout.build_readout(...).factors['1'].measured[*].value (by-hand/readout.py only)", "doc_section": "5"},
-      {"name": "rain_7day_per_model_mm", "unit": "mm per model", "levels": ["<numeric value per model>"], "status": "implemented", "resolution": "coordinate", "json_path": "hazard.per_model[*]['7day_total_mm']", "doc_section": "6"},
-      {"name": "distance_to_bank_m", "unit": "m", "levels": ["<numeric value>", "OPEN"], "status": "NOT_YET_WIRED -- source field exists in the nationwide feed, not yet carried into observations.bank/collect.ANSWER_SOURCES", "resolution": "station (where wired)", "json_path": "not yet wired into any answer field -- OPEN", "doc_section": "7"},
-      {"name": "bank_fill_percent", "unit": "%", "levels": ["<numeric value>", "OPEN"], "status": "NOT_YET_WIRED -- same gap as distance_to_bank_m", "resolution": "station (where wired)", "json_path": "not yet wired into any answer field -- OPEN", "doc_section": "8"},
-      {"name": "one_decision", "unit": "categorical (decision text) + confidence", "levels": {"level": ["RED", "YELLOW", "GREEN", "UNKNOWN"], "confidence": ["HIGH", "MEDIUM", "LOW", "NONE"], "gate": ["LICENSED_WITHIN_ENVELOPE", "REFUSED"]}, "status": "implemented_in_by_hand_module_only -- kb.py's own answer has no separate confidence field yet", "resolution": "station", "json_path": "floodconnect_model.one_decision(inputs) -> {level, confidence, gate, ...} (by-hand only)", "doc_section": "9"},
-      {"name": "water_debt", "unit": "none", "levels": [], "status": "planned (v0.2+)", "resolution": "n/a", "toledo_ids": ["PROP-FLOOD-03", "PROP-FLOOD-06", "PROP-FLOOD-07"], "json_path": "not implemented -- no field, v0.2+", "doc_section": "10"}
+      {
+        "name": "current_local_state",
+        "unit": "categorical",
+        "levels": [
+          "RED",
+          "YELLOW",
+          "GREEN",
+          "UNKNOWN"
+        ],
+        "status": "implemented",
+        "resolution": "station",
+        "json_path": "next_action.dual_state.current_local_state",
+        "doc_section": "1"
+      },
+      {
+        "name": "forward_hazard",
+        "unit": "categorical",
+        "levels": [
+          "ACTIVE",
+          "NONE",
+          "UNKNOWN"
+        ],
+        "status": "implemented",
+        "resolution": "coordinate",
+        "json_path": "next_action.dual_state.forward_hazard",
+        "doc_section": "2"
+      },
+      {
+        "name": "rise_rate_dk",
+        "unit": "m per k ticks",
+        "levels": [
+          "RISING",
+          "FALLING",
+          "FLAT",
+          "NO_READOUT"
+        ],
+        "status": "implemented_in_by_hand_module_only -- not in kb.py's answer JSON",
+        "resolution": "station",
+        "toledo_id": "PROP-FLOOD-01",
+        "json_path": "floodconnect_model.delta_k(...).trend (by-hand only)",
+        "doc_section": "3"
+      },
+      {
+        "name": "time_to_threshold_tk",
+        "unit": "ticks",
+        "levels": [
+          "<numeric value>",
+          "REFUSED/UNRESOLVED",
+          "REFUSED/NOT_APPLICABLE"
+        ],
+        "status": "implemented_in_by_hand_module_only -- not in kb.py's answer JSON",
+        "resolution": "station",
+        "toledo_id": "PROP-FLOOD-02",
+        "json_path": "floodconnect_model.time_to_threshold(...) (by-hand only)",
+        "doc_section": "4"
+      },
+      {
+        "name": "rain_24h_mm",
+        "unit": "mm",
+        "levels": [
+          "<numeric value>"
+        ],
+        "status": "implemented_in_readout_py_only -- not in kb.py's answer JSON",
+        "resolution": "area/bulletin",
+        "json_path": "readout.build_readout(...).factors['1'].measured[*].value (by-hand/readout.py only)",
+        "doc_section": "5"
+      },
+      {
+        "name": "rain_7day_per_model_mm",
+        "unit": "mm per model",
+        "levels": [
+          "<numeric value per model>"
+        ],
+        "status": "implemented",
+        "resolution": "coordinate",
+        "json_path": "hazard.per_model[*]['7day_total_mm']",
+        "doc_section": "6"
+      },
+      {
+        "name": "distance_to_bank_m",
+        "unit": "m",
+        "levels": [
+          "<numeric value>",
+          "OPEN"
+        ],
+        "status": "RELAYED_IN_PROVENANCE_ONLY -- collect.collect_thaiwater_waterlevel stores diff_wl_bank/min_bank in observations.provenance_json; not a standalone top-level answer field yet (the agency status word it is tied to, diff_wl_bank_text, DOES drive current_local_state directly, v0.1.2)",
+        "resolution": "station or basin, per state.evidence[*].resolution",
+        "json_path": "provenance.diff_wl_bank on a thaiwater_waterlevel state.evidence row -- not a top-level answer field",
+        "doc_section": "7"
+      },
+      {
+        "name": "bank_fill_percent",
+        "unit": "%",
+        "levels": [
+          "<numeric value>",
+          "OPEN"
+        ],
+        "status": "RELAYED_IN_PROVENANCE_ONLY -- same as distance_to_bank_m; situation_level (also agency-published) drives current_local_state, not a storage_percent cutoff this project chose",
+        "resolution": "station or basin, per state.evidence[*].resolution",
+        "json_path": "provenance.storage_percent on a thaiwater_waterlevel state.evidence row -- not a top-level answer field",
+        "doc_section": "8"
+      },
+      {
+        "name": "one_decision",
+        "unit": "categorical (decision text) + confidence",
+        "levels": {
+          "level": [
+            "RED",
+            "YELLOW",
+            "GREEN",
+            "UNKNOWN"
+          ],
+          "confidence": [
+            "HIGH",
+            "MEDIUM",
+            "LOW",
+            "NONE"
+          ],
+          "gate": [
+            "LICENSED_WITHIN_ENVELOPE",
+            "REFUSED"
+          ]
+        },
+        "status": "implemented_in_by_hand_module_only -- kb.py's own answer has no separate confidence field yet",
+        "resolution": "station",
+        "json_path": "floodconnect_model.one_decision(inputs) -> {level, confidence, gate, ...} (by-hand only)",
+        "doc_section": "9"
+      },
+      {
+        "name": "water_debt",
+        "unit": "none",
+        "levels": [],
+        "status": "planned (v0.2+)",
+        "resolution": "n/a",
+        "toledo_ids": [
+          "PROP-FLOOD-03",
+          "PROP-FLOOD-06",
+          "PROP-FLOOD-07"
+        ],
+        "json_path": "not implemented -- no field, v0.2+",
+        "doc_section": "10"
+      }
     ]
   },
   "primary_sources_for_this_file": [
-    "README.md", "AI.md", "AGENTS.md", "docs/AI_ENTRYPOINT.md", "docs/EVIDENCE.md",
-    "docs/AI_TIERS.md", "docs/EQUATIONS_FOR_AI.md", "docs/INDICATORS.md",
-    "pyproject.toml", "sources/registry.yaml", "tests/test_token_budget.py", "model_spec.json"
+    "README.md",
+    "AI.md",
+    "AGENTS.md",
+    "docs/AI_ENTRYPOINT.md",
+    "docs/EVIDENCE.md",
+    "docs/AI_TIERS.md",
+    "docs/EQUATIONS_FOR_AI.md",
+    "docs/INDICATORS.md",
+    "pyproject.toml",
+    "sources/registry.yaml",
+    "tests/test_token_budget.py",
+    "model_spec.json"
   ]
 }
