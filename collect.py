@@ -25,10 +25,13 @@ import datetime
 import hashlib
 import json
 import os
+import sqlite3
 import subprocess
 import sys
+import threading
 import urllib.error
 import urllib.request
+import time as _time
 from pathlib import Path
 from urllib.parse import urlencode, urlparse
 
@@ -62,6 +65,72 @@ REQUEST_TIMEOUT_S = 30
 # this many seconds in total. Not observed in practice against these hosts; documented here
 # instead of citing `--max-time`, which is a curl flag this code doesn't use.
 PDF_TIMEOUT_S = 300
+
+# A short local TTL cache for `run()`'s `ttl_s`
+# parameter -- a fresh cache entry (fetched within the TTL) skips the real network call
+# entirely for that source this run, so a caller hitting `kb.py answer`/MCP
+# `floodconnect_answer` repeatedly inside the window reuses the already-stored
+# observation instead of re-fetching. One plain JSON file, keyed by source_id, holding
+# only the ISO timestamp of the last REAL (non-cached, non-skipped) fetch attempt for
+# that source -- never the fetched data itself (that already lives in
+# `data/observations.sqlite`, this file is purely a "when did we last ask" ledger).
+# `--offline`/`refresh=False` callers never reach `run()` with `ttl_s` set at all (see
+# `kb.py::build_answer`'s own docstring), so this cache has no effect on that path.
+FETCH_CACHE_PATH = HERE / "data" / ".fetch_cache.json"
+DEFAULT_TTL_S = int(os.environ.get("FLOODCONNECT_REFRESH_TTL_S", "600"))  # 10 min, configurable
+
+
+def _load_fetch_cache(path: Path = FETCH_CACHE_PATH) -> dict:
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return {}
+
+
+def _save_fetch_cache(cache: dict, path: Path = FETCH_CACHE_PATH) -> None:
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(cache, f)
+    except OSError:
+        # A cache write failure (e.g. read-only filesystem) must never fail the real
+        # fetch it is only an optimisation on top of -- the next run simply has no
+        # cache entry and fetches for real again, same as a cold cache.
+        pass
+
+
+def _cache_key(sid: str, points_by_source: "dict | None") -> str:
+    """The TTL cache's real key -- `sid` alone for every source EXCEPT one in
+    `POINT_FILTERABLE_SOURCES` with a specific point declared in `points_by_source`
+    (openmeteo_forecast16d/metno_locationforecast, each scoped to ONE area's own
+    lat/lon per call -- see `kb.py::_refresh_relevant_sources`). Keying those by bare
+    `sid` would be a real cross-area bug: area A's cache entry would make area B's
+    later call (same sid, different point, same TTL window) report a false cache hit
+    and skip fetching B's own point entirely, silently leaving B's forecast reading
+    however stale (or absent) it already was. Folding the actual point(s) into the key
+    makes every distinct area/point combination its own cache slot."""
+    if sid in POINT_FILTERABLE_SOURCES and points_by_source and sid in points_by_source:
+        points = points_by_source[sid]
+        return sid + "::" + ";".join(f"{k}={v}" for k, v in sorted(points.items()))
+    return sid
+
+
+def _cache_hit(key: str, ttl_s: int, cache: dict) -> "float | None":
+    """Returns the cache entry's age in seconds if `key` (see `_cache_key`) was
+    fetched within the last `ttl_s` seconds, else None (cold/stale/absent -- a real
+    fetch is needed)."""
+    if ttl_s <= 0:
+        return None
+    ts = cache.get(key)
+    if not ts:
+        return None
+    try:
+        fetched_at = datetime.datetime.fromisoformat(ts)
+    except ValueError:
+        return None
+    age_s = (datetime.datetime.now(datetime.timezone.utc) - fetched_at).total_seconds()
+    return age_s if 0 <= age_s < ttl_s else None
 
 
 def load_registry(path: Path = REGISTRY_PATH) -> dict:
@@ -3154,6 +3223,20 @@ NO_FETCHER = {"governor_shared_flooded_roads", "rtsd_2010_ground_level_map",
 # them silently. See sources/registry.yaml's own `host_rule.notes` for this source.
 DORMANT_NOT_IN_ALL = {"bma_klongmap", "bma_station_detail"}
 
+# `bma_pumphistory`'s own endpoint (weather.bangkok.go.th/Station/PumpHistory) returned
+# HTTP 404 on 2026-10-04 (MEASURED, a direct `urllib` GET against `lwl.PUMPHISTORY_URL`
+# just now -- not relayed). Unlike `DORMANT_NOT_IN_ALL` above, this source is
+# deliberately NOT removed from `--all`/`--refresh`'s own source_ids list -- it stays
+# visible in every report as an explicit `skipped=True` row with this reason (see `run()`
+# below), rather than silently disappearing, since a human deciding whether to re-check
+# the host by hand needs to see it was skipped and why. `ANSWER_SOURCES` above still
+# names it (pump status feeds state factor 4) -- unchanged, since the day BMA's endpoint
+# comes back this set is still the right place for it to be fetched again; only the
+# `run()`-level skip needs removing then, this allowlist needs no edit. One single
+# measurement is not proof the 404 is permanent forever -- if a later run finds it
+# resolved, update this comment and remove the `run()` skip, don't just leave it stale.
+DORMANT_PERMANENT_404 = {"bma_pumphistory"}
+
 # Sources whose own content is a catalog/document listing, not a reading that feeds
 # `state`/`hazard`/`next_action` (the answer fields a caller actually asked for).
 # `kb._refresh_relevant_sources` excludes this set entirely from a per-area `--refresh`
@@ -3246,6 +3329,34 @@ AREA_RELEVANT_SOURCES: dict[str, set] = {
     "pcd_coastal_marine_quality": set(),
 }
 
+# A generous Bangkok-metro bounding box (not a legal/administrative boundary --
+# `kb.THAILAND_BBOX`'s own comment applies the same way here: wide enough to never
+# false-negative on a real Bangkok-area point, never meant to be precise at the edge).
+# Covers the full BMA area plus a margin into the immediately adjoining provinces
+# (Samut Prakan/Nonthaburi/Pathum Thani), since the stations themselves can sit a few
+# km outside the BMA administrative line.
+BANGKOK_METRO_BBOX = {"lat_min": 13.45, "lat_max": 14.05, "lon_min": 100.25, "lon_max": 100.95}
+
+# Bbox-scoped sources (added for v0.1.1, independent post-release review finding: "no
+# Bangkok DDS sources for Chiang Mai"): every one of these fetches from a BMA (Bangkok
+# Metropolitan Administration) endpoint (dds.bangkok.go.th / weather.bangkok.go.th) --
+# unlike `AREA_RELEVANT_SOURCES` above (a per-source allowlist of DECLARED area_ids,
+# which only narrows for a point that resolves to one of this repo's named areas),
+# this map narrows by the point's own lat/lon, including a bare `--at lat,lon` that
+# resolves to no named area at all (e.g. a Chiang Mai coordinate). A source absent
+# from this map is unaffected by it (same default-preserving posture as
+# `AREA_RELEVANT_SOURCES`) -- `kb._refresh_relevant_sources` intersects its candidate
+# source_ids against this map ONLY when it has a lat/lon to check against; it has no
+# effect on `collect.py`'s own --all/--source paths, which still reach every wired
+# source regardless of location.
+SOURCE_BBOX: dict[str, dict] = {
+    "dds_daily_pdf": BANGKOK_METRO_BBOX,          # dds.bangkok.go.th daily bulletin
+    "dds_tide_pdf": BANGKOK_METRO_BBOX,           # dds.bangkok.go.th tide page
+    "dds_flood_report": BANGKOK_METRO_BBOX,       # dds.bangkok.go.th flood-report page
+    "bma_pumphistory": BANGKOK_METRO_BBOX,        # weather.bangkok.go.th pump status
+    "bma_watermap": BANGKOK_METRO_BBOX,           # weather.bangkok.go.th canal readings
+}
+
 
 def _host_of(url: str) -> str:
     return urlparse(url).netloc if url else ""
@@ -3294,61 +3405,264 @@ POINT_FILTERABLE_SOURCES = {
 }
 
 
-def run(source_ids, dry_run=False, from_file=None, db_path=None, points_by_source=None):
+def _pre_fetch_check(sid: str, registry: dict, dry_run: bool) -> "CollectResult | None":
+    """Checks shared by both the sequential and parallel fetch paths in `run()` below:
+    registry membership, `NO_FETCHER`, `DORMANT_PERMANENT_404`, collector presence, and
+    (for a real fetch only) a missing API key. Returns a `CollectResult` when the
+    source must NOT be fetched at all (the caller appends it and moves on), or `None`
+    when it's clear to fetch -- the host-circuit-breaker check (sequential path only,
+    see `run()`'s own docstring on why parallel mode does not have one) and the actual
+    `fn(...)` call stay the caller's job, since they need the live `conn`/`host`."""
+    if sid not in registry:
+        return CollectResult(sid, False, note="not in registry.yaml")
+    if sid in NO_FETCHER:
+        return CollectResult(
+            sid, False, skipped=True,
+            note="skipped -- no fetcher by design (manual import / static "
+                 "reference), see registry.yaml; never fetched, never counted as ok")
+    if sid in DORMANT_PERMANENT_404:
+        return CollectResult(
+            sid, False, skipped=True,
+            note="skipped -- weather.bangkok.go.th/Station/PumpHistory returned "
+                 "HTTP 404 (MEASURED 2026-10-04); host-safety rule says stop "
+                 "touching a dead endpoint, not retry it every run. This skip "
+                 "applies unconditionally (same as NO_FETCHER sources), including "
+                 "an explicit --source bma_pumphistory -- to re-check by hand "
+                 "whether the endpoint has come back, probe the URL directly "
+                 "(outside this CLI) first, then remove the id from "
+                 "DORMANT_PERMANENT_404 in collect.py once it is confirmed live")
+    fn = COLLECTORS.get(sid)
+    if fn is None:
+        return CollectResult(sid, False, skipped=True, note="skipped -- no collector implemented")
+    # The key gate only blocks a REAL fetch -- a --dry-run never calls the network
+    # regardless (every collector's own `if dry_run: return ... True` short-circuits
+    # first), so it must not need a key present either; this keeps `--dry-run --all`
+    # reporting ok=True for every wired source with a collector, key-gated or not
+    # (see test_collect.py::test_dry_run_all_sources_makes_no_network_call).
+    missing_key_env = None if dry_run else _missing_api_key_env(sid, registry[sid])
+    if missing_key_env:
+        return CollectResult(
+            sid, False,
+            note=f"missing env var {missing_key_env} in this machine's own "
+                 "environment -- we never store or bundle an API key for you; "
+                 "set it yourself, then re-run --refresh")
+    return None
+
+
+def _call_collector(fn, sid: str, conn, dry_run: bool, from_file, points_by_source) -> "CollectResult":
+    """The one real `fn(...)` call shape, shared by the sequential and parallel fetch
+    paths -- never a second, divergently-argumented copy."""
+    try:
+        if sid in ("dds_daily_pdf", "dds_tide_pdf", "dds_flood_report"):
+            return fn(conn, dry_run=dry_run, from_file=from_file.get(sid) if from_file else None)
+        if sid in POINT_FILTERABLE_SOURCES and points_by_source and sid in points_by_source:
+            return fn(conn, dry_run=dry_run, points=points_by_source[sid])
+        return fn(conn, dry_run=dry_run)
+    except Exception as e:  # noqa: BLE001 -- one source's failure must not stop --all
+        return CollectResult(sid, False, note=f"unexpected error: {e!r}")
+
+
+def run(source_ids, dry_run=False, from_file=None, db_path=None, points_by_source=None,
+        parallel=False, ttl_s=0, max_workers=8, per_source_timeout_s=20, on_result=None):
+    """Fetches every id in `source_ids`. Two modes:
+
+    `on_result` (parallel mode only -- ignored in sequential mode, which
+    already prints/appends each result as it goes): an optional `callable(CollectResult)`
+    invoked once per source THE MOMENT that source's result is ready (a real completion
+    or a timeout), rather than only after the whole batch finishes -- lets a caller
+    (`kb.py connectors --live`) print a streaming progress line per source instead of a
+    silent wait followed by one bulk printout. Exceptions raised by `on_result` itself
+    propagate (a caller's own printer bug should not be swallowed), same as a bug in any
+    other caller-supplied callback would be.
+
+    `parallel=False` (the default): one request per
+    source, strictly sequential, with the per-run host circuit breaker (a 403/reset on
+    one source stops touching that same host for the rest of THIS run -- see
+    `_looks_like_host_block`). Every existing test/caller that does not pass
+    `parallel=True` sees identical behaviour.
+
+    `parallel=True` (wired from `kb.py`'s refresh-by-default
+    `answer`/MCP `floodconnect_answer` path): fetches the sources NOT served from the
+    TTL cache concurrently, one plain daemon `threading.Thread` per source (NOT a
+    `concurrent.futures.ThreadPoolExecutor` -- see the MEASURED comment at this
+    function's parallel branch for why: its own `atexit` hook joins every worker
+    thread it ever created with no timeout, which hung `kb.py connectors --live` well
+    past this function's own time budget on a single slow source). A
+    `threading.Semaphore(max_workers)` (default 8) still caps how many sources fetch
+    for REAL at once -- only the waiting mechanism changed, not the concurrency limit.
+    Each source still makes at most one request with no retry (unchanged discipline).
+    The whole batch is bounded by `per_source_timeout_s` (default 20s) wall-clock
+    TOTAL (a `time.monotonic()`-tracked deadline across every thread's `join()`, not a
+    fresh budget per thread) -- a source that blows that budget comes back as its own
+    failed `CollectResult` ("timed out"); a daemon thread still running past the
+    deadline is simply abandoned (Python does not force-kill a thread), its eventual
+    result/DB write discarded. Trade-off, stated honestly: the sequential path's host
+    circuit breaker (skip a host already blocked earlier THIS run) does NOT apply here
+    -- sources race concurrently, so there is no "earlier this run" to have already
+    discovered a block from before every request was already in flight. Each worker
+    thread opens its OWN sqlite connection (`sqlite3.Connection` is not thread-safe to
+    share) via `store.connect(db_path)`, closed when that source's own fetch finishes
+    (store.connect's WAL mode + 30s busy_timeout, see store.py, is what keeps these
+    concurrent writers from raising "database is locked" against each other).
+
+    `ttl_s`: sources NOT in `parallel`/`dry_run`/`DORMANT_PERMANENT_404`/
+    etc. whose last REAL fetch (see `_load_fetch_cache`/`FETCH_CACHE_PATH`) was within
+    `ttl_s` seconds are reported as a cache hit (`ok=True`, `skipped=False`, a note
+    naming the cached age) with NO network call at all this run -- the already-stored
+    `data/observations.sqlite` row from that earlier fetch is reused as-is. `ttl_s<=0`
+    (the default) disables the cache entirely. This
+    applies in BOTH `parallel` and sequential mode (a caller may want the cache without
+    the thread pool, or vice versa -- they are two independent flags). The cache's real
+    key is `_cache_key(sid, points_by_source)`, NOT bare `sid`, for a source in
+    `POINT_FILTERABLE_SOURCES` (openmeteo_forecast16d/metno_locationforecast) -- each
+    is scoped to one AREA's own lat/lon per call (see `kb.py::_refresh_relevant_
+    sources`), so keying by bare `sid` would let area A's cache entry falsely cache-hit
+    area B's later call for the SAME sid but a DIFFERENT point within the TTL window,
+    silently skipping B's own fetch. Every other source (nationwide, not point-scoped)
+    is unaffected -- its key is still the bare `sid`."""
     registry = load_registry()
-    conn = store.connect(db_path) if db_path else store.connect()
     results = []
-    tripped_hosts = set()  # per-run circuit breaker -- see _looks_like_host_block
+    fetch_cache = _load_fetch_cache(FETCH_CACHE_PATH) if ttl_s > 0 and not dry_run else {}
+    now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+    if not parallel:
+        conn = store.connect(db_path) if db_path else store.connect()
+        tripped_hosts = set()  # per-run circuit breaker -- see _looks_like_host_block
+        for sid in source_ids:
+            pre = _pre_fetch_check(sid, registry, dry_run)
+            if pre is not None:
+                results.append(pre)
+                continue
+            host = _host_of(registry[sid].get("url", ""))
+            if not dry_run and host and host in tripped_hosts:
+                results.append(CollectResult(
+                    sid, False, skipped=True,
+                    note=f"skipped -- host {host!r} was unreachable or blocked earlier "
+                         "this run (403, reset, or refused -- the exact cause is not "
+                         "distinguished); host-safety rule says stop touching it, not "
+                         "request a different path on the same host"))
+                continue
+            cache_key = _cache_key(sid, points_by_source)
+            age_s = _cache_hit(cache_key, ttl_s, fetch_cache)
+            if age_s is not None:
+                results.append(CollectResult(
+                    sid, True, note=f"cache hit ({age_s:.0f}s old, ttl={ttl_s}s) -- "
+                                     "fetch skipped, reusing already-stored observation"))
+                continue
+            res = _call_collector(COLLECTORS[sid], sid, conn, dry_run, from_file, points_by_source)
+            if not dry_run and host and _looks_like_host_block(res):
+                tripped_hosts.add(host)
+            if not dry_run and res.ok and ttl_s > 0:
+                fetch_cache[cache_key] = now_iso
+            results.append(res)
+        if ttl_s > 0 and not dry_run:
+            _save_fetch_cache(fetch_cache, FETCH_CACHE_PATH)
+        return results
+
+    # Parallel path. Phase 1: cheap sequential prechecks + cache lookups
+    # (no network, no thread needed) so the thread pool only ever holds real fetches.
+    to_fetch: "list[str]" = []
+    cache_keys: "dict[str, str]" = {}
     for sid in source_ids:
-        if sid not in registry:
-            results.append(CollectResult(sid, False, note="not in registry.yaml"))
+        pre = _pre_fetch_check(sid, registry, dry_run)
+        if pre is not None:
+            results.append(pre)
             continue
-        host = _host_of(registry[sid].get("url", ""))
-        if not dry_run and host and host in tripped_hosts:
+        cache_key = _cache_key(sid, points_by_source)
+        age_s = _cache_hit(cache_key, ttl_s, fetch_cache)
+        if age_s is not None:
             results.append(CollectResult(
-                sid, False, skipped=True,
-                note=f"skipped -- host {host!r} was unreachable or blocked earlier this "
-                     "run (403, reset, or refused -- the exact cause is not "
-                     "distinguished); host-safety rule says stop touching it, not "
-                     "request a different path on the same host"))
+                sid, True, note=f"cache hit ({age_s:.0f}s old, ttl={ttl_s}s) -- "
+                                 "fetch skipped, reusing already-stored observation"))
             continue
-        if sid in NO_FETCHER:
-            results.append(CollectResult(
-                sid, False, skipped=True,
-                note="skipped -- no fetcher by design (manual import / static "
-                     "reference), see registry.yaml; never fetched, never counted as ok"))
-            continue
-        fn = COLLECTORS.get(sid)
-        if fn is None:
-            results.append(CollectResult(
-                sid, False, skipped=True,
-                note="skipped -- no collector implemented"))
-            continue
-        # The key gate only blocks a REAL fetch -- a --dry-run never calls the network
-        # regardless (every collector's own `if dry_run: return ... True` short-circuits
-        # first), so it must not need a key present either; this keeps `--dry-run --all`
-        # reporting ok=True for every wired source with a collector, key-gated or not
-        # (see test_collect.py::test_dry_run_all_sources_makes_no_network_call).
-        missing_key_env = None if dry_run else _missing_api_key_env(sid, registry[sid])
-        if missing_key_env:
-            results.append(CollectResult(
+        cache_keys[sid] = cache_key
+        to_fetch.append(sid)
+
+    if not to_fetch:
+        return results
+
+    # MEASURED (2026-10-04): `ThreadPoolExecutor` (even calling `shutdown(wait=False)`
+    # instead of the `with` block's own `shutdown(wait=True)`) still blocks process
+    # exit on a genuinely slow/hanging source -- `concurrent.futures.thread` registers
+    # its OWN `atexit` hook that joins every worker thread it ever created, with no
+    # timeout, regardless of what this function does. `kb.py connectors --live`
+    # (60+ wired sources, some with urllib timeouts as long as `PDF_TIMEOUT_S`=300s)
+    # hit this directly: the CLI hung well past this function's own `per_source_
+    # timeout_s` budget. Plain `threading.Thread(..., daemon=True)` has no such
+    # atexit-join behaviour -- a daemon thread is simply abandoned at interpreter exit,
+    # which is the correct trade-off here: the discarded fetch's eventual DB write (if
+    # any) is lost, same honest "result discarded" trade-off `run()`'s own docstring
+    # already states, just reliably non-blocking now instead of only "best-effort".
+    result_holder: dict = {}
+    holder_lock = threading.Lock()
+    concurrency_gate = threading.Semaphore(max_workers)  # caps REAL concurrent fetches
+
+    def _worker(sid: str) -> None:
+        with concurrency_gate:
+            conn = None
+            try:
+                conn = store.connect(db_path) if db_path else store.connect()
+                res = _call_collector(COLLECTORS[sid], sid, conn, dry_run, from_file, points_by_source)
+            except sqlite3.OperationalError as e:
+                # `store.connect()` itself (its own PRAGMA/schema statements) or the
+                # collector's own writes can raise this when another worker thread
+                # holds the write lock past our busy_timeout -- report it as the lock
+                # error it is, not as a generic "unexpected error" (and never let it
+                # propagate unhandled out of this thread, which would otherwise leave
+                # `result_holder` without an entry and get this source misreported as
+                # "timed out" at the join deadline below instead of a real DB error).
+                res = CollectResult(sid, False, note=f"database locked: {e!r}")
+            except Exception as e:  # noqa: BLE001 -- one source's failure must not stop the batch
+                res = CollectResult(sid, False, note=f"unexpected error: {e!r}")
+            finally:
+                if conn is not None:
+                    conn.close()
+        with holder_lock:
+            result_holder[sid] = res
+        # Always fires the moment THIS source's real fetch actually finishes -- true
+        # streaming, independent of whether the main thread's join-deadline loop below
+        # has already (separately) reported this same sid as "timed out" because this
+        # thread was still running when its budget ran out. A caller may legitimately
+        # see two progress lines for one sid in that case (a prompt "timed out" at the
+        # budget boundary, then the real belated result) -- `results`/`fetch_cache`
+        # below are built from `result_holder`'s state at the join deadline only, so
+        # the FINAL per-run report never double-counts a sid either way.
+        if on_result is not None:
+            on_result(res)
+
+    start = _time.monotonic()
+    threads = [threading.Thread(target=_worker, args=(sid,), daemon=True) for sid in to_fetch]
+    for t in threads:
+        t.start()
+    for t in threads:
+        remaining = per_source_timeout_s - (_time.monotonic() - start)
+        if remaining > 0:
+            t.join(timeout=remaining)
+        # remaining <= 0: still call join(0) implicitly skipped -- every subsequent
+        # thread gets checked (and joined for whatever's left, possibly 0) rather than
+        # `break`ing early, since a LATER-started thread may have finished faster than
+        # an earlier one that is genuinely stuck.
+
+    newly_ok = []
+    for sid in to_fetch:
+        with holder_lock:
+            res = result_holder.get(sid)
+        if res is None:
+            res = CollectResult(
                 sid, False,
-                note=f"missing env var {missing_key_env} in this machine's own "
-                     "environment -- we never store or bundle an API key for you; "
-                     "set it yourself, then re-run --refresh"))
-            continue
-        try:
-            if sid in ("dds_daily_pdf", "dds_tide_pdf", "dds_flood_report"):
-                res = fn(conn, dry_run=dry_run, from_file=from_file.get(sid) if from_file else None)
-            elif sid in POINT_FILTERABLE_SOURCES and points_by_source and sid in points_by_source:
-                res = fn(conn, dry_run=dry_run, points=points_by_source[sid])
-            else:
-                res = fn(conn, dry_run=dry_run)
-        except Exception as e:  # noqa: BLE001 -- one source's failure must not stop --all
-            res = CollectResult(sid, False, note=f"unexpected error: {e!r}")
-        if not dry_run and host and _looks_like_host_block(res):
-            tripped_hosts.add(host)
+                note=f"timed out after {per_source_timeout_s}s (per-source wall-clock "
+                     "budget) -- the request may still complete in a "
+                     "detached background thread, its eventual result is discarded")
+            if on_result is not None:
+                on_result(res)
+        elif not dry_run and res.ok:
+            newly_ok.append(sid)
         results.append(res)
+
+    if ttl_s > 0 and not dry_run and newly_ok:
+        for sid in newly_ok:
+            fetch_cache[cache_keys[sid]] = now_iso
+        _save_fetch_cache(fetch_cache, FETCH_CACHE_PATH)
     return results
 
 

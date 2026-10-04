@@ -8,9 +8,12 @@ Chromium (`mcp__playwright`), ดักทุก network request 20 วินา
 เพิ่มเติมด้วย `curl` เฉพาะ endpoint ที่ยังไม่เคยเห็น (คนละ 1 ครั้งต่อ endpoint)
 
 **สรุปสั้นสำหรับผู้ก่อตั้ง**: หน้า waterchart นี้ **เชื่อมอยู่แล้วบางส่วน** — ข้อมูลเขื่อน (`analyst/dam`) และ
-ประตูระบายน้ำ (`public/watergate_load`) เป็น **host+path เดียวกัน** กับที่ `collect.py` ดึงอยู่ทุก 30 นาที
+ประตูระบายน้ำ (`public/watergate_load`) เป็น **host+path เดียวกัน** กับที่ `collect.py` ดึง
 (`hii_dam`, `hii_watergate` ใน `sources/registry.yaml`) — หน้านี้แค่เรียกซ้ำพร้อม query filter ตาม basin
-เท่านั้น ไม่ใช่ของใหม่. แต่มี **2 endpoint ที่ยังไม่ได้เชื่อม**: `public/waterlevel_load` (ข้อมูลระดับน้ำ+
+เท่านั้น ไม่ใช่ของใหม่. *(บันทึกย้อนหลัง: ตอนบันทึกการ์ดนี้ `collect.py` ยังรันอัตโนมัติทุก 30 นาทีผ่าน
+GitHub Actions — งานนั้นถูกถอดออกจาก workflow แล้วตั้งแต่ 2026-10-04 `collect.py`/`floodconnect answer`
+รันเฉพาะตอนผู้ใช้เรียกเอง บนเครื่อง/เน็ต/คีย์ของผู้ใช้เองเท่านั้น ไม่มีจังหวะอัตโนมัติฝั่งเราอีกแล้ว)*. แต่มี
+**2 endpoint ที่ยังไม่ได้เชื่อม**: `public/waterlevel_load` (ข้อมูลระดับน้ำ+
 ปริมาณน้ำ**cms**+% ตลิ่งต่อสถานี ละเอียดกว่า `public/waterlevel` ที่มีอยู่) และ `analyst/cctv` (กล้อง CCTV
 สถานีน้ำทั่วประเทศ). ทั้งสอง endpoint เป็น JSON เปิดสาธารณะ **ไม่ต้องใช้ token/auth** อยู่บน host เดิม
 (`api-v3.thaiwater.net`) ที่เราเชื่อมอยู่แล้ว — ความเสี่ยงต่ำมากถ้าจะเพิ่ม. นอกจากนี้หน้าเว็บยังใช้ไฟล์ SVG

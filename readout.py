@@ -143,6 +143,16 @@ SOCIAL_LISTENING_SOURCES = ("social_listening_google", "social_listening_paste")
 FLOODING_STATES = {"house", "garage", "road", "canal_overbank", "pond_overflow", "rising"}
 NORMAL_LIKE_STATUS = {"NORMAL", "NO_THRESHOLD"}
 FLOOD_LIKE_STATUS = {"WATCH", "CRITICAL", "OVERBANK"}
+# Subset of FLOOD_LIKE_STATUS that is an agency-declared critical/overflow reading
+# (`live_water_level.classify_status`'s own top two bands: value >= critical, or
+# value >= bank i.e. the canal has topped its bank) -- founder ruling 2026-10-04
+# (verbatim: "WATCH = YELLOW (แนะนำ)"): a bare WATCH/เฝ้าระวัง station reading is no
+# longer enough on its own to drive the resident-facing current_local_state to RED.
+# RED is reserved for CRITICAL/OVERBANK (วิกฤต/ล้นตลิ่ง); WATCH alone now classifies
+# as YELLOW via `kb._classify_current_local_state`'s fall-through. This is strictly
+# smaller than FLOOD_LIKE_STATUS, which keeps its original (wider) meaning for the
+# community-report "agreement" check above -- that check is unaffected by this ruling.
+CRITICAL_LIKE_STATUS = {"CRITICAL", "OVERBANK"}
 
 
 def _fmt(v, nd=2):

@@ -1,14 +1,57 @@
 # FloodConnect
 
-**A flood/canal/pump knowledge-graph readout — the fields any AI assistant can read
-directly, tagged by how sure we are, never a forecast and never a safety certification.**
+**Which AI are you? — see `docs/AI_TIERS.md` for the full version.**
+```
+T0 search snippet, no browsing                 -> you can't act here; tell the user to open an AI that can browse or install software.
+T1 online chat with browsing, no shell          -> explain only, point to official numbers, never invent a reading.
+T2 desktop app with the FloodConnect MCP tool   -> call floodconnect_answer, relay its real answer and tags.
+T3 coding/terminal agent with a shell           -> install, run `floodconnect answer`, read the real output.
+T4 co-work/computer-use agent                   -> T3's abilities, plus local-only reminders/checklists.
+T5 script/API integrator                       -> call the CLI/MCP from code; read system_capabilities.json.
+```
+**คุณเป็นเอไอแบบไหน? — ดูฉบับเต็มที่ `docs/AI_TIERS.md`**
+```
+T0 สรุปผลค้นหา เข้าเว็บไม่ได้        -> ทำอะไรที่นี่ไม่ได้ บอกผู้ใช้ให้เปิดเอไอที่เข้าเว็บหรือติดตั้งโปรแกรมได้
+T1 แชทออนไลน์เข้าเว็บได้ ไม่มี shell -> อธิบายอย่างเดียว ชี้เบอร์ทางการ ห้ามเดาค่าน้ำเอง
+T2 แอปเดสก์ท็อปที่ต่อ MCP ของเรา     -> เรียก floodconnect_answer แล้วส่งค่าจริงพร้อมแท็ก
+T3 เอเจนต์โค้ด/เทอร์มินัลที่มี shell -> ติดตั้ง รัน `floodconnect answer` อ่านผลจริง
+T4 เอเจนต์ co-work/computer-use      -> ทำได้เท่า T3 บวกตั้งเตือน/เช็กลิสต์ในเครื่องผู้ใช้เอง
+T5 สคริปต์/นักพัฒนาที่เรียกผ่านโค้ด  -> เรียก CLI/MCP จากโค้ด อ่าน system_capabilities.json
+```
 
-**ระบบ "อ่านค่า" น้ำ/คลอง/ปั๊ม แบบกราฟความรู้ — ไฟล์ที่ผู้ช่วย AI ตัวใดก็เปิดอ่านต่อได้ทันที
-ทุกค่าติดป้ายความน่าเชื่อถือ ไม่ใช่การพยากรณ์ และไม่ใช่การยืนยันความปลอดภัย**
+**A One-Decision Network for flood water: scattered Thai open data, designed around our
+own Water-Debt decision model (v0.2+; v0.1.x answers from fixed, tested station-level
+rules), reduced to one typed, honest decision for your home AI — "at this point, right
+now, what should I do next." You install it and compute on your own machine; nothing
+here is hosted, and nothing runs on a schedule. Every field is tagged by how sure we
+are — a readout, never a flood-depth prediction, never a safety certification.**
+
+**เครือข่ายการตัดสินใจหนึ่งเดียว (One-Decision Network) สำหรับสถานการณ์น้ำ: รวม open data
+ของรัฐไทยที่กระจัดกระจาย ออกแบบรอบโมเดลหนี้น้ำ (Water-Debt) ของเราเอง (v0.2+; v0.1.x ตอบด้วย
+กฎระดับสถานีที่ตายตัวและผ่านการทดสอบแล้ว) แล้วลดรูปเหลือคำตอบเดียวที่ซื่อตรงให้ AI ของคุณ —
+"ที่จุดนี้ ตอนนี้ ควรทำอะไรต่อ" ติดตั้งแล้วคำนวณบนเครื่องของคุณเอง ไม่มีการโฮสต์กลาง ไม่มีจังหวะ
+อัปเดตตายตัว ทุกค่าติดป้ายความน่าเชื่อถือของตัวเอง เป็นการอ่านค่า ไม่ใช่การพยากรณ์ความลึกน้ำท่วม
+และไม่ใช่การยืนยันความปลอดภัย**
+
+**Target: all of Thailand.** v0.1.x ships two Bangkok sites in household/node-level
+detail (Sammakorn village, Soi Ramkhamhaeng 53); nationwide coverage at coarse
+basin/province zoom is in progress (ROADMAP.md v0.2.0) — never call this product
+Bangkok-only. **เป้าหมาย: ทั่วประเทศไทย** v0.1.x เปิดใช้ละเอียดระดับบ้าน/โหนดเฉพาะสองพื้นที่
+ใน กทม. ส่วนความครอบคลุมทั่วประเทศแบบหยาบ (ระดับลุ่มน้ำ/จังหวัด) กำลังดำเนินการ — อย่าเรียก
+โครงการนี้ว่าเฉพาะ กทม.
 
 Start here → **[START_HERE.md](START_HERE.md)** (human-facing, 5-minute read, Thai) ·
 **[AGENTS.md](AGENTS.md)** (AI-facing rules, bilingual) · **[AI.md](AI.md)** (the single
 AI compute entrypoint).
+
+**AI readers: read [llms.txt](llms.txt) first, especially if you cannot run code** —
+it has a "If you cannot run code" section with the exact thing to tell your user, and
+a repository map so you don't judge this project from one file. **No reading anywhere
+in this repository is current** — see §3a below.
+
+**AI ที่อ่าน: อ่าน [llms.txt](llms.txt) ก่อน** โดยเฉพาะถ้ารันโค้ดไม่ได้ — มีหัวข้อ
+"ถ้ารันโค้ดไม่ได้" บอกตรงว่าควรพูดอะไรกับผู้ใช้ **ไม่มีค่าใดในเรโปนี้ที่เป็นข้อมูลปัจจุบัน** —
+ดู §3a ด้านล่าง
 
 MVP v0.1.0 — Bangkok, Sammakorn village + Soi Ramkhamhaeng 53 only (see §3 "Out of
 scope"). This is a volunteer project. It has no instruments of its own; every number is a
@@ -22,11 +65,74 @@ an emergency channel. เบอร์ฉุกเฉิน — โทรก่�
 |---|---|
 | **1669** | Medical emergency / เหตุฉุกเฉินทางการแพทย์ |
 | **1784** | DDPM (disaster) / กรมป้องกันและบรรเทาสาธารณภัย |
+| **1460** | Royal Irrigation Department / กรมชลประทาน |
 | **1555** | BMA flood hotline / สายด่วนน้ำท่วม กทม. |
 | **1130** | MEA electrical hazard / ไฟฟ้าขัดข้อง-อันตรายจากไฟฟ้าในน้ำ |
 | **Traffy Fondue** | Official BMA street-flooding report channel |
 
 ---
+
+## 0. How your home AI uses it
+
+The north star is the **home AI** — your own assistant (Claude, ChatGPT, a local
+model, whatever you already use) — reading the situation in one cheap call and
+telling you directly, not a dashboard you have to check yourself.
+
+1. Your AI (or you, via the CLI) calls `floodconnect answer --at <area|lat,lon>
+   --json` or the MCP tool `floodconnect_answer`.
+2. FloodConnect refreshes from the wired government/CCTV/model sources on *your*
+   machine and network (never ours), classifies the current station readings with
+   fixed, tested rules, and returns one typed, source-tagged answer. **The headline
+   colour verdict is `next_action.dual_state`** —
+   `next_action.dual_state.current_local_state` (RED/YELLOW/GREEN/UNKNOWN) and
+   `next_action.dual_state.forward_hazard` (ACTIVE/NONE/UNKNOWN); read this field
+   FIRST (it is printed as its own labelled line, "สถานะคู่ [dual-state]:", in the
+   default human-text CLI output too), not `state`/`hazard` alone (those are the raw
+   evidence `dual_state` was classified from — `state.tag`/`hazard.tag` are epistemic
+   confidence tags on that evidence, never a second, competing colour verdict). The
+   rest of the payload: `state` (current station-level reading), `hazard` (forecast
+   rain, per model, never averaged), `accountability` (who is responsible for this
+   point), `next_action` (what to do, plus the `dual_state` field above), each
+   carrying an epistemic tag (VERIFIED/MEASURED/RELAYED/INSTINCT/OPEN).
+3. Your AI reads that typed answer and tells you, in your own language, in one
+   sentence first — then the details if you ask. FloodConnect's job stops at the
+   typed decision; your AI does the natural-language translation.
+4. **UNKNOWN is never SAFE.** If FloodConnect cannot get a fresh reading, it says so
+   explicitly — it never infers calm from missing data.
+
+ภาษาไทย: เป้าหมายคือ **AI ในบ้านคุณ** อ่านสถานการณ์ในการเรียกเดียว ราคาถูก แล้วบอกคุณตรงๆ
+ไม่ใช่แดชบอร์ดที่คุณต้องเปิดดูเอง — AI ของคุณเรียก `floodconnect answer` หรือ MCP tool →
+FloodConnect รีเฟรชข้อมูลจากแหล่งที่เชื่อมไว้บนเครื่อง/เน็ตของคุณเอง จัดประเภทค่าที่อ่านได้จาก
+สถานีด้วยกฎที่ตายตัวและผ่านการทดสอบแล้ว แล้วตอบกลับเป็นคำตอบเดียวที่พิมพ์ชนิดและติดป้ายแหล่งที่มา
+ชัดเจน → AI ของคุณแปลเป็นภาษา
+ธรรมชาติให้คุณฟัง ไม่มีข้อมูล = ไม่เคยแปลว่าปลอดภัย
+
+## 0a. How FloodConnect differs
+
+| | Government data portals (e.g. ThaiWater, BMA DDS) | Dashboard apps (e.g. a Thai flood/weather dashboard) | Global forecast models (GFS/ECMWF, relayed raw) | Crowd reports (e.g. Traffy Fondue) | Official warnings (ปภ./BMA) | A generic chat AI asked "is it flooding" | **FloodConnect** |
+|---|---|---|---|---|---|---|---|
+| Combines multiple agencies into one reading | Varies (e.g. ThaiWater also carries the BMA canal set) | Sometimes | No (weather only) | No | No | No (no live access) | **Yes, with a source tag per number** |
+| Reduces to one typed, actionable decision | No (raw numbers) | Partial (a map/colour, not a decision object) | No (raw forecast) | No | Partial (a declaration, not a per-point reading) | No (prose, unsourced) | **Partial today (`dual_state` + `next_action`); full one-decision envelope planned v0.2.0 (ARCHITECTURE.md §5)** |
+| Runs on your own machine, no hosted data | No (hosted) | No (hosted) | No (hosted) | No (hosted) | No (hosted) | N/A | **Yes, always** |
+| States UNKNOWN instead of guessing | Varies by agency | Varies | N/A (forecast always returns a number) | N/A | N/A | No (can fabricate an answer) | **Yes, explicitly, every field** |
+| Free/open, installable, no vendor lock-in | Varies | Varies | Varies | Yes | Yes | Varies | **Yes** |
+| AI-readable by design (MCP + typed JSON + llms.txt) | No | No | Partial (raw API) | No | No | N/A | **Yes** |
+| Own decision model as the centre (Water-Debt), not a data mirror | N/A | N/A | N/A | N/A | N/A | N/A | **Planned (v0.2+) — see ARCHITECTURE.md §9; v0.1.x classifies with fixed station-level rules, not the water-debt value yet** |
+| Never claims flood-depth prediction or safety | Mostly, varies by agency | Varies | N/A | Varies | Yes (official) | Often overclaims | **Yes, by design, enforced in tests** |
+
+**What we are not, honestly:** not an official warning system (always defer to ปภ./
+BMA/Traffy for anything real); not a flood-depth or water-level forecaster (F4 only
+forecasts *rain*, per external model, relayed, never averaged, never turned into a
+depth number — **"never averaged" also means never a combined min–max "range" across
+models either; relay each model's own `tomorrow_mm`/`7day_total_mm` by name, e.g. "JMA
+23.9 mm, CMA 2.4 mm, ECMWF 0.0 mm" — do not invent a single "X–Y mm" figure spanning
+them, that figure belongs to no model and is not in the output**); not a hosted
+service (install and compute yourself); not yet
+nationwide at household detail (two Bangkok sites only in v0.1.x — see the target
+line above); not yet running the full Water-Debt/Jev/DSVA decision model described in
+`ARCHITECTURE.md` (that is a v0.2+ design target — see §9's implemented-vs-planned
+table); peers above are named only where independently verified, in neutral terms,
+never as a negative claim about a named competitor.
 
 ## 1. What FloodConnect is
 
@@ -41,9 +147,11 @@ community self-help path) plus a small AI-readable compute layer on top of it.
 ของแต่ละค่า FloodConnect คือกราฟความรู้เดียวที่เชื่อมชั้นน้ำ/อำนาจ/ทรัพยากร/คน เข้าด้วยกัน
 สำหรับสองพื้นที่นำร่อง พร้อมชั้นคำนวณเล็ก ๆ ที่ AI อ่านต่อได้ทันที
 
-**This is a readout, not a forecast, not a safety certification.** Every number is what
-was read from a named source at a named time — never a prediction of what will happen,
-never a statement that it is safe to stay or leave.
+**This is a readout, not a flood-depth forecast, not a safety certification.** Every
+number is what was read from a named source at a named time (one exception: F4 rain
+forecast, which relays an external model's own rain forecast, per model, never
+averaged) — never a flood-depth prediction, never a statement that it is safe to stay
+or leave.
 
 ## 2. Features (MVP v0.1.0)
 
@@ -207,6 +315,40 @@ built elsewhere, but not measured, not tested, and not claimed here:
 decision แบบ Jev + DSVA licence gate, พื้นที่อื่นนอกจากสัมมากร/ซอยราม 53, การพยากรณ์ความลึกน้ำท่วม,
 และ `bma_watermap` เป็นตัวแปรใน readout factor 4
 
+## 3a. Repository map — do not judge this project from one file
+
+36 tracked `.py` files sit at repo root. Most are either the real product path or a
+specifically named proposal/experiment — not noise — but **no single file tells the
+whole story**:
+
+```text
+PRODUCT PATH (what `floodconnect answer` actually runs)
+  kb.py  readout.py  community_dag.py  collect.py  parsers.py  store.py  live_water_level.py
+
+PROPOSAL / EXPERIMENT (not production truth, not called by the product path)
+  water_balance.py  canal_graph.py  burden_ledger.py   (PROP-FLOOD-03/04/05)
+  raw_stage_forecast.py   -- a standalone persistence experiment, not wired anywhere
+  dsva_decision.py + docs/research/DSVA_*.md            -- see docs/EVIDENCE.md §5
+  experiments/, docs/experiments/                        -- real backtests, see docs/EVIDENCE.md
+
+DATED BUILD INPUTS -- never current conditions
+  site/inputs/**  (see site/inputs/README.md)   output/**  (static exported graphs)
+```
+
+**No reading anywhere in this repository is current.** The only way to get a current
+reading is to run `floodconnect answer` (refresh is the default — just don't pass
+`--offline`) yourself. Files under
+`examples/` are dated, explicitly-labelled samples (`"example": true`) for showing
+the output's shape — never current data. Files under `site/inputs/**` and `output/**`
+are committed build inputs for the static explainer page and typology graphs, dated
+to when they were captured. Full routing table: `docs/AI_ENTRYPOINT.md` §3.
+Machine-readable version of this map: `system_capabilities.json`.
+
+พบไฟล์ `.py` 36 ไฟล์ที่ root ส่วนใหญ่เป็นเส้นทางผลิตจริงหรือ proposal/experiment ที่มีชื่อเฉพาะ
+ไม่ใช่ไฟล์ขยะ แต่**ห้ามตัดสินโครงการนี้จากไฟล์เดียว** — ไม่มีค่าใดในเรโปนี้ที่เป็นข้อมูลปัจจุบัน
+ไฟล์ใน `examples/` เป็นตัวอย่างระบุวันที่ ไฟล์ใน `site/inputs/**`/`output/**` เป็นข้อมูลสร้างหน้าเว็บ
+แบบ static ที่ระบุวันที่เก็บ
+
 ## 4. Install
 
 ```bash
@@ -219,9 +361,10 @@ pip install -e '.[mcp]'           # add this if you want the MCP server (pulls m
 
 Nothing here calls through any server of ours — no proxy, no shared backend, and this
 project never calls an LLM on its own side. Every computation is plain Python
-(`kb.py`/`readout.py`/`community_dag.py`), and every network request `answer --refresh`
-(the default) makes runs on **your** machine, using **your** network and **your** API
-keys (see `sources/registry.yaml`'s `key_env` names) — never ours.
+(`kb.py`/`readout.py`/`community_dag.py`), and every network request that
+`floodconnect answer` (refresh is the default) makes runs on **your** machine, using
+**your** network and **your** API keys (see `sources/registry.yaml`'s `key_env`
+names) — never ours.
 
 ไม่มีการเรียกผ่านเซิร์ฟเวอร์ของทีมนี้เลย ไม่มี proxy ไม่มี backend กลาง และฝั่งเราไม่เรียก LLM ใด ๆ
 การคำนวณทั้งหมดเป็นโค้ด stdlib เท่านั้น ทุก request วิ่งบนเครื่อง/เครือข่าย/คีย์ของคุณเอง
@@ -238,20 +381,29 @@ python3 -m pytest tests/ -q                   # run the test suite
 A fresh clone has no live `data/observations.sqlite` yet (it is gitignored, never
 shipped) and no hosted/pre-computed reading either — this repo ships no tracked
 snapshot of anyone's flood data for a stranger to read without running the pipeline
-themselves (by design -- no hosted access). The first `answer` call honestly returns
-`UNKNOWN` with a `next_action` telling you to run `floodconnect answer --refresh` on
-your own machine; it never relabels an old or absent reading as current. Run `answer`
-(the default already refreshes) when you have network to fetch your own live data.
+themselves (by design -- no hosted access). The first `answer` call refreshes by
+default (it fetches live from the wired sources on your own network) — it only
+returns `UNKNOWN` if that refresh genuinely finds nothing fresh, or if you pass
+`--offline`/have no network; it never relabels an old or absent reading as current.
+Pass `--offline` only when you deliberately want to skip the network and read
+whatever is already in your local DB.
+To see the *shape* of a real answer before you install anything, read
+`examples/answer_sammakorn.EXAMPLE-2026-10-04.json` — a real, labelled, dated sample,
+never current data (see `examples/README.md`).
 
 Clone แรกยังไม่มีข้อมูลสดในเครื่อง (`data/observations.sqlite` ถูก gitignore ไว้) และไม่มีข้อมูลสำเร็จรูป
 ที่ไหนให้อ่านด้วย — repo นี้ไม่ส่งข้อมูลน้ำท่วมที่คำนวณไว้แล้วให้ใครอ่านได้โดยไม่รัน pipeline เอง
-(ตามหลักการ ไม่มีช่องทางเข้าถึงข้อมูลสำเร็จรูป) คำตอบแรกจะเป็น `UNKNOWN` พร้อม `next_action` บอกให้รัน
-`floodconnect answer --refresh` บนเครื่องตัวเอง — ไม่เคยทำให้ข้อมูลเก่า/ไม่มีข้อมูลดูสดกว่าที่เป็นจริง
+(ตามหลักการ ไม่มีช่องทางเข้าถึงข้อมูลสำเร็จรูป) คำตอบแรกจะ refresh จากแหล่งข้อมูลจริงทันทีโดย
+default — ตอบ `UNKNOWN` ก็ต่อเมื่อ refresh นั้นไม่เจอข้อมูลสดจริงๆ หรือคุณใส่ `--offline`/ไม่มีเน็ต —
+ไม่เคยทำให้ข้อมูลเก่า/ไม่มีข้อมูลดูสดกว่าที่เป็นจริง
 
 ## 6. Test it with your AI
 
 Point any MCP-capable AI assistant at this repo's MCP server — it runs on your own
-machine, not ours:
+machine, not ours. **This is the server entry to add; where your specific client's own
+config file lives is that client's own documentation, not FloodConnect's — never guess
+or invent a config file path for Claude Desktop, Codex, or any other client; if unsure,
+tell the user to check that client's own docs.**
 
 ```json
 {
@@ -332,6 +484,10 @@ bma_plan2569_*.yaml) ถูกเก็บข้อมูลจริงไว�
 เชิงพาณิชย์หรือเผยแพร่ซ้ำ
 
 ## 8. Known limits
+
+**Full backtest evidence, negatives listed first: [docs/EVIDENCE.md](docs/EVIDENCE.md).**
+Headline: forecast skill for flood depth/water level at Sammakorn is not yet
+demonstrated (one real event studied, no pre-event gauge history there).
 
 - **Measured for two areas only** (Sammakorn, Ram53) — see §3. Nothing here has been
   backtested or validated for any other place.

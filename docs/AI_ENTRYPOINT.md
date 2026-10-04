@@ -12,13 +12,14 @@
 covers exactly that case in a fraction of this file's token budget. Read on here only if
 `AI.md` does not cover what you need, or if you are about to write.
 
-The MCP server (`tools/mcp/floodconnect_mcp.py`), the agent skill
-(`skills/floodconnect/SKILL.md`), and the static `api/v1/*` export
-(`tools/api/export_api.py`) are present in this repo at file level — the merge
-history behind that is kept as an internal local-only team record, not synced
-to the public mirror. `AI.md` names all three routes and is the one place the
-reasoning rules are stated; `docs/AI_INTERFACE.md` is the fuller MCP/API
-technical spec.
+The MCP server code (`tools/mcp/floodconnect_mcp.py`), the agent skill
+(`skills/floodconnect/SKILL.md`), and the static `api/v1/*` export tool
+(`tools/api/export_api.py`) are all tracked source files in this repo — but the
+export tool's *output* (`site/dist/api/v1/**`) is gitignored and not tracked; it
+exists only after you run `site/build_data.py` + `tools/api/export_api.py` on your
+own machine. Nothing here is a hosted endpoint. `AI.md` names all three routes and
+is the one place the reasoning rules are stated; `docs/AI_INTERFACE.md` is the
+fuller MCP/export technical spec.
 
 ## 0A. If you will write
 

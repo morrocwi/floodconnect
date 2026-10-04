@@ -37,12 +37,26 @@ def _observations_db_restored():
     design (see kb.py:39/45). Snapshot the real, git-ignored DB's bytes (or its
     absence) before the test and restore them after, same pattern as
     tests/test_kb.py's `_index_yaml_restored`, so this test never leaves a real
-    recorded-data store changed as a side effect of exercising the install path."""
+    recorded-data store changed as a side effect of exercising the install path.
+
+    `store.connect()` runs under `PRAGMA journal_mode=WAL`, so the subprocess above
+    also creates/rewrites the `-wal`/`-shm` sidecar files next to the main db file --
+    restoring only the main file's bytes and leaving those two behind (or changed)
+    still trips tests/conftest.py's session-wide real-data-store guard, so every
+    sidecar path next to the main one is snapshotted/restored the same way."""
     path = REPO_ROOT / "data" / "observations.sqlite"
+    sidecar_paths = [path.with_name(path.name + "-wal"), path.with_name(path.name + "-shm")]
     before = path.read_bytes() if path.exists() else None
+    sidecars_before = [(p, p.read_bytes() if p.exists() else None) for p in sidecar_paths]
     try:
         yield path
     finally:
+        for p, content in sidecars_before:
+            if content is None:
+                if p.exists():
+                    p.unlink()
+            else:
+                p.write_bytes(content)
         if before is None:
             if path.exists():
                 path.unlink()

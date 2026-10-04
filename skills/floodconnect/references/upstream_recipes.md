@@ -1,9 +1,11 @@
 # Upstream API recipes
 
-`GET /api/v1/sources.json` (or `floodconnect_list_upstream_sources`) is the
-registry of every upstream agency source FloodConnect itself reads from. It
-mirrors `sources/registry.yaml` with secrets stripped and `auth` collapsed to
-the public enum `none | key`.
+The local export file you build yourself (`site/dist/api/v1/sources.json`,
+after running `site/build_data.py` + `tools/api/export_api.py` on your own
+machine — there is no hosted endpoint) or the MCP tool
+`floodconnect_list_upstream_sources` is the registry of every upstream agency
+source FloodConnect itself reads from. It mirrors `sources/registry.yaml`
+with secrets stripped and `auth` collapsed to the public enum `none | key`.
 
 ## Rules for calling any upstream source
 
@@ -49,7 +51,7 @@ variations tried "just in case," no second attempt if it fails.
 ## Compact recipe table (8 representative wired sources)
 
 Only needed if you are an external AI that wants to fetch a government/third-party
-source yourself rather than running `kb.py answer --refresh` in the repo — e.g. you
+source yourself rather than running `kb.py answer` (refresh is the default) in the repo — e.g. you
 have your own quota/compute and no local clone. Every row below is copied from
 `sources/registry.yaml` (the real `url`/`method` fields, not re-derived) — read that
 file for the full 42-source registry; this is a deliberately short, representative

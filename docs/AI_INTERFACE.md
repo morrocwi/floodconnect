@@ -16,27 +16,31 @@ contradictions ต้องแสดงทั้งสองฝั่ง, งด
 (two-copies-drift). `skills/floodconnect/references/epistemic_rules.md` เก็บ provenance
 เต็ม (อ้างอิง project decision ของแต่ละกฎ)
 
-## ทางเลือก 1 — Static JSON API v1
+## ทางเลือก 1 — Local JSON export (ไม่ใช่ API ที่ไหน ไม่มี host ให้ GET)
 
 **ไม่มีโฮสต์กลาง (project decision 2026-10-04):** repo นี้ไม่รัน/ไม่ publish `/api/v1/`
-ที่ไหนให้ใครอ่านได้ทันที — `site/dist/api/v1/` เป็น build artifact ที่ gitignore ไว้
-ต้องรัน `site/build_data.py` แล้ว `tools/api/export_api.py` บนเครื่องตัวเองก่อนเสมอ
-(ดู `tools/api/export_api.py` สำหรับ argument ที่ต้องส่ง) จึงจะมีไฟล์ให้ MCP server
-หรือ static-JSON client อ่าน — ไม่มี path สำเร็จรูปในคลังนี้
+ที่ไหนให้ใครอ่านได้ทันที — ไม่มี URL ใดๆ ที่ตอบคำขอนี้ได้จริง `site/dist/api/v1/` เป็น
+build artifact ที่ gitignore ไว้ **ไม่ถูก track ในคลังนี้เลย** ต้องรัน `site/build_data.py`
+แล้ว `tools/api/export_api.py` บนเครื่องตัวเองก่อนเสมอ (ดู `tools/api/export_api.py`
+สำหรับ argument ที่ต้องส่ง) จึงจะมีไฟล์ **local** ให้ MCP server หรือ client ที่อ่าน JSON Schema
+อ่านได้ — ไม่มี path สำเร็จรูปในคลังนี้ และไม่มี `GET` ข้าม network ที่ไหนทำงานได้จริง คอลัมน์
+"เส้นทางเดิม" ด้านล่างแค่บอกชื่อไฟล์ relative path ที่คุณจะได้ **หลังสร้างเอง** เท่านั้น — อ่านเป็น
+local file path ไม่ใช่ HTTP call:
 
-| Endpoint | คำอธิบาย |
+| ไฟล์ local (หลังรันเองแล้วเท่านั้น) | คำอธิบาย |
 |---|---|
-| `GET /api/v1/index.json` | รายชื่อพื้นที่ + ตารางลิงก์ endpoint อื่นทั้งหมด |
-| `GET /api/v1/areas/{area_id}.json` | สถานะเต็มของพื้นที่หนึ่ง — มี `current_local_state` และ `forward_hazard` แยกกันเสมอ |
-| `GET /api/v1/typology/graph.json` | กราฟ typology ทั้งหมด (node-link JSON) |
-| `GET /api/v1/typology/subgraph/{area_id}.json` | กราฟ typology เฉพาะพื้นที่ |
-| `GET /api/v1/community/self_help_dag.json` | DAG ช่วยเหลือตัวเองของชุมชน (`schema_status: proposal_operational_schema`) |
-| `GET /api/v1/sources.json` | ทะเบียนแหล่งข้อมูลต้นทาง (`auth` อยู่ใน enum `none`/`key` เท่านั้น ไม่มี secret จริง) |
-| `GET /api/v1/schema/{name}.schema.json` | JSON Schema (draft 2020-12) ของแต่ละ endpoint |
-| `GET /api/v1/openapi.yaml` | สเปก OpenAPI แบบ GET-only |
+| `site/dist/api/v1/index.json` | รายชื่อพื้นที่ + ตารางลิงก์ endpoint อื่นทั้งหมด |
+| `site/dist/api/v1/areas/{area_id}.json` | สถานะเต็มของพื้นที่หนึ่ง — มี `current_local_state` และ `forward_hazard` แยกกันเสมอ |
+| `site/dist/api/v1/typology/graph.json` | กราฟ typology ทั้งหมด (node-link JSON) |
+| `site/dist/api/v1/typology/subgraph/{area_id}.json` | กราฟ typology เฉพาะพื้นที่ |
+| `site/dist/api/v1/community/self_help_dag.json` | DAG ช่วยเหลือตัวเองของชุมชน (`schema_status: proposal_operational_schema`) |
+| `site/dist/api/v1/sources.json` | ทะเบียนแหล่งข้อมูลต้นทาง (`auth` อยู่ใน enum `none`/`key` เท่านั้น ไม่มี secret จริง) |
+| `site/dist/api/v1/schema/{name}.schema.json` | JSON Schema (draft 2020-12) ของแต่ละไฟล์ |
+| `site/dist/api/v1/openapi.yaml` | สเปก OpenAPI เดิม (อธิบายรูปร่างไฟล์ ไม่ใช่ endpoint ที่มีจริง) |
 
-กติกาเรียก: **หนึ่ง request ต่อหนึ่ง URL ไม่มี retry** — ถ้าเรียกไม่สำเร็จ ให้ถือว่าฟิลด์นั้น
-`tag: OPEN` ไม่เดาไม่ลองซ้ำ
+กติกาการสร้างไฟล์: **หนึ่ง network request ต่อหนึ่ง URL ต่อนแหล่งข้อมูลต้นทาง ไม่มี retry**
+(เกิดขึ้นตอนรัน `collect.py`/`floodconnect answer` (refresh เป็น default อยู่แล้ว) บนเครื่องคุณเอง ไม่ใช่ตอนอ่านไฟล์
+เหล่านี้) — ถ้าแหล่งข้อมูลเรียกไม่สำเร็จ ให้ถือว่าฟิลด์นั้น `tag: OPEN` ไม่เดาไม่ลองซ้ำ
 
 ## ทางเลือก 2 — MCP server
 

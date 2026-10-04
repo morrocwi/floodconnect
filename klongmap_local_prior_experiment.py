@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""
+"""LEGACY/STANDALONE EXPERIMENT -- not called by `floodconnect answer`, `floodconnect
+forecast`, or any MCP tool; not part of the main pipeline. Do not judge FloodConnect's
+canal-direction/topology work from this file alone -- it is one attempt among several
+(see README_bangkok_canals.md for the others), kept for provenance only.
+
 2026-09-23 -- 4th attempt at extracting SOME direction signal from BMA KlongMap for the
 Bangkok canal graph. NOT the precise-georeferencing approach (that's dead, confirmed 3x --
 see README_bangkok_canals.md). This is the maintainers' different idea, routed through the

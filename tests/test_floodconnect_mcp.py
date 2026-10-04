@@ -68,6 +68,29 @@ def test_get_area_state_always_has_both_top_level_keys(mcp_mod, api_dir):
     assert "forward_hazard" in resp
 
 
+def test_get_area_state_water_balance_refused_gets_plain_note(mcp_mod, monkeypatch):
+    """FIX B item 4 (2026-10-04): a REFUSED water_balance (PROP-FLOOD-03 -- always
+    REFUSES today, both villages declare A/c/C_pump/S0 as OPEN) must come back with a
+    plain-language note pointing at floodconnect_answer, not a bare REFUSED the caller
+    has to already know how to interpret."""
+    fake_area = {
+        "area_id": "sammakorn", "label": "สัมมากร", "generated_at_bkk": None,
+        "current_local_state": {
+            "water_balance": {"status": "REFUSED", "reason_codes": ["MISSING_INPUT"],
+                               "inputs_present": [], "inputs_missing": ["A", "c", "C_pump", "S0"]},
+            "pumps": [], "canals": [],
+        },
+        "forward_hazard": {"note": "placeholder"},
+        "data_freshness": {"overall_age_class": "expired", "oldest_field": "none"},
+    }
+    monkeypatch.setattr(mcp_mod, "_read", lambda base, rel: fake_area)
+    resp = mcp_mod.get_area_state("unused-base", "sammakorn")
+    wb = resp["current_local_state"]["water_balance"]
+    assert wb["status"] == "REFUSED"
+    assert "floodconnect_answer" in wb["note"]
+    assert "not computed in v0.1.x" in wb["note"]
+
+
 def test_get_area_state_unknown_area_raises_typed_error(mcp_mod, api_dir):
     with pytest.raises(mcp_mod.FloodConnectMCPError) as exc_info:
         mcp_mod.get_area_state(api_dir, "not-a-real-area")
@@ -421,6 +444,27 @@ def test_floodconnect_answer_tool_bad_at_raises_typed_mcp_error(mcp_mod, monkeyp
     with pytest.raises(mcp_mod.FloodConnectMCPError) as exc_info:
         mcp_mod.floodconnect_answer_core("not,a,valid,at,value", refresh=False)
     assert exc_info.value.code == "BAD_AT"
+
+
+def test_fallback_tools_list_descriptions_are_not_empty(mcp_mod):
+    """FIX (v0.1.1): the stdlib JSON-RPC fallback's `tools/list` used to build each
+    tool's `description` from `fn.__doc__` where `fn` is a bare lambda in `_TOOLS` --
+    always `""` (a lambda has no docstring of its own), so every tool's first-contact
+    description was silently empty on this path. Every tool must now carry a real,
+    non-empty, first-contact sentence (via `_TOOL_DESCRIPTIONS`) that also says the
+    reading is computed locally, never official."""
+    if mcp_mod.mcp is not None:
+        pytest.skip("mcp SDK is importable here; this test targets the no-SDK fallback "
+                    "branch only (test_all_tool_docstrings_carry_unknown_not_safe_sentence "
+                    "covers the SDK path)")
+    resp = mcp_mod._handle_request({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
+    tools = resp["result"]["tools"]
+    assert tools, "no tools registered"
+    assert {t["name"] for t in tools} == set(mcp_mod._TOOLS)
+    for t in tools:
+        desc = t["description"]
+        assert desc, f"{t['name']} has an empty description"
+        assert "UNKNOWN is not SAFE" in desc, f"{t['name']} description missing required sentence: {desc!r}"
 
 
 def test_real_stdio_initialize_handshake(api_dir):

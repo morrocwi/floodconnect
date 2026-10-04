@@ -45,10 +45,11 @@ Then either:
 - skip MCP entirely and run `floodconnect answer --at sammakorn --json` (after the
   install above) directly.
 
-No hosted/pre-computed data: this clone ships NO reading already computed. The first
-call honestly returns `UNKNOWN` + a `next_action` to run `floodconnect answer
---refresh` (the default) on your own machine/network/keys — see `AI.md`'s "On-demand
-refresh" section. No key, account, or server call of ours is ever required.
+No hosted/pre-computed data: this clone ships NO *live* reading (`examples/` has
+labelled samples only, never current). A fresh clone's first call refreshes by default
+(live fetch, your own machine/network/keys); it returns `UNKNOWN` only if that refresh
+finds nothing fresh, or `--offline` is passed — see `AI.md`'s "On-demand refresh". No
+key, account, or server call of ours is ever required.
 
 ## How to call
 
@@ -86,8 +87,8 @@ cutoff.
 ## Upstream recipes
 
 Before calling any upstream government/third-party API on a resident's
-behalf, read `sources.json` (or `floodconnect_list_upstream_sources`) and
-obey that entry's `host_rule.max_requests_per_run` and the general
+behalf, read `sources/registry.yaml` (or `floodconnect_list_upstream_sources`)
+and obey that entry's `host_rule.max_requests_per_run` and the general
 one-request-per-URL / no-retry discipline. Never call an upstream API that
 isn't in the registry.
 

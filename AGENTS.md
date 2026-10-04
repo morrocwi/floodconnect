@@ -58,19 +58,25 @@ collect.py --all              # pulls every source in sources/registry.yaml (1 r
         ↓
 data/observations.sqlite      # append-only store (observations/documents/contradictions)
         ↓
-site/build_data.py            # runs only registered equations (PROP-FLOOD-01/03/04/05a/05b) -> data.json
+site/build_data.py            # runs PROP-FLOOD-01/02 (unverified proposals on Toledo main) +
+                               # 03/04/05a/05b (open, unmerged proposals -- experiment path only) -> data.json
         ↓
 site/build_page.py            # assembles a local page from data.json (not hosted anywhere)
         ↓
 tools/api/export_api.py       # writes site/dist/api/v1/** from the build above
 ```
 
-**No hosted access (project decision 2026-10-04):** GitHub Pages is unpublished and stays
-off. This repo ships no pre-computed flood reading for anyone to read without running the
-pipeline themselves — `site/dist/**` (including `site/dist/api/v1/**`) is gitignored, not
-tracked, and not part of any release artifact. `gate: leak-scan` (§6) still runs before any
-public push, but there is no "publish -> Pages" step any more; there is no deploy job and
-no `pages`/`id-token` permission in `.github/workflows/floodconnect.yml`.
+**No hosted data (project decision 2026-10-04, refined 2026-10-04):** GitHub Pages
+serves **only** `site/landing/` — a static explainer page with no live/current flood
+reading, deployed by `.github/workflows/pages-landing.yml` (push to `site/landing/**`
+or manual dispatch only, no cron). It must never serve `site/dist` or `api/v1`. This
+repo ships no pre-computed flood reading for anyone to read without running the
+pipeline themselves — `site/dist/**` (including `site/dist/api/v1/**`) is gitignored,
+not tracked, and not part of any release artifact or the Pages deploy. `gate:
+leak-scan` (§6) still runs before any public push; there is no "publish data -> Pages"
+step, and `floodconnect.yml` (the data-pipeline workflow) carries no `pages`/
+`id-token` permission — only the separate, minimal `pages-landing.yml` deploy job
+does, scoped to the landing upload+deploy alone.
 
 No scheduled fetch anywhere: there is no cron/timer in this repo, and the committed GitHub
 Actions workflow (`.github/workflows/floodconnect.yml`) runs on push to `main` or a manual
@@ -87,7 +93,7 @@ and picks no "winner" between runs.
 
 | Question | Open |
 |---|---|
-| Current water status | `floodconnect answer --refresh` on your own machine (no hosted page) / `site/dist/data.json` after you build it |
+| Current water status | `floodconnect answer` (refresh is the default) on your own machine (no hosted page) / `site/dist/data.json` after you build it |
 | Trend / who bears the burden | `readout_history.py --history` |
 | BMA drainage capacity | `docs/CAPACITY.md` |
 | Who has authority / who to ask | `docs/knowledge/POWER_RESOURCE_MAP.md` |
@@ -97,6 +103,9 @@ and picks no "winner" between runs.
 | What we still can't answer | `docs/knowledge/WATER_MANAGER_QUESTION_BANK.md` (or `kb.py status`) |
 | System vs. world frameworks | `docs/ARCHITECTURE_world_frameworks.md` |
 | Live plan / what to do next | `docs/knowledge/HANDOFF_ecosystem_2026-09-27.md` (see §7) |
+| Why the system is shaped this way (Water-Debt Core, D1–D8, Jev envelope) | `ARCHITECTURE.md` |
+| Release sequence / acceptance criteria per version | `ROADMAP.md` |
+| Picking up this repo as a new AI session | `docs/handoff/NEXT_AI_HANDOFF.md` |
 | Find anything by keyword | `python3 kb.py find "<term>"` |
 
 ## 5. Adding things

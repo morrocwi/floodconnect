@@ -143,3 +143,26 @@ def test_resolve_point_latlon_areaid_and_assetid():
     assert p3["lat"] == 13.0
     p4 = acct.resolve_point("not-a-real-anything", G)
     assert "refused" in p4
+
+
+def test_run_falls_back_for_mvp_area_when_graph_empty(monkeypatch, capsys):
+    """FIX B item 3 (2026-10-04): `run()` must give the SAME non-REFUSED fallback
+    answer `kb.py answer --at sammakorn`/`--at ram53` already gives on a fresh install
+    (no graph built yet) -- never a bare REFUSED exit code for these two MVP areas."""
+    monkeypatch.setattr(acct, "load_graph", lambda path=acct.GRAPH_PATH: nx.MultiDiGraph())
+    rc = acct.run("sammakorn", as_json=True)
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "REFUSED" not in out
+    assert "fallback" in out
+    assert "INSTINCT" in out
+
+
+def test_run_still_refuses_for_non_mvp_area_when_graph_empty(monkeypatch, capsys):
+    """A bare lat,lon far from both MVP areas keeps the real OPEN refusal -- the
+    fallback is scoped to sammakorn/ram53 only, same as `kb.py`'s own fallback."""
+    monkeypatch.setattr(acct, "load_graph", lambda path=acct.GRAPH_PATH: nx.MultiDiGraph())
+    rc = acct.run("7.88,98.39", as_json=True)
+    assert rc == 1
+    out = capsys.readouterr().out
+    assert "refused" in out

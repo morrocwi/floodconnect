@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""
+"""LEGACY/STANDALONE EXPERIMENT -- not called by `floodconnect answer`, `floodconnect
+forecast`, or any MCP tool; not part of the main pipeline. Do not judge FloodConnect's
+canal-direction/topology work from this file -- it is a negative-result diagnostic (see
+below), kept for provenance only.
+
 One-off diagnostic (NOT part of the main pipeline): empirically tests whether Copernicus
 GLO-30 DEM elevation differences across Bangkok canal-graph edges carry a usable
 flow-direction signal, or are noise-dominated.
