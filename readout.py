@@ -526,10 +526,22 @@ def build_readout(conn, centre_lat: float, centre_lon: float, radius_km: float,
     # real committed example: one station showed a 2026-06-09 value, another a 2019-12-24
     # value) sat in the "live drainage table" indistinguishable from a fresh reading.
     _key = lambda o: o.get("station_code") or o.get("station_name")
+    # Tracks whether a LOCAL (already-geolocated, already radius-filtered to this
+    # point) factor-4 reading is fresh -- used below to stop the nationwide
+    # thaiwater_waterlevel block (stations up to 50 km away) from outranking a
+    # point's own close-by canal/pump telemetry. Regression, found by independent
+    # review (2026-10-04): before this flag, Sammakorn's own fresh canal stations
+    # didn't count toward `_has_fresh_station` (that check only looked at the
+    # nationwide thaiwater_waterlevel source), so a RED basin-resolution row 15-26 km
+    # away on an unrelated canal could flip Sammakorn from YELLOW to RED even though
+    # Sammakorn's own nearby stations were fresh and said otherwise.
+    _local_factor4_decides = False
     for o in _latest_by_composite_key(near_canal, _key).values():
         fresh, age_h = lwl.is_fresh(o["observed_at_utc"], staleness_reference_utc,
                                     _max_age("thaiwater_canal_waterlevel"), future_tolerance_h=future_tolerance_h)
         stale = not fresh
+        if fresh:
+            _local_factor4_decides = True
         f4["measured"].append({
             "station": o.get("station_name") or o.get("station_code"),
             "value": o["value"], "unit": "m", "status": o.get("status"),
@@ -540,6 +552,8 @@ def build_readout(conn, centre_lat: float, centre_lon: float, radius_km: float,
         fresh, age_h = lwl.is_fresh(o["observed_at_utc"], staleness_reference_utc,
                                     _max_age("bma_pumphistory"), future_tolerance_h=future_tolerance_h)
         stale = not fresh
+        if fresh:
+            _local_factor4_decides = True
         f4["measured"].append({
             "station": o.get("station_name") or o.get("station_code"),
             "value": o["value"], "unit": "m", "status": o.get("status"),
@@ -555,7 +569,11 @@ def build_readout(conn, centre_lat: float, centre_lon: float, radius_km: float,
     # a same-sub_basin station within BASIN_RADIUS_KM decide, at "basin" resolution,
     # and a basin-resolution row can never contribute a GREEN (far + "normal" is not a
     # clearance) -- it is still shown, just excluded from the decision
-    # (`used_for_decision=False`) when its own classified level is GREEN.
+    # (`used_for_decision=False`) when its own classified level is GREEN. A
+    # nationwide row of either resolution is ALSO excluded from the decision (still
+    # shown as reference evidence) whenever this point's own LOCAL factor-4 reading
+    # (near_canal/near_pumps, already geolocated+radius-filtered to this point) is
+    # fresh -- see `_local_factor4_decides` above.
     near_wl_basin = store.query_observations(
         conn, source_id="thaiwater_waterlevel",
         near=(centre_lat, centre_lon, NATIONWIDE_BASIN_RADIUS_KM), limit=2000)
@@ -592,6 +610,12 @@ def build_readout(conn, centre_lat: float, centre_lon: float, radius_km: float,
         if resolution == "basin" and level == "GREEN":
             # basin resolution can never decide GREEN on its own -- see this block's
             # own comment above.
+            decides = False
+        if _local_factor4_decides:
+            # A local (Bangkok canal/pump, already-geolocated-and-radius-filtered)
+            # reading already decides this point -- a nationwide row up to 50 km away
+            # is shown as reference evidence only, never lets a far station override
+            # the point's own close telemetry. See this block's comment above.
             decides = False
         f4["measured"].append({
             "station": o.get("station_name") or o.get("station_code"),

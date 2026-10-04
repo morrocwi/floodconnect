@@ -141,3 +141,37 @@ def test_parse_scalar_or_list_round_trip():
     items = ["a", 'b"c', "d\\e"]
     dumped = kb._yaml_list(items)
     assert kb._parse_scalar_or_list(dumped) == items
+
+
+def test_trim_evidence_carries_province_th_for_a_deciding_nationwide_row():
+    """Independent review item 3 (MED): `_trim_evidence` (the non-verbose `evidence`
+    path every default `kb.py answer` call uses) used to drop `province_th` even
+    though the untrimmed `evidence` list already carried it -- so
+    `_nationwide_accountability_fallback` (which reads this trimmed list on the
+    default path) always fell back to "ไม่ทราบจังหวัด [OPEN]" for every nationwide
+    point, regardless of whether the feed's own geocode province was known."""
+    evidence = [{
+        "station": "สถานีตัวอย่าง", "status": "OVERBANK", "age_h": 0.5,
+        "used_for_decision": True, "stale": False,
+        "dist_km": 2.1, "resolution": "station",
+        "agency": "RID", "province_th": "เชียงใหม่",
+    }]
+    trimmed = kb._trim_evidence(evidence)
+    assert trimmed, "expected the deciding row to survive trimming"
+    assert trimmed[0]["province_th"] == "เชียงใหม่"
+
+
+def test_nationwide_accountability_fallback_relays_province_from_trimmed_evidence():
+    """End-to-end companion to the test above: `_nationwide_accountability_fallback`
+    must name the real province once `_trim_evidence` carries it through, not the
+    "ไม่ทราบจังหวัด [OPEN]" placeholder."""
+    state_answer = {"evidence": kb._trim_evidence([{
+        "station": "สถานีตัวอย่าง", "status": "OVERBANK", "age_h": 0.5,
+        "used_for_decision": True, "stale": False,
+        "dist_km": 2.1, "resolution": "station",
+        "agency": "RID", "province_th": "เชียงใหม่",
+    }])}
+    result = kb._nationwide_accountability_fallback(state_answer)
+    assert result is not None
+    assert "เชียงใหม่" in result["owner_agencies"][0]
+    assert "ไม่ทราบจังหวัด" not in result["owner_agencies"][0]

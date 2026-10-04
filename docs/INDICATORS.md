@@ -298,8 +298,8 @@ and is never silently re-expressed as RED/YELLOW/GREEN/UNKNOWN.**
   figure):**
   - `HIGH` — a fresh official status word backed the call.
   - `MEDIUM` — no official status word; the call came from the trend (`Δk`/`Tk`) alone.
-  - `LOW` — (reserved for basin-level-only resolution once §11 is wired; not produced by
-    this release).
+  - `LOW` — basin-level-only resolution (§11, shipped in v0.1.2): no fresh station
+    within 10 km, only a same-sub_basin reading within 50 km decided.
   - `NONE` — no current reading at all (`h_t` missing) or a stale reading.
 - **Status in this release:** implemented and tested in the by-hand companion module
   (`floodconnect_model.py`), pinned against `kb.py`'s own classifier for the status-word
@@ -327,24 +327,31 @@ resolution is **station or basin (coarse zoom: nearest telemetry station/basin),
 household-level**. Nationwide ≠ household detail; do not claim street-level precision
 outside the two MVP areas.
 
-- **Station resolution** (every indicator above, at its best): a fresh
-  `thaiwater_waterlevel` row within **10 km** (river) decided it. Declared radius, this
-  project's own design choice (`readout.NATIONWIDE_RIVER_RADIUS_KM`) — never an agency
-  threshold.
+- **Station resolution** (every indicator above, at its best): the NEAREST
+  `thaiwater_waterlevel` station within **10 km** (any water body — this is not
+  checked against `river_name`, despite some older wording in this repo's docs)
+  decided it, if fresh. Declared radius, this project's own design choice
+  (`readout.NATIONWIDE_RIVER_RADIUS_KM`) — never an agency threshold.
 - **Basin resolution** (coarser, lower confidence): no fresh station within 10 km, but
-  a fresh station on the **same `sub_basin_id`** within **50 km**
-  (`readout.NATIONWIDE_BASIN_RADIUS_KM`, also this project's own design choice) exists.
-  A basin-resolution row **can never decide GREEN** on its own (far + "normal" is not a
-  clearance) — it is shown, with `resolution: "basin"`, but excluded from the decision
-  when its own classified level is GREEN; it still raises YELLOW/RED normally.
-- **No resolution at all:** no fresh station within 50 km on the same sub-basin —
+  a fresh station sharing the NEAREST station's own `sub_basin_id` (a stand-in for
+  "same basin" — the two stations are not checked against a shared named river)
+  within **50 km** (`readout.NATIONWIDE_BASIN_RADIUS_KM`, also this project's own
+  design choice) exists. A basin-resolution row **can never decide GREEN** on its own
+  (far + "normal" is not a clearance) — it is shown, with `resolution: "basin"`, but
+  excluded from the decision when its own classified level is GREEN; it still raises
+  YELLOW/RED normally.
+- **No resolution at all:** no fresh station within 50 km sharing that sub-basin —
   `current_local_state` stays `UNKNOWN`, same as always (UNKNOWN is never SAFE).
 - Every `state.evidence` row a nationwide query returns carries `dist_km` and
   `resolution` (`"station"` or `"basin"`) alongside the station name/status/agency —
-  never a bare number with no named source.
-- The two Bangkok household areas (Sammakorn village, Soi Ramkhamhaeng 53) are
-  **unchanged** — they keep their existing node-level detail (fixed station lists,
-  canal/pump sources), untouched by this nationwide addition.
+  never a bare number with no named source. `kb.py answer`'s own printed CLI line for
+  the deciding row also shows `dist_km`/`resolution` now, not just the station name.
+- The two Bangkok household areas (Sammakorn village, Soi Ramkhamhaeng 53) keep their
+  existing node-level detail (fixed station lists, canal/pump sources) as the
+  decision for those two areas whenever a local (Bangkok canal/pump) source already
+  decided the point — a basin-resolution nationwide row never overrides an already-
+  decided local reading there, but a fresh nationwide station/basin row is still
+  shown as reference evidence.
 - `distance_to_bank_m`/`bank_fill_percent` (§7/§8) stay relayed-in-`provenance`-only,
   not wired into a numeric threshold of their own (Toledo-first: no invented cutoff);
   the agency's own `situation_level`/`diff_wl_bank_text` words are what §1 actually

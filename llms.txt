@@ -57,8 +57,9 @@ all** (you are a browsing-only chat AI, T0/T1 above)? Follow
 `docs/NEAREST_STATION_RECIPE.md` — the same official sources and rules, step by step,
 done by hand: fetch `api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel`
 (nationwide, no key) or the BMA Bangkok pages, pick the nearest station within 10 km
-(same river, else same sub-basin within 50 km, "basin" resolution, never GREEN on its
-own) on the same water body, read the agency's own status word
+(any water body -- not checked against river name), else a station sharing that
+nearest station's own sub-basin within 50 km ("basin" resolution, never GREEN on its
+own), read the agency's own status word
 (`situation_level`/`diff_wl_bank_text`) or bank/ground-level fields, check freshness,
 classify — never invent a station or a number.
 

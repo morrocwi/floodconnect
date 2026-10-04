@@ -50,11 +50,25 @@ from __future__ import annotations
 # stations): `situation_level == 5` co-occurred with `diff_wl_bank_text` == "ล้นตลิ่ง
 # (ม.)" (the agency's own overflow word) in every checked record, and
 # `storage_percent` (bank-fill %, also agency-published) rises monotonically with the
-# code (1: <10%, 2: 10-30%, 3: 30-70%, 4: 70-100%, 5: >100%/overflow). The exact Thai
-# label text thaiwater.net itself prints for levels 1-4 was NOT independently
-# confirmed (the legend page is JS-rendered; a plain GET could not read it) -- that
-# label wording is OPEN, see docs/INDICATORS.md; the ORDINAL mapping below is
-# MEASURED-derived, not a guessed label.
+# code (1: <=10%, 2: >10-30%, 3: >30-70%, 4: >70-100%, 5: >100%/overflow). The agency's
+# own Thai label and colour for each code (VERIFIED: fetched from the public bundle
+# https://www.thaiwater.net/dist/js/app.chunk.js on 2026-10-04) --
+#   0 ไม่มีข้อมูล (no data, grey #BDBDBD) · 1 น้อยวิกฤต (critically LOW water, orange
+#   #db802b) · 2 น้อย (low, yellow #ffc000) · 3 ปกติ (normal, green #00b050) ·
+#   4 มาก (high, BLUE #003cfa) · 5 ล้นตลิ่ง (overbank, red #ff0000).
+# Two things this repo's own mapping deliberately does NOT inherit from the agency:
+#   (a) level 1's label "น้อยวิกฤต" contains the word "วิกฤต" ("critical") but means
+#       critically LOW water, not a flood risk -- an AI reading `diff_wl_bank_text`/
+#       labels by hand must not pattern-match "วิกฤต" there onto RED (see
+#       docs/NEAREST_STATION_RECIPE.md);
+#   (b) the agency colours level 4 ("มาก"/high) BLUE and does not call it a warning --
+#       mapping it to YELLOW below is FloodConnect's OWN conservative choice, not the
+#       agency's; likewise 1/2 ("น้อยวิกฤต"/"น้อย", low water) -> GREEN here is this
+#       repo's own choice that low water is not itself a flood signal, not an agency
+#       claim. The ORDINAL mapping (which way is worse) is MEASURED-derived from
+#       `storage_percent`/`diff_wl_bank_text` as above; which Thai-coloured level
+#       crosses into FloodConnect's YELLOW/RED is this repo's judgment call on top of
+#       that ordinal, stated here so it is never confused with an agency threshold.
 #
 # `NO_THRESHOLD` (no agency level published at all for this station) is deliberately
 # ABSENT from every colour-bearing set -- it is UNKNOWN (fixed from v0.1.1's bug,

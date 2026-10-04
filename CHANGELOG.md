@@ -14,12 +14,14 @@ only what actually shipped and is tested in this repository — never a plan (se
   reading, not just the two Bangkok MVP areas (Sammakorn village, Soi Ramkhamhaeng 53,
   which keep their existing household/node-level detail, unchanged). Resolution is
   **coarse (station or basin), never household-level**, outside those two areas:
-  - **Station resolution:** a fresh `thaiwater_waterlevel` reading within 10 km on the
-    same river/canal decides.
-  - **Basin resolution:** failing that, a fresh reading on the same `sub_basin_id`
-    within 50 km decides — but can **never** produce GREEN on its own (it can still
-    raise YELLOW/RED).
-  - No fresh reading within 50 km on the same sub-basin → `UNKNOWN` (never GREEN by
+  - **Station resolution:** the nearest `thaiwater_waterlevel` station within 10 km
+    (any water body, not checked against `river_name`) decides, if fresh.
+  - **Basin resolution:** failing that, a fresh reading sharing the NEAREST station's
+    own `sub_basin_id` (a stand-in for "same basin", not a check that both stations
+    sit on the same named river) within 50 km decides — but can **never** produce
+    GREEN on its own (it can still raise YELLOW/RED), and only when no local
+    factor-4 source (Bangkok canal/pump telemetry) already decided this point.
+  - No fresh reading within 50 km sharing that sub-basin → `UNKNOWN` (never GREEN by
     default).
   - Both radii are FloodConnect's own stated design choice (`docs/INDICATORS.md` §11),
     never an agency threshold.
@@ -78,11 +80,13 @@ only what actually shipped and is tested in this repository — never a plan (se
   not a standalone top-level answer field or a numeric colour cutoff — Toledo-first
   discipline: no invented threshold. The agency's own `situation_level`/
   `diff_wl_bank_text` words are what actually drives the colour.
-- The exact Thai label text thaiwater.net itself prints for each `situation_level`
-  code (1–5) was not independently confirmed (the legend page is JS-rendered,
-  unreachable by a plain GET this check could run) — the 1–5 ordinal DIRECTION used
-  for colour is measured (co-occurrence with `diff_wl_bank_text`/`storage_percent` on
-  one live capture, 2026-10-04); the label wording itself is OPEN.
+- The agency's own Thai label/colour for each `situation_level` code (1–5) is
+  VERIFIED (fetched from the public bundle
+  `https://www.thaiwater.net/dist/js/app.chunk.js`, 2026-10-04) — see
+  `floodconnect_model.py`'s `STATUS_TO_LEVEL` comment for the full table. Level
+  4 ("มาก") is coloured BLUE by the agency and is not called a warning there;
+  FloodConnect's own mapping of level 4 → YELLOW (and 1/2 → GREEN) is this repo's own
+  conservative choice on top of the agency's labels, not an agency threshold.
 - The Water-Debt/Jev/DSVA one-decision envelope, the `--level` tiers, and a
   geolocated nationwide governance/accountability knowledge graph remain v0.2+ work
   (see `ROADMAP.md`).

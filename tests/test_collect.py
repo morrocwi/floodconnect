@@ -361,6 +361,33 @@ def test_refresh_relevant_sources_keeps_bangkok_dds_for_a_bangkok_point(monkeypa
             f"{bkk_source} wrongly excluded for a real Bangkok point")
 
 
+def test_refresh_relevant_sources_snaps_bare_coord_near_a_named_forecast_point(monkeypatch):
+    """Independent review item 4 (MED): a bare lat,lon within
+    `kb._FORECAST_POINT_SNAP_RADIUS_KM` of a named `kb._FORECAST_KNOWN_POINTS` entry
+    (here Chiang Mai) must fetch its forecast under THAT named point id -- not under
+    the coordinate's own `coord_*` id. Before this fix, the fetch always used
+    `coord_*`, while the READ side (`kb._resolve_forecast_point`) snaps such a point
+    onto the named point's cache -- so a fetch-then-read round trip for exactly this
+    coordinate always came back `forward_hazard: UNKNOWN`, stale=True (MEASURED: real
+    Chiang Mai and Hat Yai coordinates both regressed this way), because nothing was
+    ever fetched under the name the read side looked for."""
+    import kb
+
+    captured = {}
+
+    def _fake_run(source_ids, dry_run=False, points_by_source=None, **_kw):
+        captured["points_by_source"] = points_by_source
+        return []
+
+    monkeypatch.setattr(collect, "run", _fake_run)
+    kb._refresh_relevant_sources(f"{_CHIANG_MAI_LAT},{_CHIANG_MAI_LON}", verbose=False,
+                                  lat=_CHIANG_MAI_LAT, lon=_CHIANG_MAI_LON)
+    one_point = next(iter(captured["points_by_source"].values()))
+    assert "chiangmai" in one_point, (
+        f"expected the fetch to use the named point 'chiangmai', got {one_point!r}")
+    assert one_point["chiangmai"] == kb._FORECAST_KNOWN_POINTS["chiangmai"]
+
+
 def test_refresh_relevant_sources_bbox_filter_is_a_noop_with_no_coordinate(monkeypatch):
     """Existing direct callers (this test module, `kb.py`'s other internal uses before
     this fix) that pass no `lat`/`lon` at all must see unchanged behaviour -- the bbox

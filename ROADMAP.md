@@ -67,8 +67,9 @@ the static landing page only, never a data surface); token budget test still gre
 > **DONE in v0.1.2 (2026-10-04, founder ruling "ทำเลย v0.1.2 ทั้งประเทศ"): V4 coarse
 > nationwide shipped early**, out of its v0.2.0 slot below — any `lat,lon` in
 > Thailand now gets a real `current_local_state`/`forward_hazard`/text-only
-> accountability reading at station (≤10 km) or basin (≤50 km, same sub-basin, never
-> GREEN alone) resolution, from the nationwide `thaiwater_waterlevel` feed. See
+> accountability reading at station (≤10 km, nearest station any water body) or basin
+> (≤50 km, sharing that nearest station's own sub-basin, never GREEN alone)
+> resolution, from the nationwide `thaiwater_waterlevel` feed. See
 > `docs/INDICATORS.md` §11 and `CHANGELOG.md`. The V4 bullet below is kept as the
 > historical plan text (GISTDA/DWR/GloFAS and basin confidence tiers beyond
 > station/basin are NOT part of what shipped) rather than deleted, so the sequencing

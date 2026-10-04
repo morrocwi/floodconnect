@@ -1060,6 +1060,13 @@ def _trim_evidence(evidence: list[dict]) -> list[dict]:
             row["resolution"] = e["resolution"]
         if e.get("agency") is not None:
             row["agency"] = e["agency"]
+        if e.get("province_th") is not None:
+            # fix (2026-10-04, independent review item 3): `province_th` was computed
+            # in `_answer_state`'s `evidence` list but dropped here, so
+            # `_nationwide_accountability_fallback` (which reads THIS trimmed list on
+            # the default, non-verbose path) always fell back to "ไม่ทราบจังหวัด
+            # [OPEN]" even when the feed's own geocode province was known.
+            row["province_th"] = e["province_th"]
         out.append(row)
     return out
 
@@ -1217,7 +1224,21 @@ def _answer_state(lat: float, lon: float, radius_km: float = 3.0,
     status_counts_stale: dict[str, int] = {}
     evidence: list[dict] = []
     stale_count = 0
+    # fix (2026-10-04, independent review item 9): a `dds_daily_pdf` row with no
+    # confirmed coordinate (`local_match` False, never even in this point's own
+    # radius) is a Bangkok-citywide bulletin row that is NOT local to a point outside
+    # Bangkok at all -- MEASURED: Sai Buri and Ubon both showed
+    # `status_counts_all` entries like `'ระดับน้ำปกติ': 7` purely from this bulletin,
+    # reading as if it were evidence for that point, even though it never decided
+    # anything (`used_for_decision` was already correctly False). Outside the Bangkok
+    # metro bbox, these rows are dropped from `status_counts_all` (and from
+    # `evidence`) entirely rather than counted as unrelated "evidence"; inside the
+    # bbox, unchanged (a citywide bulletin row IS plausibly relevant there).
+    _in_bkk = _is_bangkok_metro(lat, lon)
     for row in full.get("factors", {}).get("4_การระบาย", {}).get("measured", []):
+        if (row.get("source") == "dds_daily_pdf" and not row.get("local_match")
+                and not _in_bkk):
+            continue
         st = row.get("status") or "UNKNOWN"
         status_counts_all[st] = status_counts_all.get(st, 0) + 1
         is_stale = row.get("tag") == "STALE"
@@ -2195,6 +2216,25 @@ def _answer_next_action(
         "current_local_state": _classify_current_local_state(state_answer),
         "forward_hazard": _classify_forward_hazard(hazard_answer),
     }
+    # fix (2026-10-04, independent review item 5): `dual_state` carried a bare colour
+    # with no resolution/confidence label, so a caller reading ONLY this top-level
+    # field had no way to tell a close "station"-resolution reading from a far
+    # "basin"-resolution one deciding the same colour. `resolution`/`dist_km` here are
+    # the SAME nationwide-row fields `_trim_evidence`/`evidence` already carry for the
+    # deciding row, never a re-derivation -- `None` for the two MVP areas' own local
+    # canal/pump readings (which carry no `resolution` field at all) or when nothing
+    # decided (`current_local_state == "UNKNOWN"`).
+    _deciding_nationwide = [
+        e for e in ((state_answer or {}).get("evidence") or [])
+        if e.get("used_for_decision") and e.get("resolution")]
+    if _deciding_nationwide:
+        # Only added when there IS a deciding nationwide row (never `None` placeholder
+        # keys on every answer) -- keeps the two MVP areas' own token-budget-tested
+        # default answers unchanged in size; see tests/test_token_budget.py.
+        _deciding_nationwide.sort(
+            key=lambda e: e.get("dist_km") if e.get("dist_km") is not None else 1e9)
+        dual_state["resolution"] = _deciding_nationwide[0].get("resolution")
+        dual_state["dist_km"] = _deciding_nationwide[0].get("dist_km")
     current = dual_state["current_local_state"]
     forward = dual_state["forward_hazard"]
     actions: list[dict] = []
@@ -2793,13 +2833,33 @@ def _refresh_relevant_sources(area_id: str | None = None, verbose: bool = False,
         points_by_source = {sid: one_point for sid in collect_mod.POINT_FILTERABLE_SOURCES}
     elif lat is not None and lon is not None:
         # v0.1.2 nationwide one-path (design review item 5): a bare lat,lon that is
-        # NOT one of the named FORECAST7D_POINTS still gets its own forecast fetched,
-        # at exactly this coordinate's own `coord_*` point id -- never silently
-        # skipped (which previously left `openmeteo_forecast16d`/
+        # NOT one of the named FORECAST7D_POINTS still gets its own forecast fetched
+        # -- never silently skipped (which previously left `openmeteo_forecast16d`/
         # `metno_locationforecast` unfetched for every point outside the 11
-        # hardcoded areas) and never borrowed from a different, named point.
-        coord_id = _coordinate_point_id(lat, lon)
-        one_point = {coord_id: (lat, lon)}
+        # hardcoded areas).
+        #
+        # fix (2026-10-04, independent review item 4): this used to ALWAYS fetch
+        # under this coordinate's own `coord_*` point id, even when the point is
+        # within `_FORECAST_POINT_SNAP_RADIUS_KM` of a named `_FORECAST_KNOWN_POINTS`
+        # entry -- `_resolve_forecast_point` (the READ side) snaps such a point onto
+        # the named point's cache, so `forward_hazard` read `coord_*` rows that were
+        # never fetched under that name and came back UNKNOWN (MEASURED: Chiang Mai
+        # 18.79,98.98 and Hat Yai 7.0086,100.4747 both regressed from a real reading
+        # to UNKNOWN this way). Apply the SAME snap here the read side already uses,
+        # so a fetch and the read that follows it always agree on one point id --
+        # never borrowed from a different, named point's own coordinate.
+        import live_water_level as lwl_mod
+        _nearest_id, _nearest_km = None, None
+        if _FORECAST_KNOWN_POINTS:
+            _nearest_id = min(
+                _FORECAST_KNOWN_POINTS,
+                key=lambda k: lwl_mod.haversine_km(lat, lon, *_FORECAST_KNOWN_POINTS[k]))
+            _nearest_km = lwl_mod.haversine_km(lat, lon, *_FORECAST_KNOWN_POINTS[_nearest_id])
+        if _nearest_id is not None and _nearest_km <= _FORECAST_POINT_SNAP_RADIUS_KM:
+            fetch_point_id, fetch_coord = _nearest_id, _FORECAST_KNOWN_POINTS[_nearest_id]
+        else:
+            fetch_point_id, fetch_coord = _coordinate_point_id(lat, lon), (lat, lon)
+        one_point = {fetch_point_id: fetch_coord}
         points_by_source = {sid: one_point for sid in collect_mod.POINT_FILTERABLE_SOURCES}
     # FIX B item 1 (2026-10-04, SPEED): `parallel=True` fetches every one of these
     # sources concurrently via `collect.run`'s own thread pool (one request each, no
@@ -3073,7 +3133,17 @@ def cmd_answer(args) -> int:
             tail = f" observed_at={e.get('observed_at_utc')} source={e.get('source')}"
         else:
             val, tail = "", ""
-        return f"    - {e.get('station')}: {val}[{e.get('status')}] (age={_age_str}){tail}"
+        # fix (2026-10-04, independent review item 5): a nationwide-source row's
+        # `dist_km`/`resolution` (already carried by `_trim_evidence`/`evidence`) were
+        # computed but never printed here -- the CLI line for a deciding basin-
+        # resolution row read identically to a close station-resolution one, with no
+        # way to tell a 2 km reading from a 48 km one without `--verbose`/`--json`.
+        _geo = ""
+        if e.get("resolution") is not None:
+            _dist = e.get("dist_km")
+            _dist_str = f"{_dist}km" if isinstance(_dist, (int, float)) else "-"
+            _geo = f" resolution={e['resolution']} dist_km={_dist_str}"
+        return f"    - {e.get('station')}: {val}[{e.get('status')}] (age={_age_str}){tail}{_geo}"
 
     # fix (2026-10-04): a `used_for_decision=False` row is excluded for
     # ONE of two different reasons -- genuinely too old (`stale=True`) OR fresh but
@@ -3158,7 +3228,13 @@ def cmd_answer(args) -> int:
         print(f"เส้นทาง [{na.get('tag')}]: {na.get('reason') or na.get('note')}")
     ds = na.get("dual_state") or {}
     if ds:
-        print(f"สถานะคู่ [dual-state]: ปัจจุบัน={ds.get('current_local_state')} / "
+        # fix (2026-10-04, independent review item 5): print `resolution`/`dist_km`
+        # (dual_state's own fields, added alongside this fix) next to
+        # `current_local_state` so the CLI line itself names how far/at what
+        # resolution the colour was decided, not only the colour word.
+        _ds_res = ds.get("resolution")
+        _ds_tail = f" (resolution={_ds_res}, dist_km={ds.get('dist_km')})" if _ds_res else ""
+        print(f"สถานะคู่ [dual-state]: ปัจจุบัน={ds.get('current_local_state')}{_ds_tail} / "
               f"แนวโน้ม={ds.get('forward_hazard')}")
     for i, act in enumerate(na.get("actions") or [], 1):
         # Finding: `source` is intentionally dropped from each action
@@ -3183,8 +3259,16 @@ def cmd_answer(args) -> int:
             far_note = "" if c.get("within_radius") else f" (>{cctv.get('radius_km')} กม.)"
             print(f"  - {c.get('name')} ({c.get('distance_km')} กม.{far_note}): "
                   f"{c.get('url') or 'ไม่มีลิงก์'}")
+    # fix (2026-10-04, independent review item 6): this footer used to hardcode the
+    # Bangkok-only numbers (1555/1130) for EVERY point nationwide, even though
+    # `who_to_call` (the JSON field right next to it) was already correctly scoped to
+    # `_is_bangkok_metro(lat, lon)` -- the printed CLI text and the JSON payload
+    # disagreed for every non-Bangkok point. Build the footer from the SAME
+    # `na["who_to_call"]["hotlines"]` list the JSON answer carries, never a second
+    # hardcoded copy.
+    _hotlines = (na.get("who_to_call") or {}).get("hotlines") or []
     print("\nข้อมูลนี้เป็นข้อมูลประกอบการตัดสินใจเท่านั้น ไม่ใช่คำสั่งอพยพ "
-          "-- เหตุฉุกเฉิน 1669 / ภัยพิบัติ 1784 / กทม. 1555 / กฟน.(ไฟฟ้าช็อตจากน้ำท่วม) 1130")
+          "-- " + (" / ".join(_hotlines) if _hotlines else "เหตุฉุกเฉิน 1669 / ภัยพิบัติ 1784"))
     return 0
 
 

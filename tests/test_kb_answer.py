@@ -1363,3 +1363,69 @@ def test_build_answer_includes_cctv_field_with_real_camera(real_cctv_db):
     payload = kb.build_answer(f"{_CCTV_QUERY_LAT},{_CCTV_QUERY_LON}", refresh=False)
     assert payload["cctv"]["kind"] == "VISUAL-CHECK"
     assert payload["cctv"]["cameras"][0]["name"] == "ปากคลองลัดโพธิ์"
+
+
+# ---------------------------------------------------------------------------
+# Independent review item 6 (MED): the printed CLI footer must agree with the
+# JSON `who_to_call` field it sits right next to -- both scoped by
+# `_is_bangkok_metro(lat, lon)`, never a second hardcoded Bangkok-only copy.
+# ---------------------------------------------------------------------------
+
+def test_cmd_answer_cli_footer_excludes_bangkok_hotlines_outside_bangkok(
+        monkeypatch, tmp_path, capsys):
+    missing_db = tmp_path / "does_not_exist.sqlite"
+    monkeypatch.setattr(kb, "DB_PATH", missing_db)
+
+    class Args:
+        at = "7.88,98.39"  # Phuket -- real coordinates, far outside Bangkok metro
+        json = False
+        offline = True
+    rc = kb.cmd_answer(Args())
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "1555" not in out
+    assert "1130" not in out
+    assert "1669" in out and "1784" in out
+
+
+def test_cmd_answer_cli_footer_includes_bangkok_hotlines_inside_bangkok(
+        monkeypatch, tmp_path, capsys):
+    missing_db = tmp_path / "does_not_exist.sqlite"
+    monkeypatch.setattr(kb, "DB_PATH", missing_db)
+
+    class Args:
+        at = f"{SAMMAKORN_LAT},{SAMMAKORN_LON}"
+        json = False
+        offline = True
+    rc = kb.cmd_answer(Args())
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "1555" in out
+    assert "1130" in out
+
+
+# ---------------------------------------------------------------------------
+# Independent review item 9 (LOW): a non-geolocated Bangkok DDS bulletin row must
+# not read as "evidence" for a point nowhere near Bangkok.
+# ---------------------------------------------------------------------------
+
+def test_status_counts_all_excludes_unmatched_dds_row_outside_bangkok(fresh_state_db):
+    """MEASURED finding: `status_counts_all` used to include a Bangkok-citywide DDS
+    bulletin row's status word for ANY point in Thailand, even one with no
+    confirmed coordinate for that station and nowhere near Bangkok (Sai Buri, Ubon in
+    the real run) -- reading as if it were evidence for that point, though it never
+    decided anything."""
+    store.insert_observation(
+        fresh_state_db, source_id="dds_daily_pdf",
+        station_name="คลองไม่มีพิกัดยืนยัน",  # no entry in readout._DDS_GATE_COORDS
+        variable="canal_level_0700_m", value=0.9, unit="m",
+        observed_at_utc="2026-09-28T00:00:00+00:00",
+        fetched_at_utc="2026-09-28T00:30:00+00:00",
+        trust_tier="official_report", status="ระดับน้ำปกติ")
+    far_from_bangkok_lat, far_from_bangkok_lon = 6.7331, 101.6176  # real Sai Buri
+    state_far = kb._answer_state(far_from_bangkok_lat, far_from_bangkok_lon,
+                                   as_of_date="2026-09-28")
+    assert "ระดับน้ำปกติ" not in (state_far.get("status_counts_all") or {})
+
+    state_bkk = kb._answer_state(SAMMAKORN_LAT, SAMMAKORN_LON, as_of_date="2026-09-28")
+    assert state_bkk.get("status_counts_all", {}).get("ระดับน้ำปกติ") == 1

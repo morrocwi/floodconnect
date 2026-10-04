@@ -60,12 +60,16 @@ front of you.**
    about your point's level (this is why FloodConnect's own `_answer_state` scopes by
    a radius AND, where known, a canal/zone id — never distance alone).
 3. Nationwide radii (FloodConnect's own design choice, `docs/INDICATORS.md` §11 —
-   NOT an agency threshold): **10 km** on the same river/canal decides at "station"
-   resolution; only when nothing fresh is that close, a station on the **same
-   sub-basin** within **50 km** decides at "basin" resolution, and a basin-resolution
-   reading can **never** be reported GREEN on its own (far + "normal" is not a
-   clearance) — it can still back a YELLOW/RED. The two Bangkok household areas use a
-   tighter 3 km radius (`_answer_state`'s own default), unchanged.
+   NOT an agency threshold): the **nearest** station within **10 km** (any water
+   body — this is NOT checked against a shared river/canal name) decides at
+   "station" resolution; only when nothing fresh is that close, a station sharing
+   that nearest station's own `sub_basin_id` within **50 km** decides at "basin"
+   resolution (a stand-in for "same basin", not a shared-named-river check), and a
+   basin-resolution reading can **never** be reported GREEN on its own (far +
+   "normal" is not a clearance) — it can still back a YELLOW/RED. The two Bangkok
+   household areas use a tighter 3 km radius (`_answer_state`'s own default); a
+   fresh nationwide station/basin row there is shown as reference evidence only and
+   never overrides an already-decided local (Bangkok canal/pump) reading.
 4. If two sources disagree about the same station, **report both**, tagged, never pick
    one silently — see `AI.md`'s conflicting-data rule, which applies to any AI relaying
    this data, not only this repo's own code.
@@ -79,16 +83,22 @@ this summary, it is the source of truth):
 - `diff_wl_bank_text` starting **"ล้นตลิ่ง"** (the agency's own, directly-observed
   overflow word) → **RED**. This is the strongest, most-verified signal this feed gives
   — always check it first, regardless of `situation_level`.
-- A station/bulletin status word of `วิกฤต`/`วิกฤติ`/`ระดับน้ำวิกฤติ`/critical → **RED**.
+- A station/bulletin status word of `วิกฤต`/`วิกฤติ`/`ระดับน้ำวิกฤติ`/critical → **RED**
+  — **except** the nationwide feed's own `situation_level == 1` label `น้อยวิกฤต`
+  ("critically LOW water"), which contains the word `วิกฤต` but is the OPPOSITE of a
+  flood signal. Do not pattern-match the substring `วิกฤต` onto RED by itself for a
+  `situation_level` row — use the numeric code mapping below instead.
 - `เตือนภัย`/`เฝ้าระวัง`/watch → **YELLOW**.
 - `ปกติ`/`ระดับน้ำปกติ`/normal → **GREEN**.
-- The nationwide feed's own `situation_level` code (1-5): this project's own live
-  measurement (2026-10-04, one capture) found `situation_level == 5` always matched
-  `diff_wl_bank_text` == overflow, and the code rises monotonically with
-  `storage_percent` — so `5` → RED, `4` → YELLOW, `1`/`2`/`3` → GREEN (same mapping
-  `STATUS_TO_LEVEL` uses as `thaiwater_situation_<n>`). The EXACT Thai label text
-  thaiwater.net itself prints for each code was **not independently confirmed** (OPEN)
-  — relay the bare code alongside your colour, never claim the label wording as fact.
+- The nationwide feed's own `situation_level` code (1-5), with the agency's own Thai
+  label and colour (VERIFIED, fetched from the public bundle
+  `https://www.thaiwater.net/dist/js/app.chunk.js`, 2026-10-04): `1` `น้อยวิกฤต`
+  (critically low, orange) / `2` `น้อย` (low, yellow) / `3` `ปกติ` (normal, green) /
+  `4` `มาก` (high, BLUE) / `5` `ล้นตลิ่ง` (overbank, red). FloodConnect's OWN mapping
+  on top of these agency labels (not the agency's threshold): `5` → RED, `4` →
+  **YELLOW** (the agency itself colours `4` blue and does not call it a warning — this
+  is this project's conservative choice), `1`/`2`/`3` → GREEN (same mapping
+  `STATUS_TO_LEVEL` uses as `thaiwater_situation_<n>`).
 - A bare bank number on its own (`min_bank`, `critical_level_msl`, or a computed
   `distance_to_bank_m`/`bank_fill_percent`, §7/§8) **never sets a colour by itself** —
   show the number, but the colour comes from one of the status words/codes above, or

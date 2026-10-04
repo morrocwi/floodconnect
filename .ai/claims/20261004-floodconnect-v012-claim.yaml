@@ -19,6 +19,11 @@ artifacts:
   - kb.py
   - tests/test_floodconnect_model.py
   - tests/test_kb_answer.py
+  - tests/test_kb.py
+  - tests/test_readout.py
+  - tests/test_nationwide_waterlevel.py
+  - tests/fixtures/thaiwater_waterlevel_v012_sample.json
+  - tests/fixtures/thaiwater_waterlevel_v012_sample.sidecar.json
   - parsers.py
   - collect.py
   - readout.py
@@ -105,6 +110,58 @@ intent: >
   different worktree's scope) per the orchestrator's instruction. File-level change
   only, no history rewrite, stops before any public push per the local/public split
   rule.
+
+  Fourth pass on this same branch (fixing 6 HIGH/MED defects an independent review
+  found in the third pass above): the "Bangkok/Sammakorn/Ram53 behaviour is unchanged
+  (regression-tested)" sentence above was false for any point whose own nearby canal/
+  pump telemetry was fresh but a FAR (15-50 km) nationwide basin-resolution station
+  existed too -- `readout.build_readout`'s nationwide block now also checks whether
+  this point's own LOCAL factor-4 reading (near_canal/near_pumps) is fresh, and
+  excludes every nationwide row from deciding when it is (still shown as reference
+  evidence); a new regression test
+  (tests/test_readout.py::test_sammakorn_local_fresh_canal_excludes_far_nationwide_basin_row)
+  pins this. The "situation_level label wording is OPEN/unreachable" sentence above
+  was also wrong -- the agency's own Thai label and colour for codes 0-5 are now
+  VERIFIED (fetched from the public bundle
+  `https://www.thaiwater.net/dist/js/app.chunk.js`, 2026-10-04) and stated in
+  `floodconnect_model.py`'s `STATUS_TO_LEVEL` comment, `CHANGELOG.md` and
+  `docs/NEAREST_STATION_RECIPE.md`; level 4 ("มาก") is coloured BLUE by the agency and
+  is NOT a warning there -- mapping it to YELLOW (and 1/2 to GREEN) is stated as this
+  project's own conservative choice, never an agency threshold, and the recipe now
+  warns that level 1's label "น้อยวิกฤต" (critically LOW water) must not be pattern-
+  matched onto RED by the substring "วิกฤต". `kb._trim_evidence` (the non-verbose
+  `evidence` path) now carries `province_th` through for the deciding row, so
+  `_nationwide_accountability_fallback` can actually relay the feed's own geocode
+  province instead of always falling back to "ไม่ทราบจังหวัด [OPEN]"
+  (tests/test_kb.py). `kb._refresh_relevant_sources`'s bare-coordinate forecast fetch
+  now snaps onto a named `_FORECAST_KNOWN_POINTS` entry within
+  `_FORECAST_POINT_SNAP_RADIUS_KM`, the same snap `_resolve_forecast_point` (the read
+  side) already applied -- before this fix a fetch-then-read round trip for a
+  coordinate near a named point (e.g. real Chiang Mai/Hat Yai coordinates) always
+  fetched under a `coord_*` id the read side never looked at, regressing
+  `forward_hazard` to UNKNOWN (tests/test_collect.py). The "fetched and read at the
+  EXACT queried coordinate for any lat,lon" sentence above should be read with that
+  fix in mind: a point within the snap radius of a named point is fetched/read under
+  that point's own canonical coordinate, not the caller's literal decimal digits.
+  Docs (`CHANGELOG.md`, `docs/INDICATORS.md` section 11, `ROADMAP.md`, `llms.txt`,
+  `docs/NEAREST_STATION_RECIPE.md`) are reworded: nationwide station resolution is
+  "nearest station within 10 km, any water body" (never checked against `river_name`,
+  despite the third pass's wording above), and basin resolution is "a station sharing
+  the NEAREST station's own `sub_basin_id`" (a stand-in for "same basin", not a
+  shared-named-river check). `dual_state` now carries `resolution`/`dist_km` for the
+  deciding nationwide row (omitted entirely, not `null`, when no nationwide row
+  decided -- keeps the token-budget-tested default answers the same size), and
+  `cmd_answer`'s printed evidence/dual-state lines show them too. `cmd_answer`'s
+  printed footer hotline list is now built from the same `who_to_call` field the JSON
+  answer already carries (`_is_bangkok_metro`-scoped) instead of a second hardcoded
+  Bangkok-only string, so the printed text and the JSON agree for every point
+  (tests/test_kb_answer.py). A non-geolocated Bangkok DDS bulletin row is now left out
+  of `status_counts_all` for a point outside `BANGKOK_METRO_BBOX` (it never decided
+  anything either way) rather than counted as unrelated "evidence" there
+  (tests/test_kb_answer.py). Two new basin-resolution unit tests
+  (tests/test_readout.py) pin that a same-sub_basin GREEN row never decides GREEN
+  alone and that a same-sub_basin flood-status row DOES decide, carrying
+  `resolution=basin`.
 created_at: "2026-10-04T20:40:00+07:00"
 expires_at: null
 reviewers: []
