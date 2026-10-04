@@ -582,12 +582,40 @@ def _coordinate_point_id(lat: float, lon: float) -> str:
     return f"coord_{lat:.3f}_{lon:.3f}"
 
 
+def _coord_point_has_cached_rows(point_id: str) -> bool:
+    """True if `data/observations.sqlite` already has at least one
+    openmeteo_forecast16d/metno_locationforecast row cached for this exact `coord_*`
+    point id (regardless of freshness -- `_forecast_rows_by_model` applies its own
+    freshness gate afterwards). Used only to answer "has this point ever been
+    refreshed", never to decide freshness itself."""
+    if not DB_PATH.exists():
+        return False
+    try:
+        conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
+        row = conn.execute(
+            """SELECT 1 FROM observations
+               WHERE source_id IN ('openmeteo_forecast16d', 'metno_locationforecast')
+               AND station_code LIKE ? LIMIT 1""",
+            (f"{point_id}:%",),
+        ).fetchone()
+        return row is not None
+    except sqlite3.Error:  # pragma: no cover - defensive
+        return False
+
+
 def _resolve_forecast_point(at: str, lat: float, lon: float) -> "tuple[str, bool]":
     """Resolves (at, lat, lon) to (point_id, within_range). `within_range` is False
     when `at` is not itself a known point id AND the nearest `_FORECAST_KNOWN_POINTS`
     entry is more than `_FORECAST_POINT_SNAP_RADIUS_KM` away -- see the fix note above.
     Shared by `cmd_forecast` and `_answer_hazard` so the two call sites can never
-    diverge on this cap."""
+    diverge on this cap.
+
+    v0.1.2 (design review item 5): a point outside every declared radius is no longer
+    an unconditional refusal -- if this exact coordinate's OWN `coord_*` point already
+    has a forecast cached (because a `refresh=True` call just fetched it there, see
+    `build_answer`'s `points_by_source` fix), that point is `within_range=True` on its
+    own terms, never borrowing a different named point's hazard. A point truly never
+    refreshed yet still returns `within_range=False` (honest UNKNOWN, unchanged)."""
     if at in _FORECAST_KNOWN_POINTS:
         return at, True
     import live_water_level as lwl_mod
@@ -597,7 +625,10 @@ def _resolve_forecast_point(at: str, lat: float, lon: float) -> "tuple[str, bool
     nearest_km = lwl_mod.haversine_km(lat, lon, *_FORECAST_KNOWN_POINTS[nearest_id])
     if nearest_km <= _FORECAST_POINT_SNAP_RADIUS_KM:
         return nearest_id, True
-    return _coordinate_point_id(lat, lon), False
+    coord_id = _coordinate_point_id(lat, lon)
+    if _coord_point_has_cached_rows(coord_id):
+        return coord_id, True
+    return coord_id, False
 
 
 _FORECAST_MODEL_LABEL_TH = {
@@ -959,6 +990,15 @@ _TOP_N_SOURCES_IN_SUMMARY = 3
 # =True` returns every row with every field, uncapped, same as `notes`.
 _TOP_N_EVIDENCE_DECIDING_IN_SUMMARY = 1
 _TOP_N_EVIDENCE_STALE_IN_SUMMARY = 0
+# v0.1.2 nationwide one-path: a basin-resolution row whose own classified level is
+# GREEN is excluded from DECIDING the colour (never "far + normal" -> clearance, see
+# readout.build_readout's nationwide block) but it is still FRESH, real evidence, not
+# a stale/too-old row -- it must not fall into the same `_TOP_N_EVIDENCE_STALE_IN_
+# SUMMARY=0` bucket that hides genuinely stale rows, or a Sai-Buri-shaped point (no
+# station within range, a fresh basin reference further out) would show NO evidence
+# at all in the default answer. Capped separately, small, since this is a reference
+# only, never a second decision path.
+_TOP_N_EVIDENCE_NATIONWIDE_REFERENCE_IN_SUMMARY = 2
 
 
 def _trim_evidence(evidence: list[dict]) -> list[dict]:
@@ -991,18 +1031,50 @@ def _trim_evidence(evidence: list[dict]) -> list[dict]:
     deciding_sorted = sorted(
         deciding_all, key=lambda e: 0 if e.get("status") in flood_like else 1)
     deciding = deciding_sorted[:_TOP_N_EVIDENCE_DECIDING_IN_SUMMARY]
-    stale = [e for e in evidence if not e.get("used_for_decision")][
+    not_deciding = [e for e in evidence if not e.get("used_for_decision")]
+    # v0.1.2: a fresh nationwide row excluded only by the basin/GREEN cap (never
+    # actually stale) is a distinct bucket from genuinely-stale rows -- see
+    # `_TOP_N_EVIDENCE_NATIONWIDE_REFERENCE_IN_SUMMARY`'s own comment.
+    nationwide_reference = [e for e in not_deciding
+                             if e.get("resolution") and not e.get("stale")][
+        :_TOP_N_EVIDENCE_NATIONWIDE_REFERENCE_IN_SUMMARY]
+    stale = [e for e in not_deciding if e not in nationwide_reference][
         :_TOP_N_EVIDENCE_STALE_IN_SUMMARY]
     out = []
-    for e in deciding + stale:
+    for e in deciding + nationwide_reference + stale:
         age_h = e.get("age_h")
-        out.append({
+        row = {
             "station": e.get("station"),
             "status": e.get("status"),
             "age_h": round(age_h, 1) if isinstance(age_h, (int, float)) else age_h,
             "used_for_decision": e.get("used_for_decision"),
             "stale": e.get("stale", e.get("used_for_decision") is False),
-        })
+        }
+        # v0.1.2 nationwide one-path: a nationwide-source row carries dist_km/
+        # resolution/agency -- kept in the capped summary too (never dropped) so a
+        # default (non-verbose) answer still names which station decided and how far
+        # it is, per the founder's own clarity requirement.
+        if e.get("dist_km") is not None:
+            row["dist_km"] = e["dist_km"]
+        if e.get("resolution") is not None:
+            row["resolution"] = e["resolution"]
+        if e.get("agency") is not None:
+            row["agency"] = e["agency"]
+        if e.get("province_th") is not None:
+            # `province_th` is computed in `_answer_state`'s `evidence` list and must
+            # be carried through here too, since `_nationwide_accountability_fallback`
+            # (which reads THIS trimmed list on the default, non-verbose path) would
+            # otherwise fall back to "ไม่ทราบจังหวัด [OPEN]" even when the feed's own
+            # geocode province was known.
+            row["province_th"] = e["province_th"]
+        if e.get("exclude_reason") is not None:
+            # A basin-resolution row excluded because a local reading already
+            # decides (or because it is basin+GREEN) must stay distinguishable from
+            # a geo-excluded row (canal_outer/no-coordinate/outside-radius) --
+            # `cmd_answer`'s evidence printer below reads this field to pick the
+            # correct, honest reason text per row.
+            row["exclude_reason"] = e["exclude_reason"]
+        out.append(row)
     return out
 
 
@@ -1159,7 +1231,20 @@ def _answer_state(lat: float, lon: float, radius_km: float = 3.0,
     status_counts_stale: dict[str, int] = {}
     evidence: list[dict] = []
     stale_count = 0
+    # A `dds_daily_pdf` row with no confirmed coordinate (`local_match` False, never
+    # even in this point's own radius) is a Bangkok-citywide bulletin row that is NOT
+    # local to a point outside Bangkok at all -- MEASURED: Sai Buri and Ubon both showed
+    # `status_counts_all` entries like `'ระดับน้ำปกติ': 7` purely from this bulletin,
+    # reading as if it were evidence for that point, even though it never decided
+    # anything (`used_for_decision` was already correctly False). Outside the Bangkok
+    # metro bbox, these rows are dropped from `status_counts_all` (and from
+    # `evidence`) entirely rather than counted as unrelated "evidence"; inside the
+    # bbox, unchanged (a citywide bulletin row IS plausibly relevant there).
+    _in_bkk = _is_bangkok_metro(lat, lon)
     for row in full.get("factors", {}).get("4_การระบาย", {}).get("measured", []):
+        if (row.get("source") == "dds_daily_pdf" and not row.get("local_match")
+                and not _in_bkk):
+            continue
         st = row.get("status") or "UNKNOWN"
         status_counts_all[st] = status_counts_all.get(st, 0) + 1
         is_stale = row.get("tag") == "STALE"
@@ -1181,6 +1266,13 @@ def _answer_state(lat: float, lon: float, radius_km: float = 3.0,
             "observed_at_utc": row.get("observed_at_utc"),
             "age_h": row.get("age_h"),
             "scope_note": row.get("scope_note"),
+            # v0.1.2 nationwide one-path (readout.build_readout's thaiwater_waterlevel
+            # block): these four keys are present only on a nationwide-source row;
+            # a Bangkok canal/pump/DDS row leaves them None/absent upstream, unchanged.
+            "dist_km": row.get("dist_km"),
+            "resolution": row.get("resolution"),
+            "agency": row.get("agency"),
+            "province_th": row.get("province_th"),
             "used_for_decision": decides,
             # fix (2026-10-04): explicit, structured flag for WHY a row
             # isn't used -- a `used_for_decision=False` row can be excluded either
@@ -1192,6 +1284,13 @@ def _answer_state(lat: float, lon: float, radius_km: float = 3.0,
             # ("values that exist but are too old"), which is simply false for a fresh
             # row.
             "stale": is_stale,
+            # A THIRD, distinct exclusion reason -- a basin-resolution nationwide row
+            # (fresh, in-radius, has a coordinate) that a local colour-bearing
+            # reading or its own GREEN level stops from deciding (see readout.py's
+            # nationwide block). Present only on such a row; absent (None) for a
+            # geo-excluded or stale row, so the printer below can tell all three
+            # cases apart.
+            "exclude_reason": row.get("exclude_reason"),
         })
         if is_stale:
             stale_count += 1
@@ -1236,7 +1335,80 @@ def _answer_state(lat: float, lon: float, radius_km: float = 3.0,
     # this condition stays False -- the fault-vs-UNKNOWN exclusion happens downstream
     # in `_classify_current_local_state`, not here.
     refresh_suggested = not status_counts and (stale_count > 0 or not evidence)
-    return {
+    # A confidence label for the colour `status_counts` decides,
+    # per the founder's "one decision, with confidence" spec -- HIGH when at least one
+    # DECIDING row with a colour-bearing agency word (see below) at station resolution
+    # (a nationwide row within NATIONWIDE_RIVER_RADIUS_KM) or local (no `resolution`
+    # field at all -- a Bangkok canal/pump/DDS reading, already-radius-filtered, as
+    # close as a reading gets) carries the SAME colour the row decided; LOW when only a
+    # BASIN-resolution row (same sub_basin_id, 10-50 km, a different water body) carries
+    # that colour; NONE when nothing decided. Computed from the UNCAPPED `evidence` list
+    # (before `_trim_evidence`'s cap) so a non-verbose answer's small sample never
+    # changes this label. `_answer_next_action` turns this into
+    # `dual_state["confidence"]`, forcing it to NONE whenever `current_local_state`
+    # itself is UNKNOWN (e.g. the fault-only-sensor case below, where a deciding row can
+    # exist in `evidence` yet the state still classifies UNKNOWN) -- see that function
+    # for the override.
+    #
+    # fix (2026-10-04, regate defect 1 MED): a deciding row whose status carries NO
+    # colour at all -- a sensor/equipment fault (`live_water_level.SENSOR_FAULT_STATUS_TH`,
+    # e.g. "ขัดข้อง") or an agency word with no threshold mapping
+    # (`floodconnect_model.UNKNOWN_LIKE_STATUS`, e.g. NO_THRESHOLD) -- used to still count
+    # as "non-basin" for this label, so a fresh local fault/no-threshold row sitting next
+    # to a basin OVERBANK row 14 km away reported confidence HIGH for a colour the local
+    # row never actually carried (MEASURED: Sammakorn's own แสนแสบ-เสรีไทย 24 row set to
+    # either word gave `{"current_local_state":"RED","confidence":"HIGH",
+    # "resolution":"basin","dist_km":14.32}` -- `resolution=basin` next to
+    # `confidence=HIGH` contradicts itself). Now this label is computed from the colour
+    # the decided state ACTUALLY classifies to (via `_classify_current_local_state`,
+    # reusing the exact same fault/no-threshold exclusion and the same
+    # critical_like/normal_like word sets `_flood_like_normal_like_status_words`
+    # builds -- never a second, possibly-divergent copy of either set), and only a
+    # deciding row whose own status word carries THAT SAME colour counts: HIGH needs a
+    # non-basin row of that kind, LOW falls back to a basin-only row of that kind, NONE
+    # when no row carries the decided colour at all (defensive -- `effective` in
+    # `_classify_current_local_state` is built from this same `status_counts`, so this
+    # should not happen in practice).
+    _current_colour_for_confidence = _classify_current_local_state(
+        {"status_counts": status_counts})
+    try:
+        import live_water_level as _lwl_mod_conf
+        _fault_statuses_conf = getattr(_lwl_mod_conf, "SENSOR_FAULT_STATUS_TH", set())
+    except Exception:  # pragma: no cover - defensive
+        _fault_statuses_conf = set()
+    try:
+        import floodconnect_model as _fm_mod_conf
+        _unknown_like_conf = set(getattr(_fm_mod_conf, "UNKNOWN_LIKE_STATUS", set()))
+    except Exception:  # pragma: no cover - defensive
+        _unknown_like_conf = set()
+    (_flood_like_conf, _normal_like_conf,
+     _critical_like_conf) = _flood_like_normal_like_status_words()
+
+    def _status_carries_decided_colour(status: str) -> bool:
+        if status in _fault_statuses_conf or status in _unknown_like_conf:
+            return False  # no colour at all -- a fault/no-threshold word
+        if _current_colour_for_confidence == "RED":
+            return status in _critical_like_conf
+        if _current_colour_for_confidence == "GREEN":
+            return status in _normal_like_conf
+        if _current_colour_for_confidence == "YELLOW":
+            # same "everything else" bucket _classify_current_local_state falls
+            # through to -- a colour-bearing word that is neither agency-critical
+            # nor agency-normal (e.g. WATCH/เฝ้าระวัง).
+            return (status not in _critical_like_conf
+                    and status not in _normal_like_conf)
+        return False  # current_local_state is UNKNOWN -- no colour to carry
+
+    _deciding_for_confidence = [
+        e for e in evidence
+        if e.get("used_for_decision") and _status_carries_decided_colour(e.get("status"))]
+    if not _deciding_for_confidence:
+        resolution_confidence = "NONE"
+    elif any(e.get("resolution") != "basin" for e in _deciding_for_confidence):
+        resolution_confidence = "HIGH"
+    else:
+        resolution_confidence = "LOW"
+    out = {
         "tag": overall.get("tag", "INSTINCT"),
         "notes": notes,
         "contradiction_count": len(full.get("contradictions", [])),
@@ -1249,6 +1421,13 @@ def _answer_state(lat: float, lon: float, radius_km: float = 3.0,
         "stale_count": stale_count,
         "refresh_suggested": refresh_suggested,
     }
+    # Same never-a-NONE-placeholder convention as `dual_state.confidence`/
+    # `dual_state.resolution` (see `_answer_next_action`): omit the key entirely on
+    # the common "nothing decided yet" answer rather than spend tokens on every
+    # single call stating a confidence for a colour that was never even reached.
+    if resolution_confidence != "NONE":
+        out["resolution_confidence"] = resolution_confidence
+    return out
 
 
 def _answer_hazard(
@@ -1526,6 +1705,39 @@ def _accountability_fallback(at: str, refused_text: "str | None" = None,
     }
 
 
+def _nationwide_accountability_fallback(state_answer: "dict | None") -> "dict | None":
+    """v0.1.2 nationwide one-path accountability (founder ruling 2026-10-04): the
+    deciding nationwide station's own province (verbatim from the feed's geocode) and
+    owning agency (verbatim from the feed's `agency` field), as plain TEXT -- never a
+    graph lookup (that is `tools/kg/*`'s own scope, a different worktree, not touched
+    here) and never an invented provincial-disaster-office phone number (that pointer
+    stays OPEN; the caller's own AI looks it up). Returns `None` (caller keeps its own
+    OPEN refusal) when `state_answer` has no deciding nationwide-source row with a
+    province/agency to relay -- this never fabricates a province from a stale or
+    non-deciding row."""
+    evidence = (state_answer or {}).get("evidence") or []
+    deciding = [e for e in evidence
+                if e.get("used_for_decision") and (e.get("province_th") or e.get("agency"))]
+    if not deciding:
+        return None
+    # Nearest (smallest dist_km) deciding row -- same "the strongest/nearest anchor
+    # decides" posture as the state classification itself.
+    deciding.sort(key=lambda e: e.get("dist_km") if e.get("dist_km") is not None else 1e9)
+    row = deciding[0]
+    province = row.get("province_th") or "ไม่ทราบจังหวัด [OPEN]"
+    agency = row.get("agency") or "ไม่ทราบหน่วยงาน [OPEN]"
+    station = row.get("station") or "สถานีที่ใช้ตัดสิน"
+    return {
+        "tag": "RELAYED",
+        "basis": "nationwide_station_geocode",
+        "owner_agencies": [f"{agency} ({station}, จังหวัด{province})"],
+        "self_help_actions": [],
+        "note": (f"จังหวัด{province} และหน่วยงานเจ้าของสถานี ({agency}) มาจาก geocode/agency "
+                 "ของสถานีที่ใช้ตัดสินสถานะนี้โดยตรง (relayed, ไม่ใช่ graph lookup) -- "
+                 "เบอร์ ปภ. จังหวัด ยังไม่ยืนยัน [OPEN], ให้ AI ของผู้ใช้ค้นหาเอง"),
+    }
+
+
 def _answer_accountability(at: str, verbose: bool = True) -> dict:
     """Who is responsible / overlapping authority / self-help options -- reuses
     tools.kg.accountability.build_result verbatim (no re-derivation). Compacted to the
@@ -1613,16 +1825,43 @@ def _answer_accountability(at: str, verbose: bool = True) -> dict:
 # elsewhere; see each function's own docstring for the exact citation.
 # ---------------------------------------------------------------------------
 
-# Resident-facing hotline list -- the SAME four numbers+labels `cmd_answer`'s own printed
+# Resident-facing hotline list -- the SAME numbers+labels `cmd_answer`'s own printed
 # footer already uses (below), kept as one constant so both places stay in sync. Labels
 # match AI.md's rule-5 wording (1130 routes to MEA/electrical,
-# never "DDPM flood").
-HOTLINES = (
+# never "DDPM flood"). The first two are nationwide; the last two name a
+# Bangkok-specific city hotline (1555) and Bangkok's own electricity authority (กฟน./MEA,
+# 1130) -- `_who_to_call` below only includes them when the queried point actually falls
+# inside `collect.BANGKOK_METRO_BBOX` (the same bbox this repo already uses to scope the
+# BMA/dds.bangkok.go.th sources), never nationwide (fix: a Chiang Mai/Hat Yai answer
+# previously listed Bangkok-only numbers, which misleads once the product is presented
+# as covering all of Thailand).
+HOTLINES_NATIONWIDE = (
     {"number": "1669", "label_th": "เหตุฉุกเฉินทางการแพทย์ (สพฉ.)"},
     {"number": "1784", "label_th": "ภัยพิบัติ เกินกำลังพื้นที่ (ปภ.)"},
+)
+HOTLINES_BANGKOK_ONLY = (
     {"number": "1555", "label_th": "สายด่วน กทม."},
     {"number": "1130", "label_th": "ไฟฟ้าช็อตจากน้ำท่วม (กฟน./MEA)"},
 )
+# Kept for any caller still importing the old flat name -- same four entries, same order,
+# nationwide first.
+HOTLINES = HOTLINES_NATIONWIDE + HOTLINES_BANGKOK_ONLY
+
+
+def _is_bangkok_metro(lat: "float | None", lon: "float | None") -> bool:
+    """True only when (lat, lon) falls inside `collect.BANGKOK_METRO_BBOX` -- the same
+    bbox this repo already uses to scope BMA/dds.bangkok.go.th sources
+    (`collect.SOURCE_BBOX`), reused here rather than inventing a second geofence.
+    `lat`/`lon` missing/None -> False (never guess Bangkok when the point is unknown)."""
+    if lat is None or lon is None:
+        return False
+    try:
+        import collect as collect_mod
+        bbox = collect_mod.BANGKOK_METRO_BBOX
+    except Exception:  # pragma: no cover - defensive
+        return False
+    return (bbox["lat_min"] <= lat <= bbox["lat_max"]
+            and bbox["lon_min"] <= lon <= bbox["lon_max"])
 
 # The one allowed action when current state is UNKNOWN (floodconnect-agent skill rule 2,
 # "UNKNOWN is never SAFE" -- AI.md's same rule). Never rephrase this into "ปลอดภัย"/"ปกติ".
@@ -1676,15 +1915,15 @@ def _flood_like_normal_like_status_words() -> "tuple[set, set, set]":
     GREEN/YELLOW/RED classification reads, never a second, possibly-divergent copy of
     this set.
 
-    Reuses readout.py's own `FLOOD_LIKE_STATUS`/`NORMAL_LIKE_STATUS`/
-    `CRITICAL_LIKE_STATUS` (English station-status words) plus the two exact BMA DDS
-    Thai keys ("ระดับน้ำวิกฤติ"/"ระดับน้ำปกติ") already registered in
-    `site/build_data.py`'s `_DDS_STATUS_TH` mapping -- never a new standalone status
-    word. Returns `(set(), set(), set())` (never raises) if either module is
-    unavailable; callers must treat that as "nothing recognised as
-    flood-like/normal-like/critical-like this check", the same fail-open-to-neutral
-    behaviour `_classify_current_local_state` already had before this helper was
-    factored out.
+    Reuses `floodconnect_model.py`'s own `STATUS_TO_LEVEL`-derived
+    `NORMAL_LIKE_STATUS`/`CRITICAL_LIKE_STATUS` (the ONE closed status-word map, v0.1.2
+    -- see that module) plus the two exact BMA DDS Thai keys ("ระดับน้ำวิกฤติ"/
+    "ระดับน้ำปกติ") already registered in `site/build_data.py`'s `_DDS_STATUS_TH`
+    mapping -- never a new standalone status word. Returns `(set(), set(), set())`
+    (never raises) if either module is unavailable; callers must treat that as "nothing
+    recognised as flood-like/normal-like/critical-like this check", the same
+    fail-open-to-neutral behaviour `_classify_current_local_state` already had before
+    this helper was factored out.
 
     `critical_like` is the agency-declared critical/overflow subset (founder ruling
     2026-10-04, verbatim: "WATCH = YELLOW (แนะนำ)") -- it drives RED on its own;
@@ -1692,7 +1931,7 @@ def _flood_like_normal_like_status_words() -> "tuple[set, set, set]":
     prioritisation and the community-report "agreement" check in readout.py, which
     this ruling does not touch."""
     try:
-        import readout as readout_mod
+        import floodconnect_model as fm_mod
     except Exception:  # pragma: no cover - defensive
         return set(), set(), set()
     dds_status_map: dict = {}
@@ -1707,12 +1946,13 @@ def _flood_like_normal_like_status_words() -> "tuple[set, set, set]":
     # standalone status word.
     thai_flood_keys = {"ระดับน้ำวิกฤติ"} & set(dds_status_map)
     thai_normal_keys = {"ระดับน้ำปกติ"} & set(dds_status_map)
-    flood_like = set(readout_mod.FLOOD_LIKE_STATUS) | thai_flood_keys
-    normal_like = set(readout_mod.NORMAL_LIKE_STATUS) | thai_normal_keys
+    flood_like = (set(fm_mod.CRITICAL_LIKE_STATUS) | set(fm_mod.WATCH_LIKE_STATUS)
+                  | thai_flood_keys)
+    normal_like = set(fm_mod.NORMAL_LIKE_STATUS) | thai_normal_keys
     # The Thai BMA DDS critical key ("ระดับน้ำวิกฤติ") is itself an agency-declared
     # critical reading, so it belongs in critical_like too -- there is no separate Thai
     # "overbank" key published by that source today.
-    critical_like = set(getattr(readout_mod, "CRITICAL_LIKE_STATUS", set())) | thai_flood_keys
+    critical_like = set(fm_mod.CRITICAL_LIKE_STATUS) | thai_flood_keys
     return flood_like, normal_like, critical_like
 
 
@@ -1752,10 +1992,19 @@ def _classify_current_local_state(state_answer: dict | None) -> str:
         return "UNKNOWN"
 
     fault_statuses = getattr(lwl_mod, "SENSOR_FAULT_STATUS_TH", set())
-    effective = {st: n for st, n in counts.items() if st not in fault_statuses}
+    try:
+        import floodconnect_model as fm_mod
+        unknown_like = set(getattr(fm_mod, "UNKNOWN_LIKE_STATUS", set()))
+    except Exception:  # pragma: no cover - defensive
+        unknown_like = set()
+    effective = {st: n for st, n in counts.items()
+                 if st not in fault_statuses and st not in unknown_like}
     if not effective:
-        # every fresh row this check was a sensor/equipment fault -- no trustworthy
-        # reading exists, which is UNKNOWN, never a fabricated YELLOW/GREEN.
+        # every fresh row this check was a sensor/equipment fault, or carried no
+        # agency threshold at all (e.g. NO_THRESHOLD) -- no trustworthy basis for a
+        # colour exists, which is UNKNOWN, never a fabricated YELLOW/GREEN (fixed
+        # 2026-10-04, regate finding #2: NO_THRESHOLD used to be folded into
+        # normal_like/GREEN here with no basis at all).
         return "UNKNOWN"
 
     _flood_like, normal_like, critical_like = _flood_like_normal_like_status_words()
@@ -1955,8 +2204,15 @@ def _route_mode_degradation(doc: dict, path: list[str]) -> list[dict]:
     return out
 
 
-def _who_to_call(accountability_answer: dict | None) -> dict:
-    """This file's own fixed `HOTLINES` -- no new agency/number is added here.
+def _who_to_call(accountability_answer: dict | None,
+                  lat: "float | None" = None, lon: "float | None" = None) -> dict:
+    """This file's own fixed `HOTLINES_NATIONWIDE` + (Bangkok-only) `HOTLINES_BANGKOK_ONLY`
+    -- no new agency/number is added here.
+
+    `lat`/`lon` (fix, 2026-10-04): the two Bangkok-only numbers (1555 กทม., 1130 กฟน./MEA)
+    are now included only when `_is_bangkok_metro(lat, lon)` is true for the point this
+    answer is for; every other point gets the nationwide pair only. Before this fix every
+    answer, anywhere in Thailand, listed the Bangkok numbers unconditionally.
     FIX C (2026-10-04, token budget): `owner_agencies` used to be repeated here
     verbatim, a byte-for-byte duplicate of `accountability.owner_agencies` at the
     payload's top level (unreferenced by any test, doc or the CLI printer --
@@ -1971,7 +2227,8 @@ def _who_to_call(accountability_answer: dict | None) -> dict:
     `HOTLINES` constant carries, unchanged, nothing dropped), no key names repeated 4
     times in every single answer. Still unreferenced by any test/doc (checked above),
     so this shape change is safe."""
-    return {"hotlines": [f"{h['number']} {h['label_th']}" for h in HOTLINES]}
+    hotlines = HOTLINES_NATIONWIDE + (HOTLINES_BANGKOK_ONLY if _is_bangkok_metro(lat, lon) else ())
+    return {"hotlines": [f"{h['number']} {h['label_th']}" for h in hotlines]}
 
 
 def _answer_next_action(
@@ -1980,6 +2237,8 @@ def _answer_next_action(
     state_answer: dict | None = None,
     hazard_answer: dict | None = None,
     accountability_answer: dict | None = None,
+    lat: "float | None" = None,
+    lon: "float | None" = None,
     now_utc: "datetime.datetime | None" = None,
     verbose: bool = True,
     refresh_ran: bool = True,
@@ -2058,6 +2317,42 @@ def _answer_next_action(
         "current_local_state": _classify_current_local_state(state_answer),
         "forward_hazard": _classify_forward_hazard(hazard_answer),
     }
+    # HIGH/LOW confidence per `_answer_state`'s own `resolution_confidence`
+    # (computed there from the UNCAPPED evidence list -- see its docstring), forced to
+    # NONE whenever `current_local_state` is UNKNOWN regardless of what that field
+    # says (covers the fault-only-sensor-exclusion case, where a deciding row can
+    # exist in `evidence` yet classification still lands on UNKNOWN). Same convention
+    # as `resolution`/`dist_km` right below: NONE is never written as a literal key
+    # (every UNKNOWN answer would otherwise carry a useless `"confidence": "NONE"` on
+    # every single call, costing real tokens for no information -- UNKNOWN already
+    # says there is no basis for a colour, so there is no basis for a confidence in
+    # one either) -- `confidence` is present (`HIGH`/`LOW`) only when
+    # `current_local_state` actually decided to something. A caller reading only
+    # `dual_state.confidence` should treat a missing key as `NONE`, the same way it
+    # already must for a missing `resolution`.
+    _confidence = ("NONE" if dual_state["current_local_state"] == "UNKNOWN"
+                   else (state_answer or {}).get("resolution_confidence", "NONE"))
+    if _confidence != "NONE":
+        dual_state["confidence"] = _confidence
+    # `dual_state` carries a bare colour with no resolution/confidence label on its
+    # own, so a caller reading ONLY this top-level field has no way to tell a close
+    # "station"-resolution reading from a far "basin"-resolution one deciding the same
+    # colour. `resolution`/`dist_km` here are
+    # the SAME nationwide-row fields `_trim_evidence`/`evidence` already carry for the
+    # deciding row, never a re-derivation -- `None` for the two MVP areas' own local
+    # canal/pump readings (which carry no `resolution` field at all) or when nothing
+    # decided (`current_local_state == "UNKNOWN"`).
+    _deciding_nationwide = [
+        e for e in ((state_answer or {}).get("evidence") or [])
+        if e.get("used_for_decision") and e.get("resolution")]
+    if _deciding_nationwide:
+        # Only added when there IS a deciding nationwide row (never `None` placeholder
+        # keys on every answer) -- keeps the two MVP areas' own token-budget-tested
+        # default answers unchanged in size; see tests/test_token_budget.py.
+        _deciding_nationwide.sort(
+            key=lambda e: e.get("dist_km") if e.get("dist_km") is not None else 1e9)
+        dual_state["resolution"] = _deciding_nationwide[0].get("resolution")
+        dual_state["dist_km"] = _deciding_nationwide[0].get("dist_km")
     current = dual_state["current_local_state"]
     forward = dual_state["forward_hazard"]
     actions: list[dict] = []
@@ -2111,8 +2406,7 @@ def _answer_next_action(
             else:
                 action_text = (
                     f"ลองรันใหม่โดยไม่ใส่ `--offline` (`floodconnect answer --at "
-                    f"{area_label}` / MCP offline=false) -- รอบนี้ไม่ได้ refresh เลย "
-                    "(ใส่ --offline ไว้)")
+                    f"{area_label}` / MCP offline=false) -- รอบนี้ไม่ได้ refresh เลย")
             actions.append({
                 "action": action_text,
                 "source": "state.refresh_suggested / hazard.stale (offline/stale "
@@ -2434,7 +2728,7 @@ def _answer_next_action(
         capped_actions = [{k: v for k, v in act.items() if k not in ("why", "source")}
                            for act in capped_actions]
     out["actions"] = capped_actions
-    out["who_to_call"] = _who_to_call(accountability_answer)
+    out["who_to_call"] = _who_to_call(accountability_answer, lat=lat, lon=lon)
     if notes:
         out["notes"] = notes
     return out
@@ -2526,8 +2820,8 @@ def _compact_hazard_for_display(hazard_answer: dict, cap: int = 3) -> dict:
             seen_models.add(highest_total["model"])
     out = dict(hazard_answer)
     out["per_model"] = deduped
-    note = (f"min/median/max by tomorrow_mm of {len(per_model)} models shown "
-            f"(+{len(per_model) - len(deduped)} more -- see --verbose for every model)")
+    note = (f"min/median/max tomorrow_mm, {len(per_model)} models "
+            f"(+{len(per_model) - len(deduped)} more, see --verbose)")
     if unknown_count:
         note += f"; {unknown_count} model(s) have no tomorrow_mm figure this check"
     out["per_model_note"] = note
@@ -2655,6 +2949,37 @@ def _refresh_relevant_sources(area_id: str | None = None, verbose: bool = False,
     if area_id in collect_mod.FORECAST7D_POINTS:
         one_point = {area_id: collect_mod.FORECAST7D_POINTS[area_id]}
         points_by_source = {sid: one_point for sid in collect_mod.POINT_FILTERABLE_SOURCES}
+    elif lat is not None and lon is not None:
+        # v0.1.2 nationwide one-path (design review item 5): a bare lat,lon that is
+        # NOT one of the named FORECAST7D_POINTS still gets its own forecast fetched
+        # -- never silently skipped (which previously left `openmeteo_forecast16d`/
+        # `metno_locationforecast` unfetched for every point outside the 11
+        # hardcoded areas).
+        #
+        # This fetch must land under the SAME point id `_resolve_forecast_point` (the
+        # READ side) will snap the point onto, not always under this coordinate's own
+        # `coord_*` id, even when the point is
+        # within `_FORECAST_POINT_SNAP_RADIUS_KM` of a named `_FORECAST_KNOWN_POINTS`
+        # entry -- `_resolve_forecast_point` (the READ side) snaps such a point onto
+        # the named point's cache, so `forward_hazard` read `coord_*` rows that were
+        # never fetched under that name and came back UNKNOWN (MEASURED: Chiang Mai
+        # 18.79,98.98 and Hat Yai 7.0086,100.4747 both regressed from a real reading
+        # to UNKNOWN this way). Apply the SAME snap here the read side already uses,
+        # so a fetch and the read that follows it always agree on one point id --
+        # never borrowed from a different, named point's own coordinate.
+        import live_water_level as lwl_mod
+        _nearest_id, _nearest_km = None, None
+        if _FORECAST_KNOWN_POINTS:
+            _nearest_id = min(
+                _FORECAST_KNOWN_POINTS,
+                key=lambda k: lwl_mod.haversine_km(lat, lon, *_FORECAST_KNOWN_POINTS[k]))
+            _nearest_km = lwl_mod.haversine_km(lat, lon, *_FORECAST_KNOWN_POINTS[_nearest_id])
+        if _nearest_id is not None and _nearest_km <= _FORECAST_POINT_SNAP_RADIUS_KM:
+            fetch_point_id, fetch_coord = _nearest_id, _FORECAST_KNOWN_POINTS[_nearest_id]
+        else:
+            fetch_point_id, fetch_coord = _coordinate_point_id(lat, lon), (lat, lon)
+        one_point = {fetch_point_id: fetch_coord}
+        points_by_source = {sid: one_point for sid in collect_mod.POINT_FILTERABLE_SOURCES}
     # FIX B item 1 (2026-10-04, SPEED): `parallel=True` fetches every one of these
     # sources concurrently via `collect.run`'s own thread pool (one request each, no
     # retry, bounded to a 20s per-source wall-clock budget -- see `collect.run`'s own
@@ -2768,6 +3093,7 @@ def build_answer(at: str, refresh: bool = False, on_refresh_progress=None,
             "accountability": unknown_accountability,
             "next_action": next_action_answer,
             "source_tags": [],
+            "indicators_doc": "docs/INDICATORS.md",
         }
     refresh_report = None
     if refresh:
@@ -2779,6 +3105,18 @@ def build_answer(at: str, refresh: bool = False, on_refresh_progress=None,
     state_answer = _answer_state(lat, lon, verbose=verbose)
     hazard_answer = _answer_hazard(area_id or at, lat, lon)
     accountability_answer = _answer_accountability(area_id or at, verbose=verbose)
+    if area_id is None and accountability_answer.get("tag") == "OPEN":
+        # v0.1.2 nationwide one-path (founder ruling 2026-10-04): a bare lat,lon
+        # outside the two MVP areas has no governance-graph/district fallback (those
+        # are sammakorn/ram53-only, see `_ACCOUNTABILITY_FALLBACK`) -- this repo does
+        # NOT build a province-level governance KG (that is the other worktree's own
+        # scope, tools/kg/*). For v0.1.2, accountability for a nationwide point is
+        # TEXT ONLY: the deciding nationwide station's own province (its feed
+        # geocode, as published) and owning agency (its feed `agency`) -- never a
+        # graph lookup, never an invented "ปภ. จังหวัด" phone number.
+        _nationwide = _nationwide_accountability_fallback(state_answer)
+        if _nationwide is not None:
+            accountability_answer = _nationwide
     cctv_answer = _answer_cctv(lat, lon)
     # Classification and `next_action` always see the FULL `hazard_answer`
     # (`_classify_forward_hazard`/`_answer_next_action` run on the uncapped per_model
@@ -2786,7 +3124,7 @@ def build_answer(at: str, refresh: bool = False, on_refresh_progress=None,
     # capping can never change what ACTIVE/NONE means.
     next_action_answer = _answer_next_action(
         area_id, state_answer=state_answer, hazard_answer=hazard_answer,
-        accountability_answer=accountability_answer, verbose=verbose,
+        accountability_answer=accountability_answer, lat=lat, lon=lon, verbose=verbose,
         refresh_ran=refresh, raw_at=at)
     # Finding: the "state" source_tag's epistemic_class
     # (LIVE_DATA_SYSTEM -> "LIVE_OBSERVATION" in the RKG) describes what KIND of system
@@ -2825,6 +3163,11 @@ def build_answer(at: str, refresh: bool = False, on_refresh_progress=None,
         "accountability": accountability_answer,
         "next_action": next_action_answer,
         "source_tags": source_tags if verbose else _compact_source_tags(source_tags),
+        # Fix (2026-10-04, review finding #5): every answer now names the one place
+        # that defines every field above -- docs/INDICATORS.md -- rather than only
+        # README/llms.txt/AI_TIERS/EQUATIONS_FOR_AI carrying that pointer. A caller
+        # reading just this JSON (no doc open) still gets told where the dictionary is.
+        "indicators_doc": "docs/INDICATORS.md",
     }
     # F8 (2026-10-04): `cctv` carries the full `{kind, radius_km, cameras}` shape when
     # there is at least one camera (token-budget measurement; a full wrapper on every
@@ -2909,19 +3252,40 @@ def cmd_answer(args) -> int:
             tail = f" observed_at={e.get('observed_at_utc')} source={e.get('source')}"
         else:
             val, tail = "", ""
-        return f"    - {e.get('station')}: {val}[{e.get('status')}] (age={_age_str}){tail}"
+        # A nationwide-source row's `dist_km`/`resolution` (already carried by
+        # `_trim_evidence`/`evidence`) are printed here too, so the CLI line for a
+        # deciding basin-resolution row reads differently from a close
+        # station-resolution one -- a reader can tell a 2 km reading from a 48 km one
+        # without needing `--verbose`/`--json`.
+        _geo = ""
+        if e.get("resolution") is not None:
+            _dist = e.get("dist_km")
+            _dist_str = f"{_dist}km" if isinstance(_dist, (int, float)) else "-"
+            _geo = f" resolution={e['resolution']} dist_km={_dist_str}"
+        return f"    - {e.get('station')}: {val}[{e.get('status')}] (age={_age_str}){tail}{_geo}"
 
     # fix (2026-10-04): a `used_for_decision=False` row is excluded for
-    # ONE of two different reasons -- genuinely too old (`stale=True`) OR fresh but
-    # geo-excluded (canal_outer / no coordinate / outside radius, `stale=False`).
-    # MEASURED later: 10 fresh (4.8h old) geo-excluded DDS rows
-    # were printed under a single "ค่าที่มีแต่เก่าเกินเกณฑ์" ("too old") label, which is
-    # false for a fresh row. The two reasons now get two separate, honest labels.
+    # one of THREE different reasons -- genuinely too old (`stale=True`), fresh but
+    # geo-excluded (canal_outer / no coordinate / outside radius, `stale=False`, no
+    # `exclude_reason`), or fresh and in-radius but a basin-resolution nationwide row
+    # that a local reading/its own GREEN level stops from deciding (`stale=False`,
+    # `exclude_reason` set -- see readout.py's nationwide block). MEASURED earlier: 10
+    # fresh (4.8h old) geo-excluded DDS rows were printed under a single
+    # "ค่าที่มีแต่เก่าเกินเกณฑ์" ("too old") label, which is false for a fresh row; a
+    # basin-resolution row excluded for a THIRD reason (local telemetry already
+    # decides, or basin-never-GREEN) used to be printed under that same geo label
+    # ("นอกรัศมี/ไม่มีพิกัด" -- outside radius/no coordinate), which is also false -- the
+    # row IS in radius and DOES have a coordinate. Each reason now gets its own,
+    # honest label.
     _used = [e for e in _evidence if e.get("used_for_decision")]
     _not_used_stale = [e for e in _evidence
                         if not e.get("used_for_decision") and e.get("stale")]
+    _not_used_basin = [e for e in _evidence
+                        if not e.get("used_for_decision") and not e.get("stale")
+                        and e.get("exclude_reason")]
     _not_used_geo = [e for e in _evidence
-                      if not e.get("used_for_decision") and not e.get("stale")]
+                      if not e.get("used_for_decision") and not e.get("stale")
+                      and not e.get("exclude_reason")]
     if _used:
         print("  หลักฐานที่ใช้ตัดสิน (used_for_decision=true):")
         for e in _used:
@@ -2930,6 +3294,15 @@ def cmd_answer(args) -> int:
         print("  ค่าที่มีแต่เก่าเกินเกณฑ์ -- ไม่ถูกใช้ตัดสิน (stale=true, used_for_decision=false):")
         for e in _not_used_stale:
             print(_fmt_evidence_line(e) + " -- เก่าเกินเกณฑ์ ไม่ถูกใช้ตัดสิน")
+    if _not_used_basin:
+        print("  ค่าสดระดับลุ่มน้ำ (basin resolution) -- ไม่ถูกใช้ตัดสิน (stale=false, "
+              "used_for_decision=false):")
+        for e in _not_used_basin:
+            if e.get("exclude_reason") == "basin_local_present":
+                _why = "ระดับลุ่มน้ำ ไม่ใช้เมื่อมีข้อมูลคลองในพื้นที่"
+            else:
+                _why = "ระดับลุ่มน้ำ ตัดสิน GREEN เองไม่ได้"
+            print(_fmt_evidence_line(e) + f" -- {_why}")
     if _not_used_geo:
         print("  ค่าสดแต่อยู่นอกรัศมี/ไม่มีพิกัดยืนยัน -- ไม่ถูกใช้ตัดสิน (stale=false, "
               "used_for_decision=false):")
@@ -2994,8 +3367,18 @@ def cmd_answer(args) -> int:
         print(f"เส้นทาง [{na.get('tag')}]: {na.get('reason') or na.get('note')}")
     ds = na.get("dual_state") or {}
     if ds:
-        print(f"สถานะคู่ [dual-state]: ปัจจุบัน={ds.get('current_local_state')} / "
-              f"แนวโน้ม={ds.get('forward_hazard')}")
+        # Print `resolution`/`dist_km` (dual_state's own fields) and `confidence`
+        # next to `current_local_state` so the CLI line itself names how far/at what
+        # resolution the colour was decided and how confident that decision is, not
+        # only the bare colour word -- `confidence` is appended only when the key is
+        # present (same never-a-NONE-placeholder convention `dual_state.confidence`
+        # itself uses; a missing key already means NONE, nothing to print).
+        _ds_res = ds.get("resolution")
+        _ds_tail = f" (resolution={_ds_res}, dist_km={ds.get('dist_km')})" if _ds_res else ""
+        _ds_conf = ds.get("confidence")
+        _ds_conf_tail = f" ความมั่นใจ={_ds_conf}" if _ds_conf else ""
+        print(f"สถานะคู่ [dual-state]: ปัจจุบัน={ds.get('current_local_state')}{_ds_tail}"
+              f"{_ds_conf_tail} / แนวโน้ม={ds.get('forward_hazard')}")
     for i, act in enumerate(na.get("actions") or [], 1):
         # Finding: `source` is intentionally dropped from each action
         # in non-verbose mode (see `_answer_next_action`'s own `capped_actions` step,
@@ -3019,8 +3402,16 @@ def cmd_answer(args) -> int:
             far_note = "" if c.get("within_radius") else f" (>{cctv.get('radius_km')} กม.)"
             print(f"  - {c.get('name')} ({c.get('distance_km')} กม.{far_note}): "
                   f"{c.get('url') or 'ไม่มีลิงก์'}")
+    # This footer's numbers must agree with `who_to_call` (the JSON field right next
+    # to it), which is scoped to `_is_bangkok_metro(lat, lon)` -- hardcoding the
+    # Bangkok-only numbers (1555/1130) here for every point nationwide would make the
+    # printed CLI text disagree with the JSON payload for every non-Bangkok point.
+    # Build the footer from the SAME
+    # `na["who_to_call"]["hotlines"]` list the JSON answer carries, never a second
+    # hardcoded copy.
+    _hotlines = (na.get("who_to_call") or {}).get("hotlines") or []
     print("\nข้อมูลนี้เป็นข้อมูลประกอบการตัดสินใจเท่านั้น ไม่ใช่คำสั่งอพยพ "
-          "-- เหตุฉุกเฉิน 1669 / ภัยพิบัติ 1784 / กทม. 1555 / กฟน.(ไฟฟ้าช็อตจากน้ำท่วม) 1130")
+          "-- " + (" / ".join(_hotlines) if _hotlines else "เหตุฉุกเฉิน 1669 / ภัยพิบัติ 1784"))
     return 0
 
 

@@ -403,10 +403,13 @@ def test_answer_json_envelope_keys(real_forecast_db, capsys):
     payload = _json.loads(capsys.readouterr().out)
     # fix (2026-10-04): `cctv` is now ALWAYS present (compact
     # {tag: OPEN, next_action} when no camera is in range, instead of omitted).
+    # fix (2026-10-04, review finding #5): every answer now also carries
+    # `indicators_doc`, pointing at docs/INDICATORS.md.
     assert set(payload) == {
         "generated_at", "at", "refresh", "state", "hazard", "accountability",
-        "next_action", "source_tags", "cctv",
+        "next_action", "source_tags", "cctv", "indicators_doc",
     }
+    assert payload["indicators_doc"] == "docs/INDICATORS.md"
     assert payload["cctv"]["tag"] == "OPEN"
     assert payload["refresh"] is None  # no --refresh passed in this test
     assert len(payload["source_tags"]) == 4
@@ -1361,3 +1364,232 @@ def test_build_answer_includes_cctv_field_with_real_camera(real_cctv_db):
     payload = kb.build_answer(f"{_CCTV_QUERY_LAT},{_CCTV_QUERY_LON}", refresh=False)
     assert payload["cctv"]["kind"] == "VISUAL-CHECK"
     assert payload["cctv"]["cameras"][0]["name"] == "ปากคลองลัดโพธิ์"
+
+
+# ---------------------------------------------------------------------------
+# Independent review item 6 (MED): the printed CLI footer must agree with the
+# JSON `who_to_call` field it sits right next to -- both scoped by
+# `_is_bangkok_metro(lat, lon)`, never a second hardcoded Bangkok-only copy.
+# ---------------------------------------------------------------------------
+
+def test_cmd_answer_cli_footer_excludes_bangkok_hotlines_outside_bangkok(
+        monkeypatch, tmp_path, capsys):
+    missing_db = tmp_path / "does_not_exist.sqlite"
+    monkeypatch.setattr(kb, "DB_PATH", missing_db)
+
+    class Args:
+        at = "7.88,98.39"  # Phuket -- real coordinates, far outside Bangkok metro
+        json = False
+        offline = True
+    rc = kb.cmd_answer(Args())
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "1555" not in out
+    assert "1130" not in out
+    assert "1669" in out and "1784" in out
+
+
+def test_cmd_answer_cli_footer_includes_bangkok_hotlines_inside_bangkok(
+        monkeypatch, tmp_path, capsys):
+    missing_db = tmp_path / "does_not_exist.sqlite"
+    monkeypatch.setattr(kb, "DB_PATH", missing_db)
+
+    class Args:
+        at = f"{SAMMAKORN_LAT},{SAMMAKORN_LON}"
+        json = False
+        offline = True
+    rc = kb.cmd_answer(Args())
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "1555" in out
+    assert "1130" in out
+
+
+# ---------------------------------------------------------------------------
+# Independent review item 9 (LOW): a non-geolocated Bangkok DDS bulletin row must
+# not read as "evidence" for a point nowhere near Bangkok.
+# ---------------------------------------------------------------------------
+
+def test_status_counts_all_excludes_unmatched_dds_row_outside_bangkok(fresh_state_db):
+    """MEASURED finding: `status_counts_all` used to include a Bangkok-citywide DDS
+    bulletin row's status word for ANY point in Thailand, even one with no
+    confirmed coordinate for that station and nowhere near Bangkok (Sai Buri, Ubon in
+    the real run) -- reading as if it were evidence for that point, though it never
+    decided anything."""
+    store.insert_observation(
+        fresh_state_db, source_id="dds_daily_pdf",
+        station_name="คลองไม่มีพิกัดยืนยัน",  # no entry in readout._DDS_GATE_COORDS
+        variable="canal_level_0700_m", value=0.9, unit="m",
+        observed_at_utc="2026-09-28T00:00:00+00:00",
+        fetched_at_utc="2026-09-28T00:30:00+00:00",
+        trust_tier="official_report", status="ระดับน้ำปกติ")
+    far_from_bangkok_lat, far_from_bangkok_lon = 6.7331, 101.6176  # real Sai Buri
+    state_far = kb._answer_state(far_from_bangkok_lat, far_from_bangkok_lon,
+                                   as_of_date="2026-09-28")
+    assert "ระดับน้ำปกติ" not in (state_far.get("status_counts_all") or {})
+
+    state_bkk = kb._answer_state(SAMMAKORN_LAT, SAMMAKORN_LON, as_of_date="2026-09-28")
+    assert state_bkk.get("status_counts_all", {}).get("ระดับน้ำปกติ") == 1
+
+
+# ---------------------------------------------------------------------------
+# `_answer_state`'s `resolution_confidence` and
+# `next_action.dual_state.confidence` -- HIGH for a station-resolution/local
+# deciding row, LOW for basin-resolution-only, NONE for UNKNOWN.
+# ---------------------------------------------------------------------------
+
+_NEAR_SAMMAKORN_LAT = SAMMAKORN_LAT + 0.01   # ~1.1 km -- within the 10 km station radius
+_FAR_SAMMAKORN_LAT = SAMMAKORN_LAT + 0.18    # ~20 km -- basin resolution only
+
+
+def test_resolution_confidence_high_for_station_resolution_row(fresh_state_db):
+    """A fresh nationwide `thaiwater_waterlevel` row within 10 km (station
+    resolution) decides -- `_answer_state`'s own `resolution_confidence` must be
+    HIGH, and `next_action.dual_state.confidence` must carry that through."""
+    store.insert_observation(
+        fresh_state_db, source_id="thaiwater_waterlevel", station_code="NEAR.CONF",
+        station_name="สถานีใกล้ (confidence test)",
+        lat=_NEAR_SAMMAKORN_LAT, lon=SAMMAKORN_LON,
+        variable="waterlevel_m", value=9.9, unit="m",
+        observed_at_utc="2026-09-28T00:00:00+00:00",
+        fetched_at_utc="2026-09-28T00:30:00+00:00",
+        trust_tier="official_telemetry", status="OVERBANK",
+        provenance={"sub_basin_id": 777, "agency": "RID", "province_th": "กรุงเทพมหานคร"})
+    state = kb._answer_state(SAMMAKORN_LAT, SAMMAKORN_LON, as_of_date="2026-09-28")
+    assert state["resolution_confidence"] == "HIGH"
+    out = kb._answer_next_action("sammakorn", state_answer=state,
+                                  hazard_answer={"per_model": []})
+    assert out["dual_state"]["current_local_state"] == "RED"
+    assert out["dual_state"]["confidence"] == "HIGH"
+
+
+def test_resolution_confidence_low_for_basin_resolution_only_row(fresh_state_db):
+    """No station within 10 km -- only a same-sub_basin reading within 50 km decides
+    (basin resolution). `resolution_confidence` must be LOW, and
+    `next_action.dual_state.confidence` must carry that through."""
+    store.insert_observation(
+        fresh_state_db, source_id="thaiwater_waterlevel", station_code="FAR.CONF",
+        station_name="สถานีไกล (confidence test)",
+        lat=_FAR_SAMMAKORN_LAT, lon=SAMMAKORN_LON,
+        variable="waterlevel_m", value=9.9, unit="m",
+        observed_at_utc="2026-09-28T00:00:00+00:00",
+        fetched_at_utc="2026-09-28T00:30:00+00:00",
+        trust_tier="official_telemetry", status="OVERBANK",
+        provenance={"sub_basin_id": 777, "agency": "RID", "province_th": "กรุงเทพมหานคร"})
+    state = kb._answer_state(SAMMAKORN_LAT, SAMMAKORN_LON, as_of_date="2026-09-28")
+    assert state["resolution_confidence"] == "LOW"
+    out = kb._answer_next_action("sammakorn", state_answer=state,
+                                  hazard_answer={"per_model": []})
+    assert out["dual_state"]["current_local_state"] == "RED"
+    assert out["dual_state"]["confidence"] == "LOW"
+
+
+def test_resolution_confidence_none_when_nothing_decides(fresh_state_db):
+    """An empty store decides nothing -- `_answer_state` takes its early "0 sources"
+    shortcut return (no `status_counts`/`resolution_confidence` key at all, same as a
+    missing DB), and `dual_state.confidence` must still come back NONE, never
+    HIGH/LOW or a KeyError."""
+    state = kb._answer_state(SAMMAKORN_LAT, SAMMAKORN_LON, as_of_date="2026-09-28")
+    assert "resolution_confidence" not in state  # the early-return shape, not computed
+    out = kb._answer_next_action("sammakorn", state_answer=state,
+                                  hazard_answer={"per_model": []})
+    assert out["dual_state"]["current_local_state"] == "UNKNOWN"
+    assert out["dual_state"].get("confidence", "NONE") == "NONE"
+
+
+def test_resolution_confidence_none_when_only_sensor_fault_fresh(fresh_state_db):
+    """A fresh row exists and decides (`used_for_decision=True`), but its ONLY status
+    is a sensor/equipment fault (`live_water_level.SENSOR_FAULT_STATUS_TH`) -- no
+    trustworthy reading at all, so `current_local_state` classifies UNKNOWN even
+    though `evidence` is non-empty. `dual_state.confidence` must still be NONE here
+    (the forced override, not whatever `resolution_confidence` computed from the raw
+    deciding-row list -- that list is non-basin, which alone would say HIGH)."""
+    import live_water_level as lwl
+    fault_status = next(iter(lwl.SENSOR_FAULT_STATUS_TH))
+    store.insert_observation(
+        fresh_state_db, source_id="thaiwater_canal_waterlevel", station_code="FAULT.01",
+        station_name="สถานีขัดข้อง (confidence test)",
+        lat=SAMMAKORN_LAT, lon=SAMMAKORN_LON,
+        variable="canal_water_level_m", value=None, unit="m",
+        observed_at_utc="2026-09-28T00:00:00+00:00",
+        fetched_at_utc="2026-09-28T00:30:00+00:00",
+        trust_tier="official_telemetry", status=fault_status)
+    state = kb._answer_state(SAMMAKORN_LAT, SAMMAKORN_LON, as_of_date="2026-09-28")
+    assert kb._classify_current_local_state(state) == "UNKNOWN"
+    out = kb._answer_next_action("sammakorn", state_answer=state,
+                                  hazard_answer={"per_model": []})
+    assert out["dual_state"]["current_local_state"] == "UNKNOWN"
+    assert out["dual_state"].get("confidence", "NONE") == "NONE"
+
+
+# fix (2026-10-04, regate defect 1 MED): a fresh LOCAL row that carries NO colour at
+# all (a sensor/equipment fault, or an agency word with no threshold mapping) must
+# never make `resolution_confidence`/`dual_state.confidence` HIGH on the strength of a
+# basin-resolution row 10-50 km away deciding the colour instead. Before this fix, both
+# cases below gave `{"current_local_state": "RED", "confidence": "HIGH",
+# "resolution": "basin", "dist_km": ...}` -- a contradiction (`resolution=basin` next
+# to `confidence=HIGH`), reproduced at Sammakorn itself.
+
+def test_resolution_confidence_low_when_local_no_threshold_plus_far_basin_overbank(
+        fresh_state_db):
+    """Local reading is fresh but NO_THRESHOLD (no colour at all,
+    `floodconnect_model.UNKNOWN_LIKE_STATUS`); only a basin-resolution OVERBANK row
+    10-50 km away carries RED. `resolution_confidence`/`dual_state.confidence` must be
+    LOW, never HIGH -- the local row isn't the one carrying the decided colour."""
+    store.insert_observation(
+        fresh_state_db, source_id="thaiwater_canal_waterlevel", station_code="NOTHR.01",
+        station_name="คลองไม่มีเกณฑ์ (confidence test)",
+        lat=SAMMAKORN_LAT, lon=SAMMAKORN_LON,
+        variable="canal_water_level_m", value=0.40, unit="m",
+        observed_at_utc="2026-09-28T00:00:00+00:00",
+        fetched_at_utc="2026-09-28T00:30:00+00:00",
+        trust_tier="official_telemetry", status="NO_THRESHOLD")
+    store.insert_observation(
+        fresh_state_db, source_id="thaiwater_waterlevel", station_code="FAR.CONF2",
+        station_name="สถานีไกล (confidence test 2)",
+        lat=_FAR_SAMMAKORN_LAT, lon=SAMMAKORN_LON,
+        variable="waterlevel_m", value=9.9, unit="m",
+        observed_at_utc="2026-09-28T00:00:00+00:00",
+        fetched_at_utc="2026-09-28T00:30:00+00:00",
+        trust_tier="official_telemetry", status="OVERBANK",
+        provenance={"sub_basin_id": 777, "agency": "RID", "province_th": "กรุงเทพมหานคร"})
+    state = kb._answer_state(SAMMAKORN_LAT, SAMMAKORN_LON, as_of_date="2026-09-28")
+    assert kb._classify_current_local_state(state) == "RED"
+    assert state["resolution_confidence"] == "LOW"
+    out = kb._answer_next_action("sammakorn", state_answer=state,
+                                  hazard_answer={"per_model": []})
+    assert out["dual_state"]["current_local_state"] == "RED"
+    assert out["dual_state"]["confidence"] == "LOW"
+
+
+def test_resolution_confidence_low_when_local_sensor_fault_plus_far_basin_overbank(
+        fresh_state_db):
+    """Same as above but the local row is a sensor/equipment fault
+    (`live_water_level.SENSOR_FAULT_STATUS_TH`, e.g. "ขัดข้อง") instead of
+    NO_THRESHOLD -- also carries no colour at all. Must also be LOW, never HIGH."""
+    import live_water_level as lwl
+    fault_status = next(iter(lwl.SENSOR_FAULT_STATUS_TH))
+    store.insert_observation(
+        fresh_state_db, source_id="thaiwater_canal_waterlevel", station_code="FAULT.02",
+        station_name="สถานีขัดข้อง (confidence test 2)",
+        lat=SAMMAKORN_LAT, lon=SAMMAKORN_LON,
+        variable="canal_water_level_m", value=None, unit="m",
+        observed_at_utc="2026-09-28T00:00:00+00:00",
+        fetched_at_utc="2026-09-28T00:30:00+00:00",
+        trust_tier="official_telemetry", status=fault_status)
+    store.insert_observation(
+        fresh_state_db, source_id="thaiwater_waterlevel", station_code="FAR.CONF3",
+        station_name="สถานีไกล (confidence test 3)",
+        lat=_FAR_SAMMAKORN_LAT, lon=SAMMAKORN_LON,
+        variable="waterlevel_m", value=9.9, unit="m",
+        observed_at_utc="2026-09-28T00:00:00+00:00",
+        fetched_at_utc="2026-09-28T00:30:00+00:00",
+        trust_tier="official_telemetry", status="OVERBANK",
+        provenance={"sub_basin_id": 777, "agency": "RID", "province_th": "กรุงเทพมหานคร"})
+    state = kb._answer_state(SAMMAKORN_LAT, SAMMAKORN_LON, as_of_date="2026-09-28")
+    assert kb._classify_current_local_state(state) == "RED"
+    assert state["resolution_confidence"] == "LOW"
+    out = kb._answer_next_action("sammakorn", state_answer=state,
+                                  hazard_answer={"per_model": []})
+    assert out["dual_state"]["current_local_state"] == "RED"
+    assert out["dual_state"]["confidence"] == "LOW"

@@ -1013,10 +1013,42 @@ def collect_openmeteo_forecast(conn, dry_run=False) -> CollectResult:
                           note="; ".join(notes), counts={"inserted": n_obs})
 
 
+def _thaiwater_status_word(situation_level, diff_wl_bank_text) -> str:
+    """v0.1.2 nationwide one-path: the ONE status word this collector stores for a
+    `thaiwater_waterlevel` row, per the regate mapping rules (diff_wl_bank_text
+    "ล้นตลิ่ง" is the agency's own directly-observed overflow word and takes priority;
+    otherwise the agency's own `situation_level` code is stored VERBATIM, as
+    `thaiwater_situation_<n>` -- `floodconnect_model.STATUS_TO_LEVEL` is the one place
+    that maps either word to a colour, never this function). No agency code at all
+    (`situation_level is None`) stores `NO_THRESHOLD`, same word every other collector
+    in this file already uses for "this station has no published level at all" --
+    `floodconnect_model.STATUS_TO_LEVEL` maps that to UNKNOWN, never GREEN."""
+    text = (diff_wl_bank_text or "").strip()
+    if text.startswith("ล้นตลิ่ง"):
+        return "OVERBANK"
+    if situation_level is not None:
+        try:
+            n = int(situation_level)
+        except (TypeError, ValueError):
+            return "NO_THRESHOLD"
+        if 1 <= n <= 5:
+            return f"thaiwater_situation_{n}"
+    return "NO_THRESHOLD"
+
+
 def collect_thaiwater_waterlevel(conn, dry_run=False) -> CollectResult:
-    """Nationwide HII river/canal telemetry (804 stations, 2026-09-27 -- see
-    docs/ASSETS.md's HII/RID probe log). Same one-GET/one-cache-raw shape as
-    collect_thaiwater_flood_road."""
+    """Nationwide HII/RID/EGAT/FOP river+canal telemetry (808 stations, 2026-10-04 --
+    see docs/ASSETS.md's HII/RID probe log). Same one-GET/one-cache-raw shape as
+    collect_thaiwater_flood_road.
+
+    v0.1.2 (founder ruling 2026-10-04, "ทำเลย v0.1.2 ทั้งประเทศ"): this is now wired
+    into the nationwide one-path decision -- `observations.bank`/`critical`/`status`
+    are filled from the agency's own `min_bank`/`critical_level_msl`/status word (see
+    `_thaiwater_status_word`), and the source is in `ANSWER_SOURCES` below. Every
+    other agency-published field this feed carries (river_name, sub_basin_id,
+    basin_id, agency shortname, amphoe/tambon, diff_wl_bank(_text), ground_level,
+    storage_percent, waterlevel_msl_previous) rides in `provenance` -- relayed, never
+    recomputed into a new reading here."""
     sid = "thaiwater_waterlevel"
     if dry_run:
         return CollectResult(sid, True, note="dry-run: would GET " + parsers.THAIWATER_WATERLEVEL_URL)
@@ -1034,15 +1066,29 @@ def collect_thaiwater_waterlevel(conn, dry_run=False) -> CollectResult:
     for r in rows:
         if r.get("observed_at") is None:
             continue
+        status_word = _thaiwater_status_word(r.get("situation_level"), r.get("diff_wl_bank_text"))
         n += store.insert_observation(
             conn, source_id=sid, station_code=r.get("station_oldcode") or r.get("station_id"),
             station_name=r.get("station_name_th"), lat=r["lat"], lon=r["lon"],
             variable="waterlevel_msl", value=r.get("waterlevel_msl"), unit="m",
             observed_at_utc=r["observed_at"], fetched_at_utc=fetched_at,
             trust_tier="official_telemetry",
+            bank=r.get("min_bank"), critical=r.get("critical_level_msl"),
+            status=status_word,
             provenance={"source_url": r.get("source_url"), "agency": r.get("agency"),
-                        "province_th": r.get("province_th"),
-                        "storage_percent": r.get("storage_percent")},
+                        "agency_shortname": r.get("agency_shortname"),
+                        "province_th": r.get("province_th"), "amphoe_th": r.get("amphoe_th"),
+                        "tambon_th": r.get("tambon_th"),
+                        "storage_percent": r.get("storage_percent"),
+                        "situation_level": r.get("situation_level"),
+                        "diff_wl_bank": r.get("diff_wl_bank"),
+                        "diff_wl_bank_text": r.get("diff_wl_bank_text"),
+                        "ground_level": r.get("ground_level"),
+                        "warning_level_m": r.get("warning_level_m"),
+                        "river_name": r.get("river_name"),
+                        "sub_basin_id": r.get("sub_basin_id"), "basin_id": r.get("basin_id"),
+                        "basin_name_th": r.get("basin_name_th"),
+                        "waterlevel_msl_previous": r.get("waterlevel_msl_previous")},
         )
     return CollectResult(sid, True, http=200, note=f"{len(rows)} nationwide station(s) fetched",
                           counts={"inserted": n})
@@ -3279,6 +3325,9 @@ CATALOG_ONLY_NOT_IN_REFRESH = {
 # source_id at all, so neither needs an entry here.
 ANSWER_SOURCES: frozenset = frozenset({
     "thaiwater_canal_waterlevel",      # canal levels -- state factor 4 (drainage)
+    "thaiwater_waterlevel",            # nationwide river/canal telemetry -- state
+                                        # factor 4 (drainage), v0.1.2 nationwide path
+                                        # (readout.build_readout's new nationwide loop)
     "bma_pumphistory",                 # pump status -- state factor 4 (drainage)
     "thaiwater_flood_road",            # flood-affected roads -- state factor 5
     "dds_daily_pdf",                   # BMA DDS daily bulletin -- state factor 4 (canal)

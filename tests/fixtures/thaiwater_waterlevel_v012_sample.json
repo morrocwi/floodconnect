@@ -1,0 +1,253 @@
+{
+  "data": [
+    {
+      "id": 1318414870,
+      "waterlevel_datetime": "2026-10-04 21:00",
+      "waterlevel_m": null,
+      "waterlevel_msl": "5.48",
+      "waterlevel_msl_previous": "5.48",
+      "flow_rate": null,
+      "discharge": null,
+      "storage_percent": "129.26",
+      "sort_order": null,
+      "station_type": "tele_waterlevel",
+      "situation_level": 5,
+      "agency": {
+        "id": 12,
+        "agency_name": {
+          "th": "กรมชลประทาน ",
+          "en": "Royal Irrigation Department",
+          "jp": ""
+        },
+        "agency_shortname": {
+          "th": "ชป.",
+          "en": "RID",
+          "jp": ""
+        }
+      },
+      "basin": {
+        "id": 10,
+        "basin_code": 10,
+        "basin_name": {
+          "th": "ลุ่มน้ำเจ้าพระยา",
+          "en": "Chao Phraya Basin"
+        }
+      },
+      "station": {
+        "id": 1095849,
+        "tele_station_name": {
+          "th": "สะพานหัวเวียง"
+        },
+        "tele_station_lat": 14.36851,
+        "tele_station_long": 100.414391,
+        "tele_station_oldcode": "C.67",
+        "tele_station_type": "tele_waterlevel",
+        "left_bank": 6.576,
+        "right_bank": 6.698,
+        "min_bank": 2.75,
+        "ground_level": -6.58,
+        "offset": null,
+        "sub_basin_id": 240,
+        "agency_id": 12,
+        "geocode_id": 570,
+        "hydro_id": 5,
+        "qmax": null,
+        "is_key_station": false,
+        "warning_level_m": null,
+        "critical_level_m": null,
+        "critical_level_msl": null
+      },
+      "geocode": {
+        "area_code": "2",
+        "area_name": {
+          "th": "ภาคกลาง",
+          "en": "Central"
+        },
+        "amphoe_code": "12",
+        "amphoe_name": {
+          "th": "เสนา",
+          "en": "Sena District"
+        },
+        "tumbon_code": "06",
+        "tumbon_name": {
+          "th": "หัวเวียง",
+          "en": "Hua Wiang"
+        },
+        "province_code": "14",
+        "province_name": {
+          "th": "พระนครศรีอยุธยา",
+          "en": "Phra Nakhon Si Ayutthaya"
+        }
+      },
+      "diff_wl_bank": "2.73",
+      "diff_wl_bank_text": "ล้นตลิ่ง (ม.)"
+    },
+    {
+      "id": 1318413803,
+      "waterlevel_datetime": "2026-10-04 21:00",
+      "waterlevel_m": null,
+      "waterlevel_msl": "133.81",
+      "waterlevel_msl_previous": "133.80",
+      "flow_rate": null,
+      "discharge": "147.10",
+      "storage_percent": null,
+      "sort_order": null,
+      "station_type": "tele_waterlevel",
+      "agency": {
+        "id": 12,
+        "agency_name": {
+          "th": "กรมชลประทาน ",
+          "en": "Royal Irrigation Department",
+          "jp": ""
+        },
+        "agency_shortname": {
+          "th": "ชป.",
+          "en": "RID",
+          "jp": ""
+        }
+      },
+      "basin": {
+        "id": 5,
+        "basin_code": 5,
+        "basin_name": {
+          "th": "ลุ่มน้ำมูล",
+          "en": "Mun Basin"
+        }
+      },
+      "station": {
+        "id": 2773,
+        "tele_station_name": {
+          "th": "บ้านวังปลัด"
+        },
+        "tele_station_lat": 15.43527,
+        "tele_station_long": 103.012627,
+        "tele_station_oldcode": "M.104",
+        "tele_station_type": "tele_waterlevel",
+        "left_bank": 134.200003,
+        "right_bank": 134.200003,
+        "min_bank": 137.8,
+        "offset": 128.300003,
+        "sub_basin_id": 120,
+        "agency_id": 12,
+        "geocode_id": 2017,
+        "hydro_id": 4,
+        "qmax": 710,
+        "is_key_station": false,
+        "warning_level_m": null,
+        "critical_level_m": null,
+        "critical_level_msl": null
+      },
+      "geocode": {
+        "area_code": "4",
+        "area_name": {
+          "th": "ภาคตะวันออกเฉียงเหนือ",
+          "en": "Northeast"
+        },
+        "amphoe_code": "02",
+        "amphoe_name": {
+          "th": "คูเมือง",
+          "en": "Khu Mueang District"
+        },
+        "tumbon_code": "03",
+        "tumbon_name": {
+          "th": "บ้านแพ",
+          "en": "Ban Phae"
+        },
+        "province_code": "31",
+        "province_name": {
+          "th": "บุรีรัมย์",
+          "en": "Buri Ram"
+        }
+      },
+      "diff_wl_bank": "3.99",
+      "diff_wl_bank_text": "ต่ำกว่าตลิ่ง (ม.)",
+      "river_gid": 144618,
+      "river_name": "แม่น้ำมูล"
+    },
+    {
+      "id": 1318428491,
+      "waterlevel_datetime": "2026-10-04 21:40",
+      "waterlevel_m": null,
+      "waterlevel_msl": "113.29",
+      "waterlevel_msl_previous": "113.28",
+      "flow_rate": null,
+      "discharge": null,
+      "storage_percent": "69.86",
+      "sort_order": null,
+      "station_type": "tele_waterlevel",
+      "situation_level": 3,
+      "agency": {
+        "id": 9,
+        "agency_name": {
+          "th": "สถาบันสารสนเทศทรัพยากรน้ำ (องค์การมหาชน)",
+          "en": "Hydro – Informatics Institute (Public Organization)",
+          "jp": ""
+        },
+        "agency_shortname": {
+          "th": "สสน.",
+          "en": "HII",
+          "jp": ""
+        }
+      },
+      "basin": {
+        "id": 4,
+        "basin_code": 4,
+        "basin_name": {
+          "th": "ลุ่มน้ำชี",
+          "en": "Chi Basin Basin"
+        }
+      },
+      "station": {
+        "id": 269,
+        "tele_station_name": {
+          "en": "Chi 11",
+          "th": "เขื่องใน"
+        },
+        "tele_station_lat": 15.32248,
+        "tele_station_long": 104.54649,
+        "tele_station_oldcode": "CHI011",
+        "tele_station_type": "tele_waterlevel",
+        "left_bank": 117.278,
+        "right_bank": 116.794,
+        "min_bank": 116.79,
+        "ground_level": 105.162,
+        "offset": null,
+        "sub_basin_id": 102,
+        "agency_id": 9,
+        "geocode_id": 2645,
+        "hydro_id": null,
+        "qmax": null,
+        "is_key_station": false,
+        "warning_level_m": null,
+        "critical_level_m": null,
+        "critical_level_msl": null
+      },
+      "geocode": {
+        "area_code": "4",
+        "area_name": {
+          "th": "ภาคตะวันออกเฉียงเหนือ",
+          "en": "Northeast"
+        },
+        "amphoe_code": "04",
+        "amphoe_name": {
+          "th": "เขื่องใน",
+          "en": "Khueang Nai District"
+        },
+        "tumbon_code": "01",
+        "tumbon_name": {
+          "th": "เขื่องใน",
+          "en": "Khueang Nai"
+        },
+        "province_code": "34",
+        "province_name": {
+          "th": "อุบลราชธานี",
+          "en": "Ubon Ratchathani"
+        }
+      },
+      "diff_wl_bank": "3.51",
+      "diff_wl_bank_text": "ต่ำกว่าตลิ่ง (ม.)",
+      "river_gid": 145659,
+      "river_name": "แม่น้ำชี"
+    }
+  ]
+}

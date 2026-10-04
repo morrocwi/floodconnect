@@ -1,0 +1,205 @@
+claim_id: "20261004-floodconnect-v012-claim"
+status: RELEASED
+writer: "ai-worker"
+branch: "agent/ai-worker/floodconnect-v0.1.2"
+base_sha: "c41bc013af57073e4cc86bc8d2934e182add2caf"
+nodes:
+  - FC_ROOT
+  - KB
+  - CI
+artifacts:
+  - docs/INDICATORS.md
+  - docs/NEAREST_STATION_RECIPE.md
+  - model_spec.json
+  - system_capabilities.json
+  - README.md
+  - llms.txt
+  - docs/AI_TIERS.md
+  - docs/EQUATIONS_FOR_AI.md
+  - kb.py
+  - tests/test_floodconnect_model.py
+  - tests/test_kb_answer.py
+  - tests/test_kb.py
+  - tests/test_readout.py
+  - tests/test_nationwide_waterlevel.py
+  - tests/fixtures/thaiwater_waterlevel_v012_sample.json
+  - tests/fixtures/thaiwater_waterlevel_v012_sample.sidecar.json
+  - parsers.py
+  - collect.py
+  - readout.py
+  - floodconnect_model.py
+  - sources/registry.yaml
+  - tests/test_collect.py
+  - pyproject.toml
+  - CHANGELOG.md
+  - ROADMAP.md
+  - tools/mcp/floodconnect_mcp.py
+intent: >
+  v0.1.2, scoped per founder ruling 2026-10-04 ("ที่สำคัญคือให้ ตัวชี้วัดนี้น้ำน้ำท่วมต้องชัด"
+  -- the flood indicators must be clear): a single closed indicators dictionary
+  (docs/INDICATORS.md, English + plain Thai) naming, for each indicator already computed
+  by this repository's v0.1.1 compute path, its one-line meaning, exact definition,
+  unit, input source, agency-published thresholds (never invented), colour/level
+  mapping, freshness rule, confidence rule, resolution label, a worked example, and
+  what it does NOT mean -- plus a machine-readable "indicators" array added to
+  model_spec.json (single source) and mirrored into system_capabilities.json, with a
+  test asserting the two match and that README/llms.txt/AI_TIERS/EQUATIONS_FOR_AI link
+  docs/INDICATORS.md. No new equation, no new agency threshold, no invented number --
+  every indicator cites its existing v0.1.1 source (floodconnect_model.py,
+  model_spec.json, kb.py). water_debt is listed with status "planned (v0.2+)" only, no
+  value.
+
+  Second pass on this same branch, after an independent review: the colour contract
+  is now scoped to current_local_state and one_decision.level only -- every other
+  indicator carries its own closed "levels" list and real "json_path" in both
+  model_spec.json/system_capabilities.json and docs/INDICATORS.md, and the unverified
+  "0 mismatches ... design review" sentence under bank_fill_percent is removed (the
+  agency's own storage_percent formula is now marked relayed, not a Toledo theorem).
+  A new offline output test (tests/test_floodconnect_model.py) runs kb.build_answer
+  and floodconnect_model.one_decision against real fixture/offline data and asserts
+  every emitted value is one of that indicator's own declared levels. Every answer
+  now carries "indicators_doc": "docs/INDICATORS.md" at its top level. The
+  Bangkok-only hotlines (1555, 1130) are now included only for a point actually
+  inside the existing BANGKOK_METRO_BBOX, never nationwide. A new
+  docs/NEAREST_STATION_RECIPE.md gives the step-by-step "find the nearest station
+  yourself" recipe (which official sources, how to pick within radius on the same
+  water body, how to read agency status) for an AI with no FloodConnect tool access,
+  per the founder's "ให้การหาพิกัด ... เป็นหน้าที่ของเอไอของใครของมันแทน" ruling; README,
+  llms.txt, docs/AI_TIERS.md, docs/EQUATIONS_FOR_AI.md and system_capabilities.json
+  all now frame FloodConnect as the method (never a hosted geocoding/POI service) and
+  link that recipe.
+
+  Third pass on this same branch (founder ruling 2026-10-04, "ทำเลย v0.1.2
+  ทั้งประเทศ"): the nationwide coarse-zoom generic read path IS now built, closing the
+  gap the second pass above declared out of scope. `parsers.parse_thaiwater_waterlevel`
+  now keeps `min_bank`/`ground_level`/`critical_level_msl`/`situation_level`/
+  `diff_wl_bank`/`diff_wl_bank_text`/`river_name`/`sub_basin_id`/`basin_id`/agency/
+  geocode/previous-value (exact paths MEASURED against one live GET, 2026-10-04 --
+  `diff_wl_bank`/`diff_wl_bank_text`/`situation_level`/`storage_percent` are TOP-LEVEL,
+  not under `station`). `collect.collect_thaiwater_waterlevel` fills
+  `observations.bank`/`critical`/`status` (status = the agency's own verbatim code,
+  `thaiwater_situation_<n>`, or `OVERBANK` when `diff_wl_bank_text` itself says
+  "ล้นตลิ่ง") and the source is in `collect.ANSWER_SOURCES` with an explicit
+  `max_age_hours: 24` in `sources/registry.yaml`. `floodconnect_model.STATUS_TO_LEVEL`
+  is now the ONE closed status-word map (readout.py/kb.py read their sets off it,
+  removing the previous duplicate copies) -- `NO_THRESHOLD` moved OUT of the
+  normal-like/GREEN set into UNKNOWN (a real pre-existing bug this pass also fixed,
+  the station carried no agency basis for GREEN at all). `readout.build_readout`
+  gained one nationwide factor-4 block: every fresh station within 10 km decides,
+  worst colour wins, at "station" resolution; failing that, a same-`sub_basin_id`
+  station within 50 km
+  decides at "basin" resolution, which can never produce GREEN on its own. Forecast
+  (`_resolve_forecast_point`/`_refresh_relevant_sources`) now fetches and reads at the
+  exact queried coordinate for ANY lat,lon, not only the 11 hardcoded points.
+  Accountability for a nationwide (non-MVP-area) point is TEXT ONLY -- the deciding
+  station's own feed-published province + owning agency -- never a graph lookup
+  (`tools/kg/*` is a different worktree's scope, not touched). Bangkok/Sammakorn/
+  Ram53 behaviour is unchanged (regression-tested). `pyproject.toml` and
+  `tools/mcp/floodconnect_mcp.py`'s `serverInfo.version` are bumped to 0.1.2;
+  `CHANGELOG.md` is new; README/llms.txt/docs/INDICATORS.md section 11/ROADMAP.md/
+  system_capabilities.json `areas_covered` are updated to say nationwide COARSE
+  (station/basin, never household) coverage is now shipped, not "in progress".
+  `distance_to_bank_m`/`bank_fill_percent` (section 7/8) stay relayed-in-provenance
+  only, not a standalone top-level answer field or a numeric colour cutoff (Toledo-
+  first: no invented threshold) -- the agency's own `situation_level`/
+  `diff_wl_bank_text` words are what actually drives the colour. `situation_level`'s
+  own Thai label wording per code was NOT independently confirmed (the thaiwater.net
+  legend page is JS-rendered, unreachable by a plain GET) -- the 1-5 ORDINAL direction
+  used for colour is MEASURED (co-occurrence with `diff_wl_bank_text`/`storage_percent`
+  on one live capture, 2026-10-04), the exact label text is OPEN, stated as such in
+  docs/INDICATORS.md. `tools/kg/*` and `output/*.graphml`/`*.jsonld` are untouched (a
+  different worktree's scope) per the orchestrator's instruction. File-level change
+  only, no history rewrite, stops before any public push per the local/public split
+  rule.
+
+  Fourth pass on this same branch (fixing 6 HIGH/MED defects an independent review
+  found in the third pass above): the "Bangkok/Sammakorn/Ram53 behaviour is unchanged
+  (regression-tested)" sentence above was false for any point whose own nearby canal/
+  pump telemetry was fresh but a FAR (15-50 km) nationwide basin-resolution station
+  existed too -- `readout.build_readout`'s nationwide block now also checks whether
+  this point's own LOCAL factor-4 reading (near_canal/near_pumps) is fresh, and
+  excludes every nationwide BASIN-resolution row from deciding when it is (still
+  shown as reference evidence; corrected in the fifth pass below -- this pass's own
+  code excluded every nationwide row, station-resolution included, which was over-
+  broad); a new regression test
+  (tests/test_readout.py::test_sammakorn_local_fresh_canal_excludes_far_nationwide_basin_row)
+  pins this. The "situation_level label wording is OPEN/unreachable" sentence above
+  was also wrong -- the agency's own Thai label and colour for codes 0-5 are now
+  VERIFIED (fetched from the public bundle
+  `https://www.thaiwater.net/dist/js/app.chunk.js`, 2026-10-04) and stated in
+  `floodconnect_model.py`'s `STATUS_TO_LEVEL` comment, `CHANGELOG.md` and
+  `docs/NEAREST_STATION_RECIPE.md`; level 4 ("มาก") is coloured BLUE by the agency and
+  is NOT a warning there -- mapping it to YELLOW (and 1/2 to GREEN) is stated as this
+  project's own conservative choice, never an agency threshold, and the recipe now
+  warns that level 1's label "น้อยวิกฤต" (critically LOW water) must not be pattern-
+  matched onto RED by the substring "วิกฤต". `kb._trim_evidence` (the non-verbose
+  `evidence` path) now carries `province_th` through for the deciding row, so
+  `_nationwide_accountability_fallback` can actually relay the feed's own geocode
+  province instead of always falling back to "ไม่ทราบจังหวัด [OPEN]"
+  (tests/test_kb.py). `kb._refresh_relevant_sources`'s bare-coordinate forecast fetch
+  now snaps onto a named `_FORECAST_KNOWN_POINTS` entry within
+  `_FORECAST_POINT_SNAP_RADIUS_KM`, the same snap `_resolve_forecast_point` (the read
+  side) already applied -- before this fix a fetch-then-read round trip for a
+  coordinate near a named point (e.g. real Chiang Mai/Hat Yai coordinates) always
+  fetched under a `coord_*` id the read side never looked at, regressing
+  `forward_hazard` to UNKNOWN (tests/test_collect.py). The "fetched and read at the
+  EXACT queried coordinate for any lat,lon" sentence above should be read with that
+  fix in mind: a point within the snap radius of a named point is fetched/read under
+  that point's own canonical coordinate, not the caller's literal decimal digits.
+  Docs (`CHANGELOG.md`, `docs/INDICATORS.md` section 11, `ROADMAP.md`, `llms.txt`,
+  `docs/NEAREST_STATION_RECIPE.md`) are reworded: nationwide station resolution is
+  "every fresh station within 10 km decides, worst colour wins" (never checked
+  against `river_name`,
+  despite the third pass's wording above), and basin resolution is "a station sharing
+  the NEAREST station's own `sub_basin_id`" (a stand-in for "same basin", not a
+  shared-named-river check). `dual_state` now carries `resolution`/`dist_km` for the
+  deciding nationwide row (omitted entirely, not `null`, when no nationwide row
+  decided -- keeps the token-budget-tested default answers the same size), and
+  `cmd_answer`'s printed evidence/dual-state lines show them too. `cmd_answer`'s
+  printed footer hotline list is now built from the same `who_to_call` field the JSON
+  answer already carries (`_is_bangkok_metro`-scoped) instead of a second hardcoded
+  Bangkok-only string, so the printed text and the JSON agree for every point
+  (tests/test_kb_answer.py). A non-geolocated Bangkok DDS bulletin row is now left out
+  of `status_counts_all` for a point outside `BANGKOK_METRO_BBOX` (it never decided
+  anything either way) rather than counted as unrelated "evidence" there
+  (tests/test_kb_answer.py). Two new basin-resolution unit tests
+  (tests/test_readout.py) pin that a same-sub_basin GREEN row never decides GREEN
+  alone and that a same-sub_basin flood-status row DOES decide, carrying
+  `resolution=basin`.
+
+  Fifth pass on this same branch: the fourth pass's own local-vs-nationwide fix went
+  too far -- it suppressed EVERY
+  nationwide row, including a station-resolution row sitting at 0.0 km on a fresh
+  agency OVERBANK status, whenever ANY local canal/pump reading was fresh, even one
+  with no colour-bearing status at all. `readout.build_readout`'s
+  `_local_factor4_decides` flag is now set only when a local reading is fresh AND
+  classifies to a real colour (`floodconnect_model.classify() != "UNKNOWN"`), and
+  when set it suppresses only a BASIN-resolution nationwide row -- a
+  STATION-resolution row (<=10 km) always decides alongside the local rows, worst
+  colour wins; a new test (tests/test_readout.py) pins a fresh local NORMAL reading
+  plus a fresh station-resolution OVERBANK row at 0-2 km deciding RED. Each excluded
+  nationwide row now also carries an `exclude_reason` (`basin_local_present` or
+  `basin_never_green`), and `kb.py`'s evidence printer gives it its own honest
+  reason text instead of the geo-exclusion ("outside radius/no coordinate") label it
+  was wrongly grouped under before. `next_action.dual_state.confidence` (`HIGH`/
+  `LOW`) is new this pass -- `HIGH` when a deciding row is station-resolution or
+  local, `LOW` when every deciding row is basin-resolution only; the key is omitted
+  entirely (read as `NONE`) when `current_local_state` is `UNKNOWN`, the same
+  never-a-null-placeholder convention `dual_state.resolution`/`dist_km` already use
+  -- with its own tests (tests/test_kb.py, tests/test_kb_answer.py) and
+  `docs/INDICATORS.md` section 9 updated to describe it next to the pre-existing
+  by-hand module's separate `confidence` field. `docs/INDICATORS.md` section 1
+  gained the agency's own `situation_level` legend table and citation, stated that
+  mapping code 4 to YELLOW and 1/2/3 to GREEN is FloodConnect's own choice (the
+  agency colours code 4 blue and does not call it a warning), and warned that code
+  1's label "น้อยวิกฤต" means critically LOW water, not RED. `system_capabilities.json`,
+  section 11, and `CHANGELOG.md` are reworded to say every fresh station within
+  10 km decides (worst colour wins), not just the nearest one, and the forecast-snap
+  caveat is added next to the "fetched and read at the queried coordinate" claim.
+  `tools/kg/*` and `output/*.graphml`/`*.jsonld` remain untouched, per the
+  orchestrator's instruction.
+created_at: "2026-10-04T20:40:00+07:00"
+expires_at: null
+reviewers: []
+supersedes: null
+note: null

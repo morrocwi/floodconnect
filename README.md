@@ -33,16 +33,53 @@ are — a readout, never a flood-depth prediction, never a safety certification.
 อัปเดตตายตัว ทุกค่าติดป้ายความน่าเชื่อถือของตัวเอง เป็นการอ่านค่า ไม่ใช่การพยากรณ์ความลึกน้ำท่วม
 และไม่ใช่การยืนยันความปลอดภัย**
 
-**Target: all of Thailand.** v0.1.x ships two Bangkok sites in household/node-level
-detail (Sammakorn village, Soi Ramkhamhaeng 53); nationwide coverage at coarse
-basin/province zoom is in progress (ROADMAP.md v0.2.0) — never call this product
-Bangkok-only. **เป้าหมาย: ทั่วประเทศไทย** v0.1.x เปิดใช้ละเอียดระดับบ้าน/โหนดเฉพาะสองพื้นที่
-ใน กทม. ส่วนความครอบคลุมทั่วประเทศแบบหยาบ (ระดับลุ่มน้ำ/จังหวัด) กำลังดำเนินการ — อย่าเรียก
-โครงการนี้ว่าเฉพาะ กทม.
+**Target: all of Thailand — shipped in v0.1.2.** Any `lat,lon` in Thailand now gets a
+real `current_local_state` reading at COARSE (station/basin) resolution, from the
+nationwide `thaiwater_waterlevel` telemetry feed — never household-level outside the
+two named Bangkok sites. Two Bangkok sites (Sammakorn village, Soi Ramkhamhaeng 53)
+keep their existing household/node-level detail, unchanged. See `docs/INDICATORS.md`
+§11 for exactly how station vs. basin resolution works and `docs/NEAREST_STATION_
+RECIPE.md` for the by-hand method. Never call this product Bangkok-only.
+**เป้าหมาย: ทั่วประเทศไทย — เปิดใช้แล้วใน v0.1.2** ทุกพิกัดในประเทศไทยตอบได้จริงที่ความละเอียด
+หยาบ (ระดับสถานี/ลุ่มน้ำ) จากฐานข้อมูลสถานีวัดระดับน้ำทั่วประเทศ — ไม่ใช่ระดับบ้านนอกสองพื้นที่
+ในกรุงเทพฯ ที่ยังคงรายละเอียดระดับบ้าน/โหนดเดิม
+
+**The flood indicators — see `docs/INDICATORS.md` for the full dictionary, every name,
+colour, source, threshold and worked example.** The closed set: `current_local_state`,
+`forward_hazard`, `rise_rate_dk`, `time_to_threshold_tk`, `rain_24h_mm`,
+`rain_7day_per_model_mm`, `distance_to_bank_m`, `bank_fill_percent`, `one_decision` (+
+`confidence`), `water_debt` (planned v0.2+). RED = agency critical/overflow, YELLOW =
+WATCH/warning or rising toward a threshold, GREEN = normal **with a fresh basis**,
+UNKNOWN = no fresh basis — **UNKNOWN is never SAFE.**
+
+**ตัวชี้วัดน้ำท่วม — อ่านรายละเอียดเต็มที่ `docs/INDICATORS.md`** ชุดตัวชี้วัดปิดตายตัว:
+`current_local_state`, `forward_hazard`, `rise_rate_dk`, `time_to_threshold_tk`,
+`rain_24h_mm`, `rain_7day_per_model_mm`, `distance_to_bank_m`, `bank_fill_percent`,
+`one_decision` (+ `confidence`), `water_debt` (วางแผน v0.2+) สีแดง=หน่วยงานประกาศวิกฤต/ล้นตลิ่ง
+สีเหลือง=เฝ้าระวังหรือกำลังขึ้นเข้าใกล้ค่าที่ตั้งไว้ สีเขียว=ปกติ **ต้องมีค่าสดรองรับ**
+ไม่ทราบ=ไม่มีค่าสดพอฟันธง **ไม่ทราบ ไม่เท่ากับ ปลอดภัย**
+
+**FloodConnect is the method, not a data service (founder ruling 2026-10-04): we give
+you WHICH sources to read, how to pick the nearest station, the equations/thresholds,
+and the honesty rules — never a hosted place/POI lookup.** Geocoding a place name and
+finding nearby points of interest are **your own AI's job**; FloodConnect never
+geocodes and holds no place/POI database. Have lat,lon already? The CLI/MCP tool is an
+**optional** deterministic helper that applies this same method for you. No tool
+access at all (a browsing-only chat AI)? Follow
+**[docs/NEAREST_STATION_RECIPE.md](docs/NEAREST_STATION_RECIPE.md)** step by step —
+same official sources, same rules, done by hand.
+
+**FloodConnect คือ "วิธีคิด" ไม่ใช่บริการข้อมูล (founder ruling 2026-10-04):** เราบอกว่าควร
+อ่านแหล่งไหน เลือกสถานีใกล้ที่สุดอย่างไร สมการ/เกณฑ์อะไร และกฎความซื่อตรง — ไม่ใช่ฐานข้อมูล
+สถานที่ที่โฮสต์ไว้ การหาพิกัดจากชื่อสถานที่และสถานที่ใกล้เคียงเป็นหน้าที่ของ **เอไอของคุณเอง**
+FloodConnect ไม่หาพิกัดเองและไม่มีฐานข้อมูลสถานที่ มีพิกัดแล้ว? ใช้ CLI/MCP เป็นตัวช่วย
+**ทางเลือก** ที่ใช้วิธีคิดเดียวกันนี้ให้อัตโนมัติ ไม่มีเครื่องมือเลย (แชทที่เข้าเว็บได้เท่านั้น)? ทำตาม
+**[docs/NEAREST_STATION_RECIPE.md](docs/NEAREST_STATION_RECIPE.md)** ทีละขั้น
 
 Start here → **[START_HERE.md](START_HERE.md)** (human-facing, 5-minute read, Thai) ·
 **[AGENTS.md](AGENTS.md)** (AI-facing rules, bilingual) · **[AI.md](AI.md)** (the single
-AI compute entrypoint).
+AI compute entrypoint) · **[docs/NEAREST_STATION_RECIPE.md](docs/NEAREST_STATION_RECIPE.md)**
+(the method, for an AI with no tool access).
 
 **AI readers: read [llms.txt](llms.txt) first, especially if you cannot run code** —
 it has a "If you cannot run code" section with the exact thing to tell your user, and
@@ -127,9 +164,10 @@ depth number — **"never averaged" also means never a combined min–max "range
 models either; relay each model's own `tomorrow_mm`/`7day_total_mm` by name, e.g. "JMA
 23.9 mm, CMA 2.4 mm, ECMWF 0.0 mm" — do not invent a single "X–Y mm" figure spanning
 them, that figure belongs to no model and is not in the output**); not a hosted
-service (install and compute yourself); not yet
-nationwide at household detail (two Bangkok sites only in v0.1.x — see the target
-line above); not yet running the full Water-Debt/Jev/DSVA decision model described in
+service (install and compute yourself); not nationwide at household detail (coarse
+station/basin resolution nationwide since v0.1.2; household/node detail stays two
+Bangkok sites only — see the target line above); not yet running the full
+Water-Debt/Jev/DSVA decision model described in
 `ARCHITECTURE.md` (that is a v0.2+ design target — see §9's implemented-vs-planned
 table); peers above are named only where independently verified, in neutral terms,
 never as a negative claim about a named competitor.

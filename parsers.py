@@ -657,15 +657,31 @@ def _th_local_to_utc_iso(dt_str: str, fmt: str = "%Y-%m-%d %H:%M"):
 THAIWATER_WATERLEVEL_URL = "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel"
 
 
+def _safe_float(v):
+    if v is None:
+        return None
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
 def parse_thaiwater_waterlevel(data: dict) -> list:
     """
     `api-v3.thaiwater.net .../public/waterlevel` JSON -> nationwide gauge-reading dicts.
 
     Returns [{station_id, station_oldcode, station_name_th, lat, lon,
-    waterlevel_msl, storage_percent, observed_at (UTC ISO), province_th, agency,
+    waterlevel_msl, waterlevel_msl_previous, storage_percent, situation_level,
+    diff_wl_bank, diff_wl_bank_text, min_bank, ground_level, critical_level_msl,
+    warning_level_m, river_name, sub_basin_id, basin_id, basin_name_th, province_th,
+    amphoe_th, tambon_th, agency, agency_shortname, observed_at (UTC ISO),
     source_url}]. A record with no valid coordinate (see `_valid_th_coord`) or no
     `waterlevel_msl` value is skipped, never fabricated -- same rule as every other
-    parser in this file.
+    parser in this file. Every added field is read straight off the live payload
+    (exact paths MEASURED 2026-10-04: `station.min_bank`, `station.ground_level`,
+    `station.critical_level_msl`, top-level `diff_wl_bank`/`diff_wl_bank_text`/
+    `storage_percent`/`situation_level` -- NOT nested under `station`) and kept as a
+    plain relayed value, never recomputed into a new number here.
     """
     out = []
     for rec in data.get("data", []):
@@ -680,22 +696,42 @@ def parse_thaiwater_waterlevel(data: dict) -> list:
             wl = float(wl)
         except (TypeError, ValueError):
             continue
-        storage_pct = rec.get("storage_percent")
-        try:
-            storage_pct = float(storage_pct) if storage_pct is not None else None
-        except (TypeError, ValueError):
-            storage_pct = None
-        agency = ((rec.get("agency") or {}).get("agency_name") or {}).get("en")
+        storage_pct = _safe_float(rec.get("storage_percent"))
+        agency_block = rec.get("agency") or {}
+        agency = (agency_block.get("agency_name") or {}).get("en")
+        agency_shortname = (agency_block.get("agency_shortname") or {}).get("en")
+        basin = rec.get("basin") or {}
         geocode = rec.get("geocode") or {}
+        situation_level = rec.get("situation_level")
+        try:
+            situation_level = int(situation_level) if situation_level is not None else None
+        except (TypeError, ValueError):
+            situation_level = None
         out.append({
             "station_id": str(station.get("id")) if station.get("id") is not None else None,
             "station_oldcode": station.get("tele_station_oldcode"),
             "station_name_th": (station.get("tele_station_name") or {}).get("th"),
             "lat": float(lat), "lon": float(lon),
-            "waterlevel_msl": wl, "storage_percent": storage_pct,
-            "observed_at": _th_local_to_utc_iso(rec.get("waterlevel_datetime")),
+            "waterlevel_msl": wl,
+            "waterlevel_msl_previous": _safe_float(rec.get("waterlevel_msl_previous")),
+            "storage_percent": storage_pct,
+            "situation_level": situation_level,
+            "diff_wl_bank": _safe_float(rec.get("diff_wl_bank")),
+            "diff_wl_bank_text": rec.get("diff_wl_bank_text"),
+            "min_bank": _safe_float(station.get("min_bank")),
+            "ground_level": _safe_float(station.get("ground_level")),
+            "critical_level_msl": _safe_float(station.get("critical_level_msl")),
+            "warning_level_m": _safe_float(station.get("warning_level_m")),
+            "river_name": rec.get("river_name"),  # top-level, not under station
+            "sub_basin_id": station.get("sub_basin_id"),
+            "basin_id": basin.get("id"),
+            "basin_name_th": (basin.get("basin_name") or {}).get("th"),
             "province_th": (geocode.get("province_name") or {}).get("th"),
-            "agency": agency, "source_url": THAIWATER_WATERLEVEL_URL,
+            "amphoe_th": (geocode.get("amphoe_name") or {}).get("th"),
+            "tambon_th": (geocode.get("tumbon_name") or {}).get("th"),
+            "observed_at": _th_local_to_utc_iso(rec.get("waterlevel_datetime")),
+            "agency": agency, "agency_shortname": agency_shortname,
+            "source_url": THAIWATER_WATERLEVEL_URL,
         })
     return out
 

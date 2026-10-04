@@ -64,7 +64,18 @@ the static landing page only, never a data surface); token budget test still gre
 > the refinement "ไม่ต้องเอาละเอียดเปะ... แค่ให้มันเชื่อมระดับ Zoom กว้างสุด" and moves
 > into v0.2.0 alongside V5, rather than keeping its own later slot.
 
-## v0.2.0 — V5 + V0 skeleton + Jev envelope + `--level` + V4 coarse nationwide
+> **DONE in v0.1.2 (2026-10-04, founder ruling "ทำเลย v0.1.2 ทั้งประเทศ"): V4 coarse
+> nationwide shipped early**, out of its v0.2.0 slot below — any `lat,lon` in
+> Thailand now gets a real `current_local_state`/`forward_hazard`/text-only
+> accountability reading at station (≤10 km, nearest station any water body) or basin
+> (≤50 km, sharing that nearest station's own sub-basin, never GREEN alone)
+> resolution, from the nationwide `thaiwater_waterlevel` feed. See
+> `docs/INDICATORS.md` §11 and `CHANGELOG.md`. The V4 bullet below is kept as the
+> historical plan text (GISTDA/DWR/GloFAS and basin confidence tiers beyond
+> station/basin are NOT part of what shipped) rather than deleted, so the sequencing
+> note above still reads correctly.
+
+## v0.2.0 — V5 + V0 skeleton + Jev envelope + `--level` (V4 coarse nationwide shipped early, v0.1.2)
 
 - **V5a/b**: BMA-direct canal gauges + the 233 (later expanded, see F8 note) road
   sensors decide the Bangkok-wide status; ปภ. (DDPM) disaster-area declarations shown
@@ -224,9 +235,9 @@ anything, is safe to publish from it.
 ## Fine-zoom (household/node) area sequencing (unchanged from the pre-v0.1.0 plan)
 
 This is the order for adding household/node-level detail (pumps, gates, water debt),
-not for nationwide coverage — coarse basin/province-zoom nationwide coverage is a
-separate v0.2.0 item (V4, see above), already in progress, and reaches every point in
-Thailand well before this fine-zoom list does.
+not for nationwide coverage — coarse station/basin-zoom nationwide coverage **shipped
+in v0.1.2** (see the DONE note above V4), ahead of this fine-zoom list, which still
+adds household detail one area at a time.
 
 Bangkok outer ring → Hat Yai → Nan/Chiang Mai → the country's 359 DWR sub-basins → other
 provinces (see `docs/MVP_SCOPE_2026-09-27.md` for the original founder ruling). Any

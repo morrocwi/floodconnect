@@ -1,0 +1,12 @@
+{
+ "source_id": "thaiwater_waterlevel",
+ "url": "https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel",
+ "captured_at": "2026-10-04T14:41:00Z",
+ "sha256": "efbf4688ebdc81192a9f5b414cbcde98c416fb6e8c006958d7cbc48174a546a8",
+ "http_status": 200,
+ "content_type": "application/json; charset=utf-8",
+ "fixture_ext": "json",
+ "capture_method": "single GET, one request per URL, no retry (per host_rule.max_requests_per_run)",
+ "trimmed_excerpt": true,
+ "trimmed_note": "trimmed from 808 live station records to 3 real records (verbatim, not edited): C.67 (diff_wl_bank_text starts ล้นตลิ่ง/overbank, situation_level 5), M.104 (situation_level null, below-bank text -- NO_THRESHOLD case), CHI011 (situation_level 3, below-bank text -- GREEN case). Picked for tests/test_nationwide_waterlevel.py's v0.1.2 regate acceptance tests (#2: NO_THRESHOLD-only never GREEN; overbank text drives RED)."
+}

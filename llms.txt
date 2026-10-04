@@ -20,17 +20,55 @@ T5 สคริปต์/นักพัฒนาที่เรียกผ่�
 ```
 
 > A One-Decision Network for flood water: a flood/canal/pump readout layer for your
-> home AI. **Target: all of Thailand** — any lat,lon, at a coarse basin/province zoom
-> (nationwide coverage is in progress, ROADMAP.md v0.2.0). v0.1.x ships household/node
-> detail for two Bangkok sites only (Sammakorn village, Soi Ramkhamhaeng 53) — never
-> call this project Bangkok-only. You install it and compute on your own machine;
-> nothing here is hosted, and nothing runs on a schedule.
+> home AI. **Target: all of Thailand — shipped in v0.1.2.** Any lat,lon gets a real
+> reading at a coarse station/basin zoom, from the nationwide `thaiwater_waterlevel`
+> telemetry feed. Household/node detail stays two Bangkok sites only (Sammakorn
+> village, Soi Ramkhamhaeng 53), unchanged — never call this project Bangkok-only. You
+> install it and compute on your own machine; nothing here is hosted, and nothing runs
+> on a schedule.
 
 > เครือข่ายการตัดสินใจหนึ่งเดียวสำหรับสถานการณ์น้ำ: เครื่องมืออ่านค่าน้ำ/คลอง/ปั๊ม สำหรับ AI
-> ของคุณเอง **เป้าหมาย: ทั่วประเทศไทย** — ทุกพิกัด lat,lon ที่ระดับหยาบ (ลุ่มน้ำ/จังหวัด) ความ
-> ครอบคลุมทั่วประเทศกำลังดำเนินการ (ดู ROADMAP.md v0.2.0) v0.1.x เปิดใช้ละเอียดระดับบ้าน/โหนด
-> เฉพาะ 2 พื้นที่ในกรุงเทพฯ (หมู่บ้านสัมมากร, ซอยรามคำแหง 53) — อย่าเรียกโครงการนี้ว่าเฉพาะ กทม.
+> ของคุณเอง **เป้าหมาย: ทั่วประเทศไทย — เปิดใช้แล้วใน v0.1.2** ทุกพิกัด lat,lon ตอบได้จริงที่ระดับ
+> หยาบ (สถานี/ลุ่มน้ำ) จากฐานข้อมูลสถานีทั่วประเทศ ความละเอียดระดับบ้าน/โหนดยังคงเฉพาะ 2 พื้นที่
+> ในกรุงเทพฯ (หมู่บ้านสัมมากร, ซอยรามคำแหง 53) — อย่าเรียกโครงการนี้ว่าเฉพาะ กทม.
 > ติดตั้งและคำนวณบนเครื่องของคุณเอง ไม่มีการโฮสต์ ไม่มีจังหวะอัปเดตตายตัว
+
+**The flood indicators — full dictionary in `docs/INDICATORS.md`.** Closed set:
+`current_local_state`, `forward_hazard`, `rise_rate_dk`, `time_to_threshold_tk`,
+`rain_24h_mm`, `rain_7day_per_model_mm`, `distance_to_bank_m`, `bank_fill_percent`,
+`one_decision` (+ `confidence`), `water_debt` (planned v0.2+). RED = agency
+critical/overflow, YELLOW = WATCH/warning or rising toward a threshold, GREEN = normal
+with a fresh basis, UNKNOWN = no fresh basis — UNKNOWN is never SAFE.
+
+**ตัวชี้วัดน้ำท่วม — ดูเต็มที่ `docs/INDICATORS.md`** ชุดปิดตายตัว: `current_local_state`,
+`forward_hazard`, `rise_rate_dk`, `time_to_threshold_tk`, `rain_24h_mm`,
+`rain_7day_per_model_mm`, `distance_to_bank_m`, `bank_fill_percent`, `one_decision`
+(+ `confidence`), `water_debt` (วางแผน v0.2+) ไม่ทราบ ไม่เท่ากับ ปลอดภัย
+
+## It is the method, not a hosted data service (founder ruling 2026-10-04)
+
+We give you the **method**: which official sources to read, how to pick the nearest
+station, the equations/thresholds, the honesty rules. **We never geocode and hold no
+place/POI database.** Finding a place's lat,lon, and nearby shelters/hospitals/routes,
+is **your own job** (your own geocoding/maps tool, or the user's own pin). If you
+already have lat,lon: the CLI/MCP tool is an **optional** helper that runs this same
+method deterministically — see "## How to get an answer" below. **No tool access at
+all** (you are a browsing-only chat AI, T0/T1 above)? Follow
+`docs/NEAREST_STATION_RECIPE.md` — the same official sources and rules, step by step,
+done by hand: fetch `api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel`
+(nationwide, no key) or the BMA Bangkok pages, check every station within 10 km
+(any water body -- not checked against river name); worst colour wins. Else a station
+sharing that nearest station's own sub-basin within 50 km ("basin" resolution, never
+GREEN on its own), read the agency's own status word
+(`situation_level`/`diff_wl_bank_text`) or bank/ground-level fields, check freshness,
+classify — never invent a station or a number.
+
+## ให้วิธีคิด ไม่ใช่บริการข้อมูลโฮสต์กลาง (founder ruling 2026-10-04)
+
+เราให้ "วิธีคิด": อ่านแหล่งไหน เลือกสถานีใกล้ที่สุดอย่างไร สมการ/เกณฑ์อะไร กฎความซื่อตรง
+**ไม่หาพิกัดเอง ไม่มีฐานข้อมูลสถานที่** การหาพิกัดจากชื่อสถานที่ และสถานที่ใกล้เคียง เป็นหน้าที่
+ของคุณเอง มีพิกัดแล้ว ใช้ CLI/MCP เป็นตัวช่วยทางเลือก ไม่มีเครื่องมือเลย ทำตาม
+`docs/NEAREST_STATION_RECIPE.md` ทีละขั้นด้วยแหล่งทางการเดียวกัน
 
 ## What it is NOT
 

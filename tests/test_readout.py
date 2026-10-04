@@ -191,6 +191,131 @@ def test_tide_table_filtered_by_local_not_utc_date(conn):
     assert -0.22 not in values
 
 
+# --- v0.1.2 nationwide one-path: local-vs-nationwide precedence, basin-never-GREEN
+# (independent review 2026-10-04, items 1 and 8) -------------------------------------
+
+_FAR_LAT, _FAR_LON = 13.938235, 100.676084  # ~20 km north of Sammakorn (CENTRE_LAT/LON)
+# -- NATIONWIDE_RIVER_RADIUS_KM (10 km) < this distance <= NATIONWIDE_BASIN_RADIUS_KM
+# (50 km), i.e. "basin" resolution only, never "station" resolution, for this point.
+
+
+def test_sammakorn_local_fresh_canal_excludes_far_nationwide_basin_row(conn):
+    """Independent review item 1 (HIGH): before this fix, Sammakorn's OWN fresh canal
+    reading did not count toward `_has_fresh_station`, so a fresh OVERBANK
+    `thaiwater_waterlevel` row ~20 km away (a different water body, same sub_basin_id
+    by construction) could decide RED for Sammakorn even though Sammakorn's own
+    nearby canal telemetry said NORMAL. The far row must stay `used_for_decision:
+    False` (still shown as reference evidence) whenever the point's own local
+    canal/pump reading is fresh."""
+    fetched = "2026-09-26T04:00:00+00:00"
+    store.insert_observation(
+        conn, source_id="thaiwater_canal_waterlevel", station_code="WL.SSB.07",
+        station_name="ค.แสนแสบ-สนข.บางกะปิ", lat=13.76509, lon=100.64791,
+        variable="canal_water_level_m", value=0.40, unit="m",
+        observed_at_utc="2026-09-26T03:00:00+00:00", fetched_at_utc=fetched,
+        trust_tier="official_telemetry", warning=0.50, critical=0.80, bank=1.20,
+        status="NORMAL")
+    store.insert_observation(
+        conn, source_id="thaiwater_waterlevel", station_code="FAR.01",
+        station_name="สถานีไกลคนละคลอง", lat=_FAR_LAT, lon=_FAR_LON,
+        variable="waterlevel_m", value=9.9, unit="m",
+        observed_at_utc="2026-09-26T03:30:00+00:00", fetched_at_utc=fetched,
+        trust_tier="official_telemetry", status="OVERBANK",
+        provenance={"sub_basin_id": 240, "agency": "RID", "province_th": "กรุงเทพมหานคร"})
+    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26")
+    f4 = result["factors"]["4_การระบาย"]
+    far_row = next(r for r in f4["measured"] if r.get("source") == "thaiwater_waterlevel")
+    assert far_row["resolution"] == "basin"
+    assert far_row["used_for_decision"] is False
+    local_row = next(r for r in f4["measured"]
+                      if r.get("source") == "thaiwater_canal_waterlevel")
+    assert local_row["tag"] == "MEASURED"
+
+
+def test_nationwide_basin_row_never_decides_green(conn):
+    """Independent review item 8 (LOW): a same-sub_basin GREEN-classified station ~20
+    km away (basin resolution, no station within 10 km, no local canal/pump reading)
+    must never decide GREEN on its own."""
+    fetched = "2026-09-26T04:00:00+00:00"
+    store.insert_observation(
+        conn, source_id="thaiwater_waterlevel", station_code="FAR.02",
+        station_name="สถานีไกลระดับปกติ", lat=_FAR_LAT, lon=_FAR_LON,
+        variable="waterlevel_m", value=1.0, unit="m",
+        observed_at_utc="2026-09-26T03:30:00+00:00", fetched_at_utc=fetched,
+        trust_tier="official_telemetry", status="thaiwater_situation_3",
+        provenance={"sub_basin_id": 240, "agency": "RID", "province_th": "กรุงเทพมหานคร"})
+    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26")
+    f4 = result["factors"]["4_การระบาย"]
+    row = next(r for r in f4["measured"] if r.get("source") == "thaiwater_waterlevel")
+    assert row["resolution"] == "basin"
+    assert row["status"] == "thaiwater_situation_3"
+    assert row["used_for_decision"] is False
+
+
+def test_nationwide_basin_row_with_flood_status_decides_at_basin_resolution(conn):
+    """Companion to the GREEN-never-decides case above: a same-sub_basin row that is
+    NOT green (here OVERBANK) at basin resolution, with no local reading to override
+    it, DOES decide -- carrying `resolution: "basin"` so a caller can tell it apart
+    from a close station-resolution reading."""
+    fetched = "2026-09-26T04:00:00+00:00"
+    store.insert_observation(
+        conn, source_id="thaiwater_waterlevel", station_code="FAR.03",
+        station_name="สถานีไกลล้นตลิ่ง", lat=_FAR_LAT, lon=_FAR_LON,
+        variable="waterlevel_m", value=9.9, unit="m",
+        observed_at_utc="2026-09-26T03:30:00+00:00", fetched_at_utc=fetched,
+        trust_tier="official_telemetry", status="OVERBANK",
+        provenance={"sub_basin_id": 240, "agency": "RID", "province_th": "กรุงเทพมหานคร"})
+    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26")
+    f4 = result["factors"]["4_การระบาย"]
+    row = next(r for r in f4["measured"] if r.get("source") == "thaiwater_waterlevel")
+    assert row["resolution"] == "basin"
+    assert row["used_for_decision"] is True
+
+
+_NEAR_LAT, _NEAR_LON = 13.768235, 100.686084  # ~1.5 km from CENTRE_LAT/LON --
+# within NATIONWIDE_RIVER_RADIUS_KM (10 km), i.e. "station" resolution for this point.
+
+
+def test_fresh_local_normal_plus_fresh_station_overbank_decides_red(conn):
+    """Fix (2026-10-04): the earlier fix for the far-basin-row regression went
+    too far -- it suppressed EVERY nationwide row (station resolution included)
+    whenever ANY local canal/pump reading was fresh, so a station sitting at 0-2 km
+    on a fresh agency OVERBANK status got silently excluded even though it is as
+    local as a reading gets. A fresh local NORMAL reading must NOT stop a fresh
+    nationwide STATION-resolution OVERBANK row at 0-2 km from deciding -- worst
+    colour wins, so the point must come back RED, with the station row carrying
+    `resolution: "station"` and `used_for_decision: True`."""
+    fetched = "2026-09-26T04:00:00+00:00"
+    store.insert_observation(
+        conn, source_id="thaiwater_canal_waterlevel", station_code="WL.SSB.07",
+        station_name="ค.แสนแสบ-สนข.บางกะปิ", lat=13.76509, lon=100.64791,
+        variable="canal_water_level_m", value=0.40, unit="m",
+        observed_at_utc="2026-09-26T03:00:00+00:00", fetched_at_utc=fetched,
+        trust_tier="official_telemetry", warning=0.50, critical=0.80, bank=1.20,
+        status="NORMAL")
+    store.insert_observation(
+        conn, source_id="thaiwater_waterlevel", station_code="NEAR.01",
+        station_name="สถานีใกล้ล้นตลิ่ง", lat=_NEAR_LAT, lon=_NEAR_LON,
+        variable="waterlevel_m", value=9.9, unit="m",
+        observed_at_utc="2026-09-26T03:30:00+00:00", fetched_at_utc=fetched,
+        trust_tier="official_telemetry", status="OVERBANK",
+        provenance={"sub_basin_id": 240, "agency": "RID", "province_th": "กรุงเทพมหานคร"})
+    result = readout.build_readout(conn, CENTRE_LAT, CENTRE_LON, 5.0, as_of_date="2026-09-26")
+    f4 = result["factors"]["4_การระบาย"]
+    near_row = next(r for r in f4["measured"] if r.get("source") == "thaiwater_waterlevel")
+    assert near_row["resolution"] == "station"
+    assert near_row["used_for_decision"] is True
+    assert near_row["status"] == "OVERBANK"
+    local_row = next(r for r in f4["measured"]
+                      if r.get("source") == "thaiwater_canal_waterlevel")
+    assert local_row["tag"] == "MEASURED"
+    # build_readout itself doesn't classify -- confirm via floodconnect_model that the
+    # deciding station status word is RED (the same closed map kb.py's classifier
+    # reads, see floodconnect_model.STATUS_TO_LEVEL).
+    import floodconnect_model as fm
+    assert fm.classify(near_row["status"]) == "RED"
+
+
 def test_write_readout_creates_md_and_json(conn, tmp_path):
     _seed_fixture_store(conn)
     out_dir = tmp_path / "output"
