@@ -9,6 +9,22 @@
 Never state a `planned`/`backlog` item as current — see `ARCHITECTURE.md` §9 for the
 implemented-vs-planned table this roadmap extends.
 
+## PAUSED after v0.1.3 (2026-10-05) — read this before anything below
+
+**The project is paused as of 2026-10-05, by founder decision, after v0.1.2
+(nationwide coarse answer) and v0.1.3 (nationwide knowledge graph shipped in git)
+— see `docs/handoff/NEXT_AI_HANDOFF.md` for what is actually released and how to
+continue.** The section labels below this line (`v0.1.1 ... next`, etc.) predate
+v0.1.2/v0.1.3 and are stale — `CHANGELOG.md` is the ledger of what actually shipped
+(v0.1.0 → v0.1.1 → v0.1.2 → v0.1.3); re-check `CHANGELOG.md` before trusting any
+"next"/"done" label in the sections that follow. The M2b backlog (canal/true-polyline
+`ON_REACH` snapping, 13 Pathum Thani `hii_watergate` gates lack `IN_PROVINCE`
+(id-prefix join), point→province accountability wiring, Strahler≥4 river network,
+per-basin main-river flag, re-check of the `thaiwater` situation-level label mapping, a
+`rain_7day_per_model_mm` fixture test) and the water-debt / Toledo-registration items
+(V6/V8, `PROP-FLOOD-03..07`) below remain **open, unregistered work for whoever
+continues this** — not resumed by this team right now.
+
 ## Binding rules (apply to every item below, no exceptions)
 
 - **No hosted data.** No release ships a pre-computed reading, a live Pages dashboard,
