@@ -1,5 +1,10 @@
 # FloodConnect
 
+**Project status: paused after v0.1.3 (2026-10-05), by founder decision.** Nothing
+released was taken down; re-run the tests/validators before relying on it. No new
+release is planned from this team right now. See
+`docs/handoff/NEXT_AI_HANDOFF.md` for what shipped and how to fork/continue.
+
 **Which AI are you? — see `docs/AI_TIERS.md` for the full version.**
 ```
 T0 search snippet, no browsing                 -> you can't act here; tell the user to open an AI that can browse or install software.
