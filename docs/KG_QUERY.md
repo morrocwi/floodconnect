@@ -57,12 +57,17 @@ denominator):**
 | basin / culvert / diversion_channel / levee / pond / reservoir_small / retention_basin / tide_gate / tunnel | 0 | 191 | 0% |
 
 **Most assets nationwide do NOT get an `ON_REACH` edge.** The river network itself is coarse
-(2,254 reaches at Strahler order ≥ 6 nationwide) and canal-sited stations never snap to it —
-e.g. every Pathum Thani gauge (province:13, cards คลองเปรมประชากร/คลองระพีพัฒน์) sits on a canal,
-not a HydroRIVERS reach, so none has an `ON_REACH` edge. **Snapping to `canal_node`/declared
-canal-chain reaches together with `river_reach`, and measuring true point-to-polyline distance
-instead of point-to-centroid, is M2b** (out of scope for this build — see `tools/kg/README.md`
-"Known gaps").
+(2,250 HydroRIVERS reaches at Strahler order ≥ 6 nationwide, plus 8 `river_reach` nodes from
+other sources). **A canal-sited station often DOES snap, but to a distant, unreliable
+reach** — 288 of the 785 `ON_REACH` edges nationwide are from an asset whose own name
+contains คลอง ("canal"), e.g. `gate:hii_watergate:11` (คลองลาดพร้าว ท้ายปตร.คลอง2) snaps 12.76 km
+away, and `gauge:thaiwater_bma:KP03` (คลองเปรมประชากร) snaps 9.44 km away — the heuristic finds
+the nearest river-reach POINT regardless of whether a canal, not a river, is what the asset
+actually sits on. Measured snap-distance distribution nationwide: median 1.71 km, 100 of 785
+edges over 5 km, 34 over 10 km, max 15.71 km. **Treat any `ON_REACH` edge from a canal-named
+asset, or any edge with a large implied snap distance, as unreliable for an
+upstream/downstream walk** — true point-to-polyline snapping across river AND canal reaches
+together is **M2b** (out of scope for this build — see `tools/kg/README.md` "Known gaps").
 
 ```python
 # which reach is this gauge on, and what's downstream of it?
@@ -151,11 +156,15 @@ inside Thailand is not silently left untagged. See `compute_main_stem()` in
 
 **`main_stem` means "lies on the main-stem path of its own HydroRIVERS river system
 (`main_river_id` group)" — it is NOT the Thai administrative sense of แม่น้ำสายหลัก (the single
-designated main river per ONWR river basin).** Under this build's definition the Nan river
-(its own HydroRIVERS system) is main-stem for itself, while the Ping/Yom/Mun/Chi (tributaries of
-the Chao Phraya/Mun systems by this measure) are not — a reader expecting the Thai per-basin
-sense should NOT read `main_stem=True` as "the one official main river of this ONWR basin". A
-second, per-ONWR-basin `basin_main_river` flag (or an explicit crosswalk to the Thai sense) is
+designated main river per ONWR river basin).** Ping, Mun and Chi are `main_stem=False`
+because each is a tributary piece INSIDE a larger HydroRIVERS group — Ping inside the Chao
+Phraya group, Mun and Chi inside the Mekong group — not because each has its own system. The
+Nan river is `main_stem=True` because it is the highest-discharge branch within the SAME
+Chao Phraya group that the Chao Phraya reach itself belongs to, not because it is its own
+system — a reader expecting the Thai per-basin sense should NOT read `main_stem=True` as "the
+one official main river of this ONWR basin", since this measure picks one branch per
+HydroRIVERS group by discharge, which need not match the Thai designation. A second,
+per-ONWR-basin `basin_main_river` flag (or an explicit crosswalk to the Thai sense) is
 **M2b**.
 
 ```python

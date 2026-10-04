@@ -284,15 +284,22 @@ table (printed to stdout on every run) if any upstream source changes.
   culvert, diversion_channel, levee, pond, reservoir_small, retention_basin, tide_gate,
   tunnel) is 0. `rain_gauge` (4,428 assets) is excluded entirely, by design. The snap
   heuristic measures distance to a reach's representative POINT, not its line geometry,
-  and never snaps to a `canal_node`/declared canal-chain reach -- every Pathum Thani
-  station (province:13), sited on a canal, is unsnapped as a direct result. True
-  point-to-polyline snapping across river AND canal reaches together is **M2b**. See
-  `docs/KG_QUERY.md` section 1 for the full per-class table.
+  and never snaps to a `canal_node`/declared canal-chain reach -- but it DOES snap a
+  canal-sited asset to the nearest HydroRIVERS `river_reach` regardless, often far away:
+  288 of the 785 edges are from an asset with คลอง (canal) in its own name (median snap
+  1.71 km, 100 over 5 km, 34 over 10 km, max 15.71 km) -- an upstream/downstream walk
+  from such an edge is not reliable. True point-to-polyline snapping across river AND
+  canal reaches together is **M2b**. See `docs/KG_QUERY.md` section 1 for the full
+  per-class table and the snap-distance numbers.
 - **`main_stem` is per HydroRIVERS river system (`main_river_id` group), not the Thai
   administrative "แม่น้ำสายหลัก" (the one designated main river per ONWR basin)** -- under
-  this build's definition several of Thailand's own tributary rivers (Ping/Yom/Mun/Chi)
-  are each their own "main stem" because each is its own HydroRIVERS system, which is NOT
-  the Thai per-basin sense a reader may expect. A second, explicit per-ONWR-basin
+  this build's definition Ping, Mun and Chi are `main_stem=False` because each is a
+  tributary piece INSIDE a larger HydroRIVERS group (the Chao Phraya group for Ping, the
+  Mekong group for Mun/Chi), not because each has its own group. The Nan river is
+  `main_stem=True`, not because it is its own system, but because it is the
+  highest-discharge branch within the SAME Chao Phraya group that also contains the Chao
+  Phraya reach itself -- `main_stem` picks one branch per group by discharge, which need
+  not match the Thai per-basin "สายหลัก" designation. A second, explicit per-ONWR-basin
   `basin_main_river` flag (or a crosswalk to the Thai sense) is **M2b**.
 - **Point -> province/accountability resolution is not wired for a bare lat,lon outside
   Sammakorn/Ram53** -- `province:*`/`amphoe:*` nodes carry no geometry (`lat`/`lon` both
