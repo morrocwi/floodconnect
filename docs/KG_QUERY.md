@@ -59,7 +59,7 @@ denominator):**
 **Most assets nationwide do NOT get an `ON_REACH` edge.** The river network itself is coarse
 (2,250 HydroRIVERS reaches at Strahler order ≥ 6 nationwide, plus 8 `river_reach` nodes from
 other sources). **A canal-sited station often DOES snap, but to a distant, unreliable
-reach** — 288 of the 785 `ON_REACH` edges nationwide are from an asset whose own name
+reach** — 250 of the 785 `ON_REACH` edges nationwide are from an asset whose own `name_th`
 contains คลอง ("canal"), e.g. `gate:hii_watergate:11` (คลองลาดพร้าว ท้ายปตร.คลอง2) snaps 12.76 km
 away, and `gauge:thaiwater_bma:KP03` (คลองเปรมประชากร) snaps 9.44 km away — the heuristic finds
 the nearest river-reach POINT regardless of whether a canal, not a river, is what the asset

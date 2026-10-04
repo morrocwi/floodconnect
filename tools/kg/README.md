@@ -286,7 +286,7 @@ table (printed to stdout on every run) if any upstream source changes.
   heuristic measures distance to a reach's representative POINT, not its line geometry,
   and never snaps to a `canal_node`/declared canal-chain reach -- but it DOES snap a
   canal-sited asset to the nearest HydroRIVERS `river_reach` regardless, often far away:
-  288 of the 785 edges are from an asset with คลอง (canal) in its own name (median snap
+  250 of the 785 edges are from an asset whose own name_th contains คลอง (canal) (median snap
   1.71 km, 100 over 5 km, 34 over 10 km, max 15.71 km) -- an upstream/downstream walk
   from such an edge is not reliable. True point-to-polyline snapping across river AND
   canal reaches together is **M2b**. See `docs/KG_QUERY.md` section 1 for the full
