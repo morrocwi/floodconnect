@@ -69,8 +69,10 @@ asset, or any edge with a large implied snap distance, as unreliable for an
 upstream/downstream walk** — true point-to-polyline snapping across river AND canal reaches
 together is **M2b** (out of scope for this build — see `tools/kg/README.md` "Known gaps").
 
-**MEASURED: no Pathum Thani asset has an `ON_REACH` edge (0 of 20 province:13 `IN_PROVINCE`
-assets, 0 of 28 HII-geocoded Pathum assets); fixing this is M2b.**
+**MEASURED: no Pathum Thani asset has an `ON_REACH` edge — 0 of 15 Pathum assets in the graph
+(4 water-level gauges BKK002, BKK013, BKK015, CAN001 + 11 rain gauges, the latter excluded
+from ON_REACH by design); 13 of the 28 HII-geocoded Pathum ids are not nodes in the shipped
+graph. Fixing this is M2b.**
 
 ```python
 # which reach is this gauge on, and what's downstream of it?
