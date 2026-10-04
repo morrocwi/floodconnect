@@ -54,7 +54,7 @@ denominator):**
 | pump_station | 117 | 297 | 39% |
 | reservoir_medium | 69 | 862 | 8% |
 | weir | 29 | 102 | 28% |
-| basin / culvert / diversion_channel / levee / pond / reservoir_small / retention_basin / tide_gate / tunnel | 0 | 191 | 0% |
+| basin / culvert / diversion_channel / levee / pond / reservoir_small / retention_basin / tide_gate / tunnel | 0 | 118 | 0% |
 
 **Most assets nationwide do NOT get an `ON_REACH` edge.** The river network itself is coarse
 (2,250 HydroRIVERS reaches at Strahler order ≥ 6 nationwide, plus 8 `river_reach` nodes from
@@ -68,6 +68,9 @@ edges over 5 km, 34 over 10 km, max 15.71 km. **Treat any `ON_REACH` edge from a
 asset, or any edge with a large implied snap distance, as unreliable for an
 upstream/downstream walk** — true point-to-polyline snapping across river AND canal reaches
 together is **M2b** (out of scope for this build — see `tools/kg/README.md` "Known gaps").
+
+**MEASURED: no Pathum Thani asset has an `ON_REACH` edge (0 of 20 province:13 `IN_PROVINCE`
+assets, 0 of 28 HII-geocoded Pathum assets); fixing this is M2b.**
 
 ```python
 # which reach is this gauge on, and what's downstream of it?
@@ -151,7 +154,7 @@ also restarts on every weakly-connected fragment of the SAME `main_river_id` gro
 gap splits apart (fixed 2026-10-04 — the Mekong's own group splits into 2 such fragments, 983 +
 302 reaches, inside this repo's Thailand-bbox extract alone), so a border river's segment still
 inside Thailand is not silently left untagged. See `compute_main_stem()` in
-`tools/kg/build_kg.py` for the exact walk, and `tests/test_kg_build.py`'s
+`tools/kg/build_kg.py` for the exact walk, and `tests/test_kg_shipped.py`'s
 `test_mekong_reach_near_nong_khai_is_main_stem_on_the_real_graph` for the regression.
 
 **`main_stem` means "lies on the main-stem path of its own HydroRIVERS river system
@@ -190,3 +193,8 @@ run `python3 -m tools.harvest.dwr_subbasin` first, or copy/symlink an existing a
 that polygon archive the builder **exits non-zero** rather than silently shipping a graph with
 zero `IN_SUBBASIN` edges — pass `--allow-missing-subbasin` only if you genuinely intend a
 degraded build, and never commit that build's output.
+
+`kb.py`'s `_answer_accountability` only consults this shipped nationwide graph when the
+`FLOODCONNECT_USE_SHIPPED_KG` environment variable is set truthy (`1`/`true`/`yes`/`on`) —
+unset or falsy, it keeps the pre-ship Sammakorn/Ram53 MVP fallback path unchanged; direct
+`tools/kg/accountability.py` CLI/MCP use is unaffected either way.

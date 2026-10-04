@@ -291,6 +291,8 @@ table (printed to stdout on every run) if any upstream source changes.
   from such an edge is not reliable. True point-to-polyline snapping across river AND
   canal reaches together is **M2b**. See `docs/KG_QUERY.md` section 1 for the full
   per-class table and the snap-distance numbers.
+  **MEASURED: no Pathum Thani asset has an `ON_REACH` edge (0 of 20 province:13
+  `IN_PROVINCE` assets, 0 of 28 HII-geocoded Pathum assets); fixing this is M2b.**
 - **`main_stem` is per HydroRIVERS river system (`main_river_id` group), not the Thai
   administrative "แม่น้ำสายหลัก" (the one designated main river per ONWR basin)** -- under
   this build's definition Ping, Mun and Chi are `main_stem=False` because each is a
