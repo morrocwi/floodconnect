@@ -187,3 +187,32 @@ protocol (see `ARCHITECTURE.md` §6), for a single point at coarse
 See `docs/AI_TIERS.md` for which of the above you're expected to do given
 your own capability tier, and `ARCHITECTURE.md` for the full protocol this
 section simplifies.
+
+## 6. The indicators dictionary — name every output exactly
+
+Step 6 above says "state one plain classification" — **always name it using one of
+the indicators in `docs/INDICATORS.md`**, never an ad-hoc label of your own. The closed
+set: `current_local_state`, `forward_hazard`, `rise_rate_dk` (§1 above),
+`time_to_threshold_tk` (§2 above), `rain_24h_mm`, `rain_7day_per_model_mm`,
+`distance_to_bank_m`, `bank_fill_percent`, `one_decision` (+ `confidence`), `water_debt`
+(planned v0.2+, no value).
+
+**The RED/YELLOW/GREEN/UNKNOWN colour vocabulary applies ONLY to
+`current_local_state` and `one_decision.level`** (fix, 2026-10-04, review finding #3 —
+an earlier draft of this section wrongly claimed every indicator shared it). Every
+other indicator has its own closed vocabulary — `forward_hazard` is
+`ACTIVE`/`NONE`/`UNKNOWN`, `rise_rate_dk` is `RISING`/`FALLING`/`FLAT`/`NO_READOUT`,
+and so on — see that indicator's own entry in `docs/INDICATORS.md` for its real
+`levels` and exact JSON path, and `model_spec.json`'s per-indicator `levels`/`json_path`
+fields for the same as data. `UNKNOWN` (wherever it is one of the possible values) is
+**never treated as safe**.
+
+## 7. FloodConnect is the method — finding the station yourself
+
+Every computation above (`Δk`, `Tk`, `one_decision`) needs a real reading, `h_t`, first.
+**FloodConnect never geocodes and holds no place/POI database** — if you only have a
+place name, resolving it to lat,lon is your own job (founder ruling 2026-10-04: "ให้การ
+หาพิกัด ... เป็นหน้าที่ของเอไอของใครของมันแทน"). Once you have lat,lon, either call the
+CLI/MCP tool (it runs this exact method deterministically), or, with no tool access,
+follow `docs/NEAREST_STATION_RECIPE.md` to find the nearest real station yourself and
+read `h_t`/`θ` off the same official sources this repository's own collector reads.

@@ -141,3 +141,95 @@ def test_parse_scalar_or_list_round_trip():
     items = ["a", 'b"c', "d\\e"]
     dumped = kb._yaml_list(items)
     assert kb._parse_scalar_or_list(dumped) == items
+
+
+def test_trim_evidence_carries_province_th_for_a_deciding_nationwide_row():
+    """Independent review item 3 (MED): `_trim_evidence` (the non-verbose `evidence`
+    path every default `kb.py answer` call uses) used to drop `province_th` even
+    though the untrimmed `evidence` list already carried it -- so
+    `_nationwide_accountability_fallback` (which reads this trimmed list on the
+    default path) always fell back to "ไม่ทราบจังหวัด [OPEN]" for every nationwide
+    point, regardless of whether the feed's own geocode province was known."""
+    evidence = [{
+        "station": "สถานีตัวอย่าง", "status": "OVERBANK", "age_h": 0.5,
+        "used_for_decision": True, "stale": False,
+        "dist_km": 2.1, "resolution": "station",
+        "agency": "RID", "province_th": "เชียงใหม่",
+    }]
+    trimmed = kb._trim_evidence(evidence)
+    assert trimmed, "expected the deciding row to survive trimming"
+    assert trimmed[0]["province_th"] == "เชียงใหม่"
+
+
+def test_nationwide_accountability_fallback_relays_province_from_trimmed_evidence():
+    """End-to-end companion to the test above: `_nationwide_accountability_fallback`
+    must name the real province once `_trim_evidence` carries it through, not the
+    "ไม่ทราบจังหวัด [OPEN]" placeholder."""
+    state_answer = {"evidence": kb._trim_evidence([{
+        "station": "สถานีตัวอย่าง", "status": "OVERBANK", "age_h": 0.5,
+        "used_for_decision": True, "stale": False,
+        "dist_km": 2.1, "resolution": "station",
+        "agency": "RID", "province_th": "เชียงใหม่",
+    }])}
+    result = kb._nationwide_accountability_fallback(state_answer)
+    assert result is not None
+    assert "เชียงใหม่" in result["owner_agencies"][0]
+    assert "ไม่ทราบจังหวัด" not in result["owner_agencies"][0]
+
+
+# --- next_action.dual_state.confidence (HIGH/LOW/NONE), shipped v0.1.2 ------------------
+# Real end-to-end computation of `_answer_state`'s own `resolution_confidence` (from a
+# real DB + readout.build_readout, HIGH for station-resolution, LOW for basin-only) is
+# covered in tests/test_kb_answer.py (which already has the `fresh_state_db` fixture
+# this needs). The tests below are narrower: they pin `_answer_next_action`'s own
+# wiring -- that it READS `state_answer['resolution_confidence']` into
+# `dual_state.confidence` and FORCES it to NONE whenever `current_local_state` is
+# UNKNOWN, regardless of what that field says -- without needing a DB at all.
+
+def test_dual_state_confidence_high_for_station_resolution_decision(monkeypatch):
+    """`kb._answer_next_action`'s `dual_state.confidence` reads
+    `state_answer['resolution_confidence']` and keeps it when the state is not
+    UNKNOWN."""
+    import community_dag
+    monkeypatch.setattr(community_dag, "find_safe_route", lambda *a, **k: {
+        "found": False, "path": None, "reason": "test stub", "tag": "OPEN"})
+    state_answer = {"status_counts": {"OVERBANK": 1}, "evidence": [],
+                     "resolution_confidence": "HIGH", "notes": []}
+    hazard_answer = {"per_model": []}
+    result = kb._answer_next_action(
+        None, state_answer=state_answer, hazard_answer=hazard_answer,
+        accountability_answer=None, lat=13.0, lon=100.0, verbose=False)
+    assert result["dual_state"]["current_local_state"] == "RED"
+    assert result["dual_state"]["confidence"] == "HIGH"
+
+
+def test_dual_state_confidence_low_when_resolution_confidence_low(monkeypatch):
+    import community_dag
+    monkeypatch.setattr(community_dag, "find_safe_route", lambda *a, **k: {
+        "found": False, "path": None, "reason": "test stub", "tag": "OPEN"})
+    state_answer = {"status_counts": {"OVERBANK": 1}, "evidence": [],
+                     "resolution_confidence": "LOW", "notes": []}
+    hazard_answer = {"per_model": []}
+    result = kb._answer_next_action(
+        None, state_answer=state_answer, hazard_answer=hazard_answer,
+        accountability_answer=None, lat=13.0, lon=100.0, verbose=False)
+    assert result["dual_state"]["confidence"] == "LOW"
+
+
+def test_dual_state_confidence_none_when_state_unknown_even_if_resolution_confidence_set(
+        monkeypatch):
+    """Forced override: `current_local_state == UNKNOWN` must always win, even if
+    `resolution_confidence` itself was somehow set to something else -- covers the
+    fault-only-sensor-exclusion case (§1) where a deciding row can exist in `evidence`
+    yet the state still classifies UNKNOWN."""
+    import community_dag
+    monkeypatch.setattr(community_dag, "find_safe_route", lambda *a, **k: {
+        "found": False, "path": None, "reason": "test stub", "tag": "OPEN"})
+    state_answer = {"status_counts": {}, "evidence": [],
+                     "resolution_confidence": "HIGH", "notes": []}
+    hazard_answer = {"per_model": []}
+    result = kb._answer_next_action(
+        None, state_answer=state_answer, hazard_answer=hazard_answer,
+        accountability_answer=None, lat=13.0, lon=100.0, verbose=False)
+    assert result["dual_state"]["current_local_state"] == "UNKNOWN"
+    assert result["dual_state"].get("confidence", "NONE") == "NONE"

@@ -23,6 +23,14 @@ not a live data endpoint and must never be treated as one.
 | **T4** | Co-work / computer-use agent with files and apps (e.g. Cowork-style agents) | shell + files/apps, no server of its own | Everything T3 can, plus prepare household checklists/files and set the **user's own local** reminders — never a shared/server-side schedule. |
 | **T5** | Developer / API integrator — an agent framework or script calling this programmatically | code, no chat UI | Call the CLI/MCP from code, read `system_capabilities.json`, respect the token budget. |
 
+**The flood indicators every tier reasons over — full dictionary in
+`docs/INDICATORS.md`.** Closed set: `current_local_state`, `forward_hazard`,
+`rise_rate_dk`, `time_to_threshold_tk`, `rain_24h_mm`, `rain_7day_per_model_mm`,
+`distance_to_bank_m`, `bank_fill_percent`, `one_decision` (+ `confidence`),
+`water_debt` (planned v0.2+). `current_local_state`/`one_decision.level` use
+RED/YELLOW/GREEN/UNKNOWN only (UNKNOWN is never SAFE) — every OTHER indicator has its
+own closed vocabulary, see `docs/INDICATORS.md`'s colour-contract scope note.
+
 ## T0 — search snippet, no browsing
 
 - **CAN:** nothing active.
@@ -50,6 +58,17 @@ not a live data endpoint and must never be treated as one.
   cached doc.
 - **Expected output:** a plain explanation + official numbers + the exact
   next step (install, or ask a shell-capable AI) — never a made-up reading.
+- **If this T1 session CAN browse the open web** (most online chat AIs can):
+  you do not have to stop at "explain only". FloodConnect is a **method**, not
+  a hosted data service — it never geocodes and holds no place/POI database,
+  so finding the user's coordinate is your own job (ask for a pin, or use
+  your own map tool), but once you have lat,lon you can follow
+  `docs/NEAREST_STATION_RECIPE.md` yourself: fetch the nationwide
+  `api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel` JSON (no key)
+  or the BMA Bangkok pages, pick the nearest station within ~3 km on the same
+  water body, read the agency's own status word, check freshness, classify
+  per `docs/INDICATORS.md` §1. **Never invent a station, a coordinate, or a
+  number not actually on the page you fetched.**
 - **If this T1 session also has a code sandbox** (no shell/no repo clone,
   but CAN run a little Python): fetch the two raw files below and use
   `floodconnect_model.py`'s `delta_k`/`time_to_threshold`/`classify`/

@@ -167,6 +167,7 @@ sources:
       thaiwater_canal_waterlevel -- not independently re-checked for this endpoint
       specifically.", unresolved: true}
     trust_tier: official_telemetry
+    max_age_hours: 24
     # collect.py collector added 2026-09-27 (founder priority A3: "HII/thaiwater
     # waterlevel nationwide is listed as 'no collector implemented' -- implement it")
     # -- see collect.collect_thaiwater_waterlevel + parsers.parse_thaiwater_waterlevel.

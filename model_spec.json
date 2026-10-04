@@ -16,17 +16,45 @@
         "NO_READOUT": "t < k, or h(t-k) was not sampled -- a real distinct outcome, never silently FLAT"
       },
       "variables": [
-        {"symbol": "h(t)", "meaning": "water-level reading at tick t", "unit": "m", "source": "official gauge page (e.g. thaiwater.net, a BMA canal-level page) or the caller's own reading at the same station"},
-        {"symbol": "h(t-k)", "meaning": "reading k ticks earlier, same station", "unit": "m", "source": "same source, earlier timestamp"},
-        {"symbol": "k", "meaning": "a predeclared lag", "unit": "ticks (caller states what one tick is, e.g. 1 reading or 1 hour)", "source": "declared BEFORE computing, never chosen after seeing the result"},
-        {"symbol": "epsilon", "meaning": "the station's own declared sensor resolution", "unit": "m", "source": "the source's own stated resolution; if the source states none, epsilon is INSTINCT (a judgment call), never MEASURED"}
+        {
+          "symbol": "h(t)",
+          "meaning": "water-level reading at tick t",
+          "unit": "m",
+          "source": "official gauge page (e.g. thaiwater.net, a BMA canal-level page) or the caller's own reading at the same station"
+        },
+        {
+          "symbol": "h(t-k)",
+          "meaning": "reading k ticks earlier, same station",
+          "unit": "m",
+          "source": "same source, earlier timestamp"
+        },
+        {
+          "symbol": "k",
+          "meaning": "a predeclared lag",
+          "unit": "ticks (caller states what one tick is, e.g. 1 reading or 1 hour)",
+          "source": "declared BEFORE computing, never chosen after seeing the result"
+        },
+        {
+          "symbol": "epsilon",
+          "meaning": "the station's own declared sensor resolution",
+          "unit": "m",
+          "source": "the source's own stated resolution; if the source states none, epsilon is INSTINCT (a judgment call), never MEASURED"
+        }
       ],
       "python_function": "floodconnect_model.delta_k(h_t, h_t_minus_k, epsilon)",
       "implementation": "floodconnect_model.py",
       "worked_example": {
         "station": "WL.SSB.08 (c.แสนแสบ-เสรีไทย 24)",
-        "inputs": {"h_t": 0.38, "h_t_minus_k": 0.30, "k": 1, "epsilon": 0.01},
-        "result": {"value": 0.08, "trend": "RISING"},
+        "inputs": {
+          "h_t": 0.38,
+          "h_t_minus_k": 0.3,
+          "k": 1,
+          "epsilon": 0.01
+        },
+        "result": {
+          "value": 0.08,
+          "trend": "RISING"
+        },
         "note": "a readout of the difference between two already-observed readings -- not a prediction that the water will keep rising at this rate"
       }
     },
@@ -42,13 +70,26 @@
         "REFUSED/NOT_APPLICABLE": "delta_k(t) < -epsilon, or h(t) >= theta, or delta_k(t) was NO_READOUT"
       },
       "variables": [
-        {"symbol": "theta", "meaning": "an official agency threshold (e.g. BMA's critical level for that station)", "unit": "m", "source": "the station's own declared warning/critical/bank value -- never a number the caller picks themselves"}
+        {
+          "symbol": "theta",
+          "meaning": "an official agency threshold (e.g. BMA's critical level for that station)",
+          "unit": "m",
+          "source": "the station's own declared warning/critical/bank value -- never a number the caller picks themselves"
+        }
       ],
       "python_function": "floodconnect_model.time_to_threshold(h_t, delta, theta, k, epsilon)",
       "implementation": "floodconnect_model.py",
       "worked_example": {
-        "inputs": {"h_t": 0.38, "theta": 0.45, "k": 1, "delta_k_value": 0.08},
-        "result": {"value": 0.875, "unit": "ticks (~53 minutes at k=1h)"},
+        "inputs": {
+          "h_t": 0.38,
+          "theta": 0.45,
+          "k": 1,
+          "delta_k_value": 0.08
+        },
+        "result": {
+          "value": 0.875,
+          "unit": "ticks (~53 minutes at k=1h)"
+        },
         "note": "report as an interval across at least two lags (e.g. k=1h and k=3h), never as one single point number; REFUSED is a non-value, not a number -- never print 0, infinity, or blank"
       }
     },
@@ -82,9 +123,17 @@
   ],
   "classify_station_status": {
     "_purpose": "the non-numeric companion classifier -- maps an agency-declared station-status word onto the closed GREEN/YELLOW/RED/UNKNOWN vocabulary this repository's kb.py actually uses in production (community_dag.py's CURRENT_LOCAL_STATE); copied from readout.py's CRITICAL_LIKE_STATUS/FLOOD_LIKE_STATUS/NORMAL_LIKE_STATUS, not a Toledo-registered equation itself (no number is computed, it is a status-word lookup)",
-    "RED": ["CRITICAL", "OVERBANK"],
-    "YELLOW": ["WATCH"],
-    "GREEN": ["NORMAL", "NO_THRESHOLD"],
+    "RED": [
+      "CRITICAL",
+      "OVERBANK"
+    ],
+    "YELLOW": [
+      "WATCH"
+    ],
+    "GREEN": [
+      "NORMAL",
+      "NO_THRESHOLD"
+    ],
     "UNKNOWN": "no reading, an unrecognised word, or (in kb.py's fuller version, not reproduced in floodconnect_model.py) a sensor-fault word",
     "python_function": "floodconnect_model.classify(status_word) / floodconnect_model.classify_counts(status_counts)",
     "founder_ruling": "2026-10-04, verbatim 'WATCH = YELLOW (แนะนำ)' -- a bare WATCH reading alone no longer drives RED; RED is reserved for an agency-declared critical/overflow reading"
@@ -94,5 +143,166 @@
     "python_function": "floodconnect_model.one_decision(inputs)",
     "vocabulary": "Jev-style decision terms (see ARCHITECTURE.md §5): decision, confidence (HIGH/MEDIUM/LOW/NONE), level (RED/YELLOW/GREEN/UNKNOWN), checks (list of str), gate (LICENSED_WITHIN_ENVELOPE/REFUSED), why",
     "BOT_not_zero": "a missing h_t, a missing epsilon, or a stale reading produces gate=REFUSED and confidence=NONE, never a silent 0/GREEN"
+  },
+  "indicators": {
+    "_purpose": "Closed dictionary of every flood indicator this repository (or its by-hand companion floodconnect_model.py) names -- full prose, worked examples and the bilingual (EN+Thai) one-line meanings live in docs/INDICATORS.md; this array is the same names/levels/status as data, mirrored verbatim into system_capabilities.json's own 'indicators' field (tests/test_floodconnect_model.py checks the two match). Founder ruling 2026-10-04, verbatim: 'ที่สำคัญคือให้ ตัวชี้วัดนี้น้ำน้ำท่วมต้องชัด' -- the flood indicators must be crystal clear.",
+    "doc": "docs/INDICATORS.md",
+    "color_contract": {
+      "_purpose": "RED/YELLOW/GREEN/UNKNOWN is NOT a universal rule over every indicator below -- fix (2026-10-04, review finding #3): it applies ONLY to the two fields named here. Every other indicator has its own closed 'levels' list on its own entry below; read that entry's 'levels', never assume RED/YELLOW/GREEN/UNKNOWN.",
+      "applies_to": [
+        "next_action.dual_state.current_local_state",
+        "one_decision.level (floodconnect_model.py, by-hand only)"
+      ],
+      "levels": [
+        "RED",
+        "YELLOW",
+        "GREEN",
+        "UNKNOWN"
+      ]
+    },
+    "names": [
+      {
+        "name": "current_local_state",
+        "unit": "categorical",
+        "levels": [
+          "RED",
+          "YELLOW",
+          "GREEN",
+          "UNKNOWN"
+        ],
+        "status": "implemented",
+        "resolution": "station",
+        "json_path": "next_action.dual_state.current_local_state",
+        "doc_section": "1"
+      },
+      {
+        "name": "forward_hazard",
+        "unit": "categorical",
+        "levels": [
+          "ACTIVE",
+          "NONE",
+          "UNKNOWN"
+        ],
+        "status": "implemented",
+        "resolution": "coordinate",
+        "json_path": "next_action.dual_state.forward_hazard",
+        "doc_section": "2"
+      },
+      {
+        "name": "rise_rate_dk",
+        "unit": "m per k ticks",
+        "levels": [
+          "RISING",
+          "FALLING",
+          "FLAT",
+          "NO_READOUT"
+        ],
+        "status": "implemented_in_by_hand_module_only -- not in kb.py's answer JSON",
+        "resolution": "station",
+        "toledo_id": "PROP-FLOOD-01",
+        "json_path": "floodconnect_model.delta_k(...).trend (by-hand only)",
+        "doc_section": "3"
+      },
+      {
+        "name": "time_to_threshold_tk",
+        "unit": "ticks",
+        "levels": [
+          "<numeric value>",
+          "REFUSED/UNRESOLVED",
+          "REFUSED/NOT_APPLICABLE"
+        ],
+        "status": "implemented_in_by_hand_module_only -- not in kb.py's answer JSON",
+        "resolution": "station",
+        "toledo_id": "PROP-FLOOD-02",
+        "json_path": "floodconnect_model.time_to_threshold(...) (by-hand only)",
+        "doc_section": "4"
+      },
+      {
+        "name": "rain_24h_mm",
+        "unit": "mm",
+        "levels": [
+          "<numeric value>"
+        ],
+        "status": "implemented_in_readout_py_only -- not in kb.py's answer JSON",
+        "resolution": "area/bulletin",
+        "json_path": "readout.build_readout(...).factors['1'].measured[*].value (by-hand/readout.py only)",
+        "doc_section": "5"
+      },
+      {
+        "name": "rain_7day_per_model_mm",
+        "unit": "mm per model",
+        "levels": [
+          "<numeric value per model>"
+        ],
+        "status": "implemented",
+        "resolution": "coordinate",
+        "json_path": "hazard.per_model[*]['7day_total_mm']",
+        "doc_section": "6"
+      },
+      {
+        "name": "distance_to_bank_m",
+        "unit": "m",
+        "levels": [
+          "<numeric value>",
+          "OPEN"
+        ],
+        "status": "RELAYED_IN_PROVENANCE_ONLY -- collect.collect_thaiwater_waterlevel stores diff_wl_bank/min_bank in observations.provenance_json; not a standalone top-level answer field yet (the agency status word it is tied to, diff_wl_bank_text, DOES drive current_local_state directly, v0.1.2)",
+        "resolution": "station or basin, per state.evidence[*].resolution",
+        "json_path": "provenance.diff_wl_bank on a thaiwater_waterlevel state.evidence row -- not a top-level answer field",
+        "doc_section": "7"
+      },
+      {
+        "name": "bank_fill_percent",
+        "unit": "%",
+        "levels": [
+          "<numeric value>",
+          "OPEN"
+        ],
+        "status": "RELAYED_IN_PROVENANCE_ONLY -- same as distance_to_bank_m; situation_level (also agency-published) drives current_local_state, not a storage_percent cutoff this project chose",
+        "resolution": "station or basin, per state.evidence[*].resolution",
+        "json_path": "provenance.storage_percent on a thaiwater_waterlevel state.evidence row -- not a top-level answer field",
+        "doc_section": "8"
+      },
+      {
+        "name": "one_decision",
+        "unit": "categorical (decision text) + confidence",
+        "levels": {
+          "level": [
+            "RED",
+            "YELLOW",
+            "GREEN",
+            "UNKNOWN"
+          ],
+          "confidence": [
+            "HIGH",
+            "MEDIUM",
+            "LOW",
+            "NONE"
+          ],
+          "gate": [
+            "LICENSED_WITHIN_ENVELOPE",
+            "REFUSED"
+          ]
+        },
+        "status": "implemented_in_by_hand_module_only -- kb.py's own answer has no separate confidence field yet",
+        "resolution": "station",
+        "json_path": "floodconnect_model.one_decision(inputs) -> {level, confidence, gate, ...} (by-hand only)",
+        "doc_section": "9"
+      },
+      {
+        "name": "water_debt",
+        "unit": "none",
+        "levels": [],
+        "status": "planned (v0.2+)",
+        "resolution": "n/a",
+        "toledo_ids": [
+          "PROP-FLOOD-03",
+          "PROP-FLOOD-06",
+          "PROP-FLOOD-07"
+        ],
+        "json_path": "not implemented -- no field, v0.2+",
+        "doc_section": "10"
+      }
+    ]
   }
 }
