@@ -134,6 +134,18 @@ This is explicitly an open invitation, not a closed project:
   need re-checking; see ARCHITECTURE.md §1 / ROADMAP v0.2.1.
 - CCTV integration, a BMA levee/tide bulletin feed, satellite imagery, and
   additional Bangkok data portals — all backlog, none started.
+- **RID SWOC big-data dashboard** (`bigdata-swoc.rid.go.th/dashboard`) — later backlog.
+  2026-10-05 sweep found a client-rendered Next.js shell with no public machine-readable
+  endpoint (tables empty in the HTML, no fetch URL literal in its public JS chunks; the
+  real data likely sits behind a staff login). See `sources/api_census.yaml` id
+  `rid_bigdata_swoc_dashboard`. Re-probe only if a public API surface is later found.
+- Basemap candidates for a future map view: OpenStreetMap standard tile and CARTO
+  "Light All" — no key in the tile URL (VERIFIED); usage terms RELAYED, not fetched —
+  the OSM tile usage policy restricts heavy third-party use. Found wired into
+  thaiwater.net's own Leaflet map — see `sources/api_census.yaml` id
+  `thaiwater_basemap_stack`. GISTDA Sphere (`gistda_sphere_platform`) is the closer
+  match to a shared Thai-government basemap but its free-tier/reuse terms are
+  unconfirmed (OPEN).
 
 ## 6. Validators/tests to run before any change
 
