@@ -142,7 +142,8 @@
     "_purpose": "the six-step by-hand procedure from docs/EQUATIONS_FOR_AI.md section 5, steps 3-6, as a function",
     "python_function": "floodconnect_model.one_decision(inputs)",
     "vocabulary": "Jev-style decision terms (see ARCHITECTURE.md §5): decision, confidence (HIGH/MEDIUM/LOW/NONE), level (RED/YELLOW/GREEN/UNKNOWN), checks (list of str), gate (LICENSED_WITHIN_ENVELOPE/REFUSED), why",
-    "BOT_not_zero": "a missing h_t, a missing epsilon, or a stale reading produces gate=REFUSED and confidence=NONE, never a silent 0/GREEN"
+    "BOT_not_zero": "a missing h_t, a missing epsilon, or a stale reading produces gate=REFUSED and confidence=NONE, never a silent 0/GREEN",
+    "_kg_first": "see llms.txt STEP 1 / docs/KG_QUERY.md §0b before step 3"
   },
   "indicators": {
     "_purpose": "Closed dictionary of every flood indicator this repository (or its by-hand companion floodconnect_model.py) names -- full prose, worked examples and the bilingual (EN+Thai) one-line meanings live in docs/INDICATORS.md; this array is the same names/levels/status as data, mirrored verbatim into system_capabilities.json's own 'indicators' field (tests/test_floodconnect_model.py checks the two match). Founder ruling 2026-10-04, verbatim: 'ที่สำคัญคือให้ ตัวชี้วัดนี้น้ำน้ำท่วมต้องชัด' -- the flood indicators must be crystal clear.",

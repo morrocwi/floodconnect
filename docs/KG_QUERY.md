@@ -32,6 +32,43 @@ KG-specific extensions `RELAYED-GENERAL`/`VERIFIED-from-official-csv`/
 `VERIFIED-from-DWR-service`/`VERIFIED-geometric`/`DERIVED-snap` — see `tools/kg/README.md`'s own
 tag table) and `source` — read both before trusting a number; never silently upgrade a tag.
 
+## 0b. Province slices (M4, "KG-first that AIs cannot skip") — use this for a point question
+
+The full graph above is ~30 MB; for a single lat,lon question **do not open it**. Instead
+read the deterministic slices in `output/kg_index/` (generated FROM the full graph by
+`tools/kg/build_index.py`, never a second source of truth — rebuild with
+`python3 -m tools.kg.build_index` after any KG change, and `tests/test_kg_index.py` asserts
+the committed files are still byte-identical to a fresh rebuild).
+
+```
+output/kg_index/index.json              -- ~10 KB: kg sha256/node/edge counts, every
+                                             province's th/en name, bbox, and member/asset
+                                             counts, plus a global known_gaps list
+output/kg_index/province_<code>.json    -- one per province (median ~10 KB, max ~180 KB
+                                             for Bangkok); see `tools/kg/locate.py` for the
+                                             offline tool that reads these for you
+```
+
+**`province_<code>.json` schema** (keys, in the shape the file actually has):
+
+| key | meaning |
+|---|---|
+| `bbox` | `[south, west, north, east]` from this province's own `IN_PROVINCE` gauge/rain-gauge members only, rounded OUTWARD (floor/ceil) — a coarse readout of where those members happen to sit, **never an administrative boundary**. Chiang Mai's box overlaps Lampang; Pathum Thani's box does not contain every point a human would call Pathum (see the `locate`/`cand` behaviour below). |
+| `sb` / `onwr` | DWR sub-basins / ONWR basins this province's `IN_PROVINCE` members touch |
+| `a_cols` / `a` | asset rows (`id,n,k,lat,lon,ag,sb,reach,rkm,pv`) for the 6 kept classes: gauge, gate, weir, dam, pump_station, tide_gate |
+| `pv` | how the asset got into this slice — `"e"`: has an `IN_PROVINCE` edge to this province (VERIFIED placement); `"b"`: no edge, but its coordinate falls inside this province's `bbox` (placed geometrically, unconfirmed, may also appear in a neighbouring province's slice); `"n"`: no edge and outside every box — placed at the nearest edge-linked member's province as a last resort. Only gauges and rain-gauges carry `IN_PROVINCE` edges in this KG build (gate/weir/dam/pump_station/tide_gate never do) — every gate/weir/dam/pump/tide_gate row you see is `pv="b"` or `"n"`, stated plainly in that slice's own `gaps` list, never silently presented as confirmed. |
+| `reach` / `rkm` | the asset's `ON_REACH` target and distance — always `DERIVED-snap` (nearest river_reach centroid by haversine, not a point-to-polyline match) |
+| `r` / `r_cols` | the reaches referenced (`strahler_order, main_stem, downstream_reach_id`) |
+| `resp` | `[agency_id, tag]` (or `[agency_id, tag, basin_id]` for a basin-level `RESPONSIBLE_FOR`) |
+| `ag` | `{agency_id: name_th}` for every agency referenced above |
+| `gaps` | this slice's own known gaps, plain text, e.g. "N of M gate/pump/.../gauge rows here have no IN_PROVINCE edge..." |
+
+**Use `tools/kg/locate.py` (`floodconnect locate` / `floodconnect_locate`) instead of
+hand-walking this JSON when you have any tool access at all** — it does the nearest-asset/
+sub-basin/reach/station/agency lookup and candidate-province resolution for you, offline,
+in under 3 seconds. See `docs/NEAREST_STATION_RECIPE.md` Step 0b for the no-tool-AI version
+of the same recipe, and `llms.txt` STEP 1 for why this is mandatory, not optional.
+
 ## 1. Walk upstream/downstream from a station or a point (gap 1 — PARTIAL, heuristic)
 
 A gauge/gate/dam/weir/pump/reservoir asset node MAY connect to the river network via an

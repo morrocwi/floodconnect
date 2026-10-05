@@ -1,5 +1,5 @@
 claim_id: "20261005-ai-worker-rid-swoc-census"
-status: ACTIVE
+status: RELEASED
 writer: "ai-worker"
 branch: "agent/ai-worker/rid-swoc-census-v2"
 base_sha: "17e25fc81e882dd5b1448ece77aa11de0576054b"

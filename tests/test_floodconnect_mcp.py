@@ -500,3 +500,59 @@ def test_real_stdio_initialize_handshake(api_dir):
     assert content, "tools/call returned no content blocks"
     payload = json.loads(content[0].text)
     assert "sammakorn" in [a["area_id"] for a in payload["areas"]]
+
+
+# ---------------------------------------------------------------------------
+# M4 "KG-first that AIs cannot skip": floodconnect_locate
+# ---------------------------------------------------------------------------
+
+def test_floodconnect_locate_in_fallback_tools_list_with_description(mcp_mod):
+    """`floodconnect_locate` must be registered in the stdlib JSON-RPC
+    fallback's `_TOOLS`/`_TOOL_DESCRIPTIONS` (the no-SDK branch only --
+    `test_floodconnect_locate_in_sdk_tools_list` below covers the real-SDK
+    path, same split `test_fallback_tools_list_descriptions_are_not_empty`
+    already uses)."""
+    if mcp_mod.mcp is not None:
+        pytest.skip("mcp SDK is importable here; this test targets the no-SDK fallback branch only")
+    assert "floodconnect_locate" in mcp_mod._TOOLS
+    assert "floodconnect_locate" in mcp_mod._TOOL_DESCRIPTIONS
+    assert mcp_mod._TOOL_DESCRIPTIONS["floodconnect_locate"]
+    resp = mcp_mod._handle_request({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
+    names = {t["name"] for t in resp["result"]["tools"]}
+    assert "floodconnect_locate" in names
+
+
+def test_floodconnect_locate_tools_call_round_trip_via_fallback(mcp_mod):
+    """A full `initialize` -> `tools/call` round trip against the stdlib
+    fallback's own `_handle_request`; skips if the real SDK is importable
+    (the SDK path's own round-trip is `test_real_stdio_initialize_handshake`)
+    or if output/kg_index/ is absent in this checkout."""
+    if mcp_mod.mcp is not None:
+        pytest.skip("mcp SDK is importable here; this test targets the no-SDK fallback branch only")
+    if not (ROOT / "output" / "kg_index" / "index.json").exists():
+        pytest.skip("output/kg_index/ absent in this checkout")
+    init = mcp_mod._handle_request({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}})
+    assert init["result"]["serverInfo"]["version"] == "0.1.4"
+    resp = mcp_mod._handle_request({
+        "jsonrpc": "2.0", "id": 2, "method": "tools/call",
+        "params": {"name": "floodconnect_locate", "arguments": {"at": "13.7656,100.6478"}},
+    })
+    assert resp["result"]["isError"] is False
+    payload = json.loads(resp["result"]["content"][0]["text"])
+    assert "kg_anchor" in payload
+
+
+def test_floodconnect_locate_in_sdk_tools_list(mcp_mod):
+    """SDK path (the real `mcp` package, usually importable here): the tool
+    must be registered on the FastMCP instance itself."""
+    if mcp_mod.mcp is None:
+        pytest.skip("mcp SDK not importable in this environment; fallback path tested separately")
+    import asyncio
+    tools = asyncio.run(mcp_mod.mcp.list_tools())
+    assert "floodconnect_locate" in {t.name for t in tools}
+
+
+def test_floodconnect_locate_core_bad_at_raises_typed_error(mcp_mod):
+    with pytest.raises(mcp_mod.FloodConnectMCPError) as exc_info:
+        mcp_mod.floodconnect_locate_core("not,a,valid,at")
+    assert exc_info.value.code == "BAD_AT"

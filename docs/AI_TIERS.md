@@ -14,12 +14,16 @@ no cron, and no server-side fetch of ours. A public static snapshot page
 (`site/landing/`, no data) is rebuilt only on push to that one folder — it is
 not a live data endpoint and must never be treated as one.
 
-**Nationwide KG-first (founder ruling 2026-10-04):** before locating or reasoning
-about any place outside Sammakorn/Ram53, every tier that can read files (T3-T5)
-reads the shipped nationwide knowledge graph from git first — never re-derive it.
-Recipes: `docs/KG_QUERY.md`. The T2 MCP tool's own answer does NOT read the KG by
-default — it only does when the caller sets `FLOODCONNECT_USE_SHIPPED_KG`;
-otherwise T2 gets the same nationwide coarse (station/basin) answer as v0.1.2.
+**KG-first, no exceptions (M4, founder ruling 2026-10-05):** before answering any
+flood/canal/pump question anywhere in Thailand, every tier runs `floodconnect locate`
+(T2-T5: the `floodconnect_locate` MCP tool; T1 with no tools: fetch
+`output/kg_index/index.json` then the matching `province_<code>.json` slice, see
+`llms.txt` STEP 1) and states the `kg_anchor` it got back. No anchor = not a
+FloodConnect answer. `floodconnect answer`/`floodconnect_answer` now also carries
+`kg_anchor` regardless of `FLOODCONNECT_USE_SHIPPED_KG` (that env var still only
+controls whether `answer`'s own accountability path reads the full nationwide
+graph — unrelated to `kg_anchor`, which comes from the small `output/kg_index/`
+slices and is always computed). Slice schema and query recipes: `docs/KG_QUERY.md`.
 
 | Tier | What it is (examples) | Shell/tools | Correct job here |
 |---|---|---|---|

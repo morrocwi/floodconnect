@@ -1,0 +1,249 @@
+generated_by: hand-committed snapshot (M4, "KG-first that AIs cannot skip")
+generated_from: standard DOPA 2-digit province codes / ISO 3166-2:TH English short
+  names (the same codes already used throughout this KG, e.g. sources/hii_station_geocode.yaml,
+  sources/province_agency_crosswalk.yaml) -- cross-checked code-by-code against the
+  Thai names already committed in output/thailand_water_kg.graphml's own province
+  nodes (tools/kg/locate.py / tools/kg/build_index.py read province_code + name_th
+  from the graph directly, never from this file).
+tag: RELAYED
+source: Common-knowledge standard English transliteration of the 77 Thai provinces'
+  official DOPA/ISO 3166-2:TH short names. Not fetched from a live official feed this
+  session -- this is a hand-typed snapshot, reviewable row by row against the graph's
+  own province_code/name_th pair, not an independently re-verified government source.
+  Re-check against a live DOPA/royin.go.th source before treating any single row as
+  VERIFIED.
+known_limitation: Only the 77 standard Thai provinces are listed. Non-Thailand geocode
+  codes present in the graph (province:99 "other", province:10499 Myanmar) are
+  intentionally absent -- build_index.py leaves their `en` field null.
+provinces:
+- province_code: "10"
+  name_th: กรุงเทพมหานคร
+  en: Bangkok
+- province_code: "11"
+  name_th: สมุทรปราการ
+  en: Samut Prakan
+- province_code: "12"
+  name_th: นนทบุรี
+  en: Nonthaburi
+- province_code: "13"
+  name_th: ปทุมธานี
+  en: Pathum Thani
+- province_code: "14"
+  name_th: พระนครศรีอยุธยา
+  en: Ayutthaya
+- province_code: "15"
+  name_th: อ่างทอง
+  en: Ang Thong
+- province_code: "16"
+  name_th: ลพบุรี
+  en: Lopburi
+- province_code: "17"
+  name_th: สิงห์บุรี
+  en: Sing Buri
+- province_code: "18"
+  name_th: ชัยนาท
+  en: Chai Nat
+- province_code: "19"
+  name_th: สระบุรี
+  en: Saraburi
+- province_code: "20"
+  name_th: ชลบุรี
+  en: Chon Buri
+- province_code: "21"
+  name_th: ระยอง
+  en: Rayong
+- province_code: "22"
+  name_th: จันทบุรี
+  en: Chanthaburi
+- province_code: "23"
+  name_th: ตราด
+  en: Trat
+- province_code: "24"
+  name_th: ฉะเชิงเทรา
+  en: Chachoengsao
+- province_code: "25"
+  name_th: ปราจีนบุรี
+  en: Prachinburi
+- province_code: "26"
+  name_th: นครนายก
+  en: Nakhon Nayok
+- province_code: "27"
+  name_th: สระแก้ว
+  en: Sa Kaeo
+- province_code: "30"
+  name_th: นครราชสีมา
+  en: Nakhon Ratchasima
+- province_code: "31"
+  name_th: บุรีรัมย์
+  en: Buriram
+- province_code: "32"
+  name_th: สุรินทร์
+  en: Surin
+- province_code: "33"
+  name_th: ศรีสะเกษ
+  en: Si Sa Ket
+- province_code: "34"
+  name_th: อุบลราชธานี
+  en: Ubon Ratchathani
+- province_code: "35"
+  name_th: ยโสธร
+  en: Yasothon
+- province_code: "36"
+  name_th: ชัยภูมิ
+  en: Chaiyaphum
+- province_code: "37"
+  name_th: อำนาจเจริญ
+  en: Amnat Charoen
+- province_code: "38"
+  name_th: บึงกาฬ
+  en: Bueng Kan
+- province_code: "39"
+  name_th: หนองบัวลำภู
+  en: Nong Bua Lam Phu
+- province_code: "40"
+  name_th: ขอนแก่น
+  en: Khon Kaen
+- province_code: "41"
+  name_th: อุดรธานี
+  en: Udon Thani
+- province_code: "42"
+  name_th: เลย
+  en: Loei
+- province_code: "43"
+  name_th: หนองคาย
+  en: Nong Khai
+- province_code: "44"
+  name_th: มหาสารคาม
+  en: Maha Sarakham
+- province_code: "45"
+  name_th: ร้อยเอ็ด
+  en: Roi Et
+- province_code: "46"
+  name_th: กาฬสินธุ์
+  en: Kalasin
+- province_code: "47"
+  name_th: สกลนคร
+  en: Sakon Nakhon
+- province_code: "48"
+  name_th: นครพนม
+  en: Nakhon Phanom
+- province_code: "49"
+  name_th: มุกดาหาร
+  en: Mukdahan
+- province_code: "50"
+  name_th: เชียงใหม่
+  en: Chiang Mai
+- province_code: "51"
+  name_th: ลำพูน
+  en: Lamphun
+- province_code: "52"
+  name_th: ลำปาง
+  en: Lampang
+- province_code: "53"
+  name_th: อุตรดิตถ์
+  en: Uttaradit
+- province_code: "54"
+  name_th: แพร่
+  en: Phrae
+- province_code: "55"
+  name_th: น่าน
+  en: Nan
+- province_code: "56"
+  name_th: พะเยา
+  en: Phayao
+- province_code: "57"
+  name_th: เชียงราย
+  en: Chiang Rai
+- province_code: "58"
+  name_th: แม่ฮ่องสอน
+  en: Mae Hong Son
+- province_code: "60"
+  name_th: นครสวรรค์
+  en: Nakhon Sawan
+- province_code: "61"
+  name_th: อุทัยธานี
+  en: Uthai Thani
+- province_code: "62"
+  name_th: กำแพงเพชร
+  en: Kamphaeng Phet
+- province_code: "63"
+  name_th: ตาก
+  en: Tak
+- province_code: "64"
+  name_th: สุโขทัย
+  en: Sukhothai
+- province_code: "65"
+  name_th: พิษณุโลก
+  en: Phitsanulok
+- province_code: "66"
+  name_th: พิจิตร
+  en: Phichit
+- province_code: "67"
+  name_th: เพชรบูรณ์
+  en: Phetchabun
+- province_code: "70"
+  name_th: ราชบุรี
+  en: Ratchaburi
+- province_code: "71"
+  name_th: กาญจนบุรี
+  en: Kanchanaburi
+- province_code: "72"
+  name_th: สุพรรณบุรี
+  en: Suphan Buri
+- province_code: "73"
+  name_th: นครปฐม
+  en: Nakhon Pathom
+- province_code: "74"
+  name_th: สมุทรสาคร
+  en: Samut Sakhon
+- province_code: "75"
+  name_th: สมุทรสงคราม
+  en: Samut Songkhram
+- province_code: "76"
+  name_th: เพชรบุรี
+  en: Phetchaburi
+- province_code: "77"
+  name_th: ประจวบคีรีขันธ์
+  en: Prachuap Khiri Khan
+- province_code: "80"
+  name_th: นครศรีธรรมราช
+  en: Nakhon Si Thammarat
+- province_code: "81"
+  name_th: กระบี่
+  en: Krabi
+- province_code: "82"
+  name_th: พังงา
+  en: Phang Nga
+- province_code: "83"
+  name_th: ภูเก็ต
+  en: Phuket
+- province_code: "84"
+  name_th: สุราษฎร์ธานี
+  en: Surat Thani
+- province_code: "85"
+  name_th: ระนอง
+  en: Ranong
+- province_code: "86"
+  name_th: ชุมพร
+  en: Chumphon
+- province_code: "90"
+  name_th: สงขลา
+  en: Songkhla
+- province_code: "91"
+  name_th: สตูล
+  en: Satun
+- province_code: "92"
+  name_th: ตรัง
+  en: Trang
+- province_code: "93"
+  name_th: พัทลุง
+  en: Phatthalung
+- province_code: "94"
+  name_th: ปัตตานี
+  en: Pattani
+- province_code: "95"
+  name_th: ยะลา
+  en: Yala
+- province_code: "96"
+  name_th: นราธิวาส
+  en: Narathiwat

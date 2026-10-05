@@ -1,8 +1,14 @@
 {
   "$comment": "Machine-readable capability map for FloodConnect. For a strong AI that can parse JSON and wants to know exactly what exists, what is live-vs-local-vs-forecast-vs-hindcast, and what is legacy. A weak/browse-only AI should read llms.txt instead -- this file assumes you can read docs/EVIDENCE.md and the cited source files, not just this one.",
   "project": "FloodConnect",
-  "pyproject_version": "0.1.2",
-  "note_on_version": "pyproject.toml declares 0.1.2; this file and its sibling first-contact docs describe v0.1.2 -- the nationwide coarse (station/basin) path for current_local_state/forward_hazard/accountability, plus the NO_THRESHOLD/UNKNOWN colour fix (see CHANGELOG.md and .ai/claims/ for the authoritative scope, never 'doc-only'). Check `git tag` / the GitHub Releases page for the actually-released tag; do not trust this field alone.",
+  "pyproject_version": "0.1.4",
+  "note_on_version": "pyproject.toml declares 0.1.4 -- v0.1.4 adds the KG-first index (output/kg_index/), the locate/floodconnect_locate tool, and kg_anchor on every answer (see CHANGELOG.md and .ai/claims/ for the authoritative scope, never 'doc-only'). Check `git tag` / the GitHub Releases page for the actually-released tag; do not trust this field alone.",
+  "kg_first": {
+    "_purpose": "M4, founder ruling 2026-10-05: 'KG-first that AIs cannot skip' -- the step a chat AI without tools must take before answering any FloodConnect question.",
+    "index": "output/kg_index/index.json",
+    "slice_pattern": "output/kg_index/province_<code>.json",
+    "anchor_fields": ["kg_sha256", "province", "cand", "sub_basin", "reach", "station_ids", "method"]
+  },
   "hosting": {
     "live": false,
     "hosted_api": false,
@@ -31,6 +37,7 @@
       "alias_for": "python3 kb.py",
       "commands": {
         "answer": "floodconnect answer --at <area|lat,lon> [--json] [--offline] [--verbose]",
+        "locate": "floodconnect locate --at <lat,lon> [--province <code|th|en>] [--json]",
         "forecast": "floodconnect forecast --at <area|lat,lon>",
         "connectors": "floodconnect connectors [--live]"
       }
@@ -47,7 +54,8 @@
         "floodconnect_find_safe_route",
         "floodconnect_list_upstream_sources",
         "floodconnect_explain_rules",
-        "floodconnect_answer"
+        "floodconnect_answer",
+        "floodconnect_locate"
       ],
       "config_example": "tools/mcp/README_config_example.json"
     },

@@ -941,6 +941,26 @@ def _rkg_epistemic_class(node_id: str) -> str | None:
 THAILAND_BBOX = {"lat_min": 5.0, "lat_max": 21.0, "lon_min": 97.0, "lon_max": 106.0}
 
 
+def _kg_anchor(lat: float, lon: float) -> dict:
+    """Wraps `tools.kg.locate.locate`'s own `kg_anchor` for `build_answer` (M4,
+    "KG-first that AIs cannot skip"). Never raises: a missing/unreadable
+    `output/kg_index/` (a non-editable install, or a clone that never ran
+    `tools/kg/build_index.py`) degrades to `{"tag": "OPEN",
+    "method": "no_kg_index"}`, which `build_answer` also uses as the trigger
+    to cap `next_action.dual_state.confidence` at LOW -- see the call site."""
+    try:
+        from tools.kg.locate import KGIndexMissing, locate as _locate
+    except ImportError:
+        return {"tag": "OPEN", "method": "no_kg_index"}
+    try:
+        result = _locate(lat, lon)
+    except KGIndexMissing:
+        return {"tag": "OPEN", "method": "no_kg_index"}
+    except (OSError, ValueError):
+        return {"tag": "OPEN", "method": "no_kg_index"}
+    return result.get("kg_anchor") or {"tag": "OPEN", "method": "no_kg_index"}
+
+
 def _outside_thailand(lat: float, lon: float) -> bool:
     return not (THAILAND_BBOX["lat_min"] <= lat <= THAILAND_BBOX["lat_max"]
                 and THAILAND_BBOX["lon_min"] <= lon <= THAILAND_BBOX["lon_max"])
@@ -3094,6 +3114,7 @@ def build_answer(at: str, refresh: bool = False, on_refresh_progress=None,
             "next_action": next_action_answer,
             "source_tags": [],
             "indicators_doc": "docs/INDICATORS.md",
+            "kg_anchor": {"tag": "OPEN", "method": "outside_thailand"},
         }
     refresh_report = None
     if refresh:
@@ -3183,6 +3204,20 @@ def build_answer(at: str, refresh: bool = False, on_refresh_progress=None,
         out["cctv"] = cctv_answer
     else:
         out["cctv"] = {"tag": "OPEN", "next_action": RUN_REFRESH_ACTION}
+    # M4 "KG-first that AIs cannot skip": every answer now states its kg_anchor,
+    # appended last so every key above keeps its existing order/bytes on a
+    # populated DB (byte-identical to v0.1.3 except for this one new key).
+    out["kg_anchor"] = _kg_anchor(lat, lon)
+    # fix: if the KG index could not be read, this answer has no anchor behind
+    # it -- cap dual_state.confidence at LOW so a caller cannot relay a HIGH
+    # confidence that was never actually anchored. Only dual_state is capped;
+    # state.resolution_confidence is a different field with a different
+    # meaning and is left untouched (see CHANGELOG v0.1.4 note: the two can
+    # then differ when the index is missing).
+    if out["kg_anchor"].get("method") == "no_kg_index":
+        _ds = out["next_action"].get("dual_state", {})
+        if _ds.get("confidence") == "HIGH":
+            _ds["confidence"] = "LOW"
     return out
 
 
@@ -3412,6 +3447,33 @@ def cmd_answer(args) -> int:
     _hotlines = (na.get("who_to_call") or {}).get("hotlines") or []
     print("\nข้อมูลนี้เป็นข้อมูลประกอบการตัดสินใจเท่านั้น ไม่ใช่คำสั่งอพยพ "
           "-- " + (" / ".join(_hotlines) if _hotlines else "เหตุฉุกเฉิน 1669 / ภัยพิบัติ 1784"))
+    # M4: every answer states its kg_anchor -- no anchor = not a FloodConnect answer
+    # (llms.txt's own first instruction). One line, same key as the JSON payload.
+    print(f"kg_anchor: {payload.get('kg_anchor')}")
+    return 0
+
+
+def cmd_locate(args) -> int:
+    """`floodconnect locate --at lat,lon [--province X]` -- offline, reads only
+    `output/kg_index/` (see `tools/kg/locate.py`). Part of M4 "KG-first that AIs
+    cannot skip"."""
+    import json as _json
+
+    from tools.kg.locate import KGIndexMissing, locate as _locate
+
+    try:
+        lat_s, lon_s = args.at.split(",")
+        lat, lon = float(lat_s), float(lon_s)
+    except ValueError:
+        print(f"ERROR: --at must be 'lat,lon', got {args.at!r}", file=sys.stderr)
+        return 2
+    try:
+        result = _locate(lat, lon, province=args.province)
+    except KGIndexMissing as e:
+        print(_json.dumps({"error": "kg index missing", "detail": str(e)}))
+        return 1
+    print(_json.dumps(result, ensure_ascii=False, indent=2 if not args.json else None,
+                       separators=(",", ":") if args.json else None))
     return 0
 
 
@@ -3499,6 +3561,22 @@ def main(argv: list[str] | None = None) -> int:
                                 "--all to fetch the full wired-source sweep instead. "
                                 "No effect with --offline.")
     p_answer.set_defaults(func=cmd_answer)
+
+    p_locate = sub.add_parser(
+        "locate",
+        help="M4 KG-first: resolve a point to its province/sub-basin/nearest "
+             "assets/reach/stations/agencies using only output/kg_index/ "
+             "(offline, no network, <3s). MCP equivalent: floodconnect_locate.")
+    p_locate.add_argument("--at", required=True, help="lat,lon")
+    p_locate.add_argument("--province", default=None,
+                           help="province code, Thai name, or English name (if the "
+                                "optional sources/province_names_en.yaml snapshot is "
+                                "present) -- the CALLER's own geocoding decision. "
+                                "Omit to get up to 3 RELAYED candidates instead of a "
+                                "silent single guess.")
+    p_locate.add_argument("--json", action="store_true",
+                           help="Compact single-line JSON (default: indented).")
+    p_locate.set_defaults(func=cmd_locate)
 
     p_connectors = sub.add_parser(
         "connectors",

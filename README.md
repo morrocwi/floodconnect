@@ -1,9 +1,12 @@
 # FloodConnect
 
-**Project status: paused after v0.1.3 (2026-10-05), by founder decision.** Nothing
-released was taken down; re-run the tests/validators before relying on it. No new
-release is planned from this team right now. See
-`docs/handoff/NEXT_AI_HANDOFF.md` for what shipped and how to fork/continue.
+**Project status: resumed for M4/v0.1.4 by founder ruling 2026-10-05 ("KG-first that AIs
+cannot skip"); paused again after v0.1.4 unless a new ruling says otherwise — see
+`docs/handoff/NEXT_AI_HANDOFF.md`.**
+
+**KG first, no exceptions: every answer states its `kg_anchor`; run `floodconnect locate`
+(or fetch `output/kg_index/index.json`) before anything else — see `llms.txt` STEP 1.**
+**ขั้นที่ 1 อ่าน KG ก่อนเสมอ ทุกคำตอบต้องมี `kg_anchor` — ดู `llms.txt`.**
 
 **Which AI are you? — see `docs/AI_TIERS.md` for the full version.**
 ```
