@@ -3800,3 +3800,147 @@ sources:
     probed_at: "2026-09-27"
     notes: "HARVESTED this check (one-off, not collect.py --all): downloaded once into raw/ibtracs/ (gitignored) and extracted via tools/harvest/ibtracs_bkk_500km.py -> sources/ibtracs_bkk_500km.yaml (141 track-point rows within 500km of Bangkok, 2005-2025, 26 distinct storms). DATA ONLY -- no danger threshold derived, for later calibration against urban_event_ledger."
     tag: VERIFIED
+
+  # ============================================================
+  # RID bigdata-swoc dashboard sweep (2026-10-05) -- founder question "is this in the
+  # API connector yet?"; it was not, see below. Basemap follow-up questions added
+  # within the same probe budget.
+  # ============================================================
+
+  - id: rid_bigdata_swoc_dashboard
+    agency: RID (กรมชลประทาน) -- SWOC (ศูนย์ปฏิบัติการน้ำอัจฉริยะ)
+    name_th: ระบบข้อมูลน้ำอัจฉริยะ SWOC (บิ๊กดาต้า)
+    name_en: RID SWOC "smart water data" dashboard (Next.js app)
+    url: "https://bigdata-swoc.rid.go.th/dashboard"
+    kind: web_portal_no_documented_rest_api
+    auth: "none for the public dashboard shell; a staff login ('เข้าสู่ระบบบริหารกรมชลประทาน') gates the live data behind it"
+    format: html
+    cadence: unknown
+    has_coords: false
+    coverage: "nationwide (per tab labels: rain, reservoir, streamflow, water quality, cultivation, infrastructure, water-plan diagram, comparison, forecast)"
+    asset_classes: [gauge, reservoir, rain]
+    status: catalog_only
+    catalog_reason: "HTTP 200, but the public page is a client-rendered Next.js shell -- every data table renders empty ('ไม่มีข้อมูล') in the server-sent HTML and the actual fetch calls are not present as literal URL/path strings in any of the 29 JS chunks this check fetched; the page itself invites a staff login for the live system, so the real API this view calls is most likely behind that login, not public. No machine-readable endpoint discovered within this check's probe budget."
+    http_status: 200
+    probed_at: "2026-10-05"
+    notes: >
+      Not in sources/registry.yaml or sources/api_census.yaml before this sweep --
+      confirmed NEW host, distinct from the already-catalogued water.rid.go.th/hydhome,
+      forecastswoc.pdf, app.rid.go.th/reservoir, and hyd-app.rid.go.th SVG flow diagrams.
+      Tabs visible in the page text (no live numbers behind them in this public view):
+      ภาพรวม (overview), ข้อมูลฝน (rain), อ่างเก็บน้ำ (reservoir), น้ำท่า (streamflow),
+      คุณภาพน้ำ (water quality, salinity g/L stations), เพาะปลูก (cultivation, million
+      rai), โครงสร้างพื้นฐาน (infrastructure), ผังน้ำ (water-plan diagram), เปรียบเทียบ
+      (comparison), คาดการณ์ (forecast). All conceptually overlap data FloodConnect
+      already gets from thaiwater.net (HII) canal/waterlevel/rain APIs and
+      app.rid.go.th/reservoir -- nothing confirmed NEW here, because no payload was
+      reachable to compare against. If a future pass gets a staff login (would need an
+      explicit founder-approved credential per safe-live-connect, not attempted here)
+      or finds the real API host this SPA calls, re-probe and promote.
+      Basemap follow-up (same sweep, founder question "is the map they use free?"):
+      a "แผนที่" (map) tab/button exists in the page text, but no map-library token
+      (leaflet/mapbox/maplibre/arcgis/cartocdn/openstreetmap/gistda) appears anywhere in
+      the 29 public JS chunks checked -- the map component is most likely one of the
+      login-gated chunks, not loaded for an anonymous visitor. Map library on this
+      specific dashboard: OPEN (not found, not confirmed free or paid).
+    tag: VERIFIED
+
+  - id: thaiwater_basemap_stack
+    agency: HII (สสน.) / thaiwater.net
+    name_th: ชุดฐานแผนที่ (basemap) ของ thaiwater.net
+    name_en: thaiwater.net Leaflet map + its configured basemap/overlay tile providers
+    url: "https://www.thaiwater.net/dist/js/app.chunk.js"
+    kind: leaflet_web_map
+    auth: "basemap tiles: no key in the tile URL for OSM/CartoDB/ArcGIS (VERIFIED); API key embedded in client JS for the Jawg tile layer and the GISTDA flood-WMS overlay (key values intentionally not recorded)"
+    format: raster tiles (png) + one WMS overlay
+    cadence: n/a (basemap, not a telemetry feed)
+    has_coords: true
+    coverage: global basemap tiles, used under a Thailand-wide map view
+    asset_classes: []
+    status: catalog_only
+    catalog_reason: "This is a UI basemap stack, not an ingestable telemetry source -- recorded for the founder's map-stack question, not a wiring candidate for collect.py."
+    http_status: 200
+    probed_at: "2026-10-05"
+    notes: >
+      thaiwater.net's map is Leaflet (confirmed: 'leaflet', 'LeafletGeotiff' tokens in
+      vendor.chunk.js) with multiple basemap layer options literal in app.chunk.js:
+      tile.openstreetmap.org/{z}/{x}/{y}.png -- no key in the tile URL (VERIFIED);
+      usage terms RELAYED, not fetched -- the OSM tile usage policy restricts heavy
+      third-party use: https://operations.osmfoundation.org/policies/tiles/ (RELAYED);
+      {s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png (CARTO "Light All" basemap)
+      -- no key in the tile URL (VERIFIED); usage terms RELAYED, not fetched:
+      https://carto.com/basemaps; server.arcgisonline.com (Esri ArcGIS Online
+      World_Light_Gray_Base / World_Street_Map / World_Topo_Map tile services) -- no key
+      in the tile URL (VERIFIED); usage terms RELAYED, not fetched:
+      https://www.esri.com/en-us/legal/terms/full-master-agreement; {s}.tile.jawg.io/jawg-dark
+      (Jawg Maps) -- needs an access token in the URL (VERIFIED); terms RELAYED, not
+      fetched: https://www.jawg.io/en/pricing/; and one overlay (not a basemap) via
+      api-gateway.gistda.or.th/api/2.0/resources/maps/flood/7days/wms, which needs an
+      api_key also embedded in the client JS (VERIFIED; terms not fetched). None of
+      these are rivers-specific government basemaps by themselves -- they are generic
+      world tile sets; GISTDA's own Sphere platform (see gistda_sphere_platform below)
+      is the closer match to "a basemap Thai agencies share". Key VALUES intentionally
+      not recorded anywhere in this repo. Reuse by FloodConnect (MIT, caller-run, no
+      hosted service): for OSM standard tile and CARTO Light All, only the absence of a
+      key in the tile URL is VERIFIED -- whether their usage terms actually permit
+      reuse inside a caller-run MIT tool is RELAYED/unread, not confirmed; ArcGIS Online
+      is in the same unread-terms position; Jawg and the GISTDA WMS overlay additionally
+      need a self-service key FloodConnect does not hold.
+    tag: VERIFIED
+
+  - id: gistda_sphere_platform
+    agency: GISTDA (สำนักงานพัฒนาเทคโนโลยีอวกาศและภูมิสารสนเทศ)
+    name_th: GISTDA Sphere (แพลตฟอร์มภูมิสารสนเทศกลาง)
+    name_en: GISTDA Sphere -- GISTDA's own geospatial/map API platform
+    url: "https://sphere.gistda.or.th/"
+    kind: map_platform_api
+    auth: "registration/login implied (auth.sphere.gistda.or.th subdomain seen); exact free-tier terms not confirmed this check"
+    format: "html/api (portal)"
+    cadence: n/a
+    has_coords: unknown
+    coverage: nationwide (Thailand)
+    asset_classes: []
+    status: catalog_only
+    catalog_reason: "Reached (HTTP 200) but this check only fetched the portal homepage, not its API docs or terms -- free-tier scope, quota, and third-party-redistribution terms are unconfirmed; not a decided wiring candidate yet."
+    http_status: 200
+    probed_at: "2026-10-05"
+    notes: >
+      Founder question: "the basemap Thai government agencies like to use, that shows
+      waterways well, shared by several agencies -- if free, record its API too."
+      sphere.gistda.or.th is GISTDA's own unified geospatial platform, referencing
+      api.sphere.gistda.or.th, auth.sphere.gistda.or.th, portal.sphere.gistda.or.th and
+      backend.sphere.gistda.or.th in its homepage HTML -- this is the closest match
+      found this sweep to a shared, Thai-government-promoted basemap/geodata API, ahead
+      of the generic OSM/CartoDB/ArcGIS tiles thaiwater.net happens to use. Whether its
+      river/canal layer rendering is good, and whether its free tier permits reuse
+      inside a third-party MIT tool each user runs on their own machine, is OPEN --
+      this check did not log in or fetch its API docs/terms page (one homepage GET
+      only, per the no-login/no-state-change probe rule). RID's own bigdata-swoc
+      dashboard did not expose any gistda.or.th or sphere token in its public JS
+      chunks, so no confirmed link between the two systems was found this sweep.
+    tag: VERIFIED
+
+  - id: longdo_map_api
+    agency: "Longdo Map (private Thai company)"
+    name_th: Longdo Map API
+    name_en: Longdo Map -- Thai commercial map/geocoding API
+    url: "https://map.longdo.com/docs/"
+    kind: map_tile_js_sdk_api
+    auth: "ApiKey required (literal 'ApiKey'/'API Key' seen on the docs page); signup flow and free-tier limits not fetched this check"
+    format: "html (docs page); tiles/JS SDK (product)"
+    cadence: n/a
+    has_coords: unknown
+    coverage: nationwide (Thailand-focused basemap, strong on Thai road/place names)
+    asset_classes: []
+    status: catalog_only
+    catalog_reason: "Reached (HTTP 200) but only the docs landing page was fetched -- free-tier quota, licence terms, and whether third-party MIT redistribution is permitted are unconfirmed this check."
+    http_status: 200
+    probed_at: "2026-10-05"
+    notes: >
+      Longdo Map is a Thai commercial product (not seen used by RID bigdata-swoc or
+      thaiwater.net in this sweep -- neither referenced a longdo.com/longdo token in
+      their JS). Free-tier existence, quota and licence: OPEN -- not stated on the
+      fetched docs landing page; terms not read. Terms page: https://map.longdo.com/
+      (not fetched beyond the docs landing page this check). Reuse by a caller-run MIT
+      tool: OPEN until the current terms are actually read.
+    tag: VERIFIED

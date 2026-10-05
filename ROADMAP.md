@@ -23,7 +23,13 @@ v0.1.2/v0.1.3 and are stale — `CHANGELOG.md` is the ledger of what actually sh
 per-basin main-river flag, re-check of the `thaiwater` situation-level label mapping, a
 `rain_7day_per_model_mm` fixture test) and the water-debt / Toledo-registration items
 (V6/V8, `PROP-FLOOD-03..07`) below remain **open, unregistered work for whoever
-continues this** — not resumed by this team right now.
+continues this** — not resumed by this team right now. Added to the pause's own
+backlog (2026-10-05 sweep, not started): the RID SWOC big-data dashboard
+(`bigdata-swoc.rid.go.th/dashboard`) — later backlog, no public API found, see
+`sources/api_census.yaml`; and basemap candidates for a future map view — OpenStreetMap
+standard tile / CARTO "Light All" (no key in the tile URL, VERIFIED; usage terms
+RELAYED, not fetched — the OSM tile usage policy restricts heavy third-party use),
+GISTDA Sphere's reuse terms still OPEN — see `docs/handoff/NEXT_AI_HANDOFF.md` §5.
 
 ## Binding rules (apply to every item below, no exceptions)
 
@@ -238,6 +244,22 @@ unverified claim about a named competitor):
 
 These four BMA-source items ship together as one gated "BMA sources" release once
 endpoint discovery is done; they are not pre-assigned a version number above.
+
+- **RID SWOC big-data dashboard** (`bigdata-swoc.rid.go.th/dashboard`) — swept
+  2026-10-05 per founder request; a client-rendered Next.js dashboard (rain, reservoir,
+  streamflow, water quality, cultivation, infrastructure, water-plan diagram,
+  comparison, forecast tabs) with no public machine-readable endpoint found within this
+  sweep's probe budget — the real data is most likely behind its staff login. Later
+  backlog, not v0.2 — nothing confirmed new or wirable yet. See
+  `sources/api_census.yaml` id `rid_bigdata_swoc_dashboard`.
+- **Basemap for a future map view** — thaiwater.net's own Leaflet map already uses two
+  tile providers with no key in the tile URL (OpenStreetMap standard tile, CARTO
+  "Light All" — VERIFIED; their usage terms are RELAYED, not fetched, and the OSM tile
+  usage policy restricts heavy third-party use) plus Esri ArcGIS Online tiles and a
+  Jawg/GISTDA-WMS layer that both need a key; GISTDA Sphere is the closer match to a
+  basemap Thai agencies share but its reuse terms for a caller-run MIT tool are
+  unconfirmed. Later backlog. See `sources/api_census.yaml` ids
+  `thaiwater_basemap_stack`, `gistda_sphere_platform`, `longdo_map_api`.
 
 ## Event archive extraction (v0.3+, explicitly not now)
 

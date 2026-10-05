@@ -1,0 +1,26 @@
+claim_id: "20261005-ai-worker-rid-swoc-census"
+status: ACTIVE
+writer: "ai-worker"
+branch: "agent/ai-worker/rid-swoc-census-v2"
+base_sha: "17e25fc81e882dd5b1448ece77aa11de0576054b"
+nodes:
+  - FC_ROOT
+artifacts:
+  - sources/api_census.yaml
+  - docs/handoff/NEXT_AI_HANDOFF.md
+  - ROADMAP.md
+intent: >
+  Founder request 2026-10-05: sweep the RID SWOC big-data dashboard
+  (bigdata-swoc.rid.go.th/dashboard) for anything FloodConnect could use, record it
+  in sources/api_census.yaml, and add future-version backlog notes if nothing is
+  wireable now. Extended mid-task with a basemap survey across thaiwater.net, DWR,
+  ONWR, BMA, GISTDA Sphere, and Longdo Map, following up on whether the map stack
+  used is free. Catalogue/plan-only -- FloodConnect is paused; nothing wired into
+  collect.py. Fix round: retag basemap "free" claims as RELAYED (terms not fetched),
+  correct Longdo free-tier status to OPEN, set a specific kind for the two map-API
+  rows, and drop an unsupported flood_extent asset class on the dashboard row.
+created_at: "2026-10-05T10:21:00+07:00"
+expires_at: null
+reviewers: []
+supersedes: null
+note: null
