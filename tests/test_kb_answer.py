@@ -405,9 +405,13 @@ def test_answer_json_envelope_keys(real_forecast_db, capsys):
     # {tag: OPEN, next_action} when no camera is in range, instead of omitted).
     # fix (2026-10-04, review finding #5): every answer now also carries
     # `indicators_doc`, pointing at docs/INDICATORS.md.
+    # fix (2026-10-05, M4 "KG-first that AIs cannot skip"): every answer now
+    # also carries `kg_anchor` (see tests/test_kb_answer_kg_anchor.py for its
+    # own shape/confidence-cap tests) -- appended last, so every key above
+    # keeps the exact same bytes as v0.1.3.
     assert set(payload) == {
         "generated_at", "at", "refresh", "state", "hazard", "accountability",
-        "next_action", "source_tags", "cctv", "indicators_doc",
+        "next_action", "source_tags", "cctv", "indicators_doc", "kg_anchor",
     }
     assert payload["indicators_doc"] == "docs/INDICATORS.md"
     assert payload["cctv"]["tag"] == "OPEN"

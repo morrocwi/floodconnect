@@ -24,8 +24,20 @@ FloodConnect (CLI/MCP) เป็นตัวช่วยที่ใช้วิ
 If someone names a place ("บ้านฉัน แถวบางกะปิ", "near Chiang Mai old city"), **your own
 AI resolves it to lat,lon** (your own geocoding tool, a map search, or asking the user
 for a pin) — FloodConnect does not do this and has no place database. Once you have
-lat,lon, continue to Step 1 (if you have the FloodConnect CLI/MCP available) or Step 2
-(if you are a browsing-only chat AI with no tool access, per `docs/AI_TIERS.md` T0/T1).
+lat,lon, continue to Step 0b (every tier, no exceptions), then Step 1 (if you have the
+FloodConnect CLI/MCP available) or Step 2 (if you are a browsing-only chat AI with no
+tool access, per `docs/AI_TIERS.md` T0/T1).
+
+## Step 0b — KG anchor (M4, no exceptions)
+
+Before anything else, get your `kg_anchor`: tool users run `floodconnect locate --at
+<lat>,<lon>` (MCP: `floodconnect_locate`); no-tool chat AIs fetch
+`output/kg_index/index.json` then the matching `province_<code>.json` slice (see
+`docs/KG_QUERY.md` §0b for the schema). `floodconnect answer`/`floodconnect_answer`
+already call this internally and carry the result as their own `kg_anchor` field, so
+if you are about to run Step 1 you do not need a separate call — just state the
+`kg_anchor` it returns. **No `kg_anchor` = not a FloodConnect answer** (`llms.txt`
+STEP 1).
 
 ## Step 1 — have the FloodConnect tool? Use it, this is all it needs
 

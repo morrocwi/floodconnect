@@ -566,6 +566,29 @@ def floodconnect_answer_core(at: str, refresh: "bool | None" = None,
         raise FloodConnectMCPError("BAD_AT", str(e)) from e
 
 
+def floodconnect_locate_core(at: str, province: "str | None" = None) -> dict:
+    """The MCP equivalent of `floodconnect locate --at lat,lon [--province X]`
+    (M4, "KG-first that AIs cannot skip"). Offline, reads only
+    `output/kg_index/` -- no network, no graphml read, <3s. Resolves `at` to
+    its province (from `province`, the CALLER's own geocoding decision, or up
+    to 3 RELAYED candidates when omitted), nearest sub-basin(s)/assets/reach,
+    stations, agencies, known_gaps, and a compact `kg_anchor`. A bad `at`
+    raises the same typed `FloodConnectMCPError` every other tool here uses;
+    a missing `output/kg_index/` raises `MISSING_KG_INDEX` rather than
+    guessing."""
+    from tools.kg.locate import KGIndexMissing, locate as _locate
+
+    try:
+        lat_s, lon_s = at.split(",")
+        lat, lon = float(lat_s), float(lon_s)
+    except ValueError as e:
+        raise FloodConnectMCPError("BAD_AT", f"--at must be 'lat,lon', got {at!r}") from e
+    try:
+        return _locate(lat, lon, province=province)
+    except KGIndexMissing as e:
+        raise FloodConnectMCPError("MISSING_KG_INDEX", str(e)) from e
+
+
 def explain_rules(base: str | None = None) -> dict:
     """Returns the fixed epistemic rules this server enforces, loaded from
     AI.md's "Mandatory reasoning rules" section at call time -- not a
@@ -636,6 +659,11 @@ _TOOL_DESCRIPTIONS: dict[str, str] = {
         "Compute a full flood/canal/pump/tide readout for one area on THIS machine "
         "(fetching fresh sources by default, on your own network/keys) -- nothing is "
         "hosted, and no reading here is an official warning." + _TOOL_DESCRIPTION_SUFFIX),
+    "floodconnect_locate": (
+        "KG-first step (M4): resolve a lat,lon point to its province/sub-basin/"
+        "nearest assets/reach/stations/agencies/known_gaps + kg_anchor, offline, "
+        "from output/kg_index/ only -- run this before answer for any point this "
+        "installation has not already anchored." + _TOOL_DESCRIPTION_SUFFIX),
 }
 
 try:
@@ -728,6 +756,22 @@ try:
         — a calm current reading does not cancel an active forecast hazard."""
         return floodconnect_answer_core(at, offline=offline, verbose=verbose)
 
+    @mcp.tool(structured_output=False)
+    def floodconnect_locate(at: str, province: str | None = None) -> dict:
+        """KG-first step (M4): resolve a lat,lon point to its province, nearest
+        sub-basin(s), nearest assets (gauge/gate/weir/dam/pump_station/tide_gate)
+        with their ON_REACH reach, stations sharing that reach/sub-basin,
+        responsible agencies, known_gaps, and a compact kg_anchor -- offline,
+        from this repo's committed output/kg_index/ only (no network, <3s).
+        Pass `province` (code, Thai name, or English name if available) when
+        your own geocoding has already decided it -- that gives method="caller".
+        Omit it to get up to 3 RELAYED candidates (method="cand"), never a
+        single silent guess.
+        UNKNOWN is not SAFE. current_local_state and forward_hazard are
+        independent — a calm current reading does not cancel an active
+        forecast hazard."""
+        return floodconnect_locate_core(at, province=province)
+
     def main() -> None:
         mcp.run("stdio")
 
@@ -761,6 +805,8 @@ except ImportError:
         "floodconnect_answer": lambda args: floodconnect_answer_core(
             args["at"], refresh=args.get("refresh"), offline=args.get("offline", False),
             verbose=args.get("verbose", False)),
+        "floodconnect_locate": lambda args: floodconnect_locate_core(
+            args["at"], province=args.get("province")),
     }
 
     def _content_wrap(result: dict) -> dict:
@@ -782,7 +828,7 @@ except ImportError:
             result = {
                 "protocolVersion": _PROTOCOL_VERSION,
                 "capabilities": {"tools": {}},
-                "serverInfo": {"name": "floodconnect", "version": "0.1.3"},
+                "serverInfo": {"name": "floodconnect", "version": "0.1.4"},
             }
         elif method == "notifications/initialized":
             return None  # notification: no response, by JSON-RPC 2.0 rule

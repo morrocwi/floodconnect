@@ -2,3 +2,4 @@
 # sidecar (see tests/contract/conftest.py) -- never let git's CRLF normalization touch
 # them, or the pinned hash stops matching the committed blob.
 tests/contract/fixtures/* -text
+output/kg_index/*.json -text

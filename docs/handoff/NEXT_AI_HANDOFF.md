@@ -6,6 +6,10 @@ or a completely separate continuation — and it does not replace reading the re
 files it points to. Re-verify every number below against `CHANGELOG.md` and the
 code; this file's own memory goes stale.
 
+**Resumed once, briefly, for M4/v0.1.4** ("KG-first that AIs cannot skip", founder
+ruling 2026-10-05) — see `CHANGELOG.md`'s v0.1.4 entry for what shipped — and
+paused again after v0.1.4 unless a new ruling says otherwise.
+
 ## 1. Why it is paused, in the founder's own words
 
 - "ทำเลย v0.1.2 ทั้งประเทศ แล้วค่อยพัก" — do v0.1.2 nationwide, then pause.

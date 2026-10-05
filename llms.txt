@@ -1,5 +1,14 @@
 # FloodConnect
 
+**STEP 1 — KG FIRST, NO EXCEPTIONS. Every FloodConnect answer must state its `kg_anchor`; no anchor = not a FloodConnect answer.**
+- Tool users (T2-T5): run `floodconnect locate --at <lat>,<lon> [--province <code|ชื่อไทย|English>]` (MCP: `floodconnect_locate`) before anything else; `floodconnect answer` also returns `kg_anchor`.
+- Chat AIs without tools (T1): fetch https://raw.githubusercontent.com/morrocwi/floodconnect/main/output/kg_index/index.json, pick the province (your own geocoding decides it — the index's bbox is coarse), then fetch that `province_<code>.json` (~10 KB median).
+- From the slice take the nearest assets, sub-basin, reach, stations and agencies, then follow `docs/NEAREST_STATION_RECIPE.md`.
+- State `kg_anchor` = {kg_sha256 (first 12 hex of index.json kg.sha256), province, sub_basin, reach, station_ids, method}.
+- Do NOT open `output/thailand_water_kg.*` (30 MB) for a point question — the slices are generated from it, deterministically.
+
+ขั้นที่ 1 อ่าน KG ก่อนเสมอ: ใช้ `floodconnect locate` หรือดึง `output/kg_index/index.json` แล้วไฟล์จังหวัด — ทุกคำตอบต้องระบุ `kg_anchor` ไม่มี anchor = ไม่ใช่คำตอบ FloodConnect
+
 **Which AI are you? — full detail in `docs/AI_TIERS.md`**
 ```
 T0 search snippet, no browsing                 -> you can't act here; tell the user to open an AI that can browse or install software.

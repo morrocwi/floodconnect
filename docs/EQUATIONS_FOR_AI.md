@@ -161,9 +161,10 @@ This is a simplified, by-hand version of the repository's own D1–D8 decision
 protocol (see `ARCHITECTURE.md` §6), for a single point at coarse
 (basin/province) zoom, using only what's registered above:
 
-1. **Locate.** Identify the nearest official gauge station(s) to the point
-   you care about (within the same canal/basin — don't average across
-   unrelated basins).
+1. **Locate — KG first.** Get your `kg_anchor` (`llms.txt` STEP 1: `floodconnect
+   locate`, or `output/kg_index/index.json` → `province_<code>.json`); pick the
+   gauge(s) from that slice's stations/assets sharing its sub-basin/reach; state
+   the `kg_anchor` in the answer.
 2. **Freshness.** Note each reading's timestamp. If a reading is older than
    the source's own stated update interval, call it **stale**, not fresh —
    a stale reading must never decide the colour/state on its own.

@@ -40,25 +40,9 @@ avoid doubling any rate-limited upstream fetch.
 
 ## On-demand refresh — runs on YOUR network/keys, never ours
 
-No scheduler anywhere in this repo. Everything below runs locally, on your own
-machine's network/keys — nothing calls out through us, no server-side fetch or LLM
-call on your behalf.
-
-```bash
-python3 kb.py answer --at sammakorn               # refresh is now the DEFAULT (2026-10-03)
-python3 kb.py answer --at sammakorn --offline     # opt OUT: answer from the stored DB only
-python3 kb.py connectors                          # dry: fixture coverage, no network
-python3 kb.py connectors --live                   # one real GET per wired source
-```
-
-`answer`/the MCP `floodconnect_answer` tool fetch area-relevant wired sources by
-default, every run (one GET per source, no retries, circuit breaker on 403/reset).
-A source with no collector, or a missing `auth: api_key` in *your* environment, comes
-back `skipped` (never `SAFE`/`FAIL`), leaving that field `OPEN`/stale -- never a
-guessed value. Every reading, fresh or carried over on a failed fetch, still passes
-the one freshness gate (`live_water_level.is_fresh`, `sources/registry.yaml`'s
-`max_age_hours`) before deciding anything -- stale is shown, never used to decide a
-colour. `key_env` per-source detail: `docs/AI_ENTRYPOINT.md`. Full detail there too.
+No scheduler. `answer`/`floodconnect_answer` refresh by default (`--offline` opts
+out); `connectors --live` does one real GET per wired source. Full detail (per-source
+`key_env`, skip/stale semantics, freshness gate): `docs/AI_ENTRYPOINT.md`.
 
 ## Three ways to the same data — pick one, don't improvise a fourth
 

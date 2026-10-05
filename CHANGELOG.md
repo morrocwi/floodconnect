@@ -4,6 +4,120 @@ All notable changes to FloodConnect. Dates are Asia/Bangkok local. This file sta
 only what actually shipped and is tested in this repository — never a plan (see
 `ROADMAP.md` for plans).
 
+## v0.1.4 — 2026-10-05
+
+**"KG-first that AIs cannot skip" (M4, founder ruling 2026-10-05, verbatim "แม้แต่เอไอ
+เก่งๆก็อ่านข้าม ตกลงเราต้องทำยังไงให้เอไอไม่ดื้อ"): a chat AI that could read the v0.1.3 KG
+mandate was observed (one founder-reported session) skipping straight to raw station
+pages. This release makes the KG step small, fast, and load-bearing in `answer`'s and
+`locate`'s own output; for a no-tool chat AI it remains an `llms.txt` instruction — no
+behavioural measurement of any AI's reading choice was run this release.**
+
+### Added
+- `tools/kg/build_index.py` — deterministic per-province KG index builder (networkx +
+  stdlib only, reads `output/thailand_water_kg.graphml` only, never writes to it).
+  Writes `output/kg_index/index.json` plus one `province_<code>.json` per province node
+  in the graph — **79 slices** (77 Thai provinces + 2 non-Thailand geocode codes present
+  in the graph: 99, 10499), against the graph measured at **26,727 nodes, 64,441 edges**,
+  `sha256` `33fcd36bafb7...`. Each slice carries the province's touched DWR sub-basins /
+  ONWR basins, member assets (gauge/gate/weir/dam/pump_station/tide_gate) tagged by
+  placement method (`pv`: `"e"` has an `IN_PROVINCE` edge, `"b"` placed by its coordinate
+  falling inside the province's bbox, `"n"` placed at the nearest edge-linked member as a
+  last resort — only gauges/rain-gauges carry `IN_PROVINCE` edges in this KG build, so
+  every gate/weir/dam/pump_station/tide_gate row is `"b"` or `"n"`, stated plainly in that
+  slice's own `gaps`), the `ON_REACH` reaches those assets snap to, `RESPONSIBLE_FOR`
+  agencies, and an explicit `known_gaps` list. Province bboxes are built from
+  `IN_PROVINCE` gauge/rain-gauge members only, rounded OUTWARD (`floor`/`ceil` at 3dp) so
+  a member sitting exactly on a rounded boundary is never excluded (a plain `round(.,3)`
+  previously excluded a real Pathum Thani member and, with it, 3 gates co-located with
+  it). **Measured sizes:** median slice 9,821 B, max 187,072 B (Bangkok — its ~960
+  box-placed gates/pumps are the point of that slice), total 1,045,491 B across 79 files —
+  within the 30 KB median / 200 KB max budget. `tests/test_kg_index.py` asserts a fresh
+  rebuild is byte-identical to the committed files, box members lie inside their own
+  bbox, and index counts match slice counts.
+- `tools/kg/locate.py` — offline `locate()` (stdlib only, no network, no graphml read):
+  resolves a lat,lon point to its province (from a caller-supplied `--province`/`province`
+  argument — code, Thai name, or English name via the committed `sources/province_names_en.yaml`
+  snapshot — or up to 3 candidates, each tagged `RELAYED`, ranked by nearest `IN_PROVINCE`
+  member when omitted, never a single silent guess), nearest sub-basin(s), nearest assets
+  with their `ON_REACH` reach, stations sharing that reach/sub-basin, and responsible
+  agencies and `known_gaps` **keyed per candidate code** when no province was resolved
+  (never one flat list that silently answers for only one of the candidates), plus a
+  compact `kg_anchor`. Stations exclude the 162 `gauge:thaiwater_rain:*` ids (rainfall-
+  only, mislabelled `class=gauge` in this KG build — recorded in `index.json`'s `gaps`).
+  **Measured:** box containment alone places the Pathum Thani test point
+  14.0208,100.5343 only in Nonthaburi's box (its nearest Pathum member is 8.865 km away,
+  outside Pathum's own rounded bbox) — confirming why `locate` must return candidates,
+  never one guess; its `agencies`/`known_gaps` for that point are returned separately for
+  each of the 3 candidate provinces, never Nonthaburi's alone. Output capped at 6,000
+  characters; measured 3,344-3,827 characters (raw JSON, in-process, `ensure_ascii=False`,
+  no indent) and indented CLI/MCP output 4,614–5,188 characters (indent=2; 5,188 at kb.py's
+  Sammakorn coordinate 13.758235,100.676084) and in-process call time 0.004-0.023 s on
+  the acceptance points (Pathum, Chiang Mai, Sai Buri, Ubon, Sammakorn, Sammakorn at
+  kb.py's own coordinate), against the 3 s budget (CLI wall time, including Python
+  startup, ~0.09 s per call).
+- CLI: `floodconnect locate --at lat,lon [--province X] [--json]` (`kb.cmd_locate`). MCP:
+  `floodconnect_locate(at, province=None)`, registered in both the real FastMCP block and
+  the stdlib JSON-RPC fallback's `_TOOLS`/`_TOOL_DESCRIPTIONS`.
+- `kb.build_answer` now appends `kg_anchor` as the LAST key of every answer (verified
+  byte-identical to v0.1.3 otherwise, by diffing an offline Sammakorn answer against
+  `origin/main` with `generated_at`/`kg_anchor` excluded). The outside-Thailand branch
+  gets `kg_anchor: {"tag": "OPEN", "method": "outside_thailand"}`. When the KG index
+  cannot be read, `kg_anchor` degrades to `{"tag": "OPEN", "method": "no_kg_index"}` and
+  `next_action.dual_state.confidence` is capped from `HIGH` to `LOW` — `state`'s own
+  `resolution_confidence` is a different field and is left untouched, so the two CAN
+  differ when the index is missing (by design: `dual_state.confidence` is what a caller
+  actually reads to decide how much to trust the colour; `resolution_confidence` records
+  what the station data alone supported).
+- `llms.txt`'s first non-heading line (both EN and TH) is now the KG-first instruction:
+  tool users run `floodconnect locate`/`floodconnect_locate` first; no-tool chat AIs
+  fetch the raw `output/kg_index/index.json` URL then the matching province slice; every
+  answer must state its `kg_anchor` or it is "not a FloodConnect answer". Mirrored
+  (briefly, pointing at the real detail rather than restating it) in `README.md`,
+  `docs/AI_TIERS.md`, `docs/NEAREST_STATION_RECIPE.md` (new Step 0b), `docs/KG_QUERY.md`
+  (new §0b, the slice schema + `pv` legend), and `system_capabilities.json` (new
+  `kg_first` block, `locate`/`floodconnect_locate` added to `entry_points`).
+- Token-budget fix: `AI.md`'s "On-demand refresh" section was
+  trimmed (full detail already lived, unchanged, at `docs/AI_ENTRYPOINT.md`) from 1,997
+  to 1,759 tokens to recover the margin `kg_anchor` costs. **Measured totals**
+  (AI.md + SKILL.md + answer, cl100k): populated-DB scenario now 1,759 + 1,226 + 1,579 =
+  **4,564** tokens (436 below the 5,000 ceiling, comfortably above the 300-token safe
+  margin); `tests/test_token_budget.py`'s existing ceilings are unchanged and stay green.
+
+- `sources/province_names_en.yaml` — a committed, hand-typed (`tag: RELAYED`, not an
+  independently re-verified government source) snapshot of the 77 Thai provinces'
+  standard English names, cross-checked code-by-code against the Thai names already in
+  `output/thailand_water_kg.graphml`'s own province nodes. `build_index.py` reads it to
+  fill `index.json`'s `en` field for all 77 (the 2 non-Thailand codes, 99/10499, stay
+  `null`); `locate --province "Pathum Thani"` now resolves the same as `--province 13`.
+- Per-asset `ag` in each slice now prefers the KG's own `OWNED_BY_AGENCY` edge (VERIFIED,
+  from `sources/owner_agency_crosswalk.yaml`) over the previous owner-name string match,
+  which missed it whenever the free-text owner field didn't exactly match an agency
+  node's `name_th`. **Measured**, before/after this fix: asset rows with `ag=null`
+  across all 79 slices dropped from 3,576/5,095 to 866/5,095.
+- `locate`'s "province not recognised" error now lists every province in the index
+  (previously the first 5 by code only).
+
+### Fixed
+- `system_capabilities.json`'s `pyproject_version` was still `"0.1.2"` (a pre-existing
+  stale value, found while bumping it for this release) — now tracks `pyproject.toml`.
+- `locate`'s `agencies`/`known_gaps` no longer come from a single silent nearest-member
+  vote when no province could be resolved (the exact Pathum Thani 14.0208,100.5343
+  pitfall this milestone names: the vote put it in Nonthaburi alone) — see above.
+- `cand` entries and `kg_anchor` are now tagged `RELAYED` in candidate mode, matching the
+  wording the docs already used.
+- `stations`/`kg_anchor.station_ids` no longer include the 162 `gauge:thaiwater_rain:*`
+  ids (rainfall-only gauges the KG mislabels `class=gauge`) ahead of real water-level
+  gauges.
+
+### Not in scope (frozen, per founder instruction)
+- No small-model measurement pass this round (explicitly declined on cost).
+- The shipped KG did not become the default for `answer`'s own accountability path;
+  `FLOODCONNECT_USE_SHIPPED_KG` is unchanged.
+- M2b items still backlog: crosswalking the geocode id-prefix for `pv="b"`/`"n"` assets,
+  splitting the Bangkok slice.
+- `output/thailand_water_kg.*` is byte-unchanged — this release only reads it.
+
 ## v0.1.3 — 2026-10-05
 
 **Nationwide knowledge graph shipped in git, KG-first mandate (founder ruling
