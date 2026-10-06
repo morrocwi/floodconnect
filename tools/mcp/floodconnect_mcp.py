@@ -535,7 +535,9 @@ def list_upstream_sources(base: str, agency: str | None = None) -> dict:
 
 
 def floodconnect_answer_core(at: str, refresh: "bool | None" = None,
-                              offline: bool = False, verbose: bool = False) -> dict:
+                              offline: bool = False, verbose: bool = False,
+                              household: "dict | None" = None,
+                              write_gap_log: bool = True) -> dict:
     """The MCP equivalent of `floodconnect answer --refresh` -- every OTHER tool here
     reads the static `site/dist/api/v1` export (Component A), but this one runs the
     richer compute call (state + hazard + accountability + next_action + cctv +
@@ -557,11 +559,25 @@ def floodconnect_answer_core(at: str, refresh: "bool | None" = None,
     `offline=True` -- same policy as `floodconnect answer` (CLI). Passing `refresh`
     explicitly (`True`/`False`) keeps the old opt-in behaviour for backward
     compatibility with existing callers that already decide for themselves; `offline`
-    is then ignored."""
+    is then ignored.
+
+    `household` (P-D, new): a dict matching
+    `schemas/household_declaration.schema.json` -- wires the home-as-shelter
+    (stay-vs-go) verdict into `jev_decision.advice.home_shelter`/`choice`/the
+    card's first step. Omitted (default `None`): `home_shelter` comes back
+    `UNKNOWN_ASK_INPUTS`, never a silent STAY.
+
+    `write_gap_log` (fix, founder ruling 2026-10-06, KG-only): defaults True at
+    this real entrypoint -- a ring the KG has no declared edge for is appended
+    to `data/policy_gap_log.jsonl` by default, same discipline `floodconnect
+    answer`'s own CLI now applies. `kb.build_answer` itself stays False by
+    default (its own docstring explains why: tests call it directly and must
+    never mutate the real repo's `data/` store)."""
     import kb  # noqa: E402 -- _REPO_ROOT is already on sys.path (see module top)
     effective_refresh = (not offline) if refresh is None else refresh
     try:
-        return kb.build_answer(at, refresh=effective_refresh, verbose=verbose)
+        return kb.build_answer(at, refresh=effective_refresh, verbose=verbose,
+                                household=household, write_gap_log=write_gap_log)
     except kb._BadAt as e:
         raise FloodConnectMCPError("BAD_AT", str(e)) from e
 
@@ -587,6 +603,46 @@ def floodconnect_locate_core(at: str, province: "str | None" = None) -> dict:
         return _locate(lat, lon, province=province)
     except KGIndexMissing as e:
         raise FloodConnectMCPError("MISSING_KG_INDEX", str(e)) from e
+
+
+def floodconnect_check_core(at: str) -> dict:
+    """The MCP equivalent of `kb.py check --at <at>` (L0 daily check, TRIGGERS.md
+    section 1/2/6). Exactly 3 keyless sources (TMD CAP, rain, Z0 level+trend), decided
+    entirely in code, ONE GET per source on THIS machine's own network -- never a
+    retry loop, never the full H1/H2/H3 zoom. Returns `flag` ("QUIET"/"ESCALATE"),
+    `reasons` (trigger ids, UNKNOWN != safe -- a missing/stale/failed fetch is always
+    a reason), `line` (the <=50-token one-line summary), and the raw per-source detail.
+    Only `sammakorn` is the founder-approved validated MVP path today
+    (`experimental: true` for every other point, including `ram53`) -- see
+    l0_check.py's own module docstring. A bad `at` raises the same typed
+    `FloodConnectMCPError` every other tool here uses."""
+    import l0_check
+
+    try:
+        return l0_check.check(at)
+    except ValueError as e:
+        raise FloodConnectMCPError("BAD_AT", str(e)) from e
+
+
+def floodconnect_watch_core(at: str) -> dict:
+    """The MCP equivalent of `kb.py watch --at <at>` (WATCHLIST.md sections 1-9,
+    TRIGGERS.md sections 3-5). Runs the same single L0 check as
+    `floodconnect_check_core` (no extra network call), then the cross-session
+    watchlist state machine (ACTIVE/COOLING/CLOSED, WATCHLIST section 3) against
+    this installation's own local `data/watchlist.csv`, and returns the
+    `fc.watch_update.v2` block: the `ops` this call already applied to that local
+    store (upsert/append/calendar), any new `alert_events`, the emergency `card`
+    (only when this check's own action is CARD) and the one-line `brief`. Every
+    session should call this (not `floodconnect_check`) for any point worth
+    remembering across sessions -- `floodconnect_check` alone never writes
+    anything. A bad `at` raises the same typed `FloodConnectMCPError` every other
+    tool here uses."""
+    import watchlist
+
+    try:
+        return watchlist.run_watch(at)
+    except ValueError as e:
+        raise FloodConnectMCPError("BAD_AT", str(e)) from e
 
 
 def explain_rules(base: str | None = None) -> dict:
@@ -664,6 +720,15 @@ _TOOL_DESCRIPTIONS: dict[str, str] = {
         "nearest assets/reach/stations/agencies/known_gaps + kg_anchor, offline, "
         "from output/kg_index/ only -- run this before answer for any point this "
         "installation has not already anchored." + _TOOL_DESCRIPTION_SUFFIX),
+    "floodconnect_check": (
+        "L0 daily check: exactly 3 keyless sources (TMD CAP, rain, Z0 level+trend), "
+        "one QUIET/ESCALATE line, computed on your own machine/network -- not the "
+        "full Sandwich zoom, and not an official reading." + _TOOL_DESCRIPTION_SUFFIX),
+    "floodconnect_watch": (
+        "L0 check + cross-session watchlist state machine (ACTIVE/COOLING/CLOSED), "
+        "writing this installation's own local watchlist store and returning the "
+        "watch_update/alert_event block -- use this instead of floodconnect_check "
+        "for any point worth remembering across sessions." + _TOOL_DESCRIPTION_SUFFIX),
 }
 
 try:
@@ -736,7 +801,8 @@ try:
     # it. No field is dropped by this -- the text content block is the one copy of the
     # answer a client actually needs; it is the duplicate this removes, not any data.
     @mcp.tool(structured_output=False)
-    def floodconnect_answer(at: str, offline: bool = False, verbose: bool = False) -> dict:
+    def floodconnect_answer(at: str, offline: bool = False, verbose: bool = False,
+                             household: "dict | None" = None) -> dict:
         """Computes a flood/canal/pump/tide readout for one area (state + hazard +
         accountability + next_action + cctv + source_tags), entirely on THIS machine --
         never a hosted or official reading. By default this FETCHES the relevant wired
@@ -753,8 +819,14 @@ try:
         relevance, keeping the token budget on a populated DB -- pass `verbose=True`
         for the full list.
         UNKNOWN is not SAFE. current_local_state and forward_hazard are independent
-        — a calm current reading does not cancel an active forecast hazard."""
-        return floodconnect_answer_core(at, offline=offline, verbose=verbose)
+        — a calm current reading does not cancel an active forecast hazard.
+        `household` (P-D, new): a dict matching
+        schemas/household_declaration.schema.json -- wires the home-as-shelter
+        (stay-vs-go) verdict into jev_decision.advice.home_shelter/choice/the
+        card's first step. Omitted (default): home_shelter comes back
+        UNKNOWN_ASK_INPUTS, never a silent STAY."""
+        return floodconnect_answer_core(at, offline=offline, verbose=verbose,
+                                         household=household)
 
     @mcp.tool(structured_output=False)
     def floodconnect_locate(at: str, province: str | None = None) -> dict:
@@ -771,6 +843,36 @@ try:
         independent — a calm current reading does not cancel an active
         forecast hazard."""
         return floodconnect_locate_core(at, province=province)
+
+    @mcp.tool(structured_output=False)
+    def floodconnect_check(at: str) -> dict:
+        """L0 daily check (TRIGGERS.md section 1/2/6): exactly 3 keyless sources
+        (TMD CAP feed, rain [observed today + 7-day forecast], Z0 level+trend),
+        decided entirely in code, ONE <=50-token line -- "QUIET" or "ESCALATE" plus
+        which first step (H1/H2/DRILL+H2/CARD). Not the full Sandwich zoom. Only
+        `sammakorn` is validated today; every other point (including `ram53`) comes
+        back `experimental: true`.
+        UNKNOWN is not SAFE. current_local_state and forward_hazard are
+        independent — a calm current reading does not cancel an active
+        forecast hazard."""
+        return floodconnect_check_core(at)
+
+    @mcp.tool(structured_output=False)
+    def floodconnect_watch(at: str) -> dict:
+        """L0 check + cross-session watchlist state machine (WATCHLIST.md sections
+        1-9, TRIGGERS.md sections 3-5): writes this installation's own local
+        `data/watchlist.csv`/`watch_log.csv` (ACTIVE on any trigger, COOLING after
+        2 quiet checks, CLOSED after 2 more plus any CAP/official-order floor
+        clearing) and returns the `fc.watch_update.v2` block -- the ops already
+        applied, any new `alert_events` (dedup'd, one per continuous trigger span),
+        an emergency `card` when this check's own action is CARD, and the one-line
+        `brief`. Use this instead of `floodconnect_check` for any point worth
+        remembering across sessions; `floodconnect_check` alone never writes
+        anything.
+        UNKNOWN is not SAFE. current_local_state and forward_hazard are
+        independent — a calm current reading does not cancel an active
+        forecast hazard."""
+        return floodconnect_watch_core(at)
 
     def main() -> None:
         mcp.run("stdio")
@@ -807,15 +909,24 @@ except ImportError:
             verbose=args.get("verbose", False)),
         "floodconnect_locate": lambda args: floodconnect_locate_core(
             args["at"], province=args.get("province")),
+        "floodconnect_check": lambda args: floodconnect_check_core(args["at"]),
+        "floodconnect_watch": lambda args: floodconnect_watch_core(args["at"]),
     }
 
     def _content_wrap(result: dict) -> dict:
         """Matches the real MCP SDK's tools/call result shape: a `content`
-        list of typed blocks, not a bare dict (spec: tools/call result)."""
-        return {"content": [{"type": "text", "text": json.dumps(result)}], "isError": False}
+        list of typed blocks, not a bare dict (spec: tools/call result).
+        Serialised minified (no spaces, Thai left as literal UTF-8) -- same
+        token-saving convention `kb.py`'s own `--json` path uses -- since this
+        text is what an LLM client reads back over stdio."""
+        return {"content": [{"type": "text",
+                              "text": json.dumps(result, ensure_ascii=False, separators=(",", ":"))}],
+                "isError": False}
 
     def _content_wrap_error(code: str, message: str) -> dict:
-        return {"content": [{"type": "text", "text": json.dumps({"error": {"code": code, "message": message}})}],
+        return {"content": [{"type": "text",
+                              "text": json.dumps({"error": {"code": code, "message": message}},
+                                                  ensure_ascii=False, separators=(",", ":"))}],
                 "isError": True}
 
     def _handle_request(req: dict) -> dict | None:
@@ -828,7 +939,7 @@ except ImportError:
             result = {
                 "protocolVersion": _PROTOCOL_VERSION,
                 "capabilities": {"tools": {}},
-                "serverInfo": {"name": "floodconnect", "version": "0.1.4"},
+                "serverInfo": {"name": "floodconnect", "version": "0.1.5"},
             }
         elif method == "notifications/initialized":
             return None  # notification: no response, by JSON-RPC 2.0 rule
@@ -877,7 +988,7 @@ except ImportError:
             resp = _handle_request(req)
             if resp is None:
                 continue
-            _sys.stdout.write(json.dumps(resp) + "\n")
+            _sys.stdout.write(json.dumps(resp, ensure_ascii=False, separators=(",", ":")) + "\n")
             _sys.stdout.flush()
 
 

@@ -91,7 +91,9 @@
           "unit": "ticks (~53 minutes at k=1h)"
         },
         "note": "report as an interval across at least two lags (e.g. k=1h and k=3h), never as one single point number; REFUSED is a non-value, not a number -- never print 0, infinity, or blank"
-      }
+      },
+      "shipped_in_answer": true,
+      "shipped_note": "Relabelled 2026-10-07 (release-accuracy fix): the mandatory RISING ETA that kb.py/floodconnect_model.py ship (`rise_eta_hours_range`/`_rise_eta_one_threshold`) is exactly this two-lag usage -- `time_to_threshold` called twice (a short/current-slope window and a longer window), range-of-hours reported, never averaged. It was previously mislabelled PROP-FLOOD-11 in code comments, kb.py, SKILL.md, API_MANUAL.md and the release notes; it is PROP-FLOOD-02, not PROP-FLOOD-11 (no second difference/acceleration term is used). See the PROP-FLOOD-11 entry below for the separate, unimplemented acceleration-aware proposal."
     },
     {
       "id": "PROP-FLOOD-03",
@@ -119,6 +121,32 @@
       "toledo_status": "OPEN pull request, NOT merged",
       "formula_ascii": "companion classification of flow direction/state built on the same inputs as PROP-FLOOD-03",
       "implemented_in_this_release": false
+    },
+    {
+      "id": "PROP-FLOOD-11",
+      "name": "Second retained difference (acceleration) over the already-registered PROP-FLOOD-01 trend",
+      "toledo_code": "weld/M.??.v1 (registered proposal)",
+      "toledo_tier": "Dr",
+      "toledo_status": "REGISTERED, unverified -- `toledo` repo `registry/proposals/flood_acceleration_eta.json`, Toledo PR #65 (\"proposals/flood-time-to-bank-v3\") MERGED into origin/main at commit 65297f05 on 2026-10-06 (VERIFIED by reading that file at that commit). It defines the quadratic L(n) = h + n*delta + n*(n+1)/2*D2, a least-n search to the threshold, an ALREADY_AT_BANK check first, and six named refusals (NO_READOUT, PUMP_STATE_CHANGED, PUMP_STATE_UNDECLARED, SPARSE_SERIES, NO_RISE, NOT_WITHIN_HORIZON). NOT IMPLEMENTED in this release (v0.2 target): registered and built (`floodconnect_model._rise_eta_prop11_computation`, tested) but never wired into any answer path -- `kb.py` never calls `floodconnect_model.rise_eta()` (the function that reaches it). The ETA that DOES ship in this release is PROP-FLOOD-02's own two-lag usage (see that entry above), never this quadratic.",
+      "formula_ascii": "a_k(t) := delta_k(t) - delta_k(t-k)  [2nd retained difference]; only ever computed when PROP-FLOOD-01's own trend_state is RISING (bank_check/at-or-over-bank is checked first).",
+      "variables": [
+        {
+          "symbol": "delta_k(t)",
+          "meaning": "PROP-FLOOD-01's own trend value at tick t",
+          "unit": "m",
+          "source": "floodconnect_model.delta_k / trend_state, same station"
+        },
+        {
+          "symbol": "delta_k(t-k)",
+          "meaning": "the same trend value k ticks earlier",
+          "unit": "m",
+          "source": "same source, earlier window"
+        }
+      ],
+      "python_function": "floodconnect_model.rise_eta(...) / floodconnect_model._rise_eta_prop11_computation(...) -- built and tested, never called from any answer path (`kb.py` does not call `rise_eta()`)",
+      "implementation": "floodconnect_model.py",
+      "shipped_in_answer": false,
+      "note": "`_answer_sandwich` in kb.py never calls `rise_eta` -- no sandwich answer currently shows the acceleration-aware ETA for any Z0, rising or not. This entry states PROP-FLOOD-11's own registered-but-unimplemented status as data; it does not claim the field is wired into the answer. v0.2 is the target release for wiring this in."
     }
   ],
   "classify_station_status": {

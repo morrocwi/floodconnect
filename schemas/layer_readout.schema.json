@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://floodconnect.local/schemas/layer_readout.schema.json",
+  "title": "FloodConnect M8 layer readout (renamed from M7a's ring_readout)",
+  "description": "Exactly the shape kb.py's `_answer_sandwich` assembles into `layers`, VERIFIED against the real code (2026-10-05): each of Z0/Z1/Z2/Z3 is a bare colour5 string -- Z0 = floodconnect_model.classify(z0_reading['status_word']), Z1/Z2/Z3 = floodconnect_model.ring_readout(rows, relation)['worst'] (only the 'worst' field is kept, not the whole ring_readout() dict). An empty/unread ring's `worst` is UNKNOWN (ring_readout's own default), never GREEN. The richer per-ring object (any_rising/at_or_over/n/n_fresh, documented in `$defs/ring_layer_full` below for reference) is what floodconnect_model.ring_readout() itself returns internally -- it is NOT what reaches the answer's `layers` key today; a caller wanting that detail must call ring_readout() directly, kb.py does not expose it through `layers`.",
+  "$defs": {
+    "ring_layer_full": {
+      "type": "object",
+      "description": "floodconnect_model.ring_readout()'s own full return shape -- reference only, not the shape of answer.layers.Z1/Z2/Z3 (see title note above).",
+      "required": ["worst", "any_rising", "at_or_over", "n", "n_fresh", "relation"],
+      "properties": {
+        "worst": {"$ref": "defs.schema.json#/$defs/colour5"},
+        "any_rising": {"type": "boolean"},
+        "at_or_over": {"type": "array", "items": {"type": "string"}},
+        "n": {"type": "integer"},
+        "n_fresh": {"type": "integer"},
+        "relation": {"type": "string", "enum": ["Z1", "Z2", "Z3"]}
+      },
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "required": ["Z0", "Z1", "Z2", "Z3"],
+  "properties": {
+    "Z0": {"$ref": "defs.schema.json#/$defs/colour5"},
+    "Z1": {"$ref": "defs.schema.json#/$defs/colour5"},
+    "Z2": {"$ref": "defs.schema.json#/$defs/colour5"},
+    "Z3": {"$ref": "defs.schema.json#/$defs/colour5"}
+  },
+  "additionalProperties": false
+}

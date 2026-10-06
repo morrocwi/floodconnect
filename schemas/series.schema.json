@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://floodconnect.local/schemas/series.schema.json",
+  "title": "FloodConnect SERIES (rate/acceleration/ETA input)",
+  "description": "An ordered list of READING ticks for ONE station, used as input to PROP-FLOOD-01 (delta_k, rate) and, only when the trend is RISING, PROP-FLOOD-02 (time-to-threshold, linear, two windows -- the shipped ETA) in floodconnect_model.py. PROP-FLOOD-11 (acceleration-aware ETA) is a separate, also-registered Toledo proposal that is registered but not implemented in this release (v0.2 target). CONFIRMED sources (2026-10-05): `bma_station_detail` (StationDetail?id=<water_id>) embeds a real multi-point series server-side, 5-minute steps, ~2 days (575-576 Date.UTC() points measured live for id=284/88) -- month in Date.UTC(Y,M0,...) is 0-indexed, see reading.schema.json's observed_at_utc note. The thaiwater snapshot's own `waterlevel_msl_previous` field gives exactly one prior tick (k=1) with NO declared spacing. `public/waterlevel_graph?station_id=&start_date=&end_date=` is OPEN: every sampled value was null for HII stations 160/48 in this pass, and RID stations return HTTP 500 -- a populated series via this endpoint is NOT confirmed; do not cite it as a working source. `public/waterlevel_load?basin_id=...&start_date=...&end_date=...` returns exactly ONE row per station regardless of the date range requested (confirmed with both a 1-day and a 3-day window) -- not a series. `bma_watermap`'s own payload carries only `wl_in` (now) + `max_in_day`/`max_in_yesterday` (two daily maxima, not a series). Acceleration (second difference) is PROP-FLOOD-11, a REGISTERED Toledo proposal (PR #65 merged 2026-10-06, tier Dr, in model_spec.json) that is NOT IMPLEMENTED in this release (v0.2 target) -- a caller must tag its output REFUSED (not computed on this answer path), never compute a number from it.",
+  "type": "object",
+  "required": ["station_code", "source_id", "ticks", "declared_tick_spacing_minutes", "max_gap_minutes"],
+  "properties": {
+    "station_code": {"type": "string", "description": "Same identity key as reading.schema.json station_code -- every tick in `ticks` must be the SAME station."},
+    "source_id": {"type": "string"},
+    "ticks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["observed_at_utc", "value"],
+        "properties": {
+          "observed_at_utc": {"type": "string", "format": "date-time"},
+          "value": {"type": ["number", "null"]}
+        }
+      },
+      "description": "Ordered ascending by observed_at_utc, deduplicated by observed_at_utc (an exact-duplicate timestamp is kept once; a near-duplicate within declared_tick_spacing_minutes/2 is a DATA QUALITY ISSUE, refuse rather than average)."
+    },
+    "declared_tick_spacing_minutes": {
+      "type": ["number", "null"],
+      "description": "Declared BEFORE computing anything (per model_spec.json PROP-FLOOD-01's epsilon/k discipline) -- never inferred after the fact from whatever gap happened to be present. null means the source does not publish a fixed spacing (e.g. thaiwater's single waterlevel_msl_previous tick) -- a caller may still count ticks (k_ticks), but a wall-clock ETA stays UNRESOLVED rather than computed from an assumed spacing."
+    },
+    "k_ticks": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Optional. The number of ticks between h(t) and h(t-k) actually used for delta_k, counted directly from `ticks` -- independent of whether declared_tick_spacing_minutes is known."
+    },
+    "declared_epsilon_m": {
+      "type": "number",
+      "description": "Optional. The sensor-resolution epsilon (m) this series' caller declared before computing delta_k, e.g. east_chain.yaml's sensor_resolution_m (0.02 m, tagged INSTINCT there)."
+    },
+    "max_gap_minutes": {
+      "type": "number",
+      "description": "If the actual gap between two consecutive ticks used for delta_k/time_to_threshold exceeds this, the caller MUST return SPARSE_SERIES (a refusal code), never silently interpolate or treat the two ticks as adjacent."
+    },
+    "min_points": {
+      "type": "object",
+      "properties": {
+        "rate": {"const": 2, "description": "PROP-FLOOD-01 (delta_k) needs exactly 2 points: h(t), h(t-k)."},
+        "acceleration": {"const": 3, "description": "A second difference (rate-of-change-of-rate) needs 3 points minimum: h(t), h(t-k), h(t-2k). PROP-FLOOD-11 names this slot (registered, PR #65 merged 2026-10-06, tier Dr, in model_spec.json) but is not implemented in this release (v0.2 target) -- never cite it as the equation behind any shipped answer-path output."}
+      }
+    },
+    "refusal_code": {
+      "type": ["string", "null"],
+      "enum": ["SPARSE_SERIES", "NO_READOUT", null],
+      "description": "Set instead of computing anything when fewer than min_points ticks exist, or the gap between the ticks that would be used exceeds max_gap_minutes (SPARSE_SERIES), or h_t/h_t_minus_k is itself missing (NO_READOUT, matches floodconnect_model.delta_k's own return). Never interpolate a missing tick."
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,32 @@
+claim_id: "20261005-floodconnect-m5-backtest-claim"
+status: RELEASED
+writer: "ai-worker"
+branch: "agent/ai-worker/floodconnect-m5-backtest-v3"
+base_sha: "885281d3a7289dbd35735b83b63bdd2dc9fb8f6e"
+nodes:
+  - BACKTEST
+artifacts:
+  - tools/backtest/run_m5_water_debt.py
+  - docs/experiments/M5_event_set.yaml
+  - docs/experiments/M5_national_units.yaml
+  - docs/experiments/M5_results.jsonl
+  - docs/experiments/M5_WATER_DEBT_BACKTEST.md
+  - tests/test_m5_water_debt_backtest.py
+intent: >
+  M5 water-debt backtest, EXPERIMENT (founder ruling 2026-10-05, "ทำ milestone backtest
+  หนี้น้ำเลย"). Adds a new runner under tools/backtest/ (extends the BACKTEST node, same
+  convention as run_backtest_v1.py/v2.py/score_forward_forecast.py) that reuses
+  water_balance.py (WATER_BALANCE node) and score_forward_forecast.py's Delta10.3 ledger
+  AS-IS, read-only, over a new real-data event set. Does not change the meaning/schema/
+  invariant of WATER_BALANCE or BACKTEST -- no edit to water_balance.py, score_forward_
+  forecast.py, or any *.balance.yaml; purely additive new files + tests. Evidence-only
+  per AGENTS.md section 9's exception, claimed anyway per this task's explicit
+  instruction. Headline finding: every unit-window REFUSES MISSING_INPUT (S0 undeclared
+  everywhere); n_independent=6 < N_min=10 -> FEW_EVENTS. See
+  docs/experiments/M5_WATER_DEBT_BACKTEST.md.
+created_at: "2026-10-05T10:55:00+07:00"
+expires_at: null
+reviewers: []
+supersedes: null
+note: "Released as part of the v0.1.5 release assembly; folded into the single
+  release commit. Not wired into the answer path."

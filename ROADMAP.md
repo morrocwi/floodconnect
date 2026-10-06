@@ -16,7 +16,9 @@ implemented-vs-planned table this roadmap extends.
 — see `docs/handoff/NEXT_AI_HANDOFF.md` for what is actually released and how to
 continue.** Resumed once, briefly, for M4/v0.1.4 ("KG-first that AIs cannot skip",
 founder ruling 2026-10-05) — see `CHANGELOG.md`'s v0.1.4 entry — and paused again
-after v0.1.4 ships unless a new ruling says otherwise. The section labels below this line (`v0.1.1 ... next`, etc.) predate
+after v0.1.4 ships unless a new ruling says otherwise. Resumed again and closed out
+as v0.1.5, the MVP-close release, on 2026-10-07 — see `CHANGELOG.md`'s v0.1.5 entry
+and `docs/handoff/NEXT_AI_HANDOFF.md`. The section labels below this line (`v0.1.1 ... next`, etc.) predate
 v0.1.2/v0.1.3 and are stale — `CHANGELOG.md` is the ledger of what actually shipped
 (v0.1.0 → v0.1.1 → v0.1.2 → v0.1.3); re-check `CHANGELOG.md` before trusting any
 "next"/"done" label in the sections that follow. The M2b backlog (canal/true-polyline

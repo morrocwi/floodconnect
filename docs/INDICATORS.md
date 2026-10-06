@@ -90,7 +90,7 @@ and is never silently re-expressed as RED/YELLOW/GREEN/UNKNOWN.**
   distinct keys `วิกฤต`/`วิกฤติ`/`ระดับน้ำวิกฤติ`/`thaiwater_situation_5` (code 5,
   overbank) are `RED`.
 - **Colour/level mapping (founder ruling 2026-10-04, verbatim "WATCH = YELLOW (แนะนำ)";
-  fix 2026-10-04, regate finding #2: `NO_THRESHOLD` moved OUT of the GREEN set — a
+  fix 2026-10-04: `NO_THRESHOLD` moved OUT of the GREEN set — a
   station with no agency level published at all has no basis for GREEN):**
   - `RED` — any agency-declared critical/overflow word present (`CRITICAL`, `OVERBANK`,
     `ระดับน้ำวิกฤติ`, `วิกฤต(ิ)`, `thaiwater_situation_5`, or `diff_wl_bank_text`
@@ -259,7 +259,7 @@ and is never silently re-expressed as RED/YELLOW/GREEN/UNKNOWN.**
   that row, or computes it itself from `observations.bank` minus `value`.
 - **Input source:** the nationwide `thaiwater_waterlevel` feed's **top-level**
   `diff_wl_bank`/`diff_wl_bank_text` fields (NOT under `station` — fix, 2026-10-04,
-  regate finding #5, exact path MEASURED against the live feed 2026-10-04) and
+  an earlier pass, exact path MEASURED against the live feed 2026-10-04) and
   `station.min_bank`.
 - **Status in this release (v0.1.2): the agency word this field's SIGN comes from
   (`diff_wl_bank_text` starting "ล้นตลิ่ง") now drives `current_local_state` directly
@@ -293,7 +293,7 @@ and is never silently re-expressed as RED/YELLOW/GREEN/UNKNOWN.**
   `collect.collect_thaiwater_waterlevel`'s stored `provenance.storage_percent` for the
   row (same `provenance` a caller already reads for §7).
 - **Input source:** the nationwide `thaiwater_waterlevel` feed's **top-level**
-  `storage_percent` field (fix, 2026-10-04, regate finding #5: not nested under
+  `storage_percent` field (fix, 2026-10-04: not nested under
   `station`), plus `station.min_bank`/`station.ground_level`.
 - **Status in this release:** relayed in `provenance`, not yet its own top-level
   answer field — the agency's own `situation_level` code (which this same feed
@@ -439,3 +439,223 @@ outside the two MVP areas.
 ระดับบ้าน) โดยหาสถานีที่สดที่สุดในรัศมี 10 กม. ก่อน ถ้าไม่มีจึงหาสถานีลุ่มน้ำเดียวกันในรัศมี 50
 กม. (ซึ่งจะไม่ให้ค่าเขียวเองได้) ถ้าไม่มีทั้งสองอย่างคือ "ไม่ทราบ" เหมือนเดิม — สองพื้นที่ในกรุงเทพฯ
 (สัมมากร, ซอยรามคำแหง 53) ยังคงรายละเอียดระดับบ้านเดิม ไม่เปลี่ยนแปลง
+
+## 12. `sandwich` — the Jev Sandwich ladder and its 4 (+UNKNOWN) colours (M8)
+
+- **KG-only, no simulation (founder ruling 2026-10-06, "ปิดการเดา ... ให้อยู่แค่ใน
+  kg graph เท่านั้น โดยปิดการจำลองโหลดไปเลย").** Two standing guarantees for every
+  answer this ladder produces:
+  1. Station relations used by Z1/Z2/Z3 come ONLY from `tools.kg.rings.rings`'s
+     `KG_ONLY_MODE` filter (default on) — a declared `site/inputs/canals/
+     east_chain.yaml` edge, the declared canalchain OUTLET_TO target, or plain
+     `SAME_SUBBASIN` membership. Every heuristic/guessed relation (verbatim
+     canal-name join, agency code-family join, the reach-snap walk and its
+     name-pattern-guess outlet fallback) is removed from the ring itself, not
+     only from colour eligibility — a station reachable only through one of
+     those no longer appears at all, and the ring reads `UNKNOWN`.
+  2. `floodconnect_model.SIMULATION_ENABLED` (False) is the one documented
+     flag promising no simulated or modelled load (water-debt, PROP-FLOOD-03/
+     06/07) ever feeds an answer. What remains: measured readings, declared
+     KG edges, and arithmetic on measured slopes (PROP-FLOOD-01/02/11),
+     labelled as arithmetic, never as simulation.
+  Where a ring has no declared edge, the answer logs a KG gap by name
+  (`kb.py`'s `kg_gaps`/the policy-gap-log `KG_GAP:<ring>` blocker) instead of
+  silently absorbing it into an unexplained `UNKNOWN`.
+- **Scope tag (founder ruling 2026-10-06).** Every `jev_decision` carries
+  `scope`: `VALIDATED_MVP` when the query point's own actual PROVINCE (not a
+  bounding box, `kb._point_province_code`) is Bangkok, or Z0's own station id
+  is one of the declared Sammakorn-area ids (`kb._station_ids_in_sammakorn_
+  declared_area` — Sammakorn's own pond gauge, or a station resolving via the
+  declared canal graph into Sammakorn's branch) — the one area actually swept
+  end to end — `EXPERIMENTAL` everywhere else, including every OTHER
+  `bma_watermap` gauge outside Bangkok province. Not a claim that an
+  EXPERIMENTAL answer is wrong, only that it has not been swept the same way.
+- Missing-input confidence (founder ruling 2026-10-06, "ถ้าไม่ใส่
+  กลุ่มเปราะบาง ผลการคำนวณผ่าน jev decision ต้องต่ำลง และบอกเหตุผล ... เช่น คนและสัตว์").**
+  `advice/home_shelter.py`'s verdict lowers `confidence` one ordinal step
+  (HIGH→MEDIUM→LOW→NONE) per wholly-absent `member_need_profile` AND per
+  wholly-absent `animal_profile` (checked separately — "คนและสัตว์"), named in
+  a `calc` block with the plain-Thai reason; an EXPLICIT declaration of
+  either — including `{}` or a declared animal count of 0 — is real
+  information and never lowers confidence. `jev_decision` itself carries a
+  sibling `calc` block (`colour`/`trend`/`eta`, verbose-only) naming which
+  inputs the colour/headroom and trend sections had, with `eta` (PROP-FLOOD-02,
+  linear, two windows — not PROP-FLOOD-11) carrying a real computed range
+  whenever Z0 is RISING, or `result: GATED` with the real reason otherwise.
+  This is transparency on `sandwich_decision`'s own existing confidence, not
+  a second rule — further confidence-stepping for a gap that computation
+  does not already cover is pending the founder.
+- **Official order is a floor, never a ceiling (founder ruling 2026-10-06).**
+  An official EVACUATE/WARNING always raises the result (rule 1, home_shelter).
+  A missing, late, or weaker official order never lowers a RED/LEAVE_NOW
+  result, and the card/choice must never read as "just wait for the official
+  order" on its own — both the emergency card's bare RED fallback and the
+  colour-only choice7 value now say to move to safety now instead.
+- **Status: shipped, v0.1.x Unreleased.** `next_action.dual_state.colour`/`label_th`
+  and the answer's own `sandwich` block (full trail under `--verbose`). Built from
+  `floodconnect_model.sandwich_decision`/`colour_ladder`, fed by `tools/kg/rings.py`
+  (offline KG neighbourhood: Z0 the point, Z1/Z2 the "middle" along the KG path, Z3
+  the basin) and `kb._answer_sandwich` (the actual station readings).
+- **The ladder (always in this order — flooding is water over the bank first).
+  Updated 2026-10-05, M8 safety revision (S1-S5): a shown colour is never lower than
+  Z0's own fresh agency word, "top calm" is never claimed without a real upstream
+  read, and a fresh RED declared OUTLET always raises the floor to at least
+  YELLOW, on every branch below — not only on conflict.**
+  1. **READ_BOTTOM** — `colour_ladder(z0)` on the point's own nearest gauge. Not
+     fresh / sensor-fault / no threshold at all → `UNKNOWN`. At/over the agency's own
+     bank or critical level/word → `RED`, decided immediately — the middle is never
+     needed for a local critical reading. (S1: RED only ever comes from Z0/its
+     `SAME_STATION` twin — an upstream RED never makes US red; see READ_TOP below.)
+  2. **READ_TOP** — is anything alarming upstream? A Z3 `UPSTREAM_PATH` row, or a
+     Z1/Z2 `UPSTREAM_CHAIN`/`UPSTREAM_REACH` row already read (OUTLET and
+     `UPSTREAM_CHAIN` rows are now ALWAYS read, every call, cheaply — see
+     `kb._answer_sandwich`'s `_outlet_middle`), that is fresh and RED, or fresh and
+     `RISING` — deliberately restricted to an upstream relation, not every Z3/middle
+     station (a large sub-basin's own rain-season base rate would otherwise make
+     "something upstream is rising" almost always true). A `SAME_SUBBASIN`/
+     `SAME_REACH`/`DOWNSTREAM_CHAIN`/`OUTLET` RED reading is still carried in
+     `facts`, just never a `top_alert` trigger here. No keyless official-warning
+     feed is wired (`official: "NOT_WIRED"`).
+  3. **TOP_UNREAD / TOP_NO_UPSTREAM** (S2) — the top could not be read at all, or
+     nothing on an actual upstream relation was ever read: Z0's OWN colour stands
+     (never `UNKNOWN`, never lower than Z0's own word), tagged `TOP_UNREAD`/
+     `TOP_NO_UPSTREAM`, `LOW` confidence, `official_tier: false` — "top calm" is
+     never claimed without a real upstream read behind it.
+  4. **AGREE** — an upstream row WAS read and is calm → Z0's own colour stands,
+     `official_tier` from the real resolution confidence.
+  5. **CONFLICT** — Z0 is GREEN/YELLOW but the top is alarmed: `needs_middle=True`,
+     no colour yet; the caller re-calls with the full Z1/Z2 "middle" filled in —
+     **the FULL middle (every relation) is still fetched from the database only on
+     this conflict, never on every call; only the small always-read OUTLET/
+     UPSTREAM_CHAIN subset above is an exception, by design.**
+  6. **EXTRACT_MIDDLE** — does the middle (Z1 "คลองใกล้เรา" / Z2 "พื้นที่น้ำเหนือเรา",
+     the KG path toward the point) confirm water coming toward Z0? A middle row
+     `RISING` or at/over critical → `ORANGE` (`WATER_COMING_ON_KG_PATH`). Otherwise
+     `YELLOW` (`MIDDLE_NOT_RISING`, or `MIDDLE_UNOBSERVED` at `LOW` confidence if no
+     middle row could actually be read).
+  7. **OUTLET_CRITICAL** (S2b) — applied LAST, after any of the branches above
+     decide a colour: a fresh RED declared `OUTLET` row, OR a fresh RED
+     `OUTLET_MAIN_STEM` row (a drainage constraint, not "water coming" — both are
+     downstream of Z0) raises the result to at least YELLOW, whatever path got
+     there, except when Z0 itself is already `UNKNOWN` or `RED` (outlet info never
+     promotes an unread point, and RED is already the ceiling).
+     `OUTLET_MAIN_STEM` (founder ruling 2026-10-06, "เจ้าพระยาคือทางออก", subtractive-
+     fix revision 2026-10-06; declared-area fix, founder ruling, same day)
+     re-labels a plain `SAME_SUBBASIN` Z3 row as a real outlet when ALL of: Z0's OWN
+     station id is inside a DECLARED per-area membership set
+     (`kb._station_ids_in_sammakorn_declared_area()` — Sammakorn's own pond gauge,
+     or any station the declared `sources/canalchain_station_joins.yaml` LOCATED_ON
+     join resolves onto a canal node inside `site/inputs/canals/east_chain.yaml`'s
+     own branch graph; **never a radius around a coordinate** — the old radius
+     wrongly matched WL.KJA.02/WL.YPN.01/WL.YPN.02, real stations 4-4.7 km from
+     Sammakorn's centre point on their own unrelated canals, as if they too were
+     "inside Sammakorn"); every other area OPEN, pending the founder; Z0's own
+     agency river name is NOT the Chao Phraya main stem and not another declared
+     outlet river; and the candidate row's own code is on that area's declared
+     `downstream_main_stem_codes` list (`CPY015`/`BKC003`/`BKC004` — never an
+     upstream main-stem station such as C.35/CPY012, and, since this same fix,
+     never CPY014 either: CPY014, lat 13.947 ปากเกร็ด, is NORTH of (upstream of)
+     the ~lat 13.75 junction `kb.py` itself places Sammakorn's drainage at, so
+     calling it "downstream" — the pre-fix claim — was false; it is OPEN, pending
+     the founder, whether CPY014 should instead be tracked as
+     "founder-named, upstream" rather than simply dropped). This is a DERIVED
+     relabel off the agency's own `river_name` field, never a declared KG edge —
+     unlike a plain `OUTLET` row, which comes from
+     `sources/canalchain_station_joins.yaml`.
+  8. Every Z3 station at/over critical is listed in `facts` (capped, sorted
+     `UPSTREAM_PATH`-then-`OUTLET`-then-`SAME_SUBBASIN`, nearest first within each
+     relation — never alphabetical by id), and every middle (Z1/Z2) row at/over
+     critical is added too whenever the middle was actually read (`kb.py`'s
+     `_answer_sandwich`), whatever the final colour.
+  8b. **`LAYER_CRITICAL_UNDER_GREEN`** (PENDING THE FOUNDER, FloodConnect's own
+      default, not founder-confirmed) — a drainage-area consistency floor: a
+      GREEN overall decision is raised to YELLOW (LOW confidence,
+      `official_tier: False`) whenever ANY layer (`sandwich.layers`) is RED,
+      since that layer reached RED only through a declared relation (never a
+      heuristic one, per item 9 below) and so is already a real, fresh
+      critical reading this answer knows about. This never promotes a GREEN
+      all the way to ORANGE/RED on its own — only to YELLOW — and the `why`
+      list carries the `LAYER_CRITICAL_UNDER_GREEN` tag so a caller can see
+      why. Implemented in `kb.py::_answer_sandwich`.
+  9. **Per-layer colours (S1b)** — `sandwich.layers` carries each ring's own
+     colour alongside the overall decision: Z0 (our point), Z1 (canals near us),
+     Z2 (water area above us), Z3 (basin above us), each from that ring's OWN
+     agency readings already fetched for this answer's own ring reads (no
+     SEPARATE fetch beyond those). A ring with no fresh reading at all is
+     `UNKNOWN`, never `GREEN` by default.
+     (founder ruling 2026-10-06, KG-only): a Z1/Z2 row with no DECLARED KG edge
+     reaching it is REMOVED from the answer path entirely, not merely
+     downgraded from colour-setting — a code-prefix guess (`SAME_CODE_FAMILY`),
+     a reach-snap pair whose own agency river names disagree
+     (`SAME_REACH_RIVER_MISMATCH`), or any other heuristic Z1/Z2 join does not
+     appear in `facts`, the raw station list, or any colour; the ring is
+     `UNKNOWN` instead and the gap is logged (`kg_gaps`, `policy_gap_log.jsonl`
+     by default). Z3's `SAME_SUBBASIN` membership join (`sb_basis`
+     IN_SUBBASIN/OUTLET_JOIN/SAME_STATION_JOIN) is the one exception kept on
+     the answer path, specifically because `kb.py`'s outlet-consistency check
+     and the drainage-area consistency floor (item 8b) both read it — it CAN
+     still appear in `facts` and the raw station list, it is just never
+     colour-eligible on its own (`tools/kg/rings.py`'s `KG_ONLY_MODE` filter).
+     A Z3 station reachable only through a DERIVED-snap/NAME_JOIN heuristic,
+     with no declared edge and no shared sub-basin, still does not appear.
+     `--verbose` gives the full `{"Z0": "GREEN", "Z1": "YELLOW", ...}` shape;
+     compact mode gives the SAME four colours as one 4-character string in the
+     fixed Z0-Z1-Z2-Z3 order, single-letter codes (`G`/`Y`/`O`/`R`/`U`) — e.g.
+     `"GYUU"` = Z0 green, Z1 yellow, Z2/Z3 unknown — chosen over a compact dict
+     because a dict's own key overhead cost ~28 tokens even with single-letter
+     values, against ~7 for the plain string (MEASURED, cl100k_base).
+  10. **NO_Z0_READING still computes layers/facts** (S6, subtractive-fix revision
+      2026-10-06) — when Z0's own id has no observation row, `kb._answer_sandwich`
+      first tries its readable `gauge:bma_watermap:` twin (`tools.kg.rings.
+      _prefer_readable_twin`); if that also fails, a stub Z0 reading (every field
+      `None`/`UNKNOWN`) feeds the normal pipeline instead of an early return — Z0's
+      own layer and the overall `colour` stay `UNKNOWN` (unchanged), but Z1/Z2/Z3
+      still carry whatever fresh readings the ring actually has, and the output
+      carries a diagnostic `reason: "NO_Z0_READING..."` alongside the real computed
+      `colour`/`layers`/`facts`.
+- **The 5 colours** (`floodconnect_model.COLOUR_LABEL_TH`) — only the agency's own
+  word/level plus the ladder above ever sets one; no invented threshold:
+  | colour | label (Thai) | set when |
+  |---|---|---|
+  | `GREEN` | ปกติ | fresh agency normal word, top calm |
+  | `YELLOW` | เฝ้าระวัง | agency watch/warning word, OR top alarmed but the middle does not confirm (or is unobserved) |
+  | `ORANGE` | เตรียมพร้อม | the middle confirms water coming along the KG path, OR local level RISING above a published warning level toward critical — **FloodConnect's own label**, aligned with the agency phrase "เฝ้าระวังและเตรียมพร้อม"; **not an official agency tier** |
+  | `RED` | วิกฤต | at/over the agency's own bank/critical level or word, by the agency's own say — always checked first, always wins |
+  | `UNKNOWN` | ไม่ทราบ | missing/stale/fault/no threshold, or the top itself unread — never read as SAFE |
+  `next_action.dual_state.current_local_state` keeps its existing closed 4-value
+  vocabulary (§1) unchanged — `ORANGE` folds to `YELLOW` there
+  (`floodconnect_model.FOLD_TO_LEGACY`); the 5-value colour rides alongside it only as
+  `dual_state.colour`/`label_th`, and only when Z0 has a fresh reading.
+- **PROP-FLOOD-01** (Δk trend) and **PROP-FLOOD-02** (Tk time-to-threshold) are both
+  **PROPOSAL**-tier Toledo entries (unverified, PR #59 merged as a proposal, not yet
+  promoted to CANONICAL.json — see `model_spec.json`). As of M8 (2026-10-06),
+  PROP-FLOOD-02's own two-lag usage (`floodconnect_model.rise_eta_hours_range`,
+  `delta_k`/`time_to_threshold` called twice at two different lags) IS wired
+  into the sandwich answer and IS computed whenever Z0 is RISING, labelled
+  PROPOSAL — this supersedes the earlier "not currently wired" / "known gap"
+  wording below. **PROP-FLOOD-11** (the separate acceleration-aware quadratic,
+  2nd retained difference on top of Tk) is REGISTERED in Toledo (PR #65 merged
+  2026-10-06, tier Dr, in `model_spec.json`) but **NOT IMPLEMENTED** in this
+  release (v0.2 target) — `floodconnect_model._rise_eta_prop11_computation`
+  exists and is tested, but `kb._answer_sandwich` never reaches it; never cite
+  PROP-FLOOD-11 as the equation behind the shipped ETA.
+- **JSON path:** `sandwich` (compact by default — `colour`/`label_th`/`z0`(only when
+  stale)/`confidence`/`facts` (each row trimmed to `[id, relation]`, every row the
+  `_SANDWICH_FACTS_CAP` already kept, never re-sliced further); the full trail —
+  `steps`/`why`/`gate`/`level`/`official_tier`/`mid`/`eq`/full `facts` rows — only
+  under `--verbose`, same token-budget discipline as every other field in this
+  file) and `next_action.dual_state.colour`/`label_th`.
+- **Known limitation:** read off only `bma_watermap`/`thaiwater_waterlevel` (the two
+  M8 nationwide sources) — the pre-existing Sammakorn/Ram53 `gauge:thaiwater_bma:*`
+  canal gauges are not (yet) re-read here; a ring member on that prefix reports
+  `MIDDLE_UNOBSERVED`, honestly, never a guessed colour.
+- **Z3 coverage, stated plainly (re-measured 2026-10-05, M8 safety revision):** a
+  `stations_v1` Z0 with no `IN_SUBBASIN` placement of its own inherits Z3's
+  sub-basin from its `SAME_STATION` twin (`sb_basis="SAME_STATION_JOIN"`) when one
+  exists. The 236/311 and 797/807 coverage figures once published here were
+  measured before the Z0-tie-break fix and the S1/S2 ladder fixes changed
+  what "resolves" means at the answer level; this file no longer cites those
+  superseded counts. The CHANGELOG's "M8 safety revision" entry
+  carries the current, re-measured live-sweep colour/reason distribution instead
+  — see `CHANGELOG.md` rather than a number pinned in this doc, so a future round
+  does not have to find and fix a second stale citation of the same measurement.

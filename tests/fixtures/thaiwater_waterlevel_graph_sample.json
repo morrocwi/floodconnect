@@ -1,0 +1,48 @@
+{
+  "source": "GET https://api-v3.thaiwater.net/api/v1/thaiwater30/public/waterlevel_graph?station_id=160&start_date=2026-09-01&end_date=2026-10-05",
+  "note": "station 160 = PRC002 (HII), used as proof-of-concept; station_id=1095849 (C.67/RID) returned a 500 panic -- endpoint only serves HII telemetry tele_waterlevel series",
+  "sample": {
+    "result": "OK",
+    "n_points": 3310,
+    "first_3": [
+      {
+        "datetime": "2026-09-01 00:00",
+        "value": null,
+        "value_out": null,
+        "discharge": null
+      },
+      {
+        "datetime": "2026-09-01 00:15",
+        "value": null,
+        "value_out": null,
+        "discharge": null
+      },
+      {
+        "datetime": "2026-09-01 00:30",
+        "value": null,
+        "value_out": null,
+        "discharge": null
+      }
+    ],
+    "last_3": [
+      {
+        "datetime": "2026-10-05 10:45",
+        "value": null,
+        "value_out": null,
+        "discharge": null
+      },
+      {
+        "datetime": "2026-10-05 11:00",
+        "value": null,
+        "value_out": null,
+        "discharge": null
+      },
+      {
+        "datetime": "2026-10-05 11:15",
+        "value": null,
+        "value_out": null,
+        "discharge": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "source_url": "https://weather.bangkok.go.th/water/StationDetail?id=14",
+  "water_id": 14,
+  "water_code": "WL.BSU.05",
+  "fetched_at_utc_approx": "2026-10-06T16:10:59Z",
+  "trim_note": "Trimmed real response: txt_water_code/txt_water_name/txt_warning/txt_critical fields plus 13 of the real page's ~575 Date.UTC(...) history points (the real first 3, then a real monotonically-rising 45-minute run, 5-min cadence, 22:20-23:05 Bangkok local on 2026-10-06, i.e. 15:20-16:05 UTC) -- a live keyless GET this session, kept byte-identical to the agency's own Date.UTC(Y, M0, D, h, m, s), value literal. Found by sampling 40 real BMA stations live and keeping the one whose last 6 points were genuinely monotonically rising (no fabricated/synthetic series).",
+  "warning_critical_source": "same live page, real fields txt_warning=0.30, txt_critical=0.50",
+  "last_real_point": {"t_utc": "2026-10-06T16:05:00Z", "v": -1.13}
+}

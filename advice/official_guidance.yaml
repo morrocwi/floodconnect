@@ -1,0 +1,1071 @@
+# advice/official_guidance.yaml -- P-D, one row per official item
+# (schemas/official_guidance.schema.json). Cited-data-file backing for the
+# official-parity hard rule (design section G): every FloodConnect
+# preparedness step must be equal to or stricter than the item here it claims
+# to implement (advice/parity.py, tests/test_official_parity.py).
+#
+# Retrieval date for every `tag: OFFICIAL` row below: 2026-10-05.
+# `tag` says whether an item was fetched/verbatim-confirmed at all (OFFICIAL) or
+# not (OPEN, never invented). `source_class` (added 2026-10-05) says WHICH
+# kind of fetched source it is, now that both OFFICIAL_TH and GENERAL rows exist --
+# `OFFICIAL_TH` = independently fetched and verbatim-confirmed directly from a
+# Thai agency's own domain (a .go.th government public-relations relay of
+# another Thai agency's own words, e.g. PRD/prd.go.th, counts as that agency's
+# own domain; a private news outlet never does); `GENERAL` = independently
+# fetched and verbatim-confirmed from a named general-practice source (Ready.gov,
+# gov.uk, American/IFRC Red Cross) -- never presented as, or substituted for, a
+# Thai agency's own position. A news-site relay/paraphrase of EITHER kind of
+# source is RELAYED, never entered here at all. `source_class` is always null
+# on an OPEN row (nothing was fetched).
+#
+# `trigger_colour` is this repo's own FLOODCONNECT judgement of the latest
+# colour by which the item should already be acted on (the agency text
+# itself does not state a Jev Sandwich colour) -- set conservatively (as
+# early as the item's own phase plausibly allows) so a parity check against
+# it is a real test, not a rubber stamp.
+
+- id: OG-01
+  agency: "กรมประชาสัมพันธ์ (PRD), อ้างแนวทาง ปภ./DDPM"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/432703"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "ติดตั้งเครื่องตัดไฟรั่ว (ELCB) หรือเบรกเกอร์ตัดไฟรั่ว"
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["install_elcb_breaker"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-02
+  agency: "กรมประชาสัมพันธ์ (PRD), อ้างแนวทาง ปภ./DDPM"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/432703"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "ตรวจสอบอุปกรณ์และสายไฟทั้งหมด หากพบจุดชำรุด ฉีกขาด หรือเปลือย ต้องซ่อมแซมหรือเปลี่ยนใหม่ทันที"
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["inspect_repair_wiring"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-03
+  agency: "กรมประชาสัมพันธ์ (PRD), อ้างแนวทาง ปภ./DDPM"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/432703"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "เคลื่อนย้ายเครื่องใช้ไฟฟ้าและปลั๊กไฟ ขึ้นไปไว้บนที่สูง"
+  phase: "PRE_FLOOD"
+  trigger_colour: YELLOW
+  action_keys: ["move_valuables_appliances_up"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-04
+  agency: "กรมประชาสัมพันธ์ (PRD), อ้างแนวทาง ปภ./DDPM"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/432703"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "สับคัทเอาท์หรือเบรกเกอร์หลัก เพื่อตัดไฟฟ้าทั้งบ้านทันที"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["cut_main_breaker_on_water_entry"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-05
+  agency: "กรมประชาสัมพันธ์ (PRD), อ้างแนวทาง ปภ./DDPM"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/432703"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "ห้ามสัมผัสหรือใช้งาน เครื่องมือและอุปกรณ์ไฟฟ้าใด ๆ ขณะที่ตัวเปียก"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["never_touch_electrical_wet"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-06
+  agency: "กรมประชาสัมพันธ์ (PRD), อ้างแนวทาง ปภ./DDPM"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/432703"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "รักษาระยะห่างจากเสาไฟฟ้าและระบบจำหน่ายไฟฟ้าอย่างน้อย 1-2 เมตร"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["keep_distance_power_poles"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-07
+  agency: "กรมประชาสัมพันธ์ (PRD), อ้างแนวทาง ปภ./DDPM"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/534015"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  # Fix: re-fetched verbatim -- the source page's
+  # own heading+body reads "ย้ายขึ้นที่สูง: อาศัยอยู่บน..." (a colon, no "โดย"); the
+  # previous row silently inserted "โดย" between the heading and body, which is not
+  # in the source text.
+  verbatim_th: "ย้ายขึ้นที่สูง: อาศัยอยู่บนชั้นสองหรือบริเวณที่สูงที่สุดของบ้าน และจัดเตรียมกระเป๋ายังชีพ ไฟฉาย ยาประจำตัว และน้ำดื่มไว้ใกล้ตัวเสมอ"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  # fix (2026-10-06): this one sentence actually carries TWO distinct
+  # actions -- move to the highest floor, AND keep a grab bag (flashlight,
+  # meds, water) within reach -- previously keyed only to the first.
+  # `prepare_emergency_kit` already covers the second (GREEN/YELLOW rank,
+  # STRICTER than this row's ORANGE trigger -- never WEAKER).
+  action_keys: ["move_to_upper_floor", "prepare_emergency_kit"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+# ---- 2026-10-05 re-fetch : the SAME prd.go.th/534015 page
+# carries several more actionable items this repo had not yet rowed -- gas
+# cylinder, glass/window caution, sandbag/drain plugging, sealed drinking water,
+# the 1138 disaster hotline, and the explicit "evacuate before crisis level, on an
+# official warning" instruction. All six verbatim_th values below are copied
+# straight off that one page (same URL/retrieved_at as OG-07).
+
+- id: OG-20
+  agency: "กรมประชาสัมพันธ์ (PRD), อ้างแนวทาง ปภ./DDPM"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/534015"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "จัดการระบบแก๊สหุงต้ม: ปิดวาล์วถังแก๊สให้แน่นหนา ผูกยึดถังแก๊สไว้กับโครงสร้างบ้านที่มั่นคงในที่สูง เพื่อป้องกันไม่ให้ถังแก๊สลอยตามน้ำจนเกิดการกระแทก รั่วซึม หรือเกิดระเบิด"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["secure_gas_cylinder"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-21
+  agency: "กรมประชาสัมพันธ์ (PRD), อ้างแนวทาง ปภ./DDPM"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/534015"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "ระวังกระจกและวัสดุแตกหัก: ถ้าน้ำเริ่มท่วมสูงและมีลมพัดแรง ควรอยู่ห่างจากประตูหรือหน้าต่างกระจก เพื่อป้องกันอุบัติเหตุจากเศษกระจกแตกที่ลอยมาตามน้ำ"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["avoid_glass_doors_windows"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-22
+  agency: "กรมประชาสัมพันธ์ (PRD), อ้างแนวทาง ปภ./DDPM"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/534015"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "อุดช่องทางน้ำไหลและถอยหลังของน้ำเสีย: ใช้กระสอบทรายหรือวัสดุกันน้ำอุดบริเวณประตู หน้าต่าง และอุดปิดชักโครกหรือท่อน้ำทิ้งในห้องน้ำชั้นล่าง เพื่อป้องกันไม่ให้น้ำเสียและสิ่งปฏิกูลดันย้อนกลับเข้ามาในตัวบ้าน"
+  phase: "PRE_FLOOD"
+  trigger_colour: YELLOW
+  action_keys: ["sandbag_and_plug_drains"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-23
+  agency: "กรมประชาสัมพันธ์ (PRD), อ้างแนวทาง ปภ./DDPM"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/534015"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "ไม่ใช้น้ำท่วมขังในการล้างหน้าหรือบริโภค ดื่มเฉพาะน้ำบรรจุขวดที่ปิดสนิท และทายากันน้ำกัดเท้าหรือล้างเท้าด้วยน้ำสะอาดทันทีหลังลุยน้ำ"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["drink_sealed_bottled_water_only"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-24
+  agency: "กรมประชาสัมพันธ์ (PRD), อ้างแนวทาง ศปภ."
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/534015"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "1138 ศูนย์ปฏิบัติการช่วยเหลือผู้ประสบอุทกภัย (ศปภ.) ประสานงานช่วยเหลือผู้ประสบภัยน้ำท่วม"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["call_1138_disaster_hotline"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-25
+  agency: "กรมประชาสัมพันธ์ (PRD), อ้างแนวทาง ปภ./DDPM"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/534015"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "หากระดับน้ำเพิ่มสูงขึ้นเรื่อยๆ จนไม่สามารถอยู่อาศัยได้ หรือมีสัญญาณเตือนภัยจากเจ้าหน้าที่ ให้อพยพทันทีโดยไม่ต้องรอให้ถึงขั้นวิกฤต ปิดบ้านให้มิดชิด นำเฉพาะสิ่งของจำเป็นใส่กระเป๋าสะพายหลังเพื่อให้มือทั้งสองข้างว่างสำหรับทรงตัว และเดินทางตามเส้นทางที่เจ้าหน้าที่กำหนดเพื่อไปยังศูนย์พักพิงอย่างปลอดภัย"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  # fix (2026-10-06): this one sentence carries four distinct actions
+  # -- evacuate now (already keyed), close the house securely, carry only
+  # essentials in a backpack with both hands free, and follow the officially-
+  # designated route -- the last three now have their own ladder steps
+  # (O34-O36), same ORANGE rank as this row's own trigger_colour.
+  action_keys: ["evacuate_on_rising_water_or_warning", "secure_house_before_leaving",
+                "carry_essentials_backpack_hands_free", "follow_designated_evacuation_route"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-08
+  agency: "กรมควบคุมโรค (DDC), ผ่าน PRD"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/529458"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "หลีกเลี่ยงการเดินเท้าเปล่าลุยน้ำ ควรสวมรองเท้าบูท"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["wear_boots_avoid_barefoot"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-09
+  agency: "กรมควบคุมโรค (DDC), ผ่าน PRD"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/529458"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "ล้างมือและเท้าด้วยน้ำและสบู่บ่อยๆ อาบน้ำชำระร่างกายทันทีหลังลุยน้ำ"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["hygiene_wash_after_wading"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-10
+  agency: "กรมควบคุมโรค (DDC), ผ่าน PRD"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/529458"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "รับประทานอาหารปรุงสุกใหม่ หลีกเลี่ยงอาหารค้างคืนที่ไม่มีภาชนะปิดมิดชิด"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["eat_freshly_cooked_food"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-11
+  agency: "กรมควบคุมโรค (DDC), ผ่าน PRD"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/529458"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "หากถูกสัตว์มีพิษกัด ให้จดจำลักษณะของสัตว์ ล้างแผลด้วยน้ำสะอาดและสบู่"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["venomous_animal_bite_care"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-12
+  agency: "กรมควบคุมโรค (DDC), ผ่าน PRD"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/529458"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "สามารถติดต่อได้ที่ สายด่วนกรมควบคุมโรค โทร. 1422"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["ddc_hotline_1422"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+# ---- 2026-10-05: re-fetched with WebFetch/WebSearch. Two more
+# OFFICIAL_TH items (MEA via PRD, กทม./BMA via PRD) plus the GENERAL-practice
+# sources the task named (gov.uk, Ready.gov) -- American/IFRC Red Cross and
+# disaster.go.th/กทม.'s own domain, สพฉ./NIEMS's own domain, and สภากาชาดไทย's own
+# domain each returned 403/no substantive guidance text (see OG-13..15,
+# and the new OG-18/OG-19 below) -- never invented, stay OPEN.
+
+- id: OG-16
+  agency: "การไฟฟ้านครหลวง (MEA), ผ่าน PRD"
+  url: "https://www.prd.go.th/th/content/category/detail/id/33/iid/545283"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "หากพบไฟฟ้าขัดข้อง อุปกรณ์ไฟฟ้าชำรุดหรือไม่ปลอดภัย หรือสงสัยว่ามีกระแสไฟฟ้ารั่ว สามารถแจ้งจุดเกิดเหตุหรือพิกัดให้ MEA ประสานเจ้าหน้าที่เข้าตรวจสอบได้"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["report_electrical_fault_to_mea"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-17
+  agency: "กรุงเทพมหานคร (กทม./BMA), ผ่าน PRD"
+  url: "https://www.prd.go.th/th/content/category/detail/id/33/iid/545256"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "งดออกจากบ้านและงดเดินทาง หากไม่มีความจำเป็น"
+  phase: "PRE_FLOOD"
+  trigger_colour: YELLOW
+  action_keys: ["avoid_unnecessary_travel"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: GEN-01
+  agency: "UK Government (prepare.campaign.gov.uk, flooding guidance)"
+  url: "https://prepare.campaign.gov.uk/flooding/"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  # Fix: re-fetched verbatim -- the source
+  # sentence continues past the period this row stopped at ("...high place." was
+  # truncated mid-sentence; the real sentence runs through "...drawer of a
+  # cabinet."). Copied in full this time, no truncation.
+  verbatim_th: "Move sentimental or valuable items upstairs or keep in a high place such as the top shelf or drawer of a cabinet."
+  # fix : this sentence sits under the page's own "Actions you can take
+  # to prepare if you live in an area at risk of flooding" section -- a BEFORE-a-
+  # flood/GREEN-phase action, not YELLOW (the previous trigger_colour claimed a
+  # later phase than the source itself places this in).
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["move_valuables_appliances_up"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-02
+  agency: "UK Government (prepare.campaign.gov.uk, flooding guidance)"
+  url: "https://prepare.campaign.gov.uk/flooding/"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "Know how to turn off your gas, electricity and water."
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["know_how_to_shut_off_utilities"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-03
+  agency: "Ready.gov (US Dept. of Homeland Security, floods guidance)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  # Fix: re-fetched verbatim -- the real
+  # sentence continues past "...during cleanup" to "...and use appropriate face
+  # coverings or masks if cleaning mold or other debris." Copied in full.
+  verbatim_th: "Wear heavy work gloves, protective clothing and boots during cleanup and use appropriate face coverings or masks if cleaning mold or other debris."
+  phase: "POST_FLOOD"
+  trigger_colour: ORANGE
+  action_keys: ["wear_boots_avoid_barefoot"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-04
+  agency: "Ready.gov (US Dept. of Homeland Security, floods guidance)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "Do not walk, swim or drive through flood waters. Turn Around. Don’t Drown!"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["never_walk_through_floodwater"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+# ---- 2026-10-05 re-fetch : more items from the SAME two
+# GENERAL sources -- sign up for warnings, GREEN-phase kit/plan/documents/help
+# twins (the source itself places kit/plan/documents/help BEFORE a flood, same
+# section as GEN-01/GEN-02 above), and Ready.gov's "no closed attic" line.
+
+- id: GEN-05
+  agency: "UK Government (prepare.campaign.gov.uk, flooding guidance)"
+  url: "https://prepare.campaign.gov.uk/flooding/"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "Sign up to receive flood warnings (for flooding from rivers, the sea and groundwater) by phone, text or email."
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["sign_up_for_warnings"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-06
+  agency: "Ready.gov (US Dept. of Homeland Security, floods guidance)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "Do not climb into a closed attic to avoid getting trapped by rising floodwater."
+  phase: "DURING"
+  trigger_colour: RED
+  action_keys: ["no_closed_attic"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-07
+  agency: "Ready.gov (US Dept. of Homeland Security, floods guidance)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "Gather supplies, including non-perishable foods, cleaning supplies and water for several days, in case you must leave immediately or if services are cut off in your area."
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["prepare_emergency_kit"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-08
+  agency: "Ready.gov (US Dept. of Homeland Security, floods guidance)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "Make a plan for your household, including your pets so that you and your family know what to do, where to go and what you will need to protect yourselves from flooding."
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["plan_route_safe_point"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-09
+  agency: "UK Government (prepare.campaign.gov.uk, flooding guidance)"
+  url: "https://prepare.campaign.gov.uk/flooding/"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "Store important documents (e.g. birth certificates) in resealable water-tight plastic bags to help protect them from water damage."
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["protect_documents_waterproof"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-10
+  agency: "UK Government (prepare.campaign.gov.uk, flooding guidance)"
+  url: "https://prepare.campaign.gov.uk/flooding/"
+  retrieved_at: "2026-10-05T00:00:00Z"
+  verbatim_th: "If you have a disability or need extra help you can contact Floodline and ask for flood warnings to be sent to a friend or relative on your behalf (telephone: 0345 988 1188, textphone: 0345 602 6340)."
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["arrange_vulnerable_care"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+# ---- added 2026-10-06 (S5, founder subtractive-fix ruling): full per-page item
+# inventory -- every remaining actionable item named on the 5 already-fetched
+# pages that had no row yet (see advice/official_guidance_inventory.yaml and
+# tests/test_official_parity.py's inventory-coverage test). Each row's
+# verbatim_th is re-confirmed against this worktree's own `curl` capture of the
+# live page, 2026-10-06, not re-derived from memory.
+
+- id: OG-26
+  agency: "กรมประชาสัมพันธ์ (PRD), อ้างแนวทาง ปภ./DDPM"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/432703"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "ห้ามแตะต้องตัวผู้บาดเจ็บด้วยมือเปล่า ให้รีบหาทางตัดกระแสไฟฟ้าที่จุดจ่ายไฟหลัก หากตัดไฟไม่ได้ ให้ใช้วัสดุที่ไม่นำไฟฟ้า เช่น ไม้แห้ง เชือกแห้ง หรือผ้าแห้ง เขี่ยตัวผู้บาดเจ็บออกจากบริเวณที่มีกระแสไฟฟ้า จากนั้นรีบปฐมพยาบาลเบื้องต้นและแจ้งหน่วยแพทย์ฉุกเฉิน หรือการไฟฟ้าในพื้นที่ทันที"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["electrocution_rescue_procedure"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-27
+  agency: "กรมประชาสัมพันธ์ (PRD), อ้างแนวทาง ปภ./DDPM"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/432703"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "เมื่อเกิดฝนฟ้าคะนอง ควรงดการใช้เครื่องใช้ไฟฟ้าทุกชนิด เช่น โทรทัศน์ คอมพิวเตอร์ และควรถอดปลั๊กอุปกรณ์ที่ไม่ได้ใช้งานออก"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["unplug_during_lightning"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-28
+  agency: "กรมประชาสัมพันธ์ (PRD), อ้างแนวทาง ปภ./DDPM"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/432703"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "โค่นต้นไม้หรือตัดแต่งกิ่งไม้ที่พาดผ่านหรืออยู่ใกล้แนวสายไฟฟ้า เพื่อป้องกันพายุลมแรงพัดต้นไม้ล้มทับสายไฟ"
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["trim_branches_near_powerlines"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-29
+  agency: "กรมประชาสัมพันธ์ (PRD), อ้างแนวทาง ปภ./DDPM"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/432703"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "ตรวจสอบให้แน่ใจว่าบ้านมีการติดตั้งสายดินที่ได้มาตรฐาน"
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["check_earth_wire_installed"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-30
+  agency: "กรมควบคุมโรค (DDC), อ้างใน PRD"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/529458"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "ห้ามปล่อยให้เด็กลงเล่นน้ำตามลำพัง เพราะเสี่ยงต่อการจมน้ำ ติดเชื้อโรคตาแดง หรือถูกสัตว์มีพิษที่หนีน้ำมากัดต่อย"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["never_let_children_play_in_floodwater_alone"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-31
+  agency: "กรมควบคุมโรค (DDC), อ้างใน PRD"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/529458"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "ไม่ทิ้งขยะหรือขับถ่ายลงในน้ำท่วมขัง ให้ใส่ถุงพลาสติก มัดปากถุงให้แน่น แล้วเก็บไว้ในที่แห้ง"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["bag_rubbish_no_toilet_in_floodwater"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-32
+  agency: "กรมควบคุมโรค (DDC), อ้างใน PRD"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/529458"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "หลีกเลี่ยงการเดินเท้าเปล่าลุยน้ำ ควรสวมรองเท้าบูท หากมีบาดแผลต้องใช้พลาสเตอร์กันน้ำปิดแผลให้สนิท"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["cover_wounds_waterproof_plaster"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-33
+  agency: "กรมควบคุมโรค (DDC), อ้างใน PRD"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/529458"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "ทาโลชั่นกันยุง นอนในมุ้ง เพื่อลดความเสี่ยงโรคไข้เลือดออก"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["mosquito_protection"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-34
+  agency: "กรมควบคุมโรค (DDC), อ้างใน PRD"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/529458"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "หากพบว่าตนเองหรือคนในครอบครัวมีอาการไข้สูงเฉียบพลัน ปวดศีรษะ หรือปวดเมื่อยตามตัว ให้รีบไปพบแพทย์ทันที"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["sudden_high_fever_see_doctor"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-35
+  agency: "กรมประชาสัมพันธ์ (PRD)"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/534015"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "สวมรองเท้าบูทยางทุกครั้ง หลีกเลี่ยงการเดินผ่านกระแสน้ำไหลเชี่ยว และใช้ไม้พลองนำทางเพื่อเช็กความลึกหรือสิ่งกีดขวางใต้ตัวน้ำ"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["probe_depth_with_pole"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-36
+  agency: "กรมประชาสัมพันธ์ (PRD)"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/534015"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "ตรวจสอบมุมอับ รองเท้า หรือเสื้อผ้าก่อนใช้งาน เพราะงู ตะขาบ และแมงป่องมักหนีน้ำเข้ามาอาศัยในที่แห้งภายในบ้าน"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["check_shoes_corners_for_venomous_animals"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-37
+  agency: "กรมประชาสัมพันธ์ (PRD)"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/534015"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "ห้ามขับรถผ่านบริเวณน้ำท่วมสูงเกินครึ่งล้อรถ หากเครื่องดับขณะอยู่ในน้ำ ให้สละรถและเดินขึ้นที่สูงทันที"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  # fix (2026-10-06): this sentence carries two distinct actions --
+  # never drive through water deeper than half the wheel (new ladder step
+  # O37, same ORANGE rank), and abandon a stalled car and walk to high
+  # ground (already keyed).
+  action_keys: ["never_drive_through_deep_water", "abandon_stalled_car_walk_to_high_ground"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-38
+  agency: "กรมประชาสัมพันธ์ (PRD)"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/534015"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "ก่อนโทรแจ้ง ให้ตั้งสติและเตรียมข้อมูลสำคัญ ได้แก่ พิกัด/สถานที่เกิดเหตุ (จุดสังเกตใกล้เคียง), จำนวนผู้ต้องการความช่วยเหลือ (ระบุเด็ก ผู้สูงอายุ หรือผู้ป่วยติดเตียง), และระดับความรุนแรงของน้ำ เพื่อให้เจ้าหน้าที่วางแผนเข้าช่วยเหลือได้อย่างรวดเร็วที่สุด"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["prepare_info_before_calling_emergency"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: GEN-11
+  agency: "Ready.gov (FEMA/USA)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Stay off bridges over fast-moving water. Fast-moving water can wash bridges away without warning."
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["stay_off_bridges_fast_water"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-12
+  agency: "Ready.gov (FEMA/USA)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Evacuate immediately, if told to do so. Never drive around barricades. Local responders use them to safely direct traffic out of flooded areas."
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["never_drive_around_barricades"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-13
+  agency: "Ready.gov (FEMA/USA)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Stay inside your car if it is trapped in rapidly moving water. Get on the roof if water is rising inside the car."
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["car_trapped_moving_water_stay_inside_roof"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-14
+  agency: "Ready.gov (FEMA/USA)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Use a generator or other gasoline-powered machinery ONLY outdoors and away from windows."
+  phase: "POST_FLOOD"
+  trigger_colour: ORANGE
+  action_keys: ["generator_outdoors_only"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-15
+  agency: "Ready.gov (FEMA/USA)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Pay attention to authorities for information and instructions. Return home only when authorities say it is safe."
+  phase: "POST_FLOOD"
+  trigger_colour: ORANGE
+  action_keys: ["return_home_on_authority_only"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-16
+  agency: "Ready.gov (FEMA/USA)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Children should not take part in disaster cleanup work."
+  phase: "POST_FLOOD"
+  trigger_colour: ORANGE
+  action_keys: ["children_not_in_cleanup"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-17
+  agency: "UK Government (prepare.campaign.gov.uk, flooding guidance)"
+  url: "https://prepare.campaign.gov.uk/flooding/"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Move your family, vehicles, pets and important items to safety, for example upstairs or to higher ground."
+  phase: "DURING"
+  trigger_colour: YELLOW
+  # fix (2026-10-06): this sentence names family and vehicles too, not
+  # only pets -- previously keyed to pets alone, which hid a WEAKER result had
+  # family/vehicles been checked against the (ORANGE-rank) move_car/
+  # move_vulnerable_early steps. Y8's own `how_th` already covers all three in
+  # one sentence (same YELLOW rank), so the fix is the key list, not a new
+  # step.
+  action_keys: ["move_pets_to_safety", "move_family_to_safety", "move_vehicles_to_safety"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-18
+  agency: "UK Government (prepare.campaign.gov.uk, flooding guidance)"
+  url: "https://prepare.campaign.gov.uk/flooding/"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Report severe river or coastal flooding in England by contacting the Environment Agency on the 24-hour service telephone line: 0800 80 70 60. You can also use Type talk on 0345 602 6340. For some types of flooding you will need to report these to your local council."
+  phase: "DURING"
+  trigger_colour: YELLOW
+  action_keys: ["report_flooding_to_authority"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+# ---- S6 (HIGH item 6, parity inventory, 2026-10-06): a fresh `curl` capture of
+# every cited page's own live HTML turned up further items this repo had not
+# yet listed -- OG-39/OG-40 from the 529458 health page, GEN-19..GEN-38 from
+# ready.gov/floods and prepare.campaign.gov.uk/flooding (several of which
+# repeat an action_key this repo already backs from a DIFFERENT page, cited
+# here under its own id/url/verbatim_th because each row is one page's own
+# citation, never a second copy of an existing row). See
+# advice/official_guidance_inventory.yaml for the full per-page coverage this
+# closes, and the excluded (US/UK-only) items with their reasons.
+
+- id: OG-39
+  agency: "กรมควบคุมโรค (DDC), ผ่าน PRD"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/529458"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "ทำความสะอาดบ้านไม่ให้มีมุมอับเพื่อป้องกันสัตว์มีพิษ"
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["clean_house_corners_prevent_pests"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-40
+  agency: "กรมควบคุมโรค (DDC), ผ่าน PRD"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/529458"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "หากป่วย มีอาการไอ จาม หรืออยู่ในที่แออัดควรรักษาสุขอนามัยและสวมหน้ากากอนามัย"
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["wear_mask_if_sick_or_crowded"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: GEN-19
+  agency: "Ready.gov (US Dept. of Homeland Security, floods guidance)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Declutter drains and gutters."
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["declutter_drains_gutters"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-20
+  agency: "Ready.gov (US Dept. of Homeland Security, floods guidance)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Avoid driving except in emergencies."
+  phase: "DURING"
+  trigger_colour: YELLOW
+  action_keys: ["avoid_unnecessary_travel"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-21
+  agency: "Ready.gov (US Dept. of Homeland Security, floods guidance)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "People with asthma and other lung conditions and/or immune suppression should not enter buildings with indoor water leaks or mold growth that can be seen or smelled."
+  phase: "AFTER"
+  trigger_colour: ORANGE
+  action_keys: ["vulnerable_avoid_mold_buildings"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-22
+  agency: "Ready.gov (US Dept. of Homeland Security, floods guidance)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Be aware that snakes and other animals may be in your house."
+  phase: "AFTER"
+  trigger_colour: ORANGE
+  action_keys: ["check_shoes_corners_for_venomous_animals"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-23
+  agency: "Ready.gov (US Dept. of Homeland Security, floods guidance)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Be aware of the risk of electrocution. Do not touch electrical equipment if it is wet or if you are standing in water. Turn off the electricity to prevent electric shock if it is safe to do so."
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["never_touch_electrical_wet"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-24
+  agency: "Ready.gov (US Dept. of Homeland Security, floods guidance)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Find safe shelter right away."
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["move_to_upper_floor"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-25
+  agency: "Ready.gov (US Dept. of Homeland Security, floods guidance)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Evacuate if told to do so."
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["evacuate_on_rising_water_or_warning"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-26
+  agency: "Ready.gov (US Dept. of Homeland Security, floods guidance)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Move to higher ground or a higher floor."
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["move_to_upper_floor"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-27
+  agency: "Ready.gov (US Dept. of Homeland Security, floods guidance)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "In case of emergency, keep documents in a waterproof container. Create password-protected digital copies."
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["protect_documents_waterproof"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-28
+  agency: "Ready.gov (US Dept. of Homeland Security, floods guidance)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Move valuables to higher levels."
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["move_valuables_appliances_up"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-29
+  agency: "Ready.gov (US Dept. of Homeland Security, floods guidance)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Evacuate immediately, if told to do so. Never drive around barricades. Local responders use them to safely direct traffic out of flooded areas."
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["evacuate_on_rising_water_or_warning"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-39
+  agency: "Ready.gov (US Dept. of Homeland Security, floods guidance)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Evacuate immediately, if told to do so. Never drive around barricades. Local responders use them to safely direct traffic out of flooded areas."
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["never_drive_around_barricades"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-30
+  agency: "UK Government (prepare.campaign.gov.uk, flooding guidance)"
+  url: "https://prepare.campaign.gov.uk/flooding/"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Make a personal flood plan for you and those around you."
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["plan_route_safe_point"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-31
+  agency: "UK Government (prepare.campaign.gov.uk, flooding guidance)"
+  url: "https://prepare.campaign.gov.uk/flooding/"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Consider packing a 'grab bag' of essentials in advance. This could include any medication you need, a first aid kit and important documents, as well as items such as a torch, bottled water, warm waterproof clothing, and baby care items. Store the bag somewhere you can easily get to."
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["prepare_emergency_kit"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-32
+  agency: "UK Government (prepare.campaign.gov.uk, flooding guidance)"
+  url: "https://prepare.campaign.gov.uk/flooding/"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Turn off your gas, electricity and water supplies, if it's safe to do so -- do not touch an electrical switch if you are standing in water."
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["know_how_to_shut_off_utilities"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-40
+  agency: "UK Government (prepare.campaign.gov.uk, flooding guidance)"
+  url: "https://prepare.campaign.gov.uk/flooding/"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Turn off your gas, electricity and water supplies, if it's safe to do so -- do not touch an electrical switch if you are standing in water."
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["never_touch_electrical_wet"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-33
+  agency: "UK Government (prepare.campaign.gov.uk, flooding guidance)"
+  url: "https://prepare.campaign.gov.uk/flooding/"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Always follow advice from your local council or the emergency services if you are asked to evacuate. Not evacuating or delaying evacuation can put your life at risk."
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["evacuate_on_rising_water_or_warning"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-34
+  agency: "UK Government (prepare.campaign.gov.uk, flooding guidance)"
+  url: "https://prepare.campaign.gov.uk/flooding/"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "If you need to travel, check for flooding and get road traffic information. Always adhere to 'Do Not Travel' notices."
+  phase: "DURING"
+  trigger_colour: YELLOW
+  action_keys: ["avoid_unnecessary_travel"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-35
+  agency: "UK Government (prepare.campaign.gov.uk, flooding guidance)"
+  url: "https://prepare.campaign.gov.uk/flooding/"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Never walk through flood water. Flood water may contain sewage and hide rubbish, wreckage, uneven roads and pavements or broken drain and manhole covers."
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["never_walk_through_floodwater"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-36
+  agency: "UK Government (prepare.campaign.gov.uk, flooding guidance)"
+  url: "https://prepare.campaign.gov.uk/flooding/"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "If you come across a flooded road while driving, turn around and find another route. The number one cause of death during flooding is driving through flood water."
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["never_walk_through_floodwater"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-37
+  agency: "UK Government (prepare.campaign.gov.uk, flooding guidance)"
+  url: "https://prepare.campaign.gov.uk/flooding/"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Do not enter flood water unless absolutely necessary. Flood water can be much deeper than it appears and hide dangers, such as uncovered manholes and sharp objects."
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["never_walk_through_floodwater"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-38
+  agency: "UK Government (prepare.campaign.gov.uk, flooding guidance)"
+  url: "https://prepare.campaign.gov.uk/flooding/"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Wash your hands regularly, this is the most important way of removing harmful bugs and any chemicals found in flood water."
+  phase: "AFTER"
+  trigger_colour: ORANGE
+  action_keys: ["hygiene_wash_after_wading"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: OG-41
+  agency: "กรมประชาสัมพันธ์ (PRD), อ้างแนวทาง ปภ./DDPM"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/534015"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "ตัดระบบไฟฟ้าทันที: สับคัตเอาต์หรือสวิตช์ไฟหลักภายในบ้านเมื่อน้ำเริ่มไหลทะลัก ห้ามสัมผัสเครื่องใช้ไฟฟ้า ปลั๊กไฟ หรือสวิตช์ขณะตัวเปียกหรือยื่นอยู่ในน้ำโดยเด็ดขาด"
+  phase: "DURING"
+  trigger_colour: ORANGE
+  action_keys: ["cut_main_breaker_on_water_entry"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+# ---- OPEN: could not be independently fetched/verbatim-confirmed ----
+# (never invented -- see the note on items #6/#37/#38, which stayed OPEN there
+# too). Listed in advice/PARITY.md as open; never fails the parity test.
+
+# re-tried 2026-10-06 (S5): disaster.go.th's homepage still returns HTTP 200,
+# but still carries only institutional/agency-name branding and a copyright
+# notice -- no standalone flood-preparedness instruction text anywhere on it to
+# cite verbatim. Stays OPEN, never invented.
+- id: OG-13
+  agency: "ปภ./DDPM (disaster.go.th)"
+  url: null
+  retrieved_at: null
+  verbatim_th: null
+  phase: null
+  trigger_colour: null
+  action_keys: []
+  tag: OPEN
+  source_class: null
+
+- id: OG-14
+  agency: "กรมควบคุมโรค (DDC) -- โรคและภัยสุขภาพที่มากับน้ำท่วม (PDF)"
+  url: null
+  retrieved_at: null
+  verbatim_th: null
+  phase: null
+  trigger_colour: null
+  action_keys: []
+  tag: OPEN
+  source_class: null
+
+- id: OG-15
+  agency: "กรมควบคุมโรค (DDC) -- สถานการณ์โรคช่วงน้ำท่วม (PDF)"
+  url: null
+  retrieved_at: null
+  verbatim_th: null
+  phase: null
+  trigger_colour: null
+  action_keys: []
+  tag: OPEN
+  source_class: null
+
+# 2026-10-05: two more re-tried, both stayed OPEN --
+# สพฉ./NIEMS's own domain (niems.go.th) and สภากาชาดไทย/Thai Red Cross's own
+# domain (redcross.or.th) returned only institutional/donation-campaign content,
+# no standalone flood-preparedness instruction text to cite verbatim.
+
+# re-tried 2026-10-06 (S5): niems.go.th's homepage still returns HTTP 200, and
+# still carries only an institutional portal plus the standalone contact
+# reference "เจ็บป่วยฉุกเฉิน โทร.1669" (already captured elsewhere in this repo's
+# own hotline list, e.g. G3's 1669) -- no standalone preparedness instruction
+# steps to cite verbatim either. Stays OPEN, never invented.
+- id: OG-18
+  agency: "สถาบันการแพทย์ฉุกเฉินแห่งชาติ (NIEMS/สพฉ., niems.go.th)"
+  url: null
+  retrieved_at: null
+  verbatim_th: null
+  phase: null
+  trigger_colour: null
+  action_keys: []
+  tag: OPEN
+  source_class: null
+
+- id: OG-19
+  agency: "สภากาชาดไทย (Thai Red Cross Society, redcross.or.th)"
+  url: null
+  retrieved_at: null
+  verbatim_th: null
+  phase: null
+  trigger_colour: null
+  action_keys: []
+  tag: OPEN
+  source_class: null
+
+# ---- 2026-10-06: the SAME prd.go.th/529458 page (OG-08..OG-12 above)
+# has 3 intro action sentences before its numbered DDC health-hygiene list --
+# these were not rowed before. Copied straight off that one page.
+
+- id: OG-42
+  agency: "กรมประชาสัมพันธ์ (PRD), อ้างแนวทาง ปภ./DDPM"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/529458"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "ติดตามข่าวสารภาครัฐอย่างใกล้ชิด"
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["sign_up_for_warnings"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-43
+  agency: "กรมประชาสัมพันธ์ (PRD), อ้างแนวทาง ปภ./DDPM"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/529458"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "บันทึกเบอร์ติดต่อฉุกเฉิน"
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["save_hotlines"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+- id: OG-44
+  agency: "กรมประชาสัมพันธ์ (PRD), อ้างแนวทาง ปภ./DDPM"
+  url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/529458"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "ซ้อมแผนอพยพเพื่อความไม่ประมาท"
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["plan_route_safe_point"]
+  tag: OFFICIAL
+  source_class: OFFICIAL_TH
+
+# ---- 2026-10-06: the SAME ready.gov/floods page (GEN-03 above) has
+# two more actionable sentences this repo had not yet rowed -- learning/
+# practicing evacuation routes (PRE_FLOOD), and getting to the highest level
+# + roof-only-if-necessary + signal for help if trapped (RED/crisis). Copied
+# straight off that one page.
+
+- id: GEN-41
+  agency: "Ready.gov (US Dept. of Homeland Security, floods guidance)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Learn and practice evacuation routes, shelter plans and flash flood response."
+  phase: "PRE_FLOOD"
+  trigger_colour: GREEN
+  action_keys: ["plan_route_safe_point"]
+  tag: OFFICIAL
+  source_class: GENERAL
+
+- id: GEN-42
+  agency: "Ready.gov (US Dept. of Homeland Security, floods guidance)"
+  url: "https://www.ready.gov/floods"
+  retrieved_at: "2026-10-06T00:00:00Z"
+  verbatim_th: "Get to the highest level if trapped in a building. Only get on the roof if necessary and once there, signal for help."
+  phase: "DURING"
+  trigger_colour: RED
+  action_keys: ["l5_move_everyone_to_highest_point", "l5_roof_signal_if_necessary"]
+  tag: OFFICIAL
+  source_class: GENERAL

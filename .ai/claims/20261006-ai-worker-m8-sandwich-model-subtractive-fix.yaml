@@ -1,0 +1,76 @@
+claim_id: "20261006-ai-worker-m8-sandwich-model-subtractive-fix"
+status: RELEASED
+writer: "ai-worker"
+branch: "agent/ai-worker/floodconnect-m8-sandwich-model"
+base_sha: "33c36fae7d4302ee1017340327da4b3d84574794"
+nodes:
+  - FC_ROOT
+  - KB
+  - LIVE_DATA_SYSTEM
+  - RIVER_KG
+artifacts:
+  - .ai/claims/20261006-ai-worker-m8-sandwich-model-subtractive-fix.yaml
+  - advice/card.py
+  - advice/gloss_th.yaml
+  - advice/home_shelter.py
+  - advice/ladder.py
+  - advice/official_guidance.yaml
+  - advice/official_guidance_inventory.yaml
+  - advice/PARITY.md
+  - advice/parity.py
+  - advice/preparedness_ladder.yaml
+  - collect.py
+  - docs/INDICATORS.md
+  - floodconnect_model.py
+  - kb.py
+  - pyproject.toml
+  - requirements-ci.txt
+  - schemas/advice.schema.json
+  - schemas/emergency_card.schema.json
+  - schemas/household_declaration.schema.json
+  - tests/test_collect.py
+  - tests/test_emergency_card.py
+  - tests/test_floodconnect_model.py
+  - tests/test_home_shelter.py
+  - tests/test_kb_answer.py
+  - tests/test_kb_answer_sandwich.py
+  - tests/test_m8_safety_round.py
+  - tests/test_official_parity.py
+  - tests/test_preparedness_ladder.py
+  - tests/test_rings.py
+  - tests/test_token_budget.py
+  - tools/kg/rings.py
+  - CHANGELOG.md
+  - docs/knowledge/KG_LEADS.md
+intent: >-
+  Continuation round on the same M8 sandwich-model claim scope: implement the
+  founder's subtractive fix ("แก้แบบตัดออก") following the 2026-10-06
+  independent verification's FAIL verdict (14 numbered items). Remove unsourced
+  inference from any layer colour/verdict (heuristic same-canal/same-family
+  joins stay visible but never colour a layer or a card), restrict the
+  main-stem outlet relabel to a declared per-area list (today: หมู่บ้านสัมมากร
+  only, per the standing "เจ้าพระยาคือทางออก" ruling) with a downstream-only
+  and non-self-river guard, invert the zero/null-bank overbank-word lock so it
+  yields NO_THRESHOLD, invert the UNKNOWN-colour STAY lock so it yields
+  UNKNOWN_ASK_INPUTS or PREPARE_TO_LEAVE, extend the official-guidance parity
+  table to full per-page item inventory with tests, and keep the NO_Z0 path
+  computing layers/facts. No new equation; no change to PROP-FLOOD-01/02/11
+  status.
+created_at: "2026-10-06T12:00:00+07:00"
+expires_at: null
+reviewers: []
+supersedes: "20261005-floodconnect-m8-sandwich-model-claim"
+note: >-
+  Round complete and RELEASED: S1-S6 implemented, items 9-14 addressed, a full
+  own-version live sweep (1,164 distinct committed station coordinates, all
+  three sources, the real build_answer path, 10 household variants each) run
+  and iterated to 0 across every named invariant (counted after the
+  GREEN-under-RED-layer consistency fix this sweep itself surfaced). The prior
+  claim on this same scope (20261005-floodconnect-m8-sandwich-model-claim) was
+  already RELEASED; this claim re-opened the same nodes for this one
+  continuation, on the same branch, continuing from its head commit.
+  out_of_scope: REPORT_4_PLACES_TH.md
+  does not exist on this branch (checked: `git log --all` finds no commit ever
+  adding it here) -- the finding that named it as needing a fix was about a
+  different branch (agent/ai-worker/floodconnect-m8-v5); nothing to fix here,
+  never fabricated.

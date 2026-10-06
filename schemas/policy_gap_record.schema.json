@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://floodconnect.local/schemas/policy_gap_record.schema.json",
+  "title": "FloodConnect M8 policy gap record",
+  "description": "advice/gap_log.py's append-only record -- one row per answer run, appended (mode 'a' only, never rewritten) to the caller's local data/policy_gap_log.jsonl (git-ignored). The answer itself carries only `policy_gap_ref` ({path, record_id}), never the full record inline -- this schema describes the LOGGED row shape, not an answer field.",
+  "type": "object",
+  "required": ["record_id", "run_at", "blockers"],
+  "properties": {
+    "record_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "sha256 hex digest of the record's own canonical (sorted-keys) JSON encoding, computed before record_id is added to the dict that gets hashed (record_id is excluded from its own hash input)."
+    },
+    "run_at": {"type": "string", "format": "date-time"},
+    "blockers": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Blocker codes, e.g. a MISSING official_guidance row (advice/parity.py), or NOT_WIRED official warning feed, or missing household input (P-C UNKNOWN_ASK_INPUTS)."
+    },
+    "sensors": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Station ids this run's decision depended on (facts + z0 + outlet)."
+    },
+    "outlet_bottleneck": {
+      "type": ["string", "null"],
+      "description": "The outlet station id, when OUTLET_CRITICAL fired, else null."
+    },
+    "responsible_agency": {
+      "type": ["string", "null"],
+      "description": "Agency name verbatim (never invented) when the relevant official_guidance/registry row names one, else null."
+    }
+  },
+  "additionalProperties": false
+}

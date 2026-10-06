@@ -133,10 +133,33 @@ def _cache_hit(key: str, ttl_s: int, cache: dict) -> "float | None":
     return age_s if 0 <= age_s < ttl_s else None
 
 
+_REGISTRY_CACHE: "dict[tuple[str, int], dict]" = {}
+
+
 def load_registry(path: Path = REGISTRY_PATH) -> dict:
+    """Parses `sources/registry.yaml` into `{source_id: source_dict}`. Cached per
+    process, keyed by `(path, mtime_ns)` so an edited file is picked up on the next
+    call (never serves stale content) while a call that reads the SAME unmodified
+    file avoids re-parsing it -- MEASURED: this file is ~145 KB and a single
+    `yaml.safe_load` of it costs ~0.13s, which used to run once per observation row
+    inside `live_water_level.max_age_hours_for`'s caller loop (kb.py
+    `_forecast_rows_by_model`, ~109 rows for one point -- ~14.5s of the ~17s a single
+    `kb.build_answer()` call measured before this fix) because that call site passes
+    no `registry=` of its own and this function had no cache at all."""
+    try:
+        mtime_ns = os.stat(path).st_mtime_ns
+    except OSError:
+        mtime_ns = -1
+    key = (str(path), mtime_ns)
+    cached = _REGISTRY_CACHE.get(key)
+    if cached is not None:
+        return cached
     with open(path, encoding="utf-8") as f:
         data = yaml.safe_load(f)
-    return {s["id"]: s for s in data.get("sources", [])}
+    out = {s["id"]: s for s in data.get("sources", [])}
+    _REGISTRY_CACHE.clear()  # one path's registry is read at a time in practice
+    _REGISTRY_CACHE[key] = out
+    return out
 
 
 def _utcnow_stamp() -> str:
@@ -936,6 +959,110 @@ def collect_bma_station_detail(conn, dry_run=False) -> CollectResult:
         counts={"stations_ok": n_ok, "thresholds": n_thresholds, "history_points": n_history})
 
 
+# M8 (2026-10-05): one-shot, single-station StationDetail series fetch for the Jev
+# Sandwich's Z0 trend -- deliberately separate from `collect_bma_station_detail` above
+# (which rotates the WHOLE water_id space, one id/run, for the admin-form thresholds).
+# This one is called ONLY for the one water_id the sandwich is deciding for (Z0, or the
+# first toward-us BMA middle station if Z0 didn't already use the run's one GET) -- never
+# a batch, never a rotation. In-process memo keyed by water_id, keyed to the series' own
+# 5-minute step, so an MCP tool/answer loop that calls this more than once inside the
+# same 5-minute window reuses the first result instead of hitting the host again (the
+# host already gave a confirmed 403 on a burst, see BMA_STATION_DETAIL_PROBE.md).
+_BMA_STATION_SERIES_MEMO: dict = {}
+BMA_STATION_SERIES_STEP_S = 300  # the series' own measured step (5 min); see parsers.py
+
+
+def fetch_bma_station_series(water_id: int, wl_in_now=None, observed_at_now=None,
+                              _now=None) -> dict:
+    """ONE GET, no retry, same browser-UA/Referer headers as
+    `collect_bma_station_detail` -- caches raw under
+    raw/live/bma_station_series/id<water_id> and returns
+    `parsers.parse_bma_station_series`'s own dict (points/step_s/runs/chosen_run/status),
+    plus `water_id` and `fetched_at_utc`. A non-200/network error returns
+    `{"water_id": water_id, "status": "FETCH_FAILED", "http": <code or None>}` -- never a
+    fabricated series. Refuses (raises no exception, returns a `FETCH_FAILED`-shaped
+    dict) is not applicable here -- the caller is expected to have already checked
+    `water_id` is a real int; this function makes the network call unconditionally once
+    called, exactly once, per this workspace's BMA-host rule."""
+    import parsers as _parsers
+
+    now = _now or _utcnow_iso()
+    memo = _BMA_STATION_SERIES_MEMO.get(water_id)
+    if memo is not None:
+        memo_age_s = (
+            datetime.datetime.fromisoformat(now.replace("Z", "+00:00"))
+            - datetime.datetime.fromisoformat(memo["fetched_at_utc"].replace("Z", "+00:00"))
+        ).total_seconds()
+        if 0 <= memo_age_s < BMA_STATION_SERIES_STEP_S:
+            return memo
+
+    url = BMA_STATION_DETAIL_URL_TMPL.format(water_id=water_id)
+    headers = dict(GENERIC_HEADERS)
+    headers.update({
+        "Accept": "text/html,application/xhtml+xml",
+        "Referer": "https://weather.bangkok.go.th/water/",
+    })
+    try:
+        status, body = _one_get(url, headers)
+    except urllib.error.HTTPError as e:
+        return {"water_id": water_id, "status": "FETCH_FAILED", "http": e.code}
+    except (urllib.error.URLError, TimeoutError):
+        return {"water_id": water_id, "status": "FETCH_FAILED", "http": None}
+    if status != 200:
+        return {"water_id": water_id, "status": "FETCH_FAILED", "http": status}
+
+    html = body.decode("utf-8", errors="replace")
+    _cache_raw(f"bma_station_series/id{water_id}", body, "html")
+    fetched_at = now
+    result = _parsers.parse_bma_station_series(html, wl_in_now=wl_in_now,
+                                                observed_at_now=observed_at_now)
+    result = dict(result, water_id=water_id, fetched_at_utc=fetched_at)
+    _BMA_STATION_SERIES_MEMO[water_id] = result
+    return result
+
+
+def collect_bma_station_series(conn, dry_run=False, water_id=None) -> CollectResult:
+    """Thin `collect.py`/registry-compatible wrapper over `fetch_bma_station_series` --
+    NOT part of any `--all`/rotation run (never add `bma_station_series` to
+    `collect.ANSWER_SOURCES`; it is called only from the sandwich path for one specific
+    Z0/middle id). Refuses (returns `ok=False`, no network call) when no `water_id` is
+    given -- this collector never guesses or rotates over an id list, unlike
+    `collect_bma_station_detail`."""
+    sid = "bma_station_series"
+    if dry_run:
+        return CollectResult(sid, True, note=(
+            f"dry-run: would GET one StationDetail series for water_id={water_id} "
+            "if one is given -- this source is never part of a batch/rotation sweep"
+            if water_id is not None else
+            "dry-run: this source refuses without a water_id (never a batch/rotation) "
+            "-- no network call either way"))
+    if water_id is None:
+        return CollectResult(sid, False, note=(
+            "refused: no water_id given -- this source is called only for one specific "
+            "station (the sandwich's Z0 or a middle station), never a batch/rotation"))
+    result = fetch_bma_station_series(water_id)
+    if result.get("status") == "FETCH_FAILED":
+        http = result.get("http")
+        if http == 403:
+            return CollectResult(sid, False, http=403, note=(
+                f"HTTP 403 on water_id={water_id} -- a human must re-check via an "
+                "explicit `--source bma_station_series` before this runs again"))
+        return CollectResult(sid, False, http=http, note=f"fetch failed for water_id={water_id}")
+    n_points = 0
+    for point in result.get("points", []):
+        n_points += store.insert_observation(
+            conn, source_id=sid, station_code=f"water_id:{water_id}", station_name=None,
+            variable="station_level_history_m", value=point["v"], unit="m",
+            observed_at_utc=point["t_utc"], fetched_at_utc=result["fetched_at_utc"],
+            trust_tier="official_telemetry",
+            provenance={"source_url": BMA_STATION_DETAIL_URL_TMPL.format(water_id=water_id),
+                        "water_id": water_id, "series_status": result["status"]},
+        )
+    return CollectResult(sid, True, http=200, note=(
+        f"water_id={water_id}: status={result['status']}, {n_points} history point(s) stored"),
+        counts={"history_points": n_points})
+
+
 def collect_dds_nowcast_gif(conn, dry_run=False) -> CollectResult:
     sid = "dds_nowcast_gif"
     url = "https://dds.bangkok.go.th/Line_data/picture/radar_rain.gif"
@@ -1013,7 +1140,8 @@ def collect_openmeteo_forecast(conn, dry_run=False) -> CollectResult:
                           note="; ".join(notes), counts={"inserted": n_obs})
 
 
-def _thaiwater_status_word(situation_level, diff_wl_bank_text) -> str:
+def _thaiwater_status_word(situation_level, diff_wl_bank_text, min_bank=None,
+                            ground_level=None) -> str:
     """v0.1.2 nationwide one-path: the ONE status word this collector stores for a
     `thaiwater_waterlevel` row, per the regate mapping rules (diff_wl_bank_text
     "ล้นตลิ่ง" is the agency's own directly-observed overflow word and takes priority;
@@ -1022,9 +1150,23 @@ def _thaiwater_status_word(situation_level, diff_wl_bank_text) -> str:
     that maps either word to a colour, never this function). No agency code at all
     (`situation_level is None`) stores `NO_THRESHOLD`, same word every other collector
     in this file already uses for "this station has no published level at all" --
-    `floodconnect_model.STATUS_TO_LEVEL` maps that to UNKNOWN, never GREEN."""
+    `floodconnect_model.STATUS_TO_LEVEL` maps that to UNKNOWN, never GREEN.
+
+    fix (S3, founder subtractive-fix ruling 2026-10-06): "ล้นตลิ่ง" is trusted only
+    when it was computed against a REAL bank -- `min_bank` that is `0`, `None`, or
+    at/below the station's own `ground_level` is not a real threshold at all (a
+    `diff_wl_bank` the feed silently computed against a bank of 0 is not an agency
+    observation, it is arithmetic against a missing number). MEASURED
+    (BLGTU05/BLGTU06/MKSND01/MKSNU03/NPNPU01/NPNPD02, 2026-10-06): all six have
+    `min_bank == ground_level == 0` and `situation_level` null, yet the feed's
+    `diff_wl_bank_text` still reads "ล้นตลิ่ง (ม.)" because `diff_wl_bank` was
+    computed as `waterlevel_msl - 0`. The invert: when the bank is not usable, fall
+    through to the situation-level word (or NO_THRESHOLD) exactly as if
+    "ล้นตลิ่ง" had never been read at all."""
     text = (diff_wl_bank_text or "").strip()
-    if text.startswith("ล้นตลิ่ง"):
+    bank_is_usable = min_bank not in (None, 0) and (
+        ground_level is None or min_bank > ground_level)
+    if text.startswith("ล้นตลิ่ง") and bank_is_usable:
         return "OVERBANK"
     if situation_level is not None:
         try:
@@ -1066,7 +1208,9 @@ def collect_thaiwater_waterlevel(conn, dry_run=False) -> CollectResult:
     for r in rows:
         if r.get("observed_at") is None:
             continue
-        status_word = _thaiwater_status_word(r.get("situation_level"), r.get("diff_wl_bank_text"))
+        status_word = _thaiwater_status_word(
+            r.get("situation_level"), r.get("diff_wl_bank_text"),
+            min_bank=r.get("min_bank"), ground_level=r.get("ground_level"))
         n += store.insert_observation(
             conn, source_id=sid, station_code=r.get("station_oldcode") or r.get("station_id"),
             station_name=r.get("station_name_th"), lat=r["lat"], lon=r["lon"],
@@ -3196,6 +3340,7 @@ COLLECTORS = {
     "bma_klongmap": collect_bma_klongmap,
     "bma_watermap": collect_bma_watermap,
     "bma_station_detail": collect_bma_station_detail,
+    "bma_station_series": collect_bma_station_series,
     "dds_nowcast_gif": collect_dds_nowcast_gif,
     "openmeteo_forecast": collect_openmeteo_forecast,
     "hii_dam": collect_hii_dam,
@@ -3267,7 +3412,12 @@ NO_FETCHER = {"governor_shared_flooded_roads", "rtsd_2010_ground_level_map",
 # Still collectible explicitly via `--source bma_klongmap` (e.g. to re-check by hand
 # whether the block has lifted) -- a human decision, not something `--all` should do for
 # them silently. See sources/registry.yaml's own `host_rule.notes` for this source.
-DORMANT_NOT_IN_ALL = {"bma_klongmap", "bma_station_detail"}
+# `bma_station_series` (M8, 2026-10-05) is here for a DIFFERENT reason than the two
+# above (no confirmed 403 of its own) -- it refuses without a `water_id` and is only ever
+# meant to be called for one specific sandwich Z0/middle station, never a batch sweep;
+# excluding it from `--all`'s implicit "every id, no args" call is what makes that
+# refusal the only thing that could ever happen there, rather than a silent no-op.
+DORMANT_NOT_IN_ALL = {"bma_klongmap", "bma_station_detail", "bma_station_series"}
 
 # `bma_pumphistory`'s own endpoint (weather.bangkok.go.th/Station/PumpHistory) returned
 # HTTP 404 on 2026-10-04 (MEASURED, a direct `urllib` GET against `lwl.PUMPHISTORY_URL`

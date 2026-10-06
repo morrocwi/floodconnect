@@ -374,7 +374,13 @@ def _parse_pumphistory_meta(html: str) -> dict:
 # already written to `data/observations.sqlite` before this fix are NOT rewritten
 # (append-only); they stay untrusted at query time via their own `status` column, which
 # already carried the raw `status_th` text (see collect.py's collect_bma_pumphistory()).
-SENSOR_FAULT_STATUS_TH = {"ขัดข้อง"}
+# 2026-10-05 (FloodConnect M8, finding #6): the real watermap archive also carries
+# `ขัดข้องชั่วคราว` ("temporarily out of service") for the same sensor-fault condition --
+# without it here that word fell through to a normal-like/YELLOW read, inventing
+# evidence this repo never had. Added to the SAME shared set so every downstream
+# consumer (kb.py, site/build_data.py, this module) excludes it identically; no second
+# copy of this set exists anywhere on purpose.
+SENSOR_FAULT_STATUS_TH = {"ขัดข้อง", "ขัดข้องชั่วคราว"}
 
 
 def sensor_status_from_status_th(status_th) -> str | None:

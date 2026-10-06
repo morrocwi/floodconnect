@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://floodconnect.local/schemas/sandwich_trace.schema.json",
+  "title": "FloodConnect M8 sandwich trace",
+  "description": "The decision-trail portion of floodconnect_model.sandwich_decision()'s return + kb.py's own `mid` wrapper -- exactly the keys `steps`, `reasons` (kb.py's answer key is `why`, the capped/trimmed view of `reasons` -- both are accepted here under `reasons` since `why` is a strict subset), `needs_middle`, and `mid` (kb.py's own key, `{read, rows}`, A5 fix: `mid.rows` is exactly what was passed to sandwich_decision on a real CONFLICT, never a re-filtered view).",
+  "type": "object",
+  "required": ["steps", "reasons", "needs_middle", "mid"],
+  "properties": {
+    "steps": {
+      "type": "array",
+      "items": {"type": "string", "enum": ["READ_BOTTOM", "AT_OR_OVER_LOCAL", "READ_TOP", "AGREE", "CONFLICT", "EXTRACT_MIDDLE", "DECIDE"]}
+    },
+    "reasons": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "sandwich_decision's own free-text reason codes (e.g. TOP_NO_UPSTREAM, TOP_UNREAD, WATER_COMING_ON_KG_PATH, MIDDLE_NOT_RISING, MIDDLE_UNOBSERVED, OUTLET_CRITICAL, BOTTOM_<colour>_NEVER_DOWNGRADED) -- an open vocabulary, not a closed enum, since sandwich_decision composes several of these per call."
+    },
+    "needs_middle": {
+      "type": "boolean",
+      "description": "True only on the legacy two-call contract (middle=None passed in) -- kb.py's own caller always passes middle already (P-A), so this is false on every real kb.py answer; kept for a direct floodconnect_model.sandwich_decision caller that still wants the two-call shape."
+    },
+    "mid": {
+      "type": "object",
+      "required": ["read", "rows"],
+      "properties": {
+        "read": {"type": "boolean", "description": "True iff the full capped toward-us middle read ran (A5: on a real CONFLICT only)."},
+        "rows": {"type": "array", "description": "Exactly the rows passed to sandwich_decision as `middle` on this call (A5) -- empty when `read` is false."}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

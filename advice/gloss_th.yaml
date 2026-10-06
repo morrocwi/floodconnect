@@ -1,0 +1,53 @@
+# advice/card.py's closed gloss table for emergency_card.now_th, keyed by colour5
+# (GREEN/YELLOW/ORANGE/RED/UNKNOWN -- a closed 5-value set, never an open vocabulary).
+#
+# OPEN deviation from the M8 schema design note (pending the founder): the design says
+# "now_th comes from a closed gloss table keyed by reason code". `trace.reasons`/`why`
+# is an OPEN, free-text vocabulary (sandwich_decision composes several codes per call,
+# plus bottom-colour basis text that is itself not closed) -- a table keyed by every
+# possible reason string could never be closed, so "a reason with no entry raises an
+# error" could never be satisfiable. This implementation keys the gloss table by COLOUR
+# instead (a genuinely closed 5-value set), which IS satisfiable: every colour5 value has
+# an entry, and `advice/card.py` raises KeyError for anything else, which is the actual
+# fail-closed behaviour tests check. The founder should confirm whether reason-code-level
+# overrides on top of this are wanted later (e.g. a distinct YELLOW wording for
+# OUTLET_CRITICAL vs MIDDLE_NOT_RISING) -- none exist yet.
+#
+# Fix: the YELLOW row's wording IS the DDPM
+# phrase "เฝ้าระวังและติดตามสถานการณ์" (founder-mandated, per the 2026-10-05 ruling,
+# kept verbatim and never shortened), but `source_tag: OFFICIAL` claimed an actual
+# backing row in advice/official_guidance.yaml that does not exist -- its would-be
+# source (OG-13, disaster.go.th/DDPM) is itself `tag: OPEN` there (could not be
+# independently fetched live, never invented). This row is retagged
+# FLOODCONNECT (an orchestrator default, PENDING THE FOUNDER) until a fetched DDPM
+# row actually backs it -- the wording itself is unchanged.
+#
+# Every other row is FloodConnect's own wording and is marked OPEN (not yet backed
+# by a advice/official_guidance.yaml parity row -- that file is built in P-D). Kept
+# deliberately short (token budget, tests/test_token_budget.py -- the whole answer,
+# not just this card, has a 5,000-token ceiling) while keeping each sentence's
+# safety meaning and avoiding the four banned resident-facing words
+# (ไม่ต้อง/ห้าม/ไม่ควร/ผ่อนคลาย).
+GREEN:
+  now_th: "ปกติ -- เฝ้าดูต่อไป"
+  source_tag: FLOODCONNECT
+YELLOW:
+  now_th: "เฝ้าระวังและติดตามสถานการณ์"
+  source_tag: FLOODCONNECT
+  tag: "FLOODCONNECT_DEFAULT_PENDING_FOUNDER"
+# fix (founder ruling "ตัดให้เหลือไม่เกิน 80"):
+# ORANGE/RED/UNKNOWN shortened -- the dropped half of each sentence is never lost
+# information, it is EXACTLY what `do_th` already carries in the same card (the
+# action to take), so repeating it in `now_th` too was pure duplication at a cost
+# of ~20-25 cl100k tokens each, the single biggest blocker to the hard 80-token
+# cap. YELLOW stays verbatim (founder-mandated DDPM phrase, unchanged); GREEN was
+# already short enough to keep as-is.
+ORANGE:
+  now_th: "น้ำกำลังมา"
+  source_tag: FLOODCONNECT
+RED:
+  now_th: "น้ำถึงระดับวิกฤต"
+  source_tag: FLOODCONNECT
+UNKNOWN:
+  now_th: "ไม่มีข้อมูล"
+  source_tag: FLOODCONNECT

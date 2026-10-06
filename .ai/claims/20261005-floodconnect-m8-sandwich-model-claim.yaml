@@ -1,0 +1,113 @@
+claim_id: "20261005-floodconnect-m8-sandwich-model-claim"
+# Fix: this claim was left ACTIVE with an
+# artifact list that omitted the entire advice/ and schemas/ advice-related
+# work (P-B/P-C/P-D) and claimed MCP wiring as out of scope although it was
+# actually wired (tools/mcp/floodconnect_mcp.py's household param). Both fixed
+# here: RELEASED (this repo's real status vocabulary -- agent_claims.py only
+# accepts ACTIVE/RELEASED, never "CLOSED") with the FULL artifact list (every
+# path `git diff af4b1f4..HEAD --name-only` actually shows), and MCP wiring
+# dropped from the out-of-scope note.
+status: RELEASED
+writer: "ai-worker"
+branch: "agent/ai-worker/floodconnect-m8-sandwich-model"
+base_sha: "af4b1f4102374ce2d0f4e62657ad4cf1ed37ec29"
+nodes:
+  - FC_ROOT
+  - KB
+  - LIVE_DATA_SYSTEM
+  - RIVER_KG
+artifacts:
+  - advice/card.py
+  - advice/gap_log.py
+  - advice/gloss_th.yaml
+  - advice/home_shelter.py
+  - advice/__init__.py
+  - advice/ladder.py
+  - advice/official_guidance.yaml
+  - advice/PARITY.md
+  - advice/parity.py
+  - advice/preparedness_ladder.yaml
+  - advice/public_shelter.py
+  - collect.py
+  - docs/INDICATORS.md
+  - floodconnect_model.py
+  - kb.py
+  - live_water_level.py
+  - model_spec.json
+  - output/kg_index/
+  - output/thailand_water_kg.graphml
+  - output/thailand_water_kg.jsonld
+  - parsers.py
+  - pyproject.toml
+  - requirements-ci.txt
+  - schemas/advice.schema.json
+  - schemas/defs.schema.json
+  - schemas/emergency_card.schema.json
+  - schemas/household_declaration.schema.json
+  - schemas/jev_decision.schema.json
+  - schemas/layer_readout.schema.json
+  - schemas/official_guidance.schema.json
+  - schemas/policy_gap_record.schema.json
+  - schemas/sandwich_trace.schema.json
+  - schemas/trend_signal.schema.json
+  - shelter_operation_ladder.py
+  - site/build_data.py
+  - sources/canalchain_station_joins.yaml
+  - sources/registry.yaml
+  - sources/stations/bma_watermap.json
+  - sources/stations/thaiwater_waterlevel.json
+  - tests/fixtures/bma_station_detail/
+  - tests/fixtures/bma_watermap/
+  - tests/test_bma_station_detail.py
+  - tests/test_emergency_card.py
+  - tests/test_floodconnect_model.py
+  - tests/test_freshness_gate_2026-10-03.py
+  - tests/test_gap_log.py
+  - tests/test_home_shelter.py
+  - tests/test_kb_answer.py
+  - tests/test_kb_answer_kg_anchor.py
+  - tests/test_kb_answer_sandwich.py
+  - tests/test_kg_index.py
+  - tests/test_l5_lines_reachable_in_ladder.py
+  - tests/test_m8_safety_round.py
+  - tests/test_official_parity.py
+  - tests/test_preparedness_ladder.py
+  - tests/test_public_shelter_advice.py
+  - tests/test_rings.py
+  - tests/test_shelter_operation_ladder.py
+  - tests/test_stations_layer.py
+  - tests/test_token_budget.py
+  - tools/harvest/bma_station_detail_draft.py
+  - tools/harvest/station_tables.py
+  - tools/kg/build_index.py
+  - tools/kg/locate.py
+  - tools/kg/rings.py
+  - tools/kg/stations_layer.py
+  - tools/mcp/floodconnect_mcp.py
+  - CHANGELOG.md
+intent: >-
+  FloodConnect M8 (founder 2026-10-05, "ทางที่ 2 เลย"): put the Jev
+  Sandwich ladder (3-state trend, bank-check-first, 4/5-colour ladder with
+  PROP-FLOOD-11 gated) into floodconnect_model.py (P1); extract nationwide
+  keyless station nodes into the KG with their declared connectivity (P2); wire
+  rings -> Z0 reading -> sandwich_decision into kb.py's answer path, middle
+  fetched only on conflict (P3); the advice layer -- emergency_card,
+  preparedness ladder, home-as-shelter, official parity, MCP wiring (P-B/P-C/
+  P-D) -- and the subsequent independent-review fix round (14 numbered
+  defects, this same claim). No new equation beyond the already-registered
+  PROP-FLOOD-01/02 Toledo proposals; PROP-FLOOD-11 stays GATED (Toledo PR #65
+  open).
+created_at: "2026-10-05T13:00:00+07:00"
+expires_at: null
+reviewers: []
+supersedes: null
+note: >-
+  out_of_scope: output/kg_index/reaches.json/canals.json global slices
+  (deferred -- raw/gis/dwr_subbasin/ absent from this checkout); IN_SUBBASIN
+  for new station nodes via geometric placement (same reason; Z3's sub-basin
+  for a node with no IN_SUBBASIN of its own is read off its declared
+  canalchain OUTLET_TO target instead, tagged sb_basis=OUTLET_JOIN); version
+  bump, SKILL.md, keyed APIs, PROP-FLOOD-12. MCP wiring is NOT out of scope --
+  tools/mcp/floodconnect_mcp.py's floodconnect_answer tool was actually wired
+  with the new household param (fix: this
+  note previously claimed it was out of scope, which was false).

@@ -1,0 +1,31 @@
+[
+ {
+  "water_id": 284,
+  "water_code": "WL.SMK.01",
+  "water_name": "จุดวัดบึงรับน้ำหมู่บ้านสัมมากร ตอนสถานีสูบน้ำบึงที่ 2 คลองบ้านม้า 2",
+  "water_name_en": "Bueng Muban Sammakorn Measurement Point, Lake 2 Pumping Station, Khlong Ban Ma 2",
+  "district_name": "สะพานสูง",
+  "water_control": null,
+  "latitude": 13.76676,
+  "longitude": 100.67784,
+  "wl_in": -0.45,
+  "left_bank": 0.83,
+  "right_bank": 0.44,
+  "warning": 0.35,
+  "critical": 0.44,
+  "max_in_day": -0.36,
+  "max_in_yesterday": -0.24,
+  "txtStatus": "ปกติ",
+  "txtStatus_en": "Normal",
+  "site_timestampTH": "05/10/2569 11:15",
+  "site_timestampEN": "2026/10/05 11:15",
+  "datediffnow": 5,
+  "status": 1,
+  "watergate01": null,
+  "watergate02": null,
+  "watergate03": null,
+  "watergate04": null,
+  "watergate05": null,
+  "watergate06": null
+ }
+]

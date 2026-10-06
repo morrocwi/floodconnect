@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://floodconnect.local/schemas/advice.schema.json",
+  "title": "FloodConnect M8 advice",
+  "description": "jev_decision.advice -- the new advice layer (D: preparedness ladder, E: home-as-shelter). `prepare_steps` is built from advice/preparedness_ladder.yaml by colour (P-D, not built in P-B). `home_shelter` is built from advice/home_shelter.py (P-C, not built in P-B). `public_shelter` stays OPEN while site/inputs/community/public_shelter_seeds.yaml has no real sites. In a P-B-only build this object may be absent or carry empty/placeholder values -- a caller must not read an empty prepare_steps as 'nothing to prepare'.",
+  "type": "object",
+  "properties": {
+    "prepare_steps": {
+      "type": "array",
+      "description": "Ordered -- the emergency card's `do_th` is prepare_steps[0].what_th. `kb.py`'s non-verbose (compact) jev_decision carries only the COMPACT item form below (token budget, tests/test_token_budget.py: the full what_th/how_th text of even 3 real steps pushed every budget test over its ceiling once P-D populated real ladder content) -- the full text is still on `verbose=True`, and is never actually lost even in compact mode, since it is the SAME text already carried by `emergency_card.do_th` in the same answer.",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["id", "colour", "what_th", "how_th", "trigger_next", "source_tag"],
+            "properties": {
+              "id": {"type": "string"},
+              "colour": {"$ref": "defs.schema.json#/$defs/colour5"},
+              "what_th": {"type": "string", "description": "เตรียมอะไร"},
+              "how_th": {"type": "string", "description": "เตรียมอย่างไร"},
+              "trigger_next": {"type": "string", "description": "What advances to the next step, e.g. 'ORANGE', 'Z0 RISING', 'ประกาศทางการ', or '-' for the terminal UNKNOWN row."},
+              "action_keys": {"type": "array", "items": {"type": "string"}},
+              "source_tag": {"$ref": "defs.schema.json#/$defs/source_tag"},
+              "official_ref": {"type": "array", "items": {"type": "string"}, "description": "official_guidance.yaml row ids backing this step -- empty/absent only when source_tag is FLOODCONNECT."}
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "description": "Compact form (verbose=False) -- a pointer only, see this property's own top-level description.",
+            "required": ["id"],
+            "properties": {"id": {"type": "string"}},
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "home_shelter": {
+      "type": "object",
+      "properties": {
+        "verdict": {"$ref": "defs.schema.json#/$defs/verdict5"},
+        "confidence": {
+          "$ref": "defs.schema.json#/$defs/confidence",
+          "description": "Present only when below HIGH -- either the verdict was reached despite an unresolved colour (P-C design rule 9: UNKNOWN colour with complete household inputs gives PREPARE_TO_LEAVE at LOW, never HIGH/MEDIUM), or FIX5B's own missing-vulnerable-input downgrade (`calc.missing` non-empty) lowered it by one ordinal step per missing category."
+        },
+        "calc": {
+          "type": "object",
+          "description": "FIX5B: the inputs behind this verdict and which of them were missing, never fabricated. `eq` names the FloodConnect-internal confidence-downgrade rule (pending the founder, same status as `rule`/`tag` below); `inputs` lists `member_need_profile` and `animal_profile`, each with its declared value or `source: missing`. A profile that is wholly absent (`null`) is `missing`; an explicit declaration -- including `{}` or an animal count of 0, i.e. 'checked, none' -- is `declared` and never lowers confidence on its own. `missing` repeats the missing names; `reasons` (when present) is the plain-Thai reason for each downgrade actually applied.",
+          "properties": {
+            "eq": {"type": "string"},
+            "inputs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {"type": "string"},
+                  "value": {},
+                  "source": {"type": "string", "enum": ["declared", "missing"]},
+                  "time": {"type": ["string", "null"]}
+                },
+                "additionalProperties": false
+              }
+            },
+            "missing": {"type": "array", "items": {"type": "string"}},
+            "reasons": {"type": "array", "items": {"type": "string"}},
+            "result": {"$ref": "defs.schema.json#/$defs/verdict5"}
+          },
+          "additionalProperties": false
+        },
+        "dry_gate": {
+          "type": "object",
+          "properties": {
+            "state": {"type": "string"},
+            "failed": {"type": "array", "items": {"type": "string"}},
+            "unknown": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "sustainment": {
+          "type": "object",
+          "properties": {
+            "state": {"type": "string"},
+            "gaps": {"type": "array", "items": {"type": "string"}},
+            "unknown": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "missing_inputs": {"type": "array", "items": {"type": "string"}, "description": "Non-empty whenever verdict == UNKNOWN_ASK_INPUTS -- missing input must never silently resolve to STAY."},
+        "checklist": {"type": "array", "items": {"type": "string"}},
+        "protective_state_raw": {"description": "The raw shelter_decision.recommend_protective_state() result, kept verbatim alongside the folded verdict."},
+        "rule": {
+          "type": "string",
+          "description": "Present only when the verdict was reached via advice/home_shelter.py's rules 4-9 (FloodConnect's own escalation defaults, e.g. R7/R9 -- never rule 1/3, which are founder-mandated safety invariants, not defaults)."
+        },
+        "tag": {
+          "type": "string",
+          "const": "FLOODCONNECT_DEFAULT_PENDING_FOUNDER",
+          "description": "Present alongside `rule` -- marks this verdict as this repo's own default, pending founder confirmation."
+        }
+      },
+      "additionalProperties": false
+    },
+    "public_shelter": {
+      "type": "object",
+      "properties": {
+        "state": {"type": "string", "enum": ["OPEN", "CANDIDATES"]},
+        "note": {"type": "string"},
+        "official_list_ref": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

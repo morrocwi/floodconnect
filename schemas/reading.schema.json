@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://floodconnect.local/schemas/reading.schema.json",
+  "title": "FloodConnect canonical READING record",
+  "description": "This is NOT a new invented format. It is this repository's own `observations` SQL table (store.py, CREATE TABLE observations, columns source_id/station_code/station_name/lat/lon/variable/value/unit/observed_at_utc/fetched_at_utc/warning/critical/bank/status/trust_tier/provenance_json), stated as JSON Schema so a caller normalising a raw agency payload knows exactly which record shape store.insert_observation() accepts. Fields NOT present as columns (agency, province, water_body, kind) are not stored directly -- they are derivable by joining source_id -> sources/registry.yaml (agency) or by reading provenance_json (province_th/water_body-ish fields vary per source, see the per-source MAPPING TABLE in docs/API_MANUAL.md). Never invent a field name store.py does not already have.",
+  "type": "object",
+  "required": ["source_id", "station_code", "variable", "observed_at_utc", "fetched_at_utc", "trust_tier"],
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "description": "= store.py observations.source_id. The registry id (sources/registry.yaml) this row came from, e.g. 'thaiwater_waterlevel', 'bma_watermap'. Read by: every query in readout.py/kb.py that filters WHERE source_id=..."
+    },
+    "station_code": {
+      "type": ["string", "null"],
+      "description": "= observations.station_code. The station/asset identity key. For thaiwater_waterlevel: r['station_oldcode'] or r['station_id'] (parsers.parse_thaiwater_waterlevel). For bma_watermap: the station's water_code (e.g. 'WL.SMK.01'), or '<water_code>#gate<NN>' for a gate reading (collect_bma_watermap). This is the field a KG node id is built from, e.g. gauge:thaiwater_waterlevel:<station_code>, gauge:thaiwater_bma:<station_code>. NOT the same as agency/kind/province (those are not columns)."
+    },
+    "station_name": {
+      "type": ["string", "null"],
+      "description": "= observations.station_name. The agency's own station name, Thai where the agency's own payload gives Thai (verbatim, never back-transliterated)."
+    },
+    "lat": {"type": ["number", "null"], "description": "= observations.lat. Decimal degrees, WGS84 as published by the agency (not independently re-surveyed)."},
+    "lon": {"type": ["number", "null"], "description": "= observations.lon. Decimal degrees, WGS84 as published by the agency."},
+    "variable": {
+      "type": "string",
+      "description": "= observations.variable (NOT NULL). The reading's own name, e.g. 'waterlevel_msl', 'canal_water_level_m', 'gate_opening_m', 'storage_percent', 'rain_mm_24h'. Each source's own collect_* function picks this string -- see the per-source MAPPING TABLE in docs/API_MANUAL.md for which agency field maps to which variable name."
+    },
+    "value": {"type": ["number", "null"], "description": "= observations.value. The reading itself, same unit as `unit` below. A missing reading is NULL, never 0 (BOT != ZERO, floodconnect_model.py's own constraint)."},
+    "unit": {"type": ["string", "null"], "description": "= observations.unit, e.g. 'm', 'm3/s', 'mm', '%'."},
+    "observed_at_utc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "= observations.observed_at_utc (NOT NULL). ISO-8601 UTC. The AGENCY's own observation time where the source states one (e.g. thaiwater's observed_at, BMA's site_timestamp). For a bulletin/PDF source with no agency timestamp field, this is documented per-source as 'fetch time used as a stand-in' -- never silently presented as if it were an agency-stated time (see readout.py's own `_header_date_recognized` comment at line ~201). TIMEZONE PITFALL (MEASURED 2026-10-05): BMA StationDetail's embedded Highcharts `Date.UTC(Y,M0,D,h,m,s)` values are Bangkok LOCAL wall-clock time written into a function literally named Date.UTC -- despite the name, these are NOT already UTC. A caller MUST attach +07:00 (or subtract 7h when converting to a trailing-Z UTC string) before storing as `observed_at_utc` -- storing the raw Date.UTC value as if it were already UTC silently shifts every reading 7 hours into the future. MONTH PITFALL (MEASURED 2026-10-05): the same `Date.UTC(Y,M0,D,...)` call's month field `M0` is 0-indexed, JS-style -- the real calendar month is `M0+1` (the fixture's literal month digit '9' means October, not September). A caller that stores `M0` as the month without the `+1` silently shifts every reading one calendar month into the past."
+    },
+    "fetched_at_utc": {"type": "string", "format": "date-time", "description": "= observations.fetched_at_utc (NOT NULL). When THIS repo's collector made the HTTP call. Always >= observed_at_utc for a real reading."},
+    "warning": {"type": ["number", "null"], "description": "= observations.warning. Agency-published warning level, SAME datum as `value` (never ground_level, a different datum -- see pitfalls in docs/API_MANUAL.md)."},
+    "critical": {"type": ["number", "null"], "description": "= observations.critical. Agency-published critical/overflow level, same datum as `value`. For bma_watermap WL.SMK.01, critical=0.44 (== right_bank for that station, MEASURED 2026-10-05)."},
+    "bank": {"type": ["number", "null"], "description": "= observations.bank. Agency-published bank level (e.g. thaiwater's min_bank, bma_watermap's left_bank/right_bank -- pick the bank nearer the community side per docs/NEAREST_STATION_RECIPE.md), same datum as `value`. MEASURED finding (2026-10-05 Sammakorn run): several bma_watermap records carry warning/critical but NO bank field at all -- set `bank` explicitly to `null` in that case (never omit the key, never guess a value) and record the reason in `bank_note`."},
+    "bank_note": {"type": ["string", "null"], "description": "NOT a store.py column -- a caller-side annotation explaining a null `bank` (or any other null level field), e.g. 'not provided by source'. Required whenever `bank` is null and the source is otherwise reporting, so a null is never silently indistinguishable from 'not yet checked'."},
+    "status": {
+      "type": ["string", "null"],
+      "description": "= observations.status. The agency's own status word, VERBATIM (e.g. 'thaiwater_situation_5', BMA Thai text, DDS 'วิกฤต'/'เตือนภัย'/'ปกติ') -- this is the `agency_status_word` the founder asked for, already a real column, never invented. floodconnect_model.STATUS_TO_LEVEL / kb.py read this exact string."
+    },
+    "trust_tier": {
+      "type": "string",
+      "enum": ["official_telemetry", "official_report", "official_shared_inference", "third_party", "community_report"],
+      "description": "= observations.trust_tier (NOT NULL). This repo's own engineering judgement of provenance class (sources/registry.yaml vocabulary, see that file's header comment) -- NOT an agency certification."
+    },
+    "provenance_json": {
+      "type": ["string", "null"],
+      "description": "= observations.provenance_json. A JSON-encoded dict of every OTHER agency-published field this source carries that doesn't have its own column (e.g. diff_wl_bank, diff_wl_bank_text, situation_level, ground_level, agency, agency_shortname, province_th, amphoe_th, tambon_th, storage_percent, river_name, sub_basin_id, basin_id, waterlevel_msl_previous for thaiwater_waterlevel -- see collect_thaiwater_waterlevel). These RIDE ALONG, relayed, never recomputed into a new reading."
+    },
+    "tag": {
+      "type": "string",
+      "enum": ["VERIFIED", "MEASURED", "RELAYED", "INSTINCT", "OPEN"],
+      "description": "NOT a store.py column -- this is the epistemic tag a caller attaches when presenting this reading (the workspace-wide readout-not-truth convention). A raw agency reading reported as-is is RELAYED; a value this repo computed from readings (e.g. PROP-FLOOD-01 delta_k) is tagged PROPOSAL at the equation level, separately -- see schemas/series.schema.json."
+    },
+    "freshness_flag": {
+      "type": "string",
+      "enum": ["FRESH", "STALE", "FAULT"],
+      "description": "NOT a store.py column -- first-class, kept SEPARATE from `status` (agency_status_word). FRESH = within the source's declared max_age; STALE = older than that but the agency itself did not flag a fault; FAULT = the agency's own status word indicates a sensor/instrument fault (e.g. BMA 'ขัดข้อง'). MEASURED finding (2026-10-05, Sammakorn run): WL.SSB.02 carries status 'ขัดข้อง' with a last reading dated 2026-03-23 -- a FAULT record. Rule: when freshness_flag=FAULT, `value` MUST be null (withheld) regardless of what the raw payload carried, and that station must never be allowed to decide a ring's colour (it is excluded from `worst_status`/hotspot evaluation, same posture as any other missing reading -- BOT != ZERO)."
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {"required": ["bank"], "properties": {"bank": {"type": "null"}}},
+      "then": {"required": ["bank_note"], "properties": {"bank_note": {"type": "string"}}}
+    },
+    {
+      "if": {"required": ["freshness_flag"], "properties": {"freshness_flag": {"const": "FAULT"}}},
+      "then": {"properties": {"value": {"type": "null"}}}
+    }
+  ]
+}

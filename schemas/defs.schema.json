@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://floodconnect.local/schemas/defs.schema.json",
+  "title": "FloodConnect M8 shared definitions",
+  "description": "Enums and small shared shapes referenced by $ref from every other M8 schema (jev_decision, emergency_card, policy_gap_record, trend_signal, layer_readout, sandwich_trace, household_declaration, advice, official_guidance). This file defines no top-level object of its own -- it exists only to be $ref'd. `reading`/`series` stay on the M7a branch (schemas/reading.schema.json, schemas/series.schema.json there) and are not duplicated here; reconciling the two schema sets is out of scope for M8 (see the M8 design note, contradictions C1-C13, resolved at the M7a merge).",
+  "$defs": {
+    "s4": {
+      "type": "string",
+      "enum": ["POS", "NEG", "ZERO", "BOT"],
+      "description": "4-state sign readout (ARCHITECTURE.md section 5). BOT = unresolved/unread, NOT the same as ZERO -- a BOT value maps to gate HOLD, never to a decided ZERO/GREEN claim."
+    },
+    "colour5": {
+      "type": "string",
+      "enum": ["GREEN", "YELLOW", "ORANGE", "RED", "UNKNOWN"],
+      "description": "founder ruling 2026-10-05: ปกติ/เฝ้าระวัง/เตรียมพร้อม (FloodConnect's own label, not an official agency tier)/วิกฤต/ไม่ทราบ. An empty/unread ring is UNKNOWN, never GREEN."
+    },
+    "tag": {
+      "type": "string",
+      "enum": ["VERIFIED", "MEASURED", "RELAYED", "INSTINCT", "OPEN"],
+      "description": "The workspace-wide readout-not-truth epistemic tag used throughout this project's own conventions."
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["HIGH", "MEDIUM", "LOW", "NONE"],
+      "description": "Ordinal, per floodconnect_model.sandwich_decision's own confidence values."
+    },
+    "gate": {
+      "type": "string",
+      "enum": ["ADMIT", "HOLD", "REJECT", "ESCALATE"],
+      "description": "The jev_decision gate (M8, new -- distinct from the legacy `licence` field below, which `sandwich_decision` already returns and which this gate does not replace)."
+    },
+    "licence": {
+      "type": "string",
+      "enum": ["LICENSED_WITHIN_ENVELOPE", "REFUSED"],
+      "description": "The legacy gate value floodconnect_model.sandwich_decision/one_decision already return under the key `gate` -- kept under `licence` inside jev_decision so the new `gate` (ADMIT/HOLD/REJECT/ESCALATE) and the old value can both be carried without one silently overwriting the other."
+    },
+    "source_tag": {
+      "type": "string",
+      "enum": ["OFFICIAL", "GENERAL", "FLOODCONNECT"],
+      "description": "OFFICIAL = traceable to a cited Thai-agency item in advice/official_guidance.yaml (source_class OFFICIAL_TH; url + retrieved_at + verbatim_th). GENERAL = traceable the same way to a general-practice item (source_class GENERAL -- Ready.gov, gov.uk, American/IFRC Red Cross -- never a Thai-agency claim). FLOODCONNECT = this repo's own wording, not yet backed by a parity row -- see advice/parity.py."
+    },
+    "verdict5": {
+      "type": "string",
+      "enum": ["STAY_PREPARED", "PREPARE_TO_LEAVE", "LEAVE_NOW", "FOLLOW_OFFICIAL_ORDER", "UNKNOWN_ASK_INPUTS"],
+      "description": "The home-as-shelter stay-vs-go verdict (P-C, advice/home_shelter.py -- not implemented in P-B). Missing household input must give UNKNOWN_ASK_INPUTS, never STAY_PREPARED. An official evacuation order always gives FOLLOW_OFFICIAL_ORDER."
+    },
+    "choice7": {
+      "type": "string",
+      "enum": ["เฝ้าดู", "เตรียมของ", "ย้ายของขึ้นที่สูง", "อยู่บ้านแบบเตรียมพร้อม",
+               "เตรียมออกจากบ้าน", "ออกจากบ้านไปจุดปลอดภัย", "ทำตามประกาศทางการ"],
+      "description": "The jev_decision.choice.options vocabulary -- the first 3 map from colour, the rest from the home-as-shelter verdict (P-C). When a verdict exists it outranks the colour's own option."
+    },
+    "kg_anchor": {
+      "type": "object",
+      "description": "Exactly the keys kb.py:_kg_anchor / tools/kg/locate.py:locate() write into 'kg_anchor' -- local copy of the shape M7a's sandwich_readout.schema.json also documents, kept here so M8 schemas never need an M7a file reference (M7a is a separate, unmerged branch).",
+      "properties": {
+        "kg_sha256": {"type": "string"},
+        "method": {"type": "string", "enum": ["caller", "cand", "no_kg_index"]},
+        "province": {"type": "string"},
+        "cand": {"type": "array", "items": {"type": "string"}, "maxItems": 3},
+        "province_tag": {"const": "RELAYED"},
+        "sub_basin": {"type": "string"},
+        "reach": {"type": "string"},
+        "station_ids": {"type": "array", "items": {"type": "string"}, "maxItems": 2},
+        "tag": {"type": "string", "enum": ["OPEN"]}
+      }
+    }
+  }
+}

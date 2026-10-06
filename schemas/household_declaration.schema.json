@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://floodconnect.local/schemas/household_declaration.schema.json",
+  "title": "FloodConnect M8 household declaration",
+  "description": "Caller-declared inputs for the home-as-shelter decision (P-C, advice/home_shelter.py:household_to_node -- not implemented in P-B). These are DECLARED inputs, never computed from a canal reading (invariant 9: water_vs_house_floor is the household's own observation, not derived from a station's h value -- that would fabricate a house depth). Field names reuse shelter_decision.py's existing vocabulary (member_need_profile, supplies) rather than inventing parallel ones. A test household used in automated tests must be labelled as a test household, never presented as a real person.",
+  "type": "object",
+  "required": ["floors", "dry_upper_floor", "water_vs_house_floor", "official_instruction", "declared_now"],
+  "properties": {
+    "floors": {"type": "integer", "minimum": 1},
+    "dry_upper_floor": {"type": "boolean"},
+    "water_vs_house_floor": {
+      "type": "string",
+      "enum": ["DRY", "BELOW_FLOOR_RISING", "ABOVE_FLOOR", "UNKNOWN"],
+      "description": "Household's own observation -- never computed from a canal/station reading (invariant 9)."
+    },
+    "panel_above_current_water": {"type": ["boolean", "null"]},
+    "can_cut_power": {"type": ["boolean", "null"]},
+    "member_need_profile": {
+      "type": "object",
+      "description": "Reuses shelter_decision.py's VULNERABILITY_COUNT_FIELDS / FUNCTIONAL_NEED_COUNT_FIELDS names verbatim (e.g. bedbound_or_homebound, older_adult_60_plus, child_0_5, needs_power_dependent_medical_device, needs_time_critical_medical_followup, needs_infant_feeding) -- not re-specified here to avoid a second, divergent field list; see that module for the authoritative set."
+    },
+    "supplies": {
+      "type": "object",
+      "description": "Per-field days of supply; assessed_horizon_h = days * 24 (advice/home_shelter.py)."
+    },
+    "planning_horizon_h": {
+      "type": ["number", "null"],
+      "description": "From a cited official_guidance item if one exists, else declared by the household, else null/UNKNOWN -- never invented."
+    },
+    "communications": {"type": ["object", "null"]},
+    "exit": {
+      "type": "object",
+      "properties": {
+        "boat": {"type": ["boolean", "null"]},
+        "route_declared": {"type": ["boolean", "null"]}
+      }
+    },
+    "official_instruction": {
+      "type": "string",
+      "enum": ["NONE", "EVACUATE", "WARNING", "UNKNOWN"],
+      "description": "An official EVACUATE always wins over every colour/household input (P-C rule 1). WARNING (added, earlier pass -- per prd.go.th/534015's own 'evacuate immediately, do not wait for crisis level, on an official warning signal') is folded into the same rule-1 outcome as EVACUATE: the household must follow whatever the official instruction actually says, never treated as merely NONE."
+    },
+    "declared_now": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this declaration was made -- used for dry_status_fresh in the home Dry Gate."
+    },
+    "animal_profile": {"type": ["object", "null"], "description": "Optional -- reuses human_animal_household.py's evaluate_animal_unit input shape. For the SUSTAINMENT/Dry-Gate calculation itself, an absent profile still defaults to zero animal burden (unchanged). FIX5B (founder ruling 2026-10-06): for the home-shelter verdict's own confidence, a wholly absent profile (null/key omitted) is now treated as MISSING information, not as 'no animals' -- it lowers confidence with a named reason (advice/home_shelter.py). An EXPLICIT declaration of no animals (`{}`, or any profile whose declared_animal_count is 0) is real information and does NOT lower confidence."},
+    "test_household": {
+      "type": "boolean",
+      "description": "True only in automated tests -- a declared input used in a test must be marked so it is never mistaken for a real household's data."
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,71 @@
+# sources/canalchain_station_joins.yaml -- declared LOCATED_ON / OUTLET_TO joins between
+# a committed station table row (sources/stations/*.json) and an existing declared
+# canalchain:* node (site/inputs/canals/east_chain.yaml). Read by
+# tools/kg/stations_layer.py ONLY -- never by canal_graph.py or the site build, which
+# read east_chain.yaml directly (per the M8 design: "Don't edit east_chain.yaml").
+#
+# method vocabulary:
+#   declared_join -- the station's own agency name/river_name string, after
+#                     normalize_canal_name(), equals (or is contained in) the
+#                     canalchain node's own name_th -- a textual match, not a distance
+#                     snap. Evidence quoted verbatim below.
+#   outlet_snap   -- a DERIVED-snap distance between two already-known coordinates,
+#                     carrying its own `distance_km` and a `contradicts` pointer when a
+#                     second, disagreeing source exists for the same physical link (per
+#                     the founder's conflicting-data rule: keep both, never silently
+#                     prefer one).
+
+joins:
+  - station_table: bma_watermap
+    station_id: "WL.SMK.01"
+    canal_node: "canalchain:sammakorn_pond"
+    edge: LOCATED_ON
+    method: declared_join
+    tag: RELAYED
+    evidence: >-
+      station water_name "จุดวัดบึงรับน้ำหมู่บ้านสัมมากร ตอนสถานีสูบน้ำบึงที่ 2
+      คลองบ้านม้า 2" names the same pond ("บึงรับน้ำหมู่บ้านสัมมากร") as
+      canalchain:sammakorn_pond's own name_th "บึงสัมมากร" (east_chain.yaml) -- BMA's
+      own agency name for this measuring point IS the Sammakorn retention pond.
+    source: "sources/stations/bma_watermap.json row WL.SMK.01 + site/inputs/canals/east_chain.yaml node sammakorn_pond"
+
+  - station_table: bma_watermap
+    station_id: "WL.BMA.02"
+    canal_node: "canalchain:banma"
+    edge: LOCATED_ON
+    method: declared_join
+    tag: RELAYED
+    evidence: >-
+      station water_name "จุดวัดคลองบ้านม้า ตอนถนนรามคำแหง" contains "คลองบ้านม้า",
+      which normalize_canal_name() (tools/kg/build_kg.py) reduces to "บ้านม้า" --
+      exactly canalchain:banma's own name_th "คลองบ้านม้า" after the same
+      normalisation.
+    source: "sources/stations/bma_watermap.json row WL.BMA.02 + site/inputs/canals/east_chain.yaml node banma"
+
+  - station_table: null  # canalchain-to-canalchain, not a station join -- kept in this
+                           # file (not build_kg.py/canal_graph.py) because it is the
+                           # OTHER, higher-confidence half of the Sammakorn topology
+                           # contradiction this file exists to carry.
+    station_id: null
+    canal_node: "canalchain:sammakorn_pond"
+    target_canal_node: "canalchain:ssb08"
+    edge: OUTLET_TO
+    method: outlet_snap
+    tag: DERIVED-snap
+    distance_km: 0.55
+    evidence: >-
+      site/inputs/canals/sammakorn_pond_canal_dag.yaml, edge
+      "central_storage_to_terminal_outlet" (status: strong_working_hypothesis): the
+      pond's own outlet discharges to ST.SPS.01 / คลองแสนแสบ, i.e. the same physical
+      canal canalchain:ssb08 ("แสนแสบ-เสรีไทย 24") represents. Distance MEASURED
+      0.55 km between ST.SPS.01's declared coordinate and canalchain:ssb08's own
+      lat/lon (13.7805, 100.67387), from the DAG file and this KG's own ssb08 node.
+    contradicts: "site/inputs/canals/east_chain.yaml edge e_sammakornpond_wangyai (sammakorn_pond -> wangyai, design_direction: unknown)"
+    source: "site/inputs/canals/sammakorn_pond_canal_dag.yaml"
+    note: >-
+      Kept alongside the contradicting east_chain.yaml edge per the founder's
+      conflicting-data rule (2026-09-27): "two sources, same station -> keep both,
+      contradiction rows, never silently prefer". stations_layer.py adds BOTH this
+      OUTLET_TO edge (tag DERIVED-snap, with its own `contradicts` attribute) and
+      leaves east_chain.yaml's own sammakorn_pond -> wangyai edge exactly as
+      build_kg.py already loads it -- neither edge is dropped or upgraded.

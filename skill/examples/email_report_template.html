@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ meta.title_th }}</title>
+<style>
+  /* FloodConnect default email report -- inline CSS, email-client safe (no external
+     assets, no flexbox/grid relied on for structure -- table-based layout), light and
+     dark friendly via prefers-color-scheme, A4 print-ready. */
+  body { margin:0; padding:0; background:#f2f4f7; color:#1a1a1a;
+         font-family: "Noto Sans Thai","Segoe UI",Tahoma,Arial,sans-serif; font-size:15px; line-height:1.55; }
+  .wrap { max-width:720px; margin:0 auto; background:#ffffff; }
+  .pad { padding:20px 22px; }
+  h1 { font-size:19px; margin:0 0 4px; }
+  h2 { font-size:16px; margin:0 0 10px; border-bottom:2px solid #e3e6ea; padding-bottom:6px; }
+  h3 { font-size:14px; margin:14px 0 8px; }
+  p { margin:0 0 10px; }
+  table { width:100%; border-collapse:collapse; margin:0 0 16px; font-size:13.5px; }
+  th, td { border:1px solid #dde1e6; padding:7px 8px; text-align:left; vertical-align:top; }
+  th { background:#eef1f5; font-weight:600; }
+  tr:nth-child(even) td { background:#fafbfc; }
+  .section { padding:18px 22px; border-bottom:1px solid #eceff2; }
+  .meta-line { color:#5b6472; font-size:13px; margin-bottom:10px; }
+  .badge { display:inline-block; padding:3px 10px; border-radius:12px; font-weight:600; font-size:13px; white-space:nowrap; }
+  .badge-GREEN   { background:#e4f6e8; color:#1e7a34; }
+  .badge-YELLOW  { background:#fff6d8; color:#8a6d00; }
+  .badge-ORANGE  { background:#ffe9d6; color:#a05200; }
+  .badge-RED     { background:#fde3e1; color:#b3261e; }
+  .badge-UNKNOWN { background:#ececec; color:#555555; }
+  .card { border:2px solid #d9b94a; background:#fffbea; border-radius:10px; padding:14px 16px; margin:16px 0; }
+  .card .badge { font-size:14px; }
+  .hotlines { font-weight:600; }
+  .muted { color:#6b7280; font-size:12.5px; }
+  .open-flag { color:#b3261e; font-size:12px; }
+  .footer { padding:16px 22px; font-size:12.5px; color:#6b7280; text-align:center; }
+  a { color:#1757c4; }
+  .pending { background:#fdf4e7; color:#8a5a00; font-size:11px; padding:1px 5px; border-radius:4px; }
+
+  @media (prefers-color-scheme: dark) {
+    body { background:#111418; color:#e7e9ec; }
+    .wrap { background:#1a1e24; }
+    .section { border-bottom:1px solid #2a2f37; }
+    th, td { border-color:#2a2f37; }
+    th { background:#232832; }
+    tr:nth-child(even) td { background:#1e222a; }
+    .meta-line, .muted, .footer { color:#9aa4b2; }
+    .card { background:#2a2514; border-color:#cda53c; }
+    a { color:#7db0ff; }
+    .badge-GREEN   { background:#163a22; color:#7fe3a0; }
+    .badge-YELLOW  { background:#3a3012; color:#f2d270; }
+    .badge-ORANGE  { background:#3a2512; color:#f2a670; }
+    .badge-RED     { background:#3a1715; color:#f29892; }
+    .badge-UNKNOWN { background:#2a2d31; color:#c7cbd1; }
+  }
+
+  @media print {
+    body { background:#ffffff; }
+    .wrap { max-width:100%; }
+    @page { size: A4; margin: 14mm 12mm; }
+    .section { break-inside: avoid; page-break-after: auto; }
+    h2 { page-break-before: always; }
+    .section:first-of-type h2, .card { page-break-before: avoid; }
+    table { page-break-inside: auto; }
+    tr { page-break-inside: avoid; }
+    thead { display: table-header-group; } /* repeat table headers on each printed page */
+    a { color:#1a1a1a; text-decoration: underline; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- EMERGENCY CARD -- always first -->
+  <div class="pad">
+    <div class="card">
+      <span class="badge badge-{{ emergency_card.colour }}">{{ badge_icon[emergency_card.colour] }} {{ badge_label[emergency_card.colour] }}</span>
+      <p style="margin-top:8px;"><strong>{{ emergency_card.now_th }}</strong></p>
+      <p>ทำตอนนี้: {{ emergency_card.do_th }}</p>
+      <p class="hotlines">สายด่วน:
+        {% for h in emergency_card.hotlines %}{{ h.number }} ({{ h.label_th }}){{ ", " if not loop.last }}{% endfor %}
+      </p>
+      <p class="muted">⚠ ไม่ใช่ประกาศทางการ</p>
+    </div>
+
+    <h1>{{ meta.title_th }}</h1>
+    <div class="meta-line">{{ meta.round_label_th }} &middot; ข้อมูลช่วง {{ meta.window_from }}–{{ meta.window_to }} น. ({{ meta.timezone }}) &middot; ส่งเมื่อ {{ meta.generated_at }}</div>
+
+    <p>
+      <span class="badge badge-{{ status_header.badge.key }}">{{ status_header.badge.icon }} {{ status_header.badge.label_th }}</span>
+      &nbsp;{{ status_header.headline_th }}
+      <span class="muted">(เหตุผล: {{ status_header.reason_code }})</span>
+    </p>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="section">
+    <h2>สรุปสถานการณ์</h2>
+    {% for p in summary.paragraphs_th %}<p>{{ p }}</p>{% endfor %}
+    <p><strong>{{ summary.watch_window_th }}</strong></p>
+  </div>
+
+  <!-- MAIN POND -->
+  <div class="section">
+    <h2>บึงหลัก (Z0)</h2>
+    <table>
+      <tbody>
+        <tr><th style="width:34%">สถานี</th><td>{{ main_pond.station.code }} — {{ main_pond.station.name_th }} ({{ main_pond.station.agency }})</td></tr>
+        <tr><th>ค่าล่าสุด</th><td>{{ main_pond.station.latest.value }} {{ main_pond.station.latest.unit }} @ {{ main_pond.station.latest.observed_at }} <span class="muted">[{{ main_pond.station.latest.tag }}]</span></td></tr>
+        <tr><th>สถานะ</th><td><span class="badge badge-{{ main_pond.station.status.key }}">{{ main_pond.station.status.icon }} {{ main_pond.station.status.label_th }}</span></td></tr>
+        <tr><th>เทรนด์</th><td>{{ main_pond.trend.arrow }} {{ main_pond.trend.value }} (Δ{{ main_pond.trend.delta_cm }} ซม., {{ main_pond.trend.window_from }}→{{ main_pond.trend.window_to }})</td></tr>
+        <tr><th>ช่องว่างถึงเกณฑ์</th><td>เตือน {{ main_pond.headroom.to_warning_cm }} ซม. / วิกฤต {{ main_pond.headroom.to_critical_cm }} ซม.</td></tr>
+        <tr><th>เทียบรอบก่อน</th><td>
+          {% if main_pond.continuity.previous_report_id %}
+            Δ {{ main_pond.continuity.delta_since_previous_cm }} ซม. ตั้งแต่รอบก่อน &middot; เทรนด์: {{ main_pond.continuity.trend_change }}
+          {% else %}
+            ไม่มีรอบก่อนให้เทียบ — {{ main_pond.continuity.reason_if_null }}
+          {% endif %}
+        </td></tr>
+        <tr><th>ETA ถึงเกณฑ์ <span class="pending">PROPOSAL PROP-FLOOD-02</span></th><td>
+          {{ main_pond.eta.status }}{% if main_pond.eta.refusal_reason %} ({{ main_pond.eta.refusal_reason }}){% endif %}
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- WATCH SECTIONS -->
+  {% for sec in watch_sections %}
+  <div class="section">
+    <h2>{{ sec.title_th }}</h2>
+    <table>
+      <thead>
+        <tr><th>รหัส</th><th>ชื่อสถานี (ทางการ)</th><th>ค่าล่าสุด</th><th>สถานะ</th><th>เทรนด์</th><th>ช่องว่างถึงเกณฑ์</th><th>แผนที่/แหล่งข้อมูล</th></tr>
+      </thead>
+      <tbody>
+        {% for r in sec.rows %}
+        <tr>
+          <td>{{ r.code }}</td>
+          <td>{{ r.name_th }}
+            {% if r.related_pump %}<div class="muted">ปั๊ม: {% for rp in r.related_pump %}<a href="{{ rp.link.url }}">{{ rp.id }}</a>{% if rp.link.link_status == "OPEN" %} <span class="open-flag">OPEN{% if rp.link.reason %} — {{ rp.link.reason }}{% endif %}</span>{% endif %}{{ ", " if not loop.last }}{% endfor %}</div>{% endif %}
+          </td>
+          <td>{{ r.latest.value }} {{ r.latest.unit }}<div class="muted">{{ r.latest.observed_at }}</div></td>
+          <td><span class="badge badge-{{ r.status.key }}">{{ r.status.icon }} {{ r.status.label_th }}</span></td>
+          <td>{{ r.trend.arrow }} {{ r.trend.value }}<div class="muted">Δ{{ r.trend.delta_cm }} ซม., {{ r.trend.window_from }}→{{ r.trend.window_to }}</div></td>
+          <td>เตือน {{ r.headroom.to_warning_cm }}<br>วิกฤต {{ r.headroom.to_critical_cm }}</td>
+          <td><a href="{{ r.links.map.url }}">แผนที่</a> &middot; <a href="{{ r.links.source.url }}">แหล่งข้อมูล</a>
+            {% if r.links.map.link_status == "OPEN" or r.links.source.link_status == "OPEN" %}<div class="open-flag">OPEN</div>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endfor %}
+
+  <!-- PUMPS -->
+  <div class="section">
+    <h2>สถานีสูบน้ำ</h2>
+    <table>
+      <thead><tr><th>รหัส</th><th>ชื่อสถานี</th><th>ความจุ (ลบ.ม./วินาที)</th><th>เครื่อง</th><th>สถานะ</th><th>ลิงก์สถานี</th></tr></thead>
+      <tbody>
+        {% for p in pumps %}
+        <tr>
+          <td>{{ p.code }}</td>
+          <td>{{ p.name_th }}</td>
+          <td>{{ p.capacity_cms.value }} <span class="muted">[{{ p.capacity_cms.tag }}]</span></td>
+          <td>{{ p.units }}</td>
+          <td><span class="badge badge-{{ p.status.key }}">{{ p.status.icon }} {{ p.status.label_th }}</span><div class="muted">{{ p.never_means }}</div></td>
+          <td><a href="{{ p.link.url }}">สถานีสูบน้ำ</a>{% if p.link.link_status == "OPEN" %}<div class="open-flag">OPEN — {{ p.link.reason }}</div>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- UPSTREAM -->
+  <div class="section">
+    <h2>น้ำเหนือ/ป่าสัก</h2>
+    <table>
+      <thead><tr><th>รหัส</th><th>ชื่อ</th><th>หน่วยงาน</th><th>ค่า</th><th>% ความจุ</th><th>เทรนด์</th><th>ลิงก์</th></tr></thead>
+      <tbody>
+        {% for u in upstream %}
+        <tr>
+          <td>{{ u.code }}</td>
+          <td>{{ u.name_th }}</td>
+          <td>{{ u.agency }}</td>
+          <td>{{ u.value.value }} {{ u.value.unit }} <span class="muted">[{{ u.value.tag }}]</span></td>
+          <td>{% if u.percent_capacity and u.percent_capacity.value is not none %}{{ u.percent_capacity.value }}%{% else %}—{% endif %}</td>
+          <td>{{ u.trend.arrow }} {{ u.trend.value }}</td>
+          <td><a href="{{ u.link.url }}">แหล่งข้อมูล</a>{% if u.link.link_status == "OPEN" %}<div class="open-flag">OPEN</div>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- WEATHER -->
+  <div class="section">
+    <h2>ฝนและอากาศ</h2>
+    <table>
+      <thead><tr><th>หน่วยงาน</th><th>ออกเมื่อ</th><th>พื้นที่ครอบคลุม</th><th>หัวข้อ</th><th>ลิงก์</th></tr></thead>
+      <tbody>
+        {% for w in weather %}
+        <tr>
+          <td>{{ w.agency }}</td>
+          <td>{{ w.issued_at }}</td>
+          <td>{% if w.coverage_pct and w.coverage_pct.value is not none %}{{ w.coverage_pct.value }}%{% else %}— [{{ w.coverage_pct.tag }}]{% endif %}</td>
+          <td>{{ w.headline_th }}</td>
+          <td>{% if w.link.url %}<a href="{{ w.link.url }}">แหล่งข้อมูล</a>{% else %}—{% endif %}{% if w.link.link_status == "OPEN" %}<div class="open-flag">OPEN</div>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SYSTEM RISK -->
+  <div class="section">
+    <h2>สรุปความเสี่ยงเชิงระบบ</h2>
+    <table>
+      <thead><tr><th>ปัจจัย</th><th>สถานะ</th><th>เทรนด์</th></tr></thead>
+      <tbody>
+        {% for s in system_risk %}
+        <tr>
+          <td>{{ s.factor_th }}</td>
+          <td><span class="badge badge-{{ s.colour.key }}">{{ s.colour.icon }} {{ s.colour.label_th }}</span></td>
+          <td>{{ s.trend }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p><strong>คำตัดสินรอบนี้:</strong> {{ decision.why_sent_th }}</p>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="section">
+    <h2>สิ่งที่ควรทำ 6–12 ชม. ข้างหน้า</h2>
+    <table>
+      <thead><tr><th>ลำดับ</th><th>เตรียมอะไร</th><th>เตรียมอย่างไร</th><th>เมื่อไรขยับขั้นถัดไป</th><th>แหล่ง</th></tr></thead>
+      <tbody>
+        {% for a in actions %}
+        <tr>
+          <td>{{ a.order }}</td>
+          <td>{{ a.what_th }}</td>
+          <td>{{ a.how_th }}</td>
+          <td>{{ a.trigger_next }}</td>
+          <td>{{ a.source_tag }}{% if a.official_ref %} {{ a.official_ref|join(', ') }}{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TECHNICAL -->
+  <div class="section">
+    <h2>รายละเอียดเชิงเทคนิค</h2>
+    <p>สูตรเทรนด์: <code>{{ technical.trend_formula }}</code></p>
+    <p>สูตรช่องว่างถึงเกณฑ์: <code>{{ technical.headroom_formula }}</code></p>
+    <p>สูตร ETA (PROPOSAL): <code>{{ technical.eta_formula }}</code></p>
+    <table>
+      <thead><tr><th>แหล่งข้อมูล</th><th>อายุข้อมูลสูงสุด (ชม.)</th></tr></thead>
+      <tbody>
+        {% for f in technical.freshness_rules %}
+        <tr><td>{{ f.source_id }}</td><td>{{ f.max_age_hours }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="muted">ข้อจำกัด: {{ technical.limits|join(' · ') }}</p>
+  </div>
+
+  <!-- SOURCES -->
+  <div class="section">
+    <h2>แหล่งข้อมูล</h2>
+    <table>
+      <thead><tr><th>แหล่ง</th><th>หน่วยงาน</th><th>ลิงก์</th><th>ดึงเมื่อ</th></tr></thead>
+      <tbody>
+        {% for s in sources %}
+        <tr>
+          <td>{{ s.source_id }}</td>
+          <td>{{ s.agency }}</td>
+          <td>{% if s.url %}<a href="{{ s.url }}">เปิด</a>{% else %}—{% endif %}</td>
+          <td>{{ s.retrieved_at }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ANCHOR -->
+  <div class="section">
+    <h2>FloodConnect anchor</h2>
+    <table>
+      <tbody>
+        <tr><th style="width:34%">kg_sha256</th><td>{{ anchor.kg_sha256 }}</td></tr>
+        <tr><th>province</th><td>{{ anchor.province }} <span class="muted">[{{ anchor.province_tag }}]</span></td></tr>
+        <tr><th>sub_basin</th><td>{{ anchor.sub_basin }}</td></tr>
+        <tr><th>station_ids</th><td>{{ anchor.station_ids|join(', ') }}</td></tr>
+        <tr><th>method</th><td>{{ anchor.method }}</td></tr>
+        <tr><th>model_version</th><td>{{ anchor.model_version }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <strong>{{ disclaimer }}</strong>
+  </div>
+
+</div>
+</body>
+</html>

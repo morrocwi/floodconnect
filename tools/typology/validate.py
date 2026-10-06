@@ -46,7 +46,7 @@ from tools.backtest.outside_calibrated_range import (  # noqa: E402
 )
 
 CLOSED_EDGE_VOCAB = {"flows_to", "owned_by", "operates", "decides", "warns", "supplies",
-                      "reports_to", "part_of", "escalates_to", "precedes"}
+                      "reports_to", "part_of", "escalates_to", "precedes", "rain_gauge_for"}
 # escalates_to (added 2026-09-28) -- community_dag.py's own forward-only household->
 # buddy_cell->zone->support/internal_safe->egress->external_safe edges, imported from
 # public/main 5364c23 and carried through unchanged; layer ordering is enforced by
@@ -57,6 +57,11 @@ CLOSED_EDGE_VOCAB = {"flows_to", "owned_by", "operates", "decides", "warns", "su
 # (flows_to=water, escalates_to=self-help social-network layer with its own KIND_LAYER
 # numbers, everything else means agency/resource relationships). Acyclicity is enforced
 # below (rule_precedes_acyclic), a schema error, never an OPEN gap.
+# rain_gauge_for (added 2026-10-06, l0_check.py's L0 daily check) -- declares which
+# thaiwater rain_24h station a Z0 gauge node's own point reads as ITS rain reading
+# (typology/edges/rain_gauge_for.yaml), per the founder's KG-only ruling: a rain gauge
+# is never picked by nearest-distance/radius at answer time, only by this declared edge.
+
 CLAIM_EDGE_KINDS = {"decides", "warns", "supplies", "reports_to", "part_of"}
 VALID_TAG_PREFIXES = ("VERIFIED", "MEASURED", "RELAYED", "INSTINCT", "OPEN")
 

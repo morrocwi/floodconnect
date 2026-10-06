@@ -1,8 +1,8 @@
 {
   "$comment": "Machine-readable capability map for FloodConnect. For a strong AI that can parse JSON and wants to know exactly what exists, what is live-vs-local-vs-forecast-vs-hindcast, and what is legacy. A weak/browse-only AI should read llms.txt instead -- this file assumes you can read docs/EVIDENCE.md and the cited source files, not just this one.",
   "project": "FloodConnect",
-  "pyproject_version": "0.1.4",
-  "note_on_version": "pyproject.toml declares 0.1.4 -- v0.1.4 adds the KG-first index (output/kg_index/), the locate/floodconnect_locate tool, and kg_anchor on every answer (see CHANGELOG.md and .ai/claims/ for the authoritative scope, never 'doc-only'). Check `git tag` / the GitHub Releases page for the actually-released tag; do not trust this field alone.",
+  "pyproject_version": "0.1.5",
+  "note_on_version": "pyproject.toml declares 0.1.5 -- v0.1.4 added the KG-first index (output/kg_index/), the locate/floodconnect_locate tool, and kg_anchor on every answer; v0.1.5 is the MVP-close release (Jev Sandwich KG-only answer path, the GOV API MANUAL, the vendor-neutral skill/ package) -- see CHANGELOG.md and .ai/claims/ for the authoritative scope, never 'doc-only'. Check `git tag` / the GitHub Releases page for the actually-released tag; do not trust this field alone.",
   "kg_first": {
     "_purpose": "M4, founder ruling 2026-10-05: 'KG-first that AIs cannot skip' -- the step a chat AI without tools must take before answering any FloodConnect question.",
     "index": "output/kg_index/index.json",

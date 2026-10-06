@@ -59,6 +59,33 @@ def _insert_wl_ssb08(conn, observed_at_utc, status="CRITICAL", value=0.8):
     store.insert_observation(conn, **row)
 
 
+# M8 Jev Sandwich fixture companion: `dual_state.
+# current_local_state` is now the sandwich's OWN Z0 reading, never the legacy
+# nationwide-radius classifier alone (see `kb._answer_next_action`'s own docstring
+# note) -- a scenario that wants `current_local_state` to decide RED/YELLOW must
+# therefore also give the sandwich's own Z0 (Sammakorn's declared station,
+# `gauge:bma_watermap:WL.SMK.01`) a matching reading, not only the pre-M8
+# `thaiwater_canal_waterlevel`/WL.SSB.08 row these tests already insert (which the
+# sandwich's `_SANDWICH_SOURCE_BY_PREFIX` cannot read at all -- a different source
+# entirely). Mirrors `REAL_SSB08_CRITICAL_ROW`'s own real shape
+# (`tests/test_m8_safety_round.py`), at the SAME coordinates/time this file's own
+# legacy fixture already uses.
+REAL_WL_SMK01 = dict(
+    source_id="bma_watermap", station_code="WL.SMK.01",
+    station_name="จุดวัดบึงรับน้ำหมู่บ้านสัมมากร ตอนสถานีสูบน้ำบึงที่ 2 คลองบ้านม้า 2",
+    lat=13.76676, lon=100.67784, variable="canal_water_level_m", value=0.5, unit="m",
+    fetched_at_utc="2026-10-02T11:39:47.180416+00:00",
+    warning=0.35, critical=0.44, bank=None, status="วิกฤต",
+    trust_tier="official_telemetry",
+)
+
+
+def _insert_wl_smk01_critical(conn, observed_at_utc):
+    row = dict(REAL_WL_SMK01)
+    row["observed_at_utc"] = observed_at_utc
+    store.insert_observation(conn, **row)
+
+
 # ---------------------------------------------------------------------------
 # 1. Stale -> UNKNOWN (the exact founder repro, pinned to a deterministic clock)
 # ---------------------------------------------------------------------------
@@ -177,6 +204,7 @@ def test_cli_offline_flag_skips_refresh_and_still_decides_from_fresh_row(conn, m
     fresh_observed_at = (datetime.datetime.now(datetime.timezone.utc)
                           - datetime.timedelta(hours=2)).isoformat()
     _insert_wl_ssb08(conn, fresh_observed_at)
+    _insert_wl_smk01_critical(conn, fresh_observed_at)
     db_path = Path(conn.execute("PRAGMA database_list").fetchone()[2])
     monkeypatch.setattr(kb, "DB_PATH", db_path)
 
@@ -242,6 +270,7 @@ def test_mcp_floodconnect_answer_core_offline_path(conn, monkeypatch):
     fresh_observed_at = (datetime.datetime.now(datetime.timezone.utc)
                           - datetime.timedelta(hours=2)).isoformat()
     _insert_wl_ssb08(conn, fresh_observed_at)
+    _insert_wl_smk01_critical(conn, fresh_observed_at)
     db_path = Path(conn.execute("PRAGMA database_list").fetchone()[2])
     monkeypatch.setattr(kb, "DB_PATH", db_path)
 
@@ -249,7 +278,7 @@ def test_mcp_floodconnect_answer_core_offline_path(conn, monkeypatch):
     monkeypatch.setattr(kb, "_refresh_relevant_sources",
                          lambda *a, **kw: called.__setitem__("refresh", True) or [])
 
-    out = mcp_mod.floodconnect_answer_core("sammakorn", offline=True)
+    out = mcp_mod.floodconnect_answer_core("sammakorn", offline=True, write_gap_log=False)
     assert called["refresh"] is False
     assert out["refresh"] is None
     assert out["next_action"]["dual_state"]["current_local_state"] == "RED"
@@ -328,5 +357,8 @@ def test_mcp_floodconnect_answer_core_default_refreshes_unless_offline(conn, mon
     monkeypatch.setattr(kb, "_refresh_relevant_sources",
                          lambda *a, **kw: called.__setitem__("refresh", True) or [])
 
-    mcp_mod.floodconnect_answer_core("sammakorn")  # no refresh=, no offline=
+    # write_gap_log=False: this test's own concern is the refresh-by-default
+    # wiring, not gap logging, and `kb.HERE` is unpatched here (see
+    # test_floodconnect_mcp.py's own tests for the default-on gap-log case).
+    mcp_mod.floodconnect_answer_core("sammakorn", write_gap_log=False)  # no refresh=, no offline=
     assert called["refresh"] is True

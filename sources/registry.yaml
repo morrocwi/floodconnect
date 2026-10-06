@@ -549,6 +549,57 @@ sources:
     contract_test: MISSING
     health_check: "not yet captured this check -- see tools/capture_source_sample.py"
 
+  - id: bma_station_series
+    agency:
+      th: "สำนักการระบายน้ำ กรุงเทพมหานคร"
+      en: "Department of Drainage and Sewerage, BMA"
+    url: "https://weather.bangkok.go.th/water/StationDetail?id={water_id}"
+    method: "GET, same URL/id space as bma_station_detail (confirmed 1:1 join) and the
+      SAME page -- this is a separate source entry because the CALL PATTERN is
+      different: bma_station_detail rotates one water_id/run across the whole id space
+      for the admin-form thresholds; bma_station_series is called for exactly ONE named
+      water_id per invocation (the Jev Sandwich's Z0, or the first toward-us BMA middle
+      station) to read that station's inline history series for a trend readout
+      (`parsers.parse_bma_station_series`, M8 2026-10-05). `collect_bma_station_series`
+      refuses (no network call) when no water_id is given -- it never rotates/guesses an
+      id. ONE GET per call, no retry, browser UA + Referer
+      https://weather.bangkok.go.th/water/, same headers as bma_station_detail."
+    cadence: "the page's own history series updates ~every 5 minutes (MEASURED,
+      2026-10-05 live capture: consecutive points 300s apart); this source itself has NO
+      schedule -- caller-run, on demand, once per sandwich decision that needs a Z0/
+      middle trend, never a background poll"
+    format: html (server-rendered; parsed with regex, see parsers.parse_bma_station_series)
+    auth: none
+    licence_status: {text: "RELAYED -- same page, same posture as bma_watermap/
+      bma_station_detail -- no dedicated licence text found.", unresolved: true}
+    trust_tier: official_telemetry
+    host_rule:
+      max_requests_per_run: 1
+      notes: "weather.bangkok.go.th BMA-host rule -- exactly 1 GET per call (one named
+        water_id, no retry), matching tests/test_registry.py::
+        test_bma_hosts_are_capped_at_one_request_per_run. NOT part of any `--all` sweep
+        (collect.py's DORMANT_NOT_IN_ALL) and NOT in collect.ANSWER_SOURCES -- it is
+        called only from the sandwich path for one specific station, never a batch. An
+        in-process memo (collect._BMA_STATION_SERIES_MEMO) keyed by water_id and the
+        series' own ~5-minute step avoids a second GET for the same station inside one
+        answer-serving process. A non-200/network error is skipped, not retried. No
+        login/write path is ever called (read-only, same posture as bma_station_detail)."
+    last_status: {date: "2026-10-05", http: null, note: "Not yet live-fetched by
+      collect.py itself -- the real series this source's parser/tests were built and
+      validated against (WL.SMK.01/id284, WL.SSB.12/id51) came from already-captured
+      real samples (see tests/fixtures/bma_station_detail/*.sidecar.json for
+      provenance), not a GET this collector made. First real `collect_bma_station_series`
+      run is still OPEN; update this field then, per this workspace's
+      sync-all-canonical-docs discipline."}
+    variables: [station_level_history_m]
+    kind: api
+    fetch_mode: on_demand
+    retry: none
+    schema_version: 1
+    imported_from: local
+    contract_test: MISSING
+    health_check: "not yet captured this check -- see tools/capture_source_sample.py"
+
   - id: governor_shared_flooded_roads
     agency:
       th: "สำนักงานผู้ว่าราชการกรุงเทพมหานคร (แชร์ต่อ)"

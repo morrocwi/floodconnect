@@ -551,6 +551,50 @@ def cmd_history(args) -> int:
 # just a dispatch, per the task's own instruction)
 # ---------------------------------------------------------------------------
 
+def cmd_check(args) -> int:
+    """Delegates to l0_check.py (TRIGGERS.md section 1/2/6) -- exactly 3 keyless
+    sources, one-line QUIET/ESCALATE output. Logic lives in that module so a caller
+    without this repo's full dependency set can still import/run it on its own.
+
+    live run, 2026-10-06: `check` fired ESCALATE (CAP-SEV, Z0-RISE)
+    but, until this fix, no `watch_update`/`alert_event` was ever emitted unless the
+    caller ALSO separately ran `kb.py watch` -- a plain `check` left the real risk
+    point entirely unrecorded. Any ESCALATE now ALSO applies the SAME already-
+    computed `l0_check.check()` result (never a second, duplicate set of live GETs --
+    `watchlist.apply_watch_from_l0_result`, not `watchlist.run_watch`) through the
+    cross-session WATCHLIST state machine, writing the local `watchlist.csv`/
+    `watch_log.csv`/`.ics` row as a side effect -- `check`'s own printed line/--json
+    output (the token-budget-gated one-liner) is UNCHANGED, this never
+    prints the watch_update block itself (that remains `kb.py watch`'s own job). A
+    failed watchlist write is swallowed (never crashes the cheap L0 check it rides
+    on) but is never silent: `data/watch_log.csv`'s own row (or its absence) is the
+    record, per this repo's retain-every-run discipline."""
+    import json as _json
+    import l0_check
+    result = l0_check.check(args.at)
+    if result.get("flag") == "ESCALATE":
+        try:
+            import watchlist
+            watchlist.apply_watch_from_l0_result(args.at, result)
+        except Exception:  # pragma: no cover - defensive, must never break `check`
+            pass
+    if getattr(args, "json", False):
+        print(_json.dumps(l0_check._compact_check_json(result), ensure_ascii=False,
+                           separators=(",", ":")))
+    else:
+        print(result["line"])
+    return 0
+
+
+def cmd_watch(args) -> int:
+    """Delegates to watchlist.py (WATCHLIST.md sections 1-9, TRIGGERS.md sections
+    3-5): runs the L0 check, then the cross-session watchlist state machine
+    (ACTIVE/COOLING/CLOSED), then writes the local watchlist store and emits the
+    `fc.watch_update.v2` block (ops + alert_events + card + brief)."""
+    import watchlist
+    return watchlist.cmd_watch(args)
+
+
 def cmd_accountability(args) -> int:
     sys.path.insert(0, str(HERE))
     from tools.kg import accountability
@@ -990,10 +1034,12 @@ def _resolve_area(at: str) -> tuple[str | None, float, float]:
             f"--at must be 'lat,lon' or one of {sorted(_ANSWER_AREAS)}") from e
 
 
+# fix (token budget, fix (compact jev_decision)): tightened further -- unreferenced by any test
+# or doc for its exact text (grep -rn "RUN_REFRESH_ACTION\|do not pass '--offline'"
+# tests/ found nothing); same meaning (how to get a real refreshed number).
 RUN_REFRESH_ACTION = (
-    "run 'floodconnect answer --at <area>' (refresh is the default; do not pass "
-    "'--offline') -- every number is computed locally, on your own network, from "
-    "your own refresh."
+    "run 'floodconnect answer --at <area>' (refresh is default) -- computed "
+    "locally from your own refresh."
 )
 
 
@@ -1129,16 +1175,19 @@ def _sources_summary_note(sources_used: list, relevance: dict[str, int]) -> str:
     already short), or the top-N by this answer's relevance (`_source_relevance_counts`) plus
     a `--verbose`/`verbose=true` pointer and a count of how many were left out, when there
     are more."""
+    # fix (token budget, fix (compact jev_decision)): tightened wording further -- unreferenced
+    # by any test (grep -rn "แหล่งในรอบนี้" tests/ found nothing); same information
+    # (source count, names, remaining count, --verbose pointer), fewer tokens.
     names = [s for s in sources_used if s]
     if not names:
-        return "ใช้ข้อมูลจาก 0 แหล่งในรอบนี้: (none in store yet)."
+        return "0 แหล่งในรอบนี้ (none in store yet)."
     if len(names) <= _TOP_N_SOURCES_IN_SUMMARY:
-        return f"ใช้ข้อมูลจาก {len(names)} แหล่งในรอบนี้: {', '.join(names)}."
+        return f"{len(names)} แหล่งในรอบนี้: {', '.join(names)}."
     ranked = sorted(names, key=lambda n: relevance.get(n, 0), reverse=True)
     top = ranked[:_TOP_N_SOURCES_IN_SUMMARY]
     remaining = len(names) - len(top)
-    return (f"ใช้ข้อมูลจาก {len(names)} แหล่งในรอบนี้ (top {len(top)} relevant): "
-            f"{', '.join(top)} (+{remaining} more; see --verbose).")
+    return (f"{len(names)} แหล่งในรอบนี้ (top {len(top)}): "
+            f"{', '.join(top)} (+{remaining}, --verbose).")
 
 
 def _answer_state(lat: float, lon: float, radius_km: float = 3.0,
@@ -1327,7 +1376,7 @@ def _answer_state(lat: float, lon: float, radius_km: float = 3.0,
     if verbose:
         notes = overall.get("notes", [])
     else:
-        # An earlier check fix: build the one remaining note straight from the structured
+        # An earlier pass fix: build the one remaining note straight from the structured
         # `sources_used` list (never by re-parsing readout.py's own note text -- see
         # `_sources_summary_note`'s docstring) instead of capping each of
         # `overall.notes` in place; the status/stale/contradiction sentences those notes
@@ -1370,7 +1419,7 @@ def _answer_state(lat: float, lon: float, radius_km: float = 3.0,
     # exist in `evidence` yet the state still classifies UNKNOWN) -- see that function
     # for the override.
     #
-    # fix (2026-10-04, regate defect 1 MED): a deciding row whose status carries NO
+    # fix (2026-10-04): a deciding row whose status carries NO
     # colour at all -- a sensor/equipment fault (`live_water_level.SENSOR_FAULT_STATUS_TH`,
     # e.g. "ขัดข้อง") or an agency word with no threshold mapping
     # (`floodconnect_model.UNKNOWN_LIKE_STATUS`, e.g. NO_THRESHOLD) -- used to still count
@@ -1707,7 +1756,9 @@ def _accountability_fallback(at: str, refused_text: "str | None" = None,
     else:
         # Token-budget trim (non-verbose default) -- the long "why this is a fallback"
         # prose is a `--verbose` detail, not something a default answer needs to repeat.
-        note = "INSTINCT fallback (เขต/สำนักตามทะเบียน, ไม่ใช่ graph lookup) -- see --verbose"
+        # fix (token budget, fix (compact jev_decision)): tightened further -- unreferenced by any
+        # test/doc (grep -rn "INSTINCT fallback" tests/ found nothing).
+        note = "INSTINCT fallback -- see --verbose"
         # FIX C (2026-10-04): a default-mode caller (person or AI) used to get the bare
         # internal registry ids ("AG_DIST_SS", "AG_DDS") here -- not actionable by
         # anyone who doesn't already know this repo's own node-id scheme. The compact
@@ -1900,9 +1951,16 @@ UNKNOWN_ACTION_TH = (
 # the REAL PROP-FLOOD-06 tier engine (tools/backtest/compute_prop_flood_06_sammakorn.py,
 # the only place this repo actually computes an L5 tier) did not itself report L5 for this
 # point this check. Contains none of the four banned resident-facing words.
+# Fix (founder ruling 2026-10-06, "official order is a FLOOR, not a ceiling"):
+# "ติดตามต่อเนื่อง" (keep monitoring) alone reads as deferring to an official
+# announcement that may never come, or may come late -- exactly what a RED
+# station reading must never wait for. The move-to-safety line plus the
+# mandated no-order phrase (same wording `advice/card.py._NO_OFFICIAL_ORDER_PHRASE`
+# carries) is now added; the station-vs-L5 caveat itself is unchanged.
 STATION_RED_NEUTRAL_ACTION_TH = (
     "สถานีน้ำใกล้จุดนี้รายงานเกินเกณฑ์ปกติ (ระดับสถานีเท่านั้น ไม่ใช่ระดับ L5 ของ "
-    "PROP-FLOOD-06) -- ติดตามต่อเนื่อง ดูผู้รับผิดชอบ/เบอร์ฉุกเฉินด้านล่าง"
+    "PROP-FLOOD-06) -- ออกจากพื้นที่เสี่ยงทันที ยังไม่มีคำสั่งทางการ — อย่ารอ "
+    "ดูผู้รับผิดชอบ/เบอร์ฉุกเฉินด้านล่าง"
 )
 
 _L5_HTML_LI_RE = re.compile(r"<li>(.*?)</li>", re.S)
@@ -2023,7 +2081,7 @@ def _classify_current_local_state(state_answer: dict | None) -> str:
         # every fresh row this check was a sensor/equipment fault, or carried no
         # agency threshold at all (e.g. NO_THRESHOLD) -- no trustworthy basis for a
         # colour exists, which is UNKNOWN, never a fabricated YELLOW/GREEN (fixed
-        # 2026-10-04, regate finding #2: NO_THRESHOLD used to be folded into
+        # 2026-10-04: NO_THRESHOLD used to be folded into
         # normal_like/GREEN here with no basis at all).
         return "UNKNOWN"
 
@@ -2224,8 +2282,27 @@ def _route_mode_degradation(doc: dict, path: list[str]) -> list[dict]:
     return out
 
 
+# fix (token budget, fix (compact jev_decision)): short agency-code labels for the NON-VERBOSE
+# `who_to_call.hotlines` line -- same short-code pattern `advice/card.py`'s own
+# `_SHORT_HOTLINE_LABEL` already uses for the same reason (budget), reused here as
+# a second table rather than importing `advice.card` into `kb.py` (would be a
+# circular import -- `advice/card.py` already imports `kb` lazily). The NUMBER is
+# never dropped (docs/AI_TIERS.md's T2 rule: "never relay a shortened subset" is
+# about which NUMBERS are present, not label wording) -- every one of the 2-4
+# numbers this function ever returns is still present on every call; only the
+# descriptive Thai label text is shortened in non-verbose mode. `verbose=True`
+# keeps the full descriptive label, unchanged.
+_SHORT_HOTLINE_LABEL = {
+    "1669": "สพฉ.",
+    "1784": "ปภ.",
+    "1555": "กทม.",
+    "1130": "กฟน.",
+}
+
+
 def _who_to_call(accountability_answer: dict | None,
-                  lat: "float | None" = None, lon: "float | None" = None) -> dict:
+                  lat: "float | None" = None, lon: "float | None" = None,
+                  verbose: bool = True) -> dict:
     """This file's own fixed `HOTLINES_NATIONWIDE` + (Bangkok-only) `HOTLINES_BANGKOK_ONLY`
     -- no new agency/number is added here.
 
@@ -2246,9 +2323,17 @@ def _who_to_call(accountability_answer: dict | None,
     "label_th":...}, ...]` -- same information (every number+label this file's own
     `HOTLINES` constant carries, unchanged, nothing dropped), no key names repeated 4
     times in every single answer. Still unreferenced by any test/doc (checked above),
-    so this shape change is safe."""
+    so this shape change is safe.
+
+    `verbose=False` (token budget): `label_th` is further shortened to
+    `_SHORT_HOTLINE_LABEL` per number -- every number is still present (see that
+    table's own docstring note); `verbose=True` keeps every number's full
+    descriptive label, unchanged."""
     hotlines = HOTLINES_NATIONWIDE + (HOTLINES_BANGKOK_ONLY if _is_bangkok_metro(lat, lon) else ())
-    return {"hotlines": [f"{h['number']} {h['label_th']}" for h in hotlines]}
+    if verbose:
+        return {"hotlines": [f"{h['number']} {h['label_th']}" for h in hotlines]}
+    return {"hotlines": [f"{h['number']} {_SHORT_HOTLINE_LABEL.get(h['number'], h['label_th'])}"
+                          for h in hotlines]}
 
 
 def _answer_next_action(
@@ -2263,6 +2348,7 @@ def _answer_next_action(
     verbose: bool = True,
     refresh_ran: bool = True,
     raw_at: str | None = None,
+    sandwich_answer: "dict | None" = None,
 ) -> dict:
     """Next action / self-help route -- calls community_dag.find_safe_route, the single
     merged route function (design H6: the MCP server's route tool must call this same
@@ -2373,6 +2459,41 @@ def _answer_next_action(
             key=lambda e: e.get("dist_km") if e.get("dist_km") is not None else 1e9)
         dual_state["resolution"] = _deciding_nationwide[0].get("resolution")
         dual_state["dist_km"] = _deciding_nationwide[0].get("dist_km")
+    # fix: when the caller (`build_answer`) hands in the Jev
+    # Sandwich answer, the sandwich decision becomes the ONLY source of
+    # `current_local_state` -- in BOTH directions, never only a raise. Before this
+    # fix, `build_answer`'s own fold (further down this module) only ever RAISED
+    # `current_local_state` to the sandwich's folded colour, so a station merely
+    # within the legacy 10 km radius could keep `current_local_state=RED` sitting
+    # right next to a sandwich `colour: GREEN`/"ปกติ" in the same `dual_state` dict
+    # (MEASURED live on a nationwide sweep). `current_local_state` is now set
+    # from `FOLD_TO_LEGACY[sandwich.colour]` whenever the sandwich's own Z0 reading
+    # is fresh (whichever direction that is -- up OR down from whatever the legacy
+    # classifier above decided), and to `UNKNOWN` whenever Z0 is stale or there was
+    # no Z0 reading at all -- the legacy `_classify_current_local_state` call above
+    # is never used for `dual_state`/`actions` once a `sandwich_answer` is given
+    # (it stays the only classifier for `_trim_evidence`'s own unrelated use,
+    # elsewhere in this module). A caller that does not pass `sandwich_answer` (the
+    # default, `None` -- every pre-M8 direct test of this function) keeps the exact
+    # pre-fix legacy behaviour; `build_answer` always passes it, since
+    # `_answer_sandwich` never raises and degrades to an honest UNKNOWN `colour`
+    # itself on any failure.
+    if sandwich_answer is not None:
+        import floodconnect_model as _fm_next_action
+        if (sandwich_answer.get("z0") or {}).get("fresh"):
+            _sw_colour = sandwich_answer.get("colour")
+            _folded = _fm_next_action.FOLD_TO_LEGACY.get(_sw_colour, "UNKNOWN")
+            dual_state["current_local_state"] = _folded
+            dual_state["colour"] = _sw_colour
+            dual_state["label_th"] = sandwich_answer.get("label_th")
+            _sw_conf = sandwich_answer.get("confidence")
+            if _sw_conf and _sw_conf != "NONE":
+                dual_state["confidence"] = _sw_conf
+            else:
+                dual_state.pop("confidence", None)
+        else:
+            dual_state["current_local_state"] = "UNKNOWN"
+            dual_state.pop("confidence", None)
     current = dual_state["current_local_state"]
     forward = dual_state["forward_hazard"]
     actions: list[dict] = []
@@ -2443,7 +2564,19 @@ def _answer_next_action(
                 "tag": "OPEN",
             })
     elif current == "RED":
-        pf06_record = _real_pf06_record(area_id, now_utc=now_utc)
+        # fix (founder ruling 2026-10-06, KG-only/no-simulation: "ปิดการจำลองโหลดไปเลย"):
+        # `floodconnect_model.SIMULATION_ENABLED` was a documented promise with
+        # nothing actually reading it -- this was the one real gap: PROP-FLOOD-06's
+        # `compute()` (`tools/backtest/compute_prop_flood_06_sammakorn.py`) folds in
+        # `forecast_rain_72h_per_model`, an external rain FORECAST promoter, which is
+        # exactly the modelled/forecast input the flag promises is off by default.
+        # `pf06_record`/`pf06_tier` are now None whenever the flag is False (today's
+        # default) -- the L5 survival-card promotion below simply does not fire;
+        # every other RED action in this function is unaffected (none of them read
+        # PF06 at all).
+        import floodconnect_model as _fm_sim
+        pf06_record = (_real_pf06_record(area_id, now_utc=now_utc)
+                       if _fm_sim.SIMULATION_ENABLED else None)
         pf06_tier = pf06_record.get("tier") if pf06_record else None
         card_html = ""
         _build_page_mod = None
@@ -2653,9 +2786,17 @@ def _answer_next_action(
                         # data -- give no instruction, point at official channels
                         # instead, and never say "ปลอดภัย" here.
                         actions.append({
+                            # Fix (founder ruling 2026-10-06, "official
+                            # order is a FLOOR"): "decide per the official
+                            # announcement" alone used to be the only
+                            # guidance here, which reads as waiting for an
+                            # order that may never come or come late. No
+                            # verified route is still real information (never
+                            # fabricated), but the call line now comes first
+                            # and the official-announcement wording is gone.
                             "action": "ระบบนี้ยังไม่มีข้อมูลเส้นทาง/จุดหมายภายนอกที่ตรวจสอบแล้ว "
-                                      "(ทุกจุดยังเป็น UNKNOWN) -- ตัดสินใจตามประกาศหน่วยงานทางการ "
-                                      "หรือโทร 1784 / 1555",
+                                      "(ทุกจุดยังเป็น UNKNOWN) -- โทร 1784 / 1555 เพื่อขอความช่วยเหลือ "
+                                      "เส้นทางออก อย่ารอประกาศทางการ",
                             "source": "community_dag.find_safe_route "
                                       "(no feasible route found)",
                             "why": route_out.get("reason")
@@ -2730,9 +2871,10 @@ def _answer_next_action(
             # already lives in state.contradiction_count (never dropped, see
             # `_answer_state`), so this note's only job in default mode is to say
             # "go look", not to restate the Thai sentence in full every call.
+            # fix (token budget, fix (compact jev_decision)): tightened further -- unreferenced by
+            # any test/doc (checked), same discipline as `_who_to_call`'s own note.
             notes.append(
-                f"{contradiction_count} contradiction(s) between sources for this point "
-                "-- see state.contradiction_count / readout contradictions (not resolved).")
+                f"{contradiction_count} contradiction(s) -- see state.contradiction_count.")
 
     out = dict(route_out)
     out["dual_state"] = dual_state
@@ -2748,7 +2890,7 @@ def _answer_next_action(
         capped_actions = [{k: v for k, v in act.items() if k not in ("why", "source")}
                            for act in capped_actions]
     out["actions"] = capped_actions
-    out["who_to_call"] = _who_to_call(accountability_answer, lat=lat, lon=lon)
+    out["who_to_call"] = _who_to_call(accountability_answer, lat=lat, lon=lon, verbose=verbose)
     if notes:
         out["notes"] = notes
     return out
@@ -3029,6 +3171,65 @@ def _refresh_relevant_sources(area_id: str | None = None, verbose: bool = False,
             for r in results]
 
 
+def _compact_sandwich(s: dict) -> dict:
+    """Non-verbose shape for `out["sandwich"]` -- same spirit as
+    `_compact_hazard_for_display`/`_compact_source_tags`: the full
+    `_answer_sandwich` dict (steps/why/gate/level/official_tier/eq/mid) measured over
+    budget on a real populated-DB answer (see tests/test_token_budget.py) -- a
+    caller that wants the full decision trail passes `verbose=True`/`--verbose`,
+    unchanged. `colour`/`label_th`/`confidence`/`z0`(trimmed)/`reason`/one fact are
+    the fields `next_action.dual_state`'s own fold already surfaces, kept here too so
+    a non-verbose caller is never worse off than reading `dual_state` alone."""
+    if not isinstance(s, dict):
+        return s
+    out: dict = {"colour": s.get("colour"), "label_th": s.get("label_th")}
+    z0 = s.get("z0")
+    if z0 and not z0.get("fresh", True):
+        # fix (this M8 revision, token budget): the common case (`fresh: true`) is
+        # dropped entirely in compact mode -- a caller with a decided colour has
+        # no need for the resolving station's own id/km (those are verbose-only
+        # detail; `next_action.dual_state` already carries the decided colour). A
+        # STALE Z0 is the one case worth a flag even in compact mode (it is why
+        # the fold never ran -- see `test_stale_z0_reading_never_folds_into_dual_
+        # state`), so that one case alone is kept. Freed margin for the OUTLET-
+        # critical fact the S3 fix now correctly carries through to the
+        # compact answer (facts must never be silently dropped to balance the
+        # budget).
+        out["z0"] = {"fresh": False}
+    if s.get("confidence"):
+        out["confidence"] = s["confidence"]
+    if s.get("reason"):
+        out["reason"] = s["reason"]
+    facts = s.get("facts")
+    if facts:
+        # fix (an earlier pass + token budget, this M8 revision): compact mode used to
+        # re-slice to facts[:1] on top of the already-capped `_SANDWICH_FACTS_CAP`
+        # (2) list -- when the 2 facts were e.g. [OUTLET critical, SAME_SUBBASIN
+        # critical], the re-slice silently dropped whichever one sorted second,
+        # which could be the OUTLET row S3 says must never be silently ignored.
+        # `facts` is already capped upstream (`_SANDWICH_FACTS_CAP`), so no row is
+        # dropped here -- but each row is trimmed to [id, relation] (status_word
+        # and basis are the verbose-only detail; every fact here is already known
+        # RED, and `s.get("colour")` already names the overall colour) to keep
+        # this M8 revision's extra, correctly-surfaced OUTLET fact from pushing the
+        # default answer over its token-budget margin (tests/test_token_budget.py).
+        out["facts"] = [[f[0], f[2]] for f in facts]
+    layers = s.get("layers")
+    if layers:
+        # S1b: the compact answer keeps the layer strip too (e.g. "Z0 green / Z1
+        # yellow / Z2 red / Z3 red"), encoded as ONE 4-character string in the
+        # fixed Z0-Z1-Z2-Z3 order (single-letter codes G/Y/O/R/U) -- MEASURED: a
+        # {"Z0":..,"Z1":..,"Z2":..,"Z3":..} dict costs ~28 tokens even with
+        # single-letter values (JSON key overhead dominates), a plain 4-char
+        # string costs ~7; this M8 revision's extra, correctly-surfaced fields
+        # (the OUTLET fact, this layer strip) must still fit the existing
+        # token-budget margin (tests/test_token_budget.py). `--verbose` keeps the
+        # full `{"Z0": "GREEN", ...}` shape.
+        _L = {"GREEN": "G", "YELLOW": "Y", "ORANGE": "O", "RED": "R", "UNKNOWN": "U"}
+        out["layers"] = "".join(_L.get(layers.get(z), "U") for z in ("Z0", "Z1", "Z2", "Z3"))
+    return out
+
+
 def _compact_refresh_report(report: list[dict]) -> dict:
     """Collapses the full per-source `_refresh_relevant_sources` report to counts plus
     the ids that actually failed (fix, 2026-10-04): the real default
@@ -3044,8 +3245,1246 @@ def _compact_refresh_report(report: list[dict]) -> dict:
     return {"total": len(report), "ok": ok, "skipped": skipped, "failed_ids": failed_ids}
 
 
+# ===========================================================================
+# M8 P3 -- Jev Sandwich answer integration (founder 2026-10-05, "ทางที่ 2 เลย"). `tools/kg/rings.py` gives the KG neighbourhood (Z0 point / Z1-Z2 "middle" /
+# Z3 basin) off the committed kg_index only; this section reads the ACTUAL readings
+# for those ring members out of `data/observations.sqlite` and hands them to
+# `floodconnect_model.sandwich_decision`, which is the one place the ladder logic
+# itself lives (never re-derived here). The middle (Z1/Z2) is read from the DB only
+# when `sandwich_decision` itself reports `needs_middle=True` -- never on every call,
+# per the founder's own "fetch middle only on conflict" rule.
+_SANDWICH_Z3_CAP = 500   # a Z3 DB lookup is a cheap indexed sqlite read, not a network
+                          # call -- this bounds it only against a pathological huge
+                          # sub-basin, never trims the real "ล้นตลิ่ง"/วิกฤต search
+                          # within a normal basin (sub_basin:1002 alone has
+                          # ~317 stations, all of which must stay reachable so a real
+                          # critical reading anywhere in it is never silently dropped
+                          # by an arbitrary small cap)
+_SANDWICH_MIDDLE_CAP = 6
+_SANDWICH_FACTS_CAP = 2
+_SANDWICH_HITS_CAP = 2
+_SANDWICH_LAYER_CAP = 40  # per-ring (Z1/Z2) cap on how many rows the LAYER colour
+                          # itself reads -- a cheap indexed sqlite read per row, bounds
+                          # only a pathological huge ring, never trims a real fresh
+                          # critical reading out of a normal-sized Z1/Z2.
+
+# fix: relation ranks for `_rank_facts` -- upstream-toward-us
+# rows (whatever their exact relation name) always outrank a declared OUTLET, which
+# outranks a same-reach/same-canal/downstream row, which outranks a bare
+# same-sub-basin row; anything else (an unexpected/future relation name) ranks last.
+_FACT_RELATION_RANK = {
+    "UPSTREAM_PATH": 0, "UPSTREAM_CHAIN": 0, "UPSTREAM_REACH": 0,
+    "OUTLET": 1, "OUTLET_MAIN_STEM": 1,
+    "SAME_REACH": 2, "DOWNSTREAM_CHAIN": 2,
+    "SAME_CANAL_DIRECTION_UNKNOWN": 2, "SAME_CODE_FAMILY": 2,
+    "SAME_SUBBASIN": 3,
+}
+
+
+def _rank_facts(rows: list, cap: int) -> list:
+    """fix: merge every candidate row the caller has already
+    read (Z3's own stations, the every-call OUTLET/UPSTREAM_CHAIN read, and -- on a
+    real conflict -- the full toward-us middle read) into ONE ranked list of fresh
+    RED rows before `cap` is ever applied. Before this fix, `facts` was filled from
+    Z3 alone up to `cap`, and an OUTLET/upstream row could only fill a seat if one
+    happened to still be free -- so a nearby but lower-priority SAME_SUBBASIN hit
+    could silently crowd out the one row (a fresh critical OUTLET, or the real
+    upstream neighbour that caused the conflict in the first place) a caller most
+    needs to see.
+
+    Ranked by `_FACT_RELATION_RANK` first, then nearest-first by `dist_km` (missing
+    distance sorts last), deduplicated by id (first/best occurrence kept). A fresh
+    RED OUTLET row always keeps a seat in the result even if every slot under `cap`
+    would otherwise already be taken by a closer upstream row -- the one row S3
+    says must never be silently dropped. Returns the existing
+    `[id, status_word, relation, basis]` list shape `facts` already uses."""
+    red_rows = [r for r in rows if r.get("colour") == "RED"]
+    red_rows.sort(key=lambda r: (_FACT_RELATION_RANK.get(r.get("relation") or "", 9),
+                                  r.get("dist_km") if r.get("dist_km") is not None else 1e9))
+    seen_ids: set = set()
+    deduped = []
+    for r in red_rows:
+        if r["id"] in seen_ids:
+            continue
+        seen_ids.add(r["id"])
+        deduped.append(r)
+    facts = deduped[:cap]
+    outlet_critical = next(
+        (r for r in deduped
+         if r.get("relation") in ("OUTLET", "OUTLET_MAIN_STEM") and r.get("fresh", True)), None)
+    if outlet_critical is not None and outlet_critical["id"] not in {f["id"] for f in facts}:
+        facts = (facts[:-1] + [outlet_critical]) if facts else [outlet_critical]
+    return [[r["id"], r["status_word"], r["relation"], r["basis"]] for r in facts]
+
+# Only these two M8-added nationwide sources are read here -- the pre-existing
+# `gauge:thaiwater_bma:*`/`gate:thaiwater_bma:*` Sammakorn/Ram53 canal nodes already
+# have their own answer path through `_answer_state`/`readout.py` and are
+# deliberately NOT re-read by this section (a ring member on that prefix comes back
+# NO_READING here, never double-read a second way).
+# fix (founder ruling 2026-10-06, "เจ้าพระยาคือทางออก" -- หมู่บ้านสัมมากร's real
+# drainage is บึงรับน้ำ -> คลองแสนแสบ -> ... -> แม่น้ำเจ้าพระยา -> ทะเล): a Z3
+# SAME_SUBBASIN station whose OWN agency-declared river name (verbatim, from the
+# declared `sources/hii_station_geocode.yaml` geocode block, never guessed) is the
+# Chao Phraya main stem is a real outlet of OUR drainage even where the KG has no
+# walked edge connecting Sammakorn's Saen Saep reach all the way to it (that
+# missing Saen Saep -> Chao Phraya KG edge is a separate, reported gap -- see
+# `docs/knowledge/` -- never fabricated here). A station on some OTHER river/canal
+# that only shares the same (15,000+ km^2) sub-basin is NOT an outlet and is never
+# relabelled -- verified case-by-case against the founder's own naming (CPY014:
+# แม่น้ำเจ้าพระยา at ปากเกร็ด, Nonthaburi -- true main-stem outlet; BKC002: a
+# DIFFERENT canal, คลองบางกะเจ้า at พระประแดง, Samut Prakan -- NOT the main stem,
+# stays plain SAME_SUBBASIN).
+_CHAO_PHRAYA_MAIN_STEM_RIVER_TH = "แม่น้ำเจ้าพระยา"
+_RIVER_NAME_GEOCODE_PATH = HERE / "sources" / "hii_station_geocode.yaml"
+_river_name_by_code_cache: "dict | None" = None
+
+# fix (S2, founder subtractive-fix ruling 2026-10-06, "แก้แบบตัดออก"): the
+# OUTLET_MAIN_STEM relabel above used to apply to every Z0 anywhere in
+# sub_basin:1002 (~300+ stations nationwide), which produced false outlets --
+# 101 upstream-of-Bangkok YELLOWs driven by C.35 (Ayutthaya)/CPY012 (Bang
+# Pa-in), and false self-outlets for Z0s that are themselves on the main stem
+# or on a DIFFERENT outlet river (THA001/แม่น้ำท่าจีน). The rule now applies
+# ONLY to an area on this DECLARED per-area list -- today just หมู่บ้านสัมมากร,
+# per the standing "เจ้าพระยาคือทางออก" ruling. Every other area is OPEN,
+# tagged pending the founder, never silently extended by a sub-basin/radius
+# guess. Within a declared area, only a station on `downstream_main_stem_
+# codes` counts -- these are DECLARED (not derived from any published
+# river-km/chainage, which this repo's sources do not carry) as the nearest
+# Bangkok-area main-stem stations actually downstream of Sammakorn's own
+# drainage junction (Saen Saep -> Chao Phraya, roughly Phan Fa/Hua Lamphong,
+# ~lat 13.75), using each station's own declared lat (MEASURED from
+# `sources/stations/thaiwater_waterlevel.json`): CPY015 (13.700, ธนบุรี),
+# BKC003/BKC004 (13.676/13.661, พระประแดง) -- all south of (downstream of) the
+# Saen Saep -> Chao Phraya junction this repo places at ~lat 13.75. Explicitly
+# EXCLUDED as upstream-of-Bangkok, never used for Sammakorn: C.35 (14.369,
+# อยุธยา), CPY012 (14.305, บางปะอิน), and every other Ayutthaya/Ang
+# Thong/Sing Buri/Chai Nat/Nakhon Sawan main-stem station.
+#
+# fix (founder ruling 2026-10-06): CPY014 (13.947, ปากเกร็ด) is DROPPED from
+# this list -- it is north of (upstream of) the ~13.75 junction, by this
+# repo's own placement, so calling it "downstream" (the old comment/docs/
+# `KG_LEADS.md` claim) was false. OPEN, pending the founder: whether CPY014
+# should instead be tagged `OUTLET_MAIN_STEM_UPSTREAM_PENDING_FOUNDER` (the
+# founder may still want it tracked as "named but upstream") -- this repo does
+# not invent that tag on its own; CPY014 simply stays plain SAME_SUBBASIN
+# (or absent, under KG-only mode) until the founder rules on it.
+_OUTLET_MAIN_STEM_DECLARED_AREAS = {
+    "sammakorn": {
+        # fix (founder ruling 2026-10-06): the declared area is now Sammakorn's
+        # OWN station ids -- Z0 itself must be the pond gauge, or must resolve
+        # (via the declared `canalchain_station_joins.yaml` LOCATED_ON join) to
+        # a canal node inside the declared `east_chain.yaml` branch graph --
+        # never a 5 km radius around a coordinate, which wrongly matched
+        # WL.KJA.02/WL.YPN.01/WL.YPN.02 (real stations 4-4.7 km from Sammakorn's
+        # centre point, on their own unrelated canals) as if they WERE
+        # Sammakorn. `_station_ids_in_sammakorn_declared_area()` computes the
+        # actual membership set once per process; see that function.
+        "downstream_main_stem_codes": frozenset({"CPY015", "BKC003", "BKC004"}),
+    },
+}
+
+# Other rivers that are themselves a declared drainage outlet to the sea
+# (per `docs/knowledge/DRAINAGE_CAPACITY_MAP.md`'s nationwide U table,
+# RELAYED from the published 22-basin ONWR list, not re-derived here). A Z0
+# whose own agency river name is one of these must never have a Chao Phraya
+# main-stem station relabelled as ITS outlet (e.g. THA001/แม่น้ำท่าจีน has its
+# own outlet to the gulf, never C.35/CPY012's).
+_OTHER_OUTLET_RIVERS_TH = frozenset({
+    "แม่น้ำท่าจีน", "แม่น้ำบางปะกง", "แม่น้ำแม่กลอง",
+})
+
+_sammakorn_declared_station_ids_cache: "frozenset | None" = None
+
+
+def _station_ids_in_sammakorn_declared_area() -> frozenset:
+    """Sammakorn's own declared-area membership (fix, founder ruling 2026-10-06): every
+    station id that either IS the pond gauge, or resolves via the declared
+    `sources/canalchain_station_joins.yaml` LOCATED_ON join to a canal node
+    reachable inside `site/inputs/canals/east_chain.yaml`'s own branch graph
+    (the exact same declared graph `tools.kg.rings._east_chain_neighbors`
+    walks for Z1) -- never a radius guess around a coordinate. Cached once per
+    process (the declared files do not change mid-run); returns frozenset() on
+    any read/parse error, never guessed."""
+    global _sammakorn_declared_station_ids_cache
+    if _sammakorn_declared_station_ids_cache is not None:
+        return _sammakorn_declared_station_ids_cache
+    try:
+        import tools.kg.rings as _rings_mod
+        located_on = _rings_mod._load_canalchain_joins()["located_on"]
+        edges = _rings_mod._load_east_chain_edges()
+        nodes: set = set()
+        for e in edges:
+            nodes.add(e["u"])
+            nodes.add(e["v"])
+        out: set = set()
+        for (table, code), node in located_on.items():
+            bare = node[len("canalchain:"):] if node.startswith("canalchain:") else node
+            if bare in nodes:
+                for prefix in ("gauge:", "gate:", "pump_station:"):
+                    out.add(f"{prefix}{table}:{code}")
+    except Exception:  # pragma: no cover - defensive, never crash the answer path
+        out = set()
+    _sammakorn_declared_station_ids_cache = frozenset(out)
+    return _sammakorn_declared_station_ids_cache
+
+
+def _declared_outlet_area_for(z0_id: str) -> "dict | None":
+    """The declared-area outlet config (see `_OUTLET_MAIN_STEM_DECLARED_AREAS`)
+    whose own declared station-id membership (fix, founder ruling 2026-10-06 --
+    `_station_ids_in_sammakorn_declared_area`, never a radius) includes `z0_id`,
+    or None when no declared area matches -- the OUTLET_MAIN_STEM relabel is
+    skipped entirely for every other area."""
+    if z0_id in _station_ids_in_sammakorn_declared_area():
+        return _OUTLET_MAIN_STEM_DECLARED_AREAS["sammakorn"]
+    return None
+
+
+def _river_name_by_code() -> dict:
+    """station code (e.g. "CPY014", "BKC002") -> its agency-declared `river_name`
+    verbatim, read once from the declared geocode source (`VERIFIED` tag) and
+    cached for this process. Returns {} (never raises) if the file is missing or
+    malformed -- a lookup miss then just means "river unknown", never a guessed
+    outlet.
+
+    PERF (M8 P-D, 2026-10-06): `sources/hii_station_geocode.yaml` is ~2.9 MB --
+    MEASURED `yaml.safe_load` (pure-Python `SafeLoader`) at ~4.0s for this one
+    file, which was nearly the whole remaining cost of a single
+    `kb.build_answer()` call after the `collect.load_registry()` cache fix.
+    `yaml.CSafeLoader` (libyaml's C scanner/parser, already installed in this
+    environment) parses the SAME file into the SAME structure in ~0.7s -- same
+    safe-loading semantics, same output, ~5.5x faster. Falls back to
+    `yaml.safe_load` when `CSafeLoader` is unavailable (a minimal environment
+    without libyaml), so this never hard-depends on the C extension."""
+    global _river_name_by_code_cache
+    if _river_name_by_code_cache is not None:
+        return _river_name_by_code_cache
+    out: dict = {}
+    try:
+        import yaml as _yaml
+        try:
+            _loader = _yaml.CSafeLoader
+        except AttributeError:  # pragma: no cover - environment without libyaml
+            _loader = _yaml.SafeLoader
+        with open(_RIVER_NAME_GEOCODE_PATH, encoding="utf-8") as f:
+            doc = _yaml.load(f, Loader=_loader) or {}
+        rows = doc.get("rows") or [] if isinstance(doc, dict) else (doc or [])
+        for row in rows:
+            asset_id = row.get("asset_id") or ""
+            code = asset_id.rsplit(":", 1)[-1] if ":" in asset_id else None
+            if code:
+                out[code] = row.get("river_name")
+    except (OSError, ValueError, AttributeError):
+        out = {}
+    _river_name_by_code_cache = out
+    return out
+
+
+def _is_chao_phraya_main_stem(kg_id: str) -> bool:
+    """True iff `kg_id`'s own agency-declared river name (per
+    `_river_name_by_code`) is verbatim the Chao Phraya main stem."""
+    code = kg_id.rsplit(":", 1)[-1]
+    return _river_name_by_code().get(code) == _CHAO_PHRAYA_MAIN_STEM_RIVER_TH
+
+
+def _river_name_for_kg_id(kg_id: str) -> "str | None":
+    """`kg_id`'s own agency-declared river name verbatim, or None when unknown."""
+    code = kg_id.rsplit(":", 1)[-1]
+    return _river_name_by_code().get(code)
+
+
+_SANDWICH_SOURCE_BY_PREFIX = {
+    "gauge:bma_watermap:": ("bma_watermap", "canal_water_level_m"),
+    "gauge:thaiwater_waterlevel:": ("thaiwater_waterlevel", "waterlevel_msl"),
+}
+
+
+def _sandwich_station_reading(conn, kg_id: str, *, as_of_iso: str,
+                               allow_series_fetch: bool = False) -> "dict | None":
+    """One KG gauge id -> one `floodconnect_model.colour_ladder`/`sandwich_decision`
+    -shaped reading dict, read from the latest matching `observations` row. Returns
+    None (NO_READING, never a guess) when: the id's prefix isn't one of the two M8
+    sources this function knows how to read, or there is no observation row for it
+    yet. `allow_series_fetch=True` additionally allows exactly ONE live
+    `bma_station_series` GET (see `_bma_series_trend`) for a `gauge:bma_watermap:*`
+    id -- the caller passes this only for the sandwich's own Z0 id, never for a Z1/
+    Z2/Z3 ring member, matching this workspace's one-GET-per-run BMA host rule."""
+    import json as _json
+    import floodconnect_model
+    import live_water_level as lwl_mod
+    import store as store_mod
+
+    source_var = None
+    for prefix, sv in _SANDWICH_SOURCE_BY_PREFIX.items():
+        if kg_id.startswith(prefix):
+            source_var = sv
+            break
+    if source_var is None:
+        return None
+    source_id, variable = source_var
+    code = kg_id.split(":", 2)[2]
+    rows = store_mod.query_observations(conn, source_id=source_id, station_code=code,
+                                         variable=variable, limit=1)
+    if not rows:
+        return None
+    r = rows[0]
+    fresh, _age_h = lwl_mod.is_fresh(r["observed_at_utc"], as_of_iso)
+    fault = lwl_mod.sensor_status_from_status_th(r.get("status")) == "fault"
+    try:
+        provenance = _json.loads(r["provenance_json"]) if r.get("provenance_json") else {}
+    except (TypeError, ValueError):
+        provenance = {}
+    h = r.get("value")
+    trend_info = {"trend": "UNKNOWN", "delta": None}
+    eta_inputs = None
+    if source_id == "thaiwater_waterlevel":
+        prev = provenance.get("waterlevel_msl_previous")
+        if h is not None and prev is not None:
+            # One delta over the agency's own unpublished-length step (no keyless
+            # per-station series for thaiwater, so this is the only trend source for it); Tk is
+            # therefore reported "in agency steps", never a real-minute unit.
+            trend_info = floodconnect_model.trend_state(h, prev, epsilon=0.01)
+    elif source_id == "bma_watermap" and h is not None and allow_series_fetch:
+        series_trend = _bma_series_trend(code, h, r["observed_at_utc"])
+        if series_trend is not None:
+            eta_inputs = series_trend.pop("_eta_inputs", None)
+            trend_info = series_trend
+    return {
+        "id": kg_id, "h": h, "warning": r.get("warning"), "critical": r.get("critical"),
+        "bank": r.get("bank"), "ground_level": provenance.get("ground_level"),
+        "status_word": r.get("status"), "fresh": fresh,
+        "fault": fault, "trend": trend_info["trend"], "delta": trend_info.get("delta"),
+        "observed_at_utc": r.get("observed_at_utc"), "epsilon": 0.01,
+        "eta_inputs": eta_inputs,
+    }
+
+
+def _bma_series_trend(water_code: str, h_now: float, observed_at_now: str) -> "dict | None":
+    """ONE on-demand `bma_station_series` GET for exactly this one BMA station (the
+    sandwich's own Z0), using the water_id already
+    cached by this run's own `bma_watermap` fetch (`collect._bma_station_detail_
+    water_ids`, read-only, no second network call of its own). Lag k=6 ticks = 30
+    min at the series' own 5-min step (INSTINCT). Returns
+    None (never a guessed trend) on any lookup/fetch/parse failure -- the caller then
+    reads this station's trend as UNKNOWN, same as having no series at all."""
+    import collect as collect_mod
+    import floodconnect_model
+
+    water_id = None
+    for wid, code, _name in collect_mod._bma_station_detail_water_ids():
+        if code == water_code:
+            water_id = wid
+            break
+    if water_id is None:
+        return None
+    series = collect_mod.fetch_bma_station_series(water_id, wl_in_now=h_now,
+                                                    observed_at_now=observed_at_now)
+    if series.get("status") != "OK":
+        return None
+    # fix : read the CHOSEN run's own points (not the flat
+    # cross-run `points` list `parse_bma_station_series` also returns for a
+    # caller that wants every run regardless) and find the point nearest to 30
+    # minutes before `observed_at_now` by REAL timestamp, never a fixed
+    # `points[-7]` index -- the series step is only "usually" 5 minutes
+    # (`step_s`, itself a modal estimate), so a fixed index silently assumes a
+    # step that occasionally isn't there (a gap, a run boundary) and reads the
+    # wrong instant.
+    chosen = series.get("chosen_run")
+    runs = series.get("runs") or []
+    if chosen is None or not (0 <= chosen < len(runs)):
+        return None
+    run_points = runs[chosen]
+    if len(run_points) < 2:
+        return None
+    try:
+        now_dt = datetime.datetime.fromisoformat(observed_at_now.replace("Z", "+00:00"))
+    except (ValueError, AttributeError):
+        return None
+    target_dt = now_dt - datetime.timedelta(minutes=30)
+    best_pt, best_pt_dt, best_gap_s = None, None, None
+    for p in run_points:
+        try:
+            p_dt = datetime.datetime.fromisoformat(p["t_utc"].replace("Z", "+00:00"))
+        except (ValueError, KeyError, AttributeError):
+            continue
+        gap_s = abs((p_dt - target_dt).total_seconds())
+        if best_gap_s is None or gap_s < best_gap_s:
+            best_gap_s, best_pt, best_pt_dt = gap_s, p, p_dt
+    # A point more than 15 minutes off the 30-minute target is too loose a lag to
+    # trust as "30 minutes ago" -- refuse rather than guess (BOT != ZERO).
+    if best_pt is None or best_gap_s > 15 * 60:
+        return None
+    # fix : round BOTH readings to BMA's own 2-decimal (0.01 m)
+    # publication resolution before `trend_state`/`delta_k` subtracts them --
+    # MEASURED live, WL.SMK.01: a true one-step (0.01 m) change was decided by
+    # float subtraction noise (delta = -0.010000000000000009 against eps 0.01
+    # gave FALLING instead of the honest STABLE a single resolution-step move
+    # is). `delta_k` (PROP-FLOOD-01) itself is untouched -- this rounds its
+    # INPUTS to the agency's own real precision, never overrides its output.
+    h_prev = round(best_pt["v"], 2)
+    trend_result = floodconnect_model.trend_state(round(h_now, 2), h_prev, epsilon=0.01)
+    # founder ruling 2026-10-06, mandatory ETA when RISING: also find
+    # the SHORT-lag point (the series' own immediately-preceding point, usually one
+    # 5-min step back) so a caller can compute PROP-FLOOD-02's "current slope" ETA
+    # alongside this function's existing 30-min "longer-window slope" -- the SAME
+    # `run_points`/`now_dt` this function already has, no second GET.
+    #
+    # fix (two real bugs, measured on a live rising station -- every RISING
+    # station previously returned range_h [0.0, 0.0]):
+    # 1. `long_hours` used to be `best_gap_s / 3600.0` -- `best_gap_s` is the
+    #    DEVIATION of `best_pt` from the 30-minute TARGET instant (by
+    #    construction close to 0, since `best_pt` is chosen to minimise it),
+    #    never the actual elapsed time from `best_pt` to `observed_at_now`.
+    #    `long_hours` is now the real lag: `(now_dt - best_pt_dt)`.
+    # 2. the short-lag point used to be `run_points[-2]` -- the series' own
+    #    LAST array index minus one, which is only "one step before now" when
+    #    `observed_at_now` happens to equal the run's own last point exactly;
+    #    otherwise (the common case) it reads a point from the END of the
+    #    series, which can be AFTER `observed_at_now`, giving a negative
+    #    `short_hours`. The short-lag point is now found the same way as
+    #    `best_pt` above: the run's own most recent reading strictly BEFORE
+    #    `observed_at_now` (the latest interval at or above the series' own
+    #    cadence), never a fixed array index.
+    long_hours = (now_dt - best_pt_dt).total_seconds() / 3600.0
+    short_prev_pt, short_prev_dt = None, None
+    for p in run_points:
+        try:
+            p_dt = datetime.datetime.fromisoformat(p["t_utc"].replace("Z", "+00:00"))
+        except (ValueError, KeyError, AttributeError):
+            continue
+        if p_dt < now_dt and (short_prev_dt is None or p_dt > short_prev_dt):
+            short_prev_dt, short_prev_pt = p_dt, p
+    short_hours, h_short_prev = None, None
+    if short_prev_pt is not None:
+        short_hours = (now_dt - short_prev_dt).total_seconds() / 3600.0
+        h_short_prev = round(short_prev_pt["v"], 2)
+    trend_result["_eta_inputs"] = {
+        "short_prev": h_short_prev, "short_hours": short_hours,
+        "long_prev": h_prev, "long_hours": long_hours,
+    }
+    return trend_result
+
+
+def _answer_sandwich(lat: float, lon: float, refresh: bool, now_utc: "datetime.datetime | None" = None) -> dict:
+    """The Jev Sandwich answer block: rings -> Z0 reading -> `sandwich_decision`,
+    re-called with the middle filled in only when the first call reports
+    `needs_middle=True`. Never raises -- every failure mode (no KG index, no DB, no
+    Z0 within radius, no reading for the resolved Z0 id) degrades to an honest
+    `{"colour": "UNKNOWN", ...}` with a `reason` code, per BOT != ZERO. `refresh`
+    gates the one optional live `bma_station_series` GET for a BMA Z0 (see
+    `_sandwich_station_reading`'s `allow_series_fetch`) -- an offline/no-refresh
+    answer never makes a network call from this function."""
+    import floodconnect_model
+
+    # fix (release-accuracy, 2026-10-07): the mandatory RISING ETA this file ships
+    # (`floodconnect_model.rise_eta_hours_range`) is PROP-FLOOD-02 (linear, two
+    # windows) -- already-registered, already-merged proposal -- NOT PROP-FLOOD-11.
+    # PROP-FLOOD-11 (acceleration-aware, quadratic, Toledo PR #65 merged 2026-10-06,
+    # tier Dr) is a separate, also-registered proposal that is NOT IMPLEMENTED in
+    # this release (v0.2 target); it is named here only as a status fact, never as
+    # the tag on the shipped ETA.
+    eq_status = {"PROP-FLOOD-01": "PROPOSAL",
+                 "PROP-FLOOD-02": ("PROPOSAL (linear, two windows)"
+                                   if floodconnect_model.PROP11_ENABLED
+                                   else "GATED (module switch off, not computed)"),
+                 "PROP-FLOOD-11": "REGISTERED, NOT IMPLEMENTED (v0.2)"}
+    try:
+        from tools.kg.rings import rings as _rings_fn
+    except ImportError as e:
+        return {"colour": "UNKNOWN", "label_th": floodconnect_model.COLOUR_LABEL_TH["UNKNOWN"],
+                "reason": f"rings module unavailable: {e}", "eq": eq_status}
+    try:
+        ring = _rings_fn(lat, lon)
+    except Exception as e:  # pragma: no cover - defensive, a bad index must not crash `answer`
+        return {"colour": "UNKNOWN", "label_th": floodconnect_model.COLOUR_LABEL_TH["UNKNOWN"],
+                "reason": f"rings failed: {e}", "eq": eq_status}
+    z0_ring = ring.get("z0")
+    if z0_ring is None:
+        return {"colour": "UNKNOWN", "label_th": floodconnect_model.COLOUR_LABEL_TH["UNKNOWN"],
+                "reason": "NO_Z0 -- no gauge within radius", "eq": eq_status}
+    if not DB_PATH.exists():
+        return {"colour": "UNKNOWN", "label_th": floodconnect_model.COLOUR_LABEL_TH["UNKNOWN"],
+                "z0": {"id": z0_ring["id"], "km": z0_ring["km"]},
+                "reason": "NO_DB", "eq": eq_status}
+    import store as store_mod
+    now = now_utc or datetime.datetime.now(datetime.timezone.utc)
+    as_of_iso = now.isoformat()
+    conn = store_mod.connect(DB_PATH)
+    z0_reading = _sandwich_station_reading(conn, z0_ring["id"], as_of_iso=as_of_iso,
+                                            allow_series_fetch=refresh)
+    # fix (S6, founder subtractive-fix ruling 2026-10-06): when Z0 itself has no
+    # observation row, prefer its readable `gauge:bma_watermap:` twin (rings.py's
+    # own `_prefer_readable_twin` -- the SAME tie-break `_nearest_gauge` already
+    # uses, applied here for the non-tie case too) before giving up on it.
+    # MEASURED: 39 thaiwater_canal-area points resolved to
+    # an unreadable `gauge:thaiwater_bma:*`/`gate:thaiwater_bma:*` id with no M8
+    # reader at all, and the OLD early return here meant the layers were never
+    # computed, hiding fresh RED rings/stations (SS01: WL.SSB.07/08/09 RED; BK02:
+    # WL.KPM.03/WL.KSG.01/C.35/CPY012 RED) behind a bare UUUU.
+    if z0_reading is None:
+        try:
+            import tools.kg.rings as _rings_mod
+            _twin_id = _rings_mod._prefer_readable_twin(
+                z0_ring["id"], _rings_mod._reach_cache(_rings_mod.KG_INDEX_DIR))
+        except Exception:
+            _twin_id = z0_ring["id"]
+        if _twin_id != z0_ring["id"]:
+            z0_reading = _sandwich_station_reading(conn, _twin_id, as_of_iso=as_of_iso,
+                                                    allow_series_fetch=refresh)
+    # fix (S6): still unreadable -- never early-return UNKNOWN with no rings read at
+    # all. A stub Z0 reading (every field None/UNKNOWN) feeds `colour_ladder`/
+    # `sandwich_decision` exactly like a real station with no published threshold
+    # or status at all -- READ_BOTTOM still comes out UNKNOWN (REFUSED, unchanged
+    # top-level `colour`), but every step below this one still runs, so the Z1/Z2/
+    # Z3 layers and `facts` now carry whatever fresh RED rows the ring actually has,
+    # instead of being silently skipped.
+    _z0_unread = z0_reading is None
+    if _z0_unread:
+        z0_reading = {"id": z0_ring["id"], "h": None, "warning": None, "critical": None,
+                      "bank": None, "ground_level": None, "status_word": None, "fresh": True,
+                      "fault": False, "trend": "UNKNOWN", "delta": None,
+                      "observed_at_utc": None, "epsilon": 0.01, "eta_inputs": None}
+
+    _read_cache: dict = {}  # id -> reading|None, shared across every _read_ring_rows
+                            # call this function makes -- A3's full per-ring layer
+                            # read would otherwise re-query sqlite for an id the
+                            # outlet/middle read already fetched.
+
+    def _read_ring_rows(rows):
+        out = []
+        for row in rows:
+            rid = row["id"]
+            if rid in _read_cache:
+                reading = _read_cache[rid]
+            else:
+                reading = _sandwich_station_reading(conn, rid, as_of_iso=as_of_iso)
+                _read_cache[rid] = reading
+            if reading is None:
+                continue
+            out.append({"id": rid, "relation": row["relation"],
+                        "status_word": reading["status_word"], "trend": reading["trend"],
+                        # fix (founder ruling 2026-10-06): colour every ring row with
+                        # the SAME ladder Z0 itself uses (`colour_ladder`, which runs
+                        # `bank_check`/fresh/fault -- never the bare agency status
+                        # word alone). Before this fix, a ring member at or over its
+                        # OWN agency critical/bank level but still carrying a lower
+                        # status word (MKVKD09: h >= critical, agency situation_level
+                        # 4, not yet "วิกฤต") read as its weaker word's colour
+                        # instead of RED, hiding a real critical reading one hop
+                        # away (K.62/MKVKD09 regression, see
+                        # tests/test_kb_sandwich.py).
+                        "colour": floodconnect_model.colour_ladder(reading)["colour"],
+                        "fresh": reading["fresh"], "dist_km": row.get("dist_km"),
+                        # fix: carry rings.py's own declared/
+                        # DERIVED-snap tag through to every ring row this answer
+                        # exposes, never dropped on the way out.
+                        "basis": row.get("basis", "DERIVED-snap")})
+        return out
+
+    z3_stations = _read_ring_rows(ring["z3"]["stations"][:_SANDWICH_Z3_CAP])
+    # fix (S2, founder subtractive-fix ruling 2026-10-06, "เจ้าพระยาคือทางออก"):
+    # re-label a Z3 row from plain SAME_SUBBASIN to OUTLET_MAIN_STEM only when
+    # ALL of these hold -- never only the river-name check alone, which used to
+    # apply nationwide (see `_OUTLET_MAIN_STEM_DECLARED_AREAS`'s docstring for
+    # the false-outlet cases this closes):
+    #   1. This (lat, lon) falls inside a DECLARED per-area list (today:
+    #      หมู่บ้านสัมมากร only) -- every other area gets no relabel at all.
+    #   2. Z0's OWN agency river name is NOT the Chao Phraya main stem and not
+    #      another declared outlet river (`_OTHER_OUTLET_RIVERS_TH`) -- a Z0
+    #      that is itself on an outlet river has its own real downstream
+    #      outlet, never one borrowed from this rule.
+    #   3. The candidate row's own code is on the declared area's
+    #      `downstream_main_stem_codes` list -- never an upstream main-stem
+    #      station (C.35/CPY012/etc never qualify for Sammakorn).
+    _main_stem_outlet_rows = []
+    _declared_area = _declared_outlet_area_for(z0_ring["id"])
+    _z0_river = _river_name_for_kg_id(z0_ring["id"])
+    _z0_on_outlet_river = (_z0_river == _CHAO_PHRAYA_MAIN_STEM_RIVER_TH
+                            or _z0_river in _OTHER_OUTLET_RIVERS_TH)
+    if _declared_area is not None and not _z0_on_outlet_river:
+        _downstream_codes = _declared_area["downstream_main_stem_codes"]
+        for _row in z3_stations:
+            _code = _row["id"].rsplit(":", 1)[-1]
+            if (_row["relation"] == "SAME_SUBBASIN" and _is_chao_phraya_main_stem(_row["id"])
+                    and _code in _downstream_codes):
+                _row["relation"] = "OUTLET_MAIN_STEM"
+                _row["basis"] = "MAIN_STEM_RIVER_NAME"
+                _main_stem_outlet_rows.append(_row)
+    z3 = {"stations": z3_stations, "dams": [], "official": ring["z3"].get("official", "NOT_WIRED")}
+
+    # fix (S2b, this M8 revision): a fresh RED OUTLET must raise the result to at
+    # least YELLOW REGARDLESS of which ladder branch decides the colour --
+    # including AGREE and TOP_NO_UPSTREAM/TOP_UNREAD, which never reach the
+    # conflict-only full middle read below. The OUTLET row(s) alone (never the full
+    # UPSTREAM_CHAIN/UPSTREAM_REACH middle -- that stays conflict-only, per the
+    # "middle fetched only on conflict" cost discipline) are read on EVERY call,
+    # cheaply (there is normally exactly one declared OUTLET per Z0).
+    # fix (S2, this M8 revision): Z1's own UPSTREAM_CHAIN rows (the immediate
+    # reach-adjacent neighbours -- typically a handful, never the full Z2
+    # UPSTREAM_REACH walk, which stays conflict-only below for cost) are read on
+    # EVERY call too, alongside OUTLET -- without this, an alarm that lives
+    # PURELY in Z1 (e.g. BKK021's real upstream neighbour BKK020 OVERBANK, with
+    # Z3 itself fresh-empty) could never even be DETECTED as a conflict, because
+    # `_sandwich_read_top`'s alert/upstream_read computation only ever sees
+    # whatever `middle` this call passes in -- Z3 alone was never enough to
+    # surface it.
+    _outlet_rows_in_ring = [r for r in (ring["z1"] + ring["z2"])
+                            if r.get("relation") in ("OUTLET", "UPSTREAM_CHAIN")]
+    _outlet_middle = _read_ring_rows(_outlet_rows_in_ring) if _outlet_rows_in_ring else []
+    # fix (founder ruling 2026-10-06): fold in the Z3 OUTLET_MAIN_STEM row(s)
+    # already read above (`z3_stations`, every call, no extra DB cost) so
+    # `sandwich_decision`'s OUTLET_CRITICAL check sees a true main-stem outlet on
+    # EVERY branch (TOP_NO_UPSTREAM/TOP_UNREAD included), exactly like a declared
+    # canalchain OUTLET row -- never only on the conflict-only full middle read.
+    _outlet_middle = _outlet_middle + _main_stem_outlet_rows
+    decision = floodconnect_model.sandwich_decision(
+        z0_reading, z3, middle=(_outlet_middle or None), facts=[])
+    middle_used = None
+    middle_unread = 0
+    # fix: detect a real conflict by the decision's own `steps`
+    # trail, never by the `needs_middle` flag -- `needs_middle` is only True when
+    # the FIRST call's own `middle` argument was None, which it no longer is
+    # whenever `_outlet_middle` is non-empty (needed for OUTLET_CRITICAL/S2 just
+    # above). `sandwich_decision` still appends "CONFLICT" to `steps` on this path
+    # regardless of whether `middle` was given, so checking for it here (instead of
+    # the now-unreliable `needs_middle`) means the full toward-us middle read below
+    # actually runs on every real conflict, not only on the (now rare) case where
+    # `_outlet_middle` happened to be empty -- before this fix, EVERY
+    # EXTRACT_MIDDLE answer with a non-empty `_outlet_middle` reported
+    # `mid: {"read": false, "rows": []}` even though the decision had in fact used
+    # `_outlet_middle` as its `middle` (MEASURED live, 58/58 cases).
+    if "CONFLICT" in decision.get("steps", []):
+        # Read the toward-us relations (UPSTREAM_CHAIN, then UPSTREAM_REACH -- the
+        # only two relations `_sandwich_extract_middle` ever looks at) FIRST,
+        # nearest-first by `dist_km`, before the cap trims anything. A row on any
+        # other relation (SAME_REACH, DOWNSTREAM_CHAIN, OUTLET) can never confirm
+        # water coming toward Z0, so it is only read once every toward-us row
+        # already fits within the cap.
+        _all_mid = ring["z1"] + ring["z2"]
+        _toward = [r for r in _all_mid if r.get("relation") in ("UPSTREAM_CHAIN", "UPSTREAM_REACH")]
+        _other = [r for r in _all_mid if r.get("relation") not in ("UPSTREAM_CHAIN", "UPSTREAM_REACH")]
+        _toward.sort(key=lambda r: (r.get("dist_km") is None, r.get("dist_km")))
+        middle_unread = max(0, len(_toward) - _SANDWICH_MIDDLE_CAP)
+        _ordered = (_toward + _other)[:_SANDWICH_MIDDLE_CAP]
+        _full_middle = _read_ring_rows(_ordered)
+        # `mid.rows` (below) is set to exactly this merged list -- the SAME one
+        # passed to `sandwich_decision` -- never a different, re-filtered view. The
+        # every-call OUTLET/UPSTREAM_CHAIN read is folded in first so a declared
+        # OUTLET row is never dropped just because the toward-us-only ordering
+        # above did not independently re-select it.
+        _merged_by_id = {row["id"]: row for row in _outlet_middle}
+        for row in _full_middle:
+            _merged_by_id.setdefault(row["id"], row)
+        middle_used = list(_merged_by_id.values())
+        decision = floodconnect_model.sandwich_decision(z0_reading, z3, middle=middle_used, facts=[])
+        if middle_unread and "MIDDLE_NOT_RISING" in decision["reasons"]:
+            decision["reasons"] = [r if r != "MIDDLE_NOT_RISING"
+                                    else f"MIDDLE_PARTIAL:{middle_unread}_UNREAD"
+                                    for r in decision["reasons"]]
+
+    # fix: rank EVERY candidate RED row (Z3's own stations,
+    # the every-call OUTLET/UPSTREAM_CHAIN read, and -- only when a real conflict
+    # occurred -- the full middle read) together via `_rank_facts`, then cap --
+    # never cap Z3's own rows first and let OUTLET/upstream rows compete for
+    # whatever room happens to be left over (see `_rank_facts`'s own docstring).
+    _fact_candidates = z3_stations + _outlet_middle + (middle_used or [])
+    decision["facts"] = _rank_facts(_fact_candidates, _SANDWICH_FACTS_CAP)
+
+    reasons = decision["reasons"]
+    if len(reasons) > _SANDWICH_HITS_CAP:
+        # Keep the LAST reason (sandwich_decision always appends its own final-step
+        # reason last -- MIDDLE_NOT_RISING/MIDDLE_UNOBSERVED/WATER_COMING_ON_KG_PATH/
+        # the AGREE/RED reason) plus the leading top-hit reason(s), rather than a
+        # blind head-slice that silently drops the decision's own final reason when
+        # a huge sub-basin (sub_basin:1002 alone has ~300+ stations) hands
+        # back many TOP_CRITICAL_* hit reasons ahead of it.
+        why = reasons[:_SANDWICH_HITS_CAP - 1] + [reasons[-1]]
+    else:
+        why = reasons
+    # fix (S1b): a colour for EACH ring (Z0 our point, Z1
+    # canals near us, Z2 water area above us, Z3 basin above us), from that ring's
+    # OWN agency readings -- a ring with no fresh reading at all is UNKNOWN, never
+    # GREEN by default (`ring_readout`'s own UNKNOWN-dominates-GREEN rule). Before
+    # this fix, Z1/Z2 only ever saw whichever rows the upstream/conflict read
+    # happened to fetch (OUTLET/UPSTREAM_CHAIN always; the rest only on conflict),
+    # so a fresh วิกฤต/OVERBANK station elsewhere in the same ring (e.g.
+    # Sammakorn's real WL.SSB.09/WL.SSB.10) never reached the layer colour at all.
+    # Every Z1/Z2 row is now read, nearest-first, capped at `_SANDWICH_LAYER_CAP`
+    # (a cheap indexed sqlite read per row, bounding only a pathological huge
+    # ring) -- `_read_cache` means a row the outlet/middle read already fetched is
+    # never queried twice. The ladder's own "water coming" rule stays restricted to
+    # the declared upstream relations (`sandwich_decision`, unchanged); this only
+    # widens what the LAYER COLOUR can see, never what counts as "upstream".
+    # fix: the capped nearest-first read above can still legitimately leave a
+    # FAR member of an oversized ring (more than `_SANDWICH_LAYER_CAP` members)
+    # unread for the layer colour specifically -- but that same row, if it is on
+    # relation OUTLET/UPSTREAM_CHAIN, was ALREADY read above (`_outlet_middle`,
+    # every call, uncapped by distance) because it can confirm "water coming";
+    # the layer colour must never show a lower colour than a row this function
+    # already has a fresh reading for simply because that reading came from a
+    # different read path. Every already-read `_outlet_middle`/`middle_used` row
+    # belonging to this ring is folded in here, at no extra DB cost.
+    _already_read_by_id = {row["id"]: row for row in (_outlet_middle + (middle_used or []))}
+
+    def _layer_rows(ring_rows):
+        ordered = sorted(
+            ring_rows,
+            key=lambda r: (r.get("dist_km") is None,
+                           r.get("dist_km") if r.get("dist_km") is not None else 0.0))
+        rows_by_id = {row["id"]: row for row in _read_ring_rows(ordered[:_SANDWICH_LAYER_CAP])}
+        _ring_ids = {r["id"] for r in ring_rows}
+        for rid, row in _already_read_by_id.items():
+            if rid in _ring_ids:
+                rows_by_id.setdefault(rid, row)
+        return list(rows_by_id.values())
+
+    # fix (S1, founder subtractive-fix ruling 2026-10-06): the LAYER colour (Z1/Z2/
+    # Z3) is built only from colour-eligible rows -- a bare SAME_SUBBASIN
+    # membership, a bare code-prefix guess (SAME_CODE_FAMILY), or a reach-snap pair
+    # whose own agency river names disagree (SAME_REACH_RIVER_MISMATCH, demoted in
+    # `tools/kg/rings.py`) carries no declared source for "this is the same water as
+    # us" and must never colour a ring RED/YELLOW on its own. Every excluded row
+    # still appears in `facts`/the raw station list via `_rank_facts` -- only the
+    # colour view is filtered here.
+    _layer_z1_rows = [r for r in _layer_rows(ring["z1"]) if floodconnect_model.is_colour_eligible(r)]
+    _layer_z2_rows = [r for r in _layer_rows(ring["z2"]) if floodconnect_model.is_colour_eligible(r)]
+    _z3_layer_rows = [r for r in z3_stations
+                      if r["relation"] != "SAME_SUBBASIN" and floodconnect_model.is_colour_eligible(r)]
+    layers = {
+        # Fix: Z0's OWN layer colour must use the
+        # exact same rule as the decision's own READ_BOTTOM step (`colour_ladder`,
+        # which runs `bank_check` -- h vs bank/critical, not just the status word) --
+        # `classify(status_word)` alone disagreed with the decision whenever h was
+        # at/over bank/critical but the agency's status word itself still read as a
+        # lower level (measured: BKK009/BKK020, h == bank to within 0.01 m, agency
+        # situation_level 4 -- the decision said RED "at/over bank", but this layer
+        # and the `strip` field built from it said Y/YELLOW).
+        "Z0": floodconnect_model.colour_ladder(z0_reading)["colour"],
+        "Z1": floodconnect_model.ring_readout(_layer_z1_rows, "Z1")["worst"],
+        "Z2": floodconnect_model.ring_readout(_layer_z2_rows, "Z2")["worst"],
+        "Z3": floodconnect_model.ring_readout(_z3_layer_rows, "Z3")["worst"],
+    }
+    # fix (consistency invariant, founder subtractive-fix ruling 2026-10-06): a
+    # GREEN decision must never sit under a RED layer -- every row that reaches
+    # a layer colour is already colour-eligible (a declared relation, never a
+    # heuristic/no-declared-source one, see `is_colour_eligible` above), so a
+    # RED layer here is always a REAL fresh critical reading this answer already
+    # knows about. Raised to YELLOW (never silently left GREEN, never promoted
+    # all the way to ORANGE/RED -- this is a drainage-area consistency floor, not
+    # a "water coming" claim), LOW confidence, `official_tier: False`.
+    if decision["colour"] == "GREEN" and "RED" in layers.values():
+        decision = dict(decision)
+        decision["colour"] = "YELLOW"
+        decision["label_th"] = floodconnect_model.COLOUR_LABEL_TH["YELLOW"]
+        decision["level"] = floodconnect_model.FOLD_TO_LEGACY.get("YELLOW", "YELLOW")
+        decision["confidence"] = "LOW"
+        decision["official_tier"] = False
+        why = list(why) + ["LAYER_CRITICAL_UNDER_GREEN"]
+    # fix (founder ruling 2026-10-06, KG-only): a ring with no declared KG edge
+    # reaching it (`tools.kg.rings.rings`'s own `KG_ONLY_MODE` filter -- never
+    # a heuristic fallback) is honestly empty, not merely "nothing alarming
+    # found" -- this is logged as a KG gap (`write_gap_log`, `build_answer`)
+    # rather than silently absorbed into an UNKNOWN layer colour with no
+    # further trace. Z0 itself is never counted (it is not a "ring reached by
+    # an edge" at all, it is the point).
+    kg_gaps = [name for name, rows in (
+        ("Z1", ring["z1"]), ("Z2", ring["z2"]), ("Z3", ring["z3"]["stations"]))
+        if not rows]
+    # founder ruling 2026-10-06: mandatory ETA whenever Z0 is RISING --
+    # PROP-FLOOD-02, linear, two windows (`floodconnect_model.rise_eta_hours_range`),
+    # the CURRENT (short) slope and the longer-window slope, as a range in hours,
+    # never silently skipped. NOT PROP-FLOOD-11 (acceleration-aware, registered but
+    # not implemented in this release).
+    # `pump_state="UNCHANGED"` for WL.SMK.01/this M8 wiring: this repo has no declared
+    # pump actuator for the Sammakorn canal gauge itself (no KG edge, no registry
+    # field) -- "UNCHANGED" (not "UNDECLARED") is the honest reading of "no pump is
+    # declared to act on THIS station's own series at all", distinct from a station
+    # that does have a known pump whose state was simply never checked this run; see
+    # `rise_eta_hours_range`'s own docstring. INSTINCT, not a measured pump reading --
+    # flagged here rather than silently defaulted inside the model function itself.
+    z0_eta = None
+    if (z0_reading["trend"] == "RISING" and z0_reading.get("eta_inputs")
+            and (z0_reading.get("warning") is not None or z0_reading.get("critical") is not None)):
+        ei = z0_reading["eta_inputs"]
+        z0_eta = floodconnect_model.rise_eta_hours_range(
+            z0_reading["h"], ei.get("short_prev"), ei.get("short_hours"),
+            ei.get("long_prev"), ei.get("long_hours"),
+            theta_warn=z0_reading.get("warning"),
+            theta_crit=z0_reading.get("critical") or z0_reading.get("bank"),
+            epsilon=z0_reading.get("epsilon", 0.01), pump_state="UNCHANGED")
+    out = {
+        "z0": {"id": z0_ring["id"], "km": z0_ring["km"], "h": z0_reading["h"],
+               "status_word": z0_reading["status_word"], "trend": z0_reading["trend"],
+               "fresh": z0_reading["fresh"], "observed_at_utc": z0_reading["observed_at_utc"],
+               "warning": z0_reading.get("warning"), "critical": z0_reading.get("critical"),
+               "eta": z0_eta},
+        "colour": decision["colour"], "label_th": decision["label_th"],
+        "level": decision["level"], "official_tier": decision["official_tier"],
+        "steps": decision["steps"], "why": why,
+        "confidence": decision["confidence"], "gate": decision["gate"],
+        "facts": decision["facts"],
+        "mid": {"read": middle_used is not None, "rows": middle_used or []},
+        "layers": layers,
+        "eq": eq_status,
+        "kg_gaps": kg_gaps,
+    }
+    if _z0_unread:
+        # fix (S6): diagnostic only -- `colour`/`layers`/`facts` above already carry
+        # the real computed result (Z0 itself UNKNOWN, everything else read).
+        out["reason"] = "NO_Z0_READING -- station has no observation row yet"
+    return out
+
+
+# M8 P-B -- the jev_decision envelope (schemas/jev_decision.schema.json). Wraps
+# `_answer_sandwich`'s existing output (colour/label_th/level/official_tier/
+# confidence/facts/layers/why/steps/mid/eq -- all P-A, unchanged) with the new
+# Choice/Score/Noul/gate fields the M8 schema design asks for. Replaces the old bare
+# `out["sandwich"]` key (see `build_answer` below) -- `_answer_sandwich` itself is
+# UNCHANGED; this is a pure wrapper so every existing P-A test that calls
+# `kb._answer_sandwich(...)` directly keeps seeing the exact same raw shape.
+_CHOICE_BY_COLOUR = {
+    "GREEN": "เฝ้าดู",
+    "YELLOW": "เตรียมของ",
+    "ORANGE": "ย้ายของขึ้นที่สูง",
+    # fix (founder ruling 2026-10-06, "official order is a FLOOR, not a
+    # ceiling"): RED's own colour-only choice (no home-as-shelter verdict
+    # reached -- a bare point query, no household declared) used to read
+    # "ทำตามประกาศทางการ" (follow the official announcement) ALONE. A missing,
+    # late, or weaker official order must never read as "wait for one" at
+    # RED -- it reuses the SAME closed choice7 value the LEAVE_NOW verdict
+    # itself uses ("leave to a safe point"), never a new 8th value outside
+    # that fixed vocabulary.
+    "RED": "ออกจากบ้านไปจุดปลอดภัย",
+}
+# UNKNOWN has no entry in the M8 schema design's choice-mapping table (that table only
+# names GREEN/YELLOW/ORANGE plus the home-as-shelter verdicts and "RED by default").
+# OPEN, pending the founder: this falls back to "เฝ้าดู" (the weakest option) rather
+# than inventing a new choice7 value -- a caller must not read this as a founder-
+# confirmed mapping.
+_CHOICE_UNKNOWN_FALLBACK = "เฝ้าดู"
+
+
+def _choice_for_jev(colour: str, verdict: "str | None" = None) -> str:
+    """Colour -> choice7, per the M8 schema design's mapping table. `verdict`
+    (home-as-shelter, P-C -- always None in P-B) outranks the colour's own option
+    when given, per that same table."""
+    _VERDICT_CHOICE = {
+        "STAY_PREPARED": "อยู่บ้านแบบเตรียมพร้อม",
+        "PREPARE_TO_LEAVE": "เตรียมออกจากบ้าน",
+        "LEAVE_NOW": "ออกจากบ้านไปจุดปลอดภัย",
+        "FOLLOW_OFFICIAL_ORDER": "ทำตามประกาศทางการ",
+    }
+    if verdict and verdict in _VERDICT_CHOICE:
+        return _VERDICT_CHOICE[verdict]
+    if colour == "UNKNOWN":
+        return _CHOICE_UNKNOWN_FALLBACK
+    return _CHOICE_BY_COLOUR.get(colour, _CHOICE_UNKNOWN_FALLBACK)
+
+
+def _gate_for_jev(colour: str, z0_fresh: bool) -> str:
+    """Default gate rule (pending the founder):
+    RED -> ESCALATE; UNKNOWN -> HOLD; Z0 fresh and colour decided -> ADMIT;
+    otherwise (colour decided but Z0 not fresh) -> HOLD. The fourth rule in the
+    design table (chosen option conflicts with an official order -> REJECT for that
+    audition row) needs a household declaration (P-C) and is not reachable here."""
+    if colour == "RED":
+        return "ESCALATE"
+    if colour is None or colour == "UNKNOWN":
+        return "HOLD"
+    return "ADMIT" if z0_fresh else "HOLD"
+
+
+def _noul_for_jev(sandwich_answer: dict) -> dict:
+    """N1-N6, each an s4 value. OPEN/INSTINCT (see jev_decision.schema.json's own
+    `noul` note): the authoritative N1-N6 definitions exist only in the founder's
+    design transcript and were not available to this implementation pass. This is a
+    best-effort placeholder reading of the SAME facts `_answer_sandwich` already
+    computed (z0 freshness/colour/trend, the upstream-read/middle/outlet reasons) --
+    never a new measurement, never founder-confirmed. A caller must check with the
+    founder before citing `noul` as settled."""
+    z0 = sandwich_answer.get("z0") or {}
+    why = sandwich_answer.get("why") or []
+    colour = sandwich_answer.get("colour")
+    n1 = "POS" if z0.get("fresh") else "BOT"
+    if colour == "RED":
+        n2 = "POS"
+    elif colour == "UNKNOWN":
+        n2 = "BOT"
+    else:
+        n2 = "NEG"
+    _trend_s4 = {"RISING": "POS", "FALLING": "NEG", "STABLE": "ZERO"}
+    n3 = _trend_s4.get(z0.get("trend"), "BOT")
+    if "TOP_NO_UPSTREAM" in why:
+        n4 = "NEG"
+    elif "TOP_UNREAD" in why:
+        n4 = "BOT"
+    elif colour == "UNKNOWN":
+        n4 = "BOT"
+    else:
+        n4 = "POS"
+    if "WATER_COMING_ON_KG_PATH" in why:
+        n5 = "POS"
+    elif "MIDDLE_NOT_RISING" in why:
+        n5 = "NEG"
+    elif "MIDDLE_UNOBSERVED" in why:
+        n5 = "BOT"
+    else:
+        n5 = "BOT"
+    n6 = "POS" if "OUTLET_CRITICAL" in why else "ZERO"
+    return {"N1": n1, "N2": n2, "N3": n3, "N4": n4, "N5": n5, "N6": n6, "tag": "INSTINCT"}
+
+
+# (founder ruling 2026-10-06, scope tagging): the one thing this repo has
+# actually validated against a full live sweep is Bangkok/หมู่บ้านสัมมากร --
+# everywhere else runs the exact same code path but has not been swept the
+# same way. VALIDATED_MVP iff the query point's actual PROVINCE (not a
+# bounding box) is Bangkok OR Z0's own station id is one of the declared
+# Sammakorn-area ids (`_station_ids_in_sammakorn_declared_area` -- Sammakorn's
+# own pond gauge, or a station resolving via the declared canal graph into
+# Sammakorn's branch, which can sit just outside the Bangkok province
+# boundary) -- everywhere else is EXPERIMENTAL, including every OTHER
+# `bma_watermap` gauge that is neither in Bangkok province nor part of the
+# declared Sammakorn area (e.g. BKK007 in Nonthaburi). Never a claim about
+# accuracy outside this scope, only about what has actually been swept.
+_SCOPE_VALIDATED_MVP = "VALIDATED_MVP"
+_SCOPE_EXPERIMENTAL = "EXPERIMENTAL"
+_BANGKOK_PROVINCE_CODE = "10"
+
+
+def _point_province_code(lat: "float | None", lon: "float | None") -> "str | None":
+    """The point's own nearest-KG-asset province, via `tools.kg.locate.locate`'s
+    candidate ranking (distance to the nearest declared KG asset in each
+    candidate province's own slice) -- never a bounding-box guess.
+
+    fix: `_answer_scope` used to check
+    `collect.BANGKOK_METRO_BBOX` (a deliberately wide "greater metro" rectangle
+    for source-fetch scoping, lat 13.45-14.05/lon 100.25-100.95), which tags a
+    point VALIDATED_MVP even when it is really in a neighbouring province --
+    MEASURED on 4 real stations this repo's own data already carries: BKC002
+    (สมุทรปราการ), BKK018/BKK019 (นนทบุรี/นครปฐม via different nearest asset),
+    VLGE20 (นครปฐม) -- every one of them sits inside that rectangle but
+    resolves, via its own nearest declared KG asset, to a province OTHER than
+    Bangkok. The nearest-candidate ranking is not perfect at a genuine
+    province border (ambiguous by construction -- see `tools/kg/locate.py`'s
+    own ranking, which this reuses verbatim rather than re-deriving a second
+    province-resolution rule), but it is grounded in the KG's own declared
+    asset-to-province membership, never an ad hoc rectangle.
+
+    Returns `None` (never a guessed code) on a missing/unreadable KG index or
+    missing lat/lon -- `_answer_scope`'s caller then falls through to
+    EXPERIMENTAL, same as "no candidate resolved" already does today."""
+    if lat is None or lon is None:
+        return None
+    try:
+        from tools.kg.locate import KGIndexMissing, locate as _locate_fn
+    except ImportError:
+        return None
+    try:
+        result = _locate_fn(lat, lon)
+    except (KGIndexMissing, OSError, ValueError):
+        return None
+    if result.get("error"):
+        return None
+    candidates = result.get("cand") or []
+    if not candidates:
+        return result.get("province")
+    return candidates[0].get("code")
+
+
+def _answer_scope(z0_id: "str | None", lat: "float | None", lon: "float | None") -> str:
+    if _point_province_code(lat, lon) == _BANGKOK_PROVINCE_CODE:
+        return _SCOPE_VALIDATED_MVP
+    if z0_id and z0_id in _station_ids_in_sammakorn_declared_area():
+        return _SCOPE_VALIDATED_MVP
+    return _SCOPE_EXPERIMENTAL
+
+
+# Founder ruling 2026-10-06, verbatim: "พยายามใช้ api ในส่วนที่ใช้ได้
+# เพื่อให้แสดงเป็นผลการคำนวณ และการใส่ตัวแปรไม่ครบ และบอกเป็นระดับความมั่นใจแทน"):
+# plain-Thai reasons for the jev_decision-level `calc` block below, named per missing
+# category -- same convention as `advice/home_shelter.py`'s own
+# `REASON_MISSING_VULNERABLE_TH`, kept as a SEPARATE constant per category here
+# (never one combined string) since each of these is a distinct physical input, not
+# one bundled "household declaration" concern.
+REASON_MISSING_Z0_READING_TH = "ไม่มีข้อมูลระดับน้ำที่สถานีจุดอ้างอิง"
+REASON_MISSING_UPSTREAM_READ_TH = "ไม่มีข้อมูลการอ่านค่าต้นน้ำ"
+REASON_MISSING_MIDDLE_READ_TH = "ไม่มีข้อมูลสถานีกลางทาง"
+REASON_MISSING_TREND_TH = "ไม่มีข้อมูลแนวโน้มระดับน้ำ (ไม่มีค่าก่อนหน้า/ชุดข้อมูลย้อนหลัง)"
+# fix: the shipped ETA is PROP-FLOOD-02 (linear, two windows), an
+# already-registered, already-merged proposal -- the old single reason
+# ("waiting for equation registration") was already false, and was wrong on
+# its own terms before that too: a station simply not RISING is the common
+# case this reads from, not a pending registration. Two separate, accurate
+# reasons replace it.
+REASON_ETA_NOT_RISING_TH = "คำนวณเวลาถึงจุดวิกฤตเฉพาะเมื่อแนวโน้มกำลังขึ้น (RISING) เท่านั้น"
+REASON_ETA_NO_INPUT_TH = "ไม่มีข้อมูลระดับน้ำย้อนหลังพอจะคำนวณอัตราขึ้น"
+REASON_ETA_NO_SERIES_TH = "ไม่ทราบแนวโน้ม ไม่มีชุดข้อมูลระดับน้ำย้อนหลัง"
+
+
+def _jev_calc_block(sandwich_answer: dict) -> dict:
+    """A `calc` block for the jev_decision's own colour/headroom and
+    trend sections (home-shelter's `calc` -- advice/home_shelter.py -- already covers
+    the home-as-shelter verdict; this is the sibling block for the sandwich/ring
+    decision itself), each shaped like `advice.schema.json`'s `calc`
+    (eq/inputs/missing/result, reasons when non-empty) -- never a new confidence
+    computation. `floodconnect_model.sandwich_decision`'s own `confidence` (already
+    HIGH/MEDIUM/LOW/NONE, already lowered by exactly these same top/middle-read gaps
+    -- `_sandwich_read_top`/`sandwich_decision`'s MEDIUM/LOW branches) is read here
+    verbatim, never recomputed a second time by a competing rule -- this function
+    only NAMES which inputs that existing confidence computation was missing, per
+    the founder's "บอกเป็นระดับความมั่นใจแทน" ask for transparency. PENDING THE
+    FOUNDER: whether colour/trend should ALSO step `confidence` down further for a
+    missing input `sandwich_decision` does not already account for (e.g. a bare
+    UNKNOWN trend) was not attempted here -- doing so without a wide measured
+    sweep risked silently shifting confidence on a large fraction of already-
+    validated answers, the same risk `advice/home_shelter.py`'s own note on
+    its rules 4-9 flags."""
+    z0 = sandwich_answer.get("z0") or {}
+    why = sandwich_answer.get("why") or []
+    mid = sandwich_answer.get("mid") or {}
+    colour = sandwich_answer.get("colour") or "UNKNOWN"
+    eq_status = sandwich_answer.get("eq") or {}
+
+    colour_missing: list[str] = []
+    colour_reasons: list[str] = []
+    if z0.get("h") is None:
+        colour_missing.append("z0_reading")
+        colour_reasons.append(REASON_MISSING_Z0_READING_TH)
+    if "TOP_NO_UPSTREAM" in why or "TOP_UNREAD" in why:
+        colour_missing.append("upstream_read")
+        colour_reasons.append(REASON_MISSING_UPSTREAM_READ_TH)
+    if not mid.get("read") and sandwich_answer.get("needs_middle"):
+        colour_missing.append("middle_read")
+        colour_reasons.append(REASON_MISSING_MIDDLE_READ_TH)
+    colour_calc = {
+        "eq": "floodconnect_model.colour_ladder+sandwich_decision",
+        "inputs": [{"name": "z0_reading", "value": z0.get("h"),
+                     "source": "declared" if z0.get("h") is not None else "missing",
+                     "time": z0.get("observed_at_utc")}],
+        "missing": colour_missing,
+        "result": colour,
+    }
+    if colour_reasons:
+        colour_calc["reasons"] = colour_reasons
+
+    trend = z0.get("trend") or "UNKNOWN"
+    trend_missing = ["z0_trend_series"] if trend == "UNKNOWN" else []
+    trend_calc = {
+        "eq": "floodconnect_model.trend_state",
+        "inputs": [{"name": "h_t", "value": z0.get("h"),
+                     "source": "declared" if z0.get("h") is not None else "missing",
+                     "time": z0.get("observed_at_utc")}],
+        "missing": trend_missing,
+        "result": trend,
+    }
+    if trend_missing:
+        trend_calc["reasons"] = [REASON_MISSING_TREND_TH]
+
+    # ETA (PROP-FLOOD-02, linear, two windows): `_answer_sandwich`'s own `z0.eta`
+    # (`floodconnect_model.rise_eta_hours_range`, computed above whenever trend ==
+    # RISING) is passed through here verbatim -- never recomputed a second time.
+    # This is PROP-FLOOD-01/02 arithmetic (already-registered, already-merged
+    # proposals) called twice at two different lags -- NOT PROP-FLOOD-11 (the
+    # separately-registered acceleration-aware quadratic, which is registered but
+    # not implemented in this release; v0.2 target). `result` is "GATED" only when
+    # the module switch itself is off, or trend is not RISING (nothing to compute)
+    # -- otherwise it carries the real range-of-hours, or one of the refusals the
+    # code actually applies (AT_BANK/NO_READOUT/PUMP_STATE_CHANGED/
+    # PUMP_STATE_UNDECLARED/NO_RISE/NOT_WITHIN_HORIZON), per threshold.
+    z0_eta = sandwich_answer.get("z0", {}).get("eta")
+    trend = z0.get("trend") or "UNKNOWN"
+    if trend != "RISING" or z0_eta is None:
+        # Name the REAL reason -- "not RISING" (STABLE/FALLING, the common
+        # case) is never the same as "no series at all" (UNKNOWN trend, no
+        # previous reading to compare against), and neither is "no usable
+        # series" (RISING, but the eta_inputs this needs were missing).
+        if trend == "UNKNOWN":
+            eta_reason = REASON_ETA_NO_SERIES_TH
+        elif trend != "RISING":
+            eta_reason = REASON_ETA_NOT_RISING_TH
+        else:
+            eta_reason = REASON_ETA_NO_INPUT_TH
+        eta_calc = {
+            "eq": "PROP-FLOOD-02",
+            "inputs": [],
+            "missing": ["PROP-FLOOD-02"],
+            "result": "GATED",
+            "reasons": [eta_reason],
+            "tag": eq_status.get("PROP-FLOOD-02") or "GATED",
+        }
+    else:
+        eta_calc = {
+            "eq": "PROP-FLOOD-02",
+            "inputs": [{"name": "z0_reading", "value": z0.get("h"),
+                         "source": "declared", "time": z0.get("observed_at_utc")}],
+            "missing": [],
+            "result": z0_eta,
+            "tag": "PROPOSAL (linear, two windows)",
+        }
+
+    return {"colour": colour_calc, "trend": trend_calc, "eta": eta_calc}
+
+
+def _build_jev_decision(sandwich_answer: dict, lat: "float | None" = None,
+                         lon: "float | None" = None) -> dict:
+    """`_answer_sandwich`'s raw output -> the jev_decision shape
+    (schemas/jev_decision.schema.json). Fills a sensible UNKNOWN/empty default for
+    every required schema field so even an early-UNKNOWN `_answer_sandwich` return
+    (NO_Z0/NO_DB/NO_Z0_READING/rings-unavailable, none of which carry
+    layers/facts/steps/mid) validates against the schema -- never raises."""
+    import floodconnect_model
+
+    colour = sandwich_answer.get("colour") or "UNKNOWN"
+    label_th = (sandwich_answer.get("label_th")
+                or floodconnect_model.COLOUR_LABEL_TH.get(colour, "ไม่ทราบ"))
+    level = sandwich_answer.get("level") or floodconnect_model.FOLD_TO_LEGACY.get(colour, "UNKNOWN")
+    z0 = sandwich_answer.get("z0") or {}
+    z0_fresh = bool(z0.get("fresh"))
+    why = sandwich_answer.get("why")
+    if why is None:
+        why = [sandwich_answer["reason"]] if sandwich_answer.get("reason") else []
+    chosen = _choice_for_jev(colour)
+    noul = _noul_for_jev(sandwich_answer)
+    return {
+        "colour": colour,
+        "label_th": label_th,
+        "level": level,
+        "official_tier": bool(sandwich_answer.get("official_tier", False)),
+        "scope": _answer_scope((z0 or {}).get("id"), lat, lon),
+        "score": label_th,
+        "choice": {
+            # fix (founder ruling 2026-10-06): RED's own colour-only choice now
+            # reuses "ออกจากบ้านไปจุดปลอดภัย" (see `_CHOICE_BY_COLOUR` above),
+            # the same value the home-as-shelter LEAVE_NOW verdict already
+            # contributes below -- de-duplicated here so `options` stays the
+            # same 7 distinct closed-vocabulary values, never 8 with one
+            # repeated twice.
+            "options": list(dict.fromkeys(
+                list(_CHOICE_BY_COLOUR.values())
+                + ["อยู่บ้านแบบเตรียมพร้อม", "เตรียมออกจากบ้าน", "ออกจากบ้านไปจุดปลอดภัย"])),
+            "chosen": chosen,
+            "p": None,
+            "audition": [{"option": chosen, "s4": noul["N2"],
+                          "reason": why[0] if why else colour}],
+        },
+        "noul": noul,
+        "confidence": sandwich_answer.get("confidence") or "NONE",
+        "gate": _gate_for_jev(colour, z0_fresh),
+        "licence": sandwich_answer.get("gate") or "REFUSED",
+        "why": why,
+        "eq": sandwich_answer.get("eq") or {},
+        "facts": sandwich_answer.get("facts") or [],
+        "layers": sandwich_answer.get("layers") or {"Z0": "UNKNOWN", "Z1": "UNKNOWN",
+                                                      "Z2": "UNKNOWN", "Z3": "UNKNOWN"},
+        "trace": {
+            "steps": sandwich_answer.get("steps") or [],
+            "reasons": why,
+            "needs_middle": bool(sandwich_answer.get("needs_middle", False)),
+            "mid": sandwich_answer.get("mid") or {"read": False, "rows": []},
+        },
+        # Colour/headroom, trend and ETA calc transparency -- see
+        # `_jev_calc_block`'s own docstring for what this does and deliberately
+        # does not (recompute confidence).
+        "calc": _jev_calc_block(sandwich_answer),
+    }
+
+
+def _compact_jev_decision(jev: dict) -> dict:
+    """Non-verbose shape for `out["jev_decision"]`, per the M8 schema design: keeps
+    only colour, label, confidence, gate, layers, facts, choice.chosen, the first 3
+    prepare_steps, and home_shelter.{verdict, missing_inputs}. `layers`/`facts` reuse
+    `_compact_sandwich`'s own encoding (same token-budget reasoning) rather than a
+    second, divergent compacting rule."""
+    inner = _compact_sandwich(jev)  # colour/label_th/confidence/facts/layers, trimmed
+    # fix (token budget, tests/test_token_budget.py): `label_th` is dropped from the
+    # compact jev_decision -- it is the exact same Thai word already shown in
+    # `emergency_card.label_th`, right next to this block in the same answer; a
+    # caller who needs it standalone (without the card) uses `verbose=True`.
+    out = {"colour": inner.get("colour")}
+    # fix (founder ruling 2026-10-06, scope tagging): kept in the compact
+    # answer too -- a single short enum value, every answer carries it, not
+    # only `--verbose`.
+    if jev.get("scope"):
+        out["scope"] = jev["scope"]
+    if inner.get("confidence"):
+        out["confidence"] = inner["confidence"]
+    out["gate"] = jev.get("gate")
+    if "layers" in inner:
+        out["layers"] = inner["layers"]
+    if "facts" in inner:
+        # fix (token budget, tests/test_token_budget.py): each fact id is trimmed to
+        # the part after its last ':' (e.g. "gauge:bma_watermap:WL.SSB.08" ->
+        # "WL.SSB.08") -- the station CODE is the information a reader actually acts
+        # on; the full KG id prefix stays available on `--verbose`. Only this
+        # compacted copy is trimmed -- `_compact_sandwich`'s own direct callers
+        # (tests/test_m8_safety_round.py) are unaffected.
+        out["facts"] = [[(f[0].rsplit(":", 1)[-1] if f else f[0]), f[1]] for f in inner["facts"]]
+    # fix (compact jev_decision design): `choice.chosen` is kept in the
+    # compact jev_decision after all, overriding this file's earlier token-
+    # budget fix note (which read it as a pure duplicate of
+    # `emergency_card.do_th`; it no longer reliably is one, since
+    # `advice/card.py`'s own headline fix now gives `do_th` a verdict-aware
+    # headline that can differ from the plain colour choice). Kept as a single
+    # short choice7 string -- the cheapest form that still carries the
+    # information.
+    if (jev.get("choice") or {}).get("chosen"):
+        out["choice"] = {"chosen": jev["choice"]["chosen"]}
+    # fix (compact jev_decision design): the compact jev_decision now also
+    # carries the first 3 `prepare_steps` (current-colour-first, per
+    # `advice.ladder`'s own reorder) as COMPACT `{"id": ...}` pointers
+    # (schemas/advice.schema.json's own documented compact-item alt -- not a
+    # new shape) plus `home_shelter.{verdict, missing_inputs}`. This file's
+    # earlier note recorded that even this smallest encoding alone over-ran the
+    # populated-DB budget's required safe margin -- the token room this needs
+    # is made by trimming `next_action.who_to_call` (below, same function
+    # family) instead of loosening TOKEN_BUDGET/MARGIN_TOKENS.
+    advice_full = jev.get("advice") or {}
+    prepare_steps = advice_full.get("prepare_steps") or []
+    home = advice_full.get("home_shelter") or {}
+    compact_advice: dict = {}
+    if prepare_steps:
+        compact_advice["prepare_steps"] = [{"id": s["id"]} for s in prepare_steps[:3] if s.get("id")]
+    home_compact: dict = {}
+    if home.get("verdict"):
+        home_compact["verdict"] = home["verdict"]
+    if home.get("missing_inputs"):
+        home_compact["missing_inputs"] = home["missing_inputs"]
+    # fix (S4/S5 wording pass, founder subtractive-fix ruling 2026-10-06): the pending-founder tag
+    # (`tag`/`rule`) used to appear only on the `--verbose` payload -- the
+    # default compact answer carried the verdict with no signal that rules
+    # 4-9 are this repo's OWN escalation default, not founder-confirmed. `tag`
+    # (the fixed string, cheap) is now kept in the compact output too; `rule`
+    # stays verbose-only (it names which of rules 4-9 fired, a detail the
+    # compact payload does not need to stay under budget).
+    if home.get("tag"):
+        home_compact["tag"] = home["tag"]
+    if home_compact:
+        compact_advice["home_shelter"] = home_compact
+    if compact_advice:
+        out["advice"] = compact_advice
+    # fix (founder ruling 2026-10-06, "ถ้าน้ำขึ้นต้องบังคับให้คำนวณอัตราล้นตลิ่ง"):
+    # the RISING time-to-bank ETA used to be reachable ONLY on `--verbose`
+    # (buried inside `calc.eta.result`) -- a default, non-verbose caller (the
+    # common case) never saw it at all, which contradicts "mandatory ETA when
+    # RISING, never silently skipped". A short `range_h`-only summary per
+    # threshold (never the full `calc` transparency block, which stays
+    # verbose-only) is added here whenever PROP-FLOOD-02 actually produced a
+    # real range for that threshold.
+    eta_result = ((jev.get("calc") or {}).get("eta") or {}).get("result")
+    if isinstance(eta_result, dict):
+        eta_compact: dict = {}
+        for threshold in ("warning", "critical"):
+            one = eta_result.get(threshold)
+            if isinstance(one, dict) and one.get("status") == "OK" and one.get("range_h"):
+                eta_compact[threshold] = {"range_h": one["range_h"]}
+        if eta_compact:
+            out["eta"] = eta_compact
+    return out
+
+
 def build_answer(at: str, refresh: bool = False, on_refresh_progress=None,
-                  verbose: bool = False, all_sources: bool = False) -> dict:
+                  verbose: bool = False, all_sources: bool = False,
+                  write_gap_log: bool = False,
+                  household: "dict | None" = None) -> dict:
     """The one real implementation behind both `kb.py answer`/`compute` (`cmd_answer`
     below) and the MCP `floodconnect_answer` tool (there
     used to be no MCP equivalent of `--refresh` because this logic lived only inside
@@ -3080,7 +4519,26 @@ def build_answer(at: str, refresh: bool = False, on_refresh_progress=None,
     `all_sources=False` (the default, fix) narrows a `refresh=True` fetch
     to `collect.ANSWER_SOURCES` -- see `_refresh_relevant_sources`'s own docstring.
     `all_sources=True` (wired to `kb.py answer --all`) restores the full wired-source
-    sweep for a human who explicitly wants it."""
+    sweep for a human who explicitly wants it.
+
+    `write_gap_log` (M8 P-B, new): when True, actually appends one policy_gap_record to
+    `data/policy_gap_log.jsonl` via `advice.gap_log.log_gap` (see that module's own
+    docstring -- append-only, "a" mode only). Defaults to False, same discipline this
+    function's `refresh` default already documents ("tests call it directly against a
+    tmp/empty DB and must never touch the network" -- here: must never mutate the real
+    repo's `data/` store either, which this repo's own test-isolation guard enforces
+    repo-wide). `policy_gap_ref` is ALWAYS present in the answer either way --
+    `{"path": "data/policy_gap_log.jsonl", "record_id": None}` when
+    `write_gap_log=False` (nothing was actually written this call), or a real truncated
+    record_id when True.
+
+    `household` (P-D, new): a `schemas/household_declaration.schema.json`-shaped
+    dict, or `None` (the default -- no declaration given this call, same as every
+    pre-P-D caller). Passed straight through to `advice.build(jev_decision,
+    household)`, which fills `jev_decision["advice"]["home_shelter"]` --
+    `UNKNOWN_ASK_INPUTS` (never a silent STAY) when `household` is `None` or is
+    missing a required field. Wired to `kb.py answer --household <json>` (CLI) and
+    the MCP `floodconnect_answer` tool's own `household` parameter."""
     area_id, lat, lon = _resolve_area(at)
     if _outside_thailand(lat, lon):
         # fix: never let a coordinate outside Thailand (a typo, or a later measurement pass
@@ -3139,6 +4597,20 @@ def build_answer(at: str, refresh: bool = False, on_refresh_progress=None,
         if _nationwide is not None:
             accountability_answer = _nationwide
     cctv_answer = _answer_cctv(lat, lon)
+    # fix: the Jev Sandwich answer is computed HERE, before
+    # `_answer_next_action`, and handed straight in -- not computed again afterwards
+    # and folded in as an afterthought. `dual_state.current_local_state` must be the
+    # sandwich's own folded colour (both up AND down) whenever Z0 is fresh, and
+    # UNKNOWN when it is not; building `next_action_answer` from the legacy
+    # classifier FIRST and only raising it later (the pre-fix order) is exactly how
+    # `current_local_state=RED` from a merely-nearby legacy station used to survive
+    # next to a lower sandwich `colour` in the same `dual_state` dict. Never raises
+    # (same contract `_answer_sandwich` already documents) -- any failure degrades
+    # to an honest UNKNOWN `colour` with a `reason`, same as before this fix.
+    try:
+        sandwich_answer = _answer_sandwich(lat, lon, refresh)
+    except Exception as e:  # pragma: no cover - defensive, must never crash `answer`
+        sandwich_answer = {"colour": "UNKNOWN", "reason": f"sandwich failed: {e}"}
     # Classification and `next_action` always see the FULL `hazard_answer`
     # (`_classify_forward_hazard`/`_answer_next_action` run on the uncapped per_model
     # list below) -- only the payload's own `hazard` field is shrunk for display, so
@@ -3146,7 +4618,7 @@ def build_answer(at: str, refresh: bool = False, on_refresh_progress=None,
     next_action_answer = _answer_next_action(
         area_id, state_answer=state_answer, hazard_answer=hazard_answer,
         accountability_answer=accountability_answer, lat=lat, lon=lon, verbose=verbose,
-        refresh_ran=refresh, raw_at=at)
+        refresh_ran=refresh, raw_at=at, sandwich_answer=sandwich_answer)
     # Finding: the "state" source_tag's epistemic_class
     # (LIVE_DATA_SYSTEM -> "LIVE_OBSERVATION" in the RKG) describes what KIND of system
     # this field structurally comes from, not whether THIS run's own data was actually
@@ -3201,6 +4673,19 @@ def build_answer(at: str, refresh: bool = False, on_refresh_progress=None,
     # emitted instead of omitting the key outright, so every answer always has a
     # `cctv` block, present or honestly OPEN -- never silently missing.
     if cctv_answer.get("cameras"):
+        # fix (token budget, fix (compact jev_decision)): non-verbose drops a `null` `url` key
+        # outright (a camera with no sourced URL) rather than carrying an explicit
+        # null on every such row -- `name`/`distance_km`/`within_radius` (what a
+        # caller actually acts on) are unchanged, nothing is ever a new claim,
+        # only an absent-value key removed. `name` is only tested field in the
+        # full answer (tests/test_kb_answer.py); `url`'s own exact value is
+        # tested only on `_parse_cctv_document_text` directly, never on this
+        # payload path.
+        if not verbose:
+            cctv_answer = dict(cctv_answer)
+            cctv_answer["cameras"] = [
+                {k: v for k, v in cam.items() if not (k == "url" and v is None)}
+                for cam in cctv_answer["cameras"]]
         out["cctv"] = cctv_answer
     else:
         out["cctv"] = {"tag": "OPEN", "next_action": RUN_REFRESH_ACTION}
@@ -3208,6 +4693,17 @@ def build_answer(at: str, refresh: bool = False, on_refresh_progress=None,
     # appended last so every key above keeps its existing order/bytes on a
     # populated DB (byte-identical to v0.1.3 except for this one new key).
     out["kg_anchor"] = _kg_anchor(lat, lon)
+    # fix (token budget, fix (compact jev_decision)): `station_ids` is trimmed to each id's own
+    # code (after its last ':', e.g. "gauge:thaiwater_bma:WL.SSB.08" ->
+    # "WL.SSB.08") in non-verbose mode -- the same trim `_compact_jev_decision`
+    # already applies to `facts` ids, for the same reason (the station CODE is
+    # what a reader acts on; the full KG id prefix is a `--verbose` detail).
+    # Unreferenced by any test (grep -rn "station_ids" tests/ found nothing), so
+    # this trim is safe.
+    if not verbose and isinstance(out["kg_anchor"].get("station_ids"), list):
+        out["kg_anchor"]["station_ids"] = [
+            (sid.rsplit(":", 1)[-1] if isinstance(sid, str) else sid)
+            for sid in out["kg_anchor"]["station_ids"]]
     # fix: if the KG index could not be read, this answer has no anchor behind
     # it -- cap dual_state.confidence at LOW so a caller cannot relay a HIGH
     # confidence that was never actually anchored. Only dual_state is capped;
@@ -3218,7 +4714,145 @@ def build_answer(at: str, refresh: bool = False, on_refresh_progress=None,
         _ds = out["next_action"].get("dual_state", {})
         if _ds.get("confidence") == "HIGH":
             _ds["confidence"] = "LOW"
-    return out
+    # M8 P-B: `out["sandwich"]` is replaced by `out["jev_decision"]` (schemas/
+    # jev_decision.schema.json) -- the Jev Sandwich block (P-A, unchanged) wrapped
+    # with the new Choice/Score/Noul/gate envelope fields (`_build_jev_decision`,
+    # above). The answer's own key ORDER is also reshaped per the M8 schema design:
+    # `emergency_card` first (the first audience), then `jev_decision`, then the
+    # pre-existing fields (unchanged order among themselves), then `policy_gap_ref`
+    # last -- a real reorder, not merely an append, because the schema design calls
+    # emergency_card "the first key of the answer".
+    jev_decision = _build_jev_decision(sandwich_answer, lat, lon)
+
+    # P-D wiring: kb.build_answer -> _answer_sandwich -> advice.build(jev,
+    # household) -> jev_decision.advice -> card -> gap_log (design's own order).
+    # Never raises on a real answer -- a failed advice build degrades to the same
+    # empty/OPEN shape `advice.build` itself returns for `household=None`, never a
+    # crashed `answer` call.
+    try:
+        import advice as _advice_mod
+        jev_decision["advice"] = _advice_mod.build(jev_decision, household)
+    except Exception as e:  # pragma: no cover - defensive, must never crash `answer`
+        jev_decision["advice"] = {"prepare_steps": [], "home_shelter": {
+            "verdict": "UNKNOWN_ASK_INPUTS", "missing_inputs": [], "checklist": [],
+            "dry_gate": {"state": "UNKNOWN"}, "sustainment": {"state": "UNKNOWN"},
+            "protective_state_raw": None, "error": str(e)},
+            "public_shelter": {"state": "OPEN", "note": f"advice build failed: {e}"}}
+
+    # The home-as-shelter verdict (when one was actually reached -- never on
+    # UNKNOWN_ASK_INPUTS, which carries no founder-confirmed action of its own)
+    # outranks the colour's own choice7 option, per the M8 schema design's mapping
+    # table ("When a verdict exists, it outranks the colour's own option").
+    _home_verdict = (jev_decision["advice"].get("home_shelter") or {}).get("verdict")
+    if _home_verdict and _home_verdict != "UNKNOWN_ASK_INPUTS":
+        _chosen = _choice_for_jev(jev_decision["colour"], verdict=_home_verdict)
+        jev_decision["choice"]["chosen"] = _chosen
+        jev_decision["choice"]["audition"] = [
+            {"option": _chosen, "s4": jev_decision["noul"]["N2"], "reason": _home_verdict}
+        ]
+        # Gate rule's 4th row (design table): the chosen option conflicting with an
+        # official order gets REJECT for that audition row -- the only way a verdict
+        # can "conflict" with an official order here is an EVACUATE instruction that
+        # did NOT fold into FOLLOW_OFFICIAL_ORDER, which `decide_home_shelter` never
+        # lets happen (rule 1 always wins first) -- so this is unreachable today and
+        # documented, not a silent no-op.
+        if _home_verdict == "FOLLOW_OFFICIAL_ORDER":
+            jev_decision["gate"] = "ESCALATE"
+
+    # live run, 2026-10-06: `answer`, like `check` (see kb.cmd_check),
+    # must not leave a real trigger unrecorded -- any answer whose colour is at
+    # least YELLOW, or whose Z0 is RISING, ALSO applies the cross-session WATCHLIST
+    # state machine (the local watchlist.csv/watch_log.csv/.ics write), not only a
+    # separate `kb.py watch` call. This runs ONLY when `refresh=True` (this
+    # function's own network-allowed flag -- an `--offline` answer makes no new live
+    # call of its own, including this one) and never raises: a failed watchlist
+    # write must never crash `answer` itself.
+    if refresh and (jev_decision.get("colour") in ("YELLOW", "ORANGE", "RED")
+                     or (sandwich_answer.get("z0") or {}).get("trend") == "RISING"):
+        try:
+            import l0_check as _l0_check_mod
+            import watchlist as _watchlist_mod
+            _l0_result = _l0_check_mod.check(at)
+            _watchlist_mod.apply_watch_from_l0_result(at, _l0_result)
+        except Exception:  # pragma: no cover - defensive, must never crash `answer`
+            pass
+
+    out["jev_decision"] = jev_decision if verbose else _compact_jev_decision(jev_decision)
+
+    try:
+        import advice.card as _card_mod
+        _card_input = dict(jev_decision)
+        _card_input["z0"] = sandwich_answer.get("z0")
+        emergency_card = _card_mod.build_card(_card_input, lat=lat, lon=lon)
+    except Exception as e:  # pragma: no cover - defensive, must never crash `answer`
+        emergency_card = {"colour": "UNKNOWN", "label_th": "ไม่ทราบ",
+                           "now_th": f"emergency card failed: {e}", "do_th": "",
+                           "hotlines": [], "not_official": True}
+
+    # fix (token budget): when nothing was actually written this call (the default --
+    # see `write_gap_log` above), the ref is just `{"record_id": None}` -- no `path`
+    # key at all, since a path pointing at a file this call never touched would be
+    # both inaccurate and (token budget) unnecessary cost for a constant it is cheap
+    # to document instead (the real path is always `data/policy_gap_log.jsonl`, see
+    # `write_gap_log`'s own docstring and `advice/gap_log.DEFAULT_LOG_PATH`).
+    policy_gap_ref = {"record_id": None}
+    if write_gap_log:
+        try:
+            import advice.gap_log as _gap_log_mod
+            _blockers = []
+            if "GATED" in ((sandwich_answer.get("eq") or {}).get("PROP-FLOOD-02") or ""):
+                _blockers.append("PROP-FLOOD-02_GATED")
+            if "OUTLET_CRITICAL" in jev_decision.get("why", []):
+                _blockers.append("OUTLET_CRITICAL")
+            # fix (founder ruling 2026-10-06, KG-only): every ring the KG has no
+            # declared edge for is logged by name, same gap record -- never a
+            # silent UNKNOWN with no trace of WHY it is unknown.
+            for _ring_name in (sandwich_answer.get("kg_gaps") or []):
+                _blockers.append(f"KG_GAP:{_ring_name}")
+            _facts = jev_decision.get("facts") or []
+            _outlet_bottleneck = next((f[0] for f in _facts
+                                        if len(f) > 2 and f[2] in ("OUTLET", "OUTLET_MAIN_STEM")),
+                                       None)
+            _written_ref = _gap_log_mod.log_gap(
+                blockers=_blockers,
+                run_at=out["generated_at"],
+                sensors=[f[0] for f in _facts if f],
+                outlet_bottleneck=_outlet_bottleneck,
+                responsible_agency=None,
+                path=HERE / "data" / "policy_gap_log.jsonl")
+            # fix (token budget, tests/test_token_budget.py): the answer's own
+            # `policy_gap_ref` carries a RELATIVE path (never this machine's absolute
+            # local path -- also keeps a local filesystem path out of an answer a
+            # caller might relay elsewhere) and a truncated record_id (first 16 hex
+            # chars, same truncation pattern kb.py's own kg_anchor.kg_sha256 already
+            # uses for its "first 12 hex chars") -- the FULL untruncated record and
+            # its full sha256 are still what is actually hashed/written to the log
+            # file itself; only the answer's own echo of it is shortened.
+            policy_gap_ref = {"path": "data/policy_gap_log.jsonl",
+                               "record_id": _written_ref["record_id"][:16]}
+        except Exception as e:  # pragma: no cover - defensive, must never crash `answer`
+            policy_gap_ref = {"path": None, "record_id": None, "error": str(e)}
+
+    out["emergency_card"] = emergency_card
+    out["policy_gap_ref"] = policy_gap_ref
+    # fix (founder ruling 2026-10-06, KG-only): a ring the KG has no declared
+    # edge for is UNKNOWN, never a silent one -- the names are already
+    # computed (`_answer_sandwich`'s own `kg_gaps`, used above to build the
+    # gap-log blockers) but were never actually returned to the caller.
+    # Always present (even `write_gap_log=False`, which only controls whether
+    # a record is PERSISTED) -- empty list when nothing was missing.
+    out["kg_gaps"] = sandwich_answer.get("kg_gaps") or []
+
+    # Final key order (M8 schema design): emergency_card, jev_decision, then every
+    # pre-existing field in its existing relative order, then policy_gap_ref last.
+    _ordered_rest = [k for k in out
+                      if k not in ("emergency_card", "jev_decision", "policy_gap_ref")]
+    ordered_out = {"emergency_card": out["emergency_card"],
+                   "jev_decision": out["jev_decision"]}
+    for k in _ordered_rest:
+        ordered_out[k] = out[k]
+    ordered_out["policy_gap_ref"] = out["policy_gap_ref"]
+    return ordered_out
 
 
 def cmd_answer(args) -> int:
@@ -3250,17 +4884,44 @@ def cmd_answer(args) -> int:
               "(refresh is now the default; --offline opts out of it).", file=sys.stderr)
         return 2
     refresh = not getattr(args, "offline", False)
+    household = None
+    _household_arg = getattr(args, "household", None)
+    if _household_arg:
+        import json as _json_mod
+        try:
+            household = _json_mod.loads(_household_arg)
+        except ValueError as e:
+            print(f"ERROR: --household is not valid JSON: {e}", file=sys.stderr)
+            return 2
     try:
         payload = build_answer(args.at, refresh=refresh,
                                 on_refresh_progress=_print_refresh_progress,
                                 verbose=getattr(args, "verbose", False),
-                                all_sources=getattr(args, "all_sources", False))
+                                all_sources=getattr(args, "all_sources", False),
+                                household=household,
+                                # fix (founder ruling 2026-10-06, KG-only): logged
+                                # by default at this real entrypoint -- `build_answer`
+                                # itself stays False by default (same discipline as
+                                # its own `refresh` default; see its docstring).
+                                # The `getattr` default is True (not False): a real
+                                # argparse Namespace always sets `no_gap_log` itself
+                                # (so this default is never actually consulted there),
+                                # while a hand-rolled test `Args` double that never
+                                # mentions gap logging at all now safely skips it,
+                                # same as before this fix, rather than silently
+                                # writing to this repo's real `data/` store.
+                                write_gap_log=not getattr(args, "no_gap_log", True))
     except _BadAt as e:
         print(f"ERROR: {e}", file=sys.stderr)
         return 2
     if args.json:
         import json as _json
-        print(_json.dumps(payload, ensure_ascii=False, indent=2))
+        # Minified (no indent, compact separators) -- same convention
+        # `cmd_locate` below already uses for its own `--json` path -- since
+        # this is the text a token-budgeted LLM caller actually reads, and
+        # `indent=2` was spending tokens on whitespace this path's own
+        # client never needs structurally.
+        print(_json.dumps(payload, ensure_ascii=False, separators=(",", ":")))
         return 0
     print(f"# floodconnect answer -- {args.at} ({payload['generated_at']})")
     print(f"สถานะปัจจุบัน [{payload['state'].get('tag')}]:")
@@ -3508,6 +5169,26 @@ def main(argv: list[str] | None = None) -> int:
     p_history.add_argument("--kind")
     p_history.set_defaults(func=cmd_history)
 
+    p_check = sub.add_parser(
+        "check",
+        help="L0 daily check: exactly 3 keyless sources (TMD CAP, rain, Z0), one "
+             "line output -- QUIET or ESCALATE (see TRIGGERS.md section 1/2/6, "
+             "l0_check.py)")
+    p_check.add_argument("--at", required=True,
+                          help="area_id (sammakorn, ram53) or 'lat,lon'")
+    p_check.add_argument("--json", action="store_true")
+    p_check.set_defaults(func=cmd_check)
+
+    p_watch = sub.add_parser(
+        "watch",
+        help="Cross-session watchlist: L0 check + ACTIVE/COOLING/CLOSED state "
+             "machine + local store + watch_update/alert_event block (see "
+             "WATCHLIST.md, watchlist.py)")
+    p_watch.add_argument("--at", required=True,
+                          help="area_id (sammakorn, ram53) or 'lat,lon'")
+    p_watch.add_argument("--json", action="store_true")
+    p_watch.set_defaults(func=cmd_watch)
+
     p_reindex = sub.add_parser("reindex", help="Rebuild docs/knowledge/INDEX.yaml")
     p_reindex.set_defaults(func=cmd_reindex)
 
@@ -3560,6 +5241,19 @@ def main(argv: list[str] | None = None) -> int:
                                 "(the sources that actually feed this answer). Pass "
                                 "--all to fetch the full wired-source sweep instead. "
                                 "No effect with --offline.")
+    p_answer.add_argument("--household", default=None,
+                           help="P-D: a JSON object matching "
+                                "schemas/household_declaration.schema.json -- wires "
+                                "the home-as-shelter (stay-vs-go) verdict into "
+                                "jev_decision.advice.home_shelter/choice/the card's "
+                                "first step. Omitted (default): home_shelter comes "
+                                "back UNKNOWN_ASK_INPUTS, never a silent STAY.")
+    p_answer.add_argument("--no-gap-log", dest="no_gap_log", action="store_true",
+                           help="Opt OUT of the default policy-gap logging -- a ring "
+                                "the KG has no declared edge for is appended to "
+                                "data/policy_gap_log.jsonl by default (founder ruling "
+                                "2026-10-06, KG-only: a missing edge is a logged gap, "
+                                "never a silent UNKNOWN). Pass this to skip that write.")
     p_answer.set_defaults(func=cmd_answer)
 
     p_locate = sub.add_parser(

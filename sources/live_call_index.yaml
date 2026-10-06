@@ -1,0 +1,171 @@
+# Live-call index for docs/API_MANUAL.md -- one row per (KG node class, source).
+# Generated 2026-10-05 from a live-GET pass (this pass, 2026-10-05) over every
+# fetchable collect.py source plus a direct live-GET check of bma_watermap,
+# hii_waterlevel_load, bma_pumphistory, bma_klongmap, analyst/dam, and the
+# StationDetail graph hunt. No live VALUES are stored here -- key field, read paths,
+# freshness and has_history only, per the standing rule ("the KG node only says what
+# to call; the live API returns the values"). `auth: none` on every row below marks it
+# keyless -- a keyed endpoint (twa-api-public.thaiwater.net) never appears here; see
+# sources/sandwich_fetch_order.yaml's optional_keyed list instead.
+
+kg_join_census:
+  kg_sha256_12: "33fcd36bafb7"
+  measured: "2026-10-05"
+  note: "Node-class prefix counts measured by one temporary scratch copy of the shipped KG graphml, counted then deleted -- WL.SMK.01/WL.BMA.02/WL.SSB.13 confirmed NOT_JOINED; WL.SSB.08 confirmed joined (gauge:thaiwater_bma:WL.SSB.08)."
+
+node_classes_with_no_live_source:
+  - id: water_station_csv
+    note: "A static CSV/metadata catalog class (e.g. hii_water_level_catalog, hii_mou_station_metadata, dnp_yom_basin_telemetry) -- station location only, never a live reading."
+  - id: rid_res_table
+    note: "Name-only list, no coordinate, no numeric value anywhere on the page -- confirmed live 2026-10-05."
+
+rows:
+  - kg_node_class: "gauge:thaiwater_waterlevel:<tele_station_oldcode>"
+    source_id: thaiwater_waterlevel
+    auth: none
+    key_field: station.tele_station_oldcode
+    read_paths: [waterlevel_msl, station.min_bank, station.critical_level_msl, situation_level, diff_wl_bank_text, waterlevel_datetime, waterlevel_msl_previous, diff_wl_bank, station.left_bank, station.right_bank, storage_percent]
+    freshness: {max_age_hours: 24, observed_time_field: waterlevel_datetime}
+    has_history: false
+    live_tested: {at: "2026-10-05T11:20:11+07:00", http: 200, bytes: 1344773}
+
+  - kg_node_class: "gauge:thaiwater_bma:<WL code>"
+    gauge_or_gate: "gate:thaiwater_bma:<WL code> for a gate station -- same source, same payload shape"
+    source_id: thaiwater_canal_waterlevel
+    auth: none
+    key_field: station.canal_oldcode
+    read_paths: [canal_value, canal_datetime, station.bank, station.warning_level, station.critical_level]
+    freshness: {max_age_hours: 24, observed_time_field: canal_datetime}
+    has_history: false
+    live_tested: {at: "2026-10-05T11:20:02+07:00", http: 200, bytes: 226086, note: "newest canal_datetime across all stations was 23h stale at fetch time"}
+
+  - kg_node_class: "gauge:thaiwater_waterlevel:<tele_station_oldcode>"
+    source_id: hii_waterlevel_load
+    auth: none
+    key_field: station.tele_station_oldcode
+    read_paths: [discharge, waterlevel_msl, station.critical_level_m, station.min_bank, waterlevel_datetime]
+    freshness: {max_age_hours: null, observed_time_field: waterlevel_datetime}
+    has_history: false
+    note: "MEASURED 2026-10-05: returns exactly 1 row/station regardless of start_date/end_date range requested (tested both 1-day and 3-day windows) -- NOT a series despite accepting a date range."
+    live_tested: {at: "2026-10-05T11:21:39+07:00", http: 200, bytes: 683832}
+
+  - kg_node_class: "gauge:thaiwater_bma:<WL code>"
+    gauge_or_gate: "gate:thaiwater_bma:<WL code> for a gate station -- same source, same payload shape"
+    source_id: bma_watermap
+    auth: none
+    key_field: water_code
+    read_paths: [wl_in, left_bank, right_bank, warning, critical, txtStatus, site_timestampTH, water_control, watergate01..06, water_id, datediffnow]
+    freshness: {max_age_hours: 24, observed_time_field: site_timestampTH, note: "Thai Buddhist Era string, Bangkok local"}
+    has_history: false
+    not_joined: ["WL.SMK.01", "WL.BMA.02", "WL.SSB.13"]
+    note: "WL.SMK.01 confirmed live, critical=0.44=right_bank. No tick series in this payload -- only wl_in (now) + max_in_day/max_in_yesterday. WL.SMK.01/WL.BMA.02/WL.SSB.13 are confirmed-live readings with NO KG node (NOT_JOINED, kg_join_census above) -- a KG-build gap, not an API gap."
+    live_tested: {at: "2026-10-05T11:20:19+07:00", http: 200, bytes: 510242, stations: 311}
+
+  - kg_node_class: "gauge:thaiwater_bma:<WL code> (same as bma_watermap, joined via water_id)"
+    source_id: bma_station_detail
+    auth: none
+    key_field: "water_id (join via bma_watermap's own water_id field)"
+    read_paths: ["inline <script> Highcharts series: [Date.UTC(Y,M0,D,h,m,s), value_m]"]
+    observed_time_note: "month is 0-indexed in Date.UTC -- observed_at = Y-(M0+1)-D Th:m:s+07:00 (Bangkok local, never shift as if already UTC)"
+    freshness: {max_age_hours: null, observed_time_field: "per-point Date.UTC literal"}
+    has_history: true
+    step_minutes: 5
+    populated: [284, 88]
+    empty: [51, 312]
+    thresholds_source: "bma_watermap (this page's own txt_warning/txt_critical form fields are EDIT-FORM DEFAULTS, never the authoritative threshold)"
+    note: "CONFIRMED populated for id=284 (WL.SMK.01, 575 points) and id=88 (WL.SSB.08, 576 points) -- the confirmed series lead in this registry. EMPTY for id=51 and id=312 (WL.SSB.13) at fetch time -- population is per-station, not universal."
+    live_tested: {at: "2026-10-05T11:24:38+07:00", http: 200, bytes: 480017, id: 284, points: 575}
+
+  - kg_node_class: "gate:hii_watergate:<station.id> | weir:hii_watergate:<station.id> | pump_station:hii_watergate:<station.id>"
+    source_id: hii_watergate
+    auth: none
+    key_field: station.id
+    read_paths: [watergate_in, watergate_out, floodgate_open, pump_on, watergate_datetime_in]
+    freshness: {max_age_hours: null, observed_time_field: watergate_datetime_in}
+    has_history: false
+    note: "Newest watergate_datetime_in on 2026-10-05 run was AHEAD of fetch time -- clock/feed anomaly on HII's side."
+    live_tested: {at: "2026-10-05T11:19:49+07:00", http: 200, bytes: 3593188, rows: 2315}
+
+  - kg_node_class: "pump_station:pumphistory:<station_code>"
+    source_id: bma_pumphistory
+    auth: none
+    key_field: station_code
+    read_paths: []
+    freshness: {max_age_hours: 24, observed_time_field: null}
+    has_history: false
+    note: "DEAD -- HTTP 404, confirmed independently 3 times (11:13, 11:20, and once more this pass) on 2026-10-05. Lead: bma_watermap's water_url -> bmawaterflow.bangkok.go.th, confirmed a Vue SPA shell (HTTP 200) but the real API call not yet isolated."
+    live_tested: {at: "2026-10-05T11:20:37+07:00", http: 404, bytes: 1245}
+
+  - kg_node_class: "dam:hii_dam:<dam_id> | reservoir_medium:hii_dam:<dam_id> | reservoir_small:hii_dam:<dam_id>"
+    source_id: hii_dam
+    auth: none
+    key_field: dam.id
+    read_paths: [dam_storage_percent, dam_storage, dam_inflow, dam_released, dam_date]
+    freshness: {max_age_hours: null, observed_time_field: dam_date}
+    has_history: false
+    note: "Chao Phraya Dam (diversion weir) has no entry in this feed -- use dds_daily_pdf's chaophraya_rows instead."
+    live_tested: {at: "2026-10-05T11:20:13+07:00", http: 200, bytes: 1050560, rows: 989}
+
+  - kg_node_class: "none (name-join only)"
+    source_id: rid_app_reservoir
+    auth: none
+    key_field: DAM_ID
+    read_paths: [DMD_QUse, PERCENT_DMD_QUse, DMD_Inflow, DMD_Outflow, DMD_Date, DAM_Lat, DAM_Lon]
+    freshness: {max_age_hours: null, observed_time_field: DMD_Date}
+    has_history: false
+    live_tested: {at: "2026-10-05T11:20:50+07:00", http: 200, bytes: 30301}
+
+  - kg_node_class: "none (name-join only)"
+    source_id: egat_water_crisis
+    auth: none
+    key_field: name_th (no coordinate on page)
+    read_paths: [storage_level_m, storage_pct, inflow_today_mcm, release_today_mcm]
+    freshness: {max_age_hours: null, observed_time_field: "page header date (not currently wired into observed_at -- collector stamps fetched_at instead, a known ~1-day under-reported-freshness gap)"}
+    has_history: false
+    live_tested: {at: "2026-10-05T11:20:12+07:00", http: 200, bytes: 29772, note: "page header date was 2026-10-04, fetched 2026-10-05"}
+
+  - kg_node_class: "rain_gauge:thaiwater_rain_24h:<station.id>"
+    source_id: thaiwater_rain_24h
+    auth: none
+    key_field: station.id
+    read_paths: [rain_24h, rain_1h, rainfall_datetime]
+    freshness: {max_age_hours: 24, observed_time_field: rainfall_datetime}
+    has_history: false
+    live_tested: {at: "2026-10-05T11:20:07+07:00", http: 200, bytes: 4628300, rows: 4552}
+
+  - kg_node_class: "forecast:openmeteo_forecast16d:<area_id>:<model>"
+    source_id: openmeteo_forecast16d
+    auth: none
+    key_field: synthetic point_id + model
+    read_paths: [daily.time, "daily.precipitation_sum_<model>"]
+    freshness: {max_age_hours: null, observed_time_field: daily.time}
+    has_history: false
+    live_tested: {at: "2026-10-05T11:19:00+07:00", http: 200, bytes: 1875}
+
+  - kg_node_class: "bulletin:dds_daily_pdf"
+    source_id: dds_daily_pdf
+    auth: none
+    key_field: "n/a (document, multiple sub-sections keyed by text, not a station code)"
+    read_paths: ["rain_stations[].rain_mm", "canal_outer/inner[].today_0700_m", "chaophraya_rows[]", "reservoirs[].storage_pct"]
+    freshness: {max_age_hours: 24, observed_time_field: "bulletin header date, 07:00 Bangkok snapshot"}
+    has_history: false
+    live_tested: {at: "2026-10-05T11:21:16+07:00", http: 200, bytes: 2022617}
+
+  - kg_node_class: "none (OPEN -- series_confirmed false)"
+    source_id: thaiwater_waterlevel_graph
+    auth: none
+    key_field: station_id
+    read_paths: ["data.graph_data[].datetime", "data.graph_data[].value", "data.graph_data[].value_out", "data.graph_data[].discharge"]
+    freshness: {max_age_hours: null, observed_time_field: "data.graph_data[].datetime"}
+    has_history: true
+    series_confirmed: false
+    status: OPEN
+    note: "15-minute time grid; every value sampled was null for HII stations 160/48 in this pass -- a populated series via this endpoint is NOT confirmed. A RID station (station_id=1095849, C.67) returns HTTP 500. Never cite this as a working series source."
+    live_tested: {at: "2026-10-05T11:29:53+07:00", http: 200, bytes: 256566, points: 3310}
+
+node_classes_not_in_rows_above:
+  note: >
+    Every other fetchable source (37 more) is documented in docs/API_MANUAL.md's master
+    table (section 1) with its own call-proof row, but is not duplicated here -- this
+    index lists the KG-joinable station-keyed sources plus the highest-value
+    bulletin/forecast examples, not a line-by-line repeat of the whole master table.

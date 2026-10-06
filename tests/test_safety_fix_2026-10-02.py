@@ -1,8 +1,7 @@
-"""Tests for the safety fix (2026-10-02) fix set -- an earlier check re-check (key
-"11" of its own results file) found the RED life-safety headline could fire off nothing
-but sensor-fault rows (defect A), that the headline shipped with no steps (defect B),
-that the replacement RED actions used raw node ids/English field names (defect C), and
-that the real tier engine was not freshness-gated (defect D).
+"""Tests for the safety fix (2026-10-02) fix set: the RED life-safety headline
+could fire off nothing but sensor-fault rows (bug A), the headline shipped with
+no steps (bug B), the replacement RED actions used raw node ids/English field
+names (bug C), and the real tier engine was not freshness-gated (bug D).
 
 Every station/threshold value below is REAL: the pump rows are parsed straight out of
 `tests/fixtures/pumphistory_sample.html` (an actual captured BMA PumpHistory page, the
@@ -42,7 +41,7 @@ PUMPHISTORY_FIXTURE = HERE / "tests" / "fixtures" / "pumphistory_sample.html"
 # Real WL.SMK.01 thresholds, read straight out of this worktree's own
 # data/observations.sqlite (`SELECT station_code,warning,critical,bank FROM
 # observations WHERE station_code='WL.SMK.01'`) -- bank is genuinely absent (None) in
-# the real recorded rows, matching an earlier check's own finding.
+# the real recorded rows.
 WL_SMK_01_WARNING_M = 0.35
 WL_SMK_01_CRITICAL_M = 0.44
 
@@ -53,7 +52,7 @@ def _insert_real_fault_pump_row(conn, observed_at_utc="2026-09-26T04:00:00+00:00
     mirroring collect.collect_bma_pumphistory's own insertion shape verbatim. The other
     three pump stations are deliberately left with NO row this check (a real, common
     shape: only one station answered this poll), which on its own already reproduces
-    defect A's bug class (see this file's module docstring)."""
+    bug A's class (see this file's module docstring)."""
     rows = lwl.parse_pumphistory_html(PUMPHISTORY_FIXTURE.read_text(encoding="utf-8"))
     sps01 = next(r for r in rows if r["station_code"] == "ST.SPS.01")
     assert sps01["status_th"] == "ขัดข้อง"  # sanity: the real fixture row is a fault
@@ -99,7 +98,7 @@ def test_gather_real_inputs_fault_only_pump_row_is_open_not_zero(real_pf06_db):
 
 
 def test_real_l5_never_fires_from_fault_only_pump_plus_real_critical_canal(real_pf06_db):
-    """The exact bug shape an earlier check measured on the real 175MB DB: a
+    """The exact bug shape measured on the real 175MB DB: a
     sensor-fault pump reading + a canal reading at/above its REAL critical line must
     cap at L4 (CANAL_AT_CRITICAL_LINE), never promote to L5 via
     PUMPS_ZERO_RUNNING_ABOVE_THRESHOLD."""
@@ -114,7 +113,7 @@ def test_real_l5_never_fires_from_fault_only_pump_plus_real_critical_canal(real_
 
 def test_kb_real_pf06_tier_reports_neutral_action_not_survival_card(real_pf06_db, monkeypatch):
     """End-to-end through kb.py's OWN `_real_pf06_tier` (never monkeypatched here,
-    unlike every pre-existing test of this path -- an earlier check defect E)."""
+    unlike every pre-existing test of this path -- bug E)."""
     conn, db_path = real_pf06_db
     _insert_real_fault_pump_row(conn)
     _insert_canal_row(conn, WL_SMK_01_CRITICAL_M + 0.05)
@@ -136,6 +135,11 @@ def test_kb_real_pf06_tier_reports_neutral_action_not_survival_card(real_pf06_db
 # ---------------------------------------------------------------------------
 
 def test_l5_action_carries_the_real_step_list(monkeypatch):
+    # founder ruling 2026-10-06 (KG-only/no-simulation): PROP-FLOOD-06 folds in
+    # an external rain forecast promoter, so it is only ever consulted when
+    # SIMULATION_ENABLED is explicitly turned on.
+    import floodconnect_model
+    monkeypatch.setattr(floodconnect_model, "SIMULATION_ENABLED", True)
     monkeypatch.setattr(kb, "_real_pf06_record",
                          lambda area_id, now_utc=None: {"tier": "L5"})
     state = {"status_counts": {"CRITICAL": 1}}
@@ -185,7 +189,7 @@ def test_continuity_gap_actions_use_label_th_and_thai_field_labels():
 
 
 def test_continuity_gap_placeholder_node_goes_to_notes_not_actions():
-    """A safety fix defect 4 (2026-10-02, an earlier check): an unverified `external_safe`
+    """A safety fix (2026-10-02, bug 4): an unverified `external_safe`
     placeholder node's continuity gap (self_help_dag.yaml's own
     `external_safe_bkk_east_01`, `label_th` literally "...ยังไม่กำหนดสถานที่จริง" / "no real
     location assigned yet") must never surface as a resident-facing action -- a resident
@@ -289,8 +293,7 @@ def test_route_mode_degradation_included_in_next_action_route_out(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# A safety fix an earlier check re-check (key "11" re-check, 2026-10-02) -- fixing the
-# HIGH/MED defects an independent review found in the fix set above.
+# A safety fix (2026-10-02) -- fixing HIGH/MED bugs found in the fix set above.
 # ---------------------------------------------------------------------------
 
 # Real verbatim rows for Sammakorn 2026-09-28, 12:15-12:45 UTC, copied out of the
@@ -343,10 +346,10 @@ def _insert_real_sammakorn_20260928_rows(conn):
 
 
 def test_sammakorn_20260928_pinned_case_pf06_tier_is_l4_not_l5(real_pf06_db):
-    """The real Sammakorn 2026-09-28 case an earlier check named explicitly: a
+    """The real Sammakorn 2026-09-28 case: a
     REAL critical canal reading (0.81m, over the REAL 0.44m critical line) plus REAL
     all-fault pump rows must cap at L4 (CANAL_AT_CRITICAL_LINE), never L5 -- this is
-    the genuine incident shape defect A/5 guard against, on the exact real rows, not a
+    the genuine incident shape bugs A and 5 guard against, on the exact real rows, not a
     probe value."""
     conn, _ = real_pf06_db
     _insert_real_sammakorn_20260928_rows(conn)
@@ -360,13 +363,18 @@ def test_sammakorn_20260928_pinned_case_pf06_tier_is_l4_not_l5(real_pf06_db):
 
 def test_sammakorn_20260928_pinned_case_full_next_action(real_pf06_db, monkeypatch):
     """End-to-end through `kb._answer_next_action`, pinned to the real 2026-09-28 clock
-    (defect 6) -- asserts all three things an earlier check named: (1) the neutral
+    (bug 6) -- asserts three things: (1) the neutral
     RED action, never the L5 survival card, (2) the forward-hazard reminder is present
-    even under RED (defect 1), (3) the route result claims an action slot too."""
+    even under RED (bug 1), (3) the route result claims an action slot too."""
     conn, db_path = real_pf06_db
     _insert_real_sammakorn_20260928_rows(conn)
     conn.close()
     monkeypatch.setattr(kb, "DB_PATH", db_path)
+    # founder ruling 2026-10-06 (KG-only/no-simulation): PROP-FLOOD-06 folds in
+    # an external rain forecast promoter, so the real engine this test wants to
+    # exercise end-to-end is only reachable with the flag explicitly on.
+    import floodconnect_model
+    monkeypatch.setattr(floodconnect_model, "SIMULATION_ENABLED", True)
 
     # current_local_state=RED is this test's one synthetic input (matching the
     # pre-existing, already-accepted convention in this same file, e.g.
@@ -390,13 +398,13 @@ def test_sammakorn_20260928_pinned_case_full_next_action(real_pf06_db, monkeypat
         "headline must never show")
     assert first["tag"] == "MEASURED"
     assert "sensor fault" in first["why"] or "ขัดข้อง" in first["why"], (
-        "defect 8: the neutral action's why must say L5 was withheld specifically "
+        "bug 8: the neutral action's why must say L5 was withheld specifically "
         "because of fault-only pump evidence, not a generic 'did not report L5'")
 
     reminder = next((a for a in out["actions"]
                       if a["action"].startswith("มีฝนคาดการณ์ล่วงหน้าจากโมเดลภายนอก")), None)
     assert reminder is not None, (
-        "defect 1: the forward-hazard reminder must still appear under RED when "
+        "bug 1: the forward-hazard reminder must still appear under RED when "
         "forward_hazard=ACTIVE, not only when current_local_state is calm")
     assert "แม้สถานะปัจจุบันยังปกติ" not in reminder["action"], (
         "the RED version must drop the 'even though current state is normal' clause "
@@ -414,7 +422,7 @@ def test_sammakorn_20260928_pinned_case_full_next_action(real_pf06_db, monkeypat
 
 
 def test_future_row_rejected_even_when_within_stale_window(real_pf06_db):
-    """A safety fix defect 7 (2026-10-02, an earlier check): a row timestamped AFTER the
+    """A safety fix (2026-10-02, bug 7): a row timestamped AFTER the
     pinned `now_utc` must never be read, even though a NEGATIVE age is numerically
     "within" `age_h > lwl.STALE_HOURS` (negative is never greater than a positive
     cutoff) -- pinned at 05:00Z, a 12:45Z row must not leak backwards in time."""
@@ -428,8 +436,8 @@ def test_future_row_rejected_even_when_within_stale_window(real_pf06_db):
 
 
 def test_pump_row_with_none_status_is_open_not_zero_running(real_pf06_db):
-    """A safety fix defect 5 (2026-10-02, an earlier check): a pump row whose status is
-    genuinely None (not a sensor-fault word, just no status reported this check) must
+    """A safety fix (2026-10-02, bug 5): a pump row whose status is
+    genuinely None (not a sensor-fault word, just no status reported) must
     not fall into `non_fault_pump_rows` and get summed as "0 pumps running" -- that is
     fabricated evidence (a confirmed zero), not an absent reading."""
     conn, _ = real_pf06_db
@@ -452,7 +460,7 @@ def test_pump_row_with_none_status_is_open_not_zero_running(real_pf06_db):
            "figure at all (always None, see this file's own module docstring) -- a "
            "genuine CANAL_AT_BANK_LEVEL L5 promoter can never fire on real Sammakorn "
            "data until a bank-level figure is actually surveyed and recorded. This is "
-           "an earlier check's own 'still OPEN, not a defect of this item' note.",
+           "still OPEN, not a bug of this item, by design.",
     strict=True)
 def test_real_l5_from_bank_level_promoter_not_possible_without_real_bank_figure(real_pf06_db):
     conn, _ = real_pf06_db
@@ -524,7 +532,7 @@ REAL_FLOOD_ROAD_CONTRADICTION_ROW = dict(
 
 
 def test_real_contradiction_through_non_monkeypatched_build_readout(real_pf06_db, monkeypatch):
-    """A safety fix defect 3 (2026-10-02, an earlier check): the existing contradiction test
+    """A safety fix (2026-10-02, bug 3): the existing contradiction test
     in test_kb_answer.py still monkeypatches `readout.build_readout` itself. This one
     does not -- a real `thaiwater_flood_road` row with no matching `dds_flood_report`
     document for its district is a genuine, already-implemented contradiction path

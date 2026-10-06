@@ -2302,3 +2302,121 @@ def parse_pcd_coastal_marine_quality_csv(text: str) -> list:
             "ph": ph,
         })
     return out
+
+
+# --- BMA StationDetail inline history series (weather.bangkok.go.th/water/StationDetail) --
+#
+# Fix (FloodConnect M8, 2026-10-05, blocking finding #2): the page's inline Highcharts
+# `Date.UTC(Y, M0, D, h, m, s)` literal already needs M0+1 (confirmed: BMA's own month
+# index is 0-based JS-style, e.g. M0=8 for September) -- `tools/harvest/
+# bma_station_detail_draft.parse_history_series` already does that part correctly. What
+# it does NOT do is correct the clock: BMA bakes Bangkok LOCAL wall-clock time into this
+# literal, not UTC, even though the function name says `.UTC` and the page's own call is
+# literally `Date.UTC(...)` -- the page's timestamps are simply mislabelled, confirmed by
+# cross-checking a real sample against the same station's watermap `site_timestampTH`
+# for the same instant (both local, both agreeing once the 7h offset is applied).
+# Un-fixed, every stored `station_level_history_m` row this repo has collected so far is
+# 7 hours off (see tests/test_bma_station_detail.py's old pin, corrected alongside this
+# function).
+_BMA_STATION_SERIES_RE = re.compile(
+    r"Date\.UTC\((\d+),\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+)\),\s*([\-\d\.]+)"
+)
+BMA_LOCAL_UTC_OFFSET = datetime.timedelta(hours=7)
+
+
+def parse_bma_station_series(html: str, wl_in_now: "float | None" = None,
+                              observed_at_now: "str | None" = None) -> dict:
+    """Parse the inline Highcharts water-level series baked into a BMA StationDetail
+    page -- there is no separate JSON endpoint for this (docs/knowledge/
+    BMA_STATION_DETAIL_PROBE.md section 2).
+
+    Each `Date.UTC(Y, M0, D, h, m, s)` literal is Bangkok LOCAL time with a 0-based month
+    (BMA's own convention) -- this function adds 1 to the month, builds a naive local
+    datetime, then subtracts `BMA_LOCAL_UTC_OFFSET` (7h) to get the real UTC instant,
+    emitted as `t_utc` (ISO, `Z` suffix). `v` is the station's raw metre reading, verbatim.
+
+    One archived sample (id51/WL.SSB.12) concatenates TWO runs back to back (inner+outer
+    canal) covering the same ~2-day window -- this function splits wherever the
+    timestamp goes backwards (a real run boundary, never inferred from point count) and
+    returns every run found in `runs` (list of point-lists), picking `chosen_run` (an
+    index into `runs`, or None) as follows:
+      - exactly one run -> chosen_run = 0, status "OK" (or "SPARSE_SERIES" if that run
+        has fewer than 2 points -- too few to compute a trend/lag at all);
+      - zero runs (no Date.UTC literal matched at all, e.g. the real empty-series case
+        this repo has seen for WL.SSB.13/id 312) -> chosen_run = None, status "EMPTY";
+      - more than one run: if `wl_in_now`/`observed_at_now` are given, the run whose
+        last point before-or-at `observed_at_now` equals `wl_in_now` (within 0.005 m,
+        BMA's own 2-decimal publication resolution) is chosen; if none or more than one
+        run matches -> chosen_run = None, status "AMBIGUOUS" (the trend from an
+        ambiguous split is UNKNOWN, never guessed); without both of those two
+        disambiguating args, multiple runs are also AMBIGUOUS (this function never
+        silently assumes "the last run is the real one").
+
+    Returns {"points": [{"t_utc", "v"}, ...] (ALL points, every run, in page order --
+    unsplit, for a caller that wants the raw series regardless), "step_s": int|None (the
+    modal gap between consecutive points within the chosen run, seconds; None if
+    `chosen_run` is None or has <2 points), "runs": [[{"t_utc","v"}, ...], ...],
+    "chosen_run": int|None, "status": "OK"|"EMPTY"|"SPARSE_SERIES"|"AMBIGUOUS"}."""
+    points = []
+    for y, mo, d, h, mi, s, v in _BMA_STATION_SERIES_RE.findall(html):
+        local_naive = datetime.datetime(int(y), int(mo) + 1, int(d), int(h), int(mi), int(s))
+        utc_dt = local_naive - BMA_LOCAL_UTC_OFFSET
+        try:
+            value = float(v)
+        except ValueError:
+            continue
+        points.append({"t_utc": utc_dt.strftime("%Y-%m-%dT%H:%M:%SZ"), "v": value,
+                        "_local": local_naive})
+
+    if not points:
+        return {"points": [], "step_s": None, "runs": [], "chosen_run": None, "status": "EMPTY"}
+
+    runs: list = [[]]
+    prev_local = None
+    for p in points:
+        if prev_local is not None and p["_local"] < prev_local:
+            runs.append([])
+        runs[-1].append({"t_utc": p["t_utc"], "v": p["v"]})
+        prev_local = p["_local"]
+
+    all_points = [{"t_utc": p["t_utc"], "v": p["v"]} for p in points]
+
+    def _step_s(run):
+        if len(run) < 2:
+            return None
+        gaps = []
+        for i in range(1, min(len(run), 6)):
+            t0 = datetime.datetime.strptime(run[i - 1]["t_utc"], "%Y-%m-%dT%H:%M:%SZ")
+            t1 = datetime.datetime.strptime(run[i]["t_utc"], "%Y-%m-%dT%H:%M:%SZ")
+            gaps.append((t1 - t0).total_seconds())
+        return max(set(gaps), key=gaps.count) if gaps else None
+
+    if len(runs) == 1:
+        run = runs[0]
+        if len(run) < 2:
+            return {"points": all_points, "step_s": None, "runs": runs, "chosen_run": 0,
+                    "status": "SPARSE_SERIES"}
+        return {"points": all_points, "step_s": _step_s(run), "runs": runs, "chosen_run": 0,
+                "status": "OK"}
+
+    if wl_in_now is None or observed_at_now is None:
+        return {"points": all_points, "step_s": None, "runs": runs, "chosen_run": None,
+                "status": "AMBIGUOUS"}
+    matches = []
+    for idx, run in enumerate(runs):
+        candidates = [p for p in run if p["t_utc"] <= observed_at_now]
+        if not candidates:
+            continue
+        last = candidates[-1]
+        if abs(last["v"] - wl_in_now) <= 0.005:
+            matches.append(idx)
+    if len(matches) != 1:
+        return {"points": all_points, "step_s": None, "runs": runs, "chosen_run": None,
+                "status": "AMBIGUOUS"}
+    chosen = matches[0]
+    run = runs[chosen]
+    if len(run) < 2:
+        return {"points": all_points, "step_s": None, "runs": runs, "chosen_run": chosen,
+                "status": "SPARSE_SERIES"}
+    return {"points": all_points, "step_s": _step_s(run), "runs": runs, "chosen_run": chosen,
+            "status": "OK"}

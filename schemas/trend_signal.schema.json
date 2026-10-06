@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://floodconnect.local/schemas/trend_signal.schema.json",
+  "title": "FloodConnect M8 trend signal",
+  "description": "A single station/reading's trend, 3-state per founder ruling 2026-10-05 ('มีสามสถานะ เพิ่มขึ้น เสถียร ลดลง') plus NO_READOUT when no comparable prior tick exists. This is an INPUT-SHAPE document for a value a caller (kb.py's trend field on a reading row) already produces as a bare string -- it names the shape a future structured trend_signal object would take; it does not itself change kb.py's return type in this part.",
+  "type": "object",
+  "required": ["value", "s4"],
+  "properties": {
+    "value": {
+      "type": "string",
+      "enum": ["RISING", "STABLE", "FALLING", "NO_READOUT"]
+    },
+    "s4": {
+      "$ref": "defs.schema.json#/$defs/s4",
+      "description": "RISING->POS, FALLING->NEG, STABLE->ZERO, NO_READOUT->BOT."
+    },
+    "tk": {
+      "type": "integer",
+      "description": "Number of comparable ticks behind this trend (PROP-FLOOD-01, Toledo tier Dr). Present only when value == RISING -- a non-RISING trend never needs this to decide anything today."
+    },
+    "prop11": {
+      "type": "object",
+      "description": "PROP-FLOOD-11 (acceleration) is GATED -- registered in Toledo (PR #65 merged 2026-10-06, tier Dr) but NOT IMPLEMENTED in this release (v0.2 target), not computed -- present only when value == RISING, and even then it is always a refusal shape, never a computed number. The shipped RISING ETA is PROP-FLOOD-02 (linear, two windows), carried separately.",
+      "required": ["value", "tag"],
+      "properties": {
+        "value": {"type": "null"},
+        "tag": {"const": "GATED"}
+      }
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {"properties": {"value": {"const": "RISING"}}, "required": ["value"]},
+      "then": {},
+      "else": {"properties": {"tk": false, "prop11": false}}
+    },
+    {
+      "if": {"properties": {"value": {"const": "NO_READOUT"}}, "required": ["value"]},
+      "then": {"properties": {"s4": {"const": "BOT"}}}
+    },
+    {
+      "if": {"properties": {"value": {"const": "RISING"}}, "required": ["value"]},
+      "then": {"properties": {"s4": {"const": "POS"}}}
+    },
+    {
+      "if": {"properties": {"value": {"const": "FALLING"}}, "required": ["value"]},
+      "then": {"properties": {"s4": {"const": "NEG"}}}
+    },
+    {
+      "if": {"properties": {"value": {"const": "STABLE"}}, "required": ["value"]},
+      "then": {"properties": {"s4": {"const": "ZERO"}}}
+    }
+  ]
+}

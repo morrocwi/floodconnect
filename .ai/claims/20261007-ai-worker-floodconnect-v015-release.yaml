@@ -1,0 +1,73 @@
+claim_id: "20261007-ai-worker-floodconnect-v015-release"
+status: ACTIVE
+writer: "ai-worker"
+branch: "agent/ai-worker/floodconnect-v0.1.5"
+base_sha: "af4b1f4102374ce2d0f4e62657ad4cf1ed37ec29"
+nodes:
+  - FC_ROOT
+  - KB
+  - LIVE_DATA_SYSTEM
+  - RIVER_KG
+  - BACKTEST
+artifacts:
+  - .ai/claims/20261007-ai-worker-floodconnect-v015-release.yaml
+  - CHANGELOG.md
+  - README.md
+  - ROADMAP.md
+  - RELEASE_NOTES_v0.1.5.md
+  - pyproject.toml
+  - system_capabilities.json
+  - tools/mcp/floodconnect_mcp.py
+  - tests/test_floodconnect_mcp.py
+  - docs/handoff/NEXT_AI_HANDOFF.md
+  - docs/API_MANUAL.md
+  - sources/sandwich_fetch_order.yaml
+  - sources/live_call_index.yaml
+  - schemas/reading.schema.json
+  - schemas/series.schema.json
+  - schemas/email_report.schema.json
+  - tests/test_api_manual.py
+  - tests/test_sandwich_fetch_order.py
+  - tests/fixtures/bma_watermap_smk01_live_sample.json
+  - tests/fixtures/bma_station_detail_smk01_series_sample.json
+  - tests/fixtures/thaiwater_waterlevel_graph_sample.json
+  - docs/experiments/M5_WATER_DEBT_BACKTEST.md
+  - docs/experiments/M5_event_set.yaml
+  - docs/experiments/M5_national_units.yaml
+  - docs/experiments/M5_results.jsonl
+  - tests/test_m5_water_debt_backtest.py
+  - tools/backtest/run_m5_water_debt.py
+  - skill/SKILL.md
+  - skill/INSTALL_CHECK.md
+  - skill/examples/email_report_template.html
+  - skill/examples/example_2026-10-06_1300.html
+  - skill/examples/example_2026-10-06_1300.json
+  - skill/examples/sheets/readings.csv
+  - skill/examples/sheets/reports.csv
+  - skill/examples/sheets/actions.csv
+  - skill/examples/sheets/api_calls.csv
+intent: >
+  v0.1.5 MVP-close release. Assembles the gated M8 Jev Sandwich KG-only decision
+  model (home-as-shelter verdict, emergency card token budget, official-order-is-
+  a-floor precedence, KG-only answer path with every heuristic/guessed relation
+  removed from the fetch and the evidence list, simulation/modelled forecast off
+  by default) with the M7a government-API fetch manual (reconciled against M8's
+  shipped schemas -- schemas/ring_readout.schema.json and
+  schemas/sandwich_readout.schema.json were never shipped and are not carried
+  forward; the rich per-ring vocabulary they would have carried is kept as prose
+  documentation only) and the M5 water-debt backtest experiment (every unit-day
+  row REFUSES MISSING_INPUT; an unwired experiment, not a shipped capability),
+  plus a new vendor-neutral skill/ package any AI can install. PROP-FLOOD-11
+  (acceleration-aware time-to-bank) is used directly, labelled PROPOSAL, since it
+  merged into Toledo as a registered proposal (PR #65, tier Dr, status
+  unverified) before this release. The MVP is validated for Bangkok and
+  หมู่บ้านสัมมากร only; other areas are experimental, per the frozen scope in
+  this release's own plan. One commit on origin/main, author and committer
+  morrocwi. No code change to kb.py/floodconnect_model.py/collect.py beyond what
+  the gated M8 tree already carried -- this claim folds in docs/sources/tests/
+  skill/schemas/version-bump/claims only.
+created_at: "2026-10-07T01:50:20+07:00"
+expires_at: null
+reviewers: []
+supersedes: null
+note: null

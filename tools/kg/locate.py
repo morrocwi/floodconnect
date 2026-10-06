@@ -54,10 +54,36 @@ def _load_slice(index_dir: str, filename: str) -> dict[str, Any]:
     return data
 
 
+def _load_slice_full(index_dir: str, meta: dict[str, Any]) -> dict[str, Any]:
+    """`_load_slice` plus any `extra_files` the province carries. `build_index.py`
+    splits a province's own `a` rows into a sibling file -- never a second
+    province, never a different schema -- only when the main slice
+    would otherwise exceed the 200 KB per-file budget (as of this writing, only
+    province 10/Bangkok's own `gauge:bma_watermap:*` box-placed rows, added by
+    `tools/kg/stations_layer.py` P2, push it over). A province with no
+    `extra_files` key reads exactly as before -- this wrapper is additive, never a
+    behaviour change for any other province. The merged result is cached once per
+    (index_dir, province code), not re-merged on every call."""
+    key = f"slice_full::{index_dir}::{meta['file']}"
+    if key in _cache:
+        return _cache[key]
+    base = _load_slice(index_dir, meta["file"])
+    extra_files = meta.get("extra_files") or []
+    if extra_files:
+        merged = dict(base)
+        merged["a"] = list(base["a"])
+        for ext_filename in extra_files:
+            ext = _load_slice(index_dir, ext_filename)
+            merged["a"].extend(ext["a"])
+        base = merged
+    _cache[key] = base
+    return base
+
+
 def _all_slices(index_dir: str, index: dict[str, Any]) -> dict[str, dict[str, Any]]:
     out = {}
     for code, meta in index["prov"].items():
-        out[code] = _load_slice(index_dir, meta["file"])
+        out[code] = _load_slice_full(index_dir, meta)
     return out
 
 
