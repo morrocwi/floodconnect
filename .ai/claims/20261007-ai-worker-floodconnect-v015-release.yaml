@@ -1,5 +1,5 @@
 claim_id: "20261007-ai-worker-floodconnect-v015-release"
-status: ACTIVE
+status: RELEASED
 writer: "ai-worker"
 branch: "agent/ai-worker/floodconnect-v0.1.5"
 base_sha: "af4b1f4102374ce2d0f4e62657ad4cf1ed37ec29"
