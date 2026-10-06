@@ -1,6 +1,6 @@
 """Real self-install check for the `floodconnect` console script.
 
-Audit finding (an earlier check): `pyproject.toml`'s `py-modules` list did not include
+Real bug, previously found: `pyproject.toml`'s `py-modules` list did not include
 `tag_vocabulary`, even though `kb.py` imports it at module level
 (`from tag_vocabulary import TAG_VOCABULARY as _TAG_VOCABULARY`). A real
 `pip install -e '.[dev]'` into a fresh venv, run from a cwd outside the repo,
@@ -108,7 +108,14 @@ def test_console_script_runs_after_real_pip_install_outside_repo(
             # without --offline this hit real upstream sources from inside the test
             # sandbox (ADDED raw/live/* files, a real regression found by this repo's
             # own session-write guard) and could hang past the 60s timeout below.
-            [str(floodconnect_bin), "answer", "--at", "sammakorn", "--offline", "--json"],
+            # --no-gap-log (fix, founder ruling 2026-10-06, KG-only): gap logging
+            # is now on by default -- this subprocess's `kb.HERE` always resolves to
+            # this repo's own real `data/` (editable install, by design), so without
+            # this flag it appends a real, untracked data/policy_gap_log.jsonl as a
+            # side effect of exercising the install path, same class of regression
+            # --offline above already guards against for raw/live/*.
+            [str(floodconnect_bin), "answer", "--at", "sammakorn", "--offline",
+             "--no-gap-log", "--json"],
             cwd=str(outside_cwd),
             capture_output=True,
             text=True,

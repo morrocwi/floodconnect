@@ -1,0 +1,313 @@
+# Jev Sandwich fetch order -- machine form of the "Fetch order -- Jev Sandwich
+# (S0-S8)" section at the top of docs/API_MANUAL.md. Pseudocode guide only, per the
+# founder's own scope decision ("ทำเป็น pseudocode แค่แนวทางการเรียก api ไม่ต้องทำให้
+# แทน") -- no executable library ships with this file; nothing here is imported by
+# collect.py/kb.py/floodconnect_model.py. Read docs/API_MANUAL.md's new top section
+# first; this file is the queryable companion to it, checked by
+# tests/test_sandwich_fetch_order.py.
+version: 1
+as_of: "2026-10-05"
+kg:
+  sha256_12: "33fcd36bafb7"
+  slices: output/kg_index/
+  declared_chain: site/inputs/canals/east_chain.yaml
+
+vocab:
+  trend: [RISING, STABLE, FALLING, NO_READOUT]
+  trend_from_delta_k: {RISING: RISING, FLAT: STABLE, FALLING: FALLING, NO_READOUT: NO_READOUT}
+  end_state: [ALARM, RISING, QUIET, UNKNOWN]
+  s4_from_trend: {RISING: POS, FALLING: NEG, STABLE: ZERO, NO_READOUT: BOT}
+  ladder_outcome: [ALARM_LOCAL, INCOMING, HELD, QUIET, UNKNOWN]
+  # This file's vocab blocks (trend/end_state/s4/ladder_outcome/colour) are the
+  # fetch-order documentation of record -- they are not validated field-for-field
+  # against schemas/layer_readout.schema.json or schemas/sandwich_trace.schema.json
+  # (the two shipped, slim runtime schemas), which do not carry this vocabulary.
+  # null means ไม่ทราบ/UNKNOWN, never the string "UNKNOWN" (see colour_scale below
+  # for the UNKNOWN row's own label/when text).
+  colour: [GREEN, YELLOW, ORANGE, RED, null]
+
+epsilon:
+  value_m: 0.02
+  tag: INSTINCT
+  source: "site/inputs/canals/east_chain.yaml sensor_resolution_m"
+
+edge_families:
+  canal_chain:
+    edge_kinds: [WATER]
+    node_prefix: "canalchain:"
+    stations_via: LOCATED_ON
+    direction_field: design_direction
+    unknown_direction: both
+    read_from: site/inputs/canals/east_chain.yaml
+  river_reach:
+    edge_kinds: [WATER]
+    node_prefix: "riverreach:"
+    stations_via: ON_REACH
+    read_from: "output/kg_index slice r[reach][2] (next_down)"
+    tag: DERIVED-snap
+  area:
+    edge_kinds: [IN_SUBBASIN, IN_BASIN]
+    read_from: ["slice a[].sb (col 6)", "slice sb[code][1]", "slice onwr"]
+  excluded:
+    - {edge_kind: WATER, node_prefix: "osmcanal:", reason: "OSM heuristic graph, direction mostly unknown -- output/bangkok_canals.graphml, not east_chain.yaml."}
+    - {edge_kind: DRAINS_TO, reason: "the drain network; no gauge sits on a DRAINS_TO edge."}
+    - {edge_kind: WATER, node_prefix: "AS_", reason: "hand-declared DAG (community_dag.py); carries station codes only in name_th text, no edge to any gauge node -- used only as S6 path evidence, never for ring station selection."}
+  hop_caps_tag: INSTINCT
+
+rings:
+  Z0:
+    th: "จุดเก็บน้ำเล็กที่สุด"  # FloodConnect wording (not founder-verbatim) --
+    # the founder's own verbatim terms are Z1/Z2/Z3 (see docs/API_MANUAL.md's
+    # "Founder's rings" line); Z0's description text here is this repo's own.
+    rule: "caller-declared storage point (e.g. canalchain:sammakorn_pond / WL.SMK.01, NOT_JOINED) else kg_anchor.station_ids[0]"
+    hops: 0
+  Z1:
+    th: "คลองใกล้เรา"
+    canal: {family: canal_chain, hop_max: 2, direction: both}
+    river: {family: river_reach, upstream_hop_max: 1}
+  Z2:
+    th: "พื้นที่น้ำเหนือเรา"
+    canal: {family: canal_chain, upstream_hop: [3, 6]}
+    river: {family: river_reach, upstream_hop: [2, 5], within: IN_SUBBASIN}
+  Z3:
+    th: "ลุ่มน้ำเหนือเรา"
+    river: {family: river_reach, upstream: closure, within: basin}
+    dams: {prefixes: ["dam:hii_dam:", "reservoir_medium:hii_dam:", "reservoir_small:hii_dam:"], within: IN_BASIN}
+  hop_caps_tag: INSTINCT
+
+# Sammakorn worked example (MEASURED 2026-10-05, from site/inputs/canals/east_chain.yaml):
+# Z1 = {banma, wangyai, tpk03}; only tpk03 (WL.TPK.03) is KG-joined; WL.SMK.01/WL.BMA.02
+# are NOT_JOINED. Z2 is EMPTY (banma is the chain head) -> BOT, never ZERO. Z3 = Chao
+# Phraya basin upstream of kg_anchor.reach. See docs/API_MANUAL.md OPEN-1 for the
+# Saen Saep receiving-water question (out of scope here -- belongs to KG-join milestone
+# M7b).
+worked_example_sammakorn:
+  z0: {station_code: "WL.SMK.01", not_joined: true}
+  z1: {canal_nodes: [banma, wangyai, tpk03], joined_stations: ["WL.TPK.03"], not_joined: ["WL.SMK.01", "WL.BMA.02"]}
+  z2: {end_state: UNKNOWN, s4: BOT, reason: "banma is the chain head -- no further upstream node declared"}
+  z3: {basin: "Chao Phraya basin upstream of kg_anchor.reach"}
+
+steps:
+  - id: S0
+    name: locate
+    protocol_step: D1
+    skill_step: "design target (K1 -- SKILL.md has no numbered steps yet)"
+    ladder: pre
+    input_schema: "{lat, lon, province?}"
+    keyless_sources: []
+    t1_sources: ["kg_index_raw_index_json", "kg_index_raw_province_slice"]
+    output: sandwich_readout.kg_anchor
+    consumed_by: ["tools/kg/locate.py:locate", "kb.py:_kg_anchor", "answer.kg_anchor", "MCP:floodconnect_locate"]
+    stop_rule: "province not recognised -> stop with cand; no anchor -> continue, confidence cap LOW"
+    budget: {max_calls: 0, t1_max_calls: 2}
+    refusal_codes: [KG_INDEX_MISSING, OUTSIDE_THAILAND, PROVINCE_NOT_RECOGNISED]
+    refusal_code_note: "design target names -- kb.py's own real code paths today are method=no_kg_index (-> KG_INDEX_MISSING) and method=outside_thailand (-> OUTSIDE_THAILAND); PROVINCE_NOT_RECOGNISED has no matching kb.py method yet."
+
+  - id: S1
+    name: ring_sets
+    protocol_step: D1
+    skill_step: "design target (K2 -- SKILL.md has no numbered steps yet)"
+    ladder: L1
+    input_schema: "{kg_anchor, output/kg_index slices, site/inputs/canals/east_chain.yaml}"
+    keyless_sources: []
+    t1_sources: ["east_chain_yaml_raw"]
+    output: "sandwich_readout.rings[].{ring, kg_traversal, station_ids, not_joined}"
+    consumed_by: ["design target (no ring-building code exists in this repo yet)"]
+    stop_rule: "an empty ring -> end_state/s4 = BOT, never ZERO"
+    budget: {max_calls: 0, t1_max_calls: 1}
+    refusal_codes: [NOT_JOINED, EMPTY_RING]
+
+  - id: S2
+    name: snapshots
+    protocol_step: D2
+    skill_step: "design target (K3 -- SKILL.md has no numbered steps yet)"
+    ladder: L1
+    input_schema: "{ring.station_ids}"
+    keyless_sources: [thaiwater_waterlevel, bma_watermap]
+    fallback_sources: [thaiwater_canal_waterlevel]
+    output: "reading[] (schemas/reading.schema.json), with freshness_flag"
+    consumed_by: ["store.insert_observation", "floodconnect_model.classify", "floodconnect_model.classify_counts", "kb.py dual_state.current_local_state"]
+    stop_rule: "non-200 -> no retry; that family's rings are BOT, never ZERO"
+    budget: {max_calls: 2}
+    refusal_codes: [NO_LIVE_SOURCE, HTTP_ERROR, STALE, FAULT]
+
+  - id: S3
+    name: hotspot_filter
+    protocol_step: D3
+    skill_step: "design target (K4 -- SKILL.md has no numbered steps yet)"
+    ladder: L1
+    input_schema: "{reading[] for ring.station_ids}"
+    keyless_sources: []
+    predicate: 'startswith(diff_wl_bank_text,"ล้นตลิ่ง") OR situation_level==5 OR (value>=bank, same row) OR (value>=critical, same row) OR classify(status) in [RED, YELLOW]'
+    output: "sandwich_readout.rings[].worst_status, .closest_to_bank"
+    consumed_by: ["floodconnect_model.CRITICAL_LIKE_STATUS", "floodconnect_model.WATCH_LIKE_STATUS", "floodconnect_model.classify"]
+    stop_rule: "scoped to this ring's KG-connected stations only, never nationwide"
+    budget: {max_calls: 0}
+    refusal_codes: []
+
+  - id: S4
+    name: z0_trend
+    protocol_step: D5
+    skill_step: "design target (K5 -- SKILL.md has no numbered steps yet)"
+    ladder: L1
+    input_schema: "{Z0 station series or snapshot}"
+    keyless_sources: [bma_station_detail]
+    zero_call_sources: ["thaiwater_waterlevel_msl_previous"]
+    open_sources: [thaiwater_waterlevel_graph]
+    host_note: "bma_station_detail is DORMANT in collect.py (DORMANT_NOT_IN_ALL) after a confirmed HTTP 403 (2026-09-27); exactly 1 GET per run on weather.bangkok.go.th, no retry; on 403/reset stop touching the host, trend = NO_READOUT (BOT), never retry -- a human must re-check before this source runs again."
+    compute_only_if: {eta: RISING, acceleration: RISING}
+    equations:
+      trend: {toledo_id: "PROP-FLOOD-01", status: "registered unverified proposal, Toledo PR #59 merged"}
+      eta: {toledo_id: "PROP-FLOOD-02", status: "registered unverified proposal, same PR #59"}
+      acceleration: {toledo_id: "PROP-FLOOD-11", status: "OPEN Toledo PR #65, not merged, not in model_spec.json -- always REFUSED/NOT_IN_TOLEDO"}
+    output: "sandwich_readout.rings[Z0].{trend, eta_to_bank, acceleration}"
+    consumed_by: ["floodconnect_model.delta_k", "floodconnect_model.time_to_threshold", "floodconnect_model.one_decision (h_t, h_t_minus_k, k, epsilon, theta)"]
+    stop_rule: "only if trend==RISING: compute eta/acceleration; acceleration is always REFUSED today regardless of trend"
+    budget: {max_calls: 1}
+    refusal_codes: [SPARSE_SERIES, NO_READOUT, UNRESOLVED, NOT_APPLICABLE, NOT_IN_TOLEDO]
+
+  - id: S5
+    name: z3_overview
+    protocol_step: D3
+    skill_step: "design target (K6 -- SKILL.md has no numbered steps yet)"
+    ladder: L1
+    input_schema: "{Z3 station_ids, basin dams}"
+    keyless_sources: [hii_dam, openmeteo_forecast16d]
+    conditional_sources: [dds_daily_pdf]
+    open_sources_outside_bangkok: ["official warning, keyless -- OPEN"]
+    rain_threshold: {value_mm: 35.1, scheme: tmd_descriptive_rain_24h, source: "sources/rain_alert_thresholds_crosswalk.yaml (RELAYED)", window_days: 3, window_tag: INSTINCT}
+    output: sandwich_readout.z3_overview
+    consumed_by: ["design target (kb.py dual_state.forward_hazard exists but is not wired to this object)"]
+    stop_rule: "non-200 or key-gated -> OPEN/NO_LIVE_SOURCE for that piece only"
+    budget: {max_calls: 3}
+    refusal_codes: [OPEN, NO_LIVE_SOURCE]
+
+  - id: S6
+    name: escalation_test
+    protocol_step: D2
+    skill_step: "design target (K7 -- SKILL.md has no numbered steps yet)"
+    ladder: L2_L3
+    input_schema: "{Z0 end_state, Z3 end_state}"
+    keyless_sources: [hii_watergate]
+    zero_call_sources: ["bma_watermap watergate01..06/water_control (already fetched in S2)"]
+    open_sources: [bma_pumphistory]
+    host_note: "if a conditional BMA middle-station GET goes to bma_station_detail and S4 did not already use it this run: bma_station_detail is DORMANT in collect.py after a confirmed HTTP 403 (2026-09-27), exactly 1 GET per run on weather.bangkok.go.th, no retry; on 403/reset stop touching the host, trend = NO_READOUT (BOT), never retry."
+    escalate_if: "not (z0_state == z3_state and z0_state in [ALARM, QUIET])"
+    triggers: [DISAGREE, MISSING_OR_STALE, RISING]
+    output: "sandwich_readout.{escalation, path}"
+    consumed_by: ["design target"]
+    stop_rule: "agree -> stop and decide, never fetch the middle; conflict -> open Z1/Z2 using S2's own snapshots (0 extra calls) plus one conditional BMA middle-station GET and one hii_watergate GET"
+    budget: {max_calls: 1, conditional_max_calls: 1}
+    refusal_codes: [OPEN]
+
+  - id: S7
+    name: ring_readouts
+    protocol_step: D7
+    skill_step: "design target (K7 -- SKILL.md has no numbered steps yet)"
+    ladder: L4
+    input_schema: "{all ring trends}"
+    keyless_sources: []
+    output: "sandwich_readout.rings[] (s4 field filled)"
+    consumed_by: ["design target (Noul check)"]
+    stop_rule: "an empty ring's s4 is BOT, never ZERO"
+    budget: {max_calls: 0}
+    refusal_codes: [BOT]
+
+  - id: S8
+    name: decide
+    protocol_step: D8
+    skill_step: "design target (K8 -- SKILL.md has no numbered steps yet)"
+    ladder: L4
+    input_schema: "{Z0 ring, escalation, path}"
+    keyless_sources: []
+    today_fields: [decision, confidence, level, checks, gate, why]
+    design_target: [Choice, Score, Noul, dsva_gate]
+    output: "sandwich_readout.{ladder, one_decision, envelope}"
+    consumed_by: ["floodconnect_model.one_decision"]
+    stop_rule: "the local at-or-over-critical fact at Z0 is always reported, whatever the ladder decides"
+    budget: {max_calls: 0}
+    refusal_codes: []
+
+ladder:
+  L1: {steps: [S2, S3, S4, S5]}
+  L2: {steps: [S6], when: agree, action: decide}
+  L3: {steps: [S6], when: conflict, action: open_middle}
+  L4: {steps: [S7, S8]}
+  always_report: "Z0 at/over agency bank/critical"
+  INCOMING:
+    th: "เสี่ยง — น้ำกำลังมา"  # FloodConnect wording (not founder-verbatim)
+    colour_superseded: {value: YELLOW, superseded_by: colour_scale}
+    colour: {value: ORANGE, status: "FOUNDER_RULING_2026-10-05"}
+    arrival: {status: OPEN, needs: PROP-FLOOD-09}
+  UNKNOWN: {never: [GREEN, SAFE]}
+
+# 4-colour scale, founder ruling 2026-10-05 (supersedes the single INCOMING=YELLOW line
+# above for the general ladder outcome -- kept both so the history of the ruling is not
+# erased).
+colour_scale:
+  GREEN: {label_th: "ปกติ", when: "agency says normal AND data fresh AND Z0/Z3 agree", official_tier: true}
+  YELLOW: {label_th: "เฝ้าระวัง", when: "an agency watch/warning, OR an upstream overflow while the middle layer is not yet rising", official_tier: true, note: "aligned with DDPM stage 1 'การเฝ้าระวังและติดตามสถานการณ์' -- RELAYED (founder ruling 2026-10-05), not independently re-read against a cited DDPM plan document by this repo."}
+  ORANGE: {label_th: "เตรียมพร้อม", when: "water confirmed coming (middle layer rising along the KG path toward us), OR local level rising above warning toward critical", official_tier: false, note: "FloodConnect's own choice, aligned with but not equal to the common agency phrase 'เฝ้าระวังและเตรียมพร้อม' -- not an official agency tier."}
+  RED: {label_th: "วิกฤต", when: "at or over the agency critical/bank level, by the agency's own word or level", official_tier: true}
+  UNKNOWN: {label_th: "ไม่ทราบ", when: "missing or stale data", official_tier: false, note: "never SAFE."}
+
+budget_per_run:
+  tool_tiers_max_calls: 8
+  t1_max_calls: 11
+  host_rule_source: sources/registry.yaml
+
+optional_keyed:
+  - endpoint: "twa-api-public.thaiwater.net/v2/waterlevel/list"
+    steps: [S2, S4]
+    adds: "percentageDiff = the agency trend field (preferred over Delta_k sign when present, RELAYED; how epsilon applies to a % is OPEN); diffWlBank"
+    auth: x-api-key
+    called: false
+    request_key_at: "https://www.hii.or.th/ (contact channel on page -- mailto:contact@hii.or.th confirmed live 2026-10-05; no self-service key-request page found -- OPEN)"
+  - endpoint: "twa-api-public.thaiwater.net/data/platform/v1/public/tele_waterlevel/graph?stationId&startDate&endDate&limit=-1"
+    steps: [S4, S6]
+    adds: "hourly RID station series (e.g. C.67 = stationId 7576) -- gives RID river stations a real series where thaiwater_waterlevel_graph (keyless) returns HTTP 500"
+    auth: x-api-key
+    called: false
+    request_key_at: "https://www.hii.or.th/ (same channel as above -- OPEN)"
+  - endpoint: "twa-api-public.thaiwater.net/v2/summary/summary4dam"
+    steps: [S5]
+    adds: "dam summary (4-dam panel)"
+    auth: x-api-key
+    called: false
+    request_key_at: "https://www.hii.or.th/ (same channel -- OPEN)"
+  - endpoint: "twa-api-public.thaiwater.net/data/platform/v1/public/dam_pdaily_sum_by_date?year="
+    steps: [S5]
+    adds: "dam daily history by year"
+    auth: x-api-key
+    called: false
+    request_key_at: "https://www.hii.or.th/ (same channel -- OPEN)"
+  - endpoint: "twa-api-public.thaiwater.net/v2/rainfall/rainfall_c1440/list"
+    steps: [S5]
+    adds: "rain observations"
+    auth: x-api-key
+    called: false
+    request_key_at: "https://www.hii.or.th/ (same channel -- OPEN)"
+  - endpoint: "twa-api-public.thaiwater.net/v2/summary/rainfall-forecast"
+    steps: [S5]
+    adds: "rain forecast"
+    auth: x-api-key
+    called: false
+    request_key_at: "https://www.hii.or.th/ (same channel -- OPEN)"
+  - endpoint: "twa-api-public.thaiwater.net/v2/summary-area/flashflood-warning"
+    steps: [S5]
+    adds: "official warning outside Bangkok"
+    auth: x-api-key
+    called: false
+    request_key_at: "https://www.hii.or.th/ (same channel -- OPEN)"
+  - endpoint: "twa-api-public.thaiwater.net/v2/storm/alert"
+    steps: [S5]
+    adds: "storm alert"
+    auth: x-api-key
+    called: false
+    request_key_at: "https://www.hii.or.th/ (same channel -- OPEN)"
+  - endpoint: "data.tmd.go.th/api/ (tmd_opendata)"
+    steps: [S5]
+    adds: "TMD's own rain/weather data"
+    auth: api_key
+    called: false
+    request_key_at: "https://data.tmd.go.th/api/ (registration) -- probed live 2026-10-05, non-200 (302 redirect), channel confirmation OPEN"

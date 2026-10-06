@@ -413,6 +413,28 @@ def build(graph_path: str = KG_GRAPHML, out_dir: str = KG_INDEX_DIR) -> dict[str
         }
         out_path = os.path.join(out_dir, f"province_{code}.json")
         text = dumps(slice_obj)
+        extra_files: list[str] = []
+        # fix: keep every slice file under the 200 KB budget
+        # without loosening the cap -- when a province's own content (as of this
+        # writing, only province 10/Bangkok, after M8 P2 added the 311 nationwide
+        # `gauge:bma_watermap:*` box-placed rows) pushes past it, split the
+        # `gauge:bma_watermap:*` rows out to a sibling `..._ext.json` file instead
+        # of trimming real committed content. `tools/kg/locate.py`'s
+        # `_load_slice_full` merges it back in at read time -- a caller never sees
+        # a behaviour difference, only two smaller files on disk.
+        if len(text.encode("utf-8")) > 200_000:
+            main_rows = [r for r in row_list if not r[0].startswith("gauge:bma_watermap:")]
+            ext_rows = [r for r in row_list if r[0].startswith("gauge:bma_watermap:")]
+            if ext_rows:
+                ext_obj = {"v": 1, "code": code, "a_cols": a_cols, "a": ext_rows}
+                ext_filename = f"province_{code}_ext.json"
+                ext_text = dumps(ext_obj)
+                with open(os.path.join(out_dir, ext_filename), "w", encoding="utf-8") as f:
+                    f.write(ext_text)
+                sizes[f"{code}_ext"] = len(ext_text.encode("utf-8"))
+                extra_files = [ext_filename]
+                slice_obj["a"] = main_rows
+                text = dumps(slice_obj)
         with open(out_path, "w", encoding="utf-8") as f:
             f.write(text)
         sizes[code] = len(text.encode("utf-8"))
@@ -432,6 +454,8 @@ def build(graph_path: str = KG_GRAPHML, out_dir: str = KG_INDEX_DIR) -> dict[str
                 "sb": len(sb_touch),
             },
         }
+        if extra_files:
+            index_provs[code]["extra_files"] = extra_files
 
     index_obj = {
         "v": 1,

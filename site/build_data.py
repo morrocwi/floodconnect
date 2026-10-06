@@ -443,7 +443,9 @@ try:
 except Exception as _lwl_exc:  # pragma: no cover - defensive fallback
 
     class _LwlFallback:
-        SENSOR_FAULT_STATUS_TH = {"ขัดข้อง"}
+        # Mirrors live_water_level.SENSOR_FAULT_STATUS_TH (2026-10-05: added
+        # "ขัดข้องชั่วคราว") -- kept identical so this defensive fallback never diverges.
+        SENSOR_FAULT_STATUS_TH = {"ขัดข้อง", "ขัดข้องชั่วคราว"}
         NO_NORMAL_LEVEL = object()
 
         @staticmethod

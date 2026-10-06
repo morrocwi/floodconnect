@@ -1,0 +1,1192 @@
+{
+  "meta": {
+    "report_id": "fc-email-2026-10-06T13:33+07:00-special",
+    "title_th": "รายงานสถานการณ์น้ำสัมมากรและกรุงเทพฯ ฝั่งตะวันออก",
+    "round_label_th": "รอบพิเศษ",
+    "generated_at": "2026-10-06T13:33:00+07:00",
+    "window_from": "12:30",
+    "window_to": "13:00",
+    "timezone": "Asia/Bangkok"
+  },
+  "emergency_card": {
+    "colour": "YELLOW",
+    "now_th": "เฝ้าระวังและติดตามสถานการณ์",
+    "do_th": "เฝ้าดู ติดตามระดับน้ำและประกาศของหน่วยงานทางการเป็นระยะ",
+    "strip": "Z0:G Z1:R Z2:U Z3:U",
+    "data_time": "13:00",
+    "hotlines": [
+      {
+        "number": "1784",
+        "label_th": "ปภ. (กรมป้องกันและบรรเทาสาธารณภัย)"
+      },
+      {
+        "number": "1669",
+        "label_th": "การแพทย์ฉุกเฉิน"
+      },
+      {
+        "number": "1555",
+        "label_th": "สายด่วนน้ำท่วม กทม. (เฉพาะพื้นที่กรุงเทพฯ)"
+      }
+    ],
+    "not_official": true
+  },
+  "status_header": {
+    "badge": {
+      "key": "YELLOW",
+      "icon": "🟡",
+      "label_th": "เฝ้าระวัง",
+      "official_tier": false
+    },
+    "headline_th": "บึงหลักสัมมากรยังปกติและลดเล็กน้อย แต่คลองรอบนอกหลายจุดยังอยู่ระดับวิกฤต",
+    "reason_code": "OUTLET_CRITICAL"
+  },
+  "summary": {
+    "paragraphs_th": [
+      "บึงรับน้ำหมู่บ้านสัมมากร (WL.SMK.01) ซึ่งเป็นจุดหลักของเรายังอยู่ในระดับปกติ และลดลงเล็กน้อยในช่วงที่ผ่านมา",
+      "ในขณะเดียวกัน คลองรอบนอกฝั่งตะวันออกหลายจุด เช่น SSB.08, SSB.10, LBK.02, PWT.04, PWT.06 ยังอยู่ระดับวิกฤต และ SSB.07 อยู่ระดับเตือนภัยใกล้วิกฤตมาก (เหลือ 1 ซม.) ทำให้ทางออกของน้ำจากสัมมากรไปแม่น้ำเจ้าพระยาผ่านคลองแสนแสบยังมีความเสี่ยง",
+      "โดยรวม ระบบยังรับมือได้ที่จุดของเราเอง แต่คอขวดอยู่ที่ปลายทางระบาย — สถานะของรายงานนี้จึงเป็นเฝ้าระวัง (YELLOW) ไม่ใช่วิกฤต (RED) เพราะ RED สงวนไว้สำหรับจุดของเราเอง (Z0) เท่านั้น"
+    ],
+    "watch_window_th": "6-12 ชั่วโมงข้างหน้า: ติดตามว่าคลองฝั่งตะวันออกที่วิกฤตอยู่แล้วจะทรงตัว/ลดลง หรือจะดันระดับน้ำเข้าใกล้สัมมากรมากขึ้นผ่านคลองแสนแสบ"
+  },
+  "main_pond": {
+    "station": {
+      "code": "WL.SMK.01",
+      "name_th": "บึงรับน้ำหมู่บ้านสัมมากร",
+      "agency": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+      "latest": {
+        "value": -0.35,
+        "unit": "m",
+        "tag": "RELAYED",
+        "observed_at": "2026-10-06T13:00:00+07:00",
+        "source_id": "bma_watermap",
+        "note": "relayed from the 2026-10-06 13:33 email; not fetched live by this tool this session"
+      },
+      "status": {
+        "key": "GREEN",
+        "icon": "🟢",
+        "label_th": "ปกติ",
+        "official_tier": true
+      },
+      "trend": {
+        "arrow": "↓",
+        "value": "FALLING",
+        "s4": "NEG",
+        "delta_cm": -2,
+        "window_from": "10:05",
+        "window_to": "13:00",
+        "abnormal_rise_tag": null,
+        "tag": "RELAYED",
+        "eq": "PROP-FLOOD-01"
+      },
+      "headroom": {
+        "to_warning_cm": 70,
+        "to_critical_cm": 79,
+        "warning_m": 0.35,
+        "critical_m": 0.44,
+        "theta_used": "warning",
+        "tag": "RELAYED"
+      },
+      "zone": "Z0",
+      "related_pump": null,
+      "links": {
+        "map": {
+          "url": "https://weather.bangkok.go.th/water/",
+          "link_source": "bma_watermap",
+          "link_status": "OPEN",
+          "reason": "overview map only; the per-station deep link is carried in `links.source` instead"
+        },
+        "source": {
+          "url": "https://weather.bangkok.go.th/water/StationDetail?id=284",
+          "link_source": "bma_watermap",
+          "link_status": "OK"
+        }
+      }
+    },
+    "trend": {
+      "arrow": "↓",
+      "value": "FALLING",
+      "s4": "NEG",
+      "delta_cm": -2,
+      "window_from": "10:05",
+      "window_to": "13:00",
+      "abnormal_rise_tag": null,
+      "tag": "RELAYED",
+      "eq": "PROP-FLOOD-01"
+    },
+    "headroom": {
+      "to_warning_cm": 70,
+      "to_critical_cm": 79,
+      "warning_m": 0.35,
+      "critical_m": 0.44,
+      "theta_used": "warning",
+      "tag": "RELAYED"
+    },
+    "continuity": {
+      "previous_report_id": null,
+      "previous_report_at": null,
+      "delta_since_previous_cm": null,
+      "delta_since_previous": {
+        "value": null,
+        "unit": "cm",
+        "tag": "OPEN",
+        "observed_at": null,
+        "source_id": null,
+        "note": "no local append-only report log entry predates this sample"
+      },
+      "trend_change": null,
+      "tags_carried": [],
+      "prediction_check": null,
+      "reason_if_null": "sample predates this report-schema's local continuity log; no previous report row exists to link to"
+    },
+    "eta": {
+      "applicable": false,
+      "status": "NOT_APPLICABLE",
+      "time_to_warning": null,
+      "time_to_bank": null,
+      "current_slope_cm_per_h": null,
+      "longer_window_slope_cm_per_h": null,
+      "refusal_reason": null,
+      "tag": "PROPOSAL",
+      "eq": "PROP-FLOOD-02"
+    }
+  },
+  "sandwich": {
+    "layers": {
+      "Z0": "GREEN",
+      "Z1": "RED",
+      "Z2": "UNKNOWN",
+      "Z3": "UNKNOWN"
+    },
+    "trace": {
+      "steps": [
+        "READ_BOTTOM",
+        "AT_OR_OVER_LOCAL",
+        "READ_TOP",
+        "CONFLICT",
+        "EXTRACT_MIDDLE",
+        "DECIDE"
+      ],
+      "reasons": [
+        "BOTTOM_GREEN_FRESH",
+        "OUTLET_CRITICAL",
+        "MIDDLE_NOT_RISING"
+      ],
+      "needs_middle": false,
+      "mid": {
+        "read": true,
+        "rows": [
+          "SSB.07",
+          "SSB.08",
+          "SSB.10",
+          "LBK.02",
+          "PWT.04",
+          "PWT.06"
+        ]
+      }
+    },
+    "outlet": {
+      "path_th": "สัมมากร → คลองแสนแสบ → แม่น้ำเจ้าพระยา",
+      "bottleneck_code": "SSB.08",
+      "bottleneck_colour": "RED"
+    }
+  },
+  "watch_sections": [
+    {
+      "section_id": "core",
+      "title_th": "§1 แกนหลัก",
+      "rows": [
+        {
+          "code": "WL.SMK.01",
+          "name_th": "บึงรับน้ำหมู่บ้านสัมมากร",
+          "agency": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+          "latest": {
+            "value": -0.35,
+            "unit": "m",
+            "tag": "RELAYED",
+            "observed_at": "2026-10-06T13:00:00+07:00",
+            "source_id": "bma_watermap",
+            "note": "relayed from the 2026-10-06 13:33 email, not fetched live by this tool this session"
+          },
+          "status": {
+            "key": "GREEN",
+            "icon": "🟢",
+            "label_th": "ปกติ",
+            "official_tier": true
+          },
+          "trend": {
+            "arrow": "↓",
+            "value": "FALLING",
+            "s4": "NEG",
+            "delta_cm": -2,
+            "window_from": "10:05",
+            "window_to": "13:00",
+            "abnormal_rise_tag": null,
+            "tag": "RELAYED",
+            "eq": "PROP-FLOOD-01"
+          },
+          "headroom": {
+            "to_warning_cm": 70,
+            "to_critical_cm": 79,
+            "warning_m": 0.35,
+            "critical_m": 0.44,
+            "theta_used": "warning",
+            "tag": "RELAYED"
+          },
+          "zone": "Z0",
+          "related_pump": null,
+          "links": {
+            "map": {
+              "url": "https://weather.bangkok.go.th/water/",
+              "link_source": "bma_watermap",
+              "link_status": "OPEN",
+              "reason": "overview map only; the per-station deep link is carried in `links.source` instead"
+            },
+            "source": {
+              "url": "https://weather.bangkok.go.th/water/StationDetail?id=284",
+              "link_source": "bma_watermap",
+              "link_status": "OK"
+            }
+          }
+        },
+        {
+          "code": "WL.BMA.02",
+          "name_th": "คลองบ้านม้า",
+          "agency": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+          "latest": {
+            "value": 0.29,
+            "unit": "m",
+            "tag": "RELAYED",
+            "observed_at": "2026-10-06T13:00:00+07:00",
+            "source_id": "bma_watermap",
+            "note": "relayed from the 2026-10-06 13:33 email, not fetched live by this tool this session"
+          },
+          "status": {
+            "key": "GREEN",
+            "icon": "🟢",
+            "label_th": "ปกติ",
+            "official_tier": true
+          },
+          "trend": {
+            "arrow": "↑",
+            "value": "RISING",
+            "s4": "POS",
+            "delta_cm": 2,
+            "window_from": "unknown",
+            "window_to": "13:00",
+            "abnormal_rise_tag": null,
+            "tag": "RELAYED",
+            "eq": "PROP-FLOOD-01"
+          },
+          "headroom": {
+            "to_warning_cm": null,
+            "to_critical_cm": null,
+            "warning_m": 0.4,
+            "critical_m": 0.5,
+            "theta_used": "warning",
+            "tag": "OPEN"
+          },
+          "zone": "Z1",
+          "related_pump": [
+            {
+              "id": "ST.SPS.01",
+              "link": {
+                "url": "https://weather.bangkok.go.th/Station/PumpHistory",
+                "link_source": "bma_pumphistory",
+                "link_status": "OPEN",
+                "reason": "endpoint returned 404 (bma_pumphistory confirmed dead this session, 2026-10-06); no alternate per-pump page found this session in the bma_watermap payload (ST.SPS.01-04 pump assets are not in the water_id space -- confirmed by searching the live payload) or in dds.bangkok.go.th/flood_report.php (fetched, no ST.SPS reference found)"
+              }
+            }
+          ],
+          "links": {
+            "map": {
+              "url": "https://weather.bangkok.go.th/water/",
+              "link_source": "bma_watermap",
+              "link_status": "OPEN",
+              "reason": "overview map only; the per-station deep link is carried in `links.source` instead"
+            },
+            "source": {
+              "url": "https://weather.bangkok.go.th/water/StationDetail?id=288",
+              "link_source": "bma_watermap",
+              "link_status": "OK"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "section_id": "east_watch",
+      "title_th": "§2 จุดเฝ้าระวังฝั่งตะวันออก",
+      "rows": [
+        {
+          "code": "SSB.07",
+          "name_th": "คลองสะพานสูง (SSB.07)",
+          "agency": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+          "latest": {
+            "value": 0.44,
+            "unit": "m",
+            "tag": "RELAYED",
+            "observed_at": "2026-10-06T13:00:00+07:00",
+            "source_id": "bma_watermap",
+            "note": "relayed from the 2026-10-06 13:33 email, not fetched live by this tool this session"
+          },
+          "status": {
+            "key": "YELLOW",
+            "icon": "🟡",
+            "label_th": "เฝ้าระวัง",
+            "official_tier": true
+          },
+          "trend": {
+            "arrow": "→",
+            "value": "STABLE",
+            "s4": "ZERO",
+            "delta_cm": 0,
+            "window_from": "10:05",
+            "window_to": "13:00",
+            "abnormal_rise_tag": null,
+            "tag": "RELAYED",
+            "eq": "PROP-FLOOD-01"
+          },
+          "headroom": {
+            "to_warning_cm": null,
+            "to_critical_cm": 1,
+            "warning_m": null,
+            "critical_m": 0.45,
+            "theta_used": "critical",
+            "tag": "RELAYED"
+          },
+          "zone": "Z1",
+          "related_pump": null,
+          "links": {
+            "map": {
+              "url": "https://weather.bangkok.go.th/water/",
+              "link_source": "bma_watermap",
+              "link_status": "OPEN",
+              "reason": "overview map only; the per-station deep link is carried in `links.source` instead"
+            },
+            "source": {
+              "url": "https://weather.bangkok.go.th/water/StationDetail?id=35",
+              "link_source": "bma_watermap",
+              "link_status": "OK"
+            }
+          }
+        },
+        {
+          "code": "SSB.08",
+          "name_th": "คลองสะพานสูง (SSB.08)",
+          "agency": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+          "latest": {
+            "value": 0.65,
+            "unit": "m",
+            "tag": "RELAYED",
+            "observed_at": "2026-10-06T13:00:00+07:00",
+            "source_id": "bma_watermap",
+            "note": "relayed from the 2026-10-06 13:33 email; not fetched live by this tool this session. Note: an earlier draft of this example invented warning_m=0.50/critical_m=0.60 for this station -- removed, since neither figure is stated in the sample or confirmed against a live BMA threshold source this session"
+          },
+          "status": {
+            "key": "RED",
+            "icon": "🔴",
+            "label_th": "วิกฤต",
+            "official_tier": true
+          },
+          "trend": {
+            "arrow": "↑",
+            "value": "RISING",
+            "s4": "POS",
+            "delta_cm": 5,
+            "window_from": "10:05",
+            "window_to": "13:00",
+            "abnormal_rise_tag": null,
+            "tag": "RELAYED",
+            "eq": "PROP-FLOOD-01"
+          },
+          "headroom": {
+            "to_warning_cm": null,
+            "to_critical_cm": null,
+            "warning_m": null,
+            "critical_m": null,
+            "theta_used": "none",
+            "tag": "OPEN"
+          },
+          "zone": "Z1",
+          "related_pump": null,
+          "links": {
+            "map": {
+              "url": "https://weather.bangkok.go.th/water/",
+              "link_source": "bma_watermap",
+              "link_status": "OPEN",
+              "reason": "overview map only; the per-station deep link is carried in `links.source` instead"
+            },
+            "source": {
+              "url": "https://weather.bangkok.go.th/water/StationDetail?id=88",
+              "link_source": "bma_watermap",
+              "link_status": "OK"
+            }
+          }
+        },
+        {
+          "code": "SSB.10",
+          "name_th": "คลองสะพานสูง (SSB.10)",
+          "agency": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+          "latest": {
+            "value": 0.83,
+            "unit": "m",
+            "tag": "RELAYED",
+            "observed_at": "2026-10-06T13:00:00+07:00",
+            "source_id": "bma_watermap",
+            "note": "สูงกว่า SSB.08 แต่ทั้งคู่จัดเป็นวิกฤตเท่ากัน -- ดู DIFF.md ข้อสังเกตความไม่สอดคล้องของตัวอย่าง -- relayed from the 2026-10-06 13:33 email, not fetched live by this tool this session"
+          },
+          "status": {
+            "key": "RED",
+            "icon": "🔴",
+            "label_th": "วิกฤต",
+            "official_tier": true
+          },
+          "trend": {
+            "arrow": "↑",
+            "value": "RISING",
+            "delta_cm": 5,
+            "window_from": "10:05",
+            "window_to": "13:00",
+            "abnormal_rise_tag": null,
+            "tag": "RELAYED",
+            "s4": "POS"
+          },
+          "headroom": {
+            "to_warning_cm": null,
+            "to_critical_cm": null,
+            "warning_m": null,
+            "critical_m": null,
+            "theta_used": "none",
+            "tag": "OPEN"
+          },
+          "zone": "Z1",
+          "related_pump": null,
+          "links": {
+            "map": {
+              "url": "https://weather.bangkok.go.th/water/",
+              "link_source": "bma_watermap",
+              "link_status": "OPEN",
+              "reason": "overview map only; the per-station deep link is carried in `links.source` instead"
+            },
+            "source": {
+              "url": "https://weather.bangkok.go.th/water/StationDetail?id=25",
+              "link_source": "bma_watermap",
+              "link_status": "OK"
+            }
+          }
+        },
+        {
+          "code": "LBK.02",
+          "name_th": "คลองลาดบัวขาว (LBK.02)",
+          "agency": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+          "latest": {
+            "value": 0.71,
+            "unit": "m",
+            "tag": "RELAYED",
+            "observed_at": "2026-10-06T13:00:00+07:00",
+            "source_id": "bma_watermap",
+            "note": "relayed from the 2026-10-06 13:33 email, not fetched live by this tool this session"
+          },
+          "status": {
+            "key": "RED",
+            "icon": "🔴",
+            "label_th": "วิกฤต",
+            "official_tier": true
+          },
+          "trend": {
+            "arrow": "↑",
+            "value": "RISING",
+            "delta_cm": 5,
+            "window_from": "10:05",
+            "window_to": "13:00",
+            "abnormal_rise_tag": null,
+            "tag": "RELAYED",
+            "s4": "POS"
+          },
+          "headroom": {
+            "to_warning_cm": null,
+            "to_critical_cm": null,
+            "warning_m": null,
+            "critical_m": null,
+            "theta_used": "none",
+            "tag": "OPEN"
+          },
+          "zone": "Z2",
+          "related_pump": null,
+          "links": {
+            "map": {
+              "url": "https://weather.bangkok.go.th/water/",
+              "link_source": "bma_watermap",
+              "link_status": "OPEN",
+              "reason": "overview map only; the per-station deep link is carried in `links.source` instead"
+            },
+            "source": {
+              "url": "https://weather.bangkok.go.th/water/StationDetail?id=176",
+              "link_source": "bma_watermap",
+              "link_status": "OK"
+            }
+          }
+        },
+        {
+          "code": "PWT.04",
+          "name_th": "คลองพระยาสุเรนทร์ (PWT.04)",
+          "agency": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+          "latest": {
+            "value": 0.66,
+            "unit": "m",
+            "tag": "RELAYED",
+            "observed_at": "2026-10-06T13:00:00+07:00",
+            "source_id": "bma_watermap",
+            "note": "relayed from the 2026-10-06 13:33 email, not fetched live by this tool this session"
+          },
+          "status": {
+            "key": "RED",
+            "icon": "🔴",
+            "label_th": "วิกฤต",
+            "official_tier": true
+          },
+          "trend": {
+            "arrow": "↑",
+            "value": "RISING",
+            "delta_cm": 3,
+            "window_from": "10:05",
+            "window_to": "13:00",
+            "abnormal_rise_tag": null,
+            "tag": "RELAYED",
+            "s4": "POS"
+          },
+          "headroom": {
+            "to_warning_cm": null,
+            "to_critical_cm": null,
+            "warning_m": null,
+            "critical_m": null,
+            "theta_used": "none",
+            "tag": "OPEN"
+          },
+          "zone": "Z2",
+          "related_pump": null,
+          "links": {
+            "map": {
+              "url": "https://weather.bangkok.go.th/water/",
+              "link_source": "bma_watermap",
+              "link_status": "OPEN",
+              "reason": "overview map only; the per-station deep link is carried in `links.source` instead"
+            },
+            "source": {
+              "url": "https://weather.bangkok.go.th/water/StationDetail?id=39",
+              "link_source": "bma_watermap",
+              "link_status": "OK"
+            }
+          }
+        },
+        {
+          "code": "PWT.06",
+          "name_th": "คลองพระยาสุเรนทร์ (PWT.06)",
+          "agency": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+          "latest": {
+            "value": 1.0,
+            "unit": "m",
+            "tag": "RELAYED",
+            "observed_at": "2026-10-06T13:00:00+07:00",
+            "source_id": "bma_watermap",
+            "note": "relayed from the 2026-10-06 13:33 email, not fetched live by this tool this session"
+          },
+          "status": {
+            "key": "RED",
+            "icon": "🔴",
+            "label_th": "วิกฤต",
+            "official_tier": true
+          },
+          "trend": {
+            "arrow": "→",
+            "value": "STABLE",
+            "s4": "ZERO",
+            "delta_cm": 0,
+            "window_from": "10:05",
+            "window_to": "13:00",
+            "abnormal_rise_tag": null,
+            "tag": "RELAYED",
+            "eq": "PROP-FLOOD-01"
+          },
+          "headroom": {
+            "to_warning_cm": null,
+            "to_critical_cm": null,
+            "warning_m": null,
+            "critical_m": null,
+            "theta_used": "none",
+            "tag": "OPEN"
+          },
+          "zone": "Z2",
+          "related_pump": null,
+          "links": {
+            "map": {
+              "url": "https://weather.bangkok.go.th/water/",
+              "link_source": "bma_watermap",
+              "link_status": "OPEN",
+              "reason": "overview map only; the per-station deep link is carried in `links.source` instead"
+            },
+            "source": {
+              "url": "https://weather.bangkok.go.th/water/StationDetail?id=65",
+              "link_source": "bma_watermap",
+              "link_status": "OK"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "pumps": [
+    {
+      "code": "ST.SPS.01",
+      "name_th": "สถานีสูบน้ำคลองบ้านม้า 2",
+      "agency": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+      "capacity_cms": {
+        "value": 4.0,
+        "unit": "m3/s",
+        "tag": "VERIFIED",
+        "observed_at": null,
+        "source_id": "bma_plan2569_control_structures",
+        "note": "4×1.0 เครื่อง, แผนปฏิบัติราชการ 2569 หน้า ง-25"
+      },
+      "units": "4×1.0",
+      "status": {
+        "key": "UNKNOWN",
+        "icon": "⚪",
+        "label_th": "ไม่ทราบ",
+        "official_tier": false
+      },
+      "link": {
+        "url": "https://weather.bangkok.go.th/Station/PumpHistory",
+        "link_source": "bma_pumphistory",
+        "link_status": "OPEN",
+        "reason": "endpoint returned 404 (bma_pumphistory confirmed dead this session, 2026-10-06); no alternate per-pump page found this session in the bma_watermap payload (ST.SPS.01-04 pump assets are not in the water_id space -- confirmed by searching the live payload) or in dds.bangkok.go.th/flood_report.php (fetched, no ST.SPS reference found)"
+      },
+      "never_means": "UNKNOWN ≠ pump stopped"
+    },
+    {
+      "code": "ST.SPS.02",
+      "name_th": "สถานีสูบน้ำบึงที่ 4 ตอนคลองวังใหญ่",
+      "agency": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+      "capacity_cms": {
+        "value": 2.0,
+        "unit": "m3/s",
+        "tag": "VERIFIED",
+        "observed_at": null,
+        "source_id": "bma_plan2569_control_structures",
+        "note": "2×1.0 เครื่อง"
+      },
+      "units": "2×1.0",
+      "status": {
+        "key": "UNKNOWN",
+        "icon": "⚪",
+        "label_th": "ไม่ทราบ",
+        "official_tier": false
+      },
+      "link": {
+        "url": "https://weather.bangkok.go.th/Station/PumpHistory",
+        "link_source": "bma_pumphistory",
+        "link_status": "OPEN",
+        "reason": "endpoint returned 404 (bma_pumphistory confirmed dead this session, 2026-10-06); no alternate per-pump page found this session in the bma_watermap payload (ST.SPS.01-04 pump assets are not in the water_id space -- confirmed by searching the live payload) or in dds.bangkok.go.th/flood_report.php (fetched, no ST.SPS reference found)"
+      },
+      "never_means": "UNKNOWN ≠ pump stopped"
+    },
+    {
+      "code": "ST.SPS.03",
+      "name_th": "สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2",
+      "agency": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+      "capacity_cms": {
+        "value": 0.75,
+        "unit": "m3/s",
+        "tag": "VERIFIED",
+        "observed_at": null,
+        "source_id": "bma_plan2569_control_structures",
+        "note": "3×0.25 เครื่อง"
+      },
+      "units": "3×0.25",
+      "status": {
+        "key": "UNKNOWN",
+        "icon": "⚪",
+        "label_th": "ไม่ทราบ",
+        "official_tier": false
+      },
+      "link": {
+        "url": "https://weather.bangkok.go.th/Station/PumpHistory",
+        "link_source": "bma_pumphistory",
+        "link_status": "OPEN",
+        "reason": "endpoint returned 404 (bma_pumphistory confirmed dead this session, 2026-10-06); no alternate per-pump page found this session in the bma_watermap payload (ST.SPS.01-04 pump assets are not in the water_id space -- confirmed by searching the live payload) or in dds.bangkok.go.th/flood_report.php (fetched, no ST.SPS reference found)"
+      },
+      "never_means": "UNKNOWN ≠ pump stopped"
+    },
+    {
+      "code": "ST.SPS.04",
+      "name_th": "สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง",
+      "agency": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+      "capacity_cms": {
+        "value": 1.0,
+        "unit": "m3/s",
+        "tag": "VERIFIED",
+        "observed_at": null,
+        "source_id": "bma_plan2569_control_structures",
+        "note": "2×0.5 เครื่อง"
+      },
+      "units": "2×0.5",
+      "status": {
+        "key": "UNKNOWN",
+        "icon": "⚪",
+        "label_th": "ไม่ทราบ",
+        "official_tier": false
+      },
+      "link": {
+        "url": "https://weather.bangkok.go.th/Station/PumpHistory",
+        "link_source": "bma_pumphistory",
+        "link_status": "OPEN",
+        "reason": "endpoint returned 404 (bma_pumphistory confirmed dead this session, 2026-10-06); no alternate per-pump page found this session in the bma_watermap payload (ST.SPS.01-04 pump assets are not in the water_id space -- confirmed by searching the live payload) or in dds.bangkok.go.th/flood_report.php (fetched, no ST.SPS reference found)"
+      },
+      "never_means": "UNKNOWN ≠ pump stopped"
+    }
+  ],
+  "upstream": [
+    {
+      "code": "C.2",
+      "name_th": "สถานี C.2 (นครสวรรค์)",
+      "agency": "กรมชลประทาน",
+      "kind": "flow",
+      "value": {
+        "value": 1951,
+        "unit": "m3/s",
+        "tag": "MEASURED",
+        "observed_at": "2026-10-06T11:00:00+07:00",
+        "source_id": "rid_bigdata_swoc",
+        "note": null
+      },
+      "percent_capacity": null,
+      "trend": {
+        "arrow": "↓",
+        "value": "FALLING",
+        "s4": "NEG",
+        "delta_cm": null,
+        "window_from": "unknown",
+        "window_to": "11:00",
+        "abnormal_rise_tag": null,
+        "tag": "RELAYED"
+      },
+      "link": {
+        "url": "http://water.rid.go.th/flood/flood/res_table.htm",
+        "link_source": "rid_bigdata_swoc",
+        "link_status": "OPEN",
+        "reason": "page lists multiple stations; no confirmed per-station anchor link"
+      }
+    },
+    {
+      "code": "C.13",
+      "name_th": "สถานี C.13 (เขื่อนเจ้าพระยา)",
+      "agency": "กรมชลประทาน",
+      "kind": "flow",
+      "value": {
+        "value": 2500,
+        "unit": "m3/s",
+        "tag": "MEASURED",
+        "observed_at": "2026-10-06T11:00:00+07:00",
+        "source_id": "rid_bigdata_swoc",
+        "note": null
+      },
+      "percent_capacity": null,
+      "trend": {
+        "arrow": "↓",
+        "value": "FALLING",
+        "s4": "NEG",
+        "delta_cm": null,
+        "window_from": "unknown",
+        "window_to": "11:00",
+        "abnormal_rise_tag": null,
+        "tag": "RELAYED"
+      },
+      "link": {
+        "url": "http://water.rid.go.th/flood/flood/res_table.htm",
+        "link_source": "rid_bigdata_swoc",
+        "link_status": "OPEN",
+        "reason": "page lists multiple stations; no confirmed per-station anchor link"
+      }
+    },
+    {
+      "code": "PASAK",
+      "name_th": "เขื่อนป่าสักชลสิทธิ์",
+      "agency": "กรมชลประทาน",
+      "kind": "storage",
+      "value": {
+        "value": 944,
+        "unit": "MCM",
+        "tag": "RELAYED",
+        "observed_at": "2026-10-06T11:00:00+07:00",
+        "source_id": "thaiwater_dam",
+        "note": "relayed from the 2026-10-06 13:33 email, not fetched live by this tool this session"
+      },
+      "percent_capacity": {
+        "value": 108,
+        "unit": "%",
+        "tag": "RELAYED",
+        "observed_at": "2026-10-06T11:00:00+07:00",
+        "source_id": "thaiwater_dam",
+        "note": "relayed from the 2026-10-06 13:33 email, not fetched live by this tool this session"
+      },
+      "trend": {
+        "arrow": "→",
+        "value": "STABLE",
+        "s4": "ZERO",
+        "delta_cm": null,
+        "window_from": "unknown",
+        "window_to": "11:00",
+        "abnormal_rise_tag": null,
+        "tag": "RELAYED"
+      },
+      "link": {
+        "url": "https://api-v3.thaiwater.net/api/v1/thaiwater30/analyst/dam",
+        "link_source": "thaiwater_dam",
+        "link_status": "OK"
+      }
+    },
+    {
+      "code": "PASAK_RELEASE",
+      "name_th": "เขื่อนป่าสักชลสิทธิ์ (ระบาย)",
+      "agency": "กรมชลประทาน",
+      "kind": "release",
+      "value": {
+        "value": 500,
+        "unit": "m3/s",
+        "tag": "RELAYED",
+        "observed_at": "2026-10-06T11:00:00+07:00",
+        "source_id": "thaiwater_dam",
+        "note": "relayed from the 2026-10-06 13:33 email, not fetched live by this tool this session"
+      },
+      "percent_capacity": null,
+      "trend": {
+        "arrow": "→",
+        "value": "STABLE",
+        "s4": "ZERO",
+        "delta_cm": null,
+        "window_from": "unknown",
+        "window_to": "11:00",
+        "abnormal_rise_tag": null,
+        "tag": "RELAYED"
+      },
+      "link": {
+        "url": "https://api-v3.thaiwater.net/api/v1/thaiwater30/analyst/dam",
+        "link_source": "thaiwater_dam",
+        "link_status": "OK"
+      }
+    },
+    {
+      "code": "RAMA6",
+      "name_th": "เขื่อนพระราม 6",
+      "agency": "กรมชลประทาน",
+      "kind": "level",
+      "value": {
+        "value": 719,
+        "unit": "cm",
+        "tag": "MEASURED",
+        "observed_at": "2026-10-06T11:00:00+07:00",
+        "source_id": "rid9",
+        "note": "ไม่ทราบระดับอ้างอิง (รทก./ม.) จากตัวอย่างต้นฉบับ -- OPEN"
+      },
+      "percent_capacity": null,
+      "trend": {
+        "arrow": "↑",
+        "value": "RISING",
+        "s4": "POS",
+        "delta_cm": null,
+        "window_from": "unknown",
+        "window_to": "11:00",
+        "abnormal_rise_tag": null,
+        "tag": "RELAYED"
+      },
+      "link": {
+        "url": "http://irrigation.rid.go.th/rid9/rid9_new/rpt_show.php",
+        "link_source": "rid9",
+        "link_status": "OPEN",
+        "reason": "dynamic report URL requires a date parameter; no static per-station anchor"
+      }
+    }
+  ],
+  "weather": [
+    {
+      "agency": "กรมอุตุนิยมวิทยา",
+      "issued_at": "2026-10-06T11:00:00+07:00",
+      "coverage_pct": {
+        "value": 70,
+        "unit": "%",
+        "tag": "RELAYED",
+        "observed_at": "2026-10-06T11:00:00+07:00",
+        "source_id": "tmd_forecast",
+        "note": "70% ของพื้นที่ มีฝนตกหนัก ตามพยากรณ์ 11:00"
+      },
+      "headline_th": "พยากรณ์ 11:00: ฝนตกหนักครอบคลุม 70% ของพื้นที่",
+      "link": {
+        "url": null,
+        "link_source": "tmd_forecast",
+        "link_status": "OPEN",
+        "reason": "original sample did not carry a URL for this forecast bulletin"
+      }
+    },
+    {
+      "agency": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+      "issued_at": "2026-10-06T13:00:00+07:00",
+      "coverage_pct": {
+        "value": null,
+        "unit": "%",
+        "tag": "OPEN",
+        "observed_at": null,
+        "source_id": "bma_rain_stations",
+        "note": "สถานีวัดฝน กทม. ตรวจพบฝนตก (ไม่มีตัวเลขเปอร์เซ็นต์ในตัวอย่างต้นฉบับ)"
+      },
+      "headline_th": "สถานีวัดฝน กทม. ตรวจพบฝนตกในพื้นที่",
+      "link": {
+        "url": "https://dds.bangkok.go.th/Line_data/picture/radar_rain.gif",
+        "link_source": "bma_radar_rain",
+        "link_status": "OK"
+      }
+    }
+  ],
+  "system_risk": [
+    {
+      "factor_id": "MAIN_POND",
+      "factor_th": "บึงหลัก (สัมมากร)",
+      "colour": {
+        "key": "GREEN",
+        "icon": "🟢",
+        "label_th": "ปกติ",
+        "official_tier": true
+      },
+      "trend": "FALLING"
+    },
+    {
+      "factor_id": "OUTLET_OUTER_CANALS",
+      "factor_th": "ทางออก/คลองรอบนอก",
+      "colour": {
+        "key": "RED",
+        "icon": "🔴",
+        "label_th": "วิกฤต",
+        "official_tier": true
+      },
+      "trend": "RISING"
+    },
+    {
+      "factor_id": "UPSTREAM",
+      "factor_th": "น้ำเหนือ/ป่าสัก",
+      "colour": {
+        "key": "YELLOW",
+        "icon": "🟡",
+        "label_th": "เฝ้าระวัง",
+        "official_tier": false
+      },
+      "trend": "FALLING"
+    },
+    {
+      "factor_id": "RAIN",
+      "factor_th": "ฝนและอากาศ",
+      "colour": {
+        "key": "YELLOW",
+        "icon": "🟡",
+        "label_th": "เฝ้าระวัง",
+        "official_tier": false
+      },
+      "trend": "RISING"
+    }
+  ],
+  "decision": {
+    "jev": {
+      "colour": "YELLOW",
+      "label_th": "เฝ้าระวัง",
+      "level": "YELLOW",
+      "official_tier": false,
+      "score": "เฝ้าระวัง",
+      "choice": {
+        "chosen": "เฝ้าดู"
+      },
+      "confidence": "HIGH",
+      "gate": "ADMIT",
+      "licence": "LICENSED_WITHIN_ENVELOPE",
+      "why": [
+        "BOTTOM_GREEN_FRESH",
+        "OUTLET_CRITICAL",
+        "MIDDLE_NOT_RISING"
+      ],
+      "layers": "GRUU"
+    },
+    "why_sent_th": "ส่งรอบพิเศษนี้เพราะคลองฝั่งตะวันออกหลายจุดขึ้นถึงระดับวิกฤตพร้อมกัน (OUTLET_CRITICAL) แม้จุดหลักของเรายังปกติ",
+    "send_rules": [
+      {
+        "rule_id": "COLOUR_CHANGE",
+        "description_th": "ส่งเมื่อสีของสถานะเปลี่ยน",
+        "fired": false,
+        "tag": "FOUNDER_RULING"
+      },
+      {
+        "rule_id": "NEW_ABNORMAL_RISE_TAG",
+        "description_th": "ส่งเมื่อมีจุดขึ้นระดับผิดปกติใหม่ (ติดแท็กต่อเนื่อง) -- ยังไม่มีการจดทะเบียนเกณฑ์ขึ้นผิดปกติ (abnormal-rise rule) ในระบบ จึงยังไม่เคย fired จริง",
+        "fired": false,
+        "tag": "FOUNDER_RULING"
+      },
+      {
+        "rule_id": "OUTLET_CRITICAL_MULTI",
+        "description_th": "ส่งเมื่อคลองรอบนอกหลายจุดวิกฤตพร้อมกัน",
+        "fired": true,
+        "tag": "FLOODCONNECT_DEFAULT_PENDING_FOUNDER"
+      },
+      {
+        "rule_id": "ETA_UNDER_N_HOURS",
+        "description_th": "ส่งเมื่อมี ETA ถึงค่าเตือน/ตลิ่งต่ำกว่า N ชั่วโมง (N ยังไม่กำหนดโดยผู้ก่อตั้ง)",
+        "fired": false,
+        "tag": "FLOODCONNECT_DEFAULT_PENDING_FOUNDER"
+      },
+      {
+        "rule_id": "SCHEDULED_ROUND",
+        "description_th": "ส่งตามรอบเวลาปกติที่กำหนดไว้",
+        "fired": false,
+        "tag": "FLOODCONNECT_DEFAULT_PENDING_FOUNDER"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "order": 1,
+      "id": "G1",
+      "what_th": "เฝ้าดู",
+      "how_th": "ติดตามระดับน้ำและประกาศของหน่วยงานทางการเป็นระยะ",
+      "trigger_next": "YELLOW",
+      "source_tag": "FLOODCONNECT",
+      "official_ref": []
+    },
+    {
+      "order": 2,
+      "id": "G3",
+      "what_th": "บันทึกเบอร์สายด่วนไว้ในโทรศัพท์",
+      "how_th": "บันทึก 1784 (ปภ.) และ 1669 (การแพทย์ฉุกเฉิน) ไว้ล่วงหน้า",
+      "trigger_next": "YELLOW",
+      "source_tag": "FLOODCONNECT",
+      "official_ref": []
+    },
+    {
+      "order": 3,
+      "id": "G10",
+      "what_th": "ย้ายของมีค่าขึ้นที่สูงไว้ล่วงหน้า",
+      "how_th": "ย้ายของที่มีค่าทางใจหรือทรัพย์สินมีค่าขึ้นชั้นบนหรือเก็บไว้ในที่สูง เช่น ชั้นบนสุดของตู้",
+      "trigger_next": "YELLOW",
+      "source_tag": "GENERAL",
+      "official_ref": [
+        "GEN-01"
+      ]
+    },
+    {
+      "order": 4,
+      "id": "ESCALATION_TRIGGER",
+      "what_th": "ขยับขั้นถัดไปเมื่อบึงหลักเริ่มขึ้นหรือคอขวดทางออกยังไม่คลี่คลายใน 6-12 ชม.",
+      "how_th": "ถ้า WL.SMK.01 เปลี่ยนจากลดเป็นขึ้น หรือ SSB.08/SSB.10/LBK.02/PWT.04/PWT.06 ยังวิกฤตต่อเนื่องเกิน 6-12 ชม. ให้ขยับไปเตรียมพร้อม (ORANGE); หลักฐานจริงหน้างานสำคัญกว่าแบบจำลอง (ground truth beats the model)",
+      "trigger_next": "ORANGE",
+      "source_tag": "FLOODCONNECT",
+      "official_ref": []
+    }
+  ],
+  "technical": {
+    "trend_formula": "Δk(t) = h(t) - h(t-k)  (PROP-FLOOD-01, Toledo tier Dr)",
+    "headroom_formula": "gap = θ - h(t), where θ is the nearer of warning/critical (floodconnect_model.bank_check)",
+    "eta_formula": "Tk = (θ - h(t)) × k / Δk(t), defined only when Δk(t) > ε and h(t) < θ (PROP-FLOOD-02, linear, two windows)",
+    "freshness_rules": [
+      {
+        "source_id": "bma_pumphistory",
+        "max_age_hours": 24
+      },
+      {
+        "source_id": "bma_watermap",
+        "max_age_hours": 24
+      },
+      {
+        "source_id": "thaiwater_dam",
+        "max_age_hours": 24
+      },
+      {
+        "source_id": "rid_bigdata_swoc",
+        "max_age_hours": 24
+      },
+      {
+        "source_id": "tmd_forecast",
+        "max_age_hours": 24
+      }
+    ],
+    "limits": [
+      "decision-support only, not an official evacuation order",
+      "UNKNOWN ≠ SAFE",
+      "station-level resolution, not household-level",
+      "pump status is structurally UNKNOWN (no reliable live pump-state feed) -- never read as 'pump stopped'",
+      "ETA (PROP-FLOOD-02, linear, two windows) is a linear extension of the last observed rate only, refusable; PROP-FLOOD-11 (acceleration-aware) is registered but not implemented in this release"
+    ]
+  },
+  "sources": [
+    {
+      "source_id": "bma_pumphistory",
+      "agency": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+      "url": "https://weather.bangkok.go.th/Station/PumpHistory",
+      "retrieved_at": "2026-10-06T13:52:00+07:00"
+    },
+    {
+      "source_id": "bma_watermap",
+      "agency": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+      "url": "https://weather.bangkok.go.th/water/",
+      "retrieved_at": "2026-10-06T13:00:00+07:00"
+    },
+    {
+      "source_id": "bma_radar_rain",
+      "agency": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+      "url": "https://dds.bangkok.go.th/Line_data/picture/radar_rain.gif",
+      "retrieved_at": "2026-10-06T13:00:00+07:00"
+    },
+    {
+      "source_id": "thaiwater_dam",
+      "agency": "สถาบันสารสนเทศทรัพยากรน้ำ (สสน.)",
+      "url": "https://api-v3.thaiwater.net/api/v1/thaiwater30/analyst/dam",
+      "retrieved_at": "2026-10-06T11:00:00+07:00"
+    },
+    {
+      "source_id": "rid_bigdata_swoc",
+      "agency": "กรมชลประทาน",
+      "url": "http://water.rid.go.th/flood/flood/res_table.htm",
+      "retrieved_at": "2026-10-06T11:00:00+07:00"
+    },
+    {
+      "source_id": "rid9",
+      "agency": "กรมชลประทาน (สำนักงานชลประทานที่ 9)",
+      "url": "http://irrigation.rid.go.th/rid9/rid9_new/rpt_show.php",
+      "retrieved_at": "2026-10-06T11:00:00+07:00"
+    },
+    {
+      "source_id": "tmd_forecast",
+      "agency": "กรมอุตุนิยมวิทยา",
+      "url": null,
+      "retrieved_at": "2026-10-06T11:00:00+07:00"
+    },
+    {
+      "source_id": "bma_plan2569_control_structures",
+      "agency": "สำนักการระบายน้ำ กรุงเทพมหานคร",
+      "url": "https://dds.bangkok.go.th/public_content/files/001/0011062_1.pdf",
+      "retrieved_at": "2026-09-27T00:00:00+07:00"
+    }
+  ],
+  "anchor": {
+    "kg_sha256": "not_recorded_in_original_sample_email",
+    "method": "caller",
+    "province": "กรุงเทพมหานคร",
+    "cand": [
+      "sammakorn",
+      "ram53"
+    ],
+    "province_tag": "RELAYED",
+    "sub_basin": "คลองแสนแสบ-ลาดพร้าว",
+    "reach": "สัมมากร-สะพานสูง",
+    "station_ids": [
+      "WL.SMK.01",
+      "WL.BMA.02"
+    ],
+    "tag": "OPEN",
+    "model_version": "floodconnect_model v0.1.3 / M8 jev_decision"
+  },
+  "disclaimer": "ไม่ใช่ประกาศเตือนภัยอย่างเป็นทางการ"
+}

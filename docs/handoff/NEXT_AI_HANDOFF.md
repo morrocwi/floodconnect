@@ -150,6 +150,44 @@ This is explicitly an open invitation, not a closed project:
   `thaiwater_basemap_stack`. GISTDA Sphere (`gistda_sphere_platform`) is the closer
   match to a shared Thai-government basemap but its free-tier/reuse terms are
   unconfirmed (OPEN).
+- **M5 water-debt backtest, EXPERIMENT, run — see
+  `docs/experiments/M5_WATER_DEBT_BACKTEST.md`.** Headline: every unit-day REFUSES
+  `MISSING_INPUT`; `S0` and `gate_flag` are **both
+  universal** blockers (all 219/219 rows each — `gate_flag` is never declared/wired for
+  any node in this run), `Q_out_meas` is additionally missing on 138/219 rows, and the
+  two village nodes (`sammakorn`/`ram53`) also lack `A`/`c`/`C_pump`/`P`. 6 independent
+  events < `N_min=10` → FEW_EVENTS regardless. This round also never chains `S_prev`
+  across consecutive days (every day restarts from `S0`) — a real ledger needs that too.
+  **Next step for the storage-increment (PROP-FLOOD-03) route, if resumed**: `S0`, a
+  `gate_flag` declaration, AND a credible `Q_out_meas` are all needed before even one row
+  can resolve OK — declaring only one of them is not enough.
+  **Separately, the v0.1.5 release's own actual focus does not need any of that**: the
+  pond's own `WL.SMK.01` level gauge (already MEASURED) is read directly as a
+  PROP-FLOOD-01/02 trend readout (RISING/FALLING/FLAT), and the shipped v0.1.5
+  ETA is PROP-FLOOD-02 (linear, two windows — `rise_eta_hours_range`), using
+  only the declared critical level for `WL.SMK.01` (bma_watermap, same gauge
+  and datum), never a reconstructed storage volume. The separate
+  acceleration-aware time-to-bank PROP-FLOOD-11 (now a REGISTERED Toledo
+  proposal, tier `Dr`, status `unverified` — merged as PR #65) is NOT
+  implemented in this release (v0.2 target); do not cite it as the equation
+  behind the shipped ETA. The water-debt backtest above stays an unwired
+  experiment.
+
+## 5a. v0.1.5 MVP-close release (2026-10-07)
+
+Assembled the gated M8 Jev Sandwich KG-only revision with the M7a GOV API MANUAL and
+the M5 experiment above, plus a new vendor-neutral `skill/` package, into one release
+— see `CHANGELOG.md`'s `v0.1.5` entry and `RELEASE_NOTES_v0.1.5.md` for the full
+scope. The MVP is validated for Bangkok and หมู่บ้านสัมมากร only; other areas are
+experimental. Backlog items this release does NOT attempt (owner: founder to
+assign): the M8.1 trend/continuity/ETA/archive engine and its sheets/email/Drive
+adapters and email renderer (documented in `skill/SKILL.md` as instructions for the
+user's own AI, not shipped code here); KlongMap pump links (OPEN) — a keyless TMD
+CAP warning source now SHIPS (`l0_check.py`'s TMD CAP warning line), superseding
+this item as still-OPEN; M7a's ring vocabulary (kept as prose documentation only,
+never a shipped schema); the `hotspot_query` live test; a Thai-label check against
+agency terms; and reconciling this repo's own internal git remote history
+(unrelated history vs this public mirror — a divergence, not yet resolved).
 
 ## 6. Validators/tests to run before any change
 

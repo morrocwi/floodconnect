@@ -14,7 +14,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "floodconnect"
-version = "0.1.4"
+version = "0.1.5"
 description = "FloodConnect: local-first flood/canal/pump knowledge graph + minimal AI entrypoint (kb.py). Self-install only -- no hosted proxy, no server-side fetch, no LLM call on our side."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -22,7 +22,12 @@ license = { text = "See LICENSE" }
 dependencies = [
     "pyyaml",
     "requests",
-    "networkx",
+    # Pinned: the committed output/thailand_river_flow.graphml
+    # re-export is only byte-identical to its own `stations_layer.py --augment` rebuild
+    # under this exact networkx version (MEASURED: networkx 3.7 produces a different-size
+    # file than the committed one; 3.6.1 reproduces it) -- an unpinned range risks a
+    # silent re-export drift a reviewer has no way to detect from the diff alone.
+    "networkx==3.6.1",
 ]
 
 [project.optional-dependencies]

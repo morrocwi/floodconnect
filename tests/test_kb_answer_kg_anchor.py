@@ -31,10 +31,16 @@ _NEAR_SAMMAKORN_LAT = SAMMAKORN_LAT + 0.01  # ~1.1 km -- within station-resoluti
 
 @pytest.fixture
 def high_confidence_db(tmp_path, monkeypatch):
-    """A fresh DB with one fresh, near-Sammakorn nationwide telemetry row --
-    the same shape `test_kb_answer.py::test_resolution_confidence_high_for_station_resolution_row`
-    uses -- so `next_action.dual_state.confidence` is HIGH, which is what the
-    confidence-cap test below needs to see change to LOW."""
+    """A fresh DB with one fresh, near-Sammakorn nationwide telemetry row, PLUS
+    a matching fresh reading for the Jev Sandwich's own
+    Z0 station at this point (`gauge:bma_watermap:WL.SMK.01`) -- `dual_state.
+    confidence` is now the sandwich's own confidence (`kb._answer_next_action`'s
+    docstring note), never the legacy nationwide-radius classifier alone, so a
+    HIGH-confidence scenario for THIS test must give the sandwich a fresh Z0
+    reading at/over its own critical level (`sandwich_decision`'s bottom-RED
+    branch always returns confidence HIGH, regardless of what the top/middle
+    ever show) -- the nationwide row alone (what this fixture used before this
+    fix) no longer drives `dual_state.confidence` on its own."""
     db_path = tmp_path / "observations.sqlite"
     conn = store.connect(db_path)
     now = datetime.datetime.now(UTC)
@@ -47,6 +53,14 @@ def high_confidence_db(tmp_path, monkeypatch):
         fetched_at_utc=(now + datetime.timedelta(minutes=1)).isoformat(),
         trust_tier="official_telemetry", status="OVERBANK",
         provenance={"sub_basin_id": 777, "agency": "RID", "province_th": "กรุงเทพมหานคร"})
+    store.insert_observation(
+        conn, source_id="bma_watermap", station_code="WL.SMK.01",
+        station_name="จุดวัดบึงรับน้ำหมู่บ้านสัมมากร ตอนสถานีสูบน้ำบึงที่ 2 คลองบ้านม้า 2",
+        lat=13.76676, lon=100.67784, variable="canal_water_level_m", value=0.5, unit="m",
+        observed_at_utc=now.isoformat(),
+        fetched_at_utc=(now + datetime.timedelta(minutes=1)).isoformat(),
+        warning=0.35, critical=0.44, bank=None, status="วิกฤต",
+        trust_tier="official_telemetry")
     conn.close()
     monkeypatch.setattr(kb, "DB_PATH", db_path)
     monkeypatch.setattr(acct, "DB_PATH", db_path)

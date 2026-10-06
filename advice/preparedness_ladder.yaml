@@ -1,0 +1,537 @@
+# advice/preparedness_ladder.yaml -- P-D, the ordered preparedness steps
+# (schemas/advice.schema.json's `prepare_steps`; design section D).
+#
+# Cumulative order: GREEN < YELLOW < ORANGE < RED (each step's `colour` is the
+# EARLIEST colour at which this repo asks a household to start it -- a step
+# introduced at YELLOW is still relevant, and still shown, at ORANGE/RED/UNKNOWN).
+# UNKNOWN includes every YELLOW step (advice/ladder.py:steps_for_colour), plus its
+# own UNKNOWN-only row, per the design table.
+#
+# `source_tag: OFFICIAL` rows are backed by a row in advice/official_guidance.yaml
+# with the SAME action_key, at a colour rank <= that official row's trigger_colour
+# (advice/parity.py enforces this -- MISSING/WEAKER fails tests/test_official_parity.py).
+# `source_tag: GENERAL` is the same backing relationship, but to a
+# `source_class: GENERAL` row (a non-Thai-official general-practice source --
+# Ready.gov, gov.uk, American/IFRC Red Cross) rather than a Thai agency's own
+# domain. `source_tag: FLOODCONNECT` rows are this repo's own wording and carry no
+# `official_ref` (schema rule: a step without official_ref must be FLOODCONNECT) --
+# they are OPEN, not yet backed by a sourced official OR general-practice item,
+# pending the founder.
+#
+# Every row has a `trigger_next` -- what advances past this step (never a bare "-"
+# except the terminal UNKNOWN row, which has none to advance to on its own).
+
+GREEN:
+  - id: G1
+    what_th: "เฝ้าดู"
+    how_th: "ติดตามระดับน้ำและประกาศของหน่วยงานทางการเป็นระยะ"
+    trigger_next: "YELLOW"
+    action_keys: ["watch"]
+    source_tag: FLOODCONNECT
+  - id: G2
+    what_th: "กรอกข้อมูลครัวเรือนไว้ล่วงหน้า"
+    how_th: "แจ้งจำนวนชั้นบ้าน ผู้สูงอายุ/ผู้ป่วยติดเตียง/ผู้ใช้ออกซิเจนหรือฟอกไต ปริมาณของใช้สำรอง และเส้นทางออกจากบ้าน ผ่านการประกาศครัวเรือน (household declaration)"
+    trigger_next: "YELLOW"
+    action_keys: ["household_declaration"]
+    source_tag: FLOODCONNECT
+  - id: G3
+    what_th: "บันทึกเบอร์สายด่วนไว้ในโทรศัพท์"
+    how_th: "บันทึก 1784 (ปภ.) และ 1669 (การแพทย์ฉุกเฉิน) ไว้ล่วงหน้า"
+    trigger_next: "YELLOW"
+    action_keys: ["save_hotlines"]
+    source_tag: FLOODCONNECT
+  - id: G4
+    what_th: "ตรวจสอบและติดตั้งอุปกรณ์ไฟฟ้าให้ปลอดภัยไว้ล่วงหน้า"
+    how_th: "ติดตั้งเครื่องตัดไฟรั่ว (ELCB)/เบรกเกอร์ตัดไฟรั่ว และตรวจสอบสายไฟ-อุปกรณ์ไฟฟ้าทั้งหมด ซ่อม/เปลี่ยนทันทีหากพบจุดชำรุด ฉีกขาด หรือเปลือย"
+    trigger_next: "YELLOW"
+    action_keys: ["install_elcb_breaker", "inspect_repair_wiring"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-01", "OG-02"]
+  - id: G5
+    what_th: "รู้วิธีปิดแก๊ส ไฟฟ้า และน้ำของบ้านตนเองไว้ล่วงหน้า"
+    how_th: "หาตำแหน่งวาล์วแก๊ส เบรกเกอร์ไฟฟ้าหลัก และวาล์วน้ำของบ้าน แล้วลองปิด-เปิดจริงอย่างน้อยหนึ่งครั้งก่อนฤดูน้ำหลาก"
+    trigger_next: "YELLOW"
+    action_keys: ["know_how_to_shut_off_utilities"]
+    source_tag: GENERAL
+    official_ref: ["GEN-02"]
+  # Fix: "GREEN twins" for the kit/plan/
+  # documents/help/valuables items gov.uk/Ready.gov place BEFORE a flood (GREEN) --
+  # the pre-existing YELLOW-rank steps for most of these (Y2/Y3/Y4/Y5 below) stay,
+  # unchanged, since there is no harm preparing even earlier; these GREEN rows are
+  # what a parity check against GEN-05/07/08/09/10 (and GEN-01, now GREEN) actually
+  # needs.
+  - id: G6
+    what_th: "เตรียมกระเป๋ายังชีพไว้ล่วงหน้า"
+    how_th: "รวบรวมอาหารไม่เสียง่าย อุปกรณ์ทำความสะอาด และน้ำสำรองหลายวันไว้ล่วงหน้า เผื่อต้องออกจากบ้านทันทีหรือระบบสาธารณูปโภคถูกตัด"
+    trigger_next: "YELLOW"
+    action_keys: ["prepare_emergency_kit"]
+    source_tag: GENERAL
+    official_ref: ["GEN-07"]
+  - id: G7
+    what_th: "วางแผนครอบครัวและเส้นทางไว้ล่วงหน้า"
+    how_th: "วางแผนสำหรับทุกคนในบ้าน รวมถึงสัตว์เลี้ยง ว่าจะทำอะไร ไปที่ไหน และต้องใช้อะไรเพื่อป้องกันตัวจากน้ำท่วม"
+    trigger_next: "YELLOW"
+    action_keys: ["plan_route_safe_point"]
+    source_tag: GENERAL
+    official_ref: ["GEN-08"]
+  - id: G8
+    what_th: "เก็บเอกสารสำคัญในถุงกันน้ำไว้ล่วงหน้า"
+    how_th: "เก็บเอกสารสำคัญ (เช่น สูติบัตร) ในถุงพลาสติกกันน้ำที่ปิดสนิทได้ เพื่อป้องกันความเสียหายจากน้ำ"
+    trigger_next: "YELLOW"
+    action_keys: ["protect_documents_waterproof"]
+    source_tag: GENERAL
+    official_ref: ["GEN-09"]
+  - id: G9
+    what_th: "ติดต่อขอความช่วยเหลือสำหรับผู้พิการ/ผู้เปราะบางไว้ล่วงหน้า"
+    how_th: "หากมีความพิการหรือต้องการความช่วยเหลือเพิ่มเติม ติดต่อหน่วยงานที่เกี่ยวข้องล่วงหน้าเพื่อขอให้ส่งการเตือนภัยถึงญาติหรือผู้ดูแลด้วย"
+    trigger_next: "YELLOW"
+    action_keys: ["arrange_vulnerable_care"]
+    source_tag: GENERAL
+    official_ref: ["GEN-10"]
+  - id: G10
+    what_th: "ย้ายของมีค่าขึ้นที่สูงไว้ล่วงหน้า"
+    how_th: "ย้ายของที่มีค่าทางใจหรือทรัพย์สินมีค่าขึ้นชั้นบนหรือเก็บไว้ในที่สูง เช่น ชั้นบนสุดของตู้"
+    trigger_next: "YELLOW"
+    action_keys: ["move_valuables_appliances_up"]
+    source_tag: GENERAL
+    official_ref: ["GEN-01"]
+  - id: G11
+    what_th: "ลงทะเบียนรับการเตือนภัยไว้ล่วงหน้า"
+    how_th: "ลงทะเบียนรับการเตือนภัยน้ำท่วมทางโทรศัพท์ ข้อความ หรืออีเมลไว้ล่วงหน้า"
+    trigger_next: "YELLOW"
+    action_keys: ["sign_up_for_warnings"]
+    source_tag: GENERAL
+    official_ref: ["GEN-05"]
+  # added 2026-10-06 (S5, full parity inventory): the remaining two PRE_FLOOD
+  # electrical-safety items from PRD/432703 that had no step yet.
+  - id: G12
+    what_th: "ตัดแต่งกิ่งไม้ใกล้แนวสายไฟฟ้าไว้ล่วงหน้า"
+    how_th: "โค่นต้นไม้หรือตัดแต่งกิ่งไม้ที่พาดผ่านหรืออยู่ใกล้แนวสายไฟฟ้า ป้องกันพายุลมแรงพัดต้นไม้ล้มทับสายไฟ"
+    trigger_next: "YELLOW"
+    action_keys: ["trim_branches_near_powerlines"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-28"]
+  - id: G13
+    what_th: "ตรวจสอบว่าบ้านมีสายดินที่ได้มาตรฐาน"
+    how_th: "ตรวจสอบให้แน่ใจว่าบ้านมีการติดตั้งสายดินที่ได้มาตรฐานไว้ล่วงหน้า"
+    trigger_next: "YELLOW"
+    action_keys: ["check_earth_wire_installed"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-29"]
+  - id: G14
+    what_th: "เคลียร์ท่อระบายน้ำและรางน้ำล่วงหน้า"
+    how_th: "เก็บเศษใบไม้ ขยะ ออกจากท่อระบายน้ำและรางน้ำรอบบ้าน เพื่อให้น้ำไหลได้สะดวกก่อนฝนตกหนัก"
+    trigger_next: "YELLOW"
+    action_keys: ["declutter_drains_gutters"]
+    source_tag: GENERAL
+    official_ref: ["GEN-19"]
+  - id: G15
+    what_th: "ทำความสะอาดมุมอับในบ้านเพื่อป้องกันสัตว์มีพิษ"
+    how_th: "ทำความสะอาดบ้านไม่ให้มีมุมอับ ลดที่หลบของงู ตะขาบ แมงป่องที่อาจหนีน้ำเข้ามา"
+    trigger_next: "YELLOW"
+    action_keys: ["clean_house_corners_prevent_pests"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-39"]
+  - id: G16
+    what_th: "สวมหน้ากากอนามัยหากป่วยหรืออยู่ในที่แออัด"
+    how_th: "หากป่วย มีอาการไอ จาม หรืออยู่ในที่แออัด ควรรักษาสุขอนามัยและสวมหน้ากากอนามัย"
+    trigger_next: "YELLOW"
+    action_keys: ["wear_mask_if_sick_or_crowded"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-40"]
+
+YELLOW:
+  - id: Y1
+    # Fix: shortened from the DDPM phrase
+    # "เฝ้าระวังและติดตามสถานการณ์" (identical to emergency_card.now_th's own
+    # founder-mandated YELLOW wording) to a distinct, shorter phrase -- when this
+    # row is `do_th` (no home_shelter verdict override), the card's `now_th` and
+    # `do_th` used to repeat the EXACT same 25-cl100k-token sentence twice, the
+    # single most expensive duplication in the whole colour x verdict matrix and
+    # enough on its own to blow the hard 80-token cap. `now_th` keeps the
+    # mandated DDPM phrasing verbatim; only this ladder row's own (FloodConnect,
+    # OPEN) wording is shortened.
+    what_th: "เฝ้าระวังใกล้ชิด"
+    how_th: "ติดตามระดับน้ำและประกาศเตือนอย่างใกล้ชิด เตรียมยกของขึ้นที่สูง"
+    trigger_next: "ORANGE"
+    action_keys: ["watch_and_monitor"]
+    source_tag: FLOODCONNECT
+  - id: Y2
+    what_th: "เตรียมของใช้จำเป็น"
+    how_th: "ชุดของใช้ฉุกเฉิน น้ำดื่ม ยาประจำตัว เอกสารสำคัญในถุงกันน้ำ โทรศัพท์ชาร์จเต็ม"
+    trigger_next: "ORANGE"
+    action_keys: ["prepare_emergency_kit"]
+    source_tag: FLOODCONNECT
+  - id: Y3
+    what_th: "วางแผนเส้นทางและจุดปลอดภัย"
+    how_th: "กำหนดเส้นทางออกจากบ้านและจุดนัดพบล่วงหน้า"
+    trigger_next: "ORANGE"
+    action_keys: ["plan_route_safe_point"]
+    source_tag: FLOODCONNECT
+  - id: Y4
+    what_th: "จัดการดูแลผู้เปราะบางล่วงหน้า"
+    how_th: "เตรียมยา/อุปกรณ์ออกซิเจน/นัดฟอกไตให้พร้อมล่วงหน้าสำหรับผู้สูงอายุ ผู้ป่วยติดเตียง เด็กเล็ก"
+    trigger_next: "ORANGE"
+    action_keys: ["arrange_vulnerable_care"]
+    source_tag: FLOODCONNECT
+  - id: Y5
+    what_th: "ย้ายของมีค่าและเครื่องใช้ไฟฟ้าขึ้นที่สูงเบื้องต้น"
+    how_th: "เคลื่อนย้ายเครื่องใช้ไฟฟ้าและปลั๊กไฟขึ้นไปไว้บนที่สูง ก่อนน้ำเริ่มขึ้น"
+    trigger_next: "ORANGE"
+    action_keys: ["move_valuables_appliances_up"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-03", "GEN-01"]
+  - id: Y6
+    what_th: "งดออกจากบ้านและงดเดินทางหากไม่มีความจำเป็น"
+    how_th: "ชะลอการเดินทางและหลีกเลี่ยงพื้นที่น้ำท่วมขัง ตรวจสอบสภาพถนนจริงก่อนออกเดินทางหากจำเป็นจริง ๆ"
+    trigger_next: "ORANGE"
+    action_keys: ["avoid_unnecessary_travel"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-17"]
+  - id: Y7
+    what_th: "อุดช่องทางน้ำไหลและปิดท่อระบายน้ำ"
+    how_th: "ใช้กระสอบทรายหรือวัสดุกันน้ำอุดบริเวณประตูและหน้าต่าง และอุดปิดชักโครกหรือท่อน้ำทิ้งในห้องน้ำชั้นล่าง ป้องกันน้ำเสียและสิ่งปฏิกูลดันย้อนกลับเข้าบ้าน"
+    trigger_next: "ORANGE"
+    action_keys: ["sandbag_and_plug_drains"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-22"]
+  # added 2026-10-06 (S5, full parity inventory): gov.uk's own flood-warning-stage
+  # items (pets, reporting) had no step yet.
+  - id: Y8
+    what_th: "ย้ายสัตว์เลี้ยงไปที่ปลอดภัยด้วย"
+    how_th: "ย้ายคนในบ้าน ยานพาหนะ สัตว์เลี้ยง และของสำคัญไปที่ปลอดภัย เช่น ชั้นบนหรือที่สูง"
+    trigger_next: "ORANGE"
+    # fix (2026-10-06, parity split): `how_th` already covers family and
+    # vehicles too (same sentence as the pets action it was already keyed to)
+    # -- `action_keys` is now the key this step already documents, not a
+    # second, duplicate step.
+    action_keys: ["move_pets_to_safety", "move_family_to_safety", "move_vehicles_to_safety"]
+    source_tag: GENERAL
+    official_ref: ["GEN-17"]
+  - id: Y9
+    what_th: "แจ้งหน่วยงานทางการเมื่อพบน้ำท่วม"
+    how_th: "แจ้งเหตุน้ำท่วมให้หน่วยงานที่รับผิดชอบในพื้นที่ทราบ (ปภ./เทศบาล/ท้องถิ่น)"
+    trigger_next: "ORANGE"
+    action_keys: ["report_flooding_to_authority"]
+    source_tag: GENERAL
+    official_ref: ["GEN-18"]
+
+ORANGE:
+  - id: O1
+    what_th: "ย้ายของขึ้นที่สูง"
+    how_th: "ย้ายของที่เหลือทั้งหมดที่ยังไม่ได้ยกขึ้นที่สูงให้ครบ"
+    trigger_next: "RED"
+    action_keys: ["move_valuables_appliances_up"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-03"]
+  - id: O2
+    what_th: "ตรวจผลการตัดสินใจอยู่บ้านหรือย้าย"
+    how_th: "ดูผล home-shelter verdict ของบ้านตนเอง (Dry Gate + การประเมินความพร้อมเลี้ยงตัวเอง) และปฏิบัติตาม"
+    trigger_next: "RED"
+    action_keys: ["home_shelter_verdict"]
+    source_tag: FLOODCONNECT
+  - id: O3
+    what_th: "ขึ้นไปอยู่ชั้นบนหรือจุดที่สูงที่สุดของบ้าน"
+    how_th: "หากเลือกอยู่บ้าน ให้ย้ายขึ้นที่สูง โดยอาศัยอยู่บนชั้นสองหรือบริเวณที่สูงที่สุดของบ้าน"
+    trigger_next: "RED"
+    action_keys: ["move_to_upper_floor"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-07"]
+  - id: O4
+    what_th: "ย้ายผู้เปราะบางก่อน"
+    how_th: "ย้ายผู้สูงอายุ ผู้ป่วยติดเตียง เด็กเล็ก และผู้ที่ต้องพึ่งอุปกรณ์ไฟฟ้า/การแพทย์ ไปจุดปลอดภัยก่อนคนอื่น"
+    trigger_next: "RED"
+    action_keys: ["move_vulnerable_early"]
+    source_tag: FLOODCONNECT
+  - id: O5
+    what_th: "หาตำแหน่งเบรกเกอร์ เตรียมสับตัดไฟทันทีที่น้ำเริ่มเข้าบ้าน"
+    how_th: "สับคัทเอาท์หรือเบรกเกอร์หลักเพื่อตัดไฟฟ้าทั้งบ้านทันทีที่น้ำเริ่มไหลเข้า ห้ามสัมผัสอุปกรณ์ไฟฟ้าขณะตัวเปียก และอยู่ห่างเสาไฟฟ้า/สายส่งอย่างน้อย 1-2 เมตร"
+    trigger_next: "RED หรือ ประกาศทางการ"
+    action_keys: ["cut_main_breaker_on_water_entry", "never_touch_electrical_wet", "keep_distance_power_poles"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-04", "OG-05", "OG-06"]
+  - id: O6
+    what_th: "ป้องกันสุขภาพจากน้ำท่วม"
+    how_th: "สวมรองเท้าบูทหลีกเลี่ยงเดินเท้าเปล่าลุยน้ำ ล้างมือ-เท้าและอาบน้ำทันทีหลังลุยน้ำ กินอาหารปรุงสุกใหม่ หากถูกสัตว์มีพิษกัดให้จดจำลักษณะสัตว์และล้างแผลด้วยน้ำสะอาด-สบู่ โทรสายด่วนกรมควบคุมโรค 1422 เมื่อจำเป็น"
+    trigger_next: "RED"
+    action_keys: ["wear_boots_avoid_barefoot", "hygiene_wash_after_wading",
+                  "eat_freshly_cooked_food", "venomous_animal_bite_care",
+                  "ddc_hotline_1422"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-08", "OG-09", "OG-10", "OG-11", "OG-12", "GEN-03"]
+  - id: O7
+    what_th: "ย้ายรถไปจุดที่สูงหรือปลอดภัย"
+    how_th: "ย้ายยานพาหนะออกจากพื้นที่เสี่ยงล่วงหน้า"
+    trigger_next: "RED"
+    action_keys: ["move_car"]
+    source_tag: FLOODCONNECT
+  - id: O8
+    what_th: "ห้ามเดินลุยหรือขับรถผ่านน้ำท่วม"
+    how_th: "น้ำไหลแรงลึกแค่ข้อเท้า (ประมาณ 15 ซม.) ก็ทำให้ล้มได้ -- อยู่บนที่สูงรอ ไม่เดินลุยหรือขับฝ่าน้ำที่ไหลหรือไม่ทราบความลึก"
+    trigger_next: "RED"
+    action_keys: ["never_walk_through_floodwater"]
+    source_tag: GENERAL
+    official_ref: ["GEN-04"]
+  - id: O9
+    what_th: "แจ้ง MEA/กฟน. ทันทีหากพบไฟฟ้าขัดข้องหรือรั่ว"
+    how_th: "หากพบไฟฟ้าขัดข้อง อุปกรณ์ไฟฟ้าชำรุดหรือไม่ปลอดภัย หรือสงสัยว่ามีกระแสไฟฟ้ารั่ว แจ้งจุดเกิดเหตุหรือพิกัดให้ MEA/กฟน. ประสานเจ้าหน้าที่เข้าตรวจสอบ โทร 1130"
+    trigger_next: "RED"
+    action_keys: ["report_electrical_fault_to_mea"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-16"]
+  - id: O10
+    what_th: "ปิดและผูกยึดถังแก๊สหุงต้มไว้ในที่สูง"
+    how_th: "ปิดวาล์วถังแก๊สให้แน่นหนา ผูกยึดถังแก๊สไว้กับโครงสร้างบ้านที่มั่นคงในที่สูง ป้องกันถังแก๊สลอยตามน้ำจนกระแทก รั่วซึม หรือระเบิด"
+    trigger_next: "RED"
+    action_keys: ["secure_gas_cylinder"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-20"]
+  - id: O11
+    what_th: "อยู่ห่างจากประตูและหน้าต่างกระจก"
+    how_th: "หากน้ำเริ่มท่วมสูงและมีลมพัดแรง ให้อยู่ห่างจากประตูหรือหน้าต่างกระจก ป้องกันอุบัติเหตุจากเศษกระจกแตกที่ลอยมาตามน้ำ"
+    trigger_next: "RED"
+    action_keys: ["avoid_glass_doors_windows"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-21"]
+  - id: O12
+    what_th: "ดื่มเฉพาะน้ำบรรจุขวดที่ปิดสนิท"
+    how_th: "ไม่ใช้น้ำท่วมขังล้างหน้าหรือบริโภค ดื่มเฉพาะน้ำบรรจุขวดที่ปิดสนิทเท่านั้น"
+    trigger_next: "RED"
+    action_keys: ["drink_sealed_bottled_water_only"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-23"]
+  - id: O13
+    what_th: "โทร 1138 ศปภ. เพื่อขอความช่วยเหลือผู้ประสบอุทกภัย"
+    how_th: "ศูนย์ปฏิบัติการช่วยเหลือผู้ประสบอุทกภัย (ศปภ.) ประสานงานช่วยเหลือผู้ประสบภัยน้ำท่วม"
+    trigger_next: "RED"
+    action_keys: ["call_1138_disaster_hotline"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-24"]
+  - id: O14
+    what_th: "อพยพทันทีหากมีสัญญาณเตือนภัย ไม่ต้องรอให้ถึงขั้นวิกฤต"
+    how_th: "หากระดับน้ำเพิ่มสูงขึ้นเรื่อยๆ จนไม่สามารถอยู่อาศัยได้ หรือมีสัญญาณเตือนภัยจากเจ้าหน้าที่ ให้อพยพทันที ปิดบ้านให้มิดชิด นำเฉพาะสิ่งของจำเป็นใส่กระเป๋าสะพายหลัง และเดินทางตามเส้นทางที่เจ้าหน้าที่กำหนดไปยังศูนย์พักพิง"
+    trigger_next: "RED หรือ ประกาศอพยพทางการ"
+    action_keys: ["evacuate_on_rising_water_or_warning"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-25"]
+  - id: O15
+    what_th: "ห้ามขึ้นไปอยู่บนห้องใต้หลังคาแบบปิด"
+    how_th: "หากต้องขึ้นไปอยู่จุดสูงสุดของบ้าน ห้ามขึ้นไปอยู่ในห้องใต้หลังคาแบบปิด เพราะอาจติดอยู่ภายในขณะน้ำยังสูงขึ้นต่อเนื่อง"
+    trigger_next: "RED"
+    action_keys: ["no_closed_attic"]
+    source_tag: GENERAL
+    official_ref: ["GEN-06"]
+  # added 2026-10-06 (S5, full parity inventory): the remaining DURING/POST_FLOOD
+  # items from PRD/432703, PRD/529458, PRD/534015, Ready.gov and gov.uk that had
+  # no step yet, each with a matching ladder step at or stricter than the
+  # guidance row's own trigger_colour.
+  - id: O16
+    what_th: "รู้วิธีช่วยคนถูกไฟฟ้าดูดในน้ำท่วมอย่างปลอดภัย"
+    how_th: "ห้ามแตะตัวผู้บาดเจ็บด้วยมือเปล่า รีบตัดกระแสไฟฟ้าที่จุดจ่ายไฟหลัก หากตัดไฟไม่ได้ให้ใช้วัสดุไม่นำไฟฟ้า (ไม้แห้ง เชือกแห้ง ผ้าแห้ง) เขี่ยตัวออกจากบริเวณที่มีไฟ แล้วปฐมพยาบาลและแจ้งหน่วยแพทย์ฉุกเฉินทันที"
+    trigger_next: "RED"
+    action_keys: ["electrocution_rescue_procedure"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-26"]
+  - id: O17
+    what_th: "ถอดปลั๊กเครื่องใช้ไฟฟ้าที่ไม่ได้ใช้งานขณะฝนฟ้าคะนอง"
+    how_th: "เมื่อเกิดฝนฟ้าคะนอง งดใช้เครื่องใช้ไฟฟ้าทุกชนิด เช่น โทรทัศน์ คอมพิวเตอร์ และถอดปลั๊กอุปกรณ์ที่ไม่ได้ใช้งาน"
+    trigger_next: "RED"
+    action_keys: ["unplug_during_lightning"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-27"]
+  - id: O18
+    what_th: "ห้ามปล่อยให้เด็กลงเล่นน้ำท่วมตามลำพัง"
+    how_th: "เด็กที่ลงเล่นน้ำท่วมตามลำพังเสี่ยงจมน้ำ ติดเชื้อโรคตาแดง หรือถูกสัตว์มีพิษที่หนีน้ำกัดต่อย"
+    trigger_next: "RED"
+    action_keys: ["never_let_children_play_in_floodwater_alone"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-30"]
+  - id: O19
+    what_th: "ห้ามทิ้งขยะหรือขับถ่ายลงน้ำท่วมขัง"
+    how_th: "ใส่ถุงพลาสติก มัดปากถุงให้แน่น แล้วเก็บไว้ในที่แห้ง ไม่ทิ้งขยะหรือขับถ่ายลงในน้ำท่วมขัง"
+    trigger_next: "RED"
+    action_keys: ["bag_rubbish_no_toilet_in_floodwater"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-31"]
+  - id: O20
+    what_th: "ปิดแผลด้วยพลาสเตอร์กันน้ำก่อนลุยน้ำ"
+    how_th: "หากมีบาดแผล ใช้พลาสเตอร์กันน้ำปิดแผลให้สนิทก่อนลุยน้ำ"
+    trigger_next: "RED"
+    action_keys: ["cover_wounds_waterproof_plaster"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-32"]
+  - id: O21
+    what_th: "ป้องกันยุงกัดช่วงน้ำท่วม"
+    how_th: "ทาโลชั่นกันยุง นอนในมุ้ง ลดความเสี่ยงโรคไข้เลือดออก"
+    trigger_next: "RED"
+    action_keys: ["mosquito_protection"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-33"]
+  - id: O22
+    what_th: "พบแพทย์ทันทีหากมีไข้สูงเฉียบพลันช่วงน้ำท่วม"
+    how_th: "หากตนเองหรือคนในครอบครัวมีไข้สูงเฉียบพลัน ปวดศีรษะ หรือปวดเมื่อยตามตัว ให้รีบไปพบแพทย์ทันที"
+    trigger_next: "RED"
+    action_keys: ["sudden_high_fever_see_doctor"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-34"]
+  - id: O23
+    what_th: "ใช้ไม้พลองตรวจความลึกน้ำก่อนเดิน"
+    how_th: "สวมรองเท้าบูทยาง หลีกเลี่ยงกระแสน้ำไหลเชี่ยว และใช้ไม้พลองนำทางเพื่อเช็กความลึกหรือสิ่งกีดขวางใต้น้ำ"
+    trigger_next: "RED"
+    action_keys: ["probe_depth_with_pole"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-35"]
+  - id: O24
+    what_th: "ตรวจมุมอับ รองเท้า เสื้อผ้าก่อนใช้งาน ป้องกันสัตว์มีพิษ"
+    how_th: "งู ตะขาบ และแมงป่องมักหนีน้ำเข้ามาอาศัยในที่แห้งภายในบ้าน -- ตรวจก่อนสวม/ใช้งานทุกครั้ง"
+    trigger_next: "RED"
+    action_keys: ["check_shoes_corners_for_venomous_animals"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-36"]
+  - id: O25
+    what_th: "สละรถและเดินขึ้นที่สูงทันทีหากรถดับกลางน้ำ"
+    how_th: "ห้ามขับรถผ่านบริเวณน้ำท่วมสูงเกินครึ่งล้อรถ หากเครื่องดับขณะอยู่ในน้ำ ให้สละรถและเดินขึ้นที่สูงทันที"
+    trigger_next: "RED"
+    action_keys: ["abandon_stalled_car_walk_to_high_ground"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-37"]
+  - id: O26
+    what_th: "เตรียมพิกัด จำนวนผู้ต้องช่วย และความรุนแรงของน้ำก่อนโทรขอความช่วยเหลือ"
+    how_th: "ก่อนโทรแจ้ง ตั้งสติและเตรียมพิกัด/สถานที่เกิดเหตุ จำนวนผู้ต้องการความช่วยเหลือ (ระบุเด็ก ผู้สูงอายุ หรือผู้ป่วยติดเตียง) และระดับความรุนแรงของน้ำ"
+    trigger_next: "RED"
+    action_keys: ["prepare_info_before_calling_emergency"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-38"]
+  - id: O27
+    what_th: "อยู่ให้ห่างสะพานที่มีน้ำไหลเชี่ยวผ่าน"
+    how_th: "สะพานที่มีน้ำไหลเชี่ยวอาจถูกซัดพังโดยไม่มีสัญญาณเตือน -- อยู่ให้ห่าง"
+    trigger_next: "RED"
+    action_keys: ["stay_off_bridges_fast_water"]
+    source_tag: GENERAL
+    official_ref: ["GEN-11"]
+  - id: O28
+    what_th: "ห้ามขับรถเลี่ยงแนวกั้นที่เจ้าหน้าที่ตั้งไว้"
+    how_th: "แนวกั้น/บาริเออร์ที่เจ้าหน้าที่ตั้งไว้ใช้กำกับเส้นทางออกจากพื้นที่น้ำท่วมอย่างปลอดภัย ห้ามขับเลี่ยงเด็ดขาด"
+    trigger_next: "RED"
+    action_keys: ["never_drive_around_barricades"]
+    source_tag: GENERAL
+    official_ref: ["GEN-12"]
+  - id: O29
+    what_th: "หากรถติดอยู่ในน้ำไหลเชี่ยว อยู่ในรถหรือขึ้นหลังคา"
+    how_th: "หากรถติดอยู่ในน้ำที่ไหลเชี่ยวอย่างรวดเร็ว ให้อยู่ในรถ และขึ้นไปบนหลังคารถหากน้ำเพิ่มสูงขึ้นภายในรถ"
+    trigger_next: "RED"
+    action_keys: ["car_trapped_moving_water_stay_inside_roof"]
+    source_tag: GENERAL
+    official_ref: ["GEN-13"]
+  - id: O30
+    what_th: "ใช้เครื่องปั่นไฟนอกบ้านเท่านั้น"
+    how_th: "ใช้เครื่องปั่นไฟหรือเครื่องจักรที่ใช้น้ำมันเฉพาะนอกบ้านและห่างจากหน้าต่างเท่านั้น"
+    trigger_next: "RED"
+    action_keys: ["generator_outdoors_only"]
+    source_tag: GENERAL
+    official_ref: ["GEN-14"]
+  - id: O31
+    what_th: "กลับเข้าบ้านเมื่อหน่วยงานทางการแจ้งว่าปลอดภัยแล้วเท่านั้น"
+    how_th: "ติดตามประกาศจากหน่วยงานทางการ และกลับเข้าบ้านเมื่อหน่วยงานทางการแจ้งว่าปลอดภัยแล้วเท่านั้น"
+    trigger_next: "RED"
+    action_keys: ["return_home_on_authority_only"]
+    source_tag: GENERAL
+    official_ref: ["GEN-15"]
+  - id: O32
+    what_th: "ห้ามให้เด็กร่วมงานทำความสะอาดหลังน้ำลด"
+    how_th: "เด็กไม่ควรเข้าร่วมงานทำความสะอาดหลังน้ำลด"
+    trigger_next: "RED"
+    action_keys: ["children_not_in_cleanup"]
+    source_tag: GENERAL
+    official_ref: ["GEN-16"]
+  - id: O33
+    what_th: "ผู้มีโรคปอดหรือภูมิคุ้มกันต่ำ ห้ามเข้าอาคารที่มีเชื้อราหรือน้ำรั่วซึม"
+    how_th: "ผู้ที่เป็นโรคหืดหรือโรคปอดอื่น ๆ และ/หรือมีภูมิคุ้มกันต่ำ ไม่ควรเข้าไปในอาคารที่มีน้ำรั่วซึมหรือเชื้อราขึ้นให้เห็นหรือได้กลิ่น"
+    trigger_next: "RED"
+    action_keys: ["vulnerable_avoid_mold_buildings"]
+    source_tag: GENERAL
+    official_ref: ["GEN-21"]
+  # added 2026-10-06 (parity split): OG-25's own evacuate-now sentence
+  # (action_key evacuate_on_rising_water_or_warning, above) carries three MORE
+  # distinct actions in the same sentence -- close the house securely, carry
+  # only essentials in a backpack with both hands free, and travel the
+  # officially-designated route -- each now reachable on its own, at the same
+  # ORANGE rank as the sentence's own trigger_colour (never a weaker rank).
+  - id: O34
+    what_th: "ปิดบ้านให้มิดชิดก่อนออกจากบ้าน"
+    how_th: "ปิดประตู หน้าต่าง และล็อกบ้านให้มิดชิดก่อนออกจากบ้านไปยังจุดปลอดภัย"
+    trigger_next: "RED"
+    action_keys: ["secure_house_before_leaving"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-25"]
+  - id: O35
+    what_th: "ใส่ของจำเป็นในกระเป๋าสะพายหลัง ให้มือทั้งสองข้างว่าง"
+    how_th: "นำเฉพาะสิ่งของจำเป็นใส่กระเป๋าสะพายหลังเพื่อให้มือทั้งสองข้างว่างสำหรับทรงตัวระหว่างเดินทาง"
+    trigger_next: "RED"
+    action_keys: ["carry_essentials_backpack_hands_free"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-25"]
+  - id: O36
+    what_th: "เดินทางตามเส้นทางที่เจ้าหน้าที่กำหนดไปยังศูนย์พักพิง"
+    how_th: "เดินทางตามเส้นทางที่เจ้าหน้าที่กำหนดเพื่อไปยังศูนย์พักพิงอย่างปลอดภัย"
+    trigger_next: "RED"
+    action_keys: ["follow_designated_evacuation_route"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-25"]
+  # added 2026-10-06 (parity split): OG-37's own sentence carries two
+  # distinct actions -- never drive through water deeper than half the wheel
+  # (new here), and abandon a stalled car and walk to high ground (already
+  # action_key abandon_stalled_car_walk_to_high_ground, O9/elsewhere) -- same
+  # ORANGE rank as the sentence's own trigger_colour.
+  - id: O37
+    what_th: "ห้ามขับรถผ่านน้ำท่วมสูงเกินครึ่งล้อรถ"
+    how_th: "ห้ามขับรถผ่านบริเวณน้ำท่วมสูงเกินครึ่งล้อรถ"
+    trigger_next: "RED"
+    action_keys: ["never_drive_through_deep_water"]
+    source_tag: OFFICIAL
+    official_ref: ["OG-37"]
+
+RED:
+  - id: R1
+    what_th: "ทำตามประกาศทางการ"
+    how_th: "ปฏิบัติตามคำสั่ง/คำแนะนำของหน่วยงานทางการทันที โทร 1784 (ปภ.) หรือ 1669 (การแพทย์ฉุกเฉิน) หากต้องการความช่วยเหลือ"
+    trigger_next: "สองรอบวัดระดับน้ำลดต่อเนื่อง (FALLING) แล้วจึงเข้าสู่ขั้นตอนหลังน้ำลด"
+    action_keys: ["follow_official_order"]
+    source_tag: FLOODCONNECT
+  - id: R2
+    what_th: "ยืนยันผลการตัดสินใจอยู่บ้านหรือย้ายอีกครั้ง"
+    how_th: "ดูผล home-shelter verdict ล่าสุดของบ้านตนเอง -- คำสั่งอพยพทางการชนะเสมอ"
+    trigger_next: "สองรอบวัดระดับน้ำลดต่อเนื่อง (FALLING) แล้วจึงเข้าสู่ขั้นตอนหลังน้ำลด"
+    action_keys: ["home_shelter_verdict"]
+    source_tag: FLOODCONNECT
+  - id: R3
+    what_th: "ปฏิบัติตามขั้นตอนเอาชีวิตรอดเมื่อน้ำเข้าบ้านแล้ว"
+    how_th: "ดูรายการขั้นตอน L5 survival (ตัดไฟ ขึ้นที่สูง ห้ามสัมผัสไฟฟ้าขณะตัวเปียก ฯลฯ) ที่ผ่านการทบทวนแล้ว"
+    # Reconciliation of the 8 independently-reviewed
+    # `site/build_page.py::_l5_survival_lines_html()` lines -- each of the 8 now has
+    # its OWN action_key here (never only the one combined "l5_survival_lines"
+    # pointer), so every line is individually reachable in the ladder, per
+    # `tests/test_l5_lines_reachable_in_ladder.py`'s own line-by-line mapping:
+    #   1 breaker-cut-if-dry           -> l5_cut_breaker_if_dry
+    #   2 move everyone+pets to top    -> l5_move_everyone_to_highest_point
+    #   3 hotline numbers table        -> l5_call_hotlines_table
+    #   4 roof only if necessary/signal -> l5_roof_signal_if_necessary
+    #   5 ankle-deep moving water      -> l5_moving_water_ankle_deep_hazard
+    #   6 sip water, keep meds         -> l5_sip_water_continue_meds
+    #   7 stay away wet wires/plugs    -> l5_stay_away_wet_wires_plugs
+    #   8 care for vulnerable closely  -> l5_care_for_vulnerable_closely
+    trigger_next: "สองรอบวัดระดับน้ำลดต่อเนื่อง (FALLING) แล้วจึงเข้าสู่ขั้นตอนหลังน้ำลด"
+    action_keys: ["l5_survival_lines", "l5_cut_breaker_if_dry",
+                  "l5_move_everyone_to_highest_point", "l5_call_hotlines_table",
+                  "l5_roof_signal_if_necessary", "l5_moving_water_ankle_deep_hazard",
+                  "l5_sip_water_continue_meds", "l5_stay_away_wet_wires_plugs",
+                  "l5_care_for_vulnerable_closely"]
+    source_tag: FLOODCONNECT
+
+UNKNOWN:
+  - id: U1
+    what_th: "ไม่มีข้อมูลสดพอจะสรุปสถานะ -- ไม่ได้แปลว่าปลอดภัย"
+    how_th: "ติดตามประกาศจากหน่วยงานทางการโดยตรง และรีเฟรชข้อมูลหรือป้อนข้อมูลครัวเรือนเพิ่มเติม"
+    trigger_next: "-"
+    action_keys: ["unknown_action"]
+    source_tag: FLOODCONNECT

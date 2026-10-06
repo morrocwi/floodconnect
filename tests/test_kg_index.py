@@ -80,14 +80,21 @@ def test_every_province_node_has_a_slice(built):
 
 
 def test_index_counts_match_slice_counts(built):
+    """`meta["n"]` counts the province's FULL `a` row set, including any rows
+    `build_index.py` split out to an `extra_files` sibling (fix) --
+    merge those back in before comparing, the same way `tools/kg/locate.py`'s
+    `_load_slice_full` does at read time."""
     _result, files = built
     index = json.loads(files["index.json"])
     for code, meta in index["prov"].items():
         slice_obj = json.loads(files[meta["file"]])
-        assert meta["n"]["a"] == len(slice_obj["a"])
-        assert meta["n"]["a_e"] == sum(1 for r in slice_obj["a"] if r[9] == "e")
-        assert meta["n"]["a_b"] == sum(1 for r in slice_obj["a"] if r[9] == "b")
-        assert meta["n"]["a_n"] == sum(1 for r in slice_obj["a"] if r[9] == "n")
+        a_rows = list(slice_obj["a"])
+        for ext_filename in meta.get("extra_files") or []:
+            a_rows.extend(json.loads(files[ext_filename])["a"])
+        assert meta["n"]["a"] == len(a_rows)
+        assert meta["n"]["a_e"] == sum(1 for r in a_rows if r[9] == "e")
+        assert meta["n"]["a_b"] == sum(1 for r in a_rows if r[9] == "b")
+        assert meta["n"]["a_n"] == sum(1 for r in a_rows if r[9] == "n")
 
 
 def test_box_members_lie_inside_the_box(built):
@@ -117,6 +124,12 @@ def test_size_report_median_and_max_within_budget(built):
     median = sizes[len(sizes) // 2]
     print(f"\nkg_index size report: median={median}B max={max(sizes)}B total={sum(sizes)}B n={len(sizes)}")
     assert median <= 30_000, f"median slice {median}B exceeds the 30 KB target"
+    # fix: the cap stays at 200KB -- it is never loosened. Bangkok's
+    # own province:10 slice would have grown to ~242KB after M8 P2 added the 311
+    # nationwide bma_watermap station nodes; `build_index.py` now splits those rows
+    # into a sibling `province_10_ext.json` file instead (see CHANGELOG
+    # "Unreleased" and `tools/kg/locate.py`'s `_load_slice_full`, which merges it
+    # back in at read time -- a caller never sees a behaviour difference).
     assert max(sizes) <= 200_000, f"max slice {max(sizes)}B exceeds the 200 KB cap"
 
 

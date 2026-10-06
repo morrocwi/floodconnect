@@ -50,9 +50,6 @@ _FIELD_RE = re.compile(r'id="(txt_\w+)"[^>]*value="([^"]*)"')
 _TITLE_H3_RE = re.compile(
     r'id="station_name_display"[^>]*>\s*(.*?)\s*</h3>', re.DOTALL
 )
-_DATE_UTC_RE = re.compile(
-    r"Date\.UTC\((\d+),\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+)\),\s*([\-\d\.]+)"
-)
 
 
 def load_html(path: str | Path) -> str:
@@ -114,28 +111,31 @@ def parse_history_series(html: str) -> list[dict[str, Any]]:
     Extract the inline Highcharts water-level series baked directly into a StationDetail
     page's <script> block (there is no separate JSON endpoint for this -- see
     docs/knowledge/BMA_STATION_DETAIL_PROBE.md section 2). Returns a list of
-    {"timestamp_utc": "...", "value": float} rows in the order BMA emitted them.
+    {"timestamp_utc": "...", "value": float} rows in the order BMA emitted them, EVERY
+    point/run concatenated (unsplit) -- same shape this function has always returned, so
+    `collect.collect_bma_station_detail` (which stores these as-is with
+    `provenance.series_split="unresolved"`) needs no change.
 
-    Caution (documented, not fixed here): in the one archived sample this repo has seen,
-    the raw Date.UTC(...) point list actually concatenates TWO runs covering the same
+    FIX (FloodConnect M8, 2026-10-05, blocking finding #2): this function now delegates
+    to `parsers.parse_bma_station_series`, which corrects a 7-hour bug this function
+    used to carry -- the raw `Date.UTC(...)` literal is Bangkok LOCAL time, not UTC,
+    even though the page labels it `.UTC` and this function used to pass that label
+    straight through with only the month fixed (+1). Every `station_level_history_m`
+    row collected before this fix is 7h wrong in the DB (append-only, not rewritten --
+    see `live_water_level.py`'s own note on the same append-only discipline for a
+    different bug). The month-index fix (BMA's 0-based month) is unchanged.
+
+    Caution (documented, not fixed here): in the one archived sample this repo has seen
+    (id51/WL.SSB.12), the raw point list actually concatenates TWO runs covering the same
     2-day window back to back (e.g. an inner-canal series followed by an outer-canal
-    series) rather than one clean series -- this function returns the raw point list
-    as-is; splitting/labelling the two runs is OPEN, left to whoever wires this in,
-    ideally after checking a second sample to see if the split point is always at the
-    midpoint of the point count.
+    series) rather than one clean series. `parse_bma_station_series` now detects and
+    splits these runs (a backwards timestamp jump is the split point), but this function
+    keeps returning every point from every run concatenated, in page order -- splitting/
+    labelling which run is which canal is still OPEN, left to whoever wires that in.
     """
-    rows = []
-    for y, mo, d, h, mi, s, v in _DATE_UTC_RE.findall(html):
-        timestamp = (
-            f"{int(y):04d}-{int(mo) + 1:02d}-{int(d):02d}T"
-            f"{int(h):02d}:{int(mi):02d}:{int(s):02d}Z"
-        )
-        try:
-            value = float(v)
-        except ValueError:
-            continue
-        rows.append({"timestamp_utc": timestamp, "value": value})
-    return rows
+    import parsers
+    result = parsers.parse_bma_station_series(html)
+    return [{"timestamp_utc": p["t_utc"], "value": p["v"]} for p in result["points"]]
 
 
 def find_history_rows(html: str) -> list[dict[str, Any]]:

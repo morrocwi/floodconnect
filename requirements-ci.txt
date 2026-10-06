@@ -11,7 +11,10 @@
 # and light compared to the geo stack).
 pyyaml
 requests
-networkx
+# Pinned: see pyproject.toml's own networkx pin comment --
+# this file's unpinned networkx previously let CI's own graphml rebuild diverge silently
+# from the committed one under a different installed networkx version.
+networkx==3.6.1
 
 # tools/harvest/bma_drain_pipes.py's parse_pipe_jacking_csv() imports pyproj (UTM47N ->
 # WGS84 conversion) at call time -- tests/test_bma_drain_pipes.py exercises this in the

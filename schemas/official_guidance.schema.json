@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://floodconnect.local/schemas/official_guidance.schema.json",
+  "title": "FloodConnect M8 official guidance row",
+  "description": "One row of advice/official_guidance.yaml (P-D, not built in P-B) -- the cited-data-file backing for the official-parity hard rule (every FloodConnect step must be equal to or stricter than this). Sources: ปภ./DDPM (disaster.go.th), กรมอุตุฯ, กทม. (bangkok.go.th), สภากาชาดไทย, สธ./กรมควบคุมโรค (source_class OFFICIAL_TH), plus general-practice sources -- Ready.gov, gov.uk, American/IFRC Red Cross (source_class GENERAL). A news-site relay of agency advice is RELAYED, never a source for this schema -- an OFFICIAL_TH row is sourced only from the agency's own domain (a .go.th government public-relations relay of another Thai agency's own words, e.g. PRD/prd.go.th, counts as that agency's own domain; a private news outlet never does). An item that cannot be sourced is tag OPEN and carries no verbatim_th/url.",
+  "type": "object",
+  "required": ["id", "agency", "tag"],
+  "properties": {
+    "id": {"type": "string"},
+    "agency": {"type": "string", "description": "Agency name verbatim, Thai where the agency's own text is Thai."},
+    "url": {"type": ["string", "null"], "format": "uri"},
+    "retrieved_at": {"type": ["string", "null"], "format": "date-time"},
+    "verbatim_th": {"type": ["string", "null"], "description": "The source's own text, verbatim -- never paraphrased into this field. Despite the name (kept for backward compatibility), a GENERAL row's text is English, not Thai."},
+    "phase": {"type": ["string", "null"], "description": "e.g. PRE_FLOOD, DURING, POST_FLOOD."},
+    "trigger_colour": {"anyOf": [{"$ref": "defs.schema.json#/$defs/colour5"}, {"type": "null"}]},
+    "action_keys": {"type": "array", "items": {"type": "string"}},
+    "tag": {
+      "type": "string",
+      "enum": ["OFFICIAL", "OPEN"],
+      "description": "OPEN = could not be independently fetched/verbatim-confirmed; carries no text/url and is listed in advice/PARITY.md as open, never fails the parity test."
+    },
+    "source_class": {
+      "type": ["string", "null"],
+      "enum": ["OFFICIAL_TH", "GENERAL", null],
+      "description": "Required (non-null) when tag is OFFICIAL. OFFICIAL_TH = a Thai agency's own domain (or a .go.th relay of it). GENERAL = a non-Thai general-practice source (Ready.gov, gov.uk, American/IFRC Red Cross) -- never presented as a Thai agency's own position. Always null for an OPEN row (no source was ever fetched)."
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {"properties": {"tag": {"const": "OFFICIAL"}}, "required": ["tag"]},
+      "then": {"required": ["url", "retrieved_at", "verbatim_th", "source_class"],
+               "properties": {"source_class": {"enum": ["OFFICIAL_TH", "GENERAL"]}}}
+    },
+    {
+      "if": {"properties": {"tag": {"const": "OPEN"}}, "required": ["tag"]},
+      "then": {"properties": {"url": {"type": "null"}, "verbatim_th": {"type": "null"},
+                               "source_class": {"type": "null"}}}
+    }
+  ]
+}

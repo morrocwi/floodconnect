@@ -1,0 +1,233 @@
+# advice/official_guidance_inventory.yaml -- S5/S6 (founder subtractive-fix
+# ruling 2026-10-06, HIGH item 6): a per-page list of EVERY actionable item
+# this repo has found on each cited guidance page, each pointing at the
+# `advice/official_guidance.yaml` row id that carries it. `tests/
+# test_official_parity.py`'s inventory-coverage test checks every one of
+# those resolves to a REAL `tag: OFFICIAL` row with a non-empty `verbatim_th`
+# and at least one `action_keys` entry that in turn has a matching ladder
+# step -- never only "a row with some id exists". A page later found to
+# carry an item not listed here is a gap in THIS file, not a passing parity
+# count; add the row, then add it here too.
+#
+# This is a coverage checklist, not a second copy of the guidance text --
+# `item` is a short label, not the quote (the quote lives in `verbatim_th` in
+# `official_guidance.yaml`).
+#
+# S6 (2026-10-06): every page below was re-fetched live with a
+# keyless `curl` GET (raw HTML saved under this worktree's own scratch
+# directory, listed per page as `evidence_file`), and its article body was
+# parsed into its own <li>/<p> blocks to build this list from scratch --
+# never only re-used from an earlier pass's own notes. An item the source
+# text carries but that is NOT a transferable action for this repo's
+# Thailand-household scope is listed with `excluded: true` and a `reason`
+# instead of an `og_id` -- it is still accounted for on this page (never
+# silently dropped), it simply does not get a row in `official_guidance.yaml`
+# or a parity verdict. A US/UK-named institution, program, phone number,
+# scheme or brand is the main reason class; a sentence that is purely
+# informational (no instruction to do anything) is the other.
+
+pages:
+  - url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/432703"
+    evidence_file: "www_prd_go_th_th_content_category_detail_id_31_iid_432703.html"
+    items:
+      - {item: "install_elcb_or_breaker_plus_earth_wire_check", og_id: "OG-01"}
+      - {item: "inspect_repair_wiring", og_id: "OG-02"}
+      - {item: "move_valuables_appliances_up", og_id: "OG-03"}
+      - {item: "trim_branches_near_powerlines", og_id: "OG-28"}
+      - {item: "cut_main_breaker_on_water_entry", og_id: "OG-04"}
+      - {item: "never_touch_electrical_wet", og_id: "OG-05"}
+      - {item: "keep_distance_power_poles", og_id: "OG-06"}
+      - {item: "unplug_during_lightning", og_id: "OG-27"}
+      - {item: "electrocution_rescue_procedure", og_id: "OG-26"}
+      - {item: "check_earth_wire_installed", og_id: "OG-29"}
+
+  - url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/529458"
+    evidence_file: "www_prd_go_th_th_content_category_detail_id_31_iid_529458.html"
+    items:
+      - item: "four_disease_groups_named"
+        excluded: true
+        reason: "a risk-category list (respiratory/food-water-borne/infectious/vector-borne diseases), not itself an instruction to do anything -- the page's own 7-point action list below carries the actionable items for these risks"
+      - {item: "bag_rubbish_no_toilet_in_floodwater", og_id: "OG-31"}
+      - {item: "never_let_children_play_in_floodwater_alone", og_id: "OG-30"}
+      - {item: "hygiene_wash_after_wading", og_id: "OG-09"}
+      - {item: "eat_freshly_cooked_food", og_id: "OG-10"}
+      - {item: "wear_boots_avoid_barefoot_plus_cover_wounds", og_id: "OG-08"}
+      - {item: "mosquito_protection", og_id: "OG-33"}
+      - {item: "clean_house_corners_prevent_pests", og_id: "OG-39"}
+      - {item: "wear_mask_if_sick_or_crowded", og_id: "OG-40"}
+      - {item: "venomous_animal_bite_care_keep_limb_still", og_id: "OG-11"}
+      - {item: "sudden_high_fever_see_doctor", og_id: "OG-34"}
+      - {item: "ddc_hotline_1422", og_id: "OG-12"}
+      - {item: "sign_up_for_warnings", og_id: "OG-42"}
+      - {item: "save_hotlines", og_id: "OG-43"}
+      - {item: "plan_route_safe_point", og_id: "OG-44"}
+
+  - url: "https://www.prd.go.th/th/content/category/detail/id/31/iid/534015"
+    evidence_file: "www_prd_go_th_th_content_category_detail_id_31_iid_534015.html"
+    items:
+      - {item: "cut_main_breaker_on_water_entry", og_id: "OG-41"}
+      - {item: "move_to_upper_floor", og_id: "OG-07"}
+      - {item: "secure_gas_cylinder", og_id: "OG-20"}
+      - {item: "avoid_glass_doors_windows", og_id: "OG-21"}
+      - {item: "sandbag_and_plug_drains", og_id: "OG-22"}
+      - {item: "wear_boots_avoid_fast_water_probe_depth", og_id: "OG-35"}
+      - {item: "check_shoes_corners_for_venomous_animals", og_id: "OG-36"}
+      - {item: "drink_sealed_bottled_water_only", og_id: "OG-23"}
+      - {item: "abandon_stalled_car_walk_to_high_ground", og_id: "OG-37"}
+      - {item: "evacuate_on_rising_water_or_warning", og_id: "OG-25"}
+      - {item: "call_1138_disaster_hotline", og_id: "OG-24"}
+      - item: "call_1784_dpm_hotline"
+        excluded: true
+        reason: "1784 (DDPM safety hotline) is already captured in this repo's own hotline step G3 (save_hotlines), which is FLOODCONNECT-sourced, not a second official_guidance.yaml row for the same number this page also lists alongside 1138/1669"
+      - item: "call_1669_emergency_medical_hotline"
+        excluded: true
+        reason: "1669 (national emergency medical hotline) is already captured in this repo's own hotline step G3 (save_hotlines); not duplicated here as a second official_guidance.yaml row"
+      - {item: "prepare_info_before_calling_emergency", og_id: "OG-38"}
+
+  - url: "https://www.prd.go.th/th/content/category/detail/id/33/iid/545256"
+    evidence_file: "www_prd_go_th_th_content_category_detail_id_33_iid_545256.html"
+    items:
+      - {item: "avoid_unnecessary_travel", og_id: "OG-17"}
+      - item: "check_31_closed_routes_via_qr_or_social_post"
+        excluded: true
+        reason: "the route list is delivered only as a QR code / live social-media-comment thread for that specific 2569-09-27 posting, not a standalone, independently-fetchable instruction this repo can cite verbatim or keep current"
+
+  - url: "https://www.prd.go.th/th/content/category/detail/id/33/iid/545283"
+    evidence_file: "www_prd_go_th_th_content_category_detail_id_33_iid_545283.html"
+    items:
+      - {item: "report_electrical_fault_to_mea", og_id: "OG-16"}
+      - item: "mea_call_center_1130"
+        excluded: true
+        reason: "MEA's own 1130 call-centre number is already carried inside OG-16's own verbatim_th action (report a fault so MEA can send a crew); not a second standalone row for the same contact"
+
+  - url: "https://www.ready.gov/floods"
+    evidence_file: "www_ready_gov_floods.html"
+    items:
+      - item: "find_safe_shelter_right_away"
+        og_id: "GEN-24"
+      - {item: "never_walk_through_floodwater", og_id: "GEN-04"}
+      - item: "six_inches_moving_water_knockdown_fact"
+        excluded: true
+        reason: "a magnitude/risk fact supporting the 'never walk through floodwater' instruction (GEN-04), not itself a separate instruction"
+      - {item: "stay_off_bridges_fast_water", og_id: "GEN-11"}
+      - item: "evacuate_if_told_to_do_so"
+        og_id: "GEN-25"
+      - item: "move_to_higher_ground_or_floor"
+        og_id: "GEN-26"
+      - item: "stay_where_you_are_if_advised"
+        excluded: true
+        reason: "a conditional branch ('depending on the type of flooding, stay where you are') describing when NOT to move, not a standalone action; the repo's own home-shelter verdict (FLOODCONNECT) already carries the stay-vs-leave decision"
+      - item: "know_your_flood_risk_fema_map"
+        excluded: true
+        reason: "names a US federal tool (FEMA Flood Map Service Center / National Risk Index); not transferable outside the US"
+      - item: "sign_up_community_warning_noaa_eas"
+        excluded: true
+        reason: "names US-specific systems (NOAA Weather Radio, the Emergency Alert System); the underlying action (sign up for warnings) is already covered by GEN-05, sourced from the UK page instead"
+      - item: "purchase_flood_insurance_nfip"
+        excluded: true
+        reason: "the National Flood Insurance Program (NFIP) is a US-specific federal insurance scheme, not transferable"
+      - {item: "prepare_emergency_kit", og_id: "GEN-07"}
+      - {item: "plan_route_safe_point", og_id: "GEN-08"}
+      - item: "keep_documents_waterproof_digital_copies"
+        og_id: "GEN-27"
+      - item: "move_valuables_to_higher_levels"
+        og_id: "GEN-28"
+      - item: "declutter_drains_gutters"
+        og_id: "GEN-19"
+      - item: "install_check_valves_sump_pump"
+        excluded: true
+        reason: "backflow check valves and battery sump pumps are a US home-plumbing retrofit pattern uncommon in this repo's Thailand-household scope; not a universal action"
+      - item: "evacuate_immediately_if_told"
+        og_id: "GEN-29"
+      - item: "never_drive_around_barricades_responder_use"
+        og_id: "GEN-39"
+      - item: "contact_healthcare_provider_call_911"
+        excluded: true
+        reason: "911 is the US-specific emergency number; this repo's own hotline set (1138/1784/1669, G3/OG-24) already covers the same need"
+      - item: "listen_to_eas_noaa_weather_radio"
+        excluded: true
+        reason: "duplicate of sign_up_community_warning_noaa_eas above -- names the same US-specific systems (EAS, NOAA Weather Radio)"
+      - {item: "car_trapped_moving_water_stay_inside_roof", og_id: "GEN-13"}
+      - {item: "no_closed_attic", og_id: "GEN-06"}
+      - {item: "return_home_on_authority_only", og_id: "GEN-15"}
+      - item: "avoid_driving_except_emergencies"
+        og_id: "GEN-20"
+      - {item: "generator_outdoors_only", og_id: "GEN-14"}
+      - item: "wear_gloves_boots_masks_during_cleanup"
+        og_id: "GEN-03"
+      - item: "vulnerable_avoid_mold_buildings_plus_children_not_in_cleanup"
+        og_id: "GEN-21"
+      - {item: "children_not_in_cleanup", og_id: "GEN-16"}
+      - item: "snakes_animals_may_be_in_house"
+        og_id: "GEN-22"
+      - item: "electrocution_risk_wet_equipment"
+        og_id: "GEN-23"
+      - item: "avoid_wading_contaminated_floodwater_charged_lines"
+        og_id: "GEN-04"
+      - item: "learn_and_practice_evacuation_routes"
+        og_id: "GEN-41"
+      - item: "get_to_highest_level_roof_only_if_necessary_signal_for_help"
+        og_id: "GEN-42"
+
+  - url: "https://prepare.campaign.gov.uk/flooding/"
+    evidence_file: "prepare_campaign_gov_uk_flooding_.html"
+    items:
+      - {item: "sign_up_for_warnings", og_id: "GEN-05"}
+      - item: "make_personal_flood_plan"
+        og_id: "GEN-30"
+      - item: "pack_grab_bag_essentials"
+        og_id: "GEN-31"
+      - {item: "move_valuables_appliances_up_general", og_id: "GEN-01"}
+      - {item: "protect_documents_waterproof", og_id: "GEN-09"}
+      - item: "riverside_canalside_property_guidance"
+        excluded: true
+        reason: "names the Canal and River Trust, a UK-specific body, and riverside-property ownership rules specific to England/Wales; not transferable"
+      - item: "property_flood_resilience_retrofit_guide"
+        excluded: true
+        reason: "points to a separate UK property-retrofit guidance page, not itself a specific action this page states"
+      - {item: "know_how_to_shut_off_utilities", og_id: "GEN-02"}
+      - item: "get_insurance_environment_agency"
+        excluded: true
+        reason: "names the UK Environment Agency's own insurance guidance; insurance systems are jurisdiction-specific"
+      - item: "turn_off_gas_electricity_water_before_flood"
+        og_id: "GEN-32"
+      - item: "do_not_touch_electrical_switch_standing_in_water"
+        og_id: "GEN-40"
+      - {item: "move_pets_to_safety", og_id: "GEN-17"}
+      - item: "flood_barriers_air_brick_covers_brand"
+        excluded: true
+        reason: "names a UK commercial brand (Flood Mary) for property flood barriers/air brick covers; a branded product reference, not a universal action"
+      - item: "follow_council_emergency_services_evacuate_advice"
+        og_id: "GEN-33"
+      - item: "check_road_traffic_info_do_not_travel_notices"
+        og_id: "GEN-34"
+      - item: "never_walk_through_flood_water_uk"
+        og_id: "GEN-35"
+      - item: "turn_around_on_flooded_road_while_driving"
+        og_id: "GEN-36"
+      - item: "do_not_enter_flood_water_unless_necessary"
+        og_id: "GEN-37"
+      - item: "wash_hands_regularly"
+        og_id: "GEN-38"
+      - item: "insurance_claims_photograph_damage_mark_water_levels"
+        excluded: true
+        reason: "a UK insurer claims-process step (photographing damage for a claim, marking water levels, insurer approval before repairs); not a universal safety action"
+      - item: "no_insurance_contact_local_council_hardship_grants"
+        excluded: true
+        reason: "the UK local-council hardship-grant system is a jurisdiction-specific welfare mechanism, not transferable"
+      - item: "flood_re_scheme"
+        excluded: true
+        reason: "Flood Re is a UK-specific government/insurer flood-insurance scheme, not transferable"
+      - {item: "report_flooding_to_authority", og_id: "GEN-18"}
+      - item: "arrange_vulnerable_care_floodline"
+        og_id: "GEN-10"
+
+  # Re-tried 2026-10-06 (S5, carried forward): both HTTP 200, neither carries
+  # standalone preparedness instruction text -- see OG-13/OG-18's
+  # own OPEN-row notes in official_guidance.yaml. No items to list; present
+  # here so this file's own page list matches what was actually re-checked,
+  # not silently dropped.
+  - url: "https://disaster.go.th"
+    items: []
+  - url: "https://www.niems.go.th"
+    items: []

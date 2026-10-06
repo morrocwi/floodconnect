@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>รายงานสถานการณ์น้ำสัมมากรและกรุงเทพฯ ฝั่งตะวันออก</title>
+<style>
+  /* FloodConnect default email report -- inline CSS, email-client safe (no external
+     assets, no flexbox/grid relied on for structure -- table-based layout), light and
+     dark friendly via prefers-color-scheme, A4 print-ready. */
+  body { margin:0; padding:0; background:#f2f4f7; color:#1a1a1a;
+         font-family: "Noto Sans Thai","Segoe UI",Tahoma,Arial,sans-serif; font-size:15px; line-height:1.55; }
+  .wrap { max-width:720px; margin:0 auto; background:#ffffff; }
+  .pad { padding:20px 22px; }
+  h1 { font-size:19px; margin:0 0 4px; }
+  h2 { font-size:16px; margin:0 0 10px; border-bottom:2px solid #e3e6ea; padding-bottom:6px; }
+  h3 { font-size:14px; margin:14px 0 8px; }
+  p { margin:0 0 10px; }
+  table { width:100%; border-collapse:collapse; margin:0 0 16px; font-size:13.5px; }
+  th, td { border:1px solid #dde1e6; padding:7px 8px; text-align:left; vertical-align:top; }
+  th { background:#eef1f5; font-weight:600; }
+  tr:nth-child(even) td { background:#fafbfc; }
+  .section { padding:18px 22px; border-bottom:1px solid #eceff2; }
+  .meta-line { color:#5b6472; font-size:13px; margin-bottom:10px; }
+  .badge { display:inline-block; padding:3px 10px; border-radius:12px; font-weight:600; font-size:13px; white-space:nowrap; }
+  .badge-GREEN   { background:#e4f6e8; color:#1e7a34; }
+  .badge-YELLOW  { background:#fff6d8; color:#8a6d00; }
+  .badge-ORANGE  { background:#ffe9d6; color:#a05200; }
+  .badge-RED     { background:#fde3e1; color:#b3261e; }
+  .badge-UNKNOWN { background:#ececec; color:#555555; }
+  .card { border:2px solid #d9b94a; background:#fffbea; border-radius:10px; padding:14px 16px; margin:16px 0; }
+  .card .badge { font-size:14px; }
+  .hotlines { font-weight:600; }
+  .muted { color:#6b7280; font-size:12.5px; }
+  .open-flag { color:#b3261e; font-size:12px; }
+  .footer { padding:16px 22px; font-size:12.5px; color:#6b7280; text-align:center; }
+  a { color:#1757c4; }
+  .pending { background:#fdf4e7; color:#8a5a00; font-size:11px; padding:1px 5px; border-radius:4px; }
+
+  @media (prefers-color-scheme: dark) {
+    body { background:#111418; color:#e7e9ec; }
+    .wrap { background:#1a1e24; }
+    .section { border-bottom:1px solid #2a2f37; }
+    th, td { border-color:#2a2f37; }
+    th { background:#232832; }
+    tr:nth-child(even) td { background:#1e222a; }
+    .meta-line, .muted, .footer { color:#9aa4b2; }
+    .card { background:#2a2514; border-color:#cda53c; }
+    a { color:#7db0ff; }
+    .badge-GREEN   { background:#163a22; color:#7fe3a0; }
+    .badge-YELLOW  { background:#3a3012; color:#f2d270; }
+    .badge-ORANGE  { background:#3a2512; color:#f2a670; }
+    .badge-RED     { background:#3a1715; color:#f29892; }
+    .badge-UNKNOWN { background:#2a2d31; color:#c7cbd1; }
+  }
+
+  @media print {
+    body { background:#ffffff; }
+    .wrap { max-width:100%; }
+    @page { size: A4; margin: 14mm 12mm; }
+    .section { break-inside: avoid; page-break-after: auto; }
+    h2 { page-break-before: always; }
+    .section:first-of-type h2, .card { page-break-before: avoid; }
+    table { page-break-inside: auto; }
+    tr { page-break-inside: avoid; }
+    thead { display: table-header-group; } /* repeat table headers on each printed page */
+    a { color:#1a1a1a; text-decoration: underline; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- EMERGENCY CARD -- always first -->
+  <div class="pad">
+    <div class="card">
+      <span class="badge badge-YELLOW">🟡 เฝ้าระวัง</span>
+      <p style="margin-top:8px;"><strong>เฝ้าระวังและติดตามสถานการณ์</strong></p>
+      <p>ทำตอนนี้: เฝ้าดู ติดตามระดับน้ำและประกาศของหน่วยงานทางการเป็นระยะ</p>
+      <p class="hotlines">สายด่วน:
+        1784 (ปภ. (กรมป้องกันและบรรเทาสาธารณภัย)), 1669 (การแพทย์ฉุกเฉิน), 1555 (สายด่วนน้ำท่วม กทม. (เฉพาะพื้นที่กรุงเทพฯ))
+      </p>
+      <p class="muted">⚠ ไม่ใช่ประกาศทางการ</p>
+    </div>
+
+    <h1>รายงานสถานการณ์น้ำสัมมากรและกรุงเทพฯ ฝั่งตะวันออก</h1>
+    <div class="meta-line">รอบพิเศษ &middot; ข้อมูลช่วง 12:30–13:00 น. (Asia/Bangkok) &middot; ส่งเมื่อ 2026-10-06T13:33:00+07:00</div>
+
+    <p>
+      <span class="badge badge-YELLOW">🟡 เฝ้าระวัง</span>
+      &nbsp;บึงหลักสัมมากรยังปกติและลดเล็กน้อย แต่คลองรอบนอกหลายจุดยังอยู่ระดับวิกฤต
+      <span class="muted">(เหตุผล: OUTLET_CRITICAL)</span>
+    </p>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="section">
+    <h2>สรุปสถานการณ์</h2>
+    <p>บึงรับน้ำหมู่บ้านสัมมากร (WL.SMK.01) ซึ่งเป็นจุดหลักของเรายังอยู่ในระดับปกติ และลดลงเล็กน้อยในช่วงที่ผ่านมา</p><p>ในขณะเดียวกัน คลองรอบนอกฝั่งตะวันออกหลายจุด เช่น SSB.08, SSB.10, LBK.02, PWT.04, PWT.06 ยังอยู่ระดับวิกฤต และ SSB.07 อยู่ระดับเตือนภัยใกล้วิกฤตมาก (เหลือ 1 ซม.) ทำให้ทางออกของน้ำจากสัมมากรไปแม่น้ำเจ้าพระยาผ่านคลองแสนแสบยังมีความเสี่ยง</p><p>โดยรวม ระบบยังรับมือได้ที่จุดของเราเอง แต่คอขวดอยู่ที่ปลายทางระบาย — สถานะของรายงานนี้จึงเป็นเฝ้าระวัง (YELLOW) ไม่ใช่วิกฤต (RED) เพราะ RED สงวนไว้สำหรับจุดของเราเอง (Z0) เท่านั้น</p>
+    <p><strong>6-12 ชั่วโมงข้างหน้า: ติดตามว่าคลองฝั่งตะวันออกที่วิกฤตอยู่แล้วจะทรงตัว/ลดลง หรือจะดันระดับน้ำเข้าใกล้สัมมากรมากขึ้นผ่านคลองแสนแสบ</strong></p>
+  </div>
+
+  <!-- MAIN POND -->
+  <div class="section">
+    <h2>บึงหลัก (Z0)</h2>
+    <table>
+      <tbody>
+        <tr><th style="width:34%">สถานี</th><td>WL.SMK.01 — บึงรับน้ำหมู่บ้านสัมมากร (สำนักการระบายน้ำ กรุงเทพมหานคร)</td></tr>
+        <tr><th>ค่าล่าสุด</th><td>-0.35 m @ 2026-10-06T13:00:00+07:00 <span class="muted">[RELAYED]</span></td></tr>
+        <tr><th>สถานะ</th><td><span class="badge badge-GREEN">🟢 ปกติ</span></td></tr>
+        <tr><th>เทรนด์</th><td>↓ FALLING (Δ-2 ซม., 10:05→13:00)</td></tr>
+        <tr><th>ช่องว่างถึงเกณฑ์</th><td>เตือน 70 ซม. / วิกฤต 79 ซม.</td></tr>
+        <tr><th>เทียบรอบก่อน</th><td>
+          
+            ไม่มีรอบก่อนให้เทียบ — sample predates this report-schema's local continuity log; no previous report row exists to link to
+          
+        </td></tr>
+        <tr><th>ETA ถึงเกณฑ์ <span class="pending">PROPOSAL PROP-FLOOD-02</span></th><td>
+          NOT_APPLICABLE
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- WATCH SECTIONS -->
+  
+  <div class="section">
+    <h2>§1 แกนหลัก</h2>
+    <table>
+      <thead>
+        <tr><th>รหัส</th><th>ชื่อสถานี (ทางการ)</th><th>ค่าล่าสุด</th><th>สถานะ</th><th>เทรนด์</th><th>ช่องว่างถึงเกณฑ์</th><th>แผนที่/แหล่งข้อมูล</th></tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>WL.SMK.01</td>
+          <td>บึงรับน้ำหมู่บ้านสัมมากร
+            
+          </td>
+          <td>-0.35 m<div class="muted">2026-10-06T13:00:00+07:00</div></td>
+          <td><span class="badge badge-GREEN">🟢 ปกติ</span></td>
+          <td>↓ FALLING<div class="muted">Δ-2 ซม., 10:05→13:00</div></td>
+          <td>เตือน 70<br>วิกฤต 79</td>
+          <td><a href="https://weather.bangkok.go.th/water/">แผนที่</a> &middot; <a href="https://weather.bangkok.go.th/water/StationDetail?id=284">แหล่งข้อมูล</a>
+            <div class="open-flag">OPEN</div>
+          </td>
+        </tr>
+        
+        <tr>
+          <td>WL.BMA.02</td>
+          <td>คลองบ้านม้า
+            <div class="muted">ปั๊ม: <a href="https://weather.bangkok.go.th/Station/PumpHistory">ST.SPS.01</a> <span class="open-flag">OPEN — PumpHistory returned 404 on 2026-10-06</span></div>
+          </td>
+          <td>0.29 m<div class="muted">2026-10-06T13:00:00+07:00</div></td>
+          <td><span class="badge badge-GREEN">🟢 ปกติ</span></td>
+          <td>↑ RISING<div class="muted">Δ2 ซม., unknown→13:00</div></td>
+          <td>เตือน None<br>วิกฤต None</td>
+          <td><a href="https://weather.bangkok.go.th/water/">แผนที่</a> &middot; <a href="https://weather.bangkok.go.th/water/StationDetail?id=288">แหล่งข้อมูล</a>
+            <div class="open-flag">OPEN</div>
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2>§2 จุดเฝ้าระวังฝั่งตะวันออก</h2>
+    <table>
+      <thead>
+        <tr><th>รหัส</th><th>ชื่อสถานี (ทางการ)</th><th>ค่าล่าสุด</th><th>สถานะ</th><th>เทรนด์</th><th>ช่องว่างถึงเกณฑ์</th><th>แผนที่/แหล่งข้อมูล</th></tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>SSB.07</td>
+          <td>คลองสะพานสูง (SSB.07)
+            
+          </td>
+          <td>0.44 m<div class="muted">2026-10-06T13:00:00+07:00</div></td>
+          <td><span class="badge badge-YELLOW">🟡 เฝ้าระวัง</span></td>
+          <td>→ STABLE<div class="muted">Δ0 ซม., 10:05→13:00</div></td>
+          <td>เตือน None<br>วิกฤต 1</td>
+          <td><a href="https://weather.bangkok.go.th/water/">แผนที่</a> &middot; <a href="https://weather.bangkok.go.th/water/StationDetail?id=35">แหล่งข้อมูล</a>
+            <div class="open-flag">OPEN</div>
+          </td>
+        </tr>
+        
+        <tr>
+          <td>SSB.08</td>
+          <td>คลองสะพานสูง (SSB.08)
+            
+          </td>
+          <td>0.65 m<div class="muted">2026-10-06T13:00:00+07:00</div></td>
+          <td><span class="badge badge-RED">🔴 วิกฤต</span></td>
+          <td>↑ RISING<div class="muted">Δ5 ซม., 10:05→13:00</div></td>
+          <td>เตือน None<br>วิกฤต None</td>
+          <td><a href="https://weather.bangkok.go.th/water/">แผนที่</a> &middot; <a href="https://weather.bangkok.go.th/water/StationDetail?id=88">แหล่งข้อมูล</a>
+            <div class="open-flag">OPEN</div>
+          </td>
+        </tr>
+        
+        <tr>
+          <td>SSB.10</td>
+          <td>คลองสะพานสูง (SSB.10)
+            
+          </td>
+          <td>0.83 m<div class="muted">2026-10-06T13:00:00+07:00</div></td>
+          <td><span class="badge badge-RED">🔴 วิกฤต</span></td>
+          <td>↑ RISING<div class="muted">Δ5 ซม., 10:05→13:00</div></td>
+          <td>เตือน None<br>วิกฤต None</td>
+          <td><a href="https://weather.bangkok.go.th/water/">แผนที่</a> &middot; <a href="https://weather.bangkok.go.th/water/StationDetail?id=25">แหล่งข้อมูล</a>
+            <div class="open-flag">OPEN</div>
+          </td>
+        </tr>
+        
+        <tr>
+          <td>LBK.02</td>
+          <td>คลองลาดบัวขาว (LBK.02)
+            
+          </td>
+          <td>0.71 m<div class="muted">2026-10-06T13:00:00+07:00</div></td>
+          <td><span class="badge badge-RED">🔴 วิกฤต</span></td>
+          <td>↑ RISING<div class="muted">Δ5 ซม., 10:05→13:00</div></td>
+          <td>เตือน None<br>วิกฤต None</td>
+          <td><a href="https://weather.bangkok.go.th/water/">แผนที่</a> &middot; <a href="https://weather.bangkok.go.th/water/StationDetail?id=176">แหล่งข้อมูล</a>
+            <div class="open-flag">OPEN</div>
+          </td>
+        </tr>
+        
+        <tr>
+          <td>PWT.04</td>
+          <td>คลองพระยาสุเรนทร์ (PWT.04)
+            
+          </td>
+          <td>0.66 m<div class="muted">2026-10-06T13:00:00+07:00</div></td>
+          <td><span class="badge badge-RED">🔴 วิกฤต</span></td>
+          <td>↑ RISING<div class="muted">Δ3 ซม., 10:05→13:00</div></td>
+          <td>เตือน None<br>วิกฤต None</td>
+          <td><a href="https://weather.bangkok.go.th/water/">แผนที่</a> &middot; <a href="https://weather.bangkok.go.th/water/StationDetail?id=39">แหล่งข้อมูล</a>
+            <div class="open-flag">OPEN</div>
+          </td>
+        </tr>
+        
+        <tr>
+          <td>PWT.06</td>
+          <td>คลองพระยาสุเรนทร์ (PWT.06)
+            
+          </td>
+          <td>1.0 m<div class="muted">2026-10-06T13:00:00+07:00</div></td>
+          <td><span class="badge badge-RED">🔴 วิกฤต</span></td>
+          <td>→ STABLE<div class="muted">Δ0 ซม., 10:05→13:00</div></td>
+          <td>เตือน None<br>วิกฤต None</td>
+          <td><a href="https://weather.bangkok.go.th/water/">แผนที่</a> &middot; <a href="https://weather.bangkok.go.th/water/StationDetail?id=65">แหล่งข้อมูล</a>
+            <div class="open-flag">OPEN</div>
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  <!-- PUMPS -->
+  <div class="section">
+    <h2>สถานีสูบน้ำ</h2>
+    <table>
+      <thead><tr><th>รหัส</th><th>ชื่อสถานี</th><th>ความจุ (ลบ.ม./วินาที)</th><th>เครื่อง</th><th>สถานะ</th><th>ลิงก์สถานี</th></tr></thead>
+      <tbody>
+        
+        <tr>
+          <td>ST.SPS.01</td>
+          <td>สถานีสูบน้ำคลองบ้านม้า 2</td>
+          <td>4.0 <span class="muted">[VERIFIED]</span></td>
+          <td>4×1.0</td>
+          <td><span class="badge badge-UNKNOWN">⚪ ไม่ทราบ</span><div class="muted">UNKNOWN ≠ pump stopped</div></td>
+          <td><a href="https://weather.bangkok.go.th/Station/PumpHistory">สถานีสูบน้ำ</a><div class="open-flag">OPEN — endpoint returned 404 (bma_pumphistory confirmed dead this session, 2026-10-06); no alternate per-pump page found this session in the bma_watermap payload (ST.SPS.01-04 pump assets are not in the water_id space -- confirmed by searching the live payload) or in dds.bangkok.go.th/flood_report.php (fetched, no ST.SPS reference found)</div></td>
+        </tr>
+        
+        <tr>
+          <td>ST.SPS.02</td>
+          <td>สถานีสูบน้ำบึงที่ 4 ตอนคลองวังใหญ่</td>
+          <td>2.0 <span class="muted">[VERIFIED]</span></td>
+          <td>2×1.0</td>
+          <td><span class="badge badge-UNKNOWN">⚪ ไม่ทราบ</span><div class="muted">UNKNOWN ≠ pump stopped</div></td>
+          <td><a href="https://weather.bangkok.go.th/Station/PumpHistory">สถานีสูบน้ำ</a><div class="open-flag">OPEN — endpoint returned 404 (bma_pumphistory confirmed dead this session, 2026-10-06); no alternate per-pump page found this session in the bma_watermap payload (ST.SPS.01-04 pump assets are not in the water_id space -- confirmed by searching the live payload) or in dds.bangkok.go.th/flood_report.php (fetched, no ST.SPS reference found)</div></td>
+        </tr>
+        
+        <tr>
+          <td>ST.SPS.03</td>
+          <td>สถานีสูบน้ำบึงที่ 2 ตอนคลองบ้านม้า 2</td>
+          <td>0.75 <span class="muted">[VERIFIED]</span></td>
+          <td>3×0.25</td>
+          <td><span class="badge badge-UNKNOWN">⚪ ไม่ทราบ</span><div class="muted">UNKNOWN ≠ pump stopped</div></td>
+          <td><a href="https://weather.bangkok.go.th/Station/PumpHistory">สถานีสูบน้ำ</a><div class="open-flag">OPEN — endpoint returned 404 (bma_pumphistory confirmed dead this session, 2026-10-06); no alternate per-pump page found this session in the bma_watermap payload (ST.SPS.01-04 pump assets are not in the water_id space -- confirmed by searching the live payload) or in dds.bangkok.go.th/flood_report.php (fetched, no ST.SPS reference found)</div></td>
+        </tr>
+        
+        <tr>
+          <td>ST.SPS.04</td>
+          <td>สถานีสูบน้ำบึงที่ 1 ตอนคลองสะพานสูง</td>
+          <td>1.0 <span class="muted">[VERIFIED]</span></td>
+          <td>2×0.5</td>
+          <td><span class="badge badge-UNKNOWN">⚪ ไม่ทราบ</span><div class="muted">UNKNOWN ≠ pump stopped</div></td>
+          <td><a href="https://weather.bangkok.go.th/Station/PumpHistory">สถานีสูบน้ำ</a><div class="open-flag">OPEN — endpoint returned 404 (bma_pumphistory confirmed dead this session, 2026-10-06); no alternate per-pump page found this session in the bma_watermap payload (ST.SPS.01-04 pump assets are not in the water_id space -- confirmed by searching the live payload) or in dds.bangkok.go.th/flood_report.php (fetched, no ST.SPS reference found)</div></td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+
+  <!-- UPSTREAM -->
+  <div class="section">
+    <h2>น้ำเหนือ/ป่าสัก</h2>
+    <table>
+      <thead><tr><th>รหัส</th><th>ชื่อ</th><th>หน่วยงาน</th><th>ค่า</th><th>% ความจุ</th><th>เทรนด์</th><th>ลิงก์</th></tr></thead>
+      <tbody>
+        
+        <tr>
+          <td>C.2</td>
+          <td>สถานี C.2 (นครสวรรค์)</td>
+          <td>กรมชลประทาน</td>
+          <td>1951 m3/s <span class="muted">[MEASURED]</span></td>
+          <td>—</td>
+          <td>↓ FALLING</td>
+          <td><a href="http://water.rid.go.th/flood/flood/res_table.htm">แหล่งข้อมูล</a><div class="open-flag">OPEN</div></td>
+        </tr>
+        
+        <tr>
+          <td>C.13</td>
+          <td>สถานี C.13 (เขื่อนเจ้าพระยา)</td>
+          <td>กรมชลประทาน</td>
+          <td>2500 m3/s <span class="muted">[MEASURED]</span></td>
+          <td>—</td>
+          <td>↓ FALLING</td>
+          <td><a href="http://water.rid.go.th/flood/flood/res_table.htm">แหล่งข้อมูล</a><div class="open-flag">OPEN</div></td>
+        </tr>
+        
+        <tr>
+          <td>PASAK</td>
+          <td>เขื่อนป่าสักชลสิทธิ์</td>
+          <td>กรมชลประทาน</td>
+          <td>944 MCM <span class="muted">[RELAYED]</span></td>
+          <td>108%</td>
+          <td>→ STABLE</td>
+          <td><a href="https://api-v3.thaiwater.net/api/v1/thaiwater30/analyst/dam">แหล่งข้อมูล</a></td>
+        </tr>
+        
+        <tr>
+          <td>PASAK_RELEASE</td>
+          <td>เขื่อนป่าสักชลสิทธิ์ (ระบาย)</td>
+          <td>กรมชลประทาน</td>
+          <td>500 m3/s <span class="muted">[RELAYED]</span></td>
+          <td>—</td>
+          <td>→ STABLE</td>
+          <td><a href="https://api-v3.thaiwater.net/api/v1/thaiwater30/analyst/dam">แหล่งข้อมูล</a></td>
+        </tr>
+        
+        <tr>
+          <td>RAMA6</td>
+          <td>เขื่อนพระราม 6</td>
+          <td>กรมชลประทาน</td>
+          <td>719 cm <span class="muted">[MEASURED]</span></td>
+          <td>—</td>
+          <td>↑ RISING</td>
+          <td><a href="http://irrigation.rid.go.th/rid9/rid9_new/rpt_show.php">แหล่งข้อมูล</a><div class="open-flag">OPEN</div></td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+
+  <!-- WEATHER -->
+  <div class="section">
+    <h2>ฝนและอากาศ</h2>
+    <table>
+      <thead><tr><th>หน่วยงาน</th><th>ออกเมื่อ</th><th>พื้นที่ครอบคลุม</th><th>หัวข้อ</th><th>ลิงก์</th></tr></thead>
+      <tbody>
+        
+        <tr>
+          <td>กรมอุตุนิยมวิทยา</td>
+          <td>2026-10-06T11:00:00+07:00</td>
+          <td>70%</td>
+          <td>พยากรณ์ 11:00: ฝนตกหนักครอบคลุม 70% ของพื้นที่</td>
+          <td>—<div class="open-flag">OPEN</div></td>
+        </tr>
+        
+        <tr>
+          <td>สำนักการระบายน้ำ กรุงเทพมหานคร</td>
+          <td>2026-10-06T13:00:00+07:00</td>
+          <td>— [OPEN]</td>
+          <td>สถานีวัดฝน กทม. ตรวจพบฝนตกในพื้นที่</td>
+          <td><a href="https://dds.bangkok.go.th/Line_data/picture/radar_rain.gif">แหล่งข้อมูล</a></td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SYSTEM RISK -->
+  <div class="section">
+    <h2>สรุปความเสี่ยงเชิงระบบ</h2>
+    <table>
+      <thead><tr><th>ปัจจัย</th><th>สถานะ</th><th>เทรนด์</th></tr></thead>
+      <tbody>
+        
+        <tr>
+          <td>บึงหลัก (สัมมากร)</td>
+          <td><span class="badge badge-GREEN">🟢 ปกติ</span></td>
+          <td>FALLING</td>
+        </tr>
+        
+        <tr>
+          <td>ทางออก/คลองรอบนอก</td>
+          <td><span class="badge badge-RED">🔴 วิกฤต</span></td>
+          <td>RISING</td>
+        </tr>
+        
+        <tr>
+          <td>น้ำเหนือ/ป่าสัก</td>
+          <td><span class="badge badge-YELLOW">🟡 เฝ้าระวัง</span></td>
+          <td>FALLING</td>
+        </tr>
+        
+        <tr>
+          <td>ฝนและอากาศ</td>
+          <td><span class="badge badge-YELLOW">🟡 เฝ้าระวัง</span></td>
+          <td>RISING</td>
+        </tr>
+        
+      </tbody>
+    </table>
+    <p><strong>คำตัดสินรอบนี้:</strong> ส่งรอบพิเศษนี้เพราะคลองฝั่งตะวันออกหลายจุดขึ้นถึงระดับวิกฤตพร้อมกัน (OUTLET_CRITICAL) แม้จุดหลักของเรายังปกติ</p>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="section">
+    <h2>สิ่งที่ควรทำ 6–12 ชม. ข้างหน้า</h2>
+    <table>
+      <thead><tr><th>ลำดับ</th><th>เตรียมอะไร</th><th>เตรียมอย่างไร</th><th>เมื่อไรขยับขั้นถัดไป</th><th>แหล่ง</th></tr></thead>
+      <tbody>
+        
+        <tr>
+          <td>1</td>
+          <td>เฝ้าดู</td>
+          <td>ติดตามระดับน้ำและประกาศของหน่วยงานทางการเป็นระยะ</td>
+          <td>YELLOW</td>
+          <td>FLOODCONNECT</td>
+        </tr>
+        
+        <tr>
+          <td>2</td>
+          <td>บันทึกเบอร์สายด่วนไว้ในโทรศัพท์</td>
+          <td>บันทึก 1784 (ปภ.) และ 1669 (การแพทย์ฉุกเฉิน) ไว้ล่วงหน้า</td>
+          <td>YELLOW</td>
+          <td>FLOODCONNECT</td>
+        </tr>
+        
+        <tr>
+          <td>3</td>
+          <td>ย้ายของมีค่าขึ้นที่สูงไว้ล่วงหน้า</td>
+          <td>ย้ายของที่มีค่าทางใจหรือทรัพย์สินมีค่าขึ้นชั้นบนหรือเก็บไว้ในที่สูง เช่น ชั้นบนสุดของตู้</td>
+          <td>YELLOW</td>
+          <td>GENERAL GEN-01</td>
+        </tr>
+        
+        <tr>
+          <td>4</td>
+          <td>ขยับขั้นถัดไปเมื่อบึงหลักเริ่มขึ้นหรือคอขวดทางออกยังไม่คลี่คลายใน 6-12 ชม.</td>
+          <td>ถ้า WL.SMK.01 เปลี่ยนจากลดเป็นขึ้น หรือ SSB.08/SSB.10/LBK.02/PWT.04/PWT.06 ยังวิกฤตต่อเนื่องเกิน 6-12 ชม. ให้ขยับไปเตรียมพร้อม (ORANGE); หลักฐานจริงหน้างานสำคัญกว่าแบบจำลอง (ground truth beats the model)</td>
+          <td>ORANGE</td>
+          <td>FLOODCONNECT</td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TECHNICAL -->
+  <div class="section">
+    <h2>รายละเอียดเชิงเทคนิค</h2>
+    <p>สูตรเทรนด์: <code>Δk(t) = h(t) - h(t-k)  (PROP-FLOOD-01, Toledo tier Dr)</code></p>
+    <p>สูตรช่องว่างถึงเกณฑ์: <code>gap = θ - h(t), where θ is the nearer of warning/critical (floodconnect_model.bank_check)</code></p>
+    <p>สูตร ETA (PROPOSAL): <code>Tk = (θ - h(t)) × k / Δk(t), defined only when Δk(t) > ε and h(t) < θ (PROP-FLOOD-02/11)</code></p>
+    <table>
+      <thead><tr><th>แหล่งข้อมูล</th><th>อายุข้อมูลสูงสุด (ชม.)</th></tr></thead>
+      <tbody>
+        
+        <tr><td>bma_pumphistory</td><td>24</td></tr>
+        
+        <tr><td>bma_watermap</td><td>24</td></tr>
+        
+        <tr><td>thaiwater_dam</td><td>24</td></tr>
+        
+        <tr><td>rid_bigdata_swoc</td><td>24</td></tr>
+        
+        <tr><td>tmd_forecast</td><td>24</td></tr>
+        
+      </tbody>
+    </table>
+    <p class="muted">ข้อจำกัด: decision-support only, not an official evacuation order · UNKNOWN ≠ SAFE · station-level resolution, not household-level · pump status is structurally UNKNOWN (no reliable live pump-state feed) -- never read as 'pump stopped' · ETA (PROP-FLOOD-02, linear, two windows) is a linear extension of the last observed rate only, gated/refusable -- PROP-FLOOD-11 (acceleration-aware) is registered but not implemented in this release</p>
+  </div>
+
+  <!-- SOURCES -->
+  <div class="section">
+    <h2>แหล่งข้อมูล</h2>
+    <table>
+      <thead><tr><th>แหล่ง</th><th>หน่วยงาน</th><th>ลิงก์</th><th>ดึงเมื่อ</th></tr></thead>
+      <tbody>
+        
+        <tr>
+          <td>bma_pumphistory</td>
+          <td>สำนักการระบายน้ำ กรุงเทพมหานคร</td>
+          <td><a href="https://weather.bangkok.go.th/Station/PumpHistory">เปิด</a></td>
+          <td>2026-10-06T13:52:00+07:00</td>
+        </tr>
+        
+        <tr>
+          <td>bma_watermap</td>
+          <td>สำนักการระบายน้ำ กรุงเทพมหานคร</td>
+          <td><a href="https://weather.bangkok.go.th/water/">เปิด</a></td>
+          <td>2026-10-06T13:00:00+07:00</td>
+        </tr>
+        
+        <tr>
+          <td>bma_radar_rain</td>
+          <td>สำนักการระบายน้ำ กรุงเทพมหานคร</td>
+          <td><a href="https://dds.bangkok.go.th/Line_data/picture/radar_rain.gif">เปิด</a></td>
+          <td>2026-10-06T13:00:00+07:00</td>
+        </tr>
+        
+        <tr>
+          <td>thaiwater_dam</td>
+          <td>สถาบันสารสนเทศทรัพยากรน้ำ (สสน.)</td>
+          <td><a href="https://api-v3.thaiwater.net/api/v1/thaiwater30/analyst/dam">เปิด</a></td>
+          <td>2026-10-06T11:00:00+07:00</td>
+        </tr>
+        
+        <tr>
+          <td>rid_bigdata_swoc</td>
+          <td>กรมชลประทาน</td>
+          <td><a href="http://water.rid.go.th/flood/flood/res_table.htm">เปิด</a></td>
+          <td>2026-10-06T11:00:00+07:00</td>
+        </tr>
+        
+        <tr>
+          <td>rid9</td>
+          <td>กรมชลประทาน (สำนักงานชลประทานที่ 9)</td>
+          <td><a href="http://irrigation.rid.go.th/rid9/rid9_new/rpt_show.php">เปิด</a></td>
+          <td>2026-10-06T11:00:00+07:00</td>
+        </tr>
+        
+        <tr>
+          <td>tmd_forecast</td>
+          <td>กรมอุตุนิยมวิทยา</td>
+          <td>—</td>
+          <td>2026-10-06T11:00:00+07:00</td>
+        </tr>
+        
+        <tr>
+          <td>bma_plan2569_control_structures</td>
+          <td>สำนักการระบายน้ำ กรุงเทพมหานคร</td>
+          <td><a href="https://dds.bangkok.go.th/public_content/files/001/0011062_1.pdf">เปิด</a></td>
+          <td>2026-09-27T00:00:00+07:00</td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ANCHOR -->
+  <div class="section">
+    <h2>FloodConnect anchor</h2>
+    <table>
+      <tbody>
+        <tr><th style="width:34%">kg_sha256</th><td>not_recorded_in_original_sample_email</td></tr>
+        <tr><th>province</th><td>กรุงเทพมหานคร <span class="muted">[RELAYED]</span></td></tr>
+        <tr><th>sub_basin</th><td>คลองแสนแสบ-ลาดพร้าว</td></tr>
+        <tr><th>station_ids</th><td>WL.SMK.01, WL.BMA.02</td></tr>
+        <tr><th>method</th><td>caller</td></tr>
+        <tr><th>model_version</th><td>floodconnect_model v0.1.3 / M8 jev_decision</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <strong>ไม่ใช่ประกาศเตือนภัยอย่างเป็นทางการ</strong>
+  </div>
+
+</div>
+</body>
+</html>

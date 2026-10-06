@@ -1,7 +1,9 @@
 # FloodConnect
 
 **Project status: resumed for M4/v0.1.4 by founder ruling 2026-10-05 ("KG-first that AIs
-cannot skip"); paused again after v0.1.4 unless a new ruling says otherwise — see
+cannot skip"); paused again after v0.1.4 unless a new ruling says otherwise. Resumed
+again and closed out as v0.1.5, the MVP-close release (Jev Sandwich KG-only answer
+path, the GOV API MANUAL, a vendor-neutral skill/ package) — see
 `docs/handoff/NEXT_AI_HANDOFF.md`.**
 
 **KG first, no exceptions: every answer states its `kg_anchor`; run `floodconnect locate`

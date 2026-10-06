@@ -162,3 +162,35 @@ def test_tool_capability_never_overrides_dry_gate():
     result = so.evaluate_shelter_operation(node)
     assert result.state == so.NO_SHELTER_OPERATION
     assert result.level is None
+
+
+def test_dry_gate_pass_fail_unknown():
+    assert so.dry_gate(base_node()).state == "PASS"
+    assert so.dry_gate(base_node(dry_operating_surface=False)).state == "FAIL"
+    assert so.dry_gate(base_node(dry_operating_surface=None)).state == "UNKNOWN"
+
+
+def test_dry_gate_refactor_identical():
+    """P-C design: `dry_gate(node)` was extracted out of
+    `evaluate_shelter_operation`'s own first loop with NO behaviour change -- the
+    failed/unknown fields and the resulting level/state must match exactly, across
+    PASS/FAIL/UNKNOWN and every DRY_GATE_FIELDS combination."""
+    import itertools
+
+    for combo in itertools.product([True, False, None], repeat=len(so.DRY_GATE_FIELDS)):
+        overrides = dict(zip(so.DRY_GATE_FIELDS, combo))
+        node = base_node(**overrides)
+        gate = so.dry_gate(node)
+        result = so.evaluate_shelter_operation(node)
+        if gate.state == "FAIL":
+            assert result.state == so.NO_SHELTER_OPERATION
+            assert result.failed_fields == gate.failed_fields
+            assert result.unknown_fields == gate.unknown_fields
+            assert result.level is None
+        elif gate.state == "UNKNOWN":
+            assert result.state == so.UNKNOWN
+            assert result.next_level == so.LEVEL_0
+            assert result.unknown_fields == gate.unknown_fields
+        else:
+            assert gate.state == "PASS"
+            assert result.state in (so.UNKNOWN, so.NO_SHELTER_OPERATION, "LEVEL_CONFIRMED")

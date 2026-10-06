@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://floodconnect.local/schemas/emergency_card.schema.json",
+  "title": "FloodConnect M8 emergency card",
+  "description": "advice/card.py's output -- the first key of the answer (kb.py build_answer, M8 P-B), aimed at the first of the two audiences (emergency card first -> evidence -> policy_gap_record). Budget: a HARD cap of 80 cl100k tokens (founder ruling -- enforced by advice/card.py's own `CardOverBudget` raise and a hard test assert across the full colour x verdict x hotline-region matrix; JSON Schema itself still cannot count tokens). `not_official`/`colour`/`now_th`/`do_th`/`hotlines` must never be dropped to make budget; `label_th` is no longer emitted at all (it duplicated `colour`); `strip` and `data_time` are the only two fields ever added opportunistically, and are the first (and only) two dropped if either would push the card over budget.",
+  "type": "object",
+  "required": ["colour", "now_th", "do_th", "hotlines", "not_official"],
+  "properties": {
+    "colour": {"$ref": "defs.schema.json#/$defs/colour5"},
+    "label_th": {"type": "string", "description": "No longer emitted by advice/card.py as of the 2026-10-05 hard token-budget fix (it duplicated `colour`) -- kept in the schema only so an older/compact caller that still sends it is not rejected."},
+    "strip": {
+      "type": "string",
+      "description": "Compact layer summary, e.g. 'Z0:Y Z1:R Z2:R Z3:U' (first letter of each layer's colour5; U = UNKNOWN). The first field dropped if the card is over budget."
+    },
+    "now_th": {
+      "type": "string",
+      "description": "From a closed gloss table keyed by reason code (advice/gloss_th.yaml) -- a reason code with no entry is a test failure, never a silently-blank string. The YELLOW case uses the DDPM phrase 'เฝ้าระวังและติดตามสถานการณ์' (default rule, pending the founder); every other wording is FloodConnect's own and marked OPEN."
+    },
+    "do_th": {
+      "type": "string",
+      "description": "= advice.prepare_steps[0].what_th (P-D; advice/preparedness_ladder.yaml is not built in P-B, so this field may fall back to a colour-only phrase until P-D wires it in)."
+    },
+    "hotlines": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["number", "label_th"],
+            "properties": {
+              "number": {"type": "string"},
+              "label_th": {"type": "string"}
+            }
+          },
+          {
+            "type": "string",
+            "description": "Budget-degraded form ('<number> <label_th>', same style as kb.py's next_action.who_to_call) -- advice/card.py's own last-resort step when the object form still pushes the card over _TOKEN_BUDGET after dropping strip/data_time. Never the schema's default shape."
+          }
+        ]
+      },
+      "minItems": 1,
+      "description": "advice/card.py's own NATIONWIDE-only numbers (1669, 1784) -- the Bangkok-only numbers (1555, 1130) stay out of the card (they are not life-safety-rescue lines the way 1669/1784 are) and are carried unchanged, geofenced, in next_action.who_to_call instead."
+    },
+    "data_time": {
+      "type": "string",
+      "description": "Short freshness stamp for Z0's own reading. The second field shortened if the card is over budget."
+    },
+    "scope": {
+      "type": "string",
+      "enum": ["V", "E"],
+      "description": "Single-letter scope marker (founder ruling 2026-10-06, scope tagging MED): 'V' = VALIDATED_MVP (jev_decision.scope), 'E' = EXPERIMENTAL. Opportunistic, same as strip/data_time -- the first of the three dropped if the card is over budget (least safety-critical). The full word is always in jev_decision.scope regardless."
+    },
+    "not_official": {
+      "const": true,
+      "description": "Always true, always present -- this card is never an official evacuation order; must never be dropped for budget."
+    }
+  },
+  "additionalProperties": false
+}

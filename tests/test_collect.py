@@ -563,3 +563,40 @@ def test_parallel_worker_db_lock_reported_as_lock_error_not_timeout(monkeypatch,
     assert results[0].ok is False
     assert "database locked" in results[0].note
     assert "timed out" not in results[0].note
+
+
+# ---------------------------------------------------------------------------
+# `diff_wl_bank_text` reading "ล้นตลิ่ง" is itself computed as
+# `h - min_bank`, so it is not a real agency observation when `min_bank` is 0,
+# null, or at/below `ground_level`. Real recorded values, 2026-10-06.
+# ---------------------------------------------------------------------------
+def test_thaiwater_status_word_ignores_overbank_text_when_bank_is_zero():
+    """BLGTU05/BLGTU06/MKSND01/MKSNU03/NPNPU01: min_bank == ground_level == 0,
+    situation_level null -- must fall through to NO_THRESHOLD, never OVERBANK."""
+    word = collect._thaiwater_status_word(
+        situation_level=None, diff_wl_bank_text="ล้นตลิ่ง (ม.)", min_bank=0.0, ground_level=0.0)
+    assert word == "NO_THRESHOLD"
+
+
+def test_thaiwater_status_word_ignores_overbank_text_when_bank_is_null():
+    word = collect._thaiwater_status_word(
+        situation_level=None, diff_wl_bank_text="ล้นตลิ่ง (ม.)", min_bank=None, ground_level=None)
+    assert word == "NO_THRESHOLD"
+
+
+def test_thaiwater_status_word_ignores_overbank_text_when_bank_at_or_below_ground():
+    word = collect._thaiwater_status_word(
+        situation_level=None, diff_wl_bank_text="ล้นตลิ่ง (ม.)", min_bank=174.5, ground_level=174.5)
+    assert word == "NO_THRESHOLD"
+    # falls back to a real situation_level when one is also published
+    word2 = collect._thaiwater_status_word(
+        situation_level=3, diff_wl_bank_text="ล้นตลิ่ง (ม.)", min_bank=174.5, ground_level=174.5)
+    assert word2 == "thaiwater_situation_3"
+
+
+def test_thaiwater_status_word_trusts_overbank_text_when_bank_is_real():
+    """NPNPD02-shaped case with a genuinely usable bank: "ล้นตลิ่ง" is still trusted
+    (a real, non-degenerate threshold backs it)."""
+    word = collect._thaiwater_status_word(
+        situation_level=None, diff_wl_bank_text="ล้นตลิ่ง (ม.)", min_bank=170.0, ground_level=165.0)
+    assert word == "OVERBANK"

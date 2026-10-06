@@ -28,7 +28,7 @@ remained open --
    "real data only in tests" rule), not the full ~22MB/175MB DB this worktree/production
    actually carries.
 
-Token-budget fix, an earlier check: the fixture above had no row within the
+Token-budget fix: the fixture above had no row within the
 3 km radius `_answer_state` actually queries around Sammakorn, so its answer never
 exercised the notes (status counts, STALE count, contradiction notices) that overflow on
 a real populated DB -- `_near_sammakorn_rows` + `REAL_CONTRADICTION_ROWS` below add real
@@ -552,11 +552,36 @@ def test_answer_stays_under_budget_on_a_populated_db(real_populated_db):
     # the DDS canal rows), so the per-model hazard cap this test cares about is still
     # exercised; only the (incorrect) RED-path current-state text is not, which is exactly
     # this fix's point.
+    # fix (2026-10-05, M8 P3 "Jev Sandwich"): `dual_state` now ALSO gets `colour`/
+    # `label_th` folded in whenever this fixture's own Z0 (nearest bma_watermap/
+    # thaiwater_waterlevel gauge to the Sammakorn point) has a fresh reading -- see
+    # tests/test_kb_answer_sandwich.py for the fold's own dedicated tests. This
+    # assertion only still pins the pre-existing two keys' VALUES (never loosened),
+    # not the dict's exact key set.
     dual_state = payload["next_action"]["dual_state"]
-    assert dual_state == {"current_local_state": "UNKNOWN", "forward_hazard": "ACTIVE"}, (
-        f"fixture's dual_state is {dual_state}, not the post-fix UNKNOWN/ACTIVE -- "
-        "if this changed, check whether a real sourced-coordinate canal_inner gate within "
-        "radius_km genuinely turned critical, don't just loosen this assertion")
+    # UPDATED (S1/S2b, founder 2026-10-05, this M8 revision): the DDS-canal-row path
+    # alone still decides UNKNOWN here (unchanged -- no sourced canal_inner gate
+    # within radius turned critical). But S1 forbids ever discarding Z0's own fresh
+    # agency word to UNKNOWN, AND S2b's fix now reads this fixture's own real
+    # declared OUTLET (WL.SSB.08, "วิกฤต" in `_near_sammakorn_rows`) on every call,
+    # which raises the sandwich's own colour from GREEN to YELLOW
+    # (OUTLET_CRITICAL) -- the fold-in a few lines below this test then promotes
+    # the undecided legacy UNKNOWN up to that YELLOW. This is the intended
+    # correction, not a regression; asserting UNKNOWN again would mean
+    # reintroducing the exact "top calm/UNKNOWN eats Z0's own word" and
+    # "OUTLET critical silently ignored" bugs this guards against.
+    assert dual_state["current_local_state"] == "YELLOW", (
+        f"fixture's current_local_state is {dual_state['current_local_state']!r}, not "
+        "the post-fix YELLOW (folded in from the sandwich's own OUTLET_CRITICAL "
+        "reading) -- if this changed, check whether the sandwich fold-in, Z0 "
+        "resolution, or the OUTLET read in kb.py/rings.py genuinely changed, don't "
+        "just loosen this assertion")
+    assert dual_state.get("confidence") == "LOW", (
+        "the fold must carry the sandwich's own LOW confidence (TOP_UNREAD/"
+        "OUTLET_CRITICAL reasons are never HIGH/official_tier) through to dual_state")
+    assert dual_state["forward_hazard"] == "ACTIVE", (
+        f"fixture's forward_hazard is {dual_state['forward_hazard']!r}, not the "
+        "post-fix ACTIVE -- don't just loosen this assertion")
     assert len(payload["hazard"].get("per_model", [])) == 3, (
         "10-model fixture must be capped to 3 (min/median/max) in default mode")
     assert "+7 more" in (payload["hazard"].get("per_model_note") or "")
@@ -820,7 +845,7 @@ def test_mcp_serialised_default_refresh_answer_stays_under_tightened_budget(
     # covered by the kb-level tests above and in tests/test_kb_answer.py.
     monkeypatch.setattr(
         mcp_server_mod, "floodconnect_answer_core",
-        lambda at, refresh=None, offline=False, verbose=False: payload)
+        lambda at, refresh=None, offline=False, verbose=False, household=None: payload)
 
     result = asyncio.run(mcp_server_mod.mcp.call_tool("floodconnect_answer", {"at": area}))
     assert isinstance(result, list), (

@@ -1,0 +1,1303 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://floodconnect.local/schemas/email_report.schema.json",
+  "title": "FloodConnect default email report (M9)",
+  "description": "FIXED schema for FloodConnect's default situation-report email. Extracted from the real 2026-10-06 13:33 sample report per the founder's request ('สกัดการรายงานแบบนี้ออกมาเป็น schema ของงานดีฟอลต์ของเรา'), corrected to fit the M8 system: colour/icon/label come from ONE enum (defs.schema.json#/$defs/colour5, never a mismatched icon+label pair), Z0/Z1/Z2/Z3 sandwich layers replace the sample's free-text zone reasoning, every station row carries VERIFIED/MEASURED/RELAYED/INSTINCT/OPEN tags, pumps stay UNKNOWN with capacity (never read as 'stopped'), and PROP-FLOOD-02 (ETA, linear, two windows -- not PROP-FLOOD-11) is a gated refusal-shaped object, never a silent number. Designed to live at schemas/email_report.schema.json inside the FloodConnect repo -- every $ref below is a relative sibling path exactly like the other M8 schemas already use (defs.schema.json, emergency_card.schema.json, layer_readout.schema.json, sandwich_trace.schema.json, jev_decision.schema.json, advice.schema.json). This file defines ONE top-level object: the full email report. Section order below (required, in this exact order in `required`) is FIXED -- a renderer walks `required` in order, never alphabetically, to reproduce the sample's reader-friendly shape with the emergency card moved to the very top (founder rule: card first, then evidence, then the policy-gap record).",
+  "type": "object",
+  "required": [
+    "meta",
+    "emergency_card",
+    "status_header",
+    "summary",
+    "main_pond",
+    "sandwich",
+    "watch_sections",
+    "pumps",
+    "upstream",
+    "weather",
+    "system_risk",
+    "decision",
+    "actions",
+    "technical",
+    "sources",
+    "anchor",
+    "disclaimer"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "colour_badge": {
+      "type": "object",
+      "description": "The ONE place icon+label+key are bound together -- fixes the sample's defect (header text '🟠 เฝ้าระวัง' mixed the ORANGE icon with the YELLOW label). A renderer must build every badge from this object, never hand-pick an icon/label pair.",
+      "required": [
+        "key",
+        "icon",
+        "label_th"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "defs.schema.json#/$defs/colour5"
+        },
+        "icon": {
+          "type": "string",
+          "enum": [
+            "🟢",
+            "🟡",
+            "🟠",
+            "🔴",
+            "⚪"
+          ],
+          "description": "GREEN=🟢 YELLOW=🟡 ORANGE=🟠 RED=🔴 UNKNOWN=⚪, bound 1:1 to `key` (enforced by allOf below)."
+        },
+        "label_th": {
+          "type": "string",
+          "enum": [
+            "ปกติ",
+            "เฝ้าระวัง",
+            "เตรียมพร้อม",
+            "วิกฤต",
+            "ไม่ทราบ"
+          ],
+          "description": "Same closed mapping as floodconnect_model.COLOUR_LABEL_TH, bound 1:1 to `key`."
+        },
+        "official_tier": {
+          "type": "boolean",
+          "description": "false for ORANGE (FloodConnect's own label, not an agency tier -- floodconnect_model.ORANGE_NOTE); true for GREEN/YELLOW/RED/UNKNOWN when sourced from the agency's own word."
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "key": {
+                "const": "GREEN"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "icon": {
+                "const": "🟢"
+              },
+              "label_th": {
+                "const": "ปกติ"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "key": {
+                "const": "YELLOW"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "icon": {
+                "const": "🟡"
+              },
+              "label_th": {
+                "const": "เฝ้าระวัง"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "key": {
+                "const": "ORANGE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "icon": {
+                "const": "🟠"
+              },
+              "label_th": {
+                "const": "เตรียมพร้อม"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "key": {
+                "const": "RED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "icon": {
+                "const": "🔴"
+              },
+              "label_th": {
+                "const": "วิกฤต"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "key": {
+                "const": "UNKNOWN"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "icon": {
+                "const": "⚪"
+              },
+              "label_th": {
+                "const": "ไม่ทราบ"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "tagged_value": {
+      "type": "object",
+      "description": "A single real-world number/word with its epistemic tag -- never a bare number. Missing data is `value: null` + `tag: OPEN`, never an invented value.",
+      "required": [
+        "value",
+        "tag"
+      ],
+      "properties": {
+        "value": {},
+        "unit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tag": {
+          "$ref": "defs.schema.json#/$defs/tag"
+        },
+        "observed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "source_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "sources/registry.yaml id this value came from."
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "link_ref": {
+      "type": "object",
+      "description": "A real, fetchable URL for one station/pump/map, plus where it came from -- NEVER an invented URL. When no per-item URL is known, `url` is null and `link_status` is OPEN with a reason (e.g. the shared station-list page is the nearest real link).",
+      "required": [
+        "url",
+        "link_status"
+      ],
+      "properties": {
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uri"
+        },
+        "link_source": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "sources/registry.yaml id or a plain description of the real page this URL points at (e.g. 'bma_pumphistory', 'bma_watermap station map', 'thaiwater canal_waterlevel station page')."
+        },
+        "link_status": {
+          "type": "string",
+          "enum": [
+            "OK",
+            "OPEN"
+          ],
+          "description": "OK = a confirmed, per-item deep link. OPEN = no confirmed per-item URL exists; `url` may still carry the nearest real shared page (e.g. the whole-list PumpHistory page) with `reason` explaining why it is not a deep link."
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Required in practice whenever link_status is OPEN."
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "link_status": {
+                "const": "OK"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "trend_object": {
+      "type": "object",
+      "description": "3-state trend per founder ruling 2026-10-05 ('มีสามสถานะ เพิ่มขึ้น เสหมิด ลดลง' -- rising/stable/falling), PROP-FLOOD-01, Toledo tier Dr. Replaces the sample's bare arrow+number with a window-scoped, formula-traceable object.",
+      "required": [
+        "arrow",
+        "value",
+        "delta_cm",
+        "window_from",
+        "window_to",
+        "tag"
+      ],
+      "properties": {
+        "arrow": {
+          "type": "string",
+          "enum": [
+            "↑",
+            "→",
+            "↓",
+            "?"
+          ],
+          "description": "RISING=↑ STABLE=→ FALLING=↓ NO_READOUT/UNKNOWN=?"
+        },
+        "value": {
+          "type": "string",
+          "enum": [
+            "RISING",
+            "STABLE",
+            "FALLING",
+            "NO_READOUT"
+          ]
+        },
+        "s4": {
+          "$ref": "defs.schema.json#/$defs/s4"
+        },
+        "delta_cm": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Δk(t) = h(t) - h(t-k), in centimetres (the sample's own unit); null only when value is NO_READOUT."
+        },
+        "window_from": {
+          "type": "string",
+          "format": "time",
+          "description": "h(t-k) clock time, Asia/Bangkok, e.g. '10:05'."
+        },
+        "window_to": {
+          "type": "string",
+          "format": "time",
+          "description": "h(t) clock time, Asia/Bangkok, e.g. '13:00'."
+        },
+        "abnormal_rise_tag": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "A persistent tag id (e.g. 'RISE-SSB08-20261006') set once a rise is flagged abnormal, carried forward report-to-report until it resolves -- founder ruling 2026-10-06: 'an abnormal rise gets a persistent tag'. Null when not flagged."
+        },
+        "tag": {
+          "$ref": "defs.schema.json#/$defs/tag"
+        },
+        "eq": {
+          "const": "PROP-FLOOD-01"
+        }
+      },
+      "additionalProperties": false
+    },
+    "headroom_object": {
+      "type": "object",
+      "description": "Distance from the current reading to the nearer published threshold -- floodconnect_model.bank_check's own `gap` (theta - h_t), expressed in cm for readability, plus the raw thresholds it was computed from.",
+      "required": [
+        "to_warning_cm",
+        "to_critical_cm",
+        "theta_used",
+        "tag"
+      ],
+      "properties": {
+        "to_warning_cm": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "to_critical_cm": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "warning_m": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "critical_m": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "theta_used": {
+          "type": "string",
+          "enum": [
+            "warning",
+            "critical",
+            "none"
+          ],
+          "description": "Which threshold `bank_check` used as the nearer one -- never both silently averaged."
+        },
+        "tag": {
+          "$ref": "defs.schema.json#/$defs/tag"
+        }
+      },
+      "additionalProperties": false
+    },
+    "continuity_block": {
+      "type": "object",
+      "description": "Founder ruling 2026-10-06: every report links to the previous one from the user's own LOCAL append-only log -- never a hosted store. Null fields with a reason when there is no previous report (e.g. first report ever sent).",
+      "required": [
+        "previous_report_id",
+        "delta_since_previous",
+        "trend_change",
+        "tags_carried",
+        "prediction_check"
+      ],
+      "properties": {
+        "previous_report_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "previous_report_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "delta_since_previous_cm": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "delta_since_previous": {
+          "$ref": "#/$defs/tagged_value"
+        },
+        "trend_change": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "SPEEDING_UP",
+            "SLOWING_DOWN",
+            "UNCHANGED",
+            "REVERSED",
+            null
+          ],
+          "description": "Comparing this report's current-slope trend to the previous report's -- null only when there is no previous report."
+        },
+        "tags_carried": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "abnormal_rise_tag ids still open from earlier reports."
+        },
+        "prediction_check": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "'what we said last time vs what happened' -- compares the previous report's eta_block / trend forecast against this report's observed reading.",
+          "properties": {
+            "we_said_th": {
+              "type": "string"
+            },
+            "what_happened_th": {
+              "type": "string"
+            },
+            "verdict": {
+              "type": "string",
+              "enum": [
+                "CONFIRMED",
+                "CONTRADICTED",
+                "PARTIAL",
+                "NOT_APPLICABLE"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "reason_if_null": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Required whenever previous_report_id is null, e.g. 'first report in local log'."
+        }
+      },
+      "additionalProperties": false
+    },
+    "eta_block": {
+      "type": "object",
+      "description": "PROP-FLOOD-02 (linear, two windows -- time-to-warning/time-to-bank from the CURRENT slope and a longer-window slope; NOT PROP-FLOOD-11, which is registered but not implemented in this release, v0.2 target), Toledo tier Dr. Founder ruling 2026-10-06: computed only when trend is RISING; shows both the current-interval slope and the longer-window slope; may refuse on AT_BANK/NO_READOUT/a pump-state change or undeclared pump/no rise/not-within-horizon, and must then state the refusal and its reason -- never a silent blank.",
+      "required": [
+        "applicable",
+        "status"
+      ],
+      "properties": {
+        "applicable": {
+          "type": "boolean",
+          "description": "true only when main_pond.trend.value == RISING."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "COMPUTED",
+            "REFUSED",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "time_to_warning": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/eta_value"
+            }
+          ]
+        },
+        "time_to_bank": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/eta_value"
+            }
+          ]
+        },
+        "current_slope_cm_per_h": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "longer_window_slope_cm_per_h": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Slope over a longer comparison window than the current interval, shown alongside it per the founder's rule -- never substituted for the current-interval slope."
+        },
+        "refusal_reason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "AT_BANK",
+            "NO_READOUT",
+            "PUMP_STATE_CHANGED",
+            "PUMP_STATE_UNDECLARED",
+            "NO_RISE",
+            "NOT_WITHIN_HORIZON",
+            null
+          ],
+          "description": "Required (non-null) when status is REFUSED -- the refusal grounds the shipped code (`floodconnect_model._rise_eta_one_threshold`) actually applies."
+        },
+        "tag": {
+          "const": "PROPOSAL",
+          "description": "PROP-FLOOD-02 is a proposal, not a registered Toledo theorem -- never presented as settled."
+        },
+        "eq": {
+          "const": "PROP-FLOOD-02"
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "REFUSED"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "refusal_reason"
+            ],
+            "properties": {
+              "refusal_reason": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "applicable": {
+                "const": false
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "status": {
+                "const": "NOT_APPLICABLE"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "eta_value": {
+      "type": "object",
+      "required": [
+        "hours",
+        "tag"
+      ],
+      "properties": {
+        "hours": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "as_of": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "tag": {
+          "$ref": "defs.schema.json#/$defs/tag"
+        }
+      },
+      "additionalProperties": false
+    },
+    "station_row": {
+      "type": "object",
+      "description": "One row of §1/§2's table -- code, name, latest value+time, status, trend, meaning (headroom), map/source links. Every value real and tagged; a missing field is null + OPEN, never invented.",
+      "required": [
+        "code",
+        "name_th",
+        "agency",
+        "latest",
+        "status",
+        "trend",
+        "headroom",
+        "links"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "e.g. WL.SMK.01, SSB.08 -- the repo's own station id, never a renamed/paraphrased one."
+        },
+        "name_th": {
+          "type": "string",
+          "description": "Agency name verbatim -- e.g. 'บึงรับน้฻อหมู่บ้านสัมมากร', never a renamed/typo'd variant like 'สามมะกอ'."
+        },
+        "agency": {
+          "type": "string"
+        },
+        "latest": {
+          "$ref": "#/$defs/tagged_value"
+        },
+        "status": {
+          "$ref": "#/$defs/colour_badge"
+        },
+        "trend": {
+          "$ref": "#/$defs/trend_object"
+        },
+        "headroom": {
+          "$ref": "#/$defs/headroom_object"
+        },
+        "zone": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "Z0",
+            "Z1",
+            "Z2",
+            "Z3",
+            null
+          ],
+          "description": "Sandwich ring this row belongs to."
+        },
+        "related_pump": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "link"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "link": {
+                "$ref": "#/$defs/link_ref"
+              }
+            },
+            "additionalProperties": false
+          },
+          "description": "Any pump station this row's drainage depends on, each carrying its own link_ref (founder rule: every pump reference needs a link to that pump)."
+        },
+        "links": {
+          "type": "object",
+          "required": [
+            "map",
+            "source"
+          ],
+          "properties": {
+            "map": {
+              "$ref": "#/$defs/link_ref"
+            },
+            "source": {
+              "$ref": "#/$defs/link_ref"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "watch_section": {
+      "type": "object",
+      "required": [
+        "section_id",
+        "title_th",
+        "rows"
+      ],
+      "properties": {
+        "section_id": {
+          "type": "string"
+        },
+        "title_th": {
+          "type": "string"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/station_row"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "pump_row": {
+      "type": "object",
+      "description": "§3 -- pump stations stay colour UNKNOWN with capacity shown. The pump-history endpoint is a dead/unreliable endpoint (sources/registry.yaml:bma_pumphistory) so this is deliberate, never read as 'pump stopped'.",
+      "required": [
+        "code",
+        "name_th",
+        "agency",
+        "capacity_cms",
+        "units",
+        "status",
+        "link",
+        "never_means"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "e.g. ST.SPS.01."
+        },
+        "name_th": {
+          "type": "string"
+        },
+        "agency": {
+          "type": "string",
+          "const": "สำนักการระบายน้ำ กรุงเทพมหานคร"
+        },
+        "capacity_cms": {
+          "$ref": "#/$defs/tagged_value",
+          "description": "m3/s, from docs/CAPACITY.md / bma_plan2569_control_structures.yaml."
+        },
+        "units": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "e.g. '4×1.0' (4 machines of 1.0 m3/s each)."
+        },
+        "status": {
+          "$ref": "#/$defs/colour_badge",
+          "description": "Always UNKNOWN (⚪) under this project's rule -- a pump-state live feed is not reliably reachable."
+        },
+        "link": {
+          "$ref": "#/$defs/link_ref"
+        },
+        "never_means": {
+          "const": "UNKNOWN ≠ pump stopped",
+          "description": "Fixed disclaimer carried on every pump row."
+        }
+      },
+      "additionalProperties": false
+    },
+    "upstream_row": {
+      "type": "object",
+      "required": [
+        "code",
+        "name_th",
+        "agency",
+        "kind",
+        "value",
+        "trend",
+        "link"
+      ],
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "name_th": {
+          "type": "string"
+        },
+        "agency": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "flow",
+            "storage",
+            "release",
+            "level"
+          ]
+        },
+        "value": {
+          "$ref": "#/$defs/tagged_value"
+        },
+        "percent_capacity": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/tagged_value"
+            }
+          ]
+        },
+        "trend": {
+          "$ref": "#/$defs/trend_object"
+        },
+        "link": {
+          "$ref": "#/$defs/link_ref"
+        }
+      },
+      "additionalProperties": false
+    },
+    "weather_row": {
+      "type": "object",
+      "required": [
+        "agency",
+        "issued_at",
+        "coverage_pct",
+        "headline_th",
+        "link"
+      ],
+      "properties": {
+        "agency": {
+          "type": "string"
+        },
+        "issued_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "coverage_pct": {
+          "$ref": "#/$defs/tagged_value",
+          "description": "e.g. '70% of area' from the sample."
+        },
+        "headline_th": {
+          "type": "string"
+        },
+        "link": {
+          "$ref": "#/$defs/link_ref"
+        }
+      },
+      "additionalProperties": false
+    },
+    "system_risk_row": {
+      "type": "object",
+      "required": [
+        "factor_id",
+        "factor_th",
+        "colour",
+        "trend"
+      ],
+      "properties": {
+        "factor_id": {
+          "type": "string",
+          "enum": [
+            "MAIN_POND",
+            "OUTLET_OUTER_CANALS",
+            "UPSTREAM",
+            "RAIN"
+          ]
+        },
+        "factor_th": {
+          "type": "string"
+        },
+        "colour": {
+          "$ref": "#/$defs/colour_badge"
+        },
+        "trend": {
+          "type": "string",
+          "enum": [
+            "RISING",
+            "STABLE",
+            "FALLING",
+            "NO_READOUT"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "action_row": {
+      "type": "object",
+      "description": "One row of the §7 preparedness-ladder table -- fields match advice/preparedness_ladder.yaml verbatim (id/what_th/how_th/trigger_next/source_tag), rendered as ลำดับ/เตรียมอะไร/เตรียมอย่างไร/เมื่อไหนขยบขั้นถัดไป/แหล่ง.",
+      "required": [
+        "order",
+        "id",
+        "what_th",
+        "how_th",
+        "trigger_next",
+        "source_tag"
+      ],
+      "properties": {
+        "order": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "id": {
+          "type": "string"
+        },
+        "what_th": {
+          "type": "string"
+        },
+        "how_th": {
+          "type": "string"
+        },
+        "trigger_next": {
+          "type": "string"
+        },
+        "source_tag": {
+          "$ref": "defs.schema.json#/$defs/source_tag"
+        },
+        "official_ref": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": [
+        "report_id",
+        "title_th",
+        "round_label_th",
+        "generated_at",
+        "window_from",
+        "window_to",
+        "timezone"
+      ],
+      "properties": {
+        "report_id": {
+          "type": "string"
+        },
+        "title_th": {
+          "type": "string"
+        },
+        "round_label_th": {
+          "type": "string",
+          "description": "e.g. 'รอบพิเศษ' or a scheduled round name."
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "window_from": {
+          "type": "string",
+          "format": "time"
+        },
+        "window_to": {
+          "type": "string",
+          "format": "time"
+        },
+        "timezone": {
+          "const": "Asia/Bangkok"
+        }
+      },
+      "additionalProperties": false
+    },
+    "emergency_card": {
+      "allOf": [
+        {
+          "$ref": "emergency_card.schema.json"
+        }
+      ],
+      "description": "FIRST section of the email body. Carries colour5 (never a mismatched icon/label), now_th, do_th, hotlines (1784/1669 nationwide + 1555 for Bangkok added here), not_official."
+    },
+    "status_header": {
+      "type": "object",
+      "required": [
+        "badge",
+        "headline_th",
+        "reason_code"
+      ],
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/colour_badge"
+        },
+        "headline_th": {
+          "type": "string"
+        },
+        "reason_code": {
+          "type": "string",
+          "description": "sandwich_trace.reasons code driving this colour, e.g. OUTLET_CRITICAL (main pond normal, outlet critical -> YELLOW, never RED -- RED is reserved for our own Z0)."
+        }
+      },
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "paragraphs_th",
+        "watch_window_th"
+      ],
+      "properties": {
+        "paragraphs_th": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "watch_window_th": {
+          "type": "string",
+          "description": "The '6-12 ชาวโมงข้างหน้า' watch rule, free text."
+        }
+      },
+      "additionalProperties": false
+    },
+    "main_pond": {
+      "type": "object",
+      "description": "Founder ruling 2026-10-06: every report reads the main pond's 3-state trend with Δ and window, plus continuity-to-previous-report and the gated ETA block.",
+      "required": [
+        "station",
+        "trend",
+        "headroom",
+        "continuity",
+        "eta"
+      ],
+      "properties": {
+        "station": {
+          "$ref": "#/$defs/station_row"
+        },
+        "trend": {
+          "$ref": "#/$defs/trend_object"
+        },
+        "headroom": {
+          "$ref": "#/$defs/headroom_object"
+        },
+        "continuity": {
+          "$ref": "#/$defs/continuity_block"
+        },
+        "eta": {
+          "$ref": "#/$defs/eta_block"
+        }
+      },
+      "additionalProperties": false
+    },
+    "sandwich": {
+      "type": "object",
+      "required": [
+        "layers",
+        "trace",
+        "outlet"
+      ],
+      "properties": {
+        "layers": {
+          "$ref": "layer_readout.schema.json"
+        },
+        "trace": {
+          "$ref": "sandwich_trace.schema.json"
+        },
+        "outlet": {
+          "type": "object",
+          "description": "Sammakorn's outlet path: ประเจ้าพระยา reached via คลองแสนแสบ.",
+          "required": [
+            "path_th",
+            "bottleneck_code",
+            "bottleneck_colour"
+          ],
+          "properties": {
+            "path_th": {
+              "type": "string",
+              "const": "สัมมากร → คลองแสนแสบ → แม่น้ำเจ้าพระยา"
+            },
+            "bottleneck_code": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "bottleneck_colour": {
+              "$ref": "defs.schema.json#/$defs/colour5"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "watch_sections": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/watch_section"
+      },
+      "minItems": 1,
+      "description": "§1 แกนหลัก and §2 จุดเฝ้าระวังฝี่งตะวันออก, as an ordered array of sections so a future section (e.g. a west-side watch list) needs no schema change."
+    },
+    "pumps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/pump_row"
+      },
+      "minItems": 1
+    },
+    "upstream": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/upstream_row"
+      },
+      "minItems": 1,
+      "description": "§4 น้ำเหนือ/ป่าสัก -- C.2, C.13, ป่าสักชลสิทหิ์ storage/release, พระราม 6 level."
+    },
+    "weather": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/weather_row"
+      },
+      "minItems": 1,
+      "description": "§5 ฝนและอากาศ -- TMD forecast row(s) + BMA rain-station detections."
+    },
+    "system_risk": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/system_risk_row"
+      },
+      "minItems": 1,
+      "description": "§6 สรุปความเสี่ยงเชิงระบบ -- one colour+trend per factor (main pond / outlet+outer canals / upstream / rain)."
+    },
+    "decision": {
+      "type": "object",
+      "required": [
+        "jev",
+        "why_sent_th",
+        "send_rules"
+      ],
+      "properties": {
+        "jev": {
+          "$ref": "jev_decision.schema.json"
+        },
+        "why_sent_th": {
+          "type": "string",
+          "description": "คำตัดสินรอบนี้ -- free text explaining which send rule fired."
+        },
+        "send_rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "rule_id",
+              "description_th",
+              "fired",
+              "tag"
+            ],
+            "properties": {
+              "rule_id": {
+                "type": "string"
+              },
+              "description_th": {
+                "type": "string"
+              },
+              "fired": {
+                "type": "boolean"
+              },
+              "tag": {
+                "type": "string",
+                "enum": [
+                  "FOUNDER_RULING",
+                  "FLOODCONNECT_DEFAULT_PENDING_FOUNDER"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/action_row"
+      },
+      "minItems": 1,
+      "description": "§7 สิ่งที่ควรทำ 6-12 ชม. -- from the preparedness ladder (advice/preparedness_ladder.yaml) for the current colour."
+    },
+    "technical": {
+      "type": "object",
+      "required": [
+        "trend_formula",
+        "headroom_formula",
+        "eta_formula",
+        "freshness_rules",
+        "limits"
+      ],
+      "properties": {
+        "trend_formula": {
+          "type": "string",
+          "const": "Δk(t) = h(t) - h(t-k)  (PROP-FLOOD-01, Toledo tier Dr)"
+        },
+        "headroom_formula": {
+          "type": "string",
+          "const": "gap = θ - h(t), where θ is the nearer of warning/critical (floodconnect_model.bank_check)"
+        },
+        "eta_formula": {
+          "type": "string",
+          "const": "Tk = (θ - h(t)) × k / Δk(t), defined only when Δk(t) > ε and h(t) < θ (PROP-FLOOD-02/11)"
+        },
+        "freshness_rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "source_id",
+              "max_age_hours"
+            ],
+            "properties": {
+              "source_id": {
+                "type": "string"
+              },
+              "max_age_hours": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "limits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "e.g. 'decision-support only, not an evacuation order', 'UNKNOWN ≠ SAFE', 'station-level resolution, not household-level'."
+        }
+      },
+      "additionalProperties": false
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "source_id",
+          "agency",
+          "url"
+        ],
+        "properties": {
+          "source_id": {
+            "type": "string"
+          },
+          "agency": {
+            "type": "string"
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "retrieved_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "anchor": {
+      "allOf": [
+        {
+          "$ref": "defs.schema.json#/$defs/kg_anchor"
+        }
+      ],
+      "type": "object",
+      "properties": {
+        "model_version": {
+          "type": "string"
+        }
+      }
+    },
+    "disclaimer": {
+      "type": "string",
+      "const": "ไม่ใช่ประกาศเตือนภัยอย่างเป็นทางการ"
+    }
+  }
+}

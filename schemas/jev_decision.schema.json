@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://floodconnect.local/schemas/jev_decision.schema.json",
+  "title": "FloodConnect M8 jev_decision",
+  "description": "The answer's decision block -- replaces the old bare `sandwich` key (kb.py build_answer, M8 P-B wiring). Everything through `trace` is already computed by floodconnect_model.sandwich_decision/kb.py._answer_sandwich (P-A); `choice`/`noul`/`advice` are the new Jev-style envelope fields. `noul`'s N1-N6 definitions are not founder-confirmed -- see the INSTINCT placeholder note on each N field below; `choice.p` is always null (nothing in this repo computes a probability). `advice` is populated by P-C/P-D (advice.build()); in P-B alone it is present but may be an empty/minimal object -- a caller must not treat an empty `advice.prepare_steps` as 'no preparation needed'.",
+  "description_compact": "VERIFIED against real build_answer() output (2026-10-05): the shape below (every property, `required` as listed) is what `verbose=True` returns in full. `verbose=False` (the DEFAULT) returns a DELIBERATELY SMALLER shape -- `kb.py`'s own `_compact_jev_decision` -- that keeps only colour/confidence/gate/layers/facts/chosen/prepare_steps/home_shelter and OMITS label_th/level/official_tier/score/choice/noul/licence/why/eq/trace entirely when `verbose=False` (token budget, tests/test_token_budget.py). `required` below is therefore loosened to `colour` alone (the one field present in EVERY real answer, both modes) rather than the full verbose field list, so this schema actually validates what both modes produce -- matching the precedent in layer_readout.schema.json, which already documents the real (compacted) answer.layers shape rather than floodconnect_model.ring_readout()'s own internal return shape.",
+  "type": "object",
+  "required": ["colour"],
+  "properties": {
+    "colour": {"$ref": "defs.schema.json#/$defs/colour5"},
+    "label_th": {"type": ["string", "null"]},
+    "level": {"type": ["string", "null"], "enum": ["RED", "YELLOW", "GREEN", "UNKNOWN", null], "description": "FOLD_TO_LEGACY'd 4-value level (ORANGE folds to YELLOW) -- floodconnect_model.sandwich_decision's own `level` key."},
+    "official_tier": {"type": "boolean", "description": "true only when the colour/word is the agency's own (ORANGE is explicitly false -- FloodConnect's own tier, never an agency tier)."},
+    "scope": {"type": "string", "enum": ["VALIDATED_MVP", "EXPERIMENTAL"], "description": "Founder ruling 2026-10-06: VALIDATED_MVP iff Z0 is a bma_watermap gauge (Sammakorn/Ram53's own BMA canal network) or the query point falls inside Bangkok metro -- the one area actually swept end to end. Everywhere else is EXPERIMENTAL -- not a claim that the answer there is wrong, only that it has not been swept the same way."},
+    "score": {"type": ["string", "null"], "description": "= the colour's own label_th, per the M8 schema design ('score (= the colour's label)'). Not a numeric score -- nothing in this repo computes one."},
+    "choice": {
+      "description": "fix (compact jev_decision): `verbose=False` keeps only `chosen` (the compact alt below) -- the full `options`/`p`/`audition` envelope is a `--verbose` detail (token budget, tests/test_token_budget.py), same documented pattern this schema's own `layers`/`advice.prepare_steps` already use.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["options", "chosen", "p", "audition"],
+          "properties": {
+            "options": {"type": "array", "items": {"$ref": "defs.schema.json#/$defs/choice7"}},
+            "chosen": {"$ref": "defs.schema.json#/$defs/choice7"},
+            "p": {"type": "null", "description": "Always null -- nothing computes a probability for this choice (M8 schema design: 'p stays null because nothing computes it')."},
+            "audition": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "option": {"$ref": "defs.schema.json#/$defs/choice7"},
+                  "s4": {"$ref": "defs.schema.json#/$defs/s4"},
+                  "reason": {"type": "string"}
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "description": "Compact form (verbose=False) -- see this property's own top-level description.",
+          "required": ["chosen"],
+          "properties": {"chosen": {"$ref": "defs.schema.json#/$defs/choice7"}},
+          "additionalProperties": false
+        }
+      ]
+    },
+    "noul": {
+      "type": "object",
+      "description": "N1-N6, each an s4 value. OPEN/INSTINCT (2026-10-05): the authoritative N1-N6 definitions exist only in the founder's design transcript and were not available to this implementation pass -- this placeholder mapping (N1 Z0 fresh, N2 Z0 vs bank, N3 trend, N4 upstream read, N5 middle confirms, N6 outlet) is a best-effort guess, not a founder-confirmed definition. A caller must not cite noul as settled without checking with the founder first.",
+      "properties": {
+        "N1": {"$ref": "defs.schema.json#/$defs/s4"},
+        "N2": {"$ref": "defs.schema.json#/$defs/s4"},
+        "N3": {"$ref": "defs.schema.json#/$defs/s4"},
+        "N4": {"$ref": "defs.schema.json#/$defs/s4"},
+        "N5": {"$ref": "defs.schema.json#/$defs/s4"},
+        "N6": {"$ref": "defs.schema.json#/$defs/s4"},
+        "tag": {"const": "INSTINCT"}
+      },
+      "additionalProperties": false
+    },
+    "confidence": {"$ref": "defs.schema.json#/$defs/confidence"},
+    "gate": {
+      "$ref": "defs.schema.json#/$defs/gate",
+      "description": "Default rule, pending the founder: RED->ESCALATE, UNKNOWN->HOLD, Z0 fresh and colour decided->ADMIT, chosen option conflicts with an official order->REJECT for that audition row."
+    },
+    "licence": {"$ref": "defs.schema.json#/$defs/licence"},
+    "why": {"type": "array", "items": {"type": "string"}},
+    "eq": {"type": "object", "description": "Toledo equation-status passthrough (PROP-FLOOD-01/02/11 tags) -- kb.py's existing `eq_status`, unchanged."},
+    "facts": {"type": "array", "description": "Ranked critical rows (A2/A4 _rank_facts) -- see sandwich_trace for the ordering rule."},
+    "layers": {
+      "oneOf": [
+        {"$ref": "layer_readout.schema.json"},
+        {"type": "string", "pattern": "^[A-Z]{4}$",
+         "description": "Compact form (verbose=False): one letter per ring (Z0-Z3), G/Y/O/R/U -- advice/card.py's `_strip` and kb.py's `_compact_sandwich` both use this same single-letter encoding."}
+      ]
+    },
+    "trace": {"$ref": "sandwich_trace.schema.json"},
+    "advice": {"$ref": "advice.schema.json", "description": "Populated by advice.build() (P-C/P-D). Absent or minimal in a P-B-only build."},
+    "calc": {
+      "type": "object",
+      "description": "(founder ruling 2026-10-06): the inputs behind the colour/headroom, trend and ETA sections, named so a caller sees WHICH input was missing rather than only a confidence number. Each of `colour`/`trend`/`eta` is shaped like advice.schema.json's own `calc` object (eq/inputs/missing/result, `reasons` when non-empty). `eta.result` is `GATED` when the Z0 trend is not RISING or the series lacks usable lag inputs, or a real `{warning, critical}` range-of-hours object (PROP-FLOOD-02, linear, two windows -- a registered, merged Toledo proposal, tier Dr; NOT PROP-FLOOD-11, which is registered but not implemented in this release, v0.2 target) when it is -- never a fixed GATED value. A short `range_h`-only summary is also carried on the compact (verbose=false) answer's own top-level `eta` field when RISING; this fuller `calc` block stays verbose-only, token budget.",
+      "properties": {
+        "colour": {"type": "object"},
+        "trend": {"type": "object"},
+        "eta": {"type": "object"}
+      }
+    }
+  },
+  "additionalProperties": false
+}

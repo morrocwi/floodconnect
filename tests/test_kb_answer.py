@@ -1,13 +1,13 @@
-"""Tests for `kb.py answer`/`compute` -- an earlier check fix (2026-10-02).
+"""Tests for `kb.py answer`/`compute` (2026-10-02).
 
 None of this subcommand had a test calling `cmd_answer`/`_resolve_area`/`_answer_*` or
-`tools.kg.accountability.build_result` directly before this file (an earlier check defect
-M5). Every forecast value used below is REAL data, copied verbatim from a collection
+`tools.kg.accountability.build_result` directly before this file. Every forecast value
+used below is REAL data, copied verbatim from a collection
 run recorded in the main working repository's `data/observations.sqlite` on
 2026-09-27/28 (Sammakorn point, source_id `openmeteo_forecast16d`), never simulated
 -- per this project's rule "real data only in tests, never simulated". The CMA
-2026-09-26T17:00Z=91.5mm row is the exact value was measured when it found defect H1
-(a 5-day-stale row served as "tomorrow").
+2026-09-26T17:00Z=91.5mm row is the exact value measured for the bug where a
+5-day-stale row was served as "tomorrow".
 
 Run only this file while iterating (AGENTS.md "no repeated full-arc audits"):
     python3 -m pytest tests/test_kb_answer.py -q
@@ -375,7 +375,7 @@ def test_next_action_open_for_bare_latlon():
 def test_next_action_found_for_known_area():
     """Sammakorn's self-help DAG start node must resolve to a route under this repo's
     real self_help_dag.yaml (not a fixture) -- this is a coverage test for `_answer_
-    next_action` being called at all (an earlier check defect M5), not a claim about any
+    next_action` being called at all, not a claim about any
     particular path shape."""
     out = kb._answer_next_action("sammakorn")
     assert out["tag"] in ("MEASURED", "OPEN")
@@ -409,10 +409,22 @@ def test_answer_json_envelope_keys(real_forecast_db, capsys):
     # also carries `kg_anchor` (see tests/test_kb_answer_kg_anchor.py for its
     # own shape/confidence-cap tests) -- appended last, so every key above
     # keeps the exact same bytes as v0.1.3.
+    # fix (2026-10-05, M8 P-B schema set): the old `sandwich` key is replaced by
+    # `jev_decision` (schemas/jev_decision.schema.json -- see
+    # tests/test_kb_answer_sandwich.py), and the answer now also carries
+    # `emergency_card` (first key, per the M8 schema design) and `policy_gap_ref`
+    # (last key) -- see tests/test_emergency_card.py / tests/test_gap_log.py.
+    # fix (founder ruling 2026-10-06, KG-only): every answer now also carries
+    # `kg_gaps` -- the ring names (if any) the KG has no declared edge for
+    # (was already computed for the gap-log blockers, never actually returned).
     assert set(payload) == {
         "generated_at", "at", "refresh", "state", "hazard", "accountability",
         "next_action", "source_tags", "cctv", "indicators_doc", "kg_anchor",
+        "jev_decision", "emergency_card", "policy_gap_ref", "kg_gaps",
     }
+    assert next(iter(payload)) == "emergency_card"
+    assert list(payload)[1] == "jev_decision"
+    assert list(payload)[-1] == "policy_gap_ref"
     assert payload["indicators_doc"] == "docs/INDICATORS.md"
     assert payload["cctv"]["tag"] == "OPEN"
     assert payload["refresh"] is None  # no --refresh passed in this test
@@ -424,6 +436,29 @@ def test_answer_json_envelope_keys(real_forecast_db, capsys):
         assert set(tag) >= {"field", "epistemic_class"}
         assert "note" not in tag
         assert set(tag) <= {"field", "epistemic_class", "toledo"}
+
+
+def test_cli_answer_logs_a_gap_by_default_and_no_gap_log_opts_out(
+        real_forecast_db, monkeypatch, tmp_path, capsys):
+    """fix (founder ruling 2026-10-06, KG-only): the REAL `kb.py answer` CLI
+    (argparse, not a hand-rolled test double) now logs a policy gap by
+    default -- `--no-gap-log` opts back out. `kb.HERE` is monkeypatched too
+    (not just `DB_PATH`) so the write lands in `tmp_path`, never the real repo."""
+    real_forecast_db()
+    monkeypatch.setattr(kb, "HERE", tmp_path)
+    gap_path = tmp_path / "data" / "policy_gap_log.jsonl"
+
+    rc = kb.main(["answer", "--at", "sammakorn", "--offline", "--json"])
+    assert rc == 0
+    capsys.readouterr()
+    assert gap_path.exists(), "the real CLI entrypoint must log a gap by default"
+    n_before = len(gap_path.read_text(encoding="utf-8").splitlines())
+
+    rc = kb.main(["answer", "--at", "sammakorn", "--offline", "--json", "--no-gap-log"])
+    assert rc == 0
+    capsys.readouterr()
+    n_after = len(gap_path.read_text(encoding="utf-8").splitlines())
+    assert n_after == n_before, "--no-gap-log must opt back out of the write"
 
 
 def test_answer_json_envelope_source_tags_verbose(real_forecast_db, capsys):
@@ -617,6 +652,15 @@ def test_dual_state_critical_row_classifies_red_and_emits_neutral_action_without
     first = out["actions"][0]
     assert first["action"] == kb.STATION_RED_NEUTRAL_ACTION_TH
     assert "not the L5 tier" in first["why"]
+    # Mutation-protecting: assert the literal required phrases, never only the
+    # module constant by reference -- comparing against `kb.STATION_RED_
+    # NEUTRAL_ACTION_TH` alone would still pass if that constant's own text
+    # were weakened, since both sides of the `==` would change together. A
+    # RED station reading must always carry a real move-now instruction and
+    # must never let "no official order yet" read as "wait for one".
+    assert "ออกจากพื้นที่เสี่ยงทันที" in first["action"]
+    assert "ยังไม่มีคำสั่งทางการ" in first["action"]
+    assert "อย่ารอ" in first["action"]
     # it must never claim water is already inside the house, and never claim safety
     for banned in ("น้ำเข้าบ้าน", "ปลอดภัย", "ไม่ต้อง", "ห้าม", "ไม่ควร", "ผ่อนคลาย"):
         assert banned not in first["action"]
@@ -707,11 +751,46 @@ def test_watch_plus_normal_still_classifies_yellow(fresh_state_db):
     assert kb._classify_current_local_state(state) == "YELLOW"
 
 
+def test_pf06_tier_engine_never_consulted_while_simulation_disabled(
+        fresh_state_db, monkeypatch):
+    """founder ruling 2026-10-06, KG-only/no-simulation ("ปิดการจำลองโหลดไปเลย"):
+    `floodconnect_model.SIMULATION_ENABLED` defaults False, and PROP-FLOOD-06's
+    engine folds in an external rain forecast promoter -- `_real_pf06_record`
+    must never even be CALLED (not just ignored) while the flag is off, even
+    when it would report L5."""
+    import floodconnect_model
+    assert floodconnect_model.SIMULATION_ENABLED is False, (
+        "default must stay off -- this test does not itself flip the flag")
+    called = []
+
+    def _spy(area_id, now_utc=None):
+        called.append(area_id)
+        return {"tier": "L5"}
+    monkeypatch.setattr(kb, "_real_pf06_record", _spy)
+    store.insert_observation(fresh_state_db, **REAL_WL_SSB_08_CRITICAL_ROW)
+    state = kb._answer_state(SAMMAKORN_LAT, SAMMAKORN_LON, as_of_date="2026-09-28")
+    out = kb._answer_next_action("sammakorn", state_answer=state)
+    assert called == [], "PF06 must not be called at all while SIMULATION_ENABLED is False"
+    first = out["actions"][0]
+    assert first["action"] == kb.STATION_RED_NEUTRAL_ACTION_TH
+    assert first["tag"] == "OPEN", (
+        "with the tier engine switched off, the tier is genuinely unknown -- "
+        "OPEN, never a stale MEASURED claim")
+
+
 def test_dual_state_red_with_real_l5_tier_emits_the_actual_survival_card_headline(
         fresh_state_db, monkeypatch):
     """The other side of that fix: when PROP-FLOOD-06's real engine DOES report
     tier=L5 for this point, the card's own headline is the correct thing to show (gated
-    on the real engine, not a faked {"tier": "L5"} dict)."""
+    on the real engine, not a faked {"tier": "L5"} dict).
+
+    `SIMULATION_ENABLED` must also be explicitly True here (founder ruling
+    2026-10-06, KG-only/no-simulation): PROP-FLOOD-06 folds in an external rain
+    FORECAST promoter (`forecast_rain_72h_per_model`), so `_real_pf06_record` is
+    never even called on the real answer path while that flag is False (the
+    default) -- this test turns it on to exercise the engine deliberately."""
+    import floodconnect_model
+    monkeypatch.setattr(floodconnect_model, "SIMULATION_ENABLED", True)
     monkeypatch.setattr(kb, "_real_pf06_record", lambda area_id, now_utc=None: {"tier": "L5"})
     store.insert_observation(fresh_state_db, **REAL_WL_SSB_08_CRITICAL_ROW)
     state = kb._answer_state(SAMMAKORN_LAT, SAMMAKORN_LON, as_of_date="2026-09-28")
@@ -797,8 +876,13 @@ def test_dual_state_no_fresh_rows_is_unknown_never_safe(fresh_state_db):
     out = kb._answer_next_action("sammakorn", state_answer=state)
     assert out["dual_state"]["current_local_state"] == "UNKNOWN"
     assert out["actions"][0]["action"] == kb.UNKNOWN_ACTION_TH
-    # it must say "absence of data is not evidence of safety", never assert safety itself
+    # Mutation-protecting: the literal required phrases, not only a compare
+    # against the module constant by reference (both sides would change
+    # together if that constant's text were weakened). UNKNOWN must say
+    # "absence of data is not evidence of safety" AND point the reader to the
+    # official agency directly, never assert safety itself.
     assert "แปลว่าปลอดภัย" in out["actions"][0]["action"]
+    assert "ติดตามประกาศจากหน่วยงานทางการโดยตรง" in out["actions"][0]["action"]
     for banned in ("ไม่ต้อง", "ห้าม", "ไม่ควร", "ผ่อนคลาย"):
         assert banned not in out["actions"][0]["action"]
 
@@ -1163,7 +1247,7 @@ def _active_hazard_answer() -> dict:
 
 
 def test_dual_state_unknown_with_active_hazard_never_claims_normal(fresh_state_db):
-    """Regression for an earlier check audit defect 3: UNKNOWN current state (no fresh rows at
+    """Regression: UNKNOWN current state (no fresh rows at
     all) combined with an ACTIVE forward hazard must never say "ปกติ" ("normal") --
     it must use the same 'no current-state data' framing as `UNKNOWN_ACTION_TH`
     instead."""
@@ -1526,7 +1610,7 @@ def test_resolution_confidence_none_when_only_sensor_fault_fresh(fresh_state_db)
     assert out["dual_state"].get("confidence", "NONE") == "NONE"
 
 
-# fix (2026-10-04, regate defect 1 MED): a fresh LOCAL row that carries NO colour at
+# fix (2026-10-04): a fresh LOCAL row that carries NO colour at
 # all (a sensor/equipment fault, or an agency word with no threshold mapping) must
 # never make `resolution_confidence`/`dual_state.confidence` HIGH on the strength of a
 # basin-resolution row 10-50 km away deciding the colour instead. Before this fix, both
@@ -1597,3 +1681,27 @@ def test_resolution_confidence_low_when_local_sensor_fault_plus_far_basin_overba
                                   hazard_answer={"per_model": []})
     assert out["dual_state"]["current_local_state"] == "RED"
     assert out["dual_state"]["confidence"] == "LOW"
+
+
+def test_compact_jev_decision_keeps_home_shelter_tag():
+    """The pending-founder `tag`
+    (FLOODCONNECT_DEFAULT_PENDING_FOUNDER) used to appear only on the
+    `--verbose` payload -- the compact (default) output must keep it too, so
+    a caller can tell a founder-confirmed verdict from this repo's own
+    rules-4-9 default without needing --verbose."""
+    jev = {
+        "colour": "GREEN", "label_th": "ปลอดภัย", "level": 0, "official_tier": False,
+        "steps": [], "why": [], "confidence": "HIGH", "gate": "LICENSED_WITHIN_ENVELOPE",
+        "facts": [], "layers": {"Z0": "GREEN", "Z1": "GREEN", "Z2": "GREEN", "Z3": "GREEN"},
+        "advice": {
+            "prepare_steps": [{"id": "G1", "what_th": "เฝ้าดู"}],
+            "home_shelter": {
+                "verdict": "STAY_PREPARED", "rule": "R7",
+                "tag": "FLOODCONNECT_DEFAULT_PENDING_FOUNDER",
+                "missing_inputs": [],
+            },
+        },
+    }
+    compact = kb._compact_jev_decision(jev)
+    assert compact["advice"]["home_shelter"]["tag"] == "FLOODCONNECT_DEFAULT_PENDING_FOUNDER"
+    assert "rule" not in compact["advice"]["home_shelter"]

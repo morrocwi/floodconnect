@@ -1,0 +1,6 @@
+{
+  "source_url": "POST https://weather.bangkok.go.th/water/PageMap/GoogleMap",
+  "fetched_at_utc_approx": "2026-10-05T04:20:00Z",
+  "trim_note": "3 of the real 311-station response, verbatim fields, trimmed to the Sammakorn sandwich case: WL.SSB.08 (วิกฤต, at critical), WL.BMA.02 (ปกติ), WL.SMK.01 (ปกติ, below critical).",
+  "stations": ["WL.SSB.08", "WL.BMA.02", "WL.SMK.01"]
+}

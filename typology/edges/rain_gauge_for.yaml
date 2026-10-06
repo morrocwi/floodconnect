@@ -1,0 +1,35 @@
+# typology/edges/rain_gauge_for.yaml -- edge_kind=rain_gauge_for, from a Z0 gauge node
+# (gauge:<source_id>:<code>) -> the thaiwater rain_24h station this repo reads as THAT
+# point's own rain reading. Per the founder's KG-only ruling (2026-10-06, see
+# feedback-floodconnect-smallest-point-first.md: "ความสัมพันธ์ระหว่างจุด = KG edge เท่านั้น"),
+# a rain gauge is never picked by nearest-distance/radius at answer time -- it is declared
+# here first, once, and every reader (l0_check.py, kb.py) looks it up by this edge, never by
+# re-computing a distance.
+#
+# `sammakorn` row history: proposed in `evidence/sammakorn_rain_gauge_proposal_2026-10-06.md`
+# (nearest real station in a live thaiwater rain_24h snapshot, 6.71 km from WL.SMK.01 --
+# offered as the candidate, not auto-selected by that distance) as
+# FLOODCONNECT_DEFAULT_PENDING_FOUNDER; the founder accepted BKK008 for Sammakorn on
+# 2026-10-06, so this file now carries it as a real declared edge (tag RELAYED: a
+# nearest-candidate selection accepted by the founder, not an agency-published linkage).
+schema_version: 1
+doc_kind: typology_edge_registry
+edge_kind: rain_gauge_for
+status_th: >
+  BKK008 (คลองแสนแสบ บางกะปิ, thaiwater station id 2) ประกาศเป็น KG edge ของจุด WL.SMK.01
+  (สัมมากร) -- founder รับแล้ว 2026-10-06 (อ้างอิง evidence/
+  sammakorn_rain_gauge_proposal_2026-10-06.md). ยังไม่มี edge สำหรับ ram53 หรือจุดอื่น --
+  จุดที่ไม่มีแถวในไฟล์นี้อ่านเป็น RAIN-NOGAUGE เสมอ (ไม่เดา ไม่ snap).
+rows:
+  - from: gauge:bma_watermap:WL.SMK.01
+    to: gauge:thaiwater_rain_24h:BKK008
+    to_thaiwater_station_id: 2
+    point_id: sammakorn
+    tag: RELAYED
+    distance_km: 6.71
+    source: >
+      evidence/sammakorn_rain_gauge_proposal_2026-10-06.md (nearest real station by
+      haversine distance from WL.SMK.01 in a live thaiwater30/public/rain_24h snapshot,
+      raw/live/thaiwater_rain_24h/2026-10-06T064758Z.json) -- the distance is reported
+      honestly (6.71 km, not hyper-local); founder accepted this candidate as the
+      declared edge for sammakorn on 2026-10-06 rather than leaving the point ungauged.

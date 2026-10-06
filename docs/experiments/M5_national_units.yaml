@@ -1,0 +1,82 @@
+# M5_national_units.yaml -- declared Toledo PROP-FLOOD-03 (water_balance.py) inputs for
+# the 5 national PROP-FLOOD-06 backtest units, in the SAME schema as the already-tracked
+# site/inputs/areas/{sammakorn,ram53,bangkok_east}.balance.yaml files (node_id/A/c/C_pump/
+# S0/tau, each field tagged VERIFIED/MEASURED/RELAYED/INSTINCT/OPEN). NEW file, written for
+# M5 -- not read by site/build_data.py or any answer path; kept separate from
+# site/inputs/areas/ on purpose (that directory feeds the live current-conditions site,
+# a different purpose/granularity than this historical backtest).
+#
+# Every value below is copied, unchanged, from sources/backtest_units.yaml's `units:`
+# block (tracked, origin/main) -- never re-derived or re-estimated for this file. Mapping
+# into water_balance.py's parameter names:
+#   A        := units[].A_U.value_km2 (converted to m^2 by the runner: km2 * 1e6)
+#   c        := units[].c_U {low, high} -- an OPEN-tagged BOUND, not a point value. Per
+#                the experiment's frozen scope (founder ruling 2026-10-05), the runner
+#                propagates this as an ENCLOSURE
+#                (runs step() at c=low and c=high, keeps [min(S_next), max(S_next)]),
+#                rather than refusing on c alone -- this is the one exception to "OPEN
+#                means refuse" in this experiment, and it is the ONLY one.
+#   C_pump   := units[].pumps.P_U_m3s (the declared pump/drainage capacity field name
+#                water_balance.py itself documents for this parameter -- literally reused,
+#                never remapped to Q_cap_o_m3s, which is a different PROP-FLOOD-06 outlet-
+#                conveyance concept this module does not use). Declared (non-null) for
+#                every one of the 5 units, including the 4 with P_U_m3s=0
+#                (NO_PUMPS_IN_UNIT, tag RELAYED) -- 0 is a real declared value, not a
+#                missing one.
+#   S0       := NOT PRESENT anywhere in sources/backtest_units.yaml for any of the 5
+#                units -- no initial-storage reading/declaration exists in this repo's
+#                knowledge base for any of them. OPEN/null for every unit, same as
+#                sammakorn/ram53/bangkok_east's own balance.yaml files. THIS is the
+#                universal blocker this experiment finds (see M5_WATER_DEBT_BACKTEST.md).
+#   tau      := NOT declared per-unit in sources/backtest_units.yaml. M5's own runner
+#                declares tau=86400s (1 day) for ALL units/nodes in this experiment,
+#                INSTINCT, stated here once rather than per-unit: this matches the daily
+#                unit-day granularity of the real rain_mm_24h/Q_o_now_m3s data available
+#                in M5_event_set.yaml (raw/backtest/events.yaml), and is DIFFERENT from
+#                the hourly tau=3600s the live site's sammakorn/ram53/bangkok_east.balance.yaml
+#                files declare for their own (unrelated) hourly-cadence purpose -- never
+#                conflated; flagged as a granularity choice specific to this backtest, same
+#                discipline as docs/BACKTEST_PROP_FLOOD_06_v2.md's own persistence-layer
+#                "granularity downgrade from registered spec" caveat.
+schema_version: 1
+source: "sources/backtest_units.yaml (tracked, origin/main) -- units: block, read 2026-10-05"
+tau_s: 86400
+tau_tag: "INSTINCT -- this experiment's own declaration, see header note above"
+units:
+  - node_id: HATYAI
+    A_km2: {value: 28.27, tag: INSTINCT, basis: "radius fallback r=3km, no basin/municipality polygon found"}
+    c: {low: 0.5, high: 1.0, tag: OPEN, basis: "bounded, propagated as enclosure per task instruction"}
+    C_pump_m3s: {value: 0, tag: RELAYED, basis: "NO_PUMPS_IN_UNIT -- gravity floodway diversion, not pump-drained"}
+    S0_m3: {value: null, tag: OPEN, basis: "no declaration anywhere in this repo's knowledge base"}
+  - node_id: NAN
+    A_km2: {value: 78.54, tag: INSTINCT, basis: "radius fallback r=5km, no municipality polygon found"}
+    c: {low: 0.5, high: 1.0, tag: OPEN, basis: "bounded, propagated as enclosure per task instruction"}
+    C_pump_m3s: {value: 0, tag: RELAYED, basis: "NO_PUMPS_IN_UNIT -- mainstem river town"}
+    S0_m3: {value: null, tag: OPEN, basis: "no declaration anywhere in this repo's knowledge base"}
+  - node_id: CHIANGMAI
+    A_km2: {value: 78.54, tag: INSTINCT, basis: "radius fallback r=5km, no municipality polygon found"}
+    c: {low: 0.5, high: 1.0, tag: OPEN, basis: "bounded, propagated as enclosure per task instruction"}
+    C_pump_m3s: {value: 0, tag: RELAYED, basis: "NO_PUMPS_IN_UNIT"}
+    S0_m3: {value: null, tag: OPEN, basis: "no declaration anywhere in this repo's knowledge base"}
+  - node_id: AYUTTHAYA_BANGBAN
+    A_km2: {value: 78.54, tag: INSTINCT, basis: "radius fallback r=5km, no district polygon found"}
+    c: {low: 0.5, high: 1.0, tag: OPEN, basis: "bounded, propagated as enclosure per task instruction"}
+    C_pump_m3s: {value: 0, tag: RELAYED, basis: "NO_PUMPS_IN_UNIT -- river-mainstem town"}
+    S0_m3: {value: null, tag: OPEN, basis: "no declaration anywhere in this repo's knowledge base"}
+  - node_id: BANGKOK_EAST
+    A_km2: {value: 78.54, tag: INSTINCT, basis: "radius fallback r=5km, no east-zone catchment polygon found (this backtest unit's own declaration -- distinct from site/inputs/areas/bangkok_east.balance.yaml's 1568.737 km2 citywide figure, a different purpose/granularity, never conflated)"}
+    c: {low: 0.5, high: 1.0, tag: OPEN, basis: "bounded, propagated as enclosure per task instruction"}
+    C_pump_m3s: {value: 1200, tag: RELAYED, basis: "led:bkk_total_pumping_phranakhon (Phra Nakhon-side max, 2569 observation), reused for both 2554 and 2569 eras -- INSTINCT anachronism for the 2554 row, flagged"}
+    S0_m3: {value: null, tag: OPEN, basis: "no declaration anywhere in this repo's knowledge base"}
+model_fit_caveat: >
+  water_balance.py's C_pump models a pump/drainage-limited outlet (Q_out := min(Q_out_meas,
+  C_pump) when gate OPEN). For the 4 river-mainstem units above with C_pump=0 declared
+  (NO_PUMPS_IN_UNIT), a literal reuse of this module would force Q_out to 0 on every tick
+  that DID reach the arithmetic stage -- not a faithful model of a gravity river channel's
+  conveyance (that would need the OUTLET's channel capacity, a PROP-FLOOD-06 concept this
+  module does not carry). This experiment does NOT invent a remapping (no new equation, per
+  the frozen scope) -- it reuses C_pump literally as declared and flags this as a model-fit
+  limitation. In practice this never changes M5's result, because S0 AND gate_flag -- both
+  universal, undeclared blockers (gate_flag is never declared/passed for any node in this
+  run) -- refuse every one of these units' ticks before the arithmetic stage is reached at
+  all (see report S:1).

@@ -94,6 +94,40 @@ LEVEL_REQUIREMENTS = {
 
 
 @dataclass(frozen=True)
+class DryGateResult:
+    """The Dry Gate alone, factored out of `evaluate_shelter_operation` (P-C,
+    `advice/home_shelter.py`'s `household_to_node` reuses this same gate for a
+    single home, not only a public-facility candidate). `state` is PASS/FAIL/
+    UNKNOWN -- UNKNOWN never silently becomes PASS."""
+
+    state: str
+    failed_fields: tuple[str, ...] = ()
+    unknown_fields: tuple[str, ...] = ()
+
+    def as_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+def dry_gate(node: dict[str, Any]) -> DryGateResult:
+    """NO VERIFIED FRESH DRY OPERATING FOOTPRINT -> FAIL. Extracted verbatim out of
+    `evaluate_shelter_operation`'s own first loop (no behaviour change -- see
+    `tests/test_shelter_operation_ladder.py::test_dry_gate_refactor_identical`)."""
+    failed = []
+    unknown = []
+    for field in DRY_GATE_FIELDS:
+        value = _truth(node.get(field))
+        if value is False:
+            failed.append(field)
+        elif value is None:
+            unknown.append(field)
+    if failed:
+        return DryGateResult("FAIL", tuple(failed), tuple(unknown))
+    if unknown:
+        return DryGateResult("UNKNOWN", (), tuple(unknown))
+    return DryGateResult("PASS")
+
+
+@dataclass(frozen=True)
 class ShelterOperationResult:
     state: str
     level: Optional[str] = None
@@ -139,26 +173,18 @@ def _requirement_truth(node: dict[str, Any], field: str) -> Optional[bool]:
 def evaluate_shelter_operation(node: dict[str, Any]) -> ShelterOperationResult:
     """Return highest defensible shelter-operation level under cumulative hard gates."""
 
-    failed = []
-    unknown = []
-    for field in DRY_GATE_FIELDS:
-        value = _truth(node.get(field))
-        if value is False:
-            failed.append(field)
-        elif value is None:
-            unknown.append(field)
-
-    if failed:
+    gate = dry_gate(node)
+    if gate.state == "FAIL":
         return ShelterOperationResult(
             NO_SHELTER_OPERATION,
-            failed_fields=tuple(failed),
-            unknown_fields=tuple(unknown),
+            failed_fields=gate.failed_fields,
+            unknown_fields=gate.unknown_fields,
         )
-    if unknown:
+    if gate.state == "UNKNOWN":
         return ShelterOperationResult(
             UNKNOWN,
             next_level=LEVEL_0,
-            unknown_fields=tuple(unknown),
+            unknown_fields=gate.unknown_fields,
         )
 
     highest = None

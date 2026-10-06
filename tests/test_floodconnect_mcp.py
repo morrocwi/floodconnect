@@ -22,6 +22,32 @@ sys.path.insert(0, str(ROOT))
 from tools.api import export_api  # noqa: E402
 
 
+def _load_mcp_module_forcing_fallback():
+    """Same load as `_load_mcp_module`, but blocks `mcp.server.fastmcp` so the
+    module's own `try/except ImportError` always lands in its stdlib JSON-RPC
+    fallback branch, regardless of whether the real SDK is installed in this
+    environment -- the only way to exercise `_handle_request`/`_content_wrap`
+    (and their minified-JSON serialiser) in a venv where the SDK import above
+    otherwise succeeds every time."""
+    import builtins
+    real_import = builtins.__import__
+
+    def _blocking_import(name, *args, **kwargs):
+        if name == "mcp.server.fastmcp" or name.startswith("mcp.server.fastmcp"):
+            raise ImportError("blocked for test: forcing stdlib fallback branch")
+        return real_import(name, *args, **kwargs)
+
+    spec = importlib.util.spec_from_file_location("floodconnect_mcp_fallback", ROOT / "tools" / "mcp" / "floodconnect_mcp.py")
+    mod = importlib.util.module_from_spec(spec)
+    builtins.__import__ = _blocking_import
+    try:
+        spec.loader.exec_module(mod)
+    finally:
+        builtins.__import__ = real_import
+    assert mod.mcp is None, "fallback branch did not actually run"
+    return mod
+
+
 def _load_mcp_module():
     spec = importlib.util.spec_from_file_location("floodconnect_mcp", ROOT / "tools" / "mcp" / "floodconnect_mcp.py")
     mod = importlib.util.module_from_spec(spec)
@@ -402,10 +428,16 @@ def test_floodconnect_answer_tool_calls_kb_build_answer_in_process(mcp_mod, monk
     (tests/conftest.py) refuses a test that leaves the real gitignored
     data/observations.sqlite touched, and importing `kb` here patches the SAME module
     object `tools/mcp/floodconnect_mcp.py`'s own `import kb` resolves to (one entry in
-    `sys.modules`), so the patch reaches the tool call too."""
+    `sys.modules`), so the patch reaches the tool call too.
+
+    `write_gap_log=False` here -- this test's own concern is the MCP wiring, not
+    gap logging, and `floodconnect_answer_core`'s own gap-log write (default
+    True, see `test_floodconnect_answer_tool_logs_a_gap_by_default` below) uses
+    `kb.HERE` (unpatched here) to build its path, which would otherwise append
+    to the real repo's own `data/policy_gap_log.jsonl`."""
     import kb
     monkeypatch.setattr(kb, "DB_PATH", tmp_path / "does_not_exist.sqlite")
-    out = mcp_mod.floodconnect_answer_core("sammakorn", refresh=False)
+    out = mcp_mod.floodconnect_answer_core("sammakorn", refresh=False, write_gap_log=False)
     assert out["at"] == "sammakorn"
     assert set(out.keys()) >= {
         "state", "hazard", "accountability", "next_action", "source_tags"}
@@ -429,7 +461,7 @@ def test_floodconnect_answer_tool_db_missing_is_unknown_with_refresh_action(mcp_
     import kb
     monkeypatch.setattr(kb, "DB_PATH", tmp_path / "does_not_exist.sqlite")
 
-    out = mcp_mod.floodconnect_answer_core("sammakorn", refresh=False)
+    out = mcp_mod.floodconnect_answer_core("sammakorn", refresh=False, write_gap_log=False)
     hazard = out["hazard"]
     assert hazard["tag"] == "OPEN"
     assert hazard.get("next_action")
@@ -442,8 +474,28 @@ def test_floodconnect_answer_tool_bad_at_raises_typed_mcp_error(mcp_mod, monkeyp
     import kb
     monkeypatch.setattr(kb, "DB_PATH", tmp_path / "does_not_exist.sqlite")
     with pytest.raises(mcp_mod.FloodConnectMCPError) as exc_info:
-        mcp_mod.floodconnect_answer_core("not,a,valid,at,value", refresh=False)
+        mcp_mod.floodconnect_answer_core("not,a,valid,at,value", refresh=False, write_gap_log=False)
     assert exc_info.value.code == "BAD_AT"
+
+
+def test_floodconnect_answer_tool_logs_a_gap_by_default(mcp_mod, monkeypatch, tmp_path):
+    """fix (founder ruling 2026-10-06, KG-only): `floodconnect_answer_core`
+    defaults `write_gap_log=True` -- a ring the KG has no declared edge for is
+    appended to the local gap log by default, not only when a caller
+    explicitly opts in. `kb.HERE` is monkeypatched (not just `DB_PATH`) so the
+    write lands in `tmp_path`, never the real repo."""
+    import kb
+    import store
+
+    db_path = tmp_path / "observations.sqlite"
+    store.connect(db_path)  # creates the real (empty) sqlite file
+    monkeypatch.setattr(kb, "DB_PATH", db_path)
+    monkeypatch.setattr(kb, "HERE", tmp_path)
+
+    out = mcp_mod.floodconnect_answer_core("sammakorn", refresh=False)
+    assert out["policy_gap_ref"]["record_id"] is not None
+    assert (tmp_path / "data" / "policy_gap_log.jsonl").exists()
+    assert "kg_gaps" in out
 
 
 def test_fallback_tools_list_descriptions_are_not_empty(mcp_mod):
@@ -532,7 +584,7 @@ def test_floodconnect_locate_tools_call_round_trip_via_fallback(mcp_mod):
     if not (ROOT / "output" / "kg_index" / "index.json").exists():
         pytest.skip("output/kg_index/ absent in this checkout")
     init = mcp_mod._handle_request({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}})
-    assert init["result"]["serverInfo"]["version"] == "0.1.4"
+    assert init["result"]["serverInfo"]["version"] == "0.1.5"
     resp = mcp_mod._handle_request({
         "jsonrpc": "2.0", "id": 2, "method": "tools/call",
         "params": {"name": "floodconnect_locate", "arguments": {"at": "13.7656,100.6478"}},
@@ -556,3 +608,38 @@ def test_floodconnect_locate_core_bad_at_raises_typed_error(mcp_mod):
     with pytest.raises(mcp_mod.FloodConnectMCPError) as exc_info:
         mcp_mod.floodconnect_locate_core("not,a,valid,at")
     assert exc_info.value.code == "BAD_AT"
+
+
+def test_stdlib_fallback_serialiser_is_minified_and_keeps_thai_literal():
+    """The stdlib JSON-RPC fallback (used only when the real `mcp` SDK is not
+    importable) must serialise `tools/call` results the same token-saving way
+    `kb.py --json` already does: no extra whitespace (`separators=(",", ":")`)
+    and Thai text left as literal UTF-8 rather than `\\uXXXX`-escaped
+    (`ensure_ascii=False`). Forces the fallback branch via
+    `_load_mcp_module_forcing_fallback` so this holds even in a venv where the
+    real SDK IS installed (this repo's own default)."""
+    mod = _load_mcp_module_forcing_fallback()
+    wrapped = mod._content_wrap({"label": "ปกติ", "nested": {"a": 1, "b": 2}})
+    text = wrapped["content"][0]["text"]
+    assert "ปกติ" in text, "Thai text must be literal UTF-8, not \\u-escaped"
+    assert "\\u" not in text
+    assert ": " not in text and ", " not in text, "must use compact separators, no spaces"
+    # round-trips to the same structure
+    assert json.loads(text) == {"label": "ปกติ", "nested": {"a": 1, "b": 2}}
+
+    err = mod._content_wrap_error("SOME_CODE", "ข้อความผิดพลาด")
+    err_text = err["content"][0]["text"]
+    assert "ข้อความผิดพลาด" in err_text
+    assert "\\u" not in err_text
+    assert ": " not in err_text and ", " not in err_text
+
+    # the stdout-line serialiser inside `main()`'s loop uses the same pattern;
+    # `_handle_request`'s own `tools/list` result is the smallest real
+    # end-to-end sample available without driving the stdin loop itself.
+    resp = mod._handle_request({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
+    import io
+    buf = io.StringIO()
+    buf.write(json.dumps(resp, ensure_ascii=False, separators=(",", ":")) + "\n")
+    line = buf.getvalue()
+    assert line.endswith("\n")
+    assert json.loads(line) == resp

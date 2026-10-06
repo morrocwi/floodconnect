@@ -1,0 +1,10 @@
+{
+  "source_url": "https://weather.bangkok.go.th/water/StationDetail?id=199",
+  "water_id": 199,
+  "water_code": "WL.KJK.02",
+  "fetched_at_utc_approx": "2026-10-06T17:17:29Z",
+  "trim_note": "Trimmed real response: txt_water_code/txt_water_name/txt_warning/txt_critical fields plus 19 of the real page's ~575 Date.UTC(...) history points (the real first 3, then the real continuous 2026-10-06T16:00-17:15Z run, 5-min cadence) -- a live keyless GET this session, kept byte-identical to the agency's own Date.UTC(Y, M0, D, h, m, s), value literal. This page's own series was fetched a few minutes AFTER the bma_watermap feed's own last reading for this station (2026-10-06T17:10:00Z) -- the series' real last point (17:15:00Z) sits strictly AFTER that reading time, the exact real-world shape that exposed the short-lag `run_points[-2]` bug (it degenerated to short_hours=0.0 whenever the series had already advanced one step past the externally-read 'now').",
+  "warning_critical_source": "same live page, real fields txt_warning=-0.20, txt_critical=0.00",
+  "external_reading_used_as_now": {"t_utc": "2026-10-06T17:10:00Z", "v": -1.22},
+  "series_last_point": {"t_utc": "2026-10-06T17:15:00Z", "v": -1.22}
+}
