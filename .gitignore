@@ -27,6 +27,9 @@ site/dist/
 # `pip install -e .` generates this; it is build metadata, never source.
 *.egg-info/
 
+# Self-install venv (README §4) -- a user's own, never committed.
+.venv
+
 # Local-only overrides / scratch (never committed)
 .leakdeny.local
 *.local

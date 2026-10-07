@@ -1,11 +1,9 @@
 # FloodConnect epistemic rules — provenance only
 
 **The rule text itself lives in exactly one place: `AI.md`'s "Mandatory
-reasoning rules" section (repo root).** This file does not restate it —
-an earlier draft restated it here as three separate copies of the same
-seven rules with two different tag vocabularies, which an independent
-review caught and corrected. Read `AI.md` for the current wording; use
-this file only to find where a rule traces back to.
+reasoning rules" section (repo root).** This file does not restate it. Read
+`AI.md` for the current wording; use this file only to find where a rule
+traces back to.
 
 ## Tag vocabulary — one place, `AI.md`
 

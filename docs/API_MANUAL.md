@@ -166,7 +166,7 @@ exist in this repo; "design target" marks what does not exist yet.
 
 | schema object | produced by (API/step) | consumed by (model fn / tool field) | protocol step | skill step |
 |---|---|---|---|---|
-**Note (updated 2026-10-07): this table is a dated M7a design-time map (2026-10-05) and the "design target"/"K-step" column predates both `tools/kg/rings.py` (which ships and builds real rings offline from `output/kg_index/`) and `skill/SKILL.md`'s own numbered sections (§0-§10, which now exist) -- read the "K" references below as pointers to that M7a-era plan, not as a claim that SKILL.md still has no numbered steps.**
+**Note (updated 2026-10-07): this table is a dated M7a design-time map (2026-10-05) and the "design target"/"K-step" column predates both `tools/kg/rings.py` (which ships and builds real rings offline from `output/kg_index/`) and `skills/floodconnect-method/SKILL.md`'s own numbered sections (§0-§10, which now exist; this file moved from `skill/SKILL.md` to `skills/floodconnect-method/SKILL.md` in v0.1.6, packaging only) -- read the "K" references below as pointers to that M7a-era plan, not as a claim that SKILL.md still has no numbered steps.**
 
 | `kg_anchor` | S0, `tools/kg/locate.py:locate` | `kb.py:_kg_anchor` -> `answer.kg_anchor`; MCP `floodconnect_locate` | D1 | SKILL.md §1(c)/§2 S0 (K1) |
 | ring station set | S1, `site/inputs/canals/east_chain.yaml` + `output/kg_index` slices | `tools/kg/rings.py:rings` (shipped, M8 -- offline from `output/kg_index/`, no graphml load) | D1 | SKILL.md §2-§3 (K2) |

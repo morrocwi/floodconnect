@@ -584,7 +584,7 @@ def test_floodconnect_locate_tools_call_round_trip_via_fallback(mcp_mod):
     if not (ROOT / "output" / "kg_index" / "index.json").exists():
         pytest.skip("output/kg_index/ absent in this checkout")
     init = mcp_mod._handle_request({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}})
-    assert init["result"]["serverInfo"]["version"] == "0.1.5"
+    assert init["result"]["serverInfo"]["version"] == "0.1.6"
     resp = mcp_mod._handle_request({
         "jsonrpc": "2.0", "id": 2, "method": "tools/call",
         "params": {"name": "floodconnect_locate", "arguments": {"at": "13.7656,100.6478"}},
