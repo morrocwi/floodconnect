@@ -13,6 +13,8 @@ description: >-
 
 # FloodConnect — external AI interface
 
+**Sibling:** reasoning rules live in `../floodconnect-method/SKILL.md`.
+
 ## When to use this skill
 
 Any query about:
@@ -38,12 +40,9 @@ pip install -e '.[mcp]'   # drop [mcp] if you only want the CLI
 ```
 
 Then either:
-- copy (or symlink) this `skills/floodconnect/` directory into wherever your own AI
-  client loads agent-skill markdown from, and configure that same client's MCP
-  settings per `tools/mcp/README_config_example.json` — fill in the absolute path
-  to THIS clone; or
-- skip MCP entirely and run `floodconnect answer --at sammakorn --json` (after the
-  install above) directly.
+- copy (or symlink) `skills/floodconnect/` into your AI client's skill folder, and
+  set its MCP config per `tools/mcp/README_config_example.json`; or
+- skip MCP and run `floodconnect answer --at sammakorn --json` directly.
 
 No hosted/pre-computed data: this clone ships NO *live* reading (`examples/` has
 labelled samples only, never current). A fresh clone's first call refreshes by default

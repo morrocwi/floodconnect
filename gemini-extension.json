@@ -1,0 +1,11 @@
+{
+  "name": "floodconnect",
+  "version": "0.1.6",
+  "description": "FloodConnect: local-first flood/canal/pump knowledge graph + minimal AI entrypoint (kb.py). Self-install only -- no hosted proxy, no server-side fetch, no LLM call on our side. Bundles the floodconnect (usage) and floodconnect-method (Sandwich method) skills, plus the read-only floodconnect MCP server.",
+  "mcpServers": {
+    "floodconnect": {
+      "command": "${extensionPath}${/}.venv${/}bin${/}python",
+      "args": ["${extensionPath}${/}tools${/}mcp${/}floodconnect_mcp.py"]
+    }
+  }
+}

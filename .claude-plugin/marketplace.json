@@ -1,0 +1,11 @@
+{
+  "name": "floodconnect-marketplace",
+  "description": "Single-plugin marketplace for FloodConnect, a local-first flood/canal/pump knowledge graph and AI entrypoint.",
+  "owner": { "name": "morrocwi" },
+  "plugins": [
+    {
+      "name": "floodconnect",
+      "source": "./"
+    }
+  ]
+}

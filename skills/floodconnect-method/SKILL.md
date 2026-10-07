@@ -1,16 +1,23 @@
 ---
-name: floodconnect-sandwich-method
-description: "Vendor-neutral method for any AI agent to answer 'is it safe near the water' for a Bangkok-area community (e.g. หมู่บ้านสัมมากร) using free government feeds, the Jev Sandwich Zoom reading order, a closed 5-colour vocabulary, main-pond rise/ETA tracking, and the user's own saved history for continuity. No vendor name, no hosted compute, no scheduler."
-version: 0.1.5
+name: floodconnect-method
+description: "Vendor-neutral METHOD for any AI agent to answer 'is it safe near the water' for a Bangkok-area community (e.g. หมู่บ้านสัมมากร) using free government feeds, the Jev Sandwich Zoom reading order, a closed 5-colour vocabulary, main-pond rise/ETA tracking, and the user's own saved history for continuity -- the fetch/decide/track rules themselves, runnable with no repo at all. No vendor name, no hosted compute, no scheduler. For the repo's own CLI/MCP USAGE (tool names, install, call contract) see the sibling `floodconnect` skill instead."
+version: 0.1.6
 ---
 
-# FloodConnect Sandwich method (v0.1.5)
+# FloodConnect Sandwich method (v0.1.6)
+
+**Sibling skill:** this file is the METHOD (the reasoning rules themselves — fetch
+order, colour ladder, ETA math — runnable by hand or by any AI with no repo at
+all). For the repo's own CLI/MCP tool names, install steps and call contract, see
+the sibling usage skill `../floodconnect/SKILL.md`. Install path (c) below is the
+bridge between the two: it names this repo's tools as an optional shortcut for the
+same rules.
 
 ## PROVENANCE — read this first, especially if your model is small
 
 **What this is:** a method file (not software) — instructions any AI agent follows
 to answer "is it safe near the water" for a Bangkok-area community. **Version
-0.1.5, 2026-10-06. Canonical repo: https://github.com/morrocwi/floodconnect** — if
+0.1.6, 2026-10-07. Canonical repo: https://github.com/morrocwi/floodconnect** — if
 this file and that repo disagree, the repo wins; this copy may be stale.
 
 **Source of truth, by kind — never this file's memory:**
@@ -107,10 +114,10 @@ Sandwich zoom it triggered.
 ## 1. Install (pick whichever of (a)-(d) fits the user's AI)
 
 **(a) Skill folders.** If the user's AI loads skills from a folder, copy this
-whole `skill/` directory into it. Nothing else to configure.
+whole `skills/floodconnect-method/` directory into it. Nothing else to configure.
 
 **(b) Custom instructions / project knowledge.** If the AI only accepts pasted
-text or uploaded files, paste §2-§9 in full and upload `skill/examples/` if it
+text or uploaded files, paste §2-§9 in full and upload `skills/floodconnect-method/examples/` if it
 accepts attachments. No code needed — §2's fetches are plain HTTP GET/POST,
 §3-§5's computation is arithmetic simple enough to do inline.
 
@@ -133,7 +140,7 @@ it can call the repo's own entrypoints instead of re-implementing §2-§5 by han
   check plus the cross-session watchlist state machine — prefer `watch` over
   bare `check` for any point worth remembering across sessions.
 
-These names are verbatim as of v0.1.5 — never invent a different spelling.
+These names are verbatim as of v0.1.6 — never invent a different spelling.
 Still follow §3-§8 below for anything the repo's own output does not already
 cover (continuity, ETA range, saving, the email example).
 
@@ -380,6 +387,53 @@ FloodConnect repo's own internal code path.
 
 ---
 
+## 4b. System Coverage Contract (SCC) — before any area-level conclusion
+
+**When this applies:** the §0b drill fires `ต้องขยับไหม: ใช่` (ESCALATE), or the
+user asks for an assessment of an area as a whole — never on a quiet §0b
+`ไม่` day; a calm L0 check stays a one-line answer, no SCC walk required.
+
+**(1) An area is a system, not one station.** Walk its dimensions before
+concluding anything about the area overall: the local storage/pond (Z0), its
+pumps, the receiving canal/outlet it drains to, observed rain at the point,
+road/pluvial flooding, forward rain forecast, and external/upstream pressure
+(Z1-Z3). Reach each dimension only via a declared KG edge and the registry
+sources in `sources/registry.yaml` — never a heuristic join (§2's KG-only
+rule still applies here).
+
+**(2) A source failure is not an assessment failure.** If one dimension's
+source times out, 404s, or returns unreadable data, mark only that dimension
+`OPEN` and continue walking the rest — never abort the whole assessment
+because one call failed.
+
+**(3) Attempt every dimension before giving an overall colour.** Report
+coverage per dimension as `FOUND`/`OPEN` plus which source was tried for
+each — attempted is not the same as data-complete. An overall area-wide
+colour (§3) is only given when the local storage/pond (Z0) **and** the
+outlet/receiving canal it drains to both came back `FOUND` — those two are
+the minimum load-bearing pair; every other dimension may be `OPEN` and the
+colour is still read off whatever came back `FOUND`, with each `OPEN` one
+named, not silently dropped. If either Z0 or the outlet is `OPEN`, there is
+**no overall colour** — report per-dimension `FOUND`/`OPEN` only (rule 4
+still lowers confidence, never the hazard).
+
+**(4) Missing evidence lowers confidence, never the hazard.** An `OPEN`
+dimension never raises or lowers the colour by itself and is never treated as
+calm; it only lowers the answer's stated confidence (HIGH/MEDIUM/LOW/NONE,
+§4's pattern) with its reason named.
+
+**(5) Keep current state and forward hazard separate.** State them as two
+lines, never merged into one verdict — e.g. a falling pond with a high
+receiving canal and rain forecast ahead is reported as "stable now, elevated
+ahead" (§5/AI.md rule 1's dual-state discipline extended to the area level),
+never flattened to a single colour that hides which half is which.
+
+**Code-level note:** this section is a documentation-only rule for v0.1.6 —
+no coverage gate or scoring code ships in this release. A code-level
+coverage block/gate is targeted for v0.2.
+
+---
+
 ## 5. Continuity — link every answer to the user's own last saved record
 
 Every answer reads the user's own previously saved report or reading (§6) before
@@ -414,7 +468,7 @@ If declined, do not ask again this session. **At most one re-invite**, only at
 the next 🟠/🔴.
 
 **Storage targets — detect what the user actually has, offer only that:** local
-CSV (UTF-8+BOM, one file per table — see `skill/examples/sheets/`); the user's
+CSV (UTF-8+BOM, one file per table — see `skills/floodconnect-method/examples/sheets/`); the user's
 own connected spreadsheet via their MCP (append rows, never overwrite); or a
 database they already run. Remember the pick in the user's own storage.
 
@@ -471,10 +525,10 @@ Produce, in this order:
 
 ## 8. Email/report EXAMPLE
 
-A full worked example is in `skill/examples/` — the schema itself lives at
+A full worked example is in `skills/floodconnect-method/examples/` — the schema itself lives at
 `schemas/email_report.schema.json` (so its sibling `$ref`s resolve against
 this repo's own schema set), with `example_2026-10-06_1300.json` and its
-`.html` render kept in `skill/examples/`. **One example output
+`.html` render kept in `skills/floodconnect-method/examples/`. **One example output
 format, not the only behaviour required** — the rules above are the
 instructions; the email just demonstrates one way to present them.
 

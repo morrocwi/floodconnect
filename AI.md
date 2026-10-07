@@ -99,6 +99,7 @@ tag whatever you derive `RELAYED`, never `VERIFIED`.
    sentence's start.
 7. **No AI/vendor credit.** Never name an AI vendor/model in resident-facing
    output; use the neutral "ผู้ช่วย AI" if attribution is asked for.
+8. **Coverage:** `floodconnect-method/SKILL.md` §4b.
 
 Full provenance/founder-rule citations for each rule:
 `skills/floodconnect/references/epistemic_rules.md`. Worked example (the
