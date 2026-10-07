@@ -1,4 +1,4 @@
-# Install self-test — 12 questions
+# Install self-test — 15 questions
 
 Run these against the installed skill (any AI, any of the four install paths in
 `SKILL.md` §1) before trusting it on a real question. Each question's expected
@@ -141,3 +141,41 @@ usable because it reached the answer via a **declared KG edge with a declared
 source** — never a heuristic (code-family/name-only/radius) join, which would
 not even appear in the evidence list (§2's KG-only rule); (3) agency data is
 always the agency's own, fetched fresh, never this file's memory of a number.
+
+---
+
+**Q13. (SCC) The §0b drill ESCALATEs for an area. The pumps dimension's source
+times out (no response at all). What happens to the rest of the assessment?**
+
+Expected: the walk **continues to every other dimension** (pond, outlet,
+rain, road flooding, forecast, upstream pressure) — the pumps dimension alone
+is marked **`OPEN`**, with the timeout named as the reason (§4b, rule 2). A
+single dimension's source failure is never treated as a failure of the whole
+assessment, and the AI must not stop early or report the area as UNKNOWN
+just because pumps timed out.
+
+---
+
+**Q14. (SCC) Only the pond (Z0) dimension has real data; every other
+dimension (pumps, outlet, rain, road flooding, forecast, upstream pressure)
+came back `OPEN`. Can the AI give an overall colour for the area?**
+
+Expected: **no overall verdict.** An overall colour needs both the pond
+(Z0) and the outlet/receiving canal `FOUND` (§4b, rule 3) — that minimum
+load-bearing pair is not met here: the outlet is `OPEN`. The answer names
+which dimensions are `FOUND` (pond only) and which are `OPEN` (the outlet
+and the rest), lowers confidence accordingly (rule 4), and does **not**
+collapse this into a single area-wide colour as if the other six dimensions
+didn't matter.
+
+---
+
+**Q15. (SCC) The pond is FALLING, the receiving canal/outlet it drains to is
+reading high, and the rain forecast shows more rain ahead. What single
+verdict, if any, should the answer give?**
+
+Expected: **not a single collapsed verdict** — current state and forward
+hazard are reported as two separate lines (§4b, rule 5 / AI.md rule 1):
+something like "stable now, elevated ahead" — the falling pond plus high
+receiver describes the current reading, the rain forecast describes a
+separate forward hazard, and neither cancels the other.

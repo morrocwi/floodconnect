@@ -3,8 +3,10 @@
 **Project status: resumed for M4/v0.1.4 by founder ruling 2026-10-05 ("KG-first that AIs
 cannot skip"); paused again after v0.1.4 unless a new ruling says otherwise. Resumed
 again and closed out as v0.1.5, the MVP-close release (Jev Sandwich KG-only answer
-path, the GOV API MANUAL, a vendor-neutral skill/ package) — see
-`docs/handoff/NEXT_AI_HANDOFF.md`.**
+path, the GOV API MANUAL, a vendor-neutral skill package, now `skills/floodconnect-method/`)
+— see `docs/handoff/NEXT_AI_HANDOFF.md`. **v0.1.6 is packaging only** (no flood-logic
+change): the two skills consolidated under `skills/` and the repo made installable as
+a plugin for Codex, Claude Code and Gemini CLI — see "Install as a plugin" below.**
 
 **KG first, no exceptions: every answer states its `kg_anchor`; run `floodconnect locate`
 (or fetch `output/kg_index/index.json`) before anything else — see `llms.txt` STEP 1.**
@@ -434,6 +436,99 @@ names) — never ours.
 
 ไม่มีการเรียกผ่านเซิร์ฟเวอร์ของทีมนี้เลย ไม่มี proxy ไม่มี backend กลาง และฝั่งเราไม่เรียก LLM ใด ๆ
 การคำนวณทั้งหมดเป็นโค้ด stdlib เท่านั้น ทุก request วิ่งบนเครื่อง/เครือข่าย/คีย์ของคุณเอง
+
+## 4a. Install as a plugin (v0.1.6, packaging only)
+
+The repo above is the whole plugin for every ecosystem below — one clone, one
+`skills/` tree (`skills/floodconnect`, `skills/floodconnect-method`), one MCP
+server (`tools/mcp/floodconnect_mcp.py`). Clone and set up the venv first (§4
+above — `pip install -e '.[mcp]'` is required for the MCP server to actually run;
+each manifest below points at `.venv/bin/python` inside this clone). Every
+command here was run and confirmed against a real local clone, in an isolated
+`HOME`/`CODEX_HOME`/`CLAUDE_CONFIG_DIR`/Gemini config dir — never against the
+founder's own global config.
+
+**Codex (`codex-cli`, confirmed on 0.155.1):**
+
+```bash
+codex plugin marketplace add /absolute/path/to/floodconnect
+codex plugin add floodconnect@floodconnect-marketplace
+codex plugin list            # confirms name + version 0.1.6 installed
+```
+
+MEASURED, contradicting the official docs page: this CLI version only reads
+`.codex-plugin/plugin.json` — a root-level `plugin.json` was tried first and
+Codex reported "missing plugin.json". `.codex-plugin/plugin.json` is the file
+this repo ships and the one that actually installs.
+
+MEASURED: Codex does not read a plugin-local `.codex-plugin/mcp.json` at all
+(removing that file changes nothing) — its real MCP source is the shared
+root `.mcp.json`, the same file Claude Code reads, which is why this repo
+ships only that one file. `codex mcp list`/`codex mcp get floodconnect` do
+list the bundled server; `codex doctor` still does not surface it. There is
+no `codex skills`/`codex skill` command at all — `codex plugin list`
+confirms the plugin and its version only.
+
+`.mcp.json`'s command/args use `${CLAUDE_PLUGIN_ROOT}` (see
+`skills/floodconnect-method/SKILL.md` §4b): MEASURED on Claude Code, this
+substitutes to the real clone path and the server connects. On Codex, `codex
+mcp get floodconnect` prints the `${CLAUDE_PLUGIN_ROOT}` placeholder back
+literally in its listing — whether Codex expands it at actual server-launch
+time is **OPEN**: confirming that needs an interactive, credentialed
+session, which this install test does not start (no credentials, per
+policy). Separately, MEASURED: installing via `codex plugin add` (even from
+a local path, not only a Git URL/marketplace) copies the plugin into
+`~/.codex/plugins/cache/...` with a `.venv` directory present but no
+runnable python inside it, so the bundled MCP server cannot start from that
+copy regardless of path format — same limit as Claude Code's plugin cache.
+
+**Claude Code (confirmed on 2.1.291):**
+
+```bash
+claude plugin marketplace add /absolute/path/to/floodconnect
+claude plugin install floodconnect@floodconnect-marketplace -y
+claude plugin details floodconnect@floodconnect-marketplace
+```
+
+`claude plugin details` is the confirmation: it printed `Skills (2) floodconnect,
+floodconnect-method` and `MCP servers (1) floodconnect` directly, non-interactively,
+no session needed.
+
+**Gemini CLI (confirmed on 0.46.0):**
+
+```bash
+gemini extensions install /absolute/path/to/floodconnect
+gemini extensions list
+gemini skills list --all
+```
+
+Both commands confirm it: `extensions list` prints `MCP servers: floodconnect` and
+`Agent skills: floodconnect-method, floodconnect`; `skills list --all` lists both
+skills with their real `SKILL.md` path under the installed extension.
+
+`install` asks two separate interactive prompts: a folder-trust prompt (not
+extension-specific — Gemini CLI's general "do you trust the files in this
+folder" gate) and an extension-install security-consent prompt. MEASURED:
+`gemini extensions install <path> --consent` skips the second prompt
+(`--help` lists `--consent`), but still blocks on the folder-trust prompt
+if the folder is not already trusted. For a scripted/CI install, pre-trust the
+folder first — either write `{"<absolute-path>": "TRUST_FOLDER"}` into that
+config dir's `.gemini/trustedFolders.json`, or set `security.folderTrust.enabled:
+false` in `settings.json` — then `gemini extensions install <path> --consent`
+installs with exit 0 and no prompts (confirmed on 0.46.0). `printf 'y\ny\n' |
+gemini extensions install ...` does not work in this version (exit 2, "No
+extensions installed") — use `--consent` with a pre-trusted folder instead.
+
+**Generic (no ecosystem plugin system — the path this repo has always supported):**
+see §4 above, then either the CLI (`floodconnect answer --at <area> --json`) or
+point any MCP-capable client at `tools/mcp/floodconnect_mcp.py` directly (§6 below).
+
+**Availability, stated plainly, no overclaim:** all three CLIs above are
+desktop/terminal tools; a plugin install from a local path or Git URL is a CLI-only
+action in every one of them — none of the three has a documented way to add a local
+or Git-sourced plugin/extension from a phone or a plain web chat UI (the "ChatGPT
+app/mobile" Skills feature mentioned in some OpenAI docs is a different, separate
+product from a Codex CLI plugin and is not what this section installs).
 
 ## 5. Quick start
 

@@ -4,6 +4,88 @@ All notable changes to FloodConnect. Dates are Asia/Bangkok local. This file sta
 only what actually shipped and is tested in this repository — never a plan (see
 `ROADMAP.md` for plans).
 
+## v0.1.6 — 2026-10-07
+
+**Packaging only — no flood-logic change.** Makes this repo installable as a
+plugin for Codex, Claude Code and Gemini CLI, plus the existing generic
+install (§4/§4a of `README.md`).
+
+- **Skill consolidation:** the two skill files that used to live at `skill/`
+  (the v0.1.5 vendor-neutral Sandwich method) and `skills/floodconnect/` (the
+  MCP/CLI usage skill) are now both under one canonical tree:
+  `skills/floodconnect/` (usage) and `skills/floodconnect-method/` (the
+  Sandwich method, moved from `skill/` via `git mv`, keeping history). Each
+  `SKILL.md`'s frontmatter `name`/`description` no longer overlaps, and each
+  cross-links to the sibling. `skill/` no longer exists — every reference to
+  it (`README.md`, `docs/API_MANUAL.md`) was updated; dated/historical files
+  (`RELEASE_NOTES_v0.1.5.md`, `docs/handoff/NEXT_AI_HANDOFF.md`,
+  `.ai/claims/20261007-ai-worker-floodconnect-v015-release.yaml`) were left
+  as-is — they are accurate records of what v0.1.5 shipped, under the path it
+  had then.
+- **Plugin manifests, all pointing at the same `skills/` tree and the same MCP
+  server (`tools/mcp/floodconnect_mcp.py`, requiring `pip install -e '.[mcp]'`):**
+  - Codex: `.codex-plugin/plugin.json` + `.agents/plugins/marketplace.json`.
+    MEASURED (codex-cli 0.155.1): the official docs' claim that a root-level
+    `plugin.json` also works did not hold on this live CLI -- only
+    `.codex-plugin/plugin.json` installed. Codex never reads a plugin-local
+    `.codex-plugin/mcp.json` (removed, was dead weight); its real MCP source
+    is the shared root `.mcp.json`, confirmed by `codex mcp list`/`codex mcp get`.
+  - Claude Code: `.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`
+    + `.mcp.json`. MEASURED (claude 2.1.291): `plugin.json`'s `author` field
+    must be an object (`{"name": ...}`), not a string — `claude plugin validate`
+    caught this before any install attempt. `.mcp.json`'s `command`/`args` use
+    `${CLAUDE_PLUGIN_ROOT}` (the documented stdio-server variable) rather than
+    a bare relative path — MEASURED: without it, `claude mcp list` fails with
+    `ENOENT` from any working directory other than this clone; with it, the
+    server connects from any directory.
+  - Gemini CLI: `gemini-extension.json` (with `mcpServers` using the
+    documented `${extensionPath}` placeholder) + `GEMINI.md`, a thin pointer
+    to the two skills under `skills/` (no copied content). Gemini CLI has no
+    marketplace concept; install is always `gemini extensions install
+    <path|git-url>` directly.
+  - `author: morrocwi`, `license: MIT` (matches `LICENSE`), `version: 0.1.6`,
+    `homepage: https://github.com/morrocwi/floodconnect` on every manifest
+    that has those fields. No field was invented for an ecosystem whose own
+    docs don't define it (e.g. Gemini's manifest carries no author/license/
+    homepage — not part of its documented schema).
+- **Isolated install tests (MEASURED), each with `HOME`/`CODEX_HOME`/
+  `CLAUDE_CONFIG_DIR`/Gemini config dir pointed at a throwaway scratch dir,
+  never the founder's own global config:** all three CLIs installed this
+  plugin from the local repo path and confirmed it. `claude plugin details`
+  and `gemini extensions list`/`gemini skills list --all` both printed the 2
+  skills and the 1 MCP server by name, non-interactively. Codex confirmed the
+  plugin name+version install via `codex plugin list`, and `codex mcp list`/
+  `codex mcp get floodconnect` list the bundled MCP server by name (both read
+  the shared root `.mcp.json`, not a Codex-specific manifest — there is no
+  `codex skill(s)` command at all to confirm skills the same way); `codex
+  doctor` does not surface it. Whether the server actually launches
+  correctly through Codex's plugin-cache copy needs an interactive/model
+  session, which this test does not start (no credentials used anywhere in
+  this release) — left OPEN, not claimed either way.
+- **New test:** `tests/test_plugin_manifests.py` — every manifest is valid
+  JSON, every path it references (directly, or via `${extensionPath}`)
+  exists, the old `skill/` directory is gone, and the version string agrees
+  across all 4 canonical places plus every plugin manifest.
+- **Version bumped to 0.1.6** in the same 4 places v0.1.5 used: `pyproject.toml`,
+  `system_capabilities.json`, `skills/floodconnect-method/SKILL.md`'s
+  frontmatter, and `tools/mcp/floodconnect_mcp.py`'s `serverInfo`.
+- **System Coverage Contract (SCC) — documentation only, no code change.**
+  New §4b in `skills/floodconnect-method/SKILL.md` (a `Sibling:` pointer line
+  in `skills/floodconnect/SKILL.md` plus rule 8 in `AI.md`'s "Mandatory
+  reasoning rules"): when an assessment escalates to the area level, walk
+  every dimension (pond, pumps, outlet, rain, road flooding, forecast,
+  upstream pressure) via declared KG edges; one dimension's source failure
+  marks only that dimension `OPEN`, never the whole assessment; attempt every
+  dimension before giving an overall colour, and give one only when the local
+  storage/pond (Z0) and the outlet/receiving canal it drains to have both
+  come back `FOUND` (the minimum load-bearing pair) — if either is `OPEN`,
+  report per-dimension `FOUND`/`OPEN` only, no overall colour; missing
+  evidence lowers confidence, never the hazard; state current vs. forward
+  hazard as two separate lines.
+  `INSTALL_CHECK.md` gained Q13-Q15 covering this. **The code-level coverage
+  block/gate (an actual pass/fail check wired into the answer path) is not in
+  this release — targeted for v0.2.**
+
 ## v0.1.5 — 2026-10-07
 
 **Targeted fixes (2026-10-07).** Fixes several specific gaps against the entry
