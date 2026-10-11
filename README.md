@@ -140,7 +140,7 @@ floodconnect answer --at "<lat>,<lon>" --json
 <!-- Backward-compatible README §3 reference; source-of-truth for scope is below. -->
 ### 3. Out of scope / ขอบเขตของโครงการ (README §3)
 
-**นอกขอบเขตรุ่นนี้:** การรับรองว่าจะท่วมหรือไม่ท่วมรายบ้าน, การพยากรณ์ความลึกน้ำ, และบริการข้อมูลสดแบบโฮสต์กลาง (ดู [ข้อจำกัด](#limitations) และ [หลักฐาน](docs/EVIDENCE.md))
+**นอกขอบเขตรุ่นนี้** (`VERIFIED`: [รายการความสามารถ](system_capabilities.json), [ผลทดสอบ](docs/EVIDENCE.md)): การรับรองว่าจะท่วมหรือไม่ท่วมรายบ้าน, การพยากรณ์ความลึกน้ำ, และบริการข้อมูลสดแบบโฮสต์กลาง (ดู [ข้อจำกัด](#limitations) และ [หลักฐาน](docs/EVIDENCE.md))
 
 **ทั่วประเทศไทย — ความละเอียดระดับสถานี/ลุ่มน้ำ** (`VERIFIED`: [ความสามารถปัจจุบัน](system_capabilities.json) / `RELAYED`: ข้อมูลสถานี): เครื่องมือรับพิกัดและพยายามเลือกข้อมูลสถานีที่มีความสัมพันธ์ตามกฎที่ระบุไว้ในโครงการ พร้อมตรวจเวลาและแสดงระดับความไม่แน่นอน **ไม่ได้หมายถึงทุกตำบลมีเซนเซอร์หรือข้อมูลครบ** (`RELEASED` / `LIMITED`)
 
@@ -213,6 +213,20 @@ floodconnect answer --at sammakorn --offline
 # ทดสอบโปรเจกต์
 python3 -m pytest tests/ -q
 ~~~
+
+### 🧱 Repository map — product path vs experiments
+
+**เส้นทางผลิตจริงและไฟล์ประกอบ** (`VERIFIED`: [แผนความสามารถระบบ](system_capabilities.json), [routing สำหรับ AI](docs/AI_ENTRYPOINT.md)):
+
+| กลุ่ม | ไฟล์/โฟลเดอร์ | ใช้ทำอะไร |
+|---|---|---|
+| **PRODUCT PATH** | `kb.py`, `readout.py`, `community_dag.py`, `collect.py`, `parsers.py`, `store.py`, `live_water_level.py` | เส้นทางอ่าน/วิเคราะห์ข้อมูลในคำตอบจริง (ตรวจสถานะและเงื่อนไขข้อมูลแต่ละแหล่งเสมอ) |
+| **AI & SKILL INTERFACE** | `AI.md`, `llms.txt`, `skills/floodconnect/`, `skills/floodconnect-method/`, `tools/mcp/floodconnect_mcp.py` | คู่มือให้ AI อ่านและช่องทางใช้ CLI/MCP/วิธีคิด |
+| **SHIPPED KNOWLEDGE GRAPH** | `output/thailand_water_kg.graphml`, `output/thailand_water_kg.jsonld`, `output/kg_index/` | KG และดัชนีเชิงโครงสร้าง ไม่ใช่ระดับน้ำสด |
+| **PROPOSAL / EXPERIMENT** | `raw_stage_forecast.py`, `water_balance.py`, `canal_graph.py`, `burden_ledger.py`, `dsva_decision.py` | งานทดลองหรือวิจัย **ไม่ใช่เส้นทางพยากรณ์ความลึกน้ำผลิตจริง** |
+| **DATED EXAMPLES / BUILD INPUTS** | `examples/`, `site/inputs/` | ตัวอย่างและไฟล์ประกอบการสร้างหน้าอธิบายที่มีวันที่ ไม่ใช่การอ่านข้อมูลน้ำปัจจุบัน |
+
+**`raw_stage_forecast.py` ไม่ใช่การพยากรณ์ระดับน้ำในคำสั่ง `floodconnect answer`** (`VERIFIED`: [เส้นทางผลิตจริง](system_capabilities.json)). อ่าน [ข้อจำกัดการทดสอบ](docs/EVIDENCE.md) ก่อนอ้างประสิทธิภาพ และดู [ข้อจำกัด](#limitations) สำหรับการนำผลไปใช้
 
 **ขอบเขตระบบ** (`VERIFIED`: [system_capabilities.json](system_capabilities.json)): `kb.py` / CLI / MCP ทำงานบนเครื่องของผู้ใช้; ไม่มี backend กลางจากโครงการ ข้อมูลตัวอย่างใน Git ถูกระบุวันและไม่ใช่ค่าล่าสุด ส่วน `site/landing/` เป็นหน้าอธิบายแบบ static เท่านั้น
 
