@@ -132,7 +132,7 @@ floodconnect answer --at "<lat>,<lon>" --json
 
 `current_local_state` · `forward_hazard` · `rise_rate_dk` · `time_to_threshold_tk` · `rain_24h_mm` · `rain_7day_per_model_mm` · `distance_to_bank_m` · `bank_fill_percent` · `one_decision` · `water_debt`
 
-> **ไม่ใช่ทุกตัวชี้วัดทำงานอยู่ในคำตอบ CLI/MCP ปัจจุบัน**: บางตัวอยู่เฉพาะโมดูลคำนวณด้วยมือ/ข้อมูลประกอบ; `water_debt` อยู่ในแผนรุ่นถัดไป ตรวจสถานะและค่าที่เป็นไปได้ **รายตัว** ใน [ทะเบียนตัวชี้วัด](docs/INDICATORS.md) และ [แผนความสามารถเครื่องอ่านได้](system_capabilities.json) ก่อนใช้ โดย `RED/YELLOW/GREEN/UNKNOWN` เป็นชุดค่าสำหรับ `current_local_state` และ `one_decision.level` เท่านั้น ไม่ใช่ทุกตัวชี้วัด
+> **ไม่ใช่ทุกตัวชี้วัดทำงานอยู่ในคำตอบ CLI/MCP ปัจจุบัน** (`VERIFIED`: ตรวจ [รายการความสามารถ](system_capabilities.json) และ [ทะเบียนตัวชี้วัด](docs/INDICATORS.md)): บางตัวอยู่เฉพาะโมดูลคำนวณด้วยมือ/ข้อมูลประกอบ; `water_debt` อยู่ในแผนรุ่นถัดไป ตรวจสถานะและค่าที่เป็นไปได้ **รายตัว** ใน [ทะเบียนตัวชี้วัด](docs/INDICATORS.md) และ [แผนความสามารถเครื่องอ่านได้](system_capabilities.json) ก่อนใช้ โดย `RED/YELLOW/GREEN/UNKNOWN` เป็นชุดค่าสำหรับ `current_local_state` และ `one_decision.level` เท่านั้น ไม่ใช่ทุกตัวชี้วัด
 
 <a id="coverage"></a>
 ## 🗺️ พื้นที่ที่รองรับ | Coverage
